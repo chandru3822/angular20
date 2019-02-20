@@ -24,10 +24,17 @@
 							:key="header.text"
 						>
 							<div v-if="filters.hasOwnProperty(header.value)">
-								<v-text-field
-								:label="header.text"
-								v-model="filters[header.value].value"
-							/>
+									<v-text-field
+										v-if="filters[header.value].type == FilterType.TEXT"
+										:label="header.text"
+										v-model="filters[header.value].value"
+									/>
+									<v-select
+										v-else-if="filters[header.value].type == FilterType.SELECT"
+										:items="selectFilterList(header.value)"
+										v-model="filters[header.value].value"
+									>
+									</v-select>
 							</div>
 						</th>
 					</tr>
@@ -64,6 +71,7 @@ export default {
   name: 'users',
   data () {
     return {
+			FilterType,
       headers: [
         { text: 'First Name', value: 'firstName'},
         { text: 'Last Name', value: 'lastName'},
@@ -77,14 +85,16 @@ export default {
         { text: 'Status', value: 'userStatusType'}
 			],
 			filters: {
-				firstName: {
-					value: [],
-					type: FilterType.TEXT
-				},
-				lastName: {
-					value: [],
-					type: FilterType.TEXT
-				}
+				firstName: {value: [], type: FilterType.TEXT},
+				lastName: {value: [], type: FilterType.TEXT},
+				email: {value: [], type: FilterType.TEXT},
+				phoneNumber: {value: [], type: FilterType.TEXT},
+				organization: {value: [], type: FilterType.SELECT},
+				department: {value: [], type: FilterType.SELECT},
+				region: {value: [], type: FilterType.SELECT},
+				office: {value: [], type: FilterType.SELECT},
+				positionName: {value: [], type: FilterType.SELECT},
+				userStatusType: {value: [], type: FilterType.TEXT}
 			},
 			users: [],
     }
@@ -97,10 +107,10 @@ export default {
 						case FilterType.TEXT:
 							return this.filters[f].value.length < 1 || user[f].toLowerCase().includes(this.filters[f].value.toLowerCase())
 						case FilterType.SELECT:
-							return true
+							return this.filters[f].value.length < 1 || this.filters[f].value.includes(user[f])
 					}
         })
-      })
+			})
 		}
 	},
   methods: {
@@ -109,7 +119,10 @@ export default {
         .then(({data}) => {
           this.users = data.users
         })
-    }
+		},
+		selectFilterList (propertyName) {
+			return this.users.filter(user => user[propertyName] != null).map(user => user[propertyName])
+		}
 	},
   created () {
     this.fetchUsers()
