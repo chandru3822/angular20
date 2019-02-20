@@ -103,11 +103,16 @@ export default {
 		filteredUsers () {
 			return this.users.filter(user => {
         return Object.keys(this.filters).every(f => {
+
+					if (this.filters[f].value.length < 1) {
+						return true;
+					}
+
           switch (this.filters[f].type) {
 						case FilterType.TEXT:
-							return this.filters[f].value.length < 1 || user[f].toLowerCase().includes(this.filters[f].value.toLowerCase())
+							return user[f].toLowerCase().includes(this.filters[f].value.toLowerCase())
 						case FilterType.SELECT:
-							return this.filters[f].value.length < 1 || this.filters[f].value.includes(user[f])
+							return this.filters[f].value == user[f]
 					}
         })
 			})
