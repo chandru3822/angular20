@@ -5,7 +5,7 @@
         <v-flex xs12 sm8>
           <v-card color="secondaryMaster" class="elevation-12">
             <v-toolbar dark color="primary">
-              <v-toolbar-title>BRS Field Ops Portal</v-toolbar-title>
+              <v-toolbar-title>Albatross</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
               <h2 class="error" v-if="$store.state.user.loginError">{{$store.state.user.loginError}}</h2>

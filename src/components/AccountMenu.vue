@@ -13,17 +13,17 @@
           color="grey lighten-4"
           class="account-img"
       >
-        <v-img name="accountImg" v-if="loadComplete && imageUrl" :src="imageUrl"></v-img>
-        <img name="accountImg" v-else src="../assets/user_img_placeholder.png">
+        <!-- <v-img name="accountImg" v-if="loadComplete && imageUrl" :src="imageUrl"></v-img>
+        <img name="accountImg" v-else src="../assets/user_img_placeholder.png"> -->
       </v-avatar>
     </v-btn>
     <v-list>
-      <v-list-tile @click="changeRoute('preferences', {})">
+      <!-- <v-list-tile @click="changeRoute('preferences', {})">
         <v-list-tile-title>Preferences</v-list-tile-title>
         <v-list-tile-action class="account-menu-icon">
           <v-icon>settings</v-icon>
         </v-list-tile-action>
-      </v-list-tile>
+      </v-list-tile> -->
       <v-list-tile @click="logout()">
         <v-list-tile-title>Logout</v-list-tile-title>
         <v-list-tile-action class="account-menu-icon">
