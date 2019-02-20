@@ -1,21 +1,25 @@
 <template>
 	<v-content>
+		Users: {{ this.filteredUsers.length }}
 		<v-container fluid fill-height>
+			
 			<v-data-table
         :headers="headers"
         :items="filteredUsers"
+				:pagination.sync="pagination"
 				item-key="text"
         class="elevation-1"
-        expand
       >
         <template slot="headers" slot-scope="props">
           <tr>
             <th
               v-for="header in props.headers"
               :key="header.text"
-              :class="['column sortable']"
+              :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
+							@click="changeSort(header.value)"
             >
               <span>{{ header.text }}</span>
+							<v-icon small>arrow_upward</v-icon>
             </th>
           </tr>
 					<tr>
@@ -72,6 +76,7 @@ export default {
   data () {
     return {
 			FilterType,
+			pagination: {},
       headers: [
         { text: 'First Name', value: 'firstName'},
         { text: 'Last Name', value: 'lastName'},
@@ -127,7 +132,15 @@ export default {
 		},
 		selectFilterList (propertyName) {
 			return this.users.filter(user => user[propertyName] != null).map(user => user[propertyName])
-		}
+		},
+		changeSort (column) {
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending
+      } else {
+        this.pagination.sortBy = column
+        this.pagination.descending = false
+      }
+    }
 	},
   created () {
     this.fetchUsers()
