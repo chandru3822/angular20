@@ -1,17 +1,29 @@
 <template>
 	<v-content>
 		Users: {{ this.filteredUsers.length }}
+		Selected Users: {{ this.selected.length }}
 		<v-container fluid fill-height>
 			
 			<v-data-table
         :headers="headers"
         :items="filteredUsers"
 				:pagination.sync="pagination"
-				item-key="text"
+				item-key="userId"
         class="elevation-1"
+				v-model="selected"
+				select-all
       >
         <template slot="headers" slot-scope="props">
           <tr>
+						<th>
+							<v-checkbox
+								:input-value="props.all"
+								:indeterminate="props.indeterminate"
+								primary
+								hide-details
+								@click.stop="toggleAll"
+							></v-checkbox>
+						</th>
             <th
               v-for="header in props.headers"
               :key="header.text"
@@ -23,6 +35,7 @@
             </th>
           </tr>
 					<tr>
+						<th></th>
 						<th
 							v-for="header in props.headers"
 							:key="header.text"
@@ -37,14 +50,20 @@
 										v-else-if="filters[header.value].type == FilterType.SELECT"
 										:items="selectFilterList(header.value)"
 										v-model="filters[header.value].value"
-									>
-									</v-select>
+									></v-select>
 							</div>
 						</th>
 					</tr>
         </template>
         <template slot="items" slot-scope="props">
-          <tr>
+          <tr :active="props.selected" @click="props.selected = !props.selected">
+						<td>
+							<v-checkbox
+								:input-value="props.selected"
+								primary
+								hide-details
+							></v-checkbox>
+						</td>
             <td>{{ props.item.firstName }}</td>
             <td>{{ props.item.lastName }}</td>
             <td>{{ props.item.email }}</td>
@@ -77,6 +96,7 @@ export default {
     return {
 			FilterType,
 			pagination: {},
+			selected: [],
       headers: [
         { text: 'First Name', value: 'firstName'},
         { text: 'Last Name', value: 'lastName'},
@@ -140,7 +160,10 @@ export default {
         this.pagination.sortBy = column
         this.pagination.descending = false
       }
-    }
+		},
+		toggleAll () {
+			this.selected = (this.selected.length) ? [] : this.users.slice()
+		}
 	},
   created () {
     this.fetchUsers()
