@@ -63,7 +63,8 @@ export default {
 
 <style scoped lang="scss">
 #portal {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: 'Lato', sans-serif;
+  letter-spacing: .4px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
