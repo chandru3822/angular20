@@ -184,7 +184,7 @@ export default {
       StatusValues,
       pagination: {},
       selected: [],
-      selectedStatuses: [1],
+      selectedStatuses: [],
       positions: {
         slot: 'primary',
         status: 'both'
@@ -278,7 +278,7 @@ export default {
         })
     },
     async fetchStatuses () {
-      await axios.get(`${VUE_APP_BASE_API}/users/statuses`)
+      return await axios.get(`${VUE_APP_BASE_API}/users/statuses`)
         .then(({data}) => {
           this.statuses = data.statuses
         })
@@ -350,7 +350,10 @@ export default {
   },
   created () {
     this.fetchStatuses()
-    this.fetchUsers()
+      .then(() => {
+        this.selectedStatuses = this.statuses.filter(s => s.id === 1)
+        this.fetchUsers()
+      })
   }
 }
 </script>
