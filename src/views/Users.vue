@@ -1,6 +1,78 @@
 <template>
 <div>
 <v-layout row wrap>
+  <v-flex xs6 text-xs-left>Users</v-flex>
+  <v-flex xs6 text-xs-right>
+    <v-menu
+      :close-on-content-click="false"
+    >
+      <v-btn 
+        class="app-button"
+        slot="activator"
+      >Adv. Search</v-btn>
+
+      <v-card>
+        <v-menu>
+          <v-text-field
+            slot="activator"
+            label="Hire Date After"
+            readonly
+            v-model="dateAfterFormatted"
+          ></v-text-field>
+
+          <v-date-picker
+            v-model="externalFilters.dateAfter"
+            @input="fetchUsers"
+          ></v-date-picker>
+        </v-menu>
+
+        <v-menu>
+          <v-text-field
+            slot="activator"
+            label="Hire Date Before"
+            readonly
+            v-model="dateBeforeFormatted"
+          ></v-text-field>
+
+          <v-date-picker
+            v-model="externalFilters.dateBefore"
+            @input="fetchUsers"
+          ></v-date-picker>
+        </v-menu>
+
+        <v-select
+          v-model="externalFilters.areaIds"
+          :items="salesAreas"
+          item-value="id"
+          item-text="area"
+          multiple
+          outline
+          label="Area"
+          @input="fetchUsers"
+        >
+
+        </v-select>
+
+        <v-divider></v-divider>
+
+        <v-select
+          v-model="externalFilters.roleIds"
+          :items="roles"
+          item-value="id"
+          item-text="name"
+          multiple
+          outline
+          label="Role"
+          @input="fetchUsers"
+        >
+        
+        </v-select>
+      </v-card>
+    </v-menu>
+  </v-flex>
+</v-layout>
+<v-divider></v-divider>
+<v-layout row wrap>
   <v-flex xs4>
     <v-flex d-flex xs12>
       <v-text-field
@@ -181,6 +253,7 @@
 import axios from 'axios'
 import cloneDeep from 'lodash.clonedeep'
 import debounce from 'lodash.debounce'
+import moment from 'moment'
 
 const { VUE_APP_BASE_API } = process.env
 
@@ -256,6 +329,8 @@ export default {
       selectedStatuses: [],
       positions: {},
       statuses: [],
+      salesAreas: [],
+      roles: [],
       users: [],
       headers: [
         { text: 'First Name', value: 'firstName'},
@@ -312,11 +387,26 @@ export default {
       }
       
       return icon
+    },
+    dateAfterFormatted () {
+      const date = moment(this.externalFilters.dateAfter)
+      return date.isValid() ? date.format('M/DD/YYYY') : ''
+    },
+    dateBeforeFormatted () {
+      const date = moment(this.externalFilters.dateBefore)
+      return date.isValid() ? date.format('M/DD/YYYY') : ''
     }
   },
   methods: {
     async fetchUsers () {
-      await axios.post(`${VUE_APP_BASE_API}/users/search`, this.externalFilters)
+
+      const dateAfter = moment(this.externalFilters.dateAfter)
+      const dateBefore = moment(this.externalFilters.dateBefore)
+
+      await axios.post(`${VUE_APP_BASE_API}/users/search`, {...this.externalFilters, ...{
+        dateAfter: (dateAfter.isValid()) ? dateAfter.toISOString() : null,
+        dateBefore: (dateBefore.isValid()) ? dateBefore.toISOString() : null
+      }})
         .then(({data}) => {
           this.users = data
         })
@@ -346,6 +436,18 @@ export default {
         .then(({data}) => {
           this.searchFilters = data
           return data
+        })
+    },
+    async fetchSalesAreas () {
+      await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
+        .then(({data}) => {
+          this.salesAreas = data
+        })
+    },
+    async fetchRoles () {
+      await axios.get(`${VUE_APP_BASE_API}/roles`)
+        .then(({data}) => {
+          this.roles = data
         })
     },
     debounceFetchUsers () {
@@ -425,6 +527,8 @@ export default {
   },
   created () {
     this.initFilters()
+    this.fetchSalesAreas()
+    this.fetchRoles()
     this.fetchSearchFilters()
       .then((filterDefaults) => {
         this.searchFiltersDefault = filterDefaults
