@@ -1,6 +1,8 @@
 <template>
-  <v-content>
-    <v-flex>
+<div>
+<v-layout row wrap>
+  <v-flex xs4>
+    <v-flex d-flex xs12>
       <v-text-field
         append-icon="search"
         label="Search..."
@@ -8,7 +10,7 @@
         @input="debounceFetchUsers"
       ></v-text-field>
     </v-flex>
-    <div>
+    <v-flex d-flex xs12>
       <v-select
         v-model="selectedStatuses"
         :items="statuses"
@@ -18,7 +20,7 @@
         return-object
         outline
         label="Status"
-        @change="updateSelectStatuses"
+        @input="updateSelectStatuses"
       >
         <v-list-tile
           slot="prepend-item"
@@ -31,17 +33,20 @@
           <v-list-tile-title>Select All</v-list-tile-title>
         </v-list-tile>
         <v-divider
-              slot="prepend-item"
-              class="mt-2"
-          ></v-divider>
+            slot="prepend-item"
+            class="mt-2"
+        ></v-divider>
       </v-select>
-    </div>
-    <div>
-      <v-radio-group 
+    </v-flex>
+  </v-flex>
+  <v-flex xs4 offset-xs1>
+      <v-layout wrap>
+        <v-flex xs12>Positions</v-flex>
+      <v-flex xs12 sm6>
+        <v-radio-group 
         v-model="positions.slot"
         @change="updatePositionFilters"	
       >
-
         <v-radio 
           :value="SlotValues.PRIMARY"
           :label="`Primary Only`"
@@ -55,7 +60,9 @@
           :label="`Both`"
         ></v-radio>
       </v-radio-group>
-      <v-radio-group 
+      </v-flex>
+      <v-flex xs12 sm6>
+        <v-radio-group 
         v-model="positions.status"
         @change="updatePositionFilters"
       >
@@ -72,89 +79,108 @@
           :label="`Both`"
         ></v-radio>
       </v-radio-group>
-    </div>
-    Users: {{ this.filteredUsers.length }}
-    Selected Users: {{ this.selected.length }}
-    <v-container fluid fill-height>
-      
-      <v-data-table
-        :headers="headers"
-        :items="filteredUsers"
-        :pagination.sync="pagination"
-        item-key="id"
-        class="elevation-1"
-        v-model="selected"
-        select-all
-      >
-        <template slot="headers" slot-scope="props">
-          <tr>
-            <th>
-              <v-checkbox
-                :input-value="props.all"
-                :indeterminate="props.indeterminate"
-                primary
-                hide-details
-                @click.stop="toggleSelectAllUsers"
-              ></v-checkbox>
-            </th>
-            <th
-              v-for="header in props.headers"
-              :key="header.text"
-              :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
-              @click="changeSort(header.value)"
-            >
-              <span>{{ header.text }}</span>
-              <v-icon small>arrow_upward</v-icon>
-            </th>
-          </tr>
-          <tr>
-            <th></th>
-            <th
-              v-for="header in props.headers"
-              :key="header.text"
-            >
-              <div v-if="filters.hasOwnProperty(header.value)">
-                  <v-text-field
-                    v-if="filters[header.value].type == FilterType.TEXT"
-                    :label="header.text"
-                    v-model="filters[header.value].value"
-                  />
-                  <v-select
-                    v-else-if="filters[header.value].type == FilterType.SELECT"
-                    :items="selectFilterList(header.value)"
-                    v-model="filters[header.value].value"
-                  ></v-select>
-              </div>
-            </th>
-          </tr>
-        </template>
-        <template slot="items" slot-scope="props">
-          <tr :active="props.selected" @click="props.selected = !props.selected">
-            <td>
-              <v-checkbox
-                :input-value="props.selected"
-                primary
-                hide-details
-              ></v-checkbox>
-            </td>
-            <td>{{ props.item.firstName }}</td>
-            <td>{{ props.item.lastName }}</td>
-            <td>{{ props.item.email }}</td>
-            <td>{{ props.item.phoneNumber }}</td>
-            <td>{{ props.item.organization }}</td>
-            <td>{{ props.item.department }}</td>
-            <td>{{ props.item.region }}</td>
-            <td>{{ props.item.office }}</td>
-            <td>{{ props.item.positionName }}</td>
-            <td>{{ props.item.userStatusType }}</td>
-          </tr>
-        </template>
-      </v-data-table>
-    </v-container>
-  </v-content>
+      </v-flex>
+      </v-layout>
+  </v-flex>
+  <v-flex xs3 class="text-xs-right">
+    <v-btn 
+      class="app-button"
+      @click="initFilters"
+    >Reset Search</v-btn>
+  </v-flex>
+</v-layout>
+<v-layout row wrap mt-5>
+  <v-flex xs12>
+    Users: {{ this.filteredUsers.length }} Selected Users: {{ this.selected.length }}
+  </v-flex>
+  <v-flex xs12>
+    <v-data-table
+      :headers="headers"
+      :items="filteredUsers"
+      :pagination.sync="pagination"
+      item-key="id"
+      class="elevation-1"
+      v-model="selected"
+      select-all
+    >
+      <template slot="headers" slot-scope="props">
+        <tr>
+          <th>
+            <v-checkbox
+              :input-value="props.all"
+              :indeterminate="props.indeterminate"
+              primary
+              hide-details
+              @click.stop="toggleSelectAllUsers"
+            ></v-checkbox>
+          </th>
+          <th
+            v-for="header in props.headers"
+            :key="header.text"
+            :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
+            @click="changeSort(header.value)"
+          >
+            <span>{{ header.text }}</span>
+            <v-icon small>arrow_upward</v-icon>
+          </th>
+        </tr>
+        <tr>
+          <th></th>
+          <th
+            v-for="header in props.headers"
+            :key="header.text"
+          >
+
+            <div v-if="inlineFilters.hasOwnProperty(header.value)">
+                <v-text-field
+                  v-if="inlineFilters[header.value].type == FilterType.TEXT"
+                  :label="header.text"
+                  v-model="inlineFilters[header.value].value"
+                />
+                <v-select
+                  v-else-if="inlineFilters[header.value].type == FilterType.SELECT"
+                  :items="searchFilters[inlineFilters[header.value].searchFilter]"
+                  item-value="id"
+                  item-text="name"
+                  multiple
+                  return-object
+                  v-model="inlineFilters[header.value].value"
+                  @change="updateSearchFilters(inlineFilters[header.value].searchFilter)"
+                ></v-select>
+            </div>
+          </th>
+        </tr>
+      </template>
+      <template slot="items" slot-scope="props">
+        <tr :active="props.selected" @click="props.selected = !props.selected">
+          <td>
+            <v-checkbox
+              :input-value="props.selected"
+              primary
+              hide-details
+            ></v-checkbox>
+          </td>
+          <td>{{ props.item.firstName }}</td>
+          <td>{{ props.item.lastName }}</td>
+          <td>{{ props.item.email }}</td>
+          <td>{{ props.item.phoneNumber }}</td>
+          <td>{{ props.item.organization }}</td>
+          <td>{{ props.item.department }}</td>
+          <td>{{ props.item.region }}</td>
+          <td>{{ props.item.office }}</td>
+          <td>{{ props.item.positionName }}</td>
+          <td>{{ props.item.userStatusType }}</td>
+        </tr>
+      </template>
+    </v-data-table>
+  </v-flex>
+</v-layout>
+</div>
 </template>
 <script>
 import axios from 'axios'
+import cloneDeep from 'lodash.clonedeep'
+import debounce from 'lodash.debounce'
 
 const { VUE_APP_BASE_API } = process.env
 
@@ -173,6 +199,44 @@ const StatusValues = {
   ACTIVE: 'active',
   INACTIVE: 'inactive',
   BOTH: 'both'
+}
+
+const InitExternalFilters = {
+  searchQuery: '', 
+  statusIds: [1], 
+  areaIds: [], 
+  dateBefore: null, 
+  dateAfter: null, 
+  roleIds: [], 
+  primaryOnly: true, 
+  secondaryOnly: false, 
+  activeOnly: false, 
+  inactiveOnly: false, 
+  missingPrimary: false, 
+  missingPosition: false, 
+  userId: null
+}
+
+const InitInlineFilters = {
+  firstName: {value: [], type: FilterType.TEXT},
+  lastName: {value: [], type: FilterType.TEXT},
+  email: {value: [], type: FilterType.TEXT},
+  phoneNumber: {value: [], type: FilterType.TEXT},
+  userStatusType: {value: [], type: FilterType.TEXT},
+  organization: {value: [], type: FilterType.SELECT, searchFilter: 'organizations'},
+  department: {value: [], type: FilterType.SELECT, searchFilter: 'departments'},
+  region: {value: [], type: FilterType.SELECT, searchFilter: 'regions'},
+  office: {value: [], type: FilterType.SELECT, searchFilter: 'offices'},
+  positionName: {value: [], type: FilterType.SELECT, searchFilter: 'positions'}
+}
+
+const InitSearchFilters = {
+  startingPoint: null,
+	positions: [],
+	organizations: [],
+	departments: [],
+	regions: [],
+	offices: []
 }
 
 export default {
@@ -203,55 +267,33 @@ export default {
         { text: 'Position', value: 'positionName'},
         { text: 'Status', value: 'userStatusType'}
       ],
-      filters: {
-        firstName: {value: [], type: FilterType.TEXT},
-        lastName: {value: [], type: FilterType.TEXT},
-        email: {value: [], type: FilterType.TEXT},
-        phoneNumber: {value: [], type: FilterType.TEXT},
-        organization: {value: [], type: FilterType.SELECT},
-        department: {value: [], type: FilterType.SELECT},
-        region: {value: [], type: FilterType.SELECT},
-        office: {value: [], type: FilterType.SELECT},
-        positionName: {value: [], type: FilterType.SELECT},
-        userStatusType: {value: [], type: FilterType.TEXT}
-      },
-      externalFilters: {
-        searchQuery: '', 
-        statusIds: [1], 
-        areaIds: [], 
-        dateBefore: null, 
-        dateAfter: null, 
-        roleIds: [], 
-        primaryOnly: true, 
-        secondaryOnly: false, 
-        activeOnly: false, 
-        inactiveOnly: false, 
-        missingPrimary: false, 
-        missingPosition: false, 
-        userId: null
-      }
+      inlineFilters: cloneDeep(InitInlineFilters),
+      searchFilters: cloneDeep(InitSearchFilters),
+      searchFiltersDefault: {},
+      externalFilters: cloneDeep(InitExternalFilters)
     }
   },
   computed: {
     filteredUsers () {
-      return this.users.filter(user => {
-        return Object.keys(this.filters).every(f => {
+      return this.users && this.users.filter(user => {
+        return Object.keys(this.inlineFilters).every(f => {
 
-          if (this.filters[f].value.length < 1) {
+          if (this.inlineFilters[f].value.length < 1) {
             return true;
           }
 
-          switch (this.filters[f].type) {
+          switch (this.inlineFilters[f].type) {
             case FilterType.TEXT:
-              return user[f].toLowerCase().includes(this.filters[f].value.toLowerCase())
+              return user[f].toLowerCase().includes(this.inlineFilters[f].value.toLowerCase())
             case FilterType.SELECT:
-              return this.filters[f].value == user[f]
+              const selectedNames = this.inlineFilters[f].value.map(filter => filter.name)
+              return selectedNames.includes(user[f])
           }
         })
       })
     },
     isAllStatusesSelected () {
-      return this.selectedStatuses.length === this.statuses.length
+      return this.statuses && this.selectedStatuses.length === this.statuses.length
     },
     isSomeStatusesSelected () {
       return this.selectedStatuses.length > 0 && !this.isAllStatusesSelected
@@ -274,24 +316,40 @@ export default {
     async fetchUsers () {
       await axios.post(`${VUE_APP_BASE_API}/users/search`, this.externalFilters)
         .then(({data}) => {
-          this.users = data.users
+          this.users = data
         })
     },
     async fetchStatuses () {
       return await axios.get(`${VUE_APP_BASE_API}/users/statuses`)
         .then(({data}) => {
-          this.statuses = data.statuses
+          this.statuses = data
+        })
+    },
+    async fetchSearchFilters (startingPoint = null) {
+      let selectedFilterOptions = {
+        startingPoint: startingPoint,
+        positionIds: this.inlineFilters.positionName.value.map(f => f.id),
+        organizationIds: this.inlineFilters.organization.value.map(f => f.id),
+        departmentIds: this.inlineFilters.department.value.map(f => f.id),
+        regionIds: this.inlineFilters.region.value.map(f => f.id),
+        officeIds: this.inlineFilters.office.value.map(f => f.id),
+        userStatusTypeIds: this.externalFilters.statusIds,
+        primaryOnly: this.externalFilters.primaryOnly, 
+        secondaryOnly: this.externalFilters.secondaryOnly, 
+        activeOnly: this.externalFilters.activeOnly, 
+        inactiveOnly: this.externalFilters.inactiveOnly
+      }
+
+      return await axios.post(`${VUE_APP_BASE_API}/users/searchFilters`, selectedFilterOptions)
+        .then(({data}) => {
+          this.searchFilters = data
+          return data
         })
     },
     debounceFetchUsers () {
-
       // @TODO: get debounce working
-      // debounce(this.fetchUsers, 2000)
-
-      this.fetchUsers();
-    },
-    selectFilterList (propertyName) {
-      return this.users.filter(user => user[propertyName] != null).map(user => user[propertyName])
+      // debounce(this.fetchUsers, 500)
+      this.fetchUsers()
     },
     updatePositionFilters () {
       
@@ -329,6 +387,9 @@ export default {
       this.externalFilters.statusIds = this.selectedStatuses.map(s => s.id)
       this.fetchUsers()
     },
+    updateSearchFilters (startingPoint) {
+      this.fetchSearchFilters(startingPoint)
+    },
     changeSort (column) {
       if (this.pagination.sortBy === column) {
         this.pagination.descending = !this.pagination.descending
@@ -346,9 +407,19 @@ export default {
         this.externalFilters.statusIds = this.selectedStatuses.map(s => s.id)
         this.fetchUsers()
       })
+    },
+    initFilters () {
+      this.selected = []
+      this.inlineFilters = cloneDeep(InitInlineFilters)
+      this.externalFilters = cloneDeep(InitExternalFilters)
+      this.searchFilters = cloneDeep(this.searchFiltersDefault)
     }
   },
   created () {
+    this.fetchSearchFilters()
+      .then((filterDefaults) => {
+        this.searchFiltersDefault = filterDefaults
+      })
     this.fetchStatuses()
       .then(() => {
         this.selectedStatuses = this.statuses.filter(s => s.id === 1)
