@@ -85,7 +85,7 @@
   <v-flex xs3 class="text-xs-right">
     <v-btn 
       class="app-button"
-      @click="initFilters"
+      @click="resetFilters"
     >Reset Search</v-btn>
   </v-flex>
 </v-layout>
@@ -267,10 +267,10 @@ export default {
         { text: 'Position', value: 'positionName'},
         { text: 'Status', value: 'userStatusType'}
       ],
-      inlineFilters: cloneDeep(InitInlineFilters),
-      searchFilters: cloneDeep(InitSearchFilters),
+      inlineFilters: {},
+      searchFilters: {},
       searchFiltersDefault: {},
-      externalFilters: cloneDeep(InitExternalFilters)
+      externalFilters: {}
     }
   },
   computed: {
@@ -413,9 +413,14 @@ export default {
       this.inlineFilters = cloneDeep(InitInlineFilters)
       this.externalFilters = cloneDeep(InitExternalFilters)
       this.searchFilters = cloneDeep(this.searchFiltersDefault)
+    },
+    resetFilters () {
+      this.initFilters()
+      this.selectedStatuses = this.statuses.filter(s => s.id === 1)
     }
   },
   created () {
+    this.initFilters()
     this.fetchSearchFilters()
       .then((filterDefaults) => {
         this.searchFiltersDefault = filterDefaults
