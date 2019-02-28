@@ -239,6 +239,11 @@ const InitSearchFilters = {
 	offices: []
 }
 
+const InitPositions = {
+  slot: 'primary',
+  status: 'both'
+}
+
 export default {
   name: 'users',
   data () {
@@ -249,10 +254,7 @@ export default {
       pagination: {},
       selected: [],
       selectedStatuses: [],
-      positions: {
-        slot: 'primary',
-        status: 'both'
-      },
+      positions: {},
       statuses: [],
       users: [],
       headers: [
@@ -413,10 +415,12 @@ export default {
       this.inlineFilters = cloneDeep(InitInlineFilters)
       this.externalFilters = cloneDeep(InitExternalFilters)
       this.searchFilters = cloneDeep(this.searchFiltersDefault)
+      this.positions = cloneDeep(InitPositions)
     },
     resetFilters () {
       this.initFilters()
       this.selectedStatuses = this.statuses.filter(s => s.id === 1)
+      this.fetchUsers()
     }
   },
   created () {
