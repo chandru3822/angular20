@@ -53,8 +53,6 @@
 
         </v-select>
 
-        <v-divider></v-divider>
-
         <v-select
           v-model="externalFilters.roleIds"
           :items="roles"
@@ -67,6 +65,44 @@
         >
         
         </v-select>
+
+        <v-list>
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-checkbox v-model="externalFilters.missingData"></v-checkbox>
+            </v-list-tile-action>
+
+            <v-list-tile-content>
+              <v-list-tile-title>Missing Data</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-checkbox 
+                v-model="externalFilters.missingPrimary"
+                @change="updateMissingExternalFilters(MissingFilterType.PRIMARY)"
+              ></v-checkbox>
+            </v-list-tile-action>
+
+            <v-list-tile-content>
+              <v-list-tile-title>Missing Primary</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+
+          <v-list-tile>
+            <v-list-tile-action>
+              <v-checkbox 
+                v-model="externalFilters.missingPosition"
+                @change="updateMissingExternalFilters(MissingFilterType.POSITION)"
+              ></v-checkbox>
+            </v-list-tile-action>
+
+            <v-list-tile-content>
+              <v-list-tile-title>Missing Position</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+        </v-list>
       </v-card>
     </v-menu>
   </v-flex>
@@ -163,7 +199,7 @@
 </v-layout>
 <v-layout row wrap mt-5>
   <v-flex xs12>
-    Users: {{ this.filteredUsers.length }} Selected Users: {{ this.selected.length }}
+    Users: {{ this.users.length }} Selected Users: {{ this.selected.length }}
   </v-flex>
   <v-flex xs12>
     <v-data-table
@@ -262,6 +298,11 @@ const FilterType = {
   SELECT: 'select'
 }
 
+const MissingFilterType = {
+  PRIMARY: 'primary',
+  POSITION: 'position'
+}
+
 const SlotValues = {
   PRIMARY: 'primary',
   SECONDARY: 'secondary',
@@ -287,6 +328,7 @@ const InitExternalFilters = {
   inactiveOnly: false, 
   missingPrimary: false, 
   missingPosition: false, 
+  missingData: false,
   userId: null
 }
 
@@ -322,6 +364,7 @@ export default {
   data () {
     return {
       FilterType,
+      MissingFilterType,
       SlotValues,
       StatusValues,
       pagination: {},
@@ -353,10 +396,15 @@ export default {
   computed: {
     filteredUsers () {
       return this.users && this.users.filter(user => {
+
+        if (this.externalFilters.missingData && user.valid === true) {
+          return false
+        }
+
         return Object.keys(this.inlineFilters).every(f => {
 
           if (this.inlineFilters[f].value.length < 1) {
-            return true;
+            return true
           }
 
           switch (this.inlineFilters[f].type) {
@@ -493,6 +541,16 @@ export default {
     },
     updateSearchFilters (startingPoint) {
       this.fetchSearchFilters(startingPoint)
+    },
+    updateMissingExternalFilters (updatedFilter) {
+      if (updatedFilter === MissingFilterType.PRIMARY && this.externalFilters.missingPrimary === true) {
+        this.externalFilters.missingPosition = false
+      }
+
+      if (updatedFilter === MissingFilterType.POSITION && this.externalFilters.missingPosition === true) {
+        this.externalFilters.missingPrimary = false
+      }
+      this.fetchUsers()
     },
     changeSort (column) {
       if (this.pagination.sortBy === column) {
