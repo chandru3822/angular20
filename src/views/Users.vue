@@ -459,10 +459,11 @@ export default {
       const dateAfter = moment(this.externalFilters.dateAfter)
       const dateBefore = moment(this.externalFilters.dateBefore)
 
-      this.users = await axios.post(`${VUE_APP_BASE_API}/users/search`, {...this.externalFilters, ...{
+      const {data} = await axios.post(`${VUE_APP_BASE_API}/users/search`, {...this.externalFilters, ...{
         dateAfter: (dateAfter.isValid()) ? dateAfter.toISOString() : null,
         dateBefore: (dateBefore.isValid()) ? dateBefore.toISOString() : null
       }})
+      this.users = data
     },
     async fetchStatuses () {
       return await axios.get(`${VUE_APP_BASE_API}/users/statuses`)
@@ -492,10 +493,12 @@ export default {
         })
     },
     async fetchSalesAreas () {
-      this.salesAreas = await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
+      this.salesAreas = data
     },
     async fetchRoles () {
-      this.roles = await axios.get(`${VUE_APP_BASE_API}/roles`)
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/roles`)
+      this.roles = data
     },
     debounceFetchUsers () {
       // @TODO: get debounce working

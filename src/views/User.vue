@@ -33,10 +33,8 @@ export default {
   },
   methods: {
     async fetchUser() {
-       await axios.get(`${VUE_APP_BASE_API}/users/${this.$route.params.id}`)
-         .then(({data}) => {
-           this.user = data
-         })
+       const {data} = await axios.get(`${VUE_APP_BASE_API}/users/${this.$route.params.id}`)
+      this.user = data
     }
   },
   created () {
