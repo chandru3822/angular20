@@ -58,7 +58,7 @@ export default {
     this.getUserImage()
   },
   methods: {
-    changeRoute (path, params) {
+    changeRoute (path) {
       this.$router.push({ name: path })
     },
     async getUserImage () {

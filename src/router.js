@@ -28,11 +28,14 @@ export default new Router({
           next()
         }
       },
-      children: [
-        {
+      children: [{
           path: 'users',
           name: 'users',
           component: () => import(/* webpackChunkName: "users" */ './views/Users.vue')
+        }, {
+          path: 'users/:id',
+          name: 'user',
+          component: () => import (/* webpackChunkName: "user" */ './views/User.vue')
         }
       ]
     }

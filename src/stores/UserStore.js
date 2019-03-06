@@ -40,7 +40,7 @@ export const UserStore = {
         )
       }
     },
-    [UserActions.LOGOUT]: ({ commit }) => {
+    [UserActions.LOGOUT]: () => {
       localStorage.removeItem('store')
     }
   },

@@ -6,7 +6,7 @@
     <v-menu
       :close-on-content-click="false"
     >
-      <v-btn 
+      <v-btn
         class="app-button"
         slot="activator"
       >Adv. Search</v-btn>
@@ -63,7 +63,7 @@
           label="Role"
           @input="fetchUsers"
         >
-        
+
         </v-select>
 
         <v-list>
@@ -79,7 +79,7 @@
 
           <v-list-tile>
             <v-list-tile-action>
-              <v-checkbox 
+              <v-checkbox
                 v-model="externalFilters.missingPrimary"
                 @change="updateMissingExternalFilters(MissingFilterType.PRIMARY)"
               ></v-checkbox>
@@ -92,7 +92,7 @@
 
           <v-list-tile>
             <v-list-tile-action>
-              <v-checkbox 
+              <v-checkbox
                 v-model="externalFilters.missingPosition"
                 @change="updateMissingExternalFilters(MissingFilterType.POSITION)"
               ></v-checkbox>
@@ -105,10 +105,15 @@
         </v-list>
       </v-card>
     </v-menu>
+
+    <v-btn
+      class="app-button"
+      @click="hideExternalFilters = !hideExternalFilters"
+    >Hide Filters</v-btn>
   </v-flex>
 </v-layout>
 <v-divider></v-divider>
-<v-layout row wrap>
+<v-layout row wrap v-if="!hideExternalFilters">
   <v-flex xs4>
     <v-flex d-flex xs12>
       <v-text-field
@@ -151,11 +156,11 @@
       <v-layout wrap>
         <v-flex xs12>Positions</v-flex>
       <v-flex xs12 sm6>
-        <v-radio-group 
+        <v-radio-group
         v-model="positions.slot"
-        @change="updatePositionFilters"	
+        @change="updatePositionFilters"
       >
-        <v-radio 
+        <v-radio
           :value="SlotValues.PRIMARY"
           :label="`Primary Only`"
         ></v-radio>
@@ -170,11 +175,11 @@
       </v-radio-group>
       </v-flex>
       <v-flex xs12 sm6>
-        <v-radio-group 
+        <v-radio-group
         v-model="positions.status"
         @change="updatePositionFilters"
       >
-        <v-radio 
+        <v-radio
           :value="StatusValues.ACTIVE"
           :label="`Active Only`"
         ></v-radio>
@@ -191,7 +196,7 @@
       </v-layout>
   </v-flex>
   <v-flex xs3 class="text-xs-right">
-    <v-btn 
+    <v-btn
       class="app-button"
       @click="resetFilters"
     >Reset Search</v-btn>
@@ -241,12 +246,12 @@
 
             <div v-if="inlineFilters.hasOwnProperty(header.value)">
                 <v-text-field
-                  v-if="inlineFilters[header.value].type == FilterType.TEXT"
+                  v-if="inlineFilters[header.value].type === FilterType.TEXT"
                   :label="header.text"
                   v-model="inlineFilters[header.value].value"
                 />
                 <v-select
-                  v-else-if="inlineFilters[header.value].type == FilterType.SELECT"
+                  v-else-if="inlineFilters[header.value].type === FilterType.SELECT"
                   :items="searchFilters[inlineFilters[header.value].searchFilter]"
                   item-value="id"
                   item-text="name"
@@ -260,7 +265,7 @@
         </tr>
       </template>
       <template slot="items" slot-scope="props">
-        <tr :active="props.selected" @click="props.selected = !props.selected">
+        <tr :active="props.selected" @click="editUser(props.item.id)">
           <td>
             <v-checkbox
               :input-value="props.selected"
@@ -288,7 +293,7 @@
 <script>
 import axios from 'axios'
 import cloneDeep from 'lodash.clonedeep'
-import debounce from 'lodash.debounce'
+// import debounce from 'lodash.debounce'
 import moment from 'moment'
 
 const { VUE_APP_BASE_API } = process.env
@@ -316,18 +321,18 @@ const StatusValues = {
 }
 
 const InitExternalFilters = {
-  searchQuery: '', 
-  statusIds: [1], 
-  areaIds: [], 
-  dateBefore: null, 
-  dateAfter: null, 
-  roleIds: [], 
-  primaryOnly: true, 
-  secondaryOnly: false, 
-  activeOnly: false, 
-  inactiveOnly: false, 
-  missingPrimary: false, 
-  missingPosition: false, 
+  searchQuery: '',
+  statusIds: [1],
+  areaIds: [],
+  dateBefore: null,
+  dateAfter: null,
+  roleIds: [],
+  primaryOnly: true,
+  secondaryOnly: false,
+  activeOnly: false,
+  inactiveOnly: false,
+  missingPrimary: false,
+  missingPosition: false,
   missingData: false,
   userId: null
 }
@@ -345,14 +350,14 @@ const InitInlineFilters = {
   positionName: {value: [], type: FilterType.SELECT, searchFilter: 'positions'}
 }
 
-const InitSearchFilters = {
-  startingPoint: null,
-	positions: [],
-	organizations: [],
-	departments: [],
-	regions: [],
-	offices: []
-}
+// const InitSearchFilters = {
+//   startingPoint: null,
+// 	positions: [],
+// 	organizations: [],
+// 	departments: [],
+// 	regions: [],
+// 	offices: []
+// }
 
 const InitPositions = {
   slot: 'primary',
@@ -367,6 +372,7 @@ export default {
       MissingFilterType,
       SlotValues,
       StatusValues,
+      hideExternalFilters: false,
       pagination: {},
       selected: [],
       selectedStatuses: [],
@@ -407,11 +413,13 @@ export default {
             return true
           }
 
+          let selectedNames;
+
           switch (this.inlineFilters[f].type) {
             case FilterType.TEXT:
               return user[f].toLowerCase().includes(this.inlineFilters[f].value.toLowerCase())
             case FilterType.SELECT:
-              const selectedNames = this.inlineFilters[f].value.map(filter => filter.name)
+              selectedNames = this.inlineFilters[f].value.map(filter => filter.name)
               return selectedNames.includes(user[f])
           }
         })
@@ -425,7 +433,7 @@ export default {
     },
     icon () {
       let icon
-      
+
       if (this.isAllStatusesSelected) {
         icon = 'check_box'
       } else if (this.isSomeStatusesSelected) {
@@ -433,7 +441,7 @@ export default {
       } else {
         icon = 'check_box_outline_blank'
       }
-      
+
       return icon
     },
     dateAfterFormatted () {
@@ -474,9 +482,9 @@ export default {
         regionIds: this.inlineFilters.region.value.map(f => f.id),
         officeIds: this.inlineFilters.office.value.map(f => f.id),
         userStatusTypeIds: this.externalFilters.statusIds,
-        primaryOnly: this.externalFilters.primaryOnly, 
-        secondaryOnly: this.externalFilters.secondaryOnly, 
-        activeOnly: this.externalFilters.activeOnly, 
+        primaryOnly: this.externalFilters.primaryOnly,
+        secondaryOnly: this.externalFilters.secondaryOnly,
+        activeOnly: this.externalFilters.activeOnly,
         inactiveOnly: this.externalFilters.inactiveOnly
       }
 
@@ -504,7 +512,7 @@ export default {
       this.fetchUsers()
     },
     updatePositionFilters () {
-      
+
       switch (this.positions.slot) {
         case SlotValues.PRIMARY:
           this.externalFilters.primaryOnly = true
@@ -581,6 +589,9 @@ export default {
       this.initFilters()
       this.selectedStatuses = this.statuses.filter(s => s.id === 1)
       this.fetchUsers()
+    },
+    editUser (id) {
+      this.$router.push({name: 'user', params: {id}})
     }
   },
   created () {
