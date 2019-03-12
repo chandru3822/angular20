@@ -62,20 +62,19 @@ export default {
       this.$router.push({ name: path })
     },
     async getUserImage () {
-      await axios.get(`${VUE_APP_BASE_API}/getPresignedUrl`, {
-        params: {
-          sourceId: this.$store.state.user.details.id,
-          attachmentSourceTypeId: 9
-        }
-      })
-        .then(({ data }) => {
-          const { assetUrl } = data
-          this.imageUrl = assetUrl
-          this.loadComplete = true
+      try {
+        const { data } = await axios.get(`${VUE_APP_BASE_API}/getPresignedUrl`, {
+          params: {
+            sourceId: this.$store.state.user.details.id,
+            attachmentSourceTypeId: 9
+          }
         })
-        .catch(() => {
-          this.loadComplete = true
-        })
+        const { assetUrl } = data
+        this.imageUrl = assetUrl
+        this.loadComplete = true
+      } catch (e) {
+        this.loadComplete = true
+      }
     },
     getFirstName () {
       if (this.$store.state.user.details) {

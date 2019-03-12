@@ -14,7 +14,7 @@
                 <v-text-field required color="primary" v-model="form.password" prepend-icon="lock" name="password" label="Password" id="password" type="password"></v-text-field>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn :loading="loginLoading" type="submit" color="brBlue" dark>Login</v-btn>
+                  <v-btn :loading="loginLoading" type="submit" color="primaryButton" dark>Login</v-btn>
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -26,26 +26,29 @@
 </template>
 
 <script>
-import { UserActions, UserMutations } from '@/stores/UserStore'
-import axios from 'axios'
-const { VUE_APP_BASE_API } = process.env
+  import { UserActions, UserMutations } from '@/stores/UserStore'
+  import axios from 'axios'
+  const { VUE_APP_BASE_API } = process.env
 
-export default {
-  data () {
-    return {
-      form: {
-        email: '',
-        password: ''
-      },
-      loginLoading: false
-    }
-  },
-  methods: {
-    async onSubmit () {
-      this.loginLoading = true
-      if (this.$refs.login.validate()) {
-        await axios.post(`${VUE_APP_BASE_API}/login`, { username: this.form.email, password: this.form.password })
-          .then(({ data }) => {
+  export default {
+    data () {
+      return {
+        form: {
+          email: '',
+          password: ''
+        },
+        loginLoading: false
+      }
+    },
+    methods: {
+      async onSubmit () {
+        this.loginLoading = true
+        if (this.$refs.login.validate()) {
+          try {
+            const { data } = await axios.post(`${VUE_APP_BASE_API}/login`, {
+              username: this.form.email,
+              password: this.form.password
+            })
             const { token, details } = data
             if (token) {
               this.$store.commit(UserMutations.SET_JWT, token)
@@ -57,35 +60,34 @@ export default {
                 'Invalid Username or Password.'
               )
             }
-          })
-          .catch(() => {
+          } catch (e) {
             this.loginLoading = false
             this.$store.commit(
               UserMutations.LOGIN_ERROR,
               'Invalid Username/Password.'
             )
-          })
-      } else {
-        console.log('Error in form')
-        this.loginLoading = false
+          }
+        } else {
+          console.log('Error in form')
+          this.loginLoading = false
+        }
+      },
+      async loginSuccess (details) {
+        await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
+        this.$router.push('/')
       }
-    },
-    async loginSuccess (details) {
-      await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
-      this.$router.push('/')
     }
   }
-}
 </script>
 
 <style scoped lang="scss">
-.logo{
-  max-width: 100%;
-}
-
-@media (min-width: 769px) {
-  .login-card-text {
-    padding: 65px;
+  .logo{
+    max-width: 100%;
   }
-}
+
+  @media (min-width: 769px) {
+    .login-card-text {
+      padding: 65px;
+    }
+  }
 </style>
