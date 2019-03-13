@@ -1,12 +1,14 @@
 <template>
   <v-layout column id="portal" v-if="loadComplete">
-    <v-flex grow>
+    <v-flex xs12>
       <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
       <!--non-mobile header...is this necessary?-->
-      <v-toolbar dense id="header" color="primaryCustom" app tabs dark extension-height="57">
+      <v-toolbar dense id="header" color="primaryCustom" app tabs dark extension-height="53">
         <v-toolbar-title class="app-title">Blue Raven Solar</v-toolbar-title>
         <v-spacer></v-spacer>
-        <AccountMenu :showImage="true"></AccountMenu>
+        <v-toolbar-items>
+          <AccountMenu :showImage="true"></AccountMenu>
+        </v-toolbar-items>
         <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
         <v-tabs color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondary">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
