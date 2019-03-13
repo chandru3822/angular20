@@ -205,7 +205,7 @@
     </v-layout>
     <v-layout column align-start justify-start mt-5>
       <v-flex xs12>
-        Users: {{ this.users.length }} Selected Users: {{ this.selected.length }}
+        Users: {{ this.filteredUsers.length }} Selected Users: {{ this.selected.length }}
       </v-flex>
       <v-flex xs12 mt-2>
         <v-data-table
@@ -254,23 +254,31 @@
                   <v-select
                     v-else-if="inlineFilters[header.value].type === FilterType.SELECT"
                     :items="searchFilters[inlineFilters[header.value].searchFilter]"
+                    :disabled="searchFilters[inlineFilters[header.value].searchFilter] === null"
                     item-value="id"
                     item-text="name"
                     multiple
                     return-object
                     v-model="inlineFilters[header.value].value"
-                    @change="updateSearchFilters(inlineFilters[header.value].searchFilter)"
+                    @change="updateSearchFilters"
                   >
                     <v-list-tile
                       slot="prepend-item"
                       ripple
-                      @click="toggleSelectAllFilter()"
                     >
                       <v-list-tile-action>
-                        <v-icon :color="inlineFilters[header.value].value.length > 0 ? 'primary' : ''">{{ icon }}</v-icon>
+                        <v-icon
+                          :color="inlineFilters[header.value].value.length > 0 ? 'primary' : ''"
+                          :disabled="disableInlineFilterSelectAll(inlineFilters[header.value])"
+                          @click="toggleSelectAllFilter(header.value)"
+                        >{{ inlineFilterIcon(header.value) }}</v-icon>
                       </v-list-tile-action>
                       <v-list-tile-title>Select All</v-list-tile-title>
                     </v-list-tile>
+                    <v-divider
+                      slot="prepend-item"
+                      class="mt-2"
+                    ></v-divider>
                   </v-select>
                 </div>
               </th>
@@ -362,15 +370,6 @@ const InitInlineFilters = {
   office: {value: [], type: FilterType.SELECT, searchFilter: 'offices'},
   positionName: {value: [], type: FilterType.SELECT, searchFilter: 'positions'}
 }
-
-// const InitSearchFilters = {
-//   startingPoint: null,
-// 	positions: [],
-// 	organizations: [],
-// 	departments: [],
-// 	regions: [],
-// 	offices: []
-// }
 
 const InitPositions = {
   slot: 'primary',
@@ -485,9 +484,9 @@ export default {
           this.statuses = data
         })
     },
-    async fetchSearchFilters (startingPoint = null) {
+    async fetchSearchFilters () {
+
       let selectedFilterOptions = {
-        startingPoint: startingPoint,
         positionIds: this.inlineFilters.positionName.value.map(f => f.id),
         organizationIds: this.inlineFilters.organization.value.map(f => f.id),
         departmentIds: this.inlineFilters.department.value.map(f => f.id),
@@ -499,6 +498,29 @@ export default {
         activeOnly: this.externalFilters.activeOnly,
         inactiveOnly: this.externalFilters.inactiveOnly
       }
+
+      let startingPoint = null
+      const hasPositions = selectedFilterOptions.positionIds.length > 0,
+            hasOrgs = selectedFilterOptions.organizationIds.length > 0,
+            hasDepartments = selectedFilterOptions.departmentIds.length > 0,
+            hasRegions = selectedFilterOptions.regionIds.length > 0,
+            hasOffices = selectedFilterOptions.officeIds.length > 0
+
+      if (hasPositions || hasDepartments || hasRegions || hasOffices) {
+        if (hasPositions) {
+          startingPoint = 'positions'
+        } else if (hasOrgs) {
+          startingPoint = 'organizations'
+        } else if (hasDepartments) {
+          startingPoint = 'departments'
+        } else if (hasRegions) {
+          startingPoint = 'regions'
+        } else if (hasOffices) {
+          startingPoint = 'offices'
+        }
+      }
+
+      selectedFilterOptions.startingPoint = startingPoint
 
       return await axios.post(`${VUE_APP_BASE_API}/users/searchFilters`, selectedFilterOptions)
         .then(({data}) => {
@@ -555,8 +577,8 @@ export default {
       this.externalFilters.statusIds = this.selectedStatuses.map(s => s.id)
       this.fetchUsers()
     },
-    updateSearchFilters (startingPoint) {
-      this.fetchSearchFilters(startingPoint)
+    updateSearchFilters () {
+      this.fetchSearchFilters()
     },
     updateMissingExternalFilters (updatedFilter) {
       if (updatedFilter === MissingFilterType.PRIMARY && this.externalFilters.missingPrimary === true) {
@@ -585,6 +607,30 @@ export default {
         this.externalFilters.statusIds = this.selectedStatuses.map(s => s.id)
         this.fetchUsers()
       })
+    },
+    toggleSelectAllFilter (filterName) {
+      let changedFilter = this.inlineFilters[filterName]
+      changedFilter.value = (changedFilter.value.length) ? [] : this.searchFilters[changedFilter.searchFilter].slice()
+      this.updateSearchFilters()
+    },
+    disableInlineFilterSelectAll (inlineFilter) {
+      const searchFilter = this.searchFilters[inlineFilter.searchFilter]
+      return typeof searchFilter === 'undefined' || searchFilter === null || searchFilter.length < 1
+    },
+    inlineFilterIcon (filterName) {
+      const inlineFilter = this.inlineFilters[filterName],
+            searchFilter = this.searchFilters[inlineFilter.searchFilter]
+      let icon
+
+      if (inlineFilter.value.length < 1) {
+        icon = 'check_box_outline_blank'
+      } else if (searchFilter !== null && inlineFilter.value.length === searchFilter.length) {
+        icon = 'check_box'
+      } else {
+        icon = 'indeterminate_check_box'
+      }
+
+      return icon
     },
     initFilters () {
       this.selected = []
