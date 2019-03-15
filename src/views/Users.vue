@@ -13,147 +13,157 @@
           >Adv. Search</v-btn>
 
           <v-card>
-            <v-menu>
-              <v-text-field
-                slot="activator"
-                label="Hire Date After"
-                readonly
-                v-model="dateAfterFormatted"
-              ></v-text-field>
 
-              <v-date-picker
-                v-model="externalFilters.dateAfter"
-                @input="fetchUsers"
-              ></v-date-picker>
-            </v-menu>
+            <v-layout column align-start class="advanced-search">
+              <v-flex xs12>
+                <v-menu>
+                  <v-text-field
+                    slot="activator"
+                    label="Hire Date After"
+                    readonly
+                    v-model="dateAfterFormatted"
+                  ></v-text-field>
 
-            <v-menu>
-              <v-text-field
-                slot="activator"
-                label="Hire Date Before"
-                readonly
-                v-model="dateBeforeFormatted"
-              ></v-text-field>
+                  <v-date-picker
+                    v-model="externalFilters.dateAfter"
+                    @input="fetchUsers"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
 
-              <v-date-picker
-                v-model="externalFilters.dateBefore"
-                @input="fetchUsers"
-              ></v-date-picker>
-            </v-menu>
+              <v-flex xs 12>
+                <v-menu>
+                  <v-text-field
+                    slot="activator"
+                    label="Hire Date Before"
+                    readonly
+                    v-model="dateBeforeFormatted"
+                  ></v-text-field>
 
-            <v-select
-              v-model="externalFilters.areaIds"
-              :items="salesAreas"
-              item-value="id"
-              item-text="area"
-              multiple
-              outline
-              label="Area"
-              @input="fetchUsers"
-            >
-              <v-list-tile
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllAreas"
-              >
-                <v-list-tile-action>
-                  <v-icon :color="externalFilters.areaIds.length > 0 ? 'primary' : ''">{{ areaIcon }}</v-icon>
-                </v-list-tile-action>
-                <v-list-tile-title>Select All</v-list-tile-title>
-              </v-list-tile>
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
-                <v-chip v-if="index === 0 && externalFilters.areaIds.length < 2">
-                  <span>{{ item.area }}</span>
-                </v-chip>
-                <span
-                  v-if="index === 1 && externalFilters.areaIds.length >= 2"
-                  class="primary--text caption"
-                >{{ externalFilters.areaIds.length }} selected</span>
-              </template>
-            </v-select>
+                  <v-date-picker
+                    v-model="externalFilters.dateBefore"
+                    @input="fetchUsers"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
 
-            <v-select
-              v-model="externalFilters.roleIds"
-              :items="roles"
-              item-value="id"
-              item-text="name"
-              multiple
-              outline
-              label="Role"
-              @input="fetchUsers"
-            >
-              <v-list-tile
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllRoles"
-              >
-                <v-list-tile-action>
-                  <v-icon :color="externalFilters.roleIds.length > 0 ? 'primary' : ''">{{ roleIcon }}</v-icon>
-                </v-list-tile-action>
-                <v-list-tile-title>Select All</v-list-tile-title>
-              </v-list-tile>
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
-                <v-chip v-if="index === 0 && externalFilters.roleIds.length < 2">
-                  <span>{{ item.name }}</span>
-                </v-chip>
-                <span
-                  v-if="index === 1 && externalFilters.roleIds.length >= 2"
-                  class="primary--text caption"
-                >{{ externalFilters.roleIds.length }} selected</span>
-              </template>
-            </v-select>
+              <v-flex xs12>
+                <v-select
+                  v-model="externalFilters.areaIds"
+                  :items="salesAreas"
+                  item-value="id"
+                  item-text="area"
+                  multiple
+                  outline
+                  label="Area"
+                  @input="fetchUsers"
+                >
+                  <v-list-tile
+                    slot="prepend-item"
+                    ripple
+                    @click="toggleSelectAllAreas"
+                  >
+                    <v-list-tile-action>
+                      <v-icon :color="externalFilters.areaIds.length > 0 ? 'primary' : ''">{{ areaIcon }}</v-icon>
+                    </v-list-tile-action>
+                    <v-list-tile-title>Select All</v-list-tile-title>
+                  </v-list-tile>
+                  <v-divider
+                    slot="prepend-item"
+                    class="mt-2"
+                  ></v-divider>
+                  <template
+                    slot="selection"
+                    slot-scope="{ item, index }"
+                  >
+                    <v-chip v-if="index === 0 && externalFilters.areaIds.length < 2">
+                      <span>{{ item.area }}</span>
+                    </v-chip>
+                    <span
+                      v-if="index === 1 && externalFilters.areaIds.length >= 2"
+                      class="primary--text caption"
+                    >{{ externalFilters.areaIds.length }} selected</span>
+                  </template>
+                </v-select>
+              </v-flex>
 
-            <v-list>
-              <v-list-tile>
-                <v-list-tile-action>
-                  <v-checkbox v-model="externalFilters.missingData"></v-checkbox>
-                </v-list-tile-action>
+              <v-flex xs12 grow>
+                <v-select
+                  v-model="externalFilters.roleIds"
+                  :items="roles"
+                  item-value="id"
+                  item-text="name"
+                  multiple
+                  outline
+                  label="Role"
+                  @input="fetchUsers"
+                >
+                  <v-list-tile
+                    slot="prepend-item"
+                    ripple
+                    @click="toggleSelectAllRoles"
+                  >
+                    <v-list-tile-action>
+                      <v-icon :color="externalFilters.roleIds.length > 0 ? 'primary' : ''">{{ roleIcon }}</v-icon>
+                    </v-list-tile-action>
+                    <v-list-tile-title>Select All</v-list-tile-title>
+                  </v-list-tile>
+                  <v-divider
+                    slot="prepend-item"
+                    class="mt-2"
+                  ></v-divider>
+                  <template
+                    slot="selection"
+                    slot-scope="{ item, index }"
+                  >
+                    <v-chip v-if="index === 0 && externalFilters.roleIds.length < 2">
+                      <span>{{ item.name }}</span>
+                    </v-chip>
+                    <span
+                      v-if="index === 1 && externalFilters.roleIds.length >= 2"
+                      class="primary--text caption"
+                    >{{ externalFilters.roleIds.length }} selected</span>
+                  </template>
+                </v-select>
+              </v-flex>
 
-                <v-list-tile-content>
-                  <v-list-tile-title>Missing Data</v-list-tile-title>
-                </v-list-tile-content>
-              </v-list-tile>
+              <v-flex xs12>
+                <v-layout row align-center justify-start fill-height>
+                  <v-flex>
+                    <v-checkbox
+                      height="1"
+                      v-model="externalFilters.missingData"></v-checkbox>
+                  </v-flex>
+                  <v-flex grow>Missing Data</v-flex>
+                </v-layout>
+              </v-flex>
 
-              <v-list-tile>
-                <v-list-tile-action>
-                  <v-checkbox
-                    v-model="externalFilters.missingPrimary"
-                    @change="updateMissingExternalFilters(MissingFilterType.PRIMARY)"
-                  ></v-checkbox>
-                </v-list-tile-action>
+              <v-flex xs12>
+                <v-layout row align-center justify-start fill-height>
+                  <v-flex>
+                    <v-checkbox
+                      height="1"
+                      v-model="externalFilters.missingPrimary"
+                      @change="updateMissingExternalFilters(MissingFilterType.PRIMARY)"
+                    ></v-checkbox>
+                  </v-flex>
+                  <v-flex grow>Missing Primary</v-flex>
+                </v-layout>
+              </v-flex>
 
-                <v-list-tile-content>
-                  <v-list-tile-title>Missing Primary</v-list-tile-title>
-                </v-list-tile-content>
-              </v-list-tile>
-
-              <v-list-tile>
-                <v-list-tile-action>
-                  <v-checkbox
-                    v-model="externalFilters.missingPosition"
-                    @change="updateMissingExternalFilters(MissingFilterType.POSITION)"
-                  ></v-checkbox>
-                </v-list-tile-action>
-
-                <v-list-tile-content>
-                  <v-list-tile-title>Missing Position</v-list-tile-title>
-                </v-list-tile-content>
-              </v-list-tile>
-            </v-list>
+              <v-flex xs12>
+                <v-layout row align-center justify-start fill-height>
+                  <v-flex>
+                    <v-checkbox
+                      height="1"
+                      v-model="externalFilters.missingPosition"
+                      @change="updateMissingExternalFilters(MissingFilterType.POSITION)"
+                    ></v-checkbox>
+                  </v-flex>
+                  <v-flex grow>Missing Position</v-flex>
+                </v-layout>
+              </v-flex>
+            </v-layout>
           </v-card>
         </v-menu>
 
@@ -793,6 +803,9 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-
+<style lang="scss">
+.advanced-search {
+  margin-left: 10px;
+  margin-right: 10px;
+}
 </style>
