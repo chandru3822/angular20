@@ -734,17 +734,11 @@ export default {
       })
     },
     toggleSelectAllFilter (filterName) {
-      // @TODO: select all when nothing is already selected not working
       this.$nextTick(() => {
         let changedFilter = this.inlineFilters[filterName]
         const searchFilter = this.searchFilters[changedFilter.searchFilter]
 
-        if (changedFilter.value.length > 0 && changedFilter.value.length === searchFilter.length) {
-          changedFilter.value = []
-        } else {
-          changedFilter.value = (changedFilter.value.length) ? searchFilter.slice() : []
-        }
-
+        changedFilter.value = (changedFilter.value.length > 0 && changedFilter.value.length === searchFilter.length) ? [] : searchFilter.slice()
         this.updateSearchFilters()
       })
     },
