@@ -805,7 +805,8 @@ export default {
 </script>
 <style lang="scss">
 .advanced-search {
-  margin-left: 10px;
-  margin-right: 10px;
+  margin-left: 15px;
+  margin-right: 15px;
+  max-width: 200px;
 }
 </style>
