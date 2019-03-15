@@ -51,7 +51,32 @@
               label="Area"
               @input="fetchUsers"
             >
-
+              <v-list-tile
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllAreas"
+              >
+                <v-list-tile-action>
+                  <v-icon :color="externalFilters.areaIds.length > 0 ? 'primary' : ''">{{ areaIcon }}</v-icon>
+                </v-list-tile-action>
+                <v-list-tile-title>Select All</v-list-tile-title>
+              </v-list-tile>
+              <v-divider
+                slot="prepend-item"
+                class="mt-2"
+              ></v-divider>
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+                <v-chip v-if="index === 0 && externalFilters.areaIds.length < 2">
+                  <span>{{ item.area }}</span>
+                </v-chip>
+                <span
+                  v-if="index === 1 && externalFilters.areaIds.length >= 2"
+                  class="primary--text caption"
+                >{{ externalFilters.areaIds.length }} selected</span>
+              </template>
             </v-select>
 
             <v-select
@@ -64,7 +89,32 @@
               label="Role"
               @input="fetchUsers"
             >
-
+              <v-list-tile
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllRoles"
+              >
+                <v-list-tile-action>
+                  <v-icon :color="externalFilters.roleIds.length > 0 ? 'primary' : ''">{{ roleIcon }}</v-icon>
+                </v-list-tile-action>
+                <v-list-tile-title>Select All</v-list-tile-title>
+              </v-list-tile>
+              <v-divider
+                slot="prepend-item"
+                class="mt-2"
+              ></v-divider>
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+                <v-chip v-if="index === 0 && externalFilters.roleIds.length < 2">
+                  <span>{{ item.name }}</span>
+                </v-chip>
+                <span
+                  v-if="index === 1 && externalFilters.roleIds.length >= 2"
+                  class="primary--text caption"
+                >{{ externalFilters.roleIds.length }} selected</span>
+              </template>
             </v-select>
 
             <v-list>
@@ -142,7 +192,7 @@
               @click="toggleSelectAllStatuses"
             >
               <v-list-tile-action>
-                <v-icon :color="selectedStatuses.length > 0 ? 'primary' : ''">{{ icon }}</v-icon>
+                <v-icon :color="selectedStatuses.length > 0 ? 'primary' : ''">{{ statusIcon }}</v-icon>
               </v-list-tile-action>
               <v-list-tile-title>Select All</v-list-tile-title>
             </v-list-tile>
@@ -150,6 +200,18 @@
               slot="prepend-item"
               class="mt-2"
             ></v-divider>
+            <template
+              slot="selection"
+              slot-scope="{ item, index }"
+            >
+              <v-chip v-if="index === 0 && selectedStatuses.length < 2">
+                <span>{{ item.userStatusType }}</span>
+              </v-chip>
+              <span
+                v-if="index === 1 && selectedStatuses.length >= 2"
+                class="primary--text caption"
+              >{{ selectedStatuses.length }} selected</span>
+            </template>
           </v-select>
         </v-flex>
       </v-flex>
@@ -279,6 +341,18 @@
                       slot="prepend-item"
                       class="mt-2"
                     ></v-divider>
+                    <template
+                      slot="selection"
+                      slot-scope="{ item, index }"
+                    >
+                      <v-chip v-if="index === 0 && inlineFilters[header.value].value.length < 2">
+                        <span>{{ item.name }}</span>
+                      </v-chip>
+                      <span
+                        v-if="index === 1 && inlineFilters[header.value].value.length >= 2"
+                        class="primary--text caption"
+                      >{{ inlineFilters[header.value].value.length }} selected</span>
+                    </template>
                   </v-select>
                 </div>
               </th>
@@ -444,12 +518,50 @@ export default {
     isSomeStatusesSelected () {
       return this.selectedStatuses.length > 0 && !this.isAllStatusesSelected
     },
-    icon () {
+    isAllAreasSelected () {
+      return this.externalFilters.areaIds && this.externalFilters.areaIds.length === this.salesAreas.length
+    },
+    isSomeAreasSelected () {
+      return this.externalFilters.areaIds.length > 0 && !this.isAllAreasSelected
+    },
+    isAllRolesSelected () {
+      return this.externalFilters.roleIds && this.externalFilters.roleIds.length === this.roles.length
+    },
+    isSomeRolesSelected () {
+      return this.externalFilters.roleIds.length > 0 && !this.isAllRolesSelected
+    },
+    statusIcon () {
       let icon
 
       if (this.isAllStatusesSelected) {
         icon = 'check_box'
       } else if (this.isSomeStatusesSelected) {
+        icon = 'indeterminate_check_box'
+      } else {
+        icon = 'check_box_outline_blank'
+      }
+
+      return icon
+    },
+    areaIcon () {
+      let icon
+
+      if (this.isAllAreasSelected) {
+        icon = 'check_box'
+      } else if (this.isSomeAreasSelected) {
+        icon = 'indeterminate_check_box'
+      } else {
+        icon = 'check_box_outline_blank'
+      }
+
+      return icon
+    },
+    roleIcon () {
+      let icon
+
+      if (this.isAllRolesSelected) {
+        icon = 'check_box'
+      } else if (this.isSomeRolesSelected) {
         icon = 'indeterminate_check_box'
       } else {
         icon = 'check_box_outline_blank'
@@ -484,7 +596,7 @@ export default {
           this.statuses = data
         })
     },
-    async fetchSearchFilters () {
+    fetchSearchFilters () {
 
       let selectedFilterOptions = {
         positionIds: this.inlineFilters.positionName.value.map(f => f.id),
@@ -522,7 +634,7 @@ export default {
 
       selectedFilterOptions.startingPoint = startingPoint
 
-      return await axios.post(`${VUE_APP_BASE_API}/users/searchFilters`, selectedFilterOptions)
+      return axios.post(`${VUE_APP_BASE_API}/users/searchFilters`, selectedFilterOptions)
         .then(({data}) => {
           this.searchFilters = data
           return data
@@ -603,15 +715,38 @@ export default {
     },
     toggleSelectAllStatuses () {
       this.$nextTick(() => {
+        // @TODO: Don't need selectedStatuses. this.externalFilters.statusIds IS the selected statuses
         this.selectedStatuses = (this.isAllStatusesSelected) ? [] : this.statuses.slice()
         this.externalFilters.statusIds = this.selectedStatuses.map(s => s.id)
         this.fetchUsers()
       })
     },
+    toggleSelectAllAreas () {
+      this.$nextTick(() => {
+        this.externalFilters.areaIds = (this.isAllAreasSelected) ? [] : this.salesAreas.map(area => area.id).slice()
+        this.fetchUsers()
+      })
+    },
+    toggleSelectAllRoles () {
+      this.$nextTick(() => {
+        this.externalFilters.roleIds = (this.isAllRolesSelected) ? [] : this.roles.map(role => role.id).slice()
+        this.fetchUsers()
+      })
+    },
     toggleSelectAllFilter (filterName) {
-      let changedFilter = this.inlineFilters[filterName]
-      changedFilter.value = (changedFilter.value.length) ? [] : this.searchFilters[changedFilter.searchFilter].slice()
-      this.updateSearchFilters()
+      // @TODO: select all when nothing is already selected not working
+      this.$nextTick(() => {
+        let changedFilter = this.inlineFilters[filterName]
+        const searchFilter = this.searchFilters[changedFilter.searchFilter]
+
+        if (changedFilter.value.length > 0 && changedFilter.value.length === searchFilter.length) {
+          changedFilter.value = []
+        } else {
+          changedFilter.value = (changedFilter.value.length) ? searchFilter.slice() : []
+        }
+
+        this.updateSearchFilters()
+      })
     },
     disableInlineFilterSelectAll (inlineFilter) {
       const searchFilter = this.searchFilters[inlineFilter.searchFilter]
