@@ -42,23 +42,23 @@ export default {
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
       model: '',
-      tabs: [
-        {
-          label: 'Users',
-          path: '/users',
-          display: true
-        }
-      ]
+      tabs: [{
+        label: 'Users',
+        path: '/users',
+        display: true
+      }, {
+        label: 'Orgs',
+        path: '/orgs',
+        display: true
+      }]
     }
   },
   created () {
 		this.loadComplete = true
 	},
   computed: {
-    displayedTabs: function () {
-      return this.tabs.filter(function (tab) {
-        return tab.display
-      })
+    displayedTabs () {
+      return this.tabs.filter(tab => tab.display)
     }
   },
   methods: {}

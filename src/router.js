@@ -29,15 +29,18 @@ export default new Router({
         }
       },
       children: [{
-          path: 'users',
-          name: 'users',
-          component: () => import(/* webpackChunkName: "users" */ './views/Users.vue')
-        }, {
-          path: 'users/:id',
-          name: 'user',
-          component: () => import (/* webpackChunkName: "user" */ './views/User.vue')
-        }
-      ]
+        path: 'users',
+        name: 'users',
+        component: () => import(/* webpackChunkName: "users" */ './views/Users.vue')
+      }, {
+        path: 'users/:id',
+        name: 'user',
+        component: () => import (/* webpackChunkName: "user" */ './views/User.vue')
+      }, {
+        path: '/orgs',
+        name: 'orgs',
+        component: () => import (/* webpackChunkName: "orgs" */ './views/Orgs.vue')
+      }]
     }
   ]
 })
