@@ -1,16 +1,304 @@
 <template>
 <v-layout column align-center justify-start fill-height>
-  <v-flex>orgs</v-flex>
+  <v-flex xs12 shrink>
+    <v-layout row wrap>
+      <v-flex xs6 text-xs-left>Organizations</v-flex>
+      <v-flex xs6 text-xs-right>
+        <v-btn
+          class="app-button"
+          @click="initFilters"
+        > Reset Search</v-btn>
+      </v-flex>
+    </v-layout>
+    <v-divider></v-divider>
+    <v-layout align-start justify-center mt-5>
+      <v-data-table
+        :items="filteredOrgs"
+        :headers="headers"
+        :pagination.sync="pagination"
+        item-key="id"
+        class="elevation-1"
+        v-model="selected"
+        select-all
+      >
+        <template slot="headers" slot-scope="props">
+          <tr>
+            <th>
+              <!-- @TODO: this checkbox icon doesn't change when orgs are selected -->
+              <v-checkbox
+                :input-value="props.all"
+                :indeterminate="props.indeterminate"
+                primary
+                hide-details
+                @click.stop="toggleSelectAllOrgs"
+              >
+              </v-checkbox>
+            </th>
+            <th
+              v-for="header in props.headers"
+              :key="header.text"
+              :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
+              @click="changeSort(header.value)"
+            >
+              <span>{{ header.text }}</span>
+              <v-icon>arrow_upward</v-icon>
+            </th>
+          </tr>
+          <tr>
+            <th></th>
+            <th
+              v-for="header in props.headers"
+              :key="header.text"
+            >
+              <v-text-field
+                v-if="filters[header.value].type === FILTER_TYPE.TEXT"
+                :label="header.text"
+                v-model="filters[header.value].value"
+              />
+              <v-select
+                v-else-if="filters[header.value].type === FILTER_TYPE.SELECT"
+                :items="searchFilters[header.value]"
+                item-value="id"
+                :item-text="`${filters[header.value].model}`"
+                multiple
+                return-object
+                v-model="filters[header.value].value"
+              >
+                <v-list-tile
+                  slot="prepend-item"
+                  ripple
+                >
+                  <v-list-tile-action>
+                    <v-icon
+                      :color="filters[header.value].value.length > 0 ? 'primary' : ''"
+                      @click="toggleSelectAllFilter(header.value)"
+                    >{{ filterIcon(header.value) }}</v-icon>
+                  </v-list-tile-action>
+                  <v-list-tile-title>Select All</v-list-tile-title>
+                </v-list-tile>
+                <v-divider
+                  slot="prepend-item"
+                  class="mt-2"
+                ></v-divider>
+                <template
+                  slot="selection"
+                  slot-scope="{ item, index }"
+                >
+                  <v-chip v-if="index === 0 && filters[header.value].value.length < 2">
+                    <span>{{ item[`${filters[header.value].model}`] }}</span>
+                  </v-chip>
+                  <span
+                    v-if="index === 1 && filters[header.value].value.length >= 2"
+                    class="primary--text caption"
+                  >{{ filters[header.value].value.length }} selected</span>
+                </template>
+              </v-select>
+            </th>
+          </tr>
+        </template>
+        <template slot="items" slot-scope="props">
+          <tr :active="props.selected">
+            <td @click.stop>
+              <v-checkbox
+                :input-value="props.selected"
+                primary
+                hide-details
+              ></v-checkbox>
+            </td>
+            <td>{{ props.item.orgName }}</td>
+            <td>{{ props.item.calendarOid }}</td>
+            <td>{{ props.item.orgType }}</td>
+            <td>{{ props.item.parent }}</td>
+            <td>{{ props.item.salesArea }}</td>
+            <td>{{ props.item.salesMetroArea }}</td>
+            <td>{{ props.item.metroArea }}</td>
+            <td>{{ props.item.active }}</td>
+          </tr>
+        </template>
+      </v-data-table>
+    </v-layout>
+  </v-flex>
 </v-layout>
 </template>
 
 <script>
-  export default {
-    name: 'orgs',
-    data () {
+import axios from 'axios'
+import cloneDeep from 'lodash.clonedeep'
 
+const {VUE_APP_BASE_API} = process.env
+
+const FILTER_TYPE = {
+  TEXT: 'text',
+  SELECT: 'select'
+}
+
+// @TODO: I don't necessarily like how I've tied this to the model
+const FILTER_DEFAULTS = {
+  orgName: {value: [], type: FILTER_TYPE.TEXT, model: 'orgName'},
+  calendarOid: {value: [], type: FILTER_TYPE.SELECT, model: 'name'},
+  orgType: {value: [], type: FILTER_TYPE.SELECT, model: 'orgType'},
+  parent: {value: [], type: FILTER_TYPE.SELECT, model: 'orgName'},
+  salesArea: {value: [], type: FILTER_TYPE.SELECT, model: 'area'},
+  salesMetroArea: {value: [], type: FILTER_TYPE.SELECT, model: 'salesMetroArea'},
+  metroArea: {value: [], type: FILTER_TYPE.SELECT, model: 'metroArea'},
+  active: {value: [], type: FILTER_TYPE.SELECT, model: 'active'}
+}
+
+export default {
+  name: 'orgs',
+  data () {
+    return {
+      FILTER_TYPE,
+      orgs: [],
+      searchFilters: {
+        orgName: [],
+        calendarOid: [],
+        orgType: [],
+        parent: [],
+        salesArea: [],
+        salesMetroArea: [],
+        metroArea: [],
+        active: [{active: true}, {active: false}]
+      },
+      headers: [
+        { text: 'Organization', value: 'orgName'},
+        { text: 'Calendar', value: 'calendarOid'},
+        { text: 'Type', value: 'orgType'},
+        { text: 'Parent', value: 'parent'},
+        { text: 'Sales Area', value: 'salesArea'},
+        { text: 'Sales Area Metro', value: 'salesMetroArea'},
+        { text: 'Metro Area', value: 'metroArea'},
+        { text: 'Active', value: 'active'}
+      ],
+      filters: [],
+      selected: [],
+      pagination: {}
     }
+  },
+  computed: {
+    filteredOrgs () {
+      return this.orgs && this.orgs.filter(org => {
+
+        return Object.keys(this.filters).every(filterName => {
+          const filter = this.filters[filterName]
+
+          if (filter.value.length < 1) {
+            return true
+          }
+
+          let selectedItems
+
+          switch (filter.type) {
+            case FILTER_TYPE.TEXT:
+              return org[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            case FILTER_TYPE.SELECT:
+              selectedItems = filter.value.map(f => f[`${filter.model}`])
+              return selectedItems.includes(org[filterName])
+          }
+        })
+      })
+    },
+    isAllOrgsSelected () {
+      return this.selected.length === this.filteredOrgs.length
+    },
+    isSomeOrgsSelected () {
+      return this.selected.length > 0 && !this.isAllRolesSelected
+    },
+    orgsIcon () {
+      let icon
+
+      if (this.isAllOrgsSelected) {
+        icon = 'check_box'
+      } else if (this.isSomeOrgsSelected) {
+        icon = 'indeterminate_check_box'
+      } else {
+        icon = 'check_box_outline_blank'
+      }
+
+      return icon
+    }
+  },
+  methods: {
+    async fetchOrgs () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs`)
+      return data
+    },
+    async fetchOrgTypes () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/types`)
+      return data
+    },
+    async fetchOrgParents () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/parents`)
+      return data
+    },
+    async fetchCalanders () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/calendars`)
+      return data
+    },
+    async fetchSalesAreas () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
+      return data
+    },
+    async fetchMetroAreas() {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/metroAreas`)
+      return data
+    },
+    async fetchSalesMetroAreas () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesMetroAreas`)
+      return data
+    },
+    toggleSelectAllOrgs () {
+      this.selected = (this.selected.length) ? [] : this.filteredOrgs.slice()
+    },
+    toggleSelectAllFilter (filterName) {
+      this.$nextTick(() => {
+        let changedFilter = this.filters[filterName]
+        const searchFilter = this.searchFilters[changedFilter.searchFilter]
+
+        changedFilter.value = (changedFilter.value.length > 0 && changedFilter.value.length === searchFilter.length) ? [] : searchFilter.slice()
+      })
+    },
+    filterIcon (filterName) {
+      const filter = this.filters[filterName],
+            searchFilter = this.searchFilters[filterName]
+      let icon
+
+      if (filter.value.length < 1) {
+        icon = 'check_box_outline_blank'
+      } else if (filter.value.length === searchFilter.length) {
+        icon = 'check_box'
+      } else {
+        icon = 'indeterminate_check_box'
+      }
+
+      return icon
+    },
+    changeSort (column) {
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending
+      } else {
+        this.pagination.sortBy = column
+        this.pagination.descending = false
+      }
+    },
+    initFilters () {
+      this.filters = cloneDeep(FILTER_DEFAULTS)
+    },
+    async fetchSearchFilters () {
+      this.searchFilters.orgType = await this.fetchOrgTypes()
+      this.searchFilters.parent = await this.fetchOrgParents()
+      this.searchFilters.calendarOid = await this.fetchCalanders()
+      this.searchFilters.salesArea = await this.fetchSalesAreas()
+      this.searchFilters.metroArea = await this.fetchMetroAreas()
+      this.searchFilters.salesMetroArea = await this.fetchSalesMetroAreas()
+    }
+  },
+  async created () {
+    this.initFilters()
+    this.fetchSearchFilters()
+    this.orgs = await this.fetchOrgs()
   }
+}
 </script>
 
 <style lang="scss" scoped>
