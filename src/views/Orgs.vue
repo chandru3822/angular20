@@ -12,8 +12,11 @@
           offset-y
           left
         >
-          <template #activator="data">
-            <v-btn class="app-button">
+          <template #activator="{on}">
+            <v-btn
+              class="app-button"
+              v-on="on"
+            >
               <span>Fields</span>
             </v-btn>
           </template>
@@ -109,12 +112,13 @@
             </th>
           </tr>
         </template>
-        <template #items="{selected, item}">
-          <tr :active="selected" @click="$router.push({name: 'org', params: {orgId: item.id}})">
+        <!-- Vuetify data tables as of 1.5.7 are (undocumentedly) unable to handle destructured slot props. aka #item="{selected, item}" -->
+        <template #items="props">
+          <tr :active="props.selected" @click="$router.push({name: 'org', params: {orgId: props.item.id}})">
             <td @click.stop>
               <!-- @TODO: Not working -->
               <v-checkbox
-                :input-value="selected"
+                v-model="props.selected"
                 primary
                 hide-details
               ></v-checkbox>
@@ -123,7 +127,7 @@
               v-for="header in visibleHeaders"
               :key="header.value"
             >
-              {{ item[header.value] }}
+              {{ props.item[header.value] }}
             </td>
           </tr>
         </template>
