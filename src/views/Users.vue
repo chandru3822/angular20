@@ -9,22 +9,26 @@
           left
           :close-on-content-click="false"
         >
-          <v-btn
-            class="app-button"
-            slot="activator"
-          >Adv. Search</v-btn>
+          <template #activator="{on}">
+            <v-btn
+              class="app-button"
+              v-on="on"
+            >Adv. Search</v-btn>
+          </template>
 
           <v-card>
             <div class="advanced-search">
               <v-layout column align-start>
                 <v-flex xs12>
                   <v-menu>
-                    <v-text-field
-                      slot="activator"
-                      label="Hire Date After"
-                      readonly
-                      v-model="dateAfterFormatted"
-                    ></v-text-field>
+                    <template #activator="{on}">
+                      <v-text-field
+                        label="Hire Date After"
+                        readonly
+                        v-model="dateAfterFormatted"
+                        v-on="on"
+                      ></v-text-field>
+                    </template>
 
                     <v-date-picker
                       v-model="externalFilters.dateAfter"
@@ -35,12 +39,14 @@
 
                 <v-flex xs 12>
                   <v-menu>
-                    <v-text-field
-                      slot="activator"
-                      label="Hire Date Before"
-                      readonly
-                      v-model="dateBeforeFormatted"
-                    ></v-text-field>
+                    <template #activator="{on}">
+                      <v-text-field
+                        label="Hire Date Before"
+                        readonly
+                        v-model="dateBeforeFormatted"
+                        v-on="on"
+                      ></v-text-field>
+                    </template>
 
                     <v-date-picker
                       v-model="externalFilters.dateBefore"
@@ -60,24 +66,19 @@
                     label="Area"
                     @input="fetchUsers"
                   >
-                    <v-list-tile
-                      slot="prepend-item"
-                      ripple
-                      @click="toggleSelectAllAreas"
-                    >
-                      <v-list-tile-action>
-                        <v-icon :color="externalFilters.areaIds.length > 0 ? 'primary' : ''">{{ areaIcon }}</v-icon>
-                      </v-list-tile-action>
-                      <v-list-tile-title>Select All</v-list-tile-title>
-                    </v-list-tile>
-                    <v-divider
-                      slot="prepend-item"
-                      class="mt-2"
-                    ></v-divider>
-                    <template
-                      slot="selection"
-                      slot-scope="{ item, index }"
-                    >
+                    <template #prepend-item>
+                      <v-list-tile
+                        ripple
+                        @click="toggleSelectAllAreas"
+                        >
+                        <v-list-tile-action>
+                          <v-icon :color="externalFilters.areaIds.length > 0 ? 'primary' : ''">{{ areaIcon }}</v-icon>
+                        </v-list-tile-action>
+                        <v-list-tile-title>Select All</v-list-tile-title>
+                      </v-list-tile>
+                      <v-divider class="mt-2"></v-divider>
+                    </template>
+                    <template #selection="{item, index}">
                       <v-chip v-if="index === 0 && externalFilters.areaIds.length < 2">
                         <span>{{ item.area }}</span>
                       </v-chip>
@@ -100,24 +101,19 @@
                     label="Role"
                     @input="fetchUsers"
                   >
-                    <v-list-tile
-                      slot="prepend-item"
-                      ripple
-                      @click="toggleSelectAllRoles"
-                    >
-                      <v-list-tile-action>
-                        <v-icon :color="externalFilters.roleIds.length > 0 ? 'primary' : ''">{{ roleIcon }}</v-icon>
-                      </v-list-tile-action>
-                      <v-list-tile-title>Select All</v-list-tile-title>
-                    </v-list-tile>
-                    <v-divider
-                      slot="prepend-item"
-                      class="mt-2"
-                    ></v-divider>
-                    <template
-                      slot="selection"
-                      slot-scope="{ item, index }"
-                    >
+                    <template #prepend-item>
+                      <v-list-tile
+                        ripple
+                        @click="toggleSelectAllRoles"
+                      >
+                        <v-list-tile-action>
+                          <v-icon :color="externalFilters.roleIds.length > 0 ? 'primary' : ''">{{ roleIcon }}</v-icon>
+                        </v-list-tile-action>
+                        <v-list-tile-title>Select All</v-list-tile-title>
+                      </v-list-tile>
+                      <v-divider class="mt-2"></v-divider>
+                    </template>
+                    <template #selection="{item, index}">
                       <v-chip v-if="index === 0 && externalFilters.roleIds.length < 2">
                         <span>{{ item.name }}</span>
                       </v-chip>
@@ -178,12 +174,14 @@
           offset-y
           left
         >
-          <v-btn
-            slot="activator"
-            class="app-button"
-          >
-            <span>Fields</span>
-          </v-btn>
+          <template #activator="{on}">
+            <v-btn
+              class="app-button"
+              v-on="on"
+            >
+              <span>Fields</span>
+            </v-btn>
+          </template>
           <v-list>
             <v-list-tile
               v-for="(header, index) in headers"
@@ -221,24 +219,19 @@
             label="Status"
             @input="updateSelectStatuses"
           >
-            <v-list-tile
-              slot="prepend-item"
-              ripple
-              @click="toggleSelectAllStatuses"
-            >
-              <v-list-tile-action>
-                <v-icon :color="selectedStatuses.length > 0 ? 'primary' : ''">{{ statusIcon }}</v-icon>
-              </v-list-tile-action>
-              <v-list-tile-title>Select All</v-list-tile-title>
-            </v-list-tile>
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
+            <template #prepend-item>
+              <v-list-tile
+                ripple
+                @click="toggleSelectAllStatuses"
+              >
+                <v-list-tile-action>
+                  <v-icon :color="selectedStatuses.length > 0 ? 'primary' : ''">{{ statusIcon }}</v-icon>
+                </v-list-tile-action>
+                <v-list-tile-title>Select All</v-list-tile-title>
+              </v-list-tile>
+              <v-divider class="mt-2"></v-divider>
+            </template>
+            <template #selection="{item, index}">
               <v-chip v-if="index === 0 && selectedStatuses.length < 2">
                 <span>{{ item.userStatusType }}</span>
               </v-chip>
@@ -314,7 +307,7 @@
           v-model="selected"
           select-all
         >
-          <template slot="headers" slot-scope="props">
+          <template #headers="props">
             <tr>
               <th>
                 <v-checkbox
@@ -359,27 +352,22 @@
                     v-model="inlineFilters[header.value].value"
                     @change="updateSearchFilters"
                   >
-                    <v-list-tile
-                      slot="prepend-item"
-                      ripple
-                    >
-                      <v-list-tile-action>
-                        <v-icon
-                          :color="inlineFilters[header.value].value.length > 0 ? 'primary' : ''"
-                          :disabled="disableInlineFilterSelectAll(inlineFilters[header.value])"
-                          @click="toggleSelectAllFilter(header.value)"
-                        >{{ inlineFilterIcon(header.value) }}</v-icon>
-                      </v-list-tile-action>
-                      <v-list-tile-title>Select All</v-list-tile-title>
-                    </v-list-tile>
-                    <v-divider
-                      slot="prepend-item"
-                      class="mt-2"
-                    ></v-divider>
-                    <template
-                      slot="selection"
-                      slot-scope="{ item, index }"
-                    >
+                    <template #prepend-item>
+                      <v-list-tile ripple>
+                        <v-list-tile-action>
+                          <v-icon
+                            :color="inlineFilters[header.value].value.length > 0 ? 'primary' : ''"
+                            :disabled="disableInlineFilterSelectAll(inlineFilters[header.value])"
+                            @click="toggleSelectAllFilter(header.value)"
+                          >{{ inlineFilterIcon(header.value) }}
+                          </v-icon>
+                        </v-list-tile-action>
+                        <v-list-tile-title>Select All</v-list-tile-title>
+                      </v-list-tile>
+                      <v-divider class="mt-2"></v-divider>
+                    </template>
+
+                    <template #selection="{item, index}">
                       <v-chip v-if="index === 0 && inlineFilters[header.value].value.length < 2">
                         <span>{{ item.name }}</span>
                       </v-chip>
@@ -393,11 +381,12 @@
               </th>
             </tr>
           </template>
-          <template slot="items" slot-scope="props">
+          <!-- Vuetify data tables as of 1.5.7 are (undocumentedly) unable to handle destructured slot props. aka #item="{selected, item}" -->
+          <template #items="props">
             <tr :active="props.selected" @click="editUser(props.item.id)">
               <td @click.stop>
                 <v-checkbox
-                  :input-value="props.selected"
+                  v-model="props.selected"
                   primary
                   hide-details
                 ></v-checkbox>
