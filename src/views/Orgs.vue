@@ -276,7 +276,7 @@ export default {
     toggleSelectAllFilter (filterName) {
       this.$nextTick(() => {
         let changedFilter = this.filters[filterName]
-        const searchFilter = this.searchFilters[changedFilter.searchFilter]
+        const searchFilter = this.searchFilters[filterName]
 
         changedFilter.value = (changedFilter.value.length > 0 && changedFilter.value.length === searchFilter.length) ? [] : searchFilter.slice()
       })
