@@ -1,6 +1,6 @@
 <template>
 <v-layout column align-center justify-start fill-height>
-  <v-flex xs12 shrink>
+  <v-flex xs12 shrink v-if="$route.name === 'orgs'">
     <v-layout row wrap>
       <v-flex xs6 text-xs-left>Organizations</v-flex>
       <v-flex xs6 text-xs-right>
@@ -12,16 +12,15 @@
           offset-y
           left
         >
-          <v-btn
-            slot="activator"
-            class="app-button"
-          >
-            <span>Fields</span>
-          </v-btn>
+          <template #activator="data">
+            <v-btn class="app-button">
+              <span>Fields</span>
+            </v-btn>
+          </template>
           <v-list>
             <v-list-tile
-              v-for="(header, index) in headers"
-              :key="index"
+              v-for="header in headers"
+              :key="header.value"
               @click="header.show = !header.show"
             >
               <v-icon class="mr-3" v-if="!header.show">add</v-icon>
@@ -43,13 +42,12 @@
         v-model="selected"
         select-all
       >
-        <template slot="headers" slot-scope="props">
+        <template #headers="{all, indeterminate, headers}">
           <tr>
             <th>
-              <!-- @TODO: this checkbox icon doesn't change when orgs are selected -->
               <v-checkbox
-                :input-value="props.all"
-                :indeterminate="props.indeterminate"
+                :input-value="all"
+                :indeterminate="indeterminate"
                 primary
                 hide-details
                 @click.stop="toggleSelectAllOrgs"
@@ -57,7 +55,7 @@
               </v-checkbox>
             </th>
             <th
-              v-for="header in props.headers"
+              v-for="header in headers"
               :key="header.text"
               :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
               @click="changeSort(header.value)"
@@ -69,7 +67,7 @@
           <tr>
             <th></th>
             <th
-              v-for="header in props.headers"
+              v-for="header in headers"
               :key="header.text"
             >
               <v-text-field
@@ -86,26 +84,19 @@
                 return-object
                 v-model="filters[header.value].value"
               >
-                <v-list-tile
-                  slot="prepend-item"
-                  ripple
-                >
-                  <v-list-tile-action>
-                    <v-icon
-                      :color="filters[header.value].value.length > 0 ? 'primary' : ''"
-                      @click="toggleSelectAllFilter(header.value)"
-                    >{{ filterIcon(header.value) }}</v-icon>
-                  </v-list-tile-action>
-                  <v-list-tile-title>Select All</v-list-tile-title>
-                </v-list-tile>
-                <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
-                ></v-divider>
-                <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-                >
+                <template #prepend-item>
+                  <v-list-tile ripple>
+                    <v-list-tile-action>
+                      <v-icon
+                        :color="filters[header.value].value.length > 0 ? 'primary' : ''"
+                        @click="toggleSelectAllFilter(header.value)"
+                      >{{ filterIcon(header.value) }}</v-icon>
+                    </v-list-tile-action>
+                    <v-list-tile-title>Select All</v-list-tile-title>
+                  </v-list-tile>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+                <template #selection="{item, index}">
                   <v-chip v-if="index === 0 && filters[header.value].value.length < 2">
                     <span>{{ item[`${filters[header.value].model}`] }}</span>
                   </v-chip>
@@ -118,11 +109,12 @@
             </th>
           </tr>
         </template>
-        <template slot="items" slot-scope="props">
-          <tr :active="props.selected">
+        <template #items="{selected, item}">
+          <tr :active="selected" @click="$router.push({name: 'org', params: {orgId: item.id}})">
             <td @click.stop>
+              <!-- @TODO: Not working -->
               <v-checkbox
-                :input-value="props.selected"
+                :input-value="selected"
                 primary
                 hide-details
               ></v-checkbox>
@@ -131,13 +123,14 @@
               v-for="header in visibleHeaders"
               :key="header.value"
             >
-              {{ props.item[header.value] }}
+              {{ item[header.value] }}
             </td>
           </tr>
         </template>
       </v-data-table>
     </v-layout>
   </v-flex>
+  <router-view/>
 </v-layout>
 </template>
 
@@ -284,16 +277,15 @@ export default {
     filterIcon (filterName) {
       const filter = this.filters[filterName],
             searchFilter = this.searchFilters[filterName]
+
       let icon
-
       if (filter.value.length < 1) {
-        icon = 'check_box_outline_blank'
+        icon = this.$vuetify.icons.checkboxOff
       } else if (filter.value.length === searchFilter.length) {
-        icon = 'check_box'
+        icon = this.$vuetify.icons.checkboxOn
       } else {
-        icon = 'indeterminate_check_box'
+        icon = this.$vuetify.icons.checkboxIndeterminate
       }
-
       return icon
     },
     changeSort (column) {

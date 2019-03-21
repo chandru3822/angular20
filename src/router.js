@@ -39,7 +39,12 @@ export default new Router({
       }, {
         path: '/orgs',
         name: 'orgs',
-        component: () => import (/* webpackChunkName: "orgs" */ './views/Orgs.vue')
+        component: () => import (/* webpackChunkName: "orgs" */ './views/Orgs.vue'),
+        children: [{
+          path: ':orgId',
+          name: 'org',
+          component: () => import (/* webpackChunkName: "org" */ './views/Org.vue')
+        }]
       }]
     }
   ]
