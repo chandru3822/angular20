@@ -5,6 +5,8 @@
       <v-flex xs6 text-xs-left>Users</v-flex>
       <v-flex xs6 text-xs-right>
         <v-menu
+          offset-y
+          left
           :close-on-content-click="false"
         >
           <v-btn
@@ -13,7 +15,6 @@
           >Adv. Search</v-btn>
 
           <v-card>
-
             <div class="advanced-search">
               <v-layout column align-start>
                 <v-flex xs12>
@@ -173,6 +174,28 @@
           class="app-button"
           @click="hideExternalFilters = !hideExternalFilters"
         >Hide Filters</v-btn>
+        <v-menu
+          offset-y
+          left
+        >
+          <v-btn
+            slot="activator"
+            class="app-button"
+          >
+            <span>Fields</span>
+          </v-btn>
+          <v-list>
+            <v-list-tile
+              v-for="(header, index) in headers"
+              :key="index"
+              @click="header.show = !header.show"
+            >
+              <v-icon class="mr-3" v-if="!header.show">add</v-icon>
+              <v-icon class="mr-3" v-if="header.show">remove</v-icon>
+              <v-list-tile-title>{{ header.text }}</v-list-tile-title>
+            </v-list-tile>
+          </v-list>
+        </v-menu>
       </v-flex>
     </v-layout>
     <v-divider></v-divider>
@@ -283,7 +306,7 @@
       </v-flex>
       <v-flex xs12 mt-2>
         <v-data-table
-          :headers="headers"
+          :headers="visibleHeaders"
           :items="filteredUsers"
           :pagination.sync="pagination"
           item-key="id"
@@ -379,16 +402,12 @@
                   hide-details
                 ></v-checkbox>
               </td>
-              <td>{{ props.item.firstName }}</td>
-              <td>{{ props.item.lastName }}</td>
-              <td>{{ props.item.email }}</td>
-              <td>{{ props.item.phoneNumber }}</td>
-              <td>{{ props.item.organization }}</td>
-              <td>{{ props.item.department }}</td>
-              <td>{{ props.item.region }}</td>
-              <td>{{ props.item.office }}</td>
-              <td>{{ props.item.positionName }}</td>
-              <td>{{ props.item.userStatusType }}</td>
+              <td
+                v-for="header in visibleHeaders"
+                :key="header.value"
+              >
+                {{ props.item[header.value] }}
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -481,16 +500,16 @@ export default {
       roles: [],
       users: [],
       headers: [
-        { text: 'First Name', value: 'firstName'},
-        { text: 'Last Name', value: 'lastName'},
-        { text: 'Email', value: 'email'},
-        { text: 'Phone', value: 'phoneNumber'},
-        { text: 'Organization', value: 'organization'},
-        { text: 'Department', value: 'department'},
-        { text: 'Region', value: 'region'},
-        { text: 'Office', value: 'office'},
-        { text: 'Position', value: 'positionName'},
-        { text: 'Status', value: 'userStatusType'}
+        { text: 'First Name', value: 'firstName', show: true},
+        { text: 'Last Name', value: 'lastName', show: true},
+        { text: 'Email', value: 'email', show: true},
+        { text: 'Phone', value: 'phoneNumber', show: true},
+        { text: 'Organization', value: 'organization', show: true},
+        { text: 'Department', value: 'department', show: true},
+        { text: 'Region', value: 'region', show: true},
+        { text: 'Office', value: 'office', show: true},
+        { text: 'Position', value: 'positionName', show: true},
+        { text: 'Status', value: 'userStatusType', show: true}
       ],
       inlineFilters: {},
       searchFilters: {},
@@ -523,6 +542,9 @@ export default {
           }
         })
       })
+    },
+    visibleHeaders () {
+      return this.headers.filter(header => header.show === true)
     },
     isAllStatusesSelected () {
       return this.statuses && this.selectedStatuses.length === this.statuses.length
