@@ -14,7 +14,7 @@
     <v-layout align-start justify-center mt-5>
       <v-data-table
         :items="filteredOrgs"
-        :headers="headers"
+        :headers="visibleHeaders"
         :pagination.sync="pagination"
         item-key="id"
         class="elevation-1"
@@ -93,6 +93,11 @@
                   >{{ filters[header.value].value.length }} selected</span>
                 </template>
               </v-select>
+              <!-- @TODO: This is ugly UI. Needs to change how columns are hidden -->
+              <v-checkbox
+                :label="`Hide`"
+                @click="header.show = !header.show"
+              ></v-checkbox>
             </th>
           </tr>
         </template>
@@ -105,14 +110,12 @@
                 hide-details
               ></v-checkbox>
             </td>
-            <td>{{ props.item.orgName }}</td>
-            <td>{{ props.item.calendarOid }}</td>
-            <td>{{ props.item.orgType }}</td>
-            <td>{{ props.item.parent }}</td>
-            <td>{{ props.item.salesArea }}</td>
-            <td>{{ props.item.salesMetroArea }}</td>
-            <td>{{ props.item.metroArea }}</td>
-            <td>{{ props.item.active }}</td>
+            <td
+              v-for="header in visibleHeaders"
+              :key="header.value"
+            >
+              {{ props.item[header.value] }}
+            </td>
           </tr>
         </template>
       </v-data-table>
@@ -161,14 +164,14 @@ export default {
         active: [{active: true}, {active: false}]
       },
       headers: [
-        { text: 'Organization', value: 'orgName'},
-        { text: 'Calendar', value: 'calendarOid'},
-        { text: 'Type', value: 'orgType'},
-        { text: 'Parent', value: 'parent'},
-        { text: 'Sales Area', value: 'salesArea'},
-        { text: 'Sales Area Metro', value: 'salesMetroArea'},
-        { text: 'Metro Area', value: 'metroArea'},
-        { text: 'Active', value: 'active'}
+        { text: 'Organization', value: 'orgName', show: true},
+        { text: 'Calendar', value: 'calendarOid', show: true},
+        { text: 'Type', value: 'orgType', show: true},
+        { text: 'Parent', value: 'parent', show: true},
+        { text: 'Sales Area', value: 'salesArea', show: true},
+        { text: 'Sales Area Metro', value: 'salesMetroArea', show: true},
+        { text: 'Metro Area', value: 'metroArea', show: true},
+        { text: 'Active', value: 'active', show: true}
       ],
       filters: [],
       selected: [],
@@ -197,6 +200,9 @@ export default {
           }
         })
       })
+    },
+    visibleHeaders () {
+      return this.headers.filter(header => header.show === true)
     },
     isAllOrgsSelected () {
       return this.selected.length === this.filteredOrgs.length
