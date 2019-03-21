@@ -8,6 +8,28 @@
           class="app-button"
           @click="initFilters"
         > Reset Search</v-btn>
+        <v-menu
+          offset-y
+          left
+        >
+          <v-btn
+            slot="activator"
+            class="app-button"
+          >
+            <span>Fields</span>
+          </v-btn>
+          <v-list>
+            <v-list-tile
+              v-for="(header, index) in headers"
+              :key="index"
+              @click="header.show = !header.show"
+            >
+              <v-icon class="mr-3" v-if="!header.show">add</v-icon>
+              <v-icon class="mr-3" v-if="header.show">remove</v-icon>
+              <v-list-tile-title>{{ header.text }}</v-list-tile-title>
+            </v-list-tile>
+          </v-list>
+        </v-menu>
       </v-flex>
     </v-layout>
     <v-divider></v-divider>
@@ -93,11 +115,6 @@
                   >{{ filters[header.value].value.length }} selected</span>
                 </template>
               </v-select>
-              <!-- @TODO: This is ugly UI. Needs to change how columns are hidden -->
-              <v-checkbox
-                :label="`Hide`"
-                @click="header.show = !header.show"
-              ></v-checkbox>
             </th>
           </tr>
         </template>
