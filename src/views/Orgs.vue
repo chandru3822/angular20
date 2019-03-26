@@ -116,13 +116,13 @@
         <template #items="props">
           <tr :active="props.selected" @click="$router.push({name: 'org', params: {orgId: props.item.id}})">
             <td @click.stop>
-              <!-- @TODO: Not working -->
               <v-checkbox
                 v-model="props.selected"
                 primary
                 hide-details
               ></v-checkbox>
             </td>
+<!--     @TODO: The calendar name is not displaying properly. Needs to show the summary property       -->
             <td
               v-for="header in visibleHeaders"
               :key="header.value"
