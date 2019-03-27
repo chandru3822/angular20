@@ -32,6 +32,10 @@
             </v-list-tile>
           </v-list>
         </v-menu>
+        <v-btn
+          class="app-button"
+          @click="$router.push({name: 'org'})"
+        >Add Org</v-btn>
       </v-flex>
     </v-layout>
     <v-divider></v-divider>

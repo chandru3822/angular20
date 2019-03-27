@@ -24,12 +24,12 @@
             :items="orgTypes"
             item-value="id"
             item-text="orgType"
-            :disabled="org.type && org.type.id !== null"
+            :disabled="mode === FORM_MODE.EDIT && org.type && org.type.id !== null"
             label="Type"
-            v-model="org.type.id"
+            v-model="org.type"
             :rules="form.rules"
             return-object
-            @input="updateType"
+            @input="typeChanged"
           ></v-select>
         </v-flex>
 
@@ -46,7 +46,7 @@
           ></v-select>
         </v-flex>
 
-        <v-flex xs12 sm6 v-if="org.type.showSalesArea">
+        <v-flex xs12 sm6 v-if="org.type && org.type.showSalesArea">
           <v-select
             tabindex=4
             :items="salesAreas"
@@ -63,6 +63,7 @@
             tabindex=5
             primary
             hide-details
+            :disabled="mode === FORM_MODE.ADD"
             label="Active"
             v-model="org.active"
             ></v-checkbox>
@@ -70,7 +71,6 @@
 
         <v-flex xs12 sm6>
           <v-select
-            tabindex=6
             :items="calendars"
             item-value="id"
             item-text="name"
@@ -82,7 +82,6 @@
 <!--        @TODO: This hardcoded value is evil and needs to die (pulled logic from the old crap, probably ties into the `updateType` function) -->
         <v-flex xs12 sm6 v-if="org.type && org.type.id === 2">
           <v-text-field
-            tabindex=7
             label="Originator ID"
             v-model="org.originatorId"
           ></v-text-field>
@@ -171,10 +170,13 @@ export default {
     },
     async submit () {
       const {status} = await axios.post(`${VUE_APP_BASE_API}/orgs`, this.org)
-      console.log(status)
+      if (status === 204) {
+        this.$router.push({name: 'orgs'})
+      }
     },
-    async updateType () {
+    async typeChanged () {
       // @TODO: Replicate logic from platform
+      this.parents = await this.fetchPotentialParents()
     }
   },
   async created () {
@@ -207,6 +209,8 @@ export default {
       if (!this.generalDataLoading) {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    } else {
+      this.org.active = true
     }
   }
 }
