@@ -5,11 +5,10 @@
       <!--non-mobile header...is this necessary?-->
       <v-toolbar dense id="header" color="primaryCustom" app tabs dark extension-height="53">
         <v-toolbar-title class="app-title">Blue Raven Solar</v-toolbar-title>
-        <v-spacer></v-spacer>
+        <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
         <v-toolbar-items>
           <AccountMenu :showImage="true"></AccountMenu>
         </v-toolbar-items>
-        <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
         <v-tabs color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondary">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
             {{tab.label}}

@@ -2,6 +2,9 @@
 <v-container fluid v-if="!loading">
   <v-flex xs12 text-xs-left>
     <v-btn
+      dark
+      color="secondaryButton"
+      class="app-button"
       @click="$router.back()"
     >Back</v-btn>
   </v-flex>
@@ -29,7 +32,7 @@
             v-model="org.type"
             :rules="form.rules"
             return-object
-            @input="typeChanged"
+            @input="updateFields"
           ></v-select>
         </v-flex>
 
@@ -46,7 +49,7 @@
           ></v-select>
         </v-flex>
 
-        <v-flex xs12 sm6 v-if="org.type && org.type.showSalesArea">
+        <v-flex xs12 sm6 v-if="showSalesAreaSelector">
           <v-select
             tabindex=4
             :items="salesAreas"
@@ -55,6 +58,7 @@
             label="Sales Area"
             v-model="org.salesArea"
             return-object
+            @input="updateFields"
           ></v-select>
         </v-flex>
 
@@ -67,6 +71,18 @@
             label="Active"
             v-model="org.active"
             ></v-checkbox>
+        </v-flex>
+
+        <v-flex xs12 sm6 v-if="showMetroAreaSelector">
+          <v-select
+            :items="activeMetroAreas"
+            item-value="id"
+            item-text="metroArea"
+            label="Metro Areas"
+            multiple
+            return-object
+            v-model="org.metroAreas"
+          ></v-select>
         </v-flex>
 
         <v-flex xs12 sm6>
@@ -94,6 +110,9 @@
 
         <v-flex xs12 text-xs-right>
           <v-btn
+            dark
+            class="app-button"
+            color="primaryButton"
             @click="submit"
           >Submit</v-btn>
         </v-flex>
@@ -125,6 +144,9 @@ export default {
       org: {},
       orgTypes: [],
       salesAreas: [],
+      activeMetroAreas: [],
+      activeSalesMetroAreas: [],
+      birdeyeLocations: [],
       calendars: [],
       resourceCalendars: [],
       parents: [],
@@ -138,6 +160,18 @@ export default {
   computed: {
     mode () {
       return (this.orgId) ? FORM_MODE.EDIT : FORM_MODE.ADD
+    },
+    showSalesAreaSelector () {
+      return this.org.type && this.org.type.showSalesArea
+    },
+    showMetroAreaSelector () {
+      return this.org.salesArea && this.org.salesArea.id && this.org.type && this.org.type.id === 8
+    },
+    showSalesMetroAreaSelector () {
+      return this.org.salesArea && this.org.salesArea.id && this.org.type && [3, 5].includes(this.org.type.id)
+    },
+    showBirdeyeSelector () {
+      return this.org.type && [6, 11, 14].includes(this.org.type.id)
     },
     ...mapState({
       loading: state => state.app.loading
@@ -160,6 +194,18 @@ export default {
       const {data} = await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
       return data
     },
+    async fetchActiveMetroAreas () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/metroAreas/active/${this.org.salesArea.id}`)
+      return data
+    },
+    async fetchActiveSalesMetroAreas () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesMetroAreas/active/${this.org.salesArea.id}`)
+      return data
+    },
+    async fetchBirdeyeLocations () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/birdeyeLocations`)
+      return data
+    },
     async fetchCalanders () {
       const {data} = await axios.get(`${VUE_APP_BASE_API}/calendars`)
       return data
@@ -174,9 +220,34 @@ export default {
         this.$router.push({name: 'orgs'})
       }
     },
-    async typeChanged () {
-      // @TODO: Replicate logic from platform
+    async updateFields () {
       this.parents = await this.fetchPotentialParents()
+
+      // @TODO: Clear selected salesArea, metroAreas, and salesMetroAreas depending on if the selected type allow/disallows them
+
+      // @TODO: These hardcoded ID's are being pulled from the old crap so I can more easily replicate functionality. But they need to die a horrible death
+      switch (this.org.type.id) {
+        case 3:
+          if (this.org.salesArea && this.org.salesArea.id) {
+            this.activeSalesMetroAreas = await this.fetchActiveSalesMetroAreas()
+          }
+          break
+        case 5:
+          if (this.org.salesArea && this.org.salesArea.id) {
+            this.activeSalesMetroAreas = await this.fetchActiveSalesMetroAreas()
+          }
+          break
+        case 8:
+          if (this.org.salesArea && this.org.salesArea.id) {
+            this.activeMetroAreas = await this.fetchActiveMetroAreas()
+          }
+          break
+        case 6:
+        case 11:
+        case 14:
+          // @TODO: hookup fetching birdeye locations. Will need backend integration...
+          // this.birdeyeLocations = await this.fetchBirdeyeLocations()
+      }
     }
   },
   async created () {

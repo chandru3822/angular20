@@ -1,41 +1,55 @@
 <template>
 <v-layout column align-center justify-start fill-height>
   <v-flex xs12 shrink v-if="$route.name === 'orgs'">
-    <v-layout row wrap>
-      <v-flex xs6 text-xs-left>Organizations</v-flex>
+    <v-layout row wrap fill-height align-center>
+      <v-flex
+        xs6
+        text-xs-left
+        class="display-1"
+      >Organizations</v-flex>
       <v-flex xs6 text-xs-right>
-        <v-btn
-          class="app-button"
-          @click="initFilters"
-        > Reset Search</v-btn>
-        <v-menu
-          offset-y
-          left
-        >
-          <template #activator="{on}">
+        <v-layout row justify-end fill-height align-center>
+          <v-flex shrink>
             <v-btn
               class="app-button"
-              v-on="on"
+              @click="initFilters"
+            > Reset Search</v-btn>
+          </v-flex>
+          <v-flex shrink>
+            <v-menu
+              offset-y
+              left
             >
-              <span>Fields</span>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-tile
-              v-for="header in headers"
-              :key="header.value"
-              @click="header.show = !header.show"
-            >
-              <v-icon class="mr-3" v-if="!header.show">add</v-icon>
-              <v-icon class="mr-3" v-if="header.show">remove</v-icon>
-              <v-list-tile-title>{{ header.text }}</v-list-tile-title>
-            </v-list-tile>
-          </v-list>
-        </v-menu>
-        <v-btn
-          class="app-button"
-          @click="$router.push({name: 'org'})"
-        >Add Org</v-btn>
+              <template #activator="{on}">
+                <v-btn
+                  class="app-button"
+                  v-on="on"
+                >
+                  <span>Fields</span>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-tile
+                  v-for="header in headers"
+                  :key="header.value"
+                  @click="header.show = !header.show"
+                >
+                  <v-icon class="mr-3" v-if="!header.show">add</v-icon>
+                  <v-icon class="mr-3" v-if="header.show">remove</v-icon>
+                  <v-list-tile-title>{{ header.text }}</v-list-tile-title>
+                </v-list-tile>
+              </v-list>
+            </v-menu>
+          </v-flex>
+          <v-flex shrink>
+            <v-btn
+              dark
+              color="primaryButton"
+              class="app-button"
+              @click="$router.push({name: 'org'})"
+            >Add Org</v-btn>
+          </v-flex>
+        </v-layout>
       </v-flex>
     </v-layout>
     <v-divider></v-divider>
