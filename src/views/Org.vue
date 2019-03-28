@@ -73,7 +73,6 @@
             ></v-checkbox>
         </v-flex>
 
-<!--        @TODO: Add chip prettiness for multi-selector -->
         <v-flex xs12 sm6 md4 v-if="showMetroAreaSelector">
           <v-select
             :items="activeMetroAreas"
@@ -83,7 +82,17 @@
             multiple
             return-object
             v-model="org.metroAreas"
-          ></v-select>
+          >
+            <template #selection="{item, index}">
+              <v-chip v-if="index === 0 && org.metroAreas.length < 2">
+                <span>{{ item.metroArea }}</span>
+              </v-chip>
+              <span
+                v-if="index === 1 && org.metroAreas.length >= 2"
+                class="primary--text caption"
+              >{{ org.metroAreas.length }} selected</span>
+            </template>
+          </v-select>
         </v-flex>
 
         <v-flex xs12 sm6 md4 v-if="showSalesMetroAreaSelector">
@@ -304,16 +313,19 @@ export default {
         case 3:
           if (this.org.salesArea && this.org.salesArea.id) {
             this.activeSalesMetroAreas = await this.fetchActiveSalesMetroAreas()
+            this.org.salesMetroArea = {}
           }
           break
         case 5:
           if (this.org.salesArea && this.org.salesArea.id) {
             this.activeSalesMetroAreas = await this.fetchActiveSalesMetroAreas()
+            this.org.salesMetroArea = {}
           }
           break
         case 8:
           if (this.org.salesArea && this.org.salesArea.id) {
             this.activeMetroAreas = await this.fetchActiveMetroAreas()
+            this.org.metroAreas = []
           }
           break
         case 6:
