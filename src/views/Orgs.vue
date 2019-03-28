@@ -24,9 +24,7 @@
                 <v-btn
                   class="app-button"
                   v-on="on"
-                >
-                  <span>Fields</span>
-                </v-btn>
+                >Fields</v-btn>
               </template>
               <v-list>
                 <v-list-tile

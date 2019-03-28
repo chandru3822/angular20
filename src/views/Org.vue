@@ -11,8 +11,8 @@
   <v-divider></v-divider>
   <v-form>
     <v-container>
-      <v-layout row wrap align-start justify-space-between>
-        <v-flex xs12 sm6>
+      <v-layout row wrap align-start>
+        <v-flex xs12 sm6 md4>
           <v-text-field
             tabindex=1
             label="Name"
@@ -21,13 +21,13 @@
           ></v-text-field>
         </v-flex>
 
-        <v-flex xs12 sm6>
+        <v-flex xs12 sm6 md4>
           <v-select
             tabindex=2
             :items="orgTypes"
             item-value="id"
             item-text="orgType"
-            :disabled="mode === FORM_MODE.EDIT && org.type && org.type.id !== null"
+            :disabled="disableTypeField"
             label="Type"
             v-model="org.type"
             :rules="form.rules"
@@ -36,7 +36,7 @@
           ></v-select>
         </v-flex>
 
-        <v-flex xs12 sm6>
+        <v-flex xs12 sm6 md4>
           <v-select
             tabindex=3
             :items="parents"
@@ -49,7 +49,7 @@
           ></v-select>
         </v-flex>
 
-        <v-flex xs12 sm6 v-if="showSalesAreaSelector">
+        <v-flex xs12 sm6 md4 v-if="showSalesAreaSelector">
           <v-select
             tabindex=4
             :items="salesAreas"
@@ -62,18 +62,19 @@
           ></v-select>
         </v-flex>
 
-        <v-flex xs12 sm6>
+        <v-flex xs12 sm6 md4>
           <v-checkbox
             tabindex=5
             primary
             hide-details
-            :disabled="mode === FORM_MODE.ADD"
+            :disabled="disableActiveField"
             label="Active"
             v-model="org.active"
             ></v-checkbox>
         </v-flex>
 
-        <v-flex xs12 sm6 v-if="showMetroAreaSelector">
+<!--        @TODO: Add chip prettiness for multi-selector -->
+        <v-flex xs12 sm6 md4 v-if="showMetroAreaSelector">
           <v-select
             :items="activeMetroAreas"
             item-value="id"
@@ -85,7 +86,18 @@
           ></v-select>
         </v-flex>
 
-        <v-flex xs12 sm6>
+        <v-flex xs12 sm6 md4 v-if="showSalesMetroAreaSelector">
+          <v-select
+            :items="activeSalesMetroAreas"
+            item-value="id"
+            item-text="salesMetroArea"
+            label="Sales Metro Area"
+            return-object
+            v-model="org.salesMetroArea"
+          ></v-select>
+        </v-flex>
+
+        <v-flex xs12 sm6 md4>
           <v-select
             :items="calendars"
             item-value="id"
@@ -95,17 +107,45 @@
           ></v-select>
         </v-flex>
 
-<!--        @TODO: This hardcoded value is evil and needs to die (pulled logic from the old crap, probably ties into the `updateType` function) -->
-        <v-flex xs12 sm6 v-if="org.type && org.type.id === 2">
+        <v-flex xs12 sm6 md4 v-if="showOriginatorSelector">
           <v-text-field
             label="Originator ID"
             v-model="org.originatorId"
           ></v-text-field>
         </v-flex>
 
-        <v-flex xs12 sm6 v-if="org.type && org.type.showColorPicker">
-<!--          @TODO: Implement a color picker -->
-          color picker goes here
+        <v-flex xs12 sm6 md4 v-if="showColorPicker">
+          <v-input label="Color">
+            <v-menu
+              top
+              offset-y
+              :max-height="'200px'"
+              :max-width="'240px'"
+            >
+              <template #activator="{on}">
+                <v-btn
+                  outline
+                  color="#C0C0C0"
+                  class="color-option"
+                  :style="{'background-color': `${org.color} !important`}"
+                  v-on="on"
+                ></v-btn>
+              </template>
+              <v-card>
+                <v-layout row wrap>
+                  <v-flex
+                    v-for="color in colors"
+                    :key="color"
+                    xs2
+                    ma-1
+                    class="color-option"
+                    :style="{'background-color': color}"
+                    @click="org.color = color"
+                  ></v-flex>
+                </v-layout>
+              </v-card>
+            </v-menu>
+          </v-input>
         </v-flex>
 
         <v-flex xs12 text-xs-right>
@@ -123,11 +163,9 @@
 </template>
 
 <script>
-import axios from 'axios'
 import {mapState} from 'vuex'
 import {AppMutations} from '@/stores/AppStore'
-
-const {VUE_APP_BASE_API} = process.env
+import {getRequest, postRequest} from '@/helpers/helpers'
 
 const FORM_MODE = {
   EDIT: 'edit',
@@ -138,7 +176,6 @@ export default {
   props: ['orgId'],
   data () {
     return {
-      FORM_MODE,
       orgLoading: false,
       generalDataLoading: false,
       org: {},
@@ -154,7 +191,18 @@ export default {
         rules: [
           val => !!val || 'Field is required'
         ]
-      }
+      },
+      colors: [
+        '#330000', '#331900', '#333300', '#193300', '#003300', '#003319', '#003333', '#001933', '#000033', '#190033', '#330033', '#330019', '#000000',
+        '#660000', '#663300', '#666600', '#336600', '#006600', '#006633', '#006666', '#003366', '#000066', '#330066', '#660066', '#660033', '#202020',
+        '#990000', '#994C00', '#999900', '#4C9900', '#009900', '#00994C', '#009999', '#004C99', '#000099', '#4C0099', '#990099', '#99004C', '#404040',
+        '#CC0000', '#CC6600', '#CCCC00', '#66CC00', '#00CC00', '#00CC66', '#00CCCC', '#0066CC', '#0000CC', '#6600CC', '#CC00CC', '#CC0066', '#606060',
+        '#FF0000', '#FF8000', '#FFFF00', '#80FF00', '#00FF00', '#00FF80', '#00FFFF', '#0080FF', '#0000FF', '#7F00FF', '#FF00FF', '#FF007F', '#808080',
+        '#FF3333', '#FF9933', '#FFFF33', '#99FF33', '#33FF33', '#33FF99', '#33FFFF', '#3399FF', '#3333FF', '#9933FF', '#FF33FF', '#FF3399', '#A0A0A0',
+        '#FF6666', '#FFB266', '#FFFF66', '#B2FF66', '#66FF66', '#66FFB2', '#66FFFF', '#66B2FF', '#6666FF', '#B266FF', '#FF66FF', '#FF66B2', '#C0C0C0',
+        '#FF9999', '#FFCC99', '#FFFF99', '#CCFF99', '#99FF99', '#99FFCC', '#99FFFF', '#99CCFF', '#9999FF', '#CC99FF', '#FF99FF', '#FF99CC', '#E0E0E0',
+        '#FFCCCC', '#FFE5CC', '#FFFFCC', '#E5FFCC', '#CCFFCC', '#CCFFE5', '#CCFFFF', '#CCE5FF', '#CCCCFF', '#E5CCFF', '#FFCCFF', '#FFCCE5', '#FFFFFF'
+      ]
     }
   },
   computed: {
@@ -164,6 +212,7 @@ export default {
     showSalesAreaSelector () {
       return this.org.type && this.org.type.showSalesArea
     },
+    // @TODO: These hardcoded values are evil and need to die (pulled logic from the old crap, probably ties into the `updateFields` function)
     showMetroAreaSelector () {
       return this.org.salesArea && this.org.salesArea.id && this.org.type && this.org.type.id === 8
     },
@@ -173,57 +222,82 @@ export default {
     showBirdeyeSelector () {
       return this.org.type && [6, 11, 14].includes(this.org.type.id)
     },
+    showOriginatorSelector () {
+      return this.org.type && this.org.type.id === 2
+    },
+    showColorPicker () {
+      return this.org.type && this.org.type.showColorPicker === true
+    },
+    disableTypeField () {
+      return this.mode === FORM_MODE.EDIT && this.org.type && this.org.type.id !== null
+    },
+    disableActiveField () {
+      return this.mode === FORM_MODE.ADD
+    },
     ...mapState({
       loading: state => state.app.loading
     })
   },
   methods: {
     async fetchOrg () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/${this.orgId}`)
+      const {data} = await getRequest(`/orgs/${this.orgId}`)
       return data
     },
     async fetchOrgTypes () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/types`)
+      const {data} = await getRequest('/orgs/types')
       return data
     },
     async fetchPotentialParents () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/parents/${this.org.type.orgParentTypeId}`)
+      const {data} = await getRequest(`/orgs/parents/${this.org.type.orgParentTypeId}`)
       return data
     },
     async fetchSalesAreas () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
+      const {data} = await getRequest(`/salesAreas`)
       return data
     },
     async fetchActiveMetroAreas () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/metroAreas/active/${this.org.salesArea.id}`)
+      const {data} = await getRequest(`/metroAreas/active/${this.org.salesArea.id}`)
       return data
     },
     async fetchActiveSalesMetroAreas () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesMetroAreas/active/${this.org.salesArea.id}`)
+      const {data} = await getRequest(`/salesMetroAreas/active/${this.org.salesArea.id}`)
       return data
     },
     async fetchBirdeyeLocations () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/birdeyeLocations`)
+      const {data} = await getRequest(`/birdeyeLocations`)
       return data
     },
     async fetchCalanders () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/calendars`)
+      const {data} = await getRequest(`/calendars`)
       return data
     },
     async fetchResourceCalendars () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/calendars/resource`)
+      const {data} = await getRequest(`/calendars/resource`)
       return data
     },
     async submit () {
-      const {status} = await axios.post(`${VUE_APP_BASE_API}/orgs`, this.org)
+
+      // Clear irrelevant/hidden fields before save
+      if (!this.showSalesAreaSelector) {
+        this.org.salesArea = {}
+      }
+      if (!this.showMetroAreaSelector) {
+        this.org.metroAreas = []
+      }
+      if (!this.showSalesMetroAreaSelector) {
+        this.org.salesMetroArea = {}
+      }
+      if (!this.showOriginatorSelector) {
+        this.org.originatorId = null
+      }
+
+      const {status} = await postRequest('/orgs', this.org)
       if (status === 204) {
         this.$router.push({name: 'orgs'})
       }
     },
     async updateFields () {
       this.parents = await this.fetchPotentialParents()
-
-      // @TODO: Clear selected salesArea, metroAreas, and salesMetroAreas depending on if the selected type allow/disallows them
 
       // @TODO: These hardcoded ID's are being pulled from the old crap so I can more easily replicate functionality. But they need to die a horrible death
       switch (this.org.type.id) {
@@ -288,5 +362,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
+  .color-option {
+    height: 30px;
+    border: solid 1px #C0C0C0;
+  }
 </style>
