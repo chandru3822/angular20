@@ -40,6 +40,18 @@
             </v-menu>
           </v-flex>
           <v-flex shrink>
+            <download-excel
+              :fields="exportableFields"
+              :fetch="calculateExportableData"
+              type="csv"
+              name="orgs.csv"
+            >
+              <v-btn
+                class="app-button"
+              >Export</v-btn>
+            </download-excel>
+          </v-flex>
+          <v-flex shrink>
             <v-btn
               dark
               color="primaryButton"
@@ -252,6 +264,15 @@ export default {
       }
 
       return icon
+    },
+    exportableFields () {
+      let fields = {}
+
+      this.visibleHeaders.forEach(header => {
+        fields[header.text] = header.value
+      })
+
+      return fields
     }
   },
   methods: {
@@ -315,6 +336,15 @@ export default {
         this.pagination.sortBy = column
         this.pagination.descending = false
       }
+    },
+    calculateExportableData () {
+      const headers = this.visibleHeaders.map(header => header.value)
+
+      // If user has selected rows, use them. Else use all orgs in the table
+      const dataSet = (this.selected.length > 0) ? 'selected' : 'filteredOrgs'
+
+      // Build an array of orgs based on dataSet where each object within the array has only the properties which match the visible headers
+      return this[dataSet].map(org => headers.reduce((acc, column) => (acc[column] = org[column], acc), {}))
     },
     initFilters () {
       this.filters = cloneDeep(FILTER_DEFAULTS)

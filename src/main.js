@@ -5,6 +5,7 @@ import router from './router'
 import store from './store'
 import axios from 'axios'
 import { UserMutations } from './stores/UserStore'
+import JsonExcel from 'vue-json-excel'
 
 // @todo: make PWA awesomeness
 // import './registerServiceWorker'
@@ -13,6 +14,8 @@ const { VUE_APP_BASE_API } = process.env
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
+
+Vue.component('downloadExcel', JsonExcel)
 
 axios.interceptors.request.use(config => {
   if (store && store.state && store.state.user && config.url.indexOf(VUE_APP_BASE_API) > -1) {
