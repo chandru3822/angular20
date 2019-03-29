@@ -425,6 +425,7 @@ import axios from 'axios'
 import cloneDeep from 'lodash.clonedeep'
 // import debounce from 'lodash.debounce'
 import moment from 'moment'
+import {mapState} from 'vuex'
 
 const { VUE_APP_BASE_API } = process.env
 
@@ -614,7 +615,10 @@ export default {
     dateBeforeFormatted () {
       const date = moment(this.externalFilters.dateBefore)
       return date.isValid() ? date.format('M/DD/YYYY') : ''
-    }
+    },
+    ...mapState({
+      userDetails: state => state.user.details
+    })
   },
   methods: {
     async fetchUsers () {
@@ -624,7 +628,9 @@ export default {
 
       const {data} = await axios.post(`${VUE_APP_BASE_API}/users/search`, {...this.externalFilters, ...{
         dateAfter: (dateAfter.isValid()) ? dateAfter.toISOString() : null,
-        dateBefore: (dateBefore.isValid()) ? dateBefore.toISOString() : null
+        dateBefore: (dateBefore.isValid()) ? dateBefore.toISOString() : null,
+        companyId: this.userDetails.companyId,
+        userId: this.userDetails.userId
       }})
       this.users = data
     },
@@ -646,7 +652,8 @@ export default {
         primaryOnly: this.externalFilters.primaryOnly,
         secondaryOnly: this.externalFilters.secondaryOnly,
         activeOnly: this.externalFilters.activeOnly,
-        inactiveOnly: this.externalFilters.inactiveOnly
+        inactiveOnly: this.externalFilters.inactiveOnly,
+        companyId: this.userDetails.companyId
       }
 
       let startingPoint = null
