@@ -47,7 +47,8 @@
           try {
             const { data } = await axios.post(`${VUE_APP_BASE_API}/login`, {
               username: this.form.email,
-              password: this.form.password
+              password: this.form.password,
+              isAlbatross: true
             })
             const { token, details } = data
             if (token) {
