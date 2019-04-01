@@ -6,6 +6,7 @@ import store from './store'
 import axios from 'axios'
 import { UserMutations } from './stores/UserStore'
 import JsonExcel from 'vue-json-excel'
+import moment from 'moment'
 
 // @todo: make PWA awesomeness
 // import './registerServiceWorker'
@@ -16,6 +17,15 @@ const JWT_EXPIRED = 'invalid token'
 Vue.config.productionTip = false
 
 Vue.component('downloadExcel', JsonExcel)
+
+Vue.filter('formatDate', function (value, format) {
+  if (value && format) {
+    return moment(String(value)).format(format)
+  } else if (value) {
+    // default format if none provided
+    return moment(String(value)).format('M/D/YYYY')
+  }
+})
 
 axios.interceptors.request.use(config => {
   if (store && store.state && store.state.user && config.url.indexOf(VUE_APP_BASE_API) > -1) {

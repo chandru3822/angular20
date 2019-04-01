@@ -5,7 +5,7 @@
       <v-layout row wrap align-start justify-space-between>
         <v-flex xs12 md4>
           <v-card class="section">
-            <v-card-title>Personal</v-card-title>
+            <v-card-title class="title">Personal</v-card-title>
             <v-card-text>
               <v-text-field
                 label="First Name"
@@ -80,107 +80,117 @@
         </v-flex>
         <v-flex sm12 md4 >
           <v-card class="section">
-            <v-card-title>Onboarding</v-card-title>
+            <v-card-title class="title">Onboarding</v-card-title>
             <v-card-text>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Offer Letter Date"
-                  readonly
-                  v-model="user.offerLetterDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.offerLetterDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Offer Letter Date"
+                    readonly
+                    :value="user.offerLetterDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.offerLetterDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Contract Request Date"
-                  readonly
-                  v-model="user.docusignRequestedDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.docusignRequestedDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Contract Request Date"
+                    readonly
+                    :value="user.docusignRequestedDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.docusignRequestedDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Contract Received Date"
-                  readonly
-                  v-model="user.docusignReceivedDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.docusignReceivedDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Contract Received Date"
+                    readonly
+                    :value="user.docusignReceivedDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.docusignReceivedDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Contract Saved Date"
-                  readonly
-                  v-model="user.docusignSavedDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.docusignSavedDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Contract Saved Date"
+                    readonly
+                    :value="user.docusignSavedDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.docusignSavedDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Background Check Submitted Date"
-                  readonly
-                  v-model="user.backgroundCheckSubmittedDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.backgroundCheckSubmittedDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Background Check Submitted Date"
+                    readonly
+                    :value="user.backgroundCheckSubmittedDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.backgroundCheckSubmittedDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Background Check Received Date"
-                  readonly
-                  v-model="user.backgroundCheckDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.backgroundCheckDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Background Check Received Date"
+                    readonly
+                    :value="user.backgroundCheckDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.backgroundCheckDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Welcome E-Mail Date"
-                  readonly
-                  v-model="user.welcomeEmailDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.welcomeEmailDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Welcome E-Mail Date"
+                    readonly
+                    :value="user.welcomeEmailDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.welcomeEmailDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Photo Date"
-                  readonly
-                  v-model="user.photoDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.photoDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Photo Date"
+                    readonly
+                    :value="user.photoDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.photoDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Voided Check Date"
-                  readonly
-                  v-model="user.voidedCheckDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.voidedCheckDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Voided Check Date"
+                    readonly
+                    :value="user.voidedCheckDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.voidedCheckDate"></v-date-picker>
               </v-menu>
+
               <v-text-field
                 label="Password"
                 v-model="user.password"
@@ -188,10 +198,12 @@
             </v-card-text>
           </v-card>
         </v-flex>
+
         <v-flex sm12 md4 >
           <v-card class="section">
-            <v-card-title>HR</v-card-title>
+            <v-card-title class="title">HR</v-card-title>
             <v-card-text>
+
               <v-select
                 v-model="user.userStatusTypeId"
                 label="Status"
@@ -199,44 +211,49 @@
                 item-text="userStatusType"
                 item-value="id"
               ></v-select>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Hire Date"
-                  readonly
-                  v-model="user.hireDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.hireDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Hire Date"
+                    readonly
+                    :value="user.hireDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.hireDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Re-Hire Date"
-                  readonly
-                  v-model="user.reHireDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.reHireDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Re-Hire Date"
+                    readonly
+                    :value="user.reHireDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.reHireDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Pending Termination Date"
-                  readonly
-                  v-model="user.pendingTerminationDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.pendingTerminationDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Pending Termination Date"
+                    readonly
+                    :value="user.pendingTerminationDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.pendingTerminationDate"></v-date-picker>
               </v-menu>
+
               <v-textarea
                 outline
                 label="Termination Reason"
                 v-model="user.terminationReason"
               ></v-textarea>
+
               <v-select
                 v-model="user.employmentTypeId"
                 label="Employment Type"
@@ -244,6 +261,7 @@
                 item-text="employmentType"
                 item-value="id"
               ></v-select>
+
               <v-select
                 v-model="user.compensationTypeId"
                 label="Compensation Type"
@@ -251,6 +269,7 @@
                 item-text="compensationType"
                 item-value="id"
               ></v-select>
+
               <v-select
                 v-model="user.recruitedByUserId"
                 label="Recruited By"
@@ -258,6 +277,7 @@
                 item-text="fullName"
                 item-value="id"
               ></v-select>
+
               <v-autocomplete
                 v-model="user.referredByUserId"
                 :items="activeUsers"
@@ -267,6 +287,7 @@
                 :hint="`Type to search`"
                 persistent-hint
               ></v-autocomplete>
+
               <v-text-field
                 v-if="onboardedUser.firstName"
                 label="Submitted By"
@@ -279,84 +300,91 @@
 
         <v-flex xs12 md4>
           <v-card class="section">
-            <v-card-title>Systems</v-card-title>
+            <v-card-title class="title">Systems</v-card-title>
             <v-card-text>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Namely Date"
-                  readonly
-                  v-model="user.enterInSolvedDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.enterInSolvedDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Namely Date"
+                    readonly
+                    :value="user.enterInSolvedDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.enterInSolvedDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="E-Mail Setup Date"
-                  readonly
-                  v-model="user.emailSetupDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.emailSetupDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="E-Mail Setup Date"
+                    readonly
+                    :value="user.emailSetupDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.emailSetupDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Request Base Date"
-                  readonly
-                  v-model="user.requestBaseDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.requestBaseDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Request Base Date"
+                    readonly
+                    :value="user.requestBaseDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.requestBaseDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Base Contact Created Date"
-                  readonly
-                  v-model="user.baseContactCreatedDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.baseContactCreatedDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Base Contact Created Date"
+                    readonly
+                    :value="user.baseContactCreatedDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.baseContactCreatedDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Mosaic Date"
-                  readonly
-                  v-model="user.mosaicDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.mosaicDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Mosaic Date"
+                    readonly
+                    :value="user.mosaicDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.mosaicDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="Litmos Date"
-                  readonly
-                  v-model="user.trumpiaDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.trumpiaDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="Litmos Date"
+                    readonly
+                    :value="user.trumpiaDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.trumpiaDate"></v-date-picker>
               </v-menu>
-              <v-menu full-width>
-                <v-text-field
-                  slot="activator"
-                  label="T-Sheets Date"
-                  readonly
-                  v-model="user.timesheetsDate"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="user.timesheetsDate"
-                ></v-date-picker>
+
+              <v-menu min-width="290px">
+                <template #activator="{on}">
+                  <v-text-field
+                    label="T-Sheets Date"
+                    readonly
+                    :value="user.timesheetsDate | formatDate"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker v-model="user.timesheetsDate"></v-date-picker>
               </v-menu>
             </v-card-text>
           </v-card>
@@ -364,42 +392,49 @@
 
         <v-flex xs12 md4>
           <v-card class="section">
-            <v-card-title>Termination</v-card-title>
+            <v-card-title class="title">Termination</v-card-title>
             <v-card-text>
               <v-text-field
                 label="Cancelled Namely Date"
-                v-model="user.cancelledIsolvedDate"
+                :value="user.cancelledIsolvedDate | formatDate"
                 readonly
+                disabled
               ></v-text-field>
               <v-text-field
                 label="E-Mail Removed Date"
-                v-model="user.emailRemovedDate"
+                :value="user.emailRemovedDate | formatDate"
                 readonly
+                disabled
               ></v-text-field>
               <v-text-field
                 label="Cancelled Base Date"
-                v-model="user.removedBaseDate"
+                :value="user.removedBaseDate | formatDate"
                 readonly
+                disabled
               ></v-text-field>
               <v-text-field
                 label="Base Contact Deleted Date"
-                v-model="user.cancelledBaseContactDate"
+                :value="user.cancelledBaseContactDate | formatDate"
                 readonly
+                disabled
               ></v-text-field>
               <v-text-field
                 label="Cancelled Mosaic Date"
-                v-model="user.cancelledMosaicDate"
+                :value="user.cancelledMosaicDate | formatDate"
                 readonly
+                disabled
               ></v-text-field>
               <v-text-field
                 label="Cancelled Litmos Date"
-                v-model="user.cancelledTrumpiaDate"
+                :value="user.cancelledTrumpiaDate | formatDate"
                 readonly
+                disabled
               ></v-text-field>
               <v-text-field
                 label="Cancelled T-Sheets Date"
-                v-model="user.timesheetCancelledDate"
+                :value="user.timesheetCancelledDate | formatDate"
                 readonly
+                disabled
               ></v-text-field>
             </v-card-text>
           </v-card>
@@ -409,7 +444,7 @@
           <v-layout row wrap>
             <v-flex xs12>
               <v-card class="section">
-                <v-card-title>Notes</v-card-title>
+                <v-card-title class="title">Notes</v-card-title>
                 <v-card-text>
                   <v-textarea
                     outline
@@ -420,7 +455,7 @@
             </v-flex>
             <v-flex xs12>
               <v-card class="section">
-                <v-card-title>Assets</v-card-title>
+                <v-card-title class="title">Assets</v-card-title>
                 <v-card-text>
                   <v-data-table
                     :headers="assetsTableHeaders"
@@ -428,7 +463,7 @@
                     item-key="id"
                     hide-actions
                   >
-                    <template slot="items" slot-scope="props">
+                    <template #items="props">
                       <tr>
                         <td>{{ props.item.tag }}</td>
                         <td>{{ props.item.assetType }}</td>
@@ -487,7 +522,16 @@ export default {
   },
   methods: {
     async fetchUserById (id) {
-      return await axios.get(`${VUE_APP_BASE_API}/users/${id}`)
+      let {data} = await axios.get(`${VUE_APP_BASE_API}/users/${id}`)
+
+      // Dates are being returned in the format of `YYYY-MM-DDTHH:mm:ss.SSSZ`, which breaks Vuetify's datepicker. It required `YYYY-MM-DD`.
+      // So, reformat all dates to match `YYYY-MM-DD`
+      Object.entries(data).forEach(([key, val]) => {
+        if (/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z/.test(val)) {
+          data[key] = val.substr(0, 10)
+        }
+      })
+      return data
     },
     async fetchStatuses () {
       // @TODO: Possibly stuff in the store when fetching on the users page to prevent redundant http requests
@@ -546,8 +590,7 @@ export default {
   },
   async created () {
     // @TODO: Do these calls like Org.vue to be better parallelized
-    const {data} = await this.fetchUserById(this.$route.params.id)
-    this.user = data
+    this.user = await this.fetchUserById(this.$route.params.id)
     const asset = await this.fetchUserImageData()
     if (asset !== null) {
       this.imageUrl = asset.assetUrl
