@@ -4,6 +4,7 @@ const {VUE_APP_BASE_API} = process.env
 
 export const IS_MOBILE = window.innerWidth <= 768
 export const SCREEN_WIDTH = window.innerWidth
+export const MAX_FILE_SIZE = 10485760
 
 export async function getRequest (path) {
   const {data, status} = await axios.get(`${VUE_APP_BASE_API}${path}`)

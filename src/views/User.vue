@@ -55,6 +55,26 @@
                 label="Accuity Appointment ID"
                 v-model="user.accuityAppointmentId"
               ></v-text-field>
+              <v-img
+                :src="imageUrl"
+                contain
+              ></v-img>
+              <v-flex xs12 text-xs-left>
+                <form enctype="multipart/form-data" novalidate class="relative">
+                  <v-btn
+                    dark
+                    color="primaryButton"
+                    class="app-button"
+
+                  >Upload File</v-btn>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    class="file-input"
+                    @change="uploadUserImage($event.target.files)"
+                  >
+                </form>
+              </v-flex>
             </v-card-text>
           </v-card>
         </v-flex>
@@ -429,6 +449,7 @@
 </template>
 <script>
 import axios from 'axios'
+import {Actions} from '@/store'
 
 const {VUE_APP_BASE_API} = process.env
 
@@ -456,7 +477,9 @@ export default {
         {text: 'Type', value: 'type'},
         {text: 'Model', value: 'model'},
         {text: 'Active', value: 'active'}
-      ]
+      ],
+      imageUrl: '',
+      imageAsset: {}
     }
   },
   computed: {
@@ -487,14 +510,49 @@ export default {
       const {data} = await axios.get(`${VUE_APP_BASE_API}/users/active`)
       this.activeUsers = data
     },
-    async fetchUserAssets() {
+    async fetchUserAssets () {
       const {data} = await axios.get(`${VUE_APP_BASE_API}/users/${this.user.id}/assets`)
       this.assets = data
-    }
+    },
+    async fetchUserImageData () {
+      const {data} = await axios.get(`${VUE_APP_BASE_API}/getPresignedUrl`, {
+        params: {
+          sourceId: this.user.id,
+          attachmentSourceTypeId: 9
+        }
+      })
+      return (data.assetUrl === null) ? null : data
+    },
+    async deleteUserImage() {
+        const {status} = await axios.delete(`${VUE_APP_BASE_API}/deleteAttachment/${this.imageAsset.id}`)
+        return status === 204
+    },
+    async uploadUserImage (files) {
+      const file = files[0]
+      await this.$store.dispatch(Actions.FILE_UPLOAD, {
+        file,
+        attachmentSourceTypeId: 9,
+        sourceId: this.user.id,
+        callback: async () => {
+          await this.deleteUserImage()
+          const asset = await this.fetchUserImageData()
+          if (asset !== null) {
+            this.imageUrl = asset.assetUrl
+            this.imageAsset = asset.asset
+          }
+        }
+      })
+    },
   },
   async created () {
+    // @TODO: Do these calls like Org.vue to be better parallelized
     const {data} = await this.fetchUserById(this.$route.params.id)
     this.user = data
+    const asset = await this.fetchUserImageData()
+    if (asset !== null) {
+      this.imageUrl = asset.assetUrl
+      this.imageAsset = asset.asset
+    }
     if (this.user.onboardedByUserId != null) {
       const {data: onboardedData} = await this.fetchUserById(this.user.onboardedByUserId)
       this.onboardedUser = onboardedData
@@ -514,5 +572,14 @@ export default {
     margin-left: 10px;
     margin-right: 10px;
     margin-top: 15px;
+  }
+
+  .file-input {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 </style>
