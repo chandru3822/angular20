@@ -485,6 +485,8 @@
 <script>
 import axios from 'axios'
 import {Actions} from '@/store'
+import DELETE_ATTACHMENT from '@/graphql/DeleteAttachment.gql'
+import PRESIGNED_URL from '@/graphql/PresignedUrl.gql'
 
 const {VUE_APP_BASE_API} = process.env
 
@@ -559,21 +561,49 @@ export default {
       this.assets = data
     },
     async fetchUserImageData () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/getPresignedUrl`, {
-        params: {
-          sourceId: this.user.id,
-          attachmentSourceTypeId: 9
-        }
+      // const {data} = await axios.get(`${VUE_APP_BASE_API}/getPresignedUrl`, {
+      //   params: {
+      //     sourceId: this.user.id,
+      //     attachmentSourceTypeId: 9
+      //   }
+      // })
+      // return (data.assetUrl === null) ? null : data
+
+      //haven't tested this yet either but should be close
+      const { data } = await this.$apollo.query({
+        query: PRESIGNED_URL,
+        fetchPolicy: 'no-cache',
+        variables: {
+          presignedUrlInput: {
+            sourceId: this.user.id,
+            attachmentSourceTypeId: 9
+          }
+        },
+        debounce: 500
       })
-      return (data.assetUrl === null) ? null : data
+      const { presignedUrl } = data
+      return presignedUrl && presignedUrl.assetUrl !== null ? presignedUrl : null
+
     },
     async deleteUserImage() {
-        const {status} = await axios.delete(`${VUE_APP_BASE_API}/deleteAttachment/${this.imageAsset.id}`)
-        return status === 204
+      // I haven't tested this out yet
+      await this.$apollo.mutate({
+        mutation: DELETE_ATTACHMENT,
+        fetchPolicy: 'no-cache',
+        variables: {
+          idInput: {
+            id: this.imageAsset.id
+          }
+        },
+        debounce: 500
+      })
+      // const {status} = await axios.delete(`${VUE_APP_BASE_API}/deleteAttachment/${this.imageAsset.id}`)
+      // return status === 204
     },
     async uploadUserImage (files) {
       const file = files[0]
       await this.$store.dispatch(Actions.FILE_UPLOAD, {
+        apolloClient: this.$apollo,
         file,
         attachmentSourceTypeId: 9,
         sourceId: this.user.id,

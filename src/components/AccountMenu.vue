@@ -13,8 +13,8 @@
           color="grey lighten-4"
           class="account-img"
       >
-        <!-- <v-img name="accountImg" v-if="loadComplete && imageUrl" :src="imageUrl"></v-img>
-        <img name="accountImg" v-else src="../assets/user_img_placeholder.png"> -->
+        <v-img name="accountImg" v-if="loadComplete && imageUrl" :src="imageUrl"></v-img>
+        <img name="accountImg" v-else src="../assets/user_img_placeholder.png">
       </v-avatar>
     </v-btn>
     <v-list>
@@ -37,8 +37,7 @@
 <script>
 import { IS_MOBILE } from '@/helpers/helpers'
 import { UserActions } from '@/stores/UserStore'
-import axios from 'axios'
-const { VUE_APP_BASE_API } = process.env
+import PRESIGNED_URL from '@/graphql/PresignedUrl.gql'
 
 export default {
   name: 'AccountMenu',
@@ -63,14 +62,19 @@ export default {
     },
     async getUserImage () {
       try {
-        const { data } = await axios.get(`${VUE_APP_BASE_API}/getPresignedUrl`, {
-          params: {
-            sourceId: this.$store.state.user.details.id,
-            attachmentSourceTypeId: 9
-          }
+        const { data } = await this.$apollo.query({
+          query: PRESIGNED_URL,
+          fetchPolicy: 'no-cache',
+          variables: {
+            presignedUrlInput: {
+              sourceId: this.$store.state.user.details.id,
+              attachmentSourceTypeId: 9
+            }
+          },
+          debounce: 500
         })
-        const { assetUrl } = data
-        this.imageUrl = assetUrl
+        const { presignedUrl } = data
+        this.imageUrl = presignedUrl.assetUrl
         this.loadComplete = true
       } catch (e) {
         this.loadComplete = true

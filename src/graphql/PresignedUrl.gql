@@ -1,0 +1,11 @@
+query presignedUrl($presignedUrlInput: PresignedUrlInput!) {
+  presignedUrl(input: $presignedUrlInput) {
+    asset {
+      id
+      deleted
+      filename
+      s3Key
+    }
+    assetUrl
+  }
+}

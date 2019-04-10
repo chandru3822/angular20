@@ -7,6 +7,7 @@ import axios from 'axios'
 import { UserMutations } from './stores/UserStore'
 import JsonExcel from 'vue-json-excel'
 import moment from 'moment'
+import { createProvider } from './vue-apollo'
 
 // @todo: make PWA awesomeness
 // import './registerServiceWorker'
@@ -25,6 +26,11 @@ Vue.filter('formatDate', function (value, format) {
     // default format if none provided
     return moment(String(value)).format('M/D/YYYY')
   }
+})
+
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title || 'BRS Albatross Placeholder'
+  next()
 })
 
 axios.interceptors.request.use(config => {
@@ -52,5 +58,6 @@ axios.interceptors.response.use((response) => {
 new Vue({
   router,
   store,
+  apolloProvider: createProvider(),
   render: h => h(App)
 }).$mount('#app')

@@ -4,8 +4,8 @@ import { UserStore } from '@/stores/UserStore'
 import { AppStore } from '@/stores/AppStore'
 import axios from 'axios'
 import { MAX_FILE_SIZE } from '@/helpers/helpers'
-
-const { VUE_APP_BASE_API } = process.env
+import UPLOAD_URL from '@/graphql/UploadUrl.gql'
+import SET_LOCAL_S3_DATA from '@/graphql/SetLocalS3Data.gql'
 
 Vue.use(Vuex)
 
@@ -39,41 +39,58 @@ const store = new Vuex.Store({
     }
   },
   actions: {
-    [Actions.FILE_UPLOAD]: (context, { file, attachmentSourceTypeId, sourceId, callback }) => {
+    [Actions.FILE_UPLOAD]: (context, { apolloClient, file, attachmentSourceTypeId, sourceId, callback }) => {
       let reader = new FileReader()
-      reader.addEventListener('loadend', async function () {
+      reader.addEventListener('loadend', async function (e) {
         if (file.size > MAX_FILE_SIZE) {
           const error = { error: true, errorMsg: 'File size cannot exceed 10MB' }
           callback(error)
         } else {
-          const { data } = await axios.post(`${VUE_APP_BASE_API}/requestUploadURL`, {
-            name: file.name,
-            type: file.type,
-            attachmentSourceTypeId
+          // get the upload url from s3
+          const { data } = await apolloClient.query({
+            query: UPLOAD_URL,
+            fetchPolicy: 'no-cache',
+            variables: {
+              uploadUrlInput: {
+                name: file.name,
+                type: file.type,
+                attachmentSourceTypeId
+              }
+            },
+            debounce: 500
           })
-          const { uploadURL, key, type, disposition } = data
+          const { uploadResponse } = data
+          const { uploadURL, key, type, disposition } = uploadResponse
+
+          // upload the file to s3
           const resp = await axios({
             method: 'put',
             url: uploadURL,
             headers: { 'Content-Type': type, 'Content-Disposition': disposition },
             data: new Blob([reader.result], { type: file.type })
           })
+
+          // set our local s3 data so we have a record of the file
           const { status } = resp
           if (status === 200) {
-            axios.post(`${VUE_APP_BASE_API}/setLocalS3Data`, {
-              filename: file.name,
-              contentType: file.type,
-              fileSize: file.size,
-              key,
-              attachmentSourceTypeId,
-              sourceId
-            }).then(({ data }) => {
-              const { asset } = data
-              callback(asset)
-            }).catch(() => {
-              const reqLocalError = { error: true, errorMsg: 'Error Uploading File: S3' }
-              callback(reqLocalError)
+            const { data } = await apolloClient.query({
+              query: SET_LOCAL_S3_DATA,
+              fetchPolicy: 'no-cache',
+              variables: {
+                localS3Input: {
+                  filename: file.name,
+                  contentType: file.type,
+                  fileSize: file.size,
+                  key,
+                  attachmentSourceTypeId,
+                  sourceId
+                }
+              },
+              debounce: 500
             })
+
+            const { setLocalS3Data } = data
+            callback(setLocalS3Data.asset)
           }
         }
       })

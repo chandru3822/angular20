@@ -28,6 +28,7 @@
 <script>
   import { UserActions, UserMutations } from '@/stores/UserStore'
   import axios from 'axios'
+  import LOGIN from '@/graphql/Login.gql'
   const { VUE_APP_BASE_API } = process.env
 
   export default {
@@ -45,12 +46,26 @@
         this.loginLoading = true
         if (this.$refs.login.validate()) {
           try {
-            const { data } = await axios.post(`${VUE_APP_BASE_API}/login`, {
-              username: this.form.email,
-              password: this.form.password,
-              isAlbatross: true
+            // const { data } = await axios.post(`${VUE_APP_BASE_API}/login`, {
+            //   username: this.form.email,
+            //   password: this.form.password,
+            //   isAlbatross: true
+            // })
+            // const { token, details } = data
+            const { data } = await this.$apollo.query({
+              query: LOGIN,
+              fetchPolicy: 'no-cache',
+              variables: {
+                loginInput: {
+                  username: this.form.email,
+                  password: this.form.password,
+                  isAlbatross: true
+                }
+              },
+              debounce: 500
             })
-            const { token, details } = data
+            const { login } = data
+            const { token, details } = login
             if (token) {
               this.$store.commit(UserMutations.SET_JWT, token)
               this.loginSuccess(details)
