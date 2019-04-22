@@ -1,0 +1,25 @@
+query userSearchFilters($searchFilterInput: SearchFilterInput!) {
+  userSearchFilters(input: $searchFilterInput) {
+      positions {
+        id
+        name
+      }
+      organizations {
+        id
+        name
+      }
+      departments {
+        id
+        name
+      }
+      regions {
+        id
+        name
+      }
+      offices {
+        id
+        name
+      }
+  }
+
+}

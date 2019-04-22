@@ -487,6 +487,7 @@ import axios from 'axios'
 import {Actions} from '@/store'
 import DELETE_ATTACHMENT from '@/graphql/DeleteAttachment.gql'
 import PRESIGNED_URL from '@/graphql/PresignedUrl.gql'
+import GET_USER from '@/graphql/GetUser.gql'
 
 const {VUE_APP_BASE_API} = process.env
 
@@ -524,11 +525,23 @@ export default {
   },
   methods: {
     async fetchUserById (id) {
-      let {data} = await axios.get(`${VUE_APP_BASE_API}/users/${id}`)
+      const { data } = await this.$apollo.query({
+        query: GET_USER,
+        fetchPolicy: 'no-cache',
+        variables: {
+          idStringInput: {
+            id
+          }
+        },
+        debounce: 500
+      })
+      const { getUser } = data
+
+      // let {data} = await axios.get(`${VUE_APP_BASE_API}/users/${id}`)
 
       // Dates are being returned in the format of `YYYY-MM-DDTHH:mm:ss.SSSZ`, which breaks Vuetify's datepicker. It required `YYYY-MM-DD`.
       // So, reformat all dates to match `YYYY-MM-DD`
-      Object.entries(data).forEach(([key, val]) => {
+      Object.entries(getUser).forEach(([key, val]) => {
         if (/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z/.test(val)) {
           data[key] = val.substr(0, 10)
         }

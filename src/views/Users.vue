@@ -421,13 +421,16 @@
 </v-layout>
 </template>
 <script>
-import axios from 'axios'
 import cloneDeep from 'lodash.clonedeep'
 // import debounce from 'lodash.debounce'
 import moment from 'moment'
 import {mapState} from 'vuex'
+import SALES_AREAS from '@/graphql/SalesAreas.gql'
+import USER_STATUSES from '@/graphql/UserStatuses.gql'
+import ROLES from '@/graphql/Roles.gql'
+import SEARCH_FILTERS from '@/graphql/SearchFilters.gql'
+import USER_SEARCH from '@/graphql/UserSearch.gql'
 
-const { VUE_APP_BASE_API } = process.env
 
 const FilterType = {
   TEXT: 'text',
@@ -626,21 +629,36 @@ export default {
       const dateAfter = moment(this.externalFilters.dateAfter)
       const dateBefore = moment(this.externalFilters.dateBefore)
 
-      const {data} = await axios.post(`${VUE_APP_BASE_API}/users/search`, {...this.externalFilters, ...{
-        dateAfter: (dateAfter.isValid()) ? dateAfter.toISOString() : null,
-        dateBefore: (dateBefore.isValid()) ? dateBefore.toISOString() : null,
-        companyId: this.userDetails.companyId,
-        userId: this.userDetails.userId
-      }})
-      this.users = data
+      //todo fix company id and fix `length of undefined` error
+      const { data } = await this.$apollo.query({
+        query: USER_SEARCH,
+        fetchPolicy: 'no-cache',
+        variables: {
+          userSearchInput: {...this.externalFilters, ...{
+              dateAfter: (dateAfter.isValid()) ? dateAfter.toISOString() : null,
+              dateBefore: (dateBefore.isValid()) ? dateBefore.toISOString() : null,
+              // companyId: this.userDetails.companyId,
+              companyId: 1,
+              userId: this.userDetails.userId
+            }}
+        },
+        debounce: 500
+      })
+      const { users } = data
+      this.users = users
+
     },
     async fetchStatuses () {
-      return await axios.get(`${VUE_APP_BASE_API}/users/statuses`)
-        .then(({data}) => {
-          this.statuses = data
-        })
+      const { data } = await this.$apollo.query({
+        query: USER_STATUSES,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { userStatuses } = data
+      this.statuses = userStatuses
     },
-    fetchSearchFilters () {
+    async fetchSearchFilters () {
 
       let selectedFilterOptions = {
         positionIds: this.inlineFilters.positionName.value.map(f => f.id),
@@ -678,20 +696,38 @@ export default {
       }
 
       selectedFilterOptions.startingPoint = startingPoint
+      selectedFilterOptions.companyId = 1
 
-      return axios.post(`${VUE_APP_BASE_API}/users/searchFilters`, selectedFilterOptions)
-        .then(({data}) => {
-          this.searchFilters = data
-          return data
-        })
+      const { data } = await this.$apollo.query({
+        query: SEARCH_FILTERS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          searchFilterInput: selectedFilterOptions
+        },
+        debounce: 500
+      })
+      const { userSearchFilters } = data
+      this.searchFilters = userSearchFilters
     },
     async fetchSalesAreas () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
-      this.salesAreas = data
+      const { data } = await this.$apollo.query({
+        query: SALES_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { salesAreas } = data
+      this.salesAreas = salesAreas
     },
     async fetchRoles () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/roles`)
-      this.roles = data
+      const { data } = await this.$apollo.query({
+        query: ROLES,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { roles } = data
+      this.roles = roles
     },
     debounceFetchUsers () {
       // @TODO: get debounce working

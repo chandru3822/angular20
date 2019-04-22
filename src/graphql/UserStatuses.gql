@@ -1,0 +1,6 @@
+query userStatuses {
+  userStatuses {
+    id
+    userStatusType
+  }
+}

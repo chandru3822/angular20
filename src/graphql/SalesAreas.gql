@@ -1,0 +1,6 @@
+query salesAreas {
+  salesAreas {
+    id
+    area
+  }
+}
