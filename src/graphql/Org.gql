@@ -1,0 +1,30 @@
+query org($idStringInput: IdStringInput!) {
+  org(input: $idStringInput) {
+    active
+    id
+    name
+    orgName
+    orgType
+    parent {
+        id
+        orgName
+        name
+    }
+    parentId
+    type {
+        id
+        orgParentTypeId
+        orgType
+        showColorPicker
+        showSalesArea
+    }
+    typeId
+    displayOrder
+    color
+    email
+    calendarOid
+    originatorId
+    companyId
+    companyName
+  }
+}

@@ -1,0 +1,30 @@
+query potentialOrgParentsByOrgTypeId($idInput: IdInput!) {
+  potentialOrgParentsByOrgTypeId(input: $idInput) {
+    active
+    id
+    name
+    orgName
+    orgType
+    parent {
+        id
+        orgName
+        name
+    }
+    parentId
+    type {
+        id
+        orgParentTypeId
+        orgType
+        showColorPicker
+        showSalesArea
+    }
+    typeId
+    displayOrder
+    color
+    email
+    calendarOid
+    originatorId
+    companyId
+    companyName
+  }
+}

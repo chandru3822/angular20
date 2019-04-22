@@ -1,0 +1,9 @@
+query metroAreas {
+  metroAreas {
+    active
+    area
+    id
+    metroArea
+    salesAreaId
+  }
+}

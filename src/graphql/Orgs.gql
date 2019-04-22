@@ -1,0 +1,23 @@
+query orgs {
+  orgs {
+    active
+    id
+    name
+    orgName
+    orgType
+    parent {
+        id
+        orgName
+        name
+    }
+    parentId
+    type {
+        id
+        orgParentTypeId
+        orgType
+        showColorPicker
+        showSalesArea
+    }
+    typeId
+  }
+}

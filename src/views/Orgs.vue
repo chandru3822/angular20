@@ -167,10 +167,15 @@
 </template>
 
 <script>
-import axios from 'axios'
 import cloneDeep from 'lodash.clonedeep'
+import ORGS from '@/graphql/Orgs.gql'
+import ORG_TYPES from '@/graphql/Orgs.gql'
+import ORG_PARENTS from '@/graphql/OrgParents.gql'
+import GOOGLE_CALENDARS from '@/graphql/GoogleCalendars.gql'
+import SALES_AREAS from '@/graphql/SalesAreas.gql'
+import SALES_METRO_AREAS from '@/graphql/SalesMetroAreas.gql'
+import METRO_AREAS from '@/graphql/MetroAreas.gql'
 
-const {VUE_APP_BASE_API} = process.env
 
 const FILTER_TYPE = {
   TEXT: 'text',
@@ -277,32 +282,88 @@ export default {
   },
   methods: {
     async fetchOrgs () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs`)
-      return data
+      // const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: ORGS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { orgs } = data
+      return orgs
     },
     async fetchOrgTypes () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/types`)
-      return data
+      // const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/types`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: ORG_TYPES,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { orgTypes } = data
+      return orgTypes
     },
     async fetchOrgParents () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/parents`)
-      return data
+      // const {data} = await axios.get(`${VUE_APP_BASE_API}/orgs/parents`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: ORG_PARENTS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { orgParents } = data
+      return orgParents
     },
-    async fetchCalanders () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/calendars`)
-      return data
+    async fetchCalendars () {
+      // const {data} = await axios.get(`${VUE_APP_BASE_API}/calendars`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: GOOGLE_CALENDARS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { googleCalendars } = data
+      return googleCalendars
     },
     async fetchSalesAreas () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
-      return data
+      // const {data} = await axios.get(`${VUE_APP_BASE_API}/salesAreas`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: SALES_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { salesAreas } = data
+      return salesAreas
     },
     async fetchMetroAreas() {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/metroAreas`)
-      return data
+      // const {data} = await axios.get(`${VUE_APP_BASE_API}/metroAreas`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: METRO_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { metroAreas } = data
+      return metroAreas
     },
     async fetchSalesMetroAreas () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/salesMetroAreas`)
-      return data
+      // const {data} = await axios.get(`${VUE_APP_BASE_API}/salesMetroAreas`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: SALES_METRO_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { salesMetroAreas } = data
+      return salesMetroAreas
     },
     toggleSelectAllOrgs () {
       this.selected = (this.selected.length) ? [] : this.filteredOrgs.slice()
@@ -352,7 +413,7 @@ export default {
     async fetchSearchFilters () {
       this.searchFilters.orgType = await this.fetchOrgTypes()
       this.searchFilters.parent = await this.fetchOrgParents()
-      this.searchFilters.calendarOid = await this.fetchCalanders()
+      this.searchFilters.calendarOid = await this.fetchCalendars()
       this.searchFilters.salesArea = await this.fetchSalesAreas()
       this.searchFilters.metroArea = await this.fetchMetroAreas()
       this.searchFilters.salesMetroArea = await this.fetchSalesMetroAreas()

@@ -1,0 +1,9 @@
+query activeMetroAreas($idInput: IdInput!) {
+  activeMetroAreas(input: $idInput) {
+    active
+    area
+    id
+    metroArea
+    salesAreaId
+  }
+}

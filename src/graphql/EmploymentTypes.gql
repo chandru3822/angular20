@@ -1,0 +1,6 @@
+query employmentTypes {
+  employmentTypes {
+    id
+    employmentType
+  }
+}

@@ -1,0 +1,14 @@
+query googleCalendars {
+  googleCalendars {
+    accessRole
+    backgroundColor
+    colorId
+    etag
+    foregroundColor
+    id
+    kind
+    selected
+    summary
+    timeZone
+  }
+}

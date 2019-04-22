@@ -1,0 +1,14 @@
+query activeSalesMetroAreas($idInput: IdInput!) {
+  activeSalesMetroAreas(input: $idInput) {
+    active
+    area
+    areaAverageFds
+    fdsLastThirtyDays
+    finalDesignMinimum
+    fixedGraceDays
+    graceDays
+    id
+    salesAreaId
+    salesMetroArea
+  }
+}

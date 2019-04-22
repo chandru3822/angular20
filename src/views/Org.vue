@@ -174,7 +174,15 @@
 <script>
 import {mapState} from 'vuex'
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, postRequest} from '@/helpers/helpers'
+import {postRequest} from '@/helpers/helpers'
+import GOOGLE_CALENDARS from '@/graphql/GoogleCalendars.gql'
+import RESOURCE_CALENDARS from '@/graphql/ResourceCalendars.gql'
+import SALES_AREAS from '@/graphql/SalesAreas.gql'
+import ACTIVE_METRO_AREAS from '@/graphql/ActiveMetroAreas.gql'
+import ACTIVE_SALES_METRO_AREAS from '@/graphql/ActiveSalesMetroAreas.gql'
+import ORG_TYPES from '@/graphql/OrgTypes.gql'
+import ORG from '@/graphql/Org.gql'
+import POTENTIAL_ORG_PARENTS_BY_ORG_TYPE_ID from '@/graphql/PotentialOrgParentsByOrgTypeId.gql'
 
 const FORM_MODE = {
   EDIT: 'edit',
@@ -249,40 +257,111 @@ export default {
   },
   methods: {
     async fetchOrg () {
-      const {data} = await getRequest(`/orgs/${this.orgId}`)
-      return data
+      const { data } = await this.$apollo.query({
+        query: ORG,
+        fetchPolicy: 'no-cache',
+        variables: {
+          idStringInput: {
+            id: this.orgId.toString()
+          }
+        },
+        debounce: 500
+      })
+      const { org } = data
+      return org
     },
     async fetchOrgTypes () {
-      const {data} = await getRequest('/orgs/types')
-      return data
+      // const {data} = await getRequest('/orgs/types')
+      // return data
+      const { data } = await this.$apollo.query({
+        query: ORG_TYPES,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { orgTypes } = data
+      return orgTypes
     },
     async fetchPotentialParents () {
-      const {data} = await getRequest(`/orgs/parents/${this.org.type.orgParentTypeId}`)
-      return data
+      const { data } = await this.$apollo.query({
+        query: POTENTIAL_ORG_PARENTS_BY_ORG_TYPE_ID,
+        fetchPolicy: 'no-cache',
+        variables: {
+          idInput: {
+            id: this.org.type.orgParentTypeId
+          }
+        },
+        debounce: 500
+      })
+      const { potentialOrgParentsByOrgTypeId } = data
+      return potentialOrgParentsByOrgTypeId
     },
     async fetchSalesAreas () {
-      const {data} = await getRequest(`/salesAreas`)
-      return data
+      const { data } = await this.$apollo.query({
+        query: SALES_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { salesAreas } = data
+      return salesAreas
     },
     async fetchActiveMetroAreas () {
-      const {data} = await getRequest(`/metroAreas/active/${this.org.salesArea.id}`)
-      return data
+      const { data } = await this.$apollo.query({
+        query: ACTIVE_METRO_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          idInput: {
+            id: this.org.salesArea.id
+          }
+        },
+        debounce: 500
+      })
+      const { activeMetroAreas } = data
+      return activeMetroAreas
     },
     async fetchActiveSalesMetroAreas () {
-      const {data} = await getRequest(`/salesMetroAreas/active/${this.org.salesArea.id}`)
-      return data
+      const { data } = await this.$apollo.query({
+        query: ACTIVE_SALES_METRO_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          idInput: {
+            id: this.org.salesArea.id
+          }
+        },
+        debounce: 500
+      })
+      const { activeSalesMetroAreas } = data
+      return activeSalesMetroAreas
     },
     async fetchBirdeyeLocations () {
-      const {data} = await getRequest(`/birdeyeLocations`)
-      return data
+      //todo: add this later
+      // const {data} = await getRequest(`/birdeyeLocations`)
+      // return data
     },
-    async fetchCalanders () {
-      const {data} = await getRequest(`/calendars`)
-      return data
+    async fetchCalendars () {
+      // const {data} = await getRequest(`/calendars`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: GOOGLE_CALENDARS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { googleCalendars } = data
+      return googleCalendars
     },
     async fetchResourceCalendars () {
-      const {data} = await getRequest(`/calendars/resource`)
-      return data
+      // const {data} = await getRequest(`/calendars/resource`)
+      // return data
+      const { data } = await this.$apollo.query({
+        query: RESOURCE_CALENDARS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { resourceCalendars } = data
+      return resourceCalendars
     },
     async submit () {
 
@@ -345,7 +424,7 @@ export default {
     Promise.all([
       this.fetchOrgTypes(),
       this.fetchSalesAreas(),
-      this.fetchCalanders(),
+      this.fetchCalendars(),
       this.fetchResourceCalendars()
     ]).then(async ([orgTypes, salesAreas, calendars, resourceCalendars]) => {
       this.orgTypes = orgTypes

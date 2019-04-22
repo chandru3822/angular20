@@ -1,0 +1,6 @@
+query compensationTypes {
+  compensationTypes {
+    id
+    compensationType
+  }
+}

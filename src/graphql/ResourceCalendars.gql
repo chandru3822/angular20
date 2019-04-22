@@ -1,0 +1,9 @@
+query resourceCalendars {
+  resourceCalendars {
+    id
+    name
+    color
+    calendarOid
+    activeFlag
+  }
+}

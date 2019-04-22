@@ -1,0 +1,14 @@
+query salesMetroAreas {
+  salesMetroAreas {
+    active
+    area
+    areaAverageFds
+    fdsLastThirtyDays
+    finalDesignMinimum
+    fixedGraceDays
+    graceDays
+    id
+    salesAreaId
+    salesMetroArea
+  }
+}

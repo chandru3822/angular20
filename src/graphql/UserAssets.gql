@@ -1,0 +1,13 @@
+query userAssets($idInput: IdInput!) {
+  userAssets(input: $idInput) {
+    id
+    active
+    archived
+    assetType
+    assetTypeId
+    model
+    tag
+    userFullName
+    userId
+  }
+}

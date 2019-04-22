@@ -483,13 +483,16 @@
 </v-container>
 </template>
 <script>
-import axios from 'axios'
 import {Actions} from '@/store'
 import DELETE_ATTACHMENT from '@/graphql/DeleteAttachment.gql'
 import PRESIGNED_URL from '@/graphql/PresignedUrl.gql'
 import GET_USER from '@/graphql/GetUser.gql'
-
-const {VUE_APP_BASE_API} = process.env
+import USER_STATUSES from '@/graphql/UserStatuses.gql'
+import EMPLOYMENT_TYPES from '@/graphql/EmploymentTypes.gql'
+import COMPENSATION_TYPES from '@/graphql/CompensationTypes.gql'
+import RECRUITERS from '@/graphql/Recruiters.gql'
+import ACTIVE_USERS from '@/graphql/ActiveUsers.gql'
+import USER_ASSETS from '@/graphql/UserAssets.gql'
 
 const HatItems = [
   {text: 'Y', value: 'Y'},
@@ -546,32 +549,72 @@ export default {
           data[key] = val.substr(0, 10)
         }
       })
-      return data
+      return getUser
     },
     async fetchStatuses () {
       // @TODO: Possibly stuff in the store when fetching on the users page to prevent redundant http requests
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/users/statuses`)
-      this.statuses = data
+      const { data } = await this.$apollo.query({
+        query: USER_STATUSES,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { userStatuses } = data
+      this.statuses = userStatuses
     },
     async fetchEmploymentTypes () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/users/employmentTypes`)
-      this.employmentTypes = data
+      const { data } = await this.$apollo.query({
+        query: EMPLOYMENT_TYPES,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { employmentTypes } = data
+      this.employmentTypes = employmentTypes
     },
     async fetchCompensationTypes () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/users/compensationTypes`)
-      this.compensationTypes = data
+      const { data } = await this.$apollo.query({
+        query: COMPENSATION_TYPES,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { compensationTypes } = data
+      this.compensationTypes = compensationTypes
     },
     async fetchRecruiters () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/recruiters`)
-      this.recruiters = data
+      const { data } = await this.$apollo.query({
+        query: RECRUITERS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { recruiters } = data
+      this.recruiters = recruiters
     },
     async fetchActiveUsers () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/users/active`)
-      this.activeUsers = data
+      const { data } = await this.$apollo.query({
+        query: ACTIVE_USERS,
+        fetchPolicy: 'no-cache',
+        variables: {},
+        debounce: 500
+      })
+      const { activeUsers } = data
+      this.activeUsers = activeUsers
     },
     async fetchUserAssets () {
-      const {data} = await axios.get(`${VUE_APP_BASE_API}/users/${this.user.id}/assets`)
-      this.assets = data
+      const { data } = await this.$apollo.query({
+        query: USER_ASSETS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          idInput: {
+            id: this.user.id
+          }
+        },
+        debounce: 500
+      })
+      const { assets } = data
+      this.assets = assets
     },
     async fetchUserImageData () {
       // const {data} = await axios.get(`${VUE_APP_BASE_API}/getPresignedUrl`, {
