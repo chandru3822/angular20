@@ -174,7 +174,6 @@
 <script>
 import {mapState} from 'vuex'
 import {AppMutations} from '@/stores/AppStore'
-import {postRequest} from '@/helpers/helpers'
 import GOOGLE_CALENDARS from '@/graphql/GoogleCalendars.gql'
 import RESOURCE_CALENDARS from '@/graphql/ResourceCalendars.gql'
 import SALES_AREAS from '@/graphql/SalesAreas.gql'
@@ -182,6 +181,7 @@ import ACTIVE_METRO_AREAS from '@/graphql/ActiveMetroAreas.gql'
 import ACTIVE_SALES_METRO_AREAS from '@/graphql/ActiveSalesMetroAreas.gql'
 import ORG_TYPES from '@/graphql/OrgTypes.gql'
 import ORG from '@/graphql/Org.gql'
+import SAVE_ORG from '@/graphql/SaveOrg.gql'
 import POTENTIAL_ORG_PARENTS_BY_ORG_TYPE_ID from '@/graphql/PotentialOrgParentsByOrgTypeId.gql'
 
 const FORM_MODE = {
@@ -379,10 +379,20 @@ export default {
         this.org.originatorId = null
       }
 
-      const {status} = await postRequest('/orgs', this.org)
-      if (status === 204) {
-        this.$router.push({name: 'orgs'})
-      }
+      //todo: i have no idea where these are coming from but they cause errors, need to fix
+      delete this.org.parent.__typename
+      delete this.org.type.__typename
+
+      const { data } = await this.$apollo.mutate({
+        mutation: SAVE_ORG,
+        fetchPolicy: 'no-cache',
+        variables: {
+          orgInput: this.org
+        },
+        debounce: 500
+      })
+      const { saveOrg } = data
+      this.$router.push({name: 'orgs'})
     },
     async updateFields () {
       this.parents = await this.fetchPotentialParents()
