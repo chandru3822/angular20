@@ -1,3 +1,0 @@
-mutation saveOrg($orgInput: OrgInput!) {
-  saveOrg(input: $orgInput)
-}

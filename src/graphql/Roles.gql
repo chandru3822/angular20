@@ -1,6 +1,0 @@
-query roles {
-  roles {
-    id
-		name
-  }
-}

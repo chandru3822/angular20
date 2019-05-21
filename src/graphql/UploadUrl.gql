@@ -1,8 +1,0 @@
-query uploadResponse($uploadUrlInput: UploadUrlInput!) {
-  uploadResponse(input: $uploadUrlInput) {
-    uploadURL
-    type
-    key
-    disposition
-  }
-}

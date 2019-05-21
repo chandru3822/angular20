@@ -1,7 +1,0 @@
-query orgParents {
-  orgParents {
-    active
-    id
-    orgName
-  }
-}

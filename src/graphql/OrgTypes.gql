@@ -1,9 +1,0 @@
-query orgTypes {
-  orgTypes {
-    id
-    orgParentTypeId
-    orgType
-    showColorPicker
-    showSalesArea
-  }
-}

@@ -1,0 +1,39 @@
+<sql>
+  <user.findByEmailIgnoreCase>
+    <![CDATA[
+        select id,
+          first_name,
+          last_name,
+          email,
+          password,
+          first_name || ' ' || last_name as full_name,
+          user_status_type_id
+        from flow.user
+        where lower(email) = lower(:email)
+      ]]>
+  </user.findByEmailIgnoreCase>
+
+  <user.findByUserUuid>
+    <![CDATA[
+        select id,
+          first_name,
+          last_name,
+          first_name || ' ' || last_name as full_name,
+          user_status_type_id
+        from flow.user
+        where uuid = :uuid
+      ]]>
+  </user.findByUserUuid>
+
+  <user.findUserById>
+    <![CDATA[
+        select id,
+          first_name,
+          last_name,
+          first_name || ' ' || last_name as full_name,
+          user_status_type_id
+        from flow.user
+        where id = :id
+      ]]>
+  </user.findUserById>
+</sql>

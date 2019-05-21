@@ -1,9 +1,0 @@
-query recruiters {
-  recruiters {
-    id
-    email
-    firstName
-    lastName
-    fullName
-  }
-}

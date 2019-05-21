@@ -1,3 +1,0 @@
-mutation deleteAttachment($idInput: IdInput!) {
-  deleteAttachment(input: $idInput)
-}
