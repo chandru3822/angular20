@@ -45,7 +45,36 @@ export default new Router({
         name: 'org',
         props: true,
         component: () => import (/* webpackChunkName: "org" */ './views/Org.vue')
-      }]
+      }, {
+          path: '/ahj',
+          name: 'ahj',
+          component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
+        }, {
+          path: '/ahj/:ahjId',
+          name: 'ahjDetails',
+          props: true,
+          component: () => import (/* webpackChunkName: "ahjDetails" */ './views/ahj/AhjDetails.vue'),
+          children: [
+            {
+              path: 'permit',
+              component: () => import (/* webpackChunkName: "permit" */ './views/ahj/components/AhjPermit.vue')
+            },
+            {
+              path: 'inspection',
+              component: () => import (/* webpackChunkName: "inspection" */ './views/ahj/components/AhjInspection.vue')
+            },
+            {
+              path: 'design',
+              component: () => import (/* webpackChunkName: "design" */ './views/ahj/components/AhjDesign.vue')
+            }
+          ]
+        },
+        {
+          path: '/ahj/utility/:ahjUtilityId/details',
+          name: 'ahjUtilityDetails',
+          props: true,
+          component: () => import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
+        }]
     }
   ]
 })
