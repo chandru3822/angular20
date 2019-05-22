@@ -49,32 +49,63 @@ export default new Router({
           path: '/ahj',
           name: 'ahj',
           component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
-        }, {
-          path: '/ahj/:ahjId',
-          name: 'ahjDetails',
-          props: true,
-          component: () => import (/* webpackChunkName: "ahjDetails" */ './views/ahj/AhjDetails.vue'),
-          children: [
-            {
-              path: 'permit',
-              component: () => import (/* webpackChunkName: "permit" */ './views/ahj/components/AhjPermit.vue')
-            },
-            {
-              path: 'inspection',
-              component: () => import (/* webpackChunkName: "inspection" */ './views/ahj/components/AhjInspection.vue')
-            },
-            {
-              path: 'design',
-              component: () => import (/* webpackChunkName: "design" */ './views/ahj/components/AhjDesign.vue')
-            }
-          ]
-        },
-        {
-          path: '/ahj/utility/:ahjUtilityId/details',
-          name: 'ahjUtilityDetails',
-          props: true,
-          component: () => import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
-        }]
+      }, {
+        path: '/ahj/:ahjId',
+        name: 'ahjDetails',
+        props: true,
+        component: () => import (/* webpackChunkName: "ahjDetails" */ './views/ahj/AhjDetails.vue'),
+        children: [
+          {
+            path: 'permit',
+            component: () => import (/* webpackChunkName: "permit" */ './views/ahj/components/AhjPermit.vue')
+          },
+          {
+            path: 'inspection',
+            component: () => import (/* webpackChunkName: "inspection" */ './views/ahj/components/AhjInspection.vue')
+          },
+          {
+            path: 'design',
+            component: () => import (/* webpackChunkName: "design" */ './views/ahj/components/AhjDesign.vue')
+          }
+        ]
+      }, {
+        path: '/ahj/utility/:ahjUtilityId/details',
+        name: 'ahjUtilityDetails',
+        props: true,
+        component: () => import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
+      }, {
+        path: '/settings',
+        name: 'settings',
+        component: () => import (/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
+        children: [
+          {
+            path: 'customFields',
+            component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue'),
+            children: [
+              {
+                path: 'project',
+                component: () => import (/* webpackChunkName: "project" */ './views/flow/settings/customFields/Project.vue')
+              }, {
+                path: 'customer',
+                component: () => import (/* webpackChunkName: "project" */ './views/flow/settings/customFields/Customer.vue')
+              }, {
+                path: 'processSteps',
+                component: () => import (/* webpackChunkName: "project" */ './views/flow/settings/customFields/ProcessSteps.vue')
+              }, {
+                path: 'user',
+                component: () => import (/* webpackChunkName: "project" */ './views/flow/settings/customFields/User.vue')
+              }
+
+              ]
+          }, {
+            path: 'attachments',
+            component: () => import (/* webpackChunkName: "attachments" */ './views/flow/settings/Attachments.vue')
+          }, {
+            path: 'links',
+            component: () => import (/* webpackChunkName: "links" */ './views/flow/settings/Links.vue')
+          }
+        ]
+      }]
     }
   ]
 })

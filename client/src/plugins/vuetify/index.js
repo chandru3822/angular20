@@ -10,15 +10,16 @@ Vue.use(Vuetify, {
     customProperties: true
   },
   theme: {
-    primary: '#30363c',
-    primaryCustom: '#30363c',
+    primary: '#1F3C73',
+    primaryCustom: '#1F3C73',
     secondary: '#f2f2f2',
     secondaryCustom: '#f2f2f2',
     brGreen: '#73d697',
     brRed: '#ee6f6a',
     brBlue: '#2292cc',
-    primaryButton: '#157efb',
+    primaryButton: '#1F3C73',
     secondaryButton: '#878787',
-    calendarBorder: '#f2f5f8'
-  }
+    calendarBorder: '#f2f5f8',
+    primaryText: '#1F3C73'
+  },
 })

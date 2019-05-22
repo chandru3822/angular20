@@ -53,6 +53,10 @@ export default {
         label: 'AHJ Database',
         path: '/ahj',
         display: true
+      }, {
+        label: 'Settings',
+        path: '/settings',
+        display: true
       }]
     }
   },

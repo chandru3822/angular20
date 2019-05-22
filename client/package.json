@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vue-cli-service serve --mode development",
+    "dev": "vue-cli-service serve --mode development --port 3000",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
@@ -17,7 +17,7 @@
     "vue": "^2.6.10",
     "vue-json-excel": "0.2.96",
     "vue-router": "^3.0.2",
-    "vuetify": "^1.5.7",
+    "vuetify": "^1.5.14",
     "vuex": "^3.1.0"
   },
   "devDependencies": {
@@ -28,7 +28,6 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^5.14.1",
     "eslint-plugin-vue": "^5.0.0",
-    "graphql-tag": "^2.9.0",
     "material-design-icons-iconfont": "^5.0.1",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.1.0",

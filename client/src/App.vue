@@ -11,7 +11,7 @@
  */
 body {
   font-family: Verdana, 'Arial', sans-sarif;
-  background: #f8f8f8
+  background: #f8f8f8;
 }
 
 #app {
@@ -105,6 +105,18 @@ label[for="adminOriginatorSelect"] {
 }
 .relative {
   position: relative;
+}
+
+.br-5 {
+  border-radius: 5px;
+}
+
+.br-10 {
+  border-radius: 10px;
+}
+
+.theme--light {
+  color: var(--v-primaryText-base) !important;
 }
 
 @media (min-width: 769px) {
