@@ -1,0 +1,15 @@
+<sql>
+  <dataType.getCompanyDataTypes><![CDATA[
+    select cdt.id,
+       cdt.company_id,
+       cdt.company_data_type,
+       cdt.data_type_id,
+       cdt.has_list_values,
+       cdt.archived,
+       dt.data_type
+    from flow.company_data_type cdt
+           inner join flow.data_type dt on dt.id = cdt.data_type_id
+    where cdt.company_id = :companyId
+      and cdt.archived is not true
+  ]]></dataType.getCompanyDataTypes>
+</sql>

@@ -1,0 +1,8 @@
+<sql>
+  <customFieldGroup.archiveRows><![CDATA[
+    update flow.custom_field_group
+      set archived = true
+    where custom_field_id = :fieldId
+  ]]></customFieldGroup.archiveRows>
+
+</sql>

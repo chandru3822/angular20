@@ -52,6 +52,7 @@
             console.log('login data', data)
             const {token, details} = data
             if (token) {
+              console.log('setting token', token)
               this.$store.commit(UserMutations.SET_JWT, token)
               this.loginSuccess(details)
             } else {
@@ -74,7 +75,14 @@
         }
       },
       async loginSuccess (details) {
-        await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
+        // todo fix this
+        console.log('DO_THIS_HERE', details)
+        let tempDetails = {
+          companyId: 1,
+          firstName: 'System',
+          id: 99999999
+        }
+        await this.$store.dispatch(UserActions.LOGIN_SUCCESS, tempDetails)
         this.$router.push('/')
       }
     }

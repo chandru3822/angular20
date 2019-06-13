@@ -14,6 +14,8 @@ Vue.use(Vuetify, {
     primaryCustom: '#1F3C73',
     secondary: '#f2f2f2',
     secondaryCustom: '#f2f2f2',
+    rowShade: '#EAEAF4',
+    rowShadeCustom: '#EAEAF4',
     brGreen: '#73d697',
     brRed: '#ee6f6a',
     brBlue: '#2292cc',

@@ -6,6 +6,17 @@
 
 <style lang="scss">
 /*
+ * OVERRIDES FOR VUETIFY THEMES
+*/
+.theme--light,
+.theme--light.v-input:not(.v-input--is-disabled) input,
+.theme--light.v-select .v-select__selections {
+  color: var(--v-primaryText-base) !important;
+}
+/*.theme--light {*/
+  /*color: var(--v-primaryText-base) !important;*/
+/*}*/
+/*
  * not sure what to do about this. this makes the date time picker look way nicer and doesn't
  * seem to affect anything else so far.  will have to figure out a solution later if it does
  */
@@ -74,6 +85,9 @@ label[for="adminOriginatorSelect"] {
   vertical-align: middle;
   margin-left: 10px;
 }
+.flex-display {
+  display: flex;
+}
 .page-header{
   text-align: left;
   font-size: 30px;
@@ -84,6 +98,11 @@ label[for="adminOriginatorSelect"] {
   font-size: 30px;
   font-weight: 600;
 }
+
+.shaded-row{
+  background-color: var(--v-rowShadeCustom-base);
+}
+
 .clickable {
   cursor: pointer
 }
@@ -95,6 +114,10 @@ label[for="adminOriginatorSelect"] {
 }
 .error-text {
   color: var(--v-error-base) !important;
+}
+
+.one-hunned {
+  width: 100%;
 }
 .bordered {
   border: solid 1px var(--v-primary-base);
@@ -115,14 +138,9 @@ label[for="adminOriginatorSelect"] {
   border-radius: 10px;
 }
 
-.theme--light {
-  color: var(--v-primaryText-base) !important;
-}
-
 @media (min-width: 769px) {
   .router-container{
     display: flex;
-    padding-top: 40px;
   }
   .page-header{
     font-size: 40px;

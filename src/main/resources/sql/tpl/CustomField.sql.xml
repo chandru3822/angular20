@@ -1,0 +1,110 @@
+<sql>
+  <customField.getOne><![CDATA[
+    select cf.id,
+     cf.list_of_value_id,
+     cf.company_id,
+     cf.drop_down,
+     cf.field_name,
+     cf.archived,
+     cf.company_data_type_id,
+     coalesce((
+                   select array_to_json(array_agg(DISTINCT custom_field_object_type_id))
+                   from (
+                             select distinct cfg.custom_field_object_type_id
+                             from flow.custom_field_group cfg
+                                       inner join flow.custom_field_object_type cfot on cfot.id = cfg.custom_field_object_type_id
+                             where cfg.custom_field_id = cf.id
+                               and cfg.archived is not true
+                        ) rows), '[]') AS selected_custom_field_object_types,
+     coalesce((
+                   select array_to_json(array_agg(rows))
+                   from (
+                             select lv.id,
+                                    lv.name,
+                                    lv.parent_id as "parentId",
+                                    lv.date_created as "dateCreated",
+                                    lv.date_updated as "dateUpdated",
+                                    lv.created_by_id as "createdById",
+                                    lv.modified_by_id as "modifiedById",
+                                    lv.archived
+                             from flow.list_of_value lv
+                             where lv.parent_id = cf.list_of_value_id
+                             and lv.archived is not true
+                             order by lv.display_order
+                        ) rows), '[]') AS dropdown_options
+    from flow.custom_field cf
+    where cf.id = :id
+    order by cf.field_name
+  ]]></customField.getOne>
+
+  <customField.getAll><![CDATA[
+    select cf.id,
+       cf.list_of_value_id,
+       cf.company_id,
+       cf.drop_down,
+       cf.field_name,
+       cf.archived,
+       cf.company_data_type_id,
+       coalesce((
+                     select array_to_json(array_agg(DISTINCT custom_field_object_type_id))
+                     from (
+                               select distinct cfg.custom_field_object_type_id
+                               from flow.custom_field_group cfg
+                                         inner join flow.custom_field_object_type cfot on cfot.id = cfg.custom_field_object_type_id
+                               where cfg.custom_field_id = cf.id
+                                 and cfg.archived is not true
+                          ) rows), '[]') AS selected_custom_field_object_types,
+       coalesce((
+                     select array_to_json(array_agg(rows))
+                     from (
+                               select lv.id,
+                                      lv.name,
+                                      lv.parent_id as "parentId",
+                                      lv.date_created as "dateCreated",
+                                      lv.date_updated as "dateUpdated",
+                                      lv.created_by_id as "createdById",
+                                      lv.modified_by_id as "modifiedById",
+                                      lv.display_order as "displayOrder",
+                                      lv.archived
+                               from flow.list_of_value lv
+                               where lv.parent_id = cf.list_of_value_id
+                               and lv.archived is not true
+                               order by lv.display_order
+                          ) rows), '[]') AS dropdown_options
+    from flow.custom_field cf
+    where cf.company_id = :companyId
+      and cf.archived is not true
+    order by cf.field_name
+  ]]></customField.getAll>
+
+  <customField.getCustomFieldObjectTypes><![CDATA[
+    select *
+    from flow.custom_field_object_type
+    where company_id = :companyId
+  ]]></customField.getCustomFieldObjectTypes>
+
+  <customField.deleteField><![CDATA[
+    update flow.custom_field
+      set archived = true
+    where id = :fieldId
+  ]]></customField.deleteField>
+
+  <customField.saveField><![CDATA[
+    update flow.custom_field
+      set field_name = :fieldName
+    where id = :id
+  ]]></customField.saveField>
+
+  <customField.insertField><![CDATA[
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id)
+    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId)
+    returning id
+  ]]></customField.insertField>
+
+  <customField.insertListOfValue><![CDATA[
+    insert into flow.list_of_value(name, parent_id, date_created, created_by_id, display_order)
+    values (:name, :parentId, now(), :createdById, :displayOrder)
+    returning id
+  ]]></customField.insertListOfValue>
+
+</sql>
