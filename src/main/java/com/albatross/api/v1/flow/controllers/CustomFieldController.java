@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldObjectType;
+import com.albatross.api.v1.flow.model.ObjectType;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,17 +29,20 @@ public class CustomFieldController {
   }
 
   @RequestMapping(value = "/getCustomFieldObjectTypes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldObjectType> getCustomFieldObjectTypes(@RequestParam Long companyId) {
-    return customFieldService.getCustomFieldObjectTypes(companyId);
+  public List<ObjectType> getCustomFieldObjectTypes(@RequestParam Long companyId) {
+    return customFieldService.getObjectTypes(companyId);
   }
 
   @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
   public CustomField saveField(@RequestBody CustomField customField) {
-    return customFieldService.saveField(customField);
+    // add the field and list of values
+    CustomField field = customFieldService.saveField(customField);
+    return field;
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteField(@PathVariable("id") Long fieldId) {
-    customFieldService.deleteField(fieldId);
+  @RequestMapping(value = "/delete", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteField(@RequestBody CustomField field) {
+    // todo: change this to a true delete method if we can start getting the logged in user id from the server
+    customFieldService.deleteField(field);
   }
 }

@@ -17,7 +17,7 @@ public class CustomField {
   private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById;
   private String fieldName, objectType;
   private Boolean archived;
-  private List<Long> selectedCustomFieldObjectTypes;
+  private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> dropdownOptions;
   private Date dateCreated, dateModified;
 }

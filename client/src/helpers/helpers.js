@@ -30,8 +30,13 @@ export async function postRequest (path, body) {
   return {data, status}
 }
 
-export async function deleteRequest (path, body) {
-  const {data, status} = await axios.delete(`${VUE_APP_BASE_API}${path}`, body)
+export async function putRequest (path, body) {
+  const {data, status} = await axios.put(`${VUE_APP_BASE_API}${path}`, body)
+  return {data, status}
+}
+
+export async function deleteRequest (path) {
+  const {data, status} = await axios.delete(`${VUE_APP_BASE_API}${path}`)
   return {data, status}
 }
 

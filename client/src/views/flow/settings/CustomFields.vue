@@ -23,13 +23,13 @@
           hide-headers
           class="elevation-1"
           item-key="id"
-          expand
+          :expand="false"
       >
         <template slot="items" slot-scope="props">
           <tr v-if="!props.item.custom" :class="{ 'shaded-row': props.index % 2 }">
             <td class="text-xs-right">{{ props.item.fieldName }}</td>
             <td class="">
-              <v-btn @click="props.expanded = !props.expanded; resetCustomField(props.item.id, props.expanded)">
+              <v-btn @click="props.expanded = !props.expanded; resetCustomField(props.item, props.expanded)">
                 {{ props.expanded ? 'Cancel' : 'Edit' }}
               </v-btn>
               <v-btn flat @click="deleteField(props.item)" :loading="props.item.deleting">
@@ -39,7 +39,7 @@
           </tr>
           <tr v-else :class="{ 'shaded-row': props.index % 2 }">
             <td colspan="2" class="text-xs-center">
-              <v-btn  @click="props.expanded = !props.expanded; resetCustomField(props.item.id, props.expanded)">
+              <v-btn  @click="props.expanded = !props.expanded; resetCustomField(props.item, props.expanded)">
                 <v-icon class="mr-1" v-if="props.expanded">cancel</v-icon>
                 <v-icon v-else>add</v-icon>
                 {{props.expanded ? 'Cancel' : 'Add Field'}}
@@ -51,6 +51,7 @@
           <v-flex justify-center class="flex-display" :class="{'shaded-row': props.index % 2}">
 
             <v-card flat class="text-xs-center field-card"  :color="props.index % 2 ? 'rowShadeCustom' : 'white'">
+              <v-card-text>{{props.item.clone}}</v-card-text>
               <v-card-text>{{props.item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
               <v-text-field
                   label="Field Name"
@@ -71,9 +72,11 @@
               ></v-autocomplete>
               <v-flex class="options-container" fluid v-if="props.item.companyDataType && props.item.companyDataType.hasListValues">
                 <span>Selectable Options</span>
-                <v-text-field v-for="(ddo, index) in props.item.dropdownOptions"
+                <v-text-field v-for="(ddo, index) in filterBy(props.item.dropdownOptions, false, 'archived')"
                               :key="index"
                               :placeholder="ddo.placeholder"
+                              append-outer-icon="delete"
+                              @click:append-outer="ddo.archived = true"
                     v-model="ddo.name"
                 ></v-text-field>
                 <v-btn
@@ -83,11 +86,11 @@
               </v-flex>
               <v-container fluid>
                 {{props.item.customFieldGroups}}
-                <v-checkbox v-for="(ot, index) in customFieldObjectTypes"
+                <v-checkbox v-for="(ot, index) in props.item.customFieldObjectTypes"
                             :key="index"
-                            v-model="props.item.selectedCustomFieldObjectTypes"
-                            :label="ot.objectType"
-                            :value="ot.id"></v-checkbox>
+                            v-model="ot.archived"
+                            :false-value="true" :true-value="false"
+                            :label="ot.objectType"></v-checkbox>
               </v-container>
               <v-btn
                   :disabled="invalid(props.item)"
@@ -105,12 +108,14 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
+import Vue2Filters from 'vue2-filters'
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
-import { getRequest, deleteRequest, postRequest } from '@/helpers/helpers'
+import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
 export default {
   name: 'CustomFields',
+  mixins: [Vue2Filters.mixin],
   data () {
     return {
       model: '',
@@ -129,7 +134,7 @@ export default {
         createdById: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         dropdownOptions: [],
-        selectedCustomFieldObjectTypes: []}
+        customFieldObjectTypes: []}
     }
   },
   methods: {
@@ -154,7 +159,8 @@ export default {
       this.dataTypes = data
     },
     async deleteField (item) {
-      const { status } = await deleteRequest(`/api/v1/flow/customField/${item.id}`)
+      item.archived = true
+      const { status } = await putRequest(`/api/v1/flow/customField/delete`, item)
       if (status === 200) {
         this.customFields = this.customFields.filter((cf) => { return cf.id !== item.id })
       }
@@ -164,10 +170,15 @@ export default {
         this.customFields = cloneDeep(this.allCustomFields)
       } else if (this.selectedObjectType.id === -2){
         this.customFields = this.allCustomFields.filter(cf => {
-          return cf.selectedCustomFieldObjectTypes.length === 0
+          return !cf.customFieldObjectTypes.some(cfot => (!cfot.archived && null != cfot.archived))
         })
       } else {
-        this.customFields = this.allCustomFields.filter(cf => { return cf.selectedCustomFieldObjectTypes.includes(this.selectedObjectType.id) })
+        this.customFields = this.allCustomFields.filter(cf => {
+          const match = cf.customFieldObjectTypes.find(cfot => {
+            return cfot.objectTypeId === this.selectedObjectType.id && (!cfot.archived && null != cfot.archived)
+          })
+          return !!match
+        })
       }
       this.customFields.unshift(cloneDeep(this.blankNewObject))
     },
@@ -179,10 +190,11 @@ export default {
 
       object.dropdownOptions.forEach((ddo, idx) => {
         console.log('idx', idx)
-        ddo.diplayOrder = idx
+        ddo.displayOrder = idx
       })
 
       object.companyDataTypeId = object.companyDataType.id
+      object.modifiedById = this.$store.state.user.details.id
 
       const {data} = await postRequest('/api/v1/flow/customField', object)
       data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
@@ -196,28 +208,28 @@ export default {
       object = cloneDeep(this.blankNewObject)
       this.customFields.unshift(object)
     },
-    resetCustomField (id, expanded) {
-      if(id && !expanded) {
-        const original = cloneDeep(this.allCustomFields.find(cf => cf.id === id))
-        const idx = this.customFields.findIndex(cf => cf.id === id)
-        console.log('randaLogger', original)
-        console.log('randaLogger', idx)
-        console.log('randaLoggerOld', this.customFields[idx])
-        this.customFields[idx] = cloneDeep(this.allCustomFields.find(cf => cf.id === id))
-        console.log('randaLoggerNew', this.customFields[idx])
+    resetCustomField (item, expanded) {
+      // is this really the only way to reset the values?  i tried resetting just the one index
+      if(!expanded) {
+        // const idx = this.customFields.indexOf(item)
+        // console.log('randaLogger', idx)
+        // this.customFields[idx] = cloneDeep(this.allCustomFields[idx])
+        this.customFields = cloneDeep(this.allCustomFields)
+        this.customFields.unshift(cloneDeep(this.blankNewObject))
       }
     },
     addOption (options) {
-      options.push({ placeholder: 'Enter New Option Name'})
+      options.push({ placeholder: 'Enter New Option Name', archived: false})
     },
     invalid (item) {
+      // todo: use real form validation?
       let invalidOptions = false
       if(item.companyDataType && item.companyDataType.hasListValues) {
         if(item.dropdownOptions.length === 0 ) {
           invalidOptions = true
         } else {
           item.dropdownOptions.forEach(ddo => {
-            if(!ddo.name) {
+            if(!ddo.name && !ddo.archived) {
               invalidOptions = true
             }
           })

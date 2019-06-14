@@ -15,7 +15,7 @@ public class ListOfValue {
 
   private Long id, parentId, createdById, modifiedById, displayOrder;
   private String name;
-  private Boolean archived;
+  private Boolean archived = false;
   private Date dateCreated, dateUpdated;
 }
 

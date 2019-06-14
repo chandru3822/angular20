@@ -9,10 +9,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class CustomFieldObjectType {
+public class ObjectType {
 
-  private Long id, customFieldId, objectTypeId;
-  private Boolean archived = false;
+  private Long id;
   private String objectType;
 }
 

@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import './plugins/vuetify'
+import Vue2Filters from 'vue2-filters'
 import App from './App.vue'
 import router from './router'
 import store from './store'
@@ -17,6 +18,8 @@ const JWT_EXPIRED = 'invalid token'
 Vue.config.productionTip = false
 
 Vue.component('downloadExcel', JsonExcel)
+
+Vue.use(Vue2Filters)
 
 Vue.filter('formatDate', function (value, format) {
   if (value && format) {

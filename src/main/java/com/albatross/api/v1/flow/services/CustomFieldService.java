@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldObjectType;
 import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.ObjectType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -48,63 +49,127 @@ public class CustomFieldService {
     return result;
   }
 
-  public List<CustomFieldObjectType> getCustomFieldObjectTypes(Long companyId) {
+  public List<ObjectType> getObjectTypes(Long companyId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
-    List<CustomFieldObjectType> result = sqlCache.query("customField.getCustomFieldObjectTypes", params, CustomFieldObjectType.class);
+    List<ObjectType> result = sqlCache.query("customField.getObjectTypes", params, ObjectType.class);
     return result;
   }
 
+  /*
+  * I think this handles saving all scenarios of custom fields
+  *   Existing custom field changes
+  *     With:
+  *        new list of value options
+  *        updating existing value options
+  *        archiving existing value options
+  *   New custom fields
+  *     With or without value options (which would always be new/inserts)
+   */
   public CustomField saveField(CustomField customField) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
     Long id = null;
+    boolean doInsertAfterListOfValues = false;
+    boolean insertParentRecordIfNeeded = false;
 
     if(null != customField.getId()) {
       // edit existing custom field
       id = customField.getId();
       params.put("id", id);
+      params.put("modifiedById", customField.getModifiedById());
       sqlCache.update("customField.saveField", params);
-
-      // todo: handle adding/editing/deleting the dropdown fields here
     } else {
-      Long parentId = null;
-      // insert the list of values first if needed to get the listOfValueId
-      if(customField.getDropdownOptions() != null && !customField.getDropdownOptions().isEmpty()) {
-        //insert the parent row
+      // have to insert the list of values first if needed to get the listOfValueId
+      doInsertAfterListOfValues = true;
+      // only insert the parent list value record if this is a new custom field
+      insertParentRecordIfNeeded = true;
+    }
+
+    Long parentId = null;
+    Long lovCreatedById;
+
+    if(customField.getDropdownOptions() != null && !customField.getDropdownOptions().isEmpty()) {
+      if(insertParentRecordIfNeeded) {
+        // use created by unless field already existed then use modified id as the created for the list value row
+        lovCreatedById = customField.getCreatedById();
+
+        //insert the parent row if this is a new field
         HashMap<String, Object> lovParent = new HashMap<>();
         lovParent.put("name", customField.getFieldName());
         lovParent.put("parentId", null);
         lovParent.put("createdById", customField.getCreatedById());
         lovParent.put("displayOrder", null);
         parentId = sqlCache.updateReturningId("customField.insertListOfValue", lovParent, "id").longValue();
+      } else {
+        parentId = customField.getListOfValueId();
+        lovCreatedById = customField.getModifiedById();
+      }
 
-        //insert the rest of the list values
-        for(ListOfValue lov : customField.getDropdownOptions()) {
-          HashMap<String, Object> lovParams = new HashMap<>();
-          lovParams.put("name", lov.getName());
-          lovParams.put("parentId", parentId);
-          lovParams.put("createdById", customField.getCreatedById());
-          lovParams.put("displayOrder", lov.getDisplayOrder());
-          sqlCache.updateReturningId("customField.insertListOfValue", lovParams, "id");
+      //insert the rest of the list values
+      for(ListOfValue lov : customField.getDropdownOptions()) {
+        HashMap<String, Object> lovParams = new HashMap<>();
+        lovParams.put("name", lov.getName());
+        lovParams.put("parentId", parentId);
+        lovParams.put("createdById", lovCreatedById);
+        lovParams.put("modifiedById", customField.getModifiedById());
+        lovParams.put("displayOrder", lov.getDisplayOrder());
+
+        if(null != lov.getId() && !lov.getArchived()) {
+          // do update of row
+          lovParams.put("id", lov.getId());
+          sqlCache.update("customField.updateListOfValue", lovParams);
+        } else if (lov.getArchived()) {
+          // do archive of row
+          lovParams.put("id", lov.getId());
+          sqlCache.update("customField.archiveListOfValue", lovParams);
+        } else {
+          // do row insert
+          sqlCache.update("customField.insertListOfValue", lovParams);
         }
       }
 
+    }
+
+    if(doInsertAfterListOfValues) {
       params.put("listOfValueId", parentId);
       params.put("companyId", customField.getCompanyId());
       params.put("createdById", customField.getCreatedById());
       params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
-      // insert new custom field
+      // insert new custom field with listOfValueId if needed
       id = sqlCache.updateReturningId("customField.insertField", params, "id").longValue();
+    }
+
+    // add / delete custom field object types
+    if(null != customField.getCustomFieldObjectTypes()) {
+      for(CustomFieldObjectType cfot : customField.getCustomFieldObjectTypes()) {
+        handleCustomFieldObjectTypes(customField.getId(), cfot);
+      }
     }
 
     return findCustomFieldById(id);
   }
 
-  public void deleteField(Long fieldId) {
+  public void handleCustomFieldObjectTypes(Long customFieldId, CustomFieldObjectType cfot) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("fieldId", fieldId);
+    params.put("archived", cfot.getArchived());
+    params.put("customFieldId", customFieldId);
+    params.put("objectTypeId", cfot.getObjectTypeId());
+
+    if(null != cfot.getId()) {
+      params.put("id", cfot.getId());
+      sqlCache.update("customField.updateCustomFieldObjectType", params);
+    } else if (null != cfot.getArchived() && !cfot.getArchived()) {
+      // do not need to insert new row if it is archived / not selected
+      sqlCache.update("customField.insertCustomFieldObjectType", params);
+    }
+  }
+
+  public void deleteField(CustomField field) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("fieldId", field.getId());
+    params.put("modifiedById", field.getModifiedById());
 
     // archive single custom field
     sqlCache.update("customField.deleteField", params);
@@ -123,11 +188,11 @@ public class CustomFieldService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Long>> selectedCustomFieldObjectTypeRef = new TypeReference<List<Long>>() {};
+      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<List<CustomFieldObjectType>>() {};
       TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<List<ListOfValue>>() {};
 
-      bw.registerCustomEditor(List.class, "selectedCustomFieldObjectTypes",
-          new JsonCollectionDeserializer(selectedCustomFieldObjectTypeRef, objectMapper));
+      bw.registerCustomEditor(List.class, "customFieldObjectTypes",
+          new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "dropdownOptions",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
