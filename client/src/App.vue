@@ -21,7 +21,7 @@
  * seem to affect anything else so far.  will have to figure out a solution later if it does
  */
 body {
-  font-family: Verdana, 'Arial', sans-sarif;
+  font-family: Verdana, 'Arial', sans-serif;
   background: #f8f8f8;
 }
 
@@ -49,7 +49,8 @@ label[for="adminOriginatorSelect"] {
   color: var(--v-secondary-base) !important;
 }
 .router-view{
-  max-width: 1200px !important;
+  margin-left: 107px !important;
+  margin-right: 107px !important;
 }
 .green-text{
   color: #73d697 !important;

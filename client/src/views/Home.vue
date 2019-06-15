@@ -17,7 +17,7 @@
       </v-toolbar>
       <v-content>
         <v-container class="router-container">
-          <router-view class="router-view"/>
+          <router-view class="router-view" />
         </v-container>
       </v-content>
     </v-flex>
@@ -32,8 +32,8 @@ import AccountMenu from '@/components/AccountMenu.vue'
 export default {
   name: 'home',
   components: {
-		Spinner,
-		AccountMenu
+    Spinner,
+    AccountMenu
   },
   data () {
     return {

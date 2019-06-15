@@ -1,19 +1,19 @@
 <template #items="props">
   <v-layout column fill-height>
     <v-flex xs12 shrink>
-      <v-layout align-center row fill-height style="width: 100%">
+      <v-layout space-between row fill-height style="width: 100%">
         <v-flex xs12 text-xs-left fill-height>
-          <v-btn color="info" :to="'/ahj'">
+          <v-btn color="info" :to="'/ahj'" style="margin: 0">
             <v-icon>arrow_left</v-icon>Back to menu
           </v-btn>
 
-          <v-layout row nowrap align-center style="width: 100%">
-            <p style="font-size: 32px; font-weight: 200;">AHJ</p>
-            <p style="font-family: 'Roboto Condensed', sans-serif; font-size: 20px; text-align: right;">
-              {{ testAhj.name }}<br>
-              {{ testAhj.metroArea }}<br>
-              {{ testAhj.state }}
-            </p>
+          <v-layout row nowrap justify-space-between align-center style="width: 100%">
+            <div style="font-size: 32px; font-weight: 200;">AHJ</div>
+            <div style="font-family: 'Roboto Condensed', sans-serif; font-size: 20px; text-align: right;">
+              <div>{{ testAhj.name }}</div>
+              <div>{{ testAhj.metroArea }}</div>
+              <div>{{ testAhj.state }}</div>
+            </div>
           </v-layout>
 
           <v-divider></v-divider>
@@ -26,7 +26,7 @@
 
           <v-divider></v-divider>
 
-          <router-view></router-view>
+          <router-view />
         </v-flex>
       </v-layout>
     </v-flex>
@@ -38,9 +38,9 @@
     name: 'ahjDetails',
     data: () => ({
       testAhj: {
-        name: 'Conejo County',
+        name: 'Conejos County',
         metroArea: 'Colorado Springs',
-        state: 'Denver'
+        state: 'Colorado'
       }
     }),
     computed: {
