@@ -11,6 +11,9 @@
           <router-link to="/settings/customFields">Custom Fields</router-link>
         </v-subheader>
         <v-subheader>
+          <router-link to="/settings/customFieldGroups">Custom Field Groups</router-link>
+        </v-subheader>
+        <v-subheader>
           <router-link to="/settings/attachments">Attachments</router-link>
         </v-subheader>
         <v-subheader>
@@ -20,7 +23,7 @@
     </v-flex>
     <v-flex xs8>
       <v-sheet color="#fff" class="elevation-2 text-xs-left pa-4 br-10">
-        <router-view class="router-view"/>
+        <router-view/>
       </v-sheet>
     </v-flex>
   </v-layout>

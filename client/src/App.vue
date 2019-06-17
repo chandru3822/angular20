@@ -49,8 +49,9 @@ label[for="adminOriginatorSelect"] {
   color: var(--v-secondary-base) !important;
 }
 .router-view{
-  margin-left: 107px !important;
-  margin-right: 107px !important;
+  max-width: 100% !important;
+  margin-left: 10px !important;
+  margin-right: 10px !important;
 }
 .green-text{
   color: #73d697 !important;
@@ -60,6 +61,12 @@ label[for="adminOriginatorSelect"] {
 }
 .shaded-row{
   background-color: var(--v-secondary-base);
+}
+.grab {
+  cursor: grab;
+  &:active {
+    cursor: grabbing;
+  }
 }
 .table-title-row{
   height: 70px;
@@ -101,7 +108,7 @@ label[for="adminOriginatorSelect"] {
 }
 
 .shaded-row{
-  background-color: var(--v-rowShadeCustom-base);
+  background-color: var(--v-rowShadeCustom-base) !important;
 }
 
 .clickable {
