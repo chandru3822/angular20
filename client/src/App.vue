@@ -48,10 +48,6 @@ body {
 label[for="adminOriginatorSelect"] {
   color: var(--v-secondary-base) !important;
 }
-.router-view{
-  margin-left: 107px !important;
-  margin-right: 107px !important;
-}
 .green-text{
   color: #73d697 !important;
 }
@@ -142,6 +138,10 @@ label[for="adminOriginatorSelect"] {
 @media (min-width: 769px) {
   .router-container{
     display: flex;
+  }
+  .router-view{
+    margin-left: 107px !important;
+    margin-right: 107px !important;
   }
   .page-header{
     font-size: 40px;
