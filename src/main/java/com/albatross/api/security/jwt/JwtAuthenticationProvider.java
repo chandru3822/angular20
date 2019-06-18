@@ -83,8 +83,6 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     @SneakyThrows
     private Optional<UserAccountDetails> retrieveUserAccountDetails(JwtClaims token) {
         Long id = token.getUserId();
-//        todo: put this back in.
-//        return userCache.get(id);
-        return Optional.empty();
+        return userCache.get(id);
     }
 }
