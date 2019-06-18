@@ -25,8 +25,8 @@
                       :items="approvalRequiredOptions"
                       v-model="ahjPermit.submissionDetails.nemApprovalRequired"
             ></v-select>
-            <v-text-field v-model="ahjPermit.submissionDetails.depositAmount"
-                          label="Deposit Amount" prefix="$" box type="currency"
+            <v-text-field v-model="ahjPermit.submissionDetails.depositAmount" type="number"
+                          label="Deposit Amount" prefix="$" box step="0.01" min="0.00"
             ></v-text-field>
             <v-select label="Payment Method" :items="submittalMethods" box
                       v-model="ahjPermit.submissionDetails.paymentMethod"
@@ -53,11 +53,9 @@
                             label="Contractor License" box
                             style="width: 50%; margin-right: 20px;"></v-text-field>
               <v-flex style="width: 50%">
-                <v-menu
-                  v-model="contractorLicenseMenu" :close-on-content-click="false"
-                  :nudge-right="40" lazy transition="scale-transition" offset-y
-                  full-width min-width="290px"
-                >
+                <v-menu v-model="contractorLicenseMenu" :close-on-content-click="false"
+                        :nudge-right="40" lazy transition="scale-transition" offset-y
+                        full-width min-width="290px">
                   <template #activator="{ on }">
                     <v-text-field label="mm/dd/yyyy" append-icon="event" readonly
                                   v-on="on" box
@@ -72,11 +70,9 @@
                             label="Other License" box
                             style="width: 50%; margin-right: 20px;"></v-text-field>
               <v-flex style="width: 50%">
-                <v-menu
-                  v-model="otherLicenseMenu" :close-on-content-click="false"
-                  :nudge-right="40" lazy transition="scale-transition"
-                  offset-y full-width min-width="290px"
-                >
+                <v-menu v-model="otherLicenseMenu" :close-on-content-click="false"
+                        :nudge-right="40" lazy transition="scale-transition"
+                        offset-y full-width min-width="290px">
                   <template #activator="{ on }">
                     <v-text-field v-model="ahjPermit.submissionDetails.otherLicenseDate"
                                   label="mm/dd/yyyy" append-icon="event" readonly
@@ -158,7 +154,7 @@
             <v-select label="Submittal Method" :items="submittalMethods" box
                       v-model="ahjPermit.revisionSubmissionDetails.submittalMethod"
             ></v-select>
-            <v-text-field label="Fee Amount" prefix="$" box
+            <v-text-field label="Fee Amount" prefix="$" box type="number" step="0.01" min="0.00"
                           v-model="ahjPermit.revisionSubmissionDetails.feeAmount"
             ></v-text-field>
             <v-select label="Payment Method" :items="submittalMethods" box
@@ -261,7 +257,6 @@
 
 <script>
   import draggable from 'vuedraggable'
-  import forEach from 'lodash.foreach'
   import max from 'lodash.max'
 
   export default {
@@ -416,7 +411,7 @@
         } else {
           if (this.ahjPermit.submissionDetails.submissionChecklistItems.length > 0) {
             let idsArray = []
-            forEach(this.ahjPermit.submissionDetails.submissionChecklistItems, item => idsArray.push(item.id))
+            this.ahjPermit.submissionDetails.submissionChecklistItems.forEach(item => idsArray.push(item.id))
             this.editedSubmissionChecklistItem.id = max(idsArray) + 1
           } else {
             this.editedSubmissionChecklistItem.id = 1
