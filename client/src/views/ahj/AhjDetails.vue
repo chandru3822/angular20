@@ -1,15 +1,16 @@
 <template #items="props">
   <v-layout column fill-height>
     <v-flex xs12 shrink>
-      <v-layout space-between row fill-height style="width: 100%">
+      <v-layout space-between row fill-height full-width>
         <v-flex xs12 text-xs-left fill-height>
-          <v-btn color="info" :to="'/ahj'" style="margin: 0">
-            <v-icon>arrow_left</v-icon>Back to menu
+          <v-btn id="back-btn" dark color="info" :to="'/ahj'">
+            <v-icon dark>arrow_left</v-icon>
+            Back to menu
           </v-btn>
 
           <v-layout row nowrap justify-space-between align-center style="width: 100%">
-            <div style="font-size: 32px; font-weight: 200;">AHJ</div>
-            <div style="font-family: 'Roboto Condensed', sans-serif; font-size: 20px; text-align: right;">
+            <div class="page-title">AHJ</div>
+            <div class="page-info">
               <div>{{ testAhj.name }}</div>
               <div>{{ testAhj.metroArea }}</div>
               <div>{{ testAhj.state }}</div>
@@ -66,3 +67,28 @@
     }
   }
 </script>
+
+<style scoped lang="scss">
+  #back-btn {
+    margin: 5px 0 0 0;
+  }
+  @media (min-width: 769px) {
+    #back-btn {
+      margin: 20px 0 0 0;
+    }
+  }
+  @media (min-width: 960px) {
+    #back-btn {
+      margin: 12px 0 0 0;
+    }
+  }
+  .page-title {
+    font-size: 32px;
+    font-weight: 200;
+  }
+  .page-info {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 20px;
+    text-align: right;
+  }
+</style>

@@ -144,7 +144,7 @@ public class CustomFieldService {
     // add / delete custom field object types
     if(null != customField.getCustomFieldObjectTypes()) {
       for(CustomFieldObjectType cfot : customField.getCustomFieldObjectTypes()) {
-        handleCustomFieldObjectTypes(customField.getId(), cfot);
+        handleCustomFieldObjectTypes(id, cfot);
       }
     }
 
@@ -155,9 +155,10 @@ public class CustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("archived", cfot.getArchived());
     params.put("customFieldId", customFieldId);
-    params.put("objectTypeId", cfot.getObjectTypeId());
+    params.put("objectTypeId", null != cfot.getCustomFieldId() ? cfot.getObjectTypeId() : cfot.getId());
 
-    if(null != cfot.getId()) {
+    // if it is a new field the cfot.getId() is actually the objectTypeId so do 2 checks here
+    if(null != cfot.getId() && null != cfot.getCustomFieldId()) {
       params.put("id", cfot.getId());
       sqlCache.update("customField.updateCustomFieldObjectType", params);
     } else if (null != cfot.getArchived() && !cfot.getArchived()) {

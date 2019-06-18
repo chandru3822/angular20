@@ -57,6 +57,12 @@ label[for="adminOriginatorSelect"] {
 .shaded-row{
   background-color: var(--v-secondary-base);
 }
+.grab {
+  cursor: grab;
+  &:active {
+    cursor: grabbing;
+  }
+}
 .table-title-row{
   height: 70px;
   line-height: 70px;
@@ -97,7 +103,7 @@ label[for="adminOriginatorSelect"] {
 }
 
 .shaded-row{
-  background-color: var(--v-rowShadeCustom-base);
+  background-color: var(--v-rowShadeCustom-base) !important;
 }
 
 .clickable {

@@ -48,10 +48,9 @@
           </tr>
         </template>
         <template v-slot:expand="props">
-          <v-flex justify-center class="flex-display" :class="{'shaded-row': props.index % 2}">
+          <v-flex justify-center class="flex-display pl-3 pr-3" :class="{'shaded-row': props.index % 2}">
 
-            <v-card flat class="text-xs-center field-card"  :color="props.index % 2 ? 'rowShadeCustom' : 'white'">
-              <v-card-text>{{props.item.clone}}</v-card-text>
+            <v-card flat class="text-xs-center field-card one-hunned"  :color="props.index % 2 ? 'rowShadeCustom' : 'white'">
               <v-card-text>{{props.item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
               <v-text-field
                   label="Field Name"
@@ -70,28 +69,53 @@
                   browser-autocomplete="new-password"
                   return-object
               ></v-autocomplete>
+
               <v-flex class="options-container" fluid v-if="props.item.companyDataType && props.item.companyDataType.hasListValues">
                 <span>Selectable Options</span>
-                <v-text-field v-for="(ddo, index) in filterBy(props.item.dropdownOptions, false, 'archived')"
-                              :key="index"
-                              :placeholder="ddo.placeholder"
-                              append-outer-icon="delete"
-                              @click:append-outer="ddo.archived = true"
-                    v-model="ddo.name"
-                ></v-text-field>
+                <draggable v-model="props.item.dropdownOptions"
+                           group="dropdownOptions" @start="drag=true" @end="drag=false">
+                  <v-list v-for="(ddo, index) in filterBy(props.item.dropdownOptions, false, 'archived')"
+                          :class="{'shaded-row': props.index % 2}"
+                          :key="index">
+                    <v-list-tile class="grab">
+                      <v-list-tile-content>
+                          <v-text-field
+                              class="one-hunned"
+                            :placeholder="ddo.placeholder"
+                            v-model="ddo.name" >
+                          </v-text-field>
+                      </v-list-tile-content>
+                      <v-list-tile-action>
+                        <v-icon>drag_handle</v-icon>
+                      </v-list-tile-action>
+                      <v-list-tile-action class="clickable" @click="ddo.archived = true">
+                        <v-icon>delete</v-icon>
+                      </v-list-tile-action>
+                    </v-list-tile>
+                  </v-list>
+                </draggable>
                 <v-btn
                     @click="addOption(props.item.dropdownOptions)">
                   Add Option
                 </v-btn>
               </v-flex>
-              <v-container fluid>
-                {{props.item.customFieldGroups}}
-                <v-checkbox v-for="(ot, index) in props.item.customFieldObjectTypes"
-                            :key="index"
-                            v-model="ot.archived"
-                            :false-value="true" :true-value="false"
-                            :label="ot.objectType"></v-checkbox>
-              </v-container>
+              <v-flex class="options-container" fluid>
+                <div>Included Object Types</div>
+                <!--<v-container v-if="props.item.custom">-->
+                  <!--<v-checkbox v-for="(ot, index) in customFieldObjectTypes"-->
+                              <!--:key="index"-->
+                              <!--v-model="ot.archived"-->
+                              <!--:false-value="true" :true-value="false"-->
+                              <!--:label="ot.objectType"></v-checkbox>-->
+                <!--</v-container>-->
+                <v-container>
+                  <v-checkbox v-for="(ot, index) in props.item.customFieldObjectTypes"
+                      :key="index"
+                      v-model="ot.archived"
+                      :false-value="true" :true-value="false"
+                      :label="ot.objectType"></v-checkbox>
+                </v-container>
+              </v-flex>
               <v-btn
                   :disabled="invalid(props.item)"
                   @click="saveChanges(props.item.custom, props.item); props.expanded = !props.expanded">
@@ -111,11 +135,15 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
+import draggable from 'vuedraggable'
 import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
 export default {
   name: 'CustomFields',
   mixins: [Vue2Filters.mixin],
+  components: {
+    draggable
+  },
   data () {
     return {
       model: '',
@@ -129,7 +157,7 @@ export default {
       objectFilters: [],
       blankNewObject: {
         id: -1,
-        fieldName: null,
+        fieldName: '',
         custom: true,
         createdById: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
@@ -143,12 +171,13 @@ export default {
       data.forEach(d => {
         d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
       })
-      this.allCustomFields = cloneDeep(data)
-      this.customFields = data
+      this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
+      this.customFields = cloneDeep(this.allCustomFields)
       this.customFields.unshift(cloneDeep(this.blankNewObject))
     },
     async getCustomFieldObjectTypes () {
       const {data} = await getRequest(`/api/v1/flow/customField/getCustomFieldObjectTypes`, { params: { companyId: this.companyId }})
+      data.forEach(d => d.archived = true)
       this.customFieldObjectTypes = cloneDeep(data)
       this.objectFilters = data
       this.objectFilters.unshift({id: -2, objectType: 'Unused'})
@@ -183,13 +212,11 @@ export default {
       this.customFields.unshift(cloneDeep(this.blankNewObject))
     },
     async saveChanges (editMode, object) {
-      // todo:
-      // todo: make work for post and put
       // the 'Add Field' row had to have an id in order to use it in the data table repeat.  remove the id here
       object.id = object.id === -1 ? null : object.id
 
+      // set the display order to save to DB
       object.dropdownOptions.forEach((ddo, idx) => {
-        console.log('idx', idx)
         ddo.displayOrder = idx
       })
 
@@ -198,24 +225,28 @@ export default {
 
       const {data} = await postRequest('/api/v1/flow/customField', object)
       data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
-      // i saw how to sort and insert in one command with sortedIndexBy but i couldn't get it to work :(
-      this.allCustomFields.push(data)
-      this.allCustomFields = orderBy(this.allCustomFields, cf => cf.fieldName.toLowerCase())
-      this.customFields[this.customFields.indexOf(object)] = data
-      this.customFields = orderBy(this.customFields, cf => cf.fieldName.toLowerCase())
 
-      // i thought i understood cloning until this
-      object = cloneDeep(this.blankNewObject)
-      this.customFields.unshift(object)
+      // if it was a new field, reset the first index, then push it to both arrays
+      if(null === object.id) {
+        object = cloneDeep(this.blankNewObject)
+        this.customFields[0] = object
+        this.allCustomFields.push(data)
+        this.customFields.push(data)
+      }
+
+      // re-sort in case the fieldName changed
+      this.customFields = orderBy(this.customFields, cf => cf.fieldName.toLowerCase())
     },
     resetCustomField (item, expanded) {
-      // is this really the only way to reset the values?  i tried resetting just the one index
+      // is this really the only way to reset the values if they cancel changes?  i tried resetting just the one index but the dom doesn't refresh
       if(!expanded) {
         // const idx = this.customFields.indexOf(item)
         // console.log('randaLogger', idx)
         // this.customFields[idx] = cloneDeep(this.allCustomFields[idx])
         this.customFields = cloneDeep(this.allCustomFields)
         this.customFields.unshift(cloneDeep(this.blankNewObject))
+      } else if (item.custom) {
+        item.customFieldObjectTypes = cloneDeep(this.customFieldObjectTypes)
       }
     },
     addOption (options) {
@@ -257,6 +288,5 @@ export default {
   padding: 12px 0 !important;
 }
 .field-card {
-  width: 50%;
 }
 </style>
