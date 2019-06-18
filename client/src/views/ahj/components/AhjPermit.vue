@@ -446,12 +446,6 @@
   .v-list__tile__title {
     font-size: 0.8em !important;
   }
-  .grab {
-    cursor: grab;
-    &:active {
-      cursor: grabbing;
-    }
-  }
   .checklist-btns {
     display: flex;
     flex-flow: row nowrap;
