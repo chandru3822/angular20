@@ -1,0 +1,29 @@
+<sql>
+  <customer.getAllForCompany>
+    <![CDATA[
+             select id,
+                    first_name,
+                    last_name,
+                    full_name,
+                    email,
+                    phone,
+                    1 as company_id
+             from flow.customer
+             offset :offset
+             limit :limit;
+    ]]>
+  </customer.getAllForCompany>
+  <customer.get>
+    <![CDATA[
+             select id,
+                    first_name,
+                    last_name,
+                    full_name,
+                    email,
+                    phone,
+                    1 as company_id
+             from flow.customer
+             where id = :customerId;
+    ]]>
+  </customer.get>
+</sql>

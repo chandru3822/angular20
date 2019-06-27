@@ -1,0 +1,44 @@
+<sql>
+  <project.getAllForCompanyProcess>
+    <![CDATA[
+             select project.id,
+                    company_process.company_id,
+                    company_process.process_id,
+                    project.customer_id,
+                    project.project_name as name
+             from flow.company_process
+             inner join flow.project on company_process.id = project.company_process_id
+             where company_process.company_id = :companyId
+               and company_process.process_id = :processId
+             offset :offset
+             limit :limit;
+    ]]>
+  </project.getAllForCompanyProcess>
+  <project.get>
+    <![CDATA[
+             select project.id,
+                    company_process.company_id,
+                    company_process.process_id,
+                    project.customer_id,
+                    project.project_name as name
+             from flow.company_process
+             inner join flow.project on company_process.id = project.company_process_id
+               and project.id = :projectId
+             where company_process.company_id = :companyId
+               and company_process.process_id = :processId;
+    ]]>
+  </project.get>
+  <project.getAllForCustomer>
+    <![CDATA[
+             select project.id,
+                    company_process.company_id,
+                    company_process.process_id,
+                    project.customer_id,
+                    project.project_name as name
+             from flow.project
+             inner join flow.company_process on company_process.id = project.company_process_id
+               and company_process.company_id = :companyId
+             where project.customer_id = :customerId;
+    ]]>
+  </project.getAllForCustomer>
+</sql>

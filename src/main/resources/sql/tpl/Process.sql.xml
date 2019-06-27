@@ -1,0 +1,23 @@
+<sql>
+  <process.getAllForCompany>
+    <![CDATA[
+             select process.id,
+                    process.process_name as name,
+                    company_process.company_id
+             from flow.company_process
+             inner join flow.process on process.id = company_process.process_id
+             where company_id = :companyId;
+    ]]>
+  </process.getAllForCompany>
+  <process.get>
+    <![CDATA[
+             select process.id,
+                    process.process_name as name,
+                    company_process.company_id
+             from flow.company_process
+             inner join flow.process on process.id = company_process.process_id
+             where company_id = :companyId
+               and process_id = :processId;
+    ]]>
+  </process.get>
+</sql>
