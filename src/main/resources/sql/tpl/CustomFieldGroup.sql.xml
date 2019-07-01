@@ -5,4 +5,93 @@
     where custom_field_id = :fieldId
   ]]></customFieldGroup.archiveRows>
 
+  <customFieldGroup.getOne><![CDATA[
+    select cfgt.*,
+       ot.object_type
+    from flow.custom_field_group_type cfgt
+           inner join flow.object_type ot on ot.id = cfgt.object_type_id
+    where cfgt.id = :id
+  ]]></customFieldGroup.getOne>
+
+  <customFieldGroup.getByObjectTypeId><![CDATA[
+    select cfgt.*,
+          cfgt.group_name as original_group_name,
+       ot.object_type
+    from flow.custom_field_group_type cfgt
+           inner join flow.object_type ot on ot.id = cfgt.object_type_id
+    where ot.id = :objectTypeId
+      and cfgt.archived is not true
+    order by cfgt.group_order, cfgt.group_name
+  ]]></customFieldGroup.getByObjectTypeId>
+
+  <customFieldGroup.getCustomFieldsInGroup><![CDATA[
+    select cfg.*,
+      cfgt.group_name,
+       cf.field_name,
+           cf.company_data_type_id,
+           cf.date_created,
+           cf.created_by_id,
+           cf.modified_by_id,
+           cf.date_updated
+    from flow.custom_field_group cfg
+      inner join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
+      inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+    where cfgt.id = :groupTypeId
+      and cfg.archived is not true
+      and cf.archived is not true
+    order by cfg.field_order
+  ]]></customFieldGroup.getCustomFieldsInGroup>
+
+  <customFieldGroup.getAvailableCustomFieldsInGroup><![CDATA[
+    select cf.*,
+       cfot.object_type_id
+    from flow.custom_field_object_type cfot
+           inner join flow.custom_field cf on cf.id = cfot.custom_field_id
+    where cfot.object_type_id = :objectTypeId
+      and cfot.archived is not true
+      and not exists (select custom_field_id
+                      from flow.custom_field_group cfg
+                      where cfg.custom_field_id = cf.id
+                        and cfg.custom_field_group_type_id = :groupTypeId
+                        and cfg.archived is not true)
+    order by cf.field_name
+  ]]></customFieldGroup.getAvailableCustomFieldsInGroup>
+
+  <customFieldGroup.insertCustomFieldGroupType><![CDATA[
+    insert into flow.custom_field_group_type(group_name, object_type_id, group_order)
+    values (:groupName, :objectTypeId, :groupOrder);
+  ]]></customFieldGroup.insertCustomFieldGroupType>
+
+  <customFieldGroup.updateCustomFieldGroupType><![CDATA[
+    update flow.custom_field_group_type
+      set group_name = :groupName,
+          group_order = :groupOrder
+    where id = :id
+  ]]></customFieldGroup.updateCustomFieldGroupType>
+
+  <customFieldGroup.deleteCustomFieldGroupType><![CDATA[
+    update flow.custom_field_group_type
+      set archived = true
+    where id = :id
+  ]]></customFieldGroup.deleteCustomFieldGroupType>
+
+  <customFieldGroup.addFieldToGroup><![CDATA[
+    insert into flow.custom_field_group(custom_field_group_type_id, custom_field_id, process_step_custom_field_id, field_order)
+    values (:customFieldGroupTypeId, :customFieldId, :processStepCustomFieldId, :fieldOrder)
+  ]]></customFieldGroup.addFieldToGroup>
+
+  <customFieldGroup.updateFieldInGroup><![CDATA[
+    update flow.custom_field_group
+      set field_order = :fieldOrder
+    where id = :id
+  ]]></customFieldGroup.updateFieldInGroup>
+
+  <customFieldGroup.deleteFieldFromGroup><![CDATA[
+    update flow.custom_field_group
+      set archived = true
+    where id = :id
+  ]]></customFieldGroup.deleteFieldFromGroup>
+
+
+
 </sql>

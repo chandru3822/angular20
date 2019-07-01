@@ -1,21 +1,21 @@
 <template>
   <v-layout row wrap class="custom-field-container">
     <v-flex xs-12>
-        <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">Custom Fields</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-select
-                class="mt-2"
-                v-model="selectedObjectType"
-                :items="objectFilters"
-                label="Filter by Object Type"
-                item-text="objectType"
-                return-object
-                @input="changeSelectedObjectType()"
-            ></v-select>
-          </v-toolbar-items>
-        </v-toolbar>
+      <v-toolbar color="white" class="elevation-1">
+        <v-toolbar-title class="app-title">Custom Fields</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-select
+              class="mt-2"
+              v-model="selectedObjectType"
+              :items="objectFilters"
+              label="Filter by Object Type"
+              item-text="objectType"
+              return-object
+              @input="changeSelectedObjectType()"
+          ></v-select>
+        </v-toolbar-items>
+      </v-toolbar>
       <v-data-table
           :headers="headers"
           :items="customFields"

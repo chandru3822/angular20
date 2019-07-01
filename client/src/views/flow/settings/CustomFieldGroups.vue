@@ -21,7 +21,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 import draggable from 'vuedraggable'
-import CustomFieldGroup from './components/CustomFieldGroup'
+import CustomFieldGroup from './CustomFieldGroup'
 
 export default {
   name: 'CustomFields',

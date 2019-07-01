@@ -11,8 +11,8 @@ import lombok.Setter;
 @Setter
 public class CustomFieldGroup {
 
-  private Long id, customFieldObjectTypeId;
-  private String objectType;
+  private Long id, objectTypeId, groupOrder;
+  private String groupName, objectType, originalGroupName;
   private Boolean archived;
 }
 

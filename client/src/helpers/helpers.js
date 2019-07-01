@@ -36,8 +36,9 @@ export async function putRequest (path, body) {
 }
 
 export async function deleteRequest (path) {
-  const {data, status} = await axios.delete(`${VUE_APP_BASE_API}${path}`)
-  return {data, status}
+  // not returning data as part of a delete
+  const {status} = await axios.delete(`${VUE_APP_BASE_API}${path}`)
+  return {status}
 }
 
 

@@ -7,17 +7,28 @@
         <v-subheader>User Profile</v-subheader>
         <v-subheader>Account</v-subheader>
         <h2>Custom UI Components</h2>
-        <v-subheader>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/customFields`}">
           <router-link to="/settings/customFields">Custom Fields</router-link>
         </v-subheader>
-        <v-subheader>
-          <router-link to="/settings/customFieldGroups">Custom Field Groups</router-link>
-        </v-subheader>
-        <v-subheader>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/attachments`}">
           <router-link to="/settings/attachments">Attachments</router-link>
         </v-subheader>
-        <v-subheader>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/links`}">
           <router-link to="/settings/links">Links</router-link>
+        </v-subheader>
+        <h2>Processes</h2>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/scopes`}">
+          <router-link to="/settings/scopes">Scopes</router-link>
+        </v-subheader>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/processSteps`}">
+          <router-link to="/settings/processSteps">Process Steps</router-link>
+        </v-subheader>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/statuses`}">
+          <router-link to="/settings/statuses">Statuses</router-link>
+        </v-subheader>
+        <h2>Objects</h2>
+        <v-subheader v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :index="o.id" :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
+          <router-link :to="{ path: `/settings/customFieldGroup/${o.id}`}">{{o.objectType}}</router-link>
         </v-subheader>
       </v-sheet>
     </v-flex>
@@ -33,25 +44,34 @@
 <script>
 import {mapState} from 'vuex'
 import {AppMutations} from '@/stores/AppStore'
+import Vue2Filters from 'vue2-filters'
+import { getRequest } from '@/helpers/helpers'
 
 export default {
   name: 'Settings',
+  mixins: [Vue2Filters.mixin],
   data () {
     return {
-
+      objectTypes: [],
+      companyId: this.$store.state.user.details.companyId
     }
   },
   computed: {
   },
   methods: {
-
+    async getCustomFieldObjectTypes () {
+      const {data} = await getRequest(`/api/v1/flow/customField/getCustomFieldObjectTypes`, { params: { companyId: this.companyId }})
+      this.objectTypes = data
+    },
   },
-  async created () {
-
+  created () {
+    this.getCustomFieldObjectTypes()
   }
 }
 </script>
 
 <style scoped lang="scss">
-
+a {
+  text-decoration: none;
+}
 </style>

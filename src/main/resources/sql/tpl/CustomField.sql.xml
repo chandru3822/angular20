@@ -87,6 +87,7 @@
     select *
     from flow.object_type
     where company_id = :companyId
+    and archived is not true
   ]]></customField.getObjectTypes>
 
   <customField.deleteField><![CDATA[

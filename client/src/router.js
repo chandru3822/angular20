@@ -82,14 +82,24 @@ export default new Router({
             path: 'customFields',
             component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue'),
           }, {
-            path: 'customFieldGroups',
-            component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFieldGroups.vue'),
+            path: 'customFieldGroup/:id',
+            props: true,
+            component: () => import (/* webpackChunkName: "customFieldGroup" */ './views/flow/settings/CustomFieldGroup.vue'),
           }, {
             path: 'attachments',
             component: () => import (/* webpackChunkName: "attachments" */ './views/flow/settings/Attachments.vue')
           }, {
             path: 'links',
             component: () => import (/* webpackChunkName: "links" */ './views/flow/settings/Links.vue')
+          }, {
+            path: 'scopes',
+            component: () => import (/* webpackChunkName: "scopes" */ './views/flow/settings/Scopes.vue')
+          }, {
+            path: 'processSteps',
+            component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/ProcessSteps.vue')
+          }, {
+            path: 'statuses',
+            component: () => import (/* webpackChunkName: "statuses" */ './views/flow/settings/Statuses.vue')
           }
         ]
       }]

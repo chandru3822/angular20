@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class ObjectType {
 
-  private Long id;
+  private Long id, flowTypeId;
   private String objectType;
 }
 
