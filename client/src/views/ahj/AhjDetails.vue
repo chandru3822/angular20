@@ -3,7 +3,7 @@
     <v-flex xs12 shrink>
       <v-layout space-between row fill-height full-width>
         <v-flex xs12 text-xs-left fill-height>
-          <v-btn id="back-btn" dark color="info" :to="'/ahj'">
+          <v-btn id="back-btn" color="primaryButton" class="white--text" :to="'/ahj'">
             <v-icon dark>arrow_left</v-icon>
             Back to menu
           </v-btn>
@@ -71,6 +71,7 @@
 <style scoped lang="scss">
   #back-btn {
     margin: 5px 0 0 0;
+    color: #fff !important;
   }
   @media (min-width: 769px) {
     #back-btn {
