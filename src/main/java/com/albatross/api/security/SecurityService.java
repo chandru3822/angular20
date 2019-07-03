@@ -75,7 +75,7 @@ public class SecurityService implements UserDetailsService {
                 user = (User) p;
             } else if (p instanceof UserAccountDetails) {
                 UserAccountDetails details = (UserAccountDetails) p;
-                user = userService.findByEmailIgnoreCase(details.getUsername());
+                user = userService.findUserById(details.getId());
 
             } else {
 //                    throw new IllegalStateException("Unhandled Security Principal type: " + p);
