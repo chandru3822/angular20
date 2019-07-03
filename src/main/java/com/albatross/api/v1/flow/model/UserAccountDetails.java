@@ -43,7 +43,7 @@ public class UserAccountDetails implements UserDetails {
 
         // TODO: determine expired, lock, enabled, etc.
         this.accountNonExpired = true;
-//        this.accountNonLocked = user.getUserStatusType() == null ? true : user.getUserStatusType().isUnlocked();
+        this.accountNonLocked = true;
         this.credentialsNonExpired = true;
         this.enabled = true;
 
