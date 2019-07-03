@@ -52,7 +52,7 @@ public class AuthController {
 
     JwtClaims body = createJwtBody(user);
     String jwt = jwtUtils.encodeDetails(body);
-    return ResponseEntity.ok(new JwtAuthResponse(jwt));
+    return ResponseEntity.ok(new JwtAuthResponse(jwt, user));
   }
 
   private JwtClaims createJwtBody(User user) {
@@ -80,5 +80,6 @@ public class AuthController {
   @AllArgsConstructor
   public static class JwtAuthResponse {
     private String token;
+    private User details;
   }
 }

@@ -5,7 +5,7 @@
         <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn flat @click="addNew = !addNew; selectedGroupId = null; customFields = []">
+          <v-btn flat @click="addNew = !addNew; newGroup = {}; selectedGroupId = null; customFields = []">
             {{addNew ? 'Cancel' : 'Add New'}}
           </v-btn>
         </v-toolbar-items>
@@ -30,7 +30,7 @@
                 :key="index">
           <v-list-tile class="grab" :class="{ 'shaded-row': cfgt.id === selectedGroupId }">
             <v-list-tile-content>
-              <v-text-field v-if="selectedGroupId === cfgt.id" v-model="cfgt.groupName" @input="cfgt.nameChanged = true">
+              <v-text-field class="one-hunned" v-if="selectedGroupId === cfgt.id" v-model="cfgt.groupName" @input="cfgt.nameChanged = true">
               </v-text-field>
               <div v-else>{{cfgt.groupName}}</div>
             </v-list-tile-content>
@@ -238,7 +238,6 @@ export default {
       // setting groupOrder to 0, then they can sort later
       this.newGroup.groupOrder = 0
       const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroupType`, this.newGroup)
-      console.log('randaLogger', data)
       this.newGroup = {}
       this.addNew = false
       // add the new type to the list
@@ -255,8 +254,6 @@ export default {
       this.addField = false
       this.newField.fieldOrder = 0
       this.newField.customFieldGroupTypeId = this.selectedGroupId
-      console.log('randaLogger', this.newField)
-      //todo: add it to db
       await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, this.newField)
 
       this.masterCustomFields.push(this.newField)
@@ -265,7 +262,6 @@ export default {
       this.newField = {}
     },
     changeGroupOrder () {
-      console.log('group order changed')
       this.groupOrderChanged = true
       // set the group order to save to DB
       this.customFieldGroupTypes.forEach((cfgt, idx) => {

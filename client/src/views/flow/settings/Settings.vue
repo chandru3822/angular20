@@ -17,8 +17,8 @@
           <router-link to="/settings/links">Links</router-link>
         </v-subheader>
         <h2>Processes</h2>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/scopes`}">
-          <router-link to="/settings/scopes">Scopes</router-link>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/processes`}">
+          <router-link to="/settings/processes">Processes</router-link>
         </v-subheader>
         <v-subheader :class="{'shaded-row': $route.path === `/settings/processSteps`}">
           <router-link to="/settings/processSteps">Process Steps</router-link>

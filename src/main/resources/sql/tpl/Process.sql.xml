@@ -2,22 +2,68 @@
   <process.getAllForCompany>
     <![CDATA[
              select process.id,
-                    process.process_name as name,
-                    company_process.company_id
+                    process.process_name,
+                    company_process.company_id,
+                    process.created_by_id,
+                    company_process.archived,
+                    process.parent_company_id
              from flow.company_process
              inner join flow.process on process.id = company_process.process_id
-             where company_id = :companyId;
+             where company_id = :companyId
+              and company_process.archived is not true
+             order by process.process_name;
     ]]>
   </process.getAllForCompany>
   <process.get>
     <![CDATA[
              select process.id,
-                    process.process_name as name,
-                    company_process.company_id
+                    process.process_name,
+                    company_process.company_id,
+                    process.created_by_id,
+                    company_process.archived,
+                    process.parent_company_id
              from flow.company_process
              inner join flow.process on process.id = company_process.process_id
              where company_id = :companyId
-               and process_id = :processId;
+               and process_id = :processId
+             order by process.process_name;
     ]]>
   </process.get>
+  <process.delete>
+    <![CDATA[
+        update flow.process
+        set archived = true
+        where id = :processId
+    ]]>
+  </process.delete>
+  <process.deleteCompanyProcess>
+    <![CDATA[
+        update flow.company_process
+        set archived = true
+        where process_id = :processId
+        and company_id = :companyId
+    ]]>
+  </process.deleteCompanyProcess>
+  <process.update>
+    <![CDATA[
+      update flow.process
+        set process_name = :processName,
+            date_updated = now(),
+            modified_by_id = :modifiedById
+      where id = :id
+    ]]>
+  </process.update>
+  <process.insert>
+    <![CDATA[
+      insert into flow.process(process_name, date_created, created_by_id, parent_company_id)
+        values (:processName, now(), :createdById, :parentCompanyId)
+      returning id;
+    ]]>
+  </process.insert>
+  <process.insertCompanyProcess>
+    <![CDATA[
+      insert into flow.company_process (company_id, process_id, status_type_id)
+        values (:companyId, :processId, :statusTypeId)
+    ]]>
+  </process.insertCompanyProcess>
 </sql>

@@ -92,8 +92,8 @@ export default new Router({
             path: 'links',
             component: () => import (/* webpackChunkName: "links" */ './views/flow/settings/Links.vue')
           }, {
-            path: 'scopes',
-            component: () => import (/* webpackChunkName: "scopes" */ './views/flow/settings/Scopes.vue')
+            path: 'processes',
+            component: () => import (/* webpackChunkName: "processes" */ './views/flow/settings/Processes.vue')
           }, {
             path: 'processSteps',
             component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/ProcessSteps.vue')

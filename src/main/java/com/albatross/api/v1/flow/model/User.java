@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class User {
 
-    private Long id;
+    private Long id, companyId, parentCompanyId;
     private String email, password, firstName, lastName, fullName, userStatusType;
     private Long userStatusTypeId;
 

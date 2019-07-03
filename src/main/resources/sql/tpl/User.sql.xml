@@ -6,6 +6,7 @@
           last_name,
           email,
           password,
+          company_id,
           first_name || ' ' || last_name as full_name,
           user_status_type_id
         from flow.user

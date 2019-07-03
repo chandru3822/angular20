@@ -77,12 +77,12 @@
       async loginSuccess (details) {
         // todo fix this
         console.log('DO_THIS_HERE', details)
-        let tempDetails = {
-          companyId: 1,
-          firstName: 'System',
-          id: 99999999
-        }
-        await this.$store.dispatch(UserActions.LOGIN_SUCCESS, tempDetails)
+        // let tempDetails = {
+        //   companyId: 1,
+        //   firstName: 'System',
+        //   id: 99999999
+        // }
+        await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
         this.$router.push('/')
       }
     }
