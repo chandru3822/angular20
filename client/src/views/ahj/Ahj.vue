@@ -55,8 +55,8 @@
 
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                    <v-btn color="info" raised @click="saveAhj"
+                    <v-btn color="secondaryButton" flat @click="close">Cancel</v-btn>
+                    <v-btn color="primaryButton" raised @click="saveAhj" style="color: #fff !important"
                            :disabled="!editedItem.metroAreaId || !editedItem.name">
                       {{ ahjBtnTxt }}
                     </v-btn>
@@ -82,8 +82,8 @@
 
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                    <v-btn color="info" raised @click="confirmDeleteAhj">Yes</v-btn>
+                    <v-btn color="secondaryButton" flat @click="close">Cancel</v-btn>
+                    <v-btn color="brRed" style="color: #fff !important" raised @click="confirmDeleteAhj">Yes</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -111,17 +111,18 @@
                     </tr>
                     <tr>
                       <th
+                        style="padding-top: 10px;"
                         v-for="header in props.headers"
                         :key="header.text"
                       >
                         <v-text-field
                           v-if="ahjFilters[header.value].type === FILTER_TYPE.TEXT"
-                          v-model="ahjFilters[header.value].value"
+                          v-model="ahjFilters[header.value].value" box
                         />
                         <v-select
                           v-else-if="ahjFilters[header.value].type === FILTER_TYPE.SELECT"
                           :items="ahjSearchFilters[header.value]"
-                          v-model="ahjFilters[header.value].value"
+                          v-model="ahjFilters[header.value].value" box
                         ></v-select>
                       </th>
                       <th></th>
@@ -157,13 +158,13 @@
                     <v-container grid-list-md>
                       <v-layout column nowrap>
                         <v-flex xs12 sm6 md4>
-                          <v-text-field v-model="editedItem.name" label="Name"></v-text-field>
+                          <v-text-field v-model="editedItem.name" label="Name" box></v-text-field>
                         </v-flex>
                         <v-flex xs12 sm6 md4>
-                          <v-text-field v-model="editedItem.metroArea" label="Metro Area"></v-text-field>
+                          <v-text-field v-model="editedItem.metroArea" label="Metro Area" box></v-text-field>
                         </v-flex>
                         <v-flex xs12 sm6 md4>
-                          <v-text-field v-model="editedItem.state" label="State"></v-text-field>
+                          <v-text-field v-model="editedItem.state" label="State" box></v-text-field>
                         </v-flex>
                       </v-layout>
                     </v-container>
@@ -171,8 +172,9 @@
 
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                    <v-btn color="info" raised @click="saveAhjUtility">
+                    <v-btn color="secondaryButton" flat @click="close">Cancel</v-btn>
+                    <v-btn color="primaryButton" style="color: #fff !important" raised @click="saveAhjUtility"
+                           :disabled="!editedItem.name || !editedItem.metroArea || !editedItem.state">
                       {{ ahjUtilityBtnTxt }}
                     </v-btn>
                   </v-card-actions>
@@ -205,8 +207,8 @@
                         v-for="header in props.headers"
                         :key="header.text"
                       >
-                        <v-text-field
-                          v-model="ahjUtilityFilters[header.value].value"
+                        <v-text-field style="margin-top: 10px"
+                          v-model="ahjUtilityFilters[header.value].value" box
                         />
                       </th>
                       <th></th>

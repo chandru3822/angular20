@@ -2,7 +2,7 @@
   <v-layout column nowrap fill-height>
     <v-flex xs12 text-xs-right fill-height>
       <a @click="resetForm()" class="cancel-link" style="margin-right: 10px">Cancel</a>
-      <v-btn id="save-btn" class="info" dark>Save</v-btn>
+      <v-btn id="save-btn" color="primaryButton" class="white--text">Save</v-btn>
     </v-flex>
 
     <v-layout row wrap>
@@ -10,7 +10,7 @@
       <v-flex xs12 md3 mb-3 class="padded-sides">
         <!-- SUBMISSION DETAILS -->
         <v-card>
-          <v-card-title class="info white--text font-weight-bold">
+          <v-card-title class="primaryCustom white--text font-weight-bold">
             Submission Details
           </v-card-title>
           <v-card-text>
@@ -39,7 +39,7 @@
                 <v-menu v-model="businessLicenseMenu" :close-on-content-click="false"
                         :nudge-right="40" lazy transition="scale-transition" offset-y
                         full-width min-width="290px">
-                  <template #activator="{ on }">
+                  <template #activator="{on}">
                     <v-text-field v-model="ahjPermit.submissionDetails.businessLicenseDate" box
                                   label="mm/dd/yyyy" append-icon="event" readonly v-on="on">
                     </v-text-field>
@@ -56,7 +56,7 @@
                 <v-menu v-model="contractorLicenseMenu" :close-on-content-click="false"
                         :nudge-right="40" lazy transition="scale-transition" offset-y
                         full-width min-width="290px">
-                  <template #activator="{ on }">
+                  <template #activator="{on}">
                     <v-text-field label="mm/dd/yyyy" append-icon="event" readonly
                                   v-on="on" box
                                   v-model="ahjPermit.submissionDetails.contractorLicenseDate"></v-text-field>
@@ -73,7 +73,7 @@
                 <v-menu v-model="otherLicenseMenu" :close-on-content-click="false"
                         :nudge-right="40" lazy transition="scale-transition"
                         offset-y full-width min-width="290px">
-                  <template #activator="{ on }">
+                  <template #activator="{on}">
                     <v-text-field v-model="ahjPermit.submissionDetails.otherLicenseDate"
                                   label="mm/dd/yyyy" append-icon="event" readonly
                                   v-on="on" box></v-text-field>
@@ -84,14 +84,16 @@
               </v-flex>
             </div>
             <v-card>
-              <v-toolbar class="info">
+              <v-toolbar class="primaryCustom">
                 <v-toolbar-title class="white--text font-weight-bold" title="Submission Checklist">
                   Submission Checklist
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn icon color="#ddd" style="border-radius: 3px"
-                       @click="addSubmissionChecklistItem()">
-                  <v-icon>add</v-icon>
+                <v-btn icon color="#ddd" style="border-radius: 3px">
+                  <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
+                          @click="addSubmissionChecklistItem()">add</v-icon>
+                  <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
+                          @click="hideSubmissionChecklistCtrls()">remove</v-icon>
                 </v-btn>
               </v-toolbar>
               <div class="checklist-item-edit-ctrls"
@@ -103,11 +105,11 @@
                 <div class="checklist-btns">
                   <a @click="hideSubmissionChecklistCtrls()"
                      class="cancel-link">Cancel</a>
-                  <v-btn v-show="submissionChecklistEditCtrls" dark
-                         @click="deleteSubmissionChecklistItem()" class="error">
+                  <v-btn v-show="submissionChecklistEditCtrls" color="brRed"
+                         @click="deleteSubmissionChecklistItem()" style="color: #fff !important">
                     Delete
                   </v-btn>
-                  <v-btn @click="saveSubmissionChecklistItem()" class="info" :dark="editedSubmissionChecklistItem.details !== ''"
+                  <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton" style="color: #fff !important"
                          v-bind:disabled="editedSubmissionChecklistItem.details === ''">
                     {{submissionChecklistEditCtrls ? 'Update' : 'Add'}}
                   </v-btn>
@@ -147,7 +149,7 @@
       <v-flex xs12 md3 mb-3 class="padded-sides">
         <!-- REVISION SUBMISSION DETAILS -->
         <v-card>
-          <v-card-title class="info white--text font-weight-bold">
+          <v-card-title class="primaryCustom white--text font-weight-bold">
             Revision Submission Details
           </v-card-title>
           <v-card-text>
@@ -161,15 +163,17 @@
                       v-model="ahjPermit.revisionSubmissionDetails.paymentMethod"
             ></v-select>
             <v-card>
-              <v-toolbar class="info">
+              <v-toolbar class="primaryCustom">
                 <v-toolbar-title class="white--text font-weight-bold"
                                  title="Revision Submission Checklist">
                   Revision Submission Checklist
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn icon color="#ddd" style="border-radius: 3px"
-                       @click="addSubmissionChecklistItem()">
-                  <v-icon>add</v-icon>
+                <v-btn icon color="#ddd" style="border-radius: 3px">
+                <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
+                        @click="addSubmissionChecklistItem()">add</v-icon>
+                <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
+                        @click="hideSubmissionChecklistCtrls()">remove</v-icon>
                 </v-btn>
               </v-toolbar>
               <div class="checklist-item-edit-ctrls"
@@ -185,7 +189,7 @@
                          @click="deleteSubmissionChecklistItem()" class="error">
                     Delete
                   </v-btn>
-                  <v-btn @click="saveSubmissionChecklistItem()" class="info white--text"
+                  <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton"
                          v-bind:disabled="editedRevisionSubmissionChecklistItem.details === ''">
                     {{revisionSubmissionChecklistEditCtrls ? 'Update' : 'Add'}}
                   </v-btn>
@@ -226,7 +230,7 @@
       <v-flex xs12 md3 mb-3 class="padded-sides">
         <!-- AS-BUILT SUBMISSION DETAILS -->
         <v-card>
-          <v-card-title class="info white--text font-weight-bold">
+          <v-card-title class="primaryCustom white--text font-weight-bold">
             As-Built Submission Details
           </v-card-title>
           <v-card-text>
@@ -240,15 +244,17 @@
                       v-model="ahjPermit.asBuiltSubmissionDetails.paymentMethod"
             ></v-select>
             <v-card>
-              <v-toolbar class="info">
+              <v-toolbar class="primaryCustom">
                 <v-toolbar-title class="white--text font-weight-bold"
                                  title="As-Built Submission Checklist">
                   As-Built Submission Checklist
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn icon color="#ddd" style="border-radius: 3px"
-                       @click="addSubmissionChecklistItem()">
-                  <v-icon>add</v-icon>
+                <v-btn icon color="#ddd" style="border-radius: 3px">
+                  <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
+                          @click="addSubmissionChecklistItem()">add</v-icon>
+                  <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
+                          @click="hideSubmissionChecklistCtrls()">remove</v-icon>
                 </v-btn>
               </v-toolbar>
               <div class="checklist-item-edit-ctrls"
@@ -264,7 +270,7 @@
                          @click="deleteSubmissionChecklistItem()" class="error">
                     Delete
                   </v-btn>
-                  <v-btn @click="saveSubmissionChecklistItem()" class="info white--text"
+                  <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton" class="white--text"
                          v-bind:disabled="editedAsBuiltSubmissionChecklistItem.details === ''">
                     {{asBuiltSubmissionChecklistEditCtrls ? 'Update' : 'Add'}}
                   </v-btn>
@@ -305,7 +311,7 @@
       <v-flex xs12 md3 mb-3 class="padded-sides">
         <!-- FOLLOW-UP / APPROVAL DETAILS -->
         <v-card class="mb-3">
-          <v-card-title class="info white--text font-weight-bold">
+          <v-card-title class="primaryCustom white--text font-weight-bold">
             Follow-up / Approval Details
           </v-card-title>
           <v-card-text>
@@ -324,7 +330,7 @@
 
         <!-- DELIVERY DETAILS -->
         <v-card class="mb-3">
-          <v-card-title class="info white--text font-weight-bold">
+          <v-card-title class="primaryCustom white--text font-weight-bold">
             Delivery Details
           </v-card-title>
           <v-card-text>
@@ -338,7 +344,7 @@
                       v-model="ahjPermit.deliveryDetails.paymentMethod"
             ></v-select>
             <v-card class="mb-4">
-              <v-toolbar class="info">
+              <v-toolbar class="primaryCustom">
                 <v-toolbar-title class="white--text font-weight-bold"
                                  title="Documents Required for Inspection">
                   Documents Required for Inspection
@@ -374,7 +380,7 @@
 
         <!-- PERMITTING CYCLE TIMES -->
         <v-card style="overflow-x: auto">
-          <v-card-title class="info white--text font-weight-bold">
+          <v-card-title class="primaryCustom white--text font-weight-bold">
             Permitting Cycle Times
           </v-card-title>
           <v-card-text>
@@ -440,29 +446,25 @@
       <h1 class="pb-2 mb-4" style="border-bottom: 1px solid #ccc; width: 100%;">Links and Contacts</h1>
       <!-- FIRST COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <v-card class="mb-4">
-          <v-toolbar class="info">
+        <v-card class="mb-3">
+          <v-toolbar class="primaryCustom">
             <v-toolbar-title class="white--text font-weight-bold" title="Submission Links">
               Submission Links
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn icon color="#ddd" style="border-radius: 3px"
-                   @click="addLink()">
-              <v-icon>add</v-icon>
+            <v-btn icon color="#ddd" style="border-radius: 3px">
+              <v-icon v-show="!submissionLinkAddCtrls" @click="addLink(1)">add</v-icon>
+              <v-icon v-show="submissionLinkAddCtrls"
+                      @click="submissionLinkAddCtrls=false">remove</v-icon>
             </v-btn>
           </v-toolbar>
           <v-form v-show="submissionLinkAddCtrls || submissionLinkEditCtrls"
-                  ref="submissionLinkForm" class="link-edit-ctrls pa-3">
-            <!-- TODO: Get this working better... the dark theme isn't being applied when everything first loads -->
-            <v-text-field v-model="editedLink.name" required
-                          label="Name" box @keyup="checkInputs()"></v-text-field>
+                  ref="submissionLinkForm" class="pa-3">
+            <v-text-field v-model="editedLink.name" required label="Name" box></v-text-field>
             <v-text-field v-model="editedLink.url" required type="url"
-                          :rules="[urlRule]" @keyup="checkInputs()"
-                          label="URL" box></v-text-field>
-            <v-text-field v-model="editedLink.username"
-                          label="Username" box></v-text-field>
-            <v-text-field v-model="editedLink.password"
-                          label="Password" box></v-text-field>
+                          :rules="[urlRule]" label="URL" box></v-text-field>
+            <v-text-field v-model="editedLink.username" label="Username" box></v-text-field>
+            <v-text-field v-model="editedLink.password" label="Password" box></v-text-field>
             <v-textarea label="Notes" auto-grow box
                         style="margin: 15px 0 -15px 0"
                         v-model="editedLink.notes">
@@ -474,9 +476,8 @@
                      @click="deleteLink(1)" class="error">
                 Delete
               </v-btn>
-              <!-- TODO: Get this working better... the button isn't disabled when there is just a name or just a url, but it should be disabled until both are present and the url is "valid" -->
-              <v-btn @click="saveLink(1)" class="info" :dark="applyDark"
-                     v-bind:disabled="!editedLink.name && !editedLink.url">
+              <v-btn @click="saveLink(1)" color="primaryButton" style="color: #fff !important"
+                     v-bind:disabled="!linkInfoEntered">
                 {{submissionLinkEditCtrls ? 'Update' : 'Add'}}
               </v-btn>
             </div>
@@ -498,27 +499,101 @@
             No links found
           </div>
         </v-card>
+
+        <v-card class="pb-1">
+          <v-toolbar class="primaryCustom mb-2">
+            <v-toolbar-title class="white--text font-weight-bold" title="Submission Contacts">
+              Submission Contacts
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon color="#ddd" style="border-radius: 3px">
+              <v-icon v-show="!submissionContactAddCtrls" @click="addContact(1)">add</v-icon>
+              <v-icon v-show="submissionContactAddCtrls"
+                      @click="submissionContactAddCtrls=false">remove</v-icon>
+            </v-btn>
+          </v-toolbar>
+          <v-form v-show="submissionContactAddCtrls || submissionContactEditCtrls"
+                  ref="submissionContactForm" class="pa-3">
+            <v-text-field v-model="editedContact.name" required label="Name" box></v-text-field>
+            <v-text-field v-model="editedContact.title" label="Title" box></v-text-field>
+            <v-text-field v-model="editedContact.phone" label="Phone" box></v-text-field>
+            <v-text-field v-model="editedContact.email" label="Email" type="email" box></v-text-field>
+            <v-text-field v-model="editedContact.hours" label="Hours" box></v-text-field>
+            <v-textarea label="Address" auto-grow box
+                        style="margin: 15px 0 -15px 0"
+                        v-model="editedContact.address">
+            </v-textarea>
+            <v-textarea label="Notes" auto-grow box
+                        style="margin: 15px 0 -15px 0"
+                        v-model="editedContact.notes">
+            </v-textarea>
+            <div class="link-btns">
+              <a @click="resetContactCtrls(1)"
+                 class="cancel-link">Cancel</a>
+              <v-btn v-show="submissionContactEditCtrls" dark
+                     @click="deleteContact(1)" class="error">
+                Delete
+              </v-btn>
+              <v-btn @click="saveContact(1)" color="primaryButton" style="color: #fff !important"
+                     v-bind:disabled="!editedContact.name">
+                {{submissionContactEditCtrls ? 'Update' : 'Add'}}
+              </v-btn>
+            </div>
+          </v-form>
+          <div v-for="(contact, index) in submissionContacts" :key="contact.id"
+               v-show="submissionContacts.length > 0" class="px-3 pt-1 pb-1">
+            <dl class="horizontal-dl">
+              <dt v-if="contact.name" class="font-weight-bold">Name</dt>
+              <dd v-if="contact.name">{{contact.name}}</dd>
+              <dt v-if="contact.title" class="font-weight-bold">Title</dt>
+              <dd v-if="contact.title">{{contact.title}}</dd>
+              <dt v-if="contact.phone" class="font-weight-bold">Phone</dt>
+              <dd v-if="contact.phone">{{contact.phone}}</dd>
+              <dt v-if="contact.email" class="font-weight-bold">Email</dt>
+              <dd v-if="contact.email">{{contact.email}}</dd>
+              <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
+              <dd v-if="contact.hours">{{contact.hours}}</dd>
+              <dt v-if="contact.address" class="font-weight-bold">Address</dt>
+              <dd v-if="contact.address">{{contact.address}}</dd>
+              <dt v-if="contact.notes"></dt>
+              <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
+              <dt></dt>
+              <dd>
+                <v-btn small color="primaryButton"
+                       @click="editContact(contact, 1)"
+                       style="color: #fff !important"
+                       class="pa-0 mx-0 mt-2">Edit</v-btn>
+              </dd>
+            </dl>
+            <v-spacer v-if="index !== submissionContacts.length - 1"
+                      class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
+          </div>
+          <div class="empty-list" v-show="submissionContacts.length < 1">
+            No contacts found
+          </div>
+        </v-card>
       </v-flex>
 
       <!-- SECOND COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <v-card class="mb-4">
-          <v-toolbar class="info">
+        <v-card class="mb-3">
+          <v-toolbar class="primaryCustom">
             <v-toolbar-title class="white--text font-weight-bold" title="Follow-up and Delivery Links">
               Follow-up and Delivery Links
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn icon color="#ddd" style="border-radius: 3px" @click="addLink(2)">
-              <v-icon>add</v-icon>
+            <v-btn icon color="#ddd" style="border-radius: 3px">
+              <v-icon v-show="!followUpAndDeliveryLinkAddCtrls" @click="addLink(2)">add</v-icon>
+              <v-icon v-show="followUpAndDeliveryLinkAddCtrls"
+                      @click="followUpAndDeliveryLinkAddCtrls=false">remove</v-icon>
             </v-btn>
           </v-toolbar>
           <v-form v-show="followUpAndDeliveryLinkAddCtrls || followUpAndDeliveryLinkEditCtrls"
-                  ref="followUpAndDeliveryLinkForm" class="link-edit-ctrls pa-3">
+                  ref="followUpAndDeliveryLinkForm" class="pa-3">
             <v-text-field v-model="editedLink.name" required
-                          label="Name" box @keyup="checkInputs()"></v-text-field>
+                          label="Name" box></v-text-field>
             <v-text-field v-model="editedLink.url" required type="url"
-                          :rules="[urlRule]" @keyup="checkInputs()"
-                          label="URL" box></v-text-field>
+                          :rules="[urlRule]" label="URL" box></v-text-field>
             <v-text-field v-model="editedLink.username"
                           label="Username" box></v-text-field>
             <v-text-field v-model="editedLink.password"
@@ -534,8 +609,8 @@
                      @click="deleteLink(2)" class="error">
                 Delete
               </v-btn>
-              <v-btn @click="saveLink(2)" class="info" :dark="applyDark"
-                     v-bind:disabled="!editedLink.name && !editedLink.url">
+              <v-btn @click="saveLink(2)" color="primaryButton" style="color: #fff !important"
+                     v-bind:disabled="!linkInfoEntered">
                 {{followUpAndDeliveryLinkEditCtrls ? 'Update' : 'Add'}}
               </v-btn>
             </div>
@@ -557,12 +632,85 @@
             No links found
           </div>
         </v-card>
+
+        <v-card class="pb-1">
+          <v-toolbar class="primaryCustom mb-2">
+            <v-toolbar-title class="white--text font-weight-bold" title="Print Locations">
+              Print Locations
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon color="#ddd" style="border-radius: 3px">
+              <v-icon v-show="!printLocationAddCtrls" @click="addPrintLocation()">add</v-icon>
+              <v-icon v-show="printLocationAddCtrls"
+                      @click="printLocationAddCtrls=false">remove</v-icon>
+            </v-btn>
+          </v-toolbar>
+          <v-form v-show="printLocationAddCtrls || printLocationEditCtrls"
+                  ref="printLocationForm" class="pa-3">
+            <v-text-field v-model="editedPrintLocation.storeName" required label="Store Name" box></v-text-field>
+            <v-text-field v-model="editedPrintLocation.storeNumber" label="Store Number" box></v-text-field>
+            <v-text-field v-model="editedPrintLocation.phone" label="Phone" box></v-text-field>
+            <v-text-field v-model="editedPrintLocation.email" label="Email" type="email" box></v-text-field>
+            <v-text-field v-model="editedPrintLocation.hours" label="Hours" box></v-text-field>
+            <v-textarea label="Address" auto-grow box
+                        style="margin: 15px 0 -15px 0"
+                        v-model="editedPrintLocation.address">
+            </v-textarea>
+            <v-textarea label="Notes" auto-grow box
+                        style="margin: 15px 0 -15px 0"
+                        v-model="editedPrintLocation.notes">
+            </v-textarea>
+            <div class="link-btns">
+              <a @click="resetPrintLocationCtrls()"
+                 class="cancel-link">Cancel</a>
+              <v-btn v-show="printLocationEditCtrls" dark
+                     @click="deletePrintLocation()" class="error">
+                Delete
+              </v-btn>
+              <v-btn @click="savePrintLocation()" color="primaryButton" style="color: #fff !important"
+                     v-bind:disabled="!editedPrintLocation.storeName">
+                {{printLocationEditCtrls ? 'Update' : 'Add'}}
+              </v-btn>
+            </div>
+          </v-form>
+          <div v-for="(location, index) in printLocations" :key="location.id"
+               v-show="printLocations.length > 0" class="px-3 pt-1 pb-1">
+            <dl class="horizontal-dl">
+              <dt v-if="location.storeName" class="font-weight-bold">Name</dt>
+              <dd v-if="location.storeName">{{location.storeName}}</dd>
+              <dt v-if="location.storeNumber" class="font-weight-bold">Title</dt>
+              <dd v-if="location.storeNumber">{{location.storeNumber}}</dd>
+              <dt v-if="location.phone" class="font-weight-bold">Phone</dt>
+              <dd v-if="location.phone">{{location.phone}}</dd>
+              <dt v-if="location.email" class="font-weight-bold">Email</dt>
+              <dd v-if="location.email">{{location.email}}</dd>
+              <dt v-if="location.hours" class="font-weight-bold">Hours</dt>
+              <dd v-if="location.hours">{{location.hours}}</dd>
+              <dt v-if="location.address" class="font-weight-bold">Address</dt>
+              <dd v-if="location.address">{{location.address}}</dd>
+              <dt v-if="location.notes"></dt>
+              <dd v-if="location.notes" class="pa-2" style="background-color: #eee">{{location.notes}}</dd>
+              <dt></dt>
+              <dd>
+                <v-btn small color="primaryButton"
+                       @click="editPrintLocation(location, 2)"
+                       style="color: #fff !important"
+                       class="pa-0 mx-0 mt-2">Edit</v-btn>
+              </dd>
+            </dl>
+            <v-spacer v-if="index !== printLocations.length - 1"
+                      class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
+          </div>
+          <div class="empty-list" v-show="printLocations.length < 1">
+            No locations found
+          </div>
+        </v-card>
       </v-flex>
 
       <!-- THIRD COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <v-card class="mb-4">
-          <v-toolbar class="info">
+        <v-card class="mb-3">
+          <v-toolbar class="primaryCustom">
             <v-toolbar-title class="white--text font-weight-bold" title="Servicing FOT's">
               Servicing FOT's
             </v-toolbar-title>
@@ -579,6 +727,79 @@
           </v-list>
           <div class="empty-list" v-show="servicingFots.length < 1">
             No Servicing FOT's found
+          </div>
+        </v-card>
+
+        <v-card class="pb-1">
+          <v-toolbar class="primaryCustom mb-2">
+            <v-toolbar-title class="white--text font-weight-bold" title="Follow-up and Delivery Contacts">
+              Follow-up and Delivery Contacts
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn icon color="#ddd" style="border-radius: 3px">
+              <v-icon v-show="!followUpAndDeliveryContactAddCtrls" @click="addContact(2)">add</v-icon>
+              <v-icon v-show="followUpAndDeliveryContactAddCtrls"
+                      @click="followUpAndDeliveryContactAddCtrls=false">remove</v-icon>
+            </v-btn>
+          </v-toolbar>
+          <v-form v-show="followUpAndDeliveryContactAddCtrls || followUpAndDeliveryContactEditCtrls"
+                  ref="followUpAndDeliveryContactForm" class="pa-3">
+            <v-text-field v-model="editedContact.name" required label="Name" box></v-text-field>
+            <v-text-field v-model="editedContact.title" label="Title" box></v-text-field>
+            <v-text-field v-model="editedContact.phone" label="Phone" box></v-text-field>
+            <v-text-field v-model="editedContact.email" label="Email" type="email" box></v-text-field>
+            <v-text-field v-model="editedContact.hours" label="Hours" box></v-text-field>
+            <v-textarea label="Address" auto-grow box
+                        style="margin: 15px 0 -15px 0"
+                        v-model="editedContact.address">
+            </v-textarea>
+            <v-textarea label="Notes" auto-grow box
+                        style="margin: 15px 0 -15px 0"
+                        v-model="editedContact.notes">
+            </v-textarea>
+            <div class="link-btns">
+              <a @click="resetContactCtrls(2)"
+                 class="cancel-link">Cancel</a>
+              <v-btn v-show="followUpAndDeliveryContactEditCtrls" dark
+                     @click="deleteContact(2)" class="error">
+                Delete
+              </v-btn>
+              <v-btn @click="saveContact(2)" color="primaryButton" style="color: #fff !important"
+                     v-bind:disabled="!editedContact.name">
+                {{followUpAndDeliveryContactEditCtrls ? 'Update' : 'Add'}}
+              </v-btn>
+            </div>
+          </v-form>
+          <div v-for="(contact, index) in followUpAndDeliveryContacts" :key="contact.id"
+               v-show="followUpAndDeliveryContacts.length > 0" class="px-3 pt-1 pb-1">
+            <dl class="horizontal-dl">
+              <dt v-if="contact.name" class="font-weight-bold">Name</dt>
+              <dd v-if="contact.name">{{contact.name}}</dd>
+              <dt v-if="contact.title" class="font-weight-bold">Title</dt>
+              <dd v-if="contact.title">{{contact.title}}</dd>
+              <dt v-if="contact.phone" class="font-weight-bold">Phone</dt>
+              <dd v-if="contact.phone">{{contact.phone}}</dd>
+              <dt v-if="contact.email" class="font-weight-bold">Email</dt>
+              <dd v-if="contact.email">{{contact.email}}</dd>
+              <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
+              <dd v-if="contact.hours">{{contact.hours}}</dd>
+              <dt v-if="contact.address" class="font-weight-bold">Address</dt>
+              <dd v-if="contact.address">{{contact.address}}</dd>
+              <dt v-if="contact.notes"></dt>
+              <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
+              <dt></dt>
+              <dd>
+                <v-btn small color="primaryButton"
+                       @click="editContact(contact, 2)"
+                       style="color: #fff !important"
+                       class="pa-0 mx-0 mt-2">Edit</v-btn>
+              </dd>
+            </dl>
+            <v-spacer v-if="index !== followUpAndDeliveryContacts.length - 1"
+                      class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
+          </div>
+          <div class="empty-list" v-show="followUpAndDeliveryContacts.length < 1">
+            No contacts found
           </div>
         </v-card>
       </v-flex>
@@ -749,7 +970,7 @@
           deliveryInstructions: null
         }
       },
-      applyDark: false,
+      validUrl: false,
       submissionLinkAddCtrls: false,
       submissionLinkEditCtrls: false,
       followUpAndDeliveryLinkAddCtrls: false,
@@ -829,8 +1050,123 @@
           office: 'Test Office 3',
           officeId: 3
         }
+      ],
+      submissionContactAddCtrls: false,
+      submissionContactEditCtrls: false,
+      followUpAndDeliveryContactAddCtrls: false,
+      followUpAndDeliveryContactEditCtrls: false,
+      contactEditedIndex: -1,
+      editedContact: {
+        id: '',
+        type: '',
+        name: '',
+        title: '',
+        phone: '',
+        email: '',
+        hours: '',
+        address: '',
+        notes: ''
+      },
+      submissionContacts: [
+        {
+          id: 1,
+          type: 1,
+          name: 'Bob',
+          title: 'Store Manager',
+          phone: '111-111-1111',
+          email: 'bob@test.com',
+          hours: 'M-F 8am-4pm',
+          address: '111 Test St, Indianapolis, IN 11111',
+          notes: 'Testing'
+        },
+        {
+          id: 2,
+          type: 1,
+          name: 'Sarah',
+          title: 'Store Manager',
+          phone: '222-222-2222',
+          email: 'sarah@test.com',
+          hours: 'M-F 9am-5pm',
+          address: '222 Test St, Indianapolis, IN 22222',
+          notes: 'More testing'
+        }
+      ],
+      followUpAndDeliveryContacts: [
+        {
+          id: 1,
+          type: 2,
+          name: 'John',
+          title: 'FedEx Delivery Truck Driver',
+          phone: '333-333-3333',
+          email: 'john@test.com',
+          hours: 'M-F 9am-5pm',
+          address: '333 Test Ave, New York City, NY 33333',
+          notes: 'Another test'
+        },
+        {
+          id: 2,
+          type: 2,
+          name: 'Jacob',
+          title: 'Professional Mover',
+          phone: '444-444-4444',
+          email: 'jacob@test.com',
+          hours: 'M-F 8am-4pm',
+          address: '444 Test Rd, Seattle, WA 99999',
+          notes: 'Testing some more'
+        },
+        {
+          id: 3,
+          type: 2,
+          name: 'Scott',
+          title: 'Test Contact',
+          phone: '555-555-5555',
+          email: 'scott@test.com',
+          hours: 'M-F 10am-6pm',
+          address: '555 Test Pl, Redmond, WA 88888',
+          notes: 'Doing more testing'
+        }
+      ],
+      printLocationAddCtrls: false,
+      printLocationEditCtrls: false,
+      printLocationEditedIndex: -1,
+      editedPrintLocation: {
+        id: '',
+        storeName: '',
+        storeNumber: '',
+        phone: '',
+        email: '',
+        hours: '',
+        address: '',
+        notes: ''
+      },
+      printLocations: [
+        {
+          id: 1,
+          storeName: 'Alphagraphics',
+          storeNumber: '111',
+          phone: '111-111-1111',
+          email: 'alphagraphics@test.com',
+          hours: 'M-F 10am-7pm',
+          address: '111 Test Ave, Seattle, WA 99999',
+          notes: 'Testing'
+        },
+        {
+          id: 2,
+          storeName: 'Zippy\'s Quick Ship \'N Copy',
+          storeNumber: '222',
+          phone: '222-222-2222',
+          email: 'zippys@test.com',
+          hours: 'M-F 9am-5pm',
+          address: '222 Test St, Indianapolis, IN 22222',
+          notes: 'More testing'
+        }
       ]
     }),
+    computed: {
+      linkInfoEntered () {
+        return this.editedLink.name && this.editedLink.url && this.validUrl
+      }
+    },
     methods: {
       resetForm() {
         /* TODO: Once the form data is being retrieved from the database, copy it to reset the form when the user clicks the "Cancel" link on the top right of the page
@@ -838,11 +1174,8 @@
         console.log("Resetting the form...")
       },
       hideSubmissionChecklistCtrls() {
-        if (this.submissionChecklistAddCtrls) {
-          this.submissionChecklistAddCtrls = false
-        } else {
-          this.submissionChecklistEditCtrls = false
-        }
+        this.submissionChecklistAddCtrls = false
+        this.submissionChecklistEditCtrls = false
       },
       addSubmissionChecklistItem() {
         this.editedSubmissionChecklistItem.details = ''
@@ -955,7 +1288,6 @@
         }
       },
       editLink(link, type) {
-        this.checkInputs()
         this.submissionLinkAddCtrls = false
         this.followUpAndDeliveryLinkAddCtrls = false
 
@@ -1024,13 +1356,145 @@
       },
       urlRule(url) {
         if (url && (!url.includes('http://') && !url.includes('https://'))) {
+          this.validUrl = false
           return 'Valid URL is required'
         } else {
+          this.validUrl = true
           return true
         }
       },
-      checkInputs() {
-        this.applyDark = this.editedLink.name !== '' || this.editedLink.url !== ''
+      resetContactCtrls(type) {
+        switch (type) {
+          case 1:
+            this.submissionContactAddCtrls = false
+            this.submissionContactEditCtrls = false
+            this.$refs.submissionContactForm.reset()
+            break
+          case 2:
+            this.followUpAndDeliveryContactAddCtrls = false
+            this.followUpAndDeliveryContactEditCtrls = false
+            this.$refs.followUpAndDeliveryContactForm.reset()
+            break
+        }
+      },
+      addContact(type) {
+        this.submissionContactEditCtrls = false
+        this.followUpAndDeliveryContactEditCtrls = false
+
+        switch (type) {
+          case 1:
+            this.submissionContactAddCtrls = true
+            this.followUpAndDeliveryContactAddCtrls = false
+            this.$refs.submissionContactForm.reset()
+            break
+          case 2:
+            this.submissionContactAddCtrls = false
+            this.followUpAndDeliveryContactAddCtrls = true
+            this.$refs.followUpAndDeliveryContactForm.reset()
+        }
+      },
+      editContact(contact, type) {
+        this.submissionContactAddCtrls = false
+        this.followUpAndDeliveryContactAddCtrls = false
+
+        switch (type) {
+          case 1:
+            this.submissionContactEditCtrls = true
+            this.followUpAndDeliveryContactEditCtrls = false
+            this.contactEditedIndex = this.submissionContacts.indexOf(contact)
+            break
+          case 2:
+            this.submissionContactEditCtrls = false
+            this.followUpAndDeliveryContactEditCtrls = true
+            this.contactEditedIndex = this.followUpAndDeliveryContacts.indexOf(contact)
+            break
+        }
+        this.editedContact = Object.assign({}, contact)
+        this.editedContact.type = type
+      },
+      deleteContact(type) {
+        switch (type) {
+          case 1:
+            this.submissionContacts.splice(this.contactEditedIndex, 1)
+            this.submissionContactEditCtrls = false
+            break
+          case 2:
+            this.followUpAndDeliveryContacts.splice(this.contactEditedIndex, 1)
+            this.followUpAndDeliveryContactEditCtrls = false
+            break
+        }
+      },
+      saveContact(type) {
+        switch (type) {
+          case 1:
+            if (this.contactEditedIndex > -1) {
+              Object.assign(this.submissionContacts[this.contactEditedIndex], this.editedContact)
+              this.submissionContactEditCtrls = false
+            } else {
+              if (this.submissionContacts.length > 0) {
+                let idsArray = []
+                this.submissionContacts.forEach(item => idsArray.push(item.id))
+                this.editedContact.id = max(idsArray) + 1
+              } else {
+                this.editedContact.id = 1
+              }
+              this.submissionContacts.push(this.editedContact)
+              this.submissionContactAddCtrls = false
+            }
+            break
+          case 2:
+            if (this.contactEditedIndex > -1) {
+              Object.assign(this.followUpAndDeliveryContacts[this.contactEditedIndex], this.editedContact)
+              this.followUpAndDeliveryContactEditCtrls = false
+            } else {
+              if (this.followUpAndDeliveryContacts.length > 0) {
+                let idsArray = []
+                this.followUpAndDeliveryContacts.forEach(item => idsArray.push(item.id))
+                this.editedContact.id = max(idsArray) + 1
+              } else {
+                this.editedContact.id = 1
+              }
+              this.followUpAndDeliveryContacts.push(this.editedContact)
+              this.followUpAndDeliveryContactAddCtrls = false
+            }
+            break
+        }
+      },
+      resetPrintLocationCtrls() {
+        this.printLocationAddCtrls = false
+        this.printLocationEditCtrls = false
+        this.$refs.printLocationForm.reset()
+      },
+      addPrintLocation() {
+        this.printLocationEditCtrls = false
+        this.printLocationAddCtrls = true
+        this.$refs.printLocationForm.reset()
+      },
+      editPrintLocation(location) {
+        this.printLocationAddCtrls = false
+        this.printLocationEditCtrls = true
+        this.printLocationEditedIndex = this.printLocations.indexOf(location)
+        this.editedPrintLocation = Object.assign({}, location)
+      },
+      deletePrintLocation() {
+        this.printLocations.splice(this.printLocationEditedIndex, 1)
+        this.printLocationEditCtrls = false
+      },
+      savePrintLocation() {
+        if (this.printLocationEditedIndex > -1) {
+          Object.assign(this.printLocations[this.printLocationEditedIndex], this.editedPrintLocation)
+          this.printLocationEditCtrls = false
+        } else {
+          if (this.printLocations.length > 0) {
+            let idsArray = []
+            this.printLocations.forEach(item => idsArray.push(item.id))
+            this.editedPrintLocation.id = max(idsArray) + 1
+          } else {
+            this.editedPrintLocation.id = 1
+          }
+          this.printLocations.push(this.editedPrintLocation)
+          this.printLocationAddCtrls = false
+        }
       }
     }
   }
@@ -1067,6 +1531,7 @@
   #save-btn {
     margin: 10px 5px 10px 0;
     text-transform: capitalize;
+    color: #fff !important;
   }
   .checklist-item-edit-ctrls {
     margin: 5px;
@@ -1089,4 +1554,20 @@
     flex-flow: row nowrap;
     align-items: center;
   }
+  /*Definition list styles*/
+  .horizontal-dl {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .horizontal-dl dt {
+    text-align: right;
+    width: 20%;
+  }
+  .horizontal-dl dd {
+    text-align: left;
+    width: 75%;
+  }
+  /*End definition list styles*/
 </style>
