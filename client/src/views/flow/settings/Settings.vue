@@ -20,7 +20,7 @@
         <v-subheader :class="{'shaded-row': $route.path === `/settings/processes`}">
           <router-link to="/settings/processes">Processes</router-link>
         </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/processSteps`}">
+        <v-subheader :class="{'shaded-row': $route.path.includes('/settings/processStep')}">
           <router-link to="/settings/processSteps">Process Steps</router-link>
         </v-subheader>
         <v-subheader :class="{'shaded-row': $route.path === `/settings/statuses`}">
@@ -60,7 +60,7 @@ export default {
   },
   methods: {
     async getCustomFieldObjectTypes () {
-      const {data} = await getRequest(`/api/v1/flow/customField/getCustomFieldObjectTypes`, { params: { companyId: this.companyId }})
+      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getCustomFieldObjectTypes`)
       this.objectTypes = data
     },
   },

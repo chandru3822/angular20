@@ -1,0 +1,11 @@
+<sql>
+  <org.getAllForCompany>
+    <![CDATA[
+      select o.*
+      from flow.org o
+      where o.company_id = :companyId
+      order by o.org_name
+    ]]>
+  </org.getAllForCompany>
+
+</sql>

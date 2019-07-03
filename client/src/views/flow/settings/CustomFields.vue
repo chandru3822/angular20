@@ -167,7 +167,7 @@ export default {
   },
   methods: {
     async getCustomFields () {
-      const {data} = await getRequest(`/api/v1/flow/customField/getAll`, { params: { companyId: this.companyId }})
+      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getAll`)
       data.forEach(d => {
         d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
       })
@@ -176,7 +176,7 @@ export default {
       this.customFields.unshift(cloneDeep(this.blankNewObject))
     },
     async getCustomFieldObjectTypes () {
-      const {data} = await getRequest(`/api/v1/flow/customField/getCustomFieldObjectTypes`, { params: { companyId: this.companyId }})
+      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getCustomFieldObjectTypes`)
       data.forEach(d => d.archived = true)
       this.customFieldObjectTypes = cloneDeep(data)
       this.objectFilters = data
@@ -184,7 +184,7 @@ export default {
       this.objectFilters.unshift({id: -1, objectType: 'All'},)
     },
     async getCompanyDataTypes () {
-      const {data} = await getRequest(`/api/v1/flow/dataType/getCompanyDataTypes`, { params: { companyId: this.companyId }})
+      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/dataType/getCompanyDataTypes`)
       this.dataTypes = data
     },
     async deleteField (item) {

@@ -54,9 +54,6 @@ label[for="adminOriginatorSelect"] {
 .red-text{
   color: #ee6f6a !important;
 }
-.shaded-row{
-  background-color: var(--v-secondary-base);
-}
 .grab {
   cursor: grab;
   &:active {

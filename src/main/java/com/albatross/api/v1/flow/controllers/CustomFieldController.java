@@ -17,19 +17,19 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/customField")
+@RequestMapping(value = "/api/v1/flow/companies/{companyId}/customField")
 public class CustomFieldController {
 
   @Autowired
   private CustomFieldService customFieldService;
 
   @RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomField> getAllCustomFields(@RequestParam Long companyId) {
+  public List<CustomField> getAllCustomFields(@PathVariable Long companyId) {
     return customFieldService.getAllCustomFields(companyId);
   }
 
   @RequestMapping(value = "/getCustomFieldObjectTypes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectType> getCustomFieldObjectTypes(@RequestParam Long companyId) {
+  public List<ObjectType> getCustomFieldObjectTypes(@PathVariable Long companyId) {
     return customFieldService.getObjectTypes(companyId);
   }
 
@@ -40,9 +40,8 @@ public class CustomFieldController {
     return field;
   }
 
-  @RequestMapping(value = "/delete", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteField(@RequestBody CustomField field) {
-    // todo: change this to a true delete method if we can start getting the logged in user id from the server
-    customFieldService.deleteField(field);
+  @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteField(@PathVariable Long id) {
+    customFieldService.deleteField(id);
   }
 }

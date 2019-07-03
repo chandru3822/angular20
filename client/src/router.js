@@ -98,6 +98,10 @@ export default new Router({
             path: 'processSteps',
             component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/ProcessSteps.vue')
           }, {
+            path: 'processStep/:id?',
+            props: true,
+            component: () => import (/* webpackChunkName: "processStep" */ './views/flow/settings/ProcessStep.vue')
+          }, {
             path: 'statuses',
             component: () => import (/* webpackChunkName: "statuses" */ './views/flow/settings/Statuses.vue')
           }

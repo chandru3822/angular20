@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,6 +28,9 @@ public class CustomFieldService {
 
   @Autowired
   SqlCache sqlCache;
+
+  @Autowired
+  SecurityService securityService;
 
   @Autowired
   ObjectMapper om;
@@ -164,10 +168,13 @@ public class CustomFieldService {
     }
   }
 
-  public void deleteField(CustomField field) {
+  public void deleteField(Long id) {
+    User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("fieldId", field.getId());
-    params.put("modifiedById", field.getModifiedById());
+    params.put("fieldId", id);
+    // @randa: currentUser is null, comeback and fix
+//    params.put("modifiedById", currentUser.getId());
+    params.put("modifiedById", 99999999);
 
     // archive single custom field
     sqlCache.update("customField.deleteField", params);
