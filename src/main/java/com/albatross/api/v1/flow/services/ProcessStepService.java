@@ -46,9 +46,7 @@ public class ProcessStepService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    // @randa: currentUser is null, comeback and fix
-//    params.put("modifiedById", currentUser.getId());
-    params.put("modifiedById", 99999999);
+    params.put("modifiedById", currentUser.getId());
     sqlCache.update("processStep.delete", params);
   }
 

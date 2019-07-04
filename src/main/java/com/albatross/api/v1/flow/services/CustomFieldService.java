@@ -172,9 +172,7 @@ public class CustomFieldService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldId", id);
-    // @randa: currentUser is null, comeback and fix
-//    params.put("modifiedById", currentUser.getId());
-    params.put("modifiedById", 99999999);
+    params.put("modifiedById", currentUser.getId());
 
     // archive single custom field
     sqlCache.update("customField.deleteField", params);
