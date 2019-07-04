@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import './plugins/vuetify'
+import Vuetify from './plugins/vuetify'
 import Vue2Filters from 'vue2-filters'
 import App from './App.vue'
 import router from './router'
@@ -57,8 +57,12 @@ axios.interceptors.response.use((response) => {
   }
 })
 
+
+Vue.use(Vuetify)
+
 new Vue({
   router,
   store,
+  vuetify: Vuetify,
   render: h => h(App)
 }).$mount('#app')

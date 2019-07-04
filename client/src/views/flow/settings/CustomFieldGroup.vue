@@ -5,7 +5,7 @@
         <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn flat @click="addNew = !addNew; newGroup = {}; selectedGroupId = null; customFields = []">
+          <v-btn text @click="addNew = !addNew; newGroup = {}; selectedGroupId = null; customFields = []">
             {{addNew ? 'Cancel' : 'Add New'}}
           </v-btn>
         </v-toolbar-items>
@@ -28,26 +28,26 @@
                  group="customFieldGroupTypes" @start="drag=true" @end="drag=false"  @change="changeGroupOrder">
         <v-list v-for="(cfgt, index) in filterBy(customFieldGroupTypes, false, 'archived')"
                 :key="index">
-          <v-list-tile class="grab" :class="{ 'shaded-row': cfgt.id === selectedGroupId }">
-            <v-list-tile-content>
+          <v-list-item class="grab" :class="{ 'shaded-row': cfgt.id === selectedGroupId }">
+            <v-list-item-content>
               <v-text-field class="one-hunned" v-if="selectedGroupId === cfgt.id" v-model="cfgt.groupName" @input="cfgt.nameChanged = true">
               </v-text-field>
               <div v-else>{{cfgt.groupName}}</div>
-            </v-list-tile-content>
-            <v-list-tile-action>
+            </v-list-item-content>
+            <v-list-item-action>
               <v-icon>drag_handle</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-action class="clickable">
+            </v-list-item-action>
+            <v-list-item-action class="clickable">
               <v-icon v-if="selectedGroupId === cfgt.id && cfgt.originalGroupName !== cfgt.groupName" @click="cfgt.originalGroupName = cfgt.groupName; saveGroupTypeName(index, cfgt)">save</v-icon>
               <v-icon v-else @click="selectedGroupId = cfgt.id; fetchCustomFields()">edit</v-icon>
-            </v-list-tile-action>
+            </v-list-item-action>
             <v-dialog
                 v-model="cfgt.deleteConfirm"
                 width="500">
               <template v-slot:activator="{ on }">
-                <v-list-tile-action class="clickable" v-on="on">
+                <v-list-item-action class="clickable" v-on="on">
                   <v-icon>delete</v-icon>
-                </v-list-tile-action>
+                </v-list-item-action>
               </template>
               <v-card>
                 <v-card-title
@@ -71,14 +71,14 @@
                   </v-btn>
                   <v-btn
                       color="primary"
-                      flat
+                      text
                       @click="cfgt.archived = true; deleteGroup(cfgt.id)">
                     Yes
                   </v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
-          </v-list-tile>
+          </v-list-item>
 
         </v-list>
       </draggable>
@@ -102,20 +102,20 @@
                  group="customFields" @start="drag=true" @end="drag=false" @change="changeFieldOrder">
         <v-list v-for="(cf, index) in filterBy(customFields, false, 'archived')"
                 :key="index">
-          <v-list-tile class="grab">
-            <v-list-tile-content>
+          <v-list-item class="grab">
+            <v-list-item-content>
               {{cf.fieldName}}
-            </v-list-tile-content>
-            <v-list-tile-action>
+            </v-list-item-content>
+            <v-list-item-action>
               <v-icon>drag_handle</v-icon>
-            </v-list-tile-action>
+            </v-list-item-action>
             <v-dialog
                 v-model="cf.deleteConfirm"
                 width="500">
               <template v-slot:activator="{ on }">
-                <v-list-tile-action class="clickable" v-on="on">
+                <v-list-item-action class="clickable" v-on="on">
                   <v-icon>delete</v-icon>
-                </v-list-tile-action>
+                </v-list-item-action>
               </template>
               <v-card>
                 <v-card-title
@@ -139,14 +139,14 @@
                   </v-btn>
                   <v-btn
                       color="primary"
-                      flat
+                      text
                       @click="cf.archived = true; deleteFieldFromGroup(cf.id)">
                     Yes
                   </v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
-          </v-list-tile>
+          </v-list-item>
         </v-list>
       </draggable>
       <v-btn v-if="fieldOrderChanged" @click="saveFieldChanges">Save Changes</v-btn>

@@ -55,7 +55,7 @@
 
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="secondaryButton" flat @click="close">Cancel</v-btn>
+                    <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
                     <v-btn color="primaryButton" raised @click="saveAhj" style="color: #fff !important"
                            :disabled="!editedItem.metroAreaId || !editedItem.name">
                       {{ ahjBtnTxt }}
@@ -82,7 +82,7 @@
 
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="secondaryButton" flat @click="close">Cancel</v-btn>
+                    <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
                     <v-btn color="brRed" style="color: #fff !important" raised @click="confirmDeleteAhj">Yes</v-btn>
                   </v-card-actions>
                 </v-card>
@@ -92,7 +92,7 @@
                 <v-data-table
                   :items="filteredAhjs"
                   :headers="visibleHeaders"
-                  :pagination.sync="pagination"
+                  :options="pagination"
                   class="elevation-1"
                   style="width: 100%; text-align: left;"
                 >
@@ -172,7 +172,7 @@
 
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="secondaryButton" flat @click="close">Cancel</v-btn>
+                    <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
                     <v-btn color="primaryButton" style="color: #fff !important" raised @click="saveAhjUtility"
                            :disabled="!editedItem.name || !editedItem.metroArea || !editedItem.state">
                       {{ ahjUtilityBtnTxt }}
@@ -185,7 +185,7 @@
                 <v-data-table
                   :items="filteredAhjUtilities"
                   :headers="visibleHeaders"
-                  :pagination.sync="pagination"
+                  :options="pagination"
                   class="elevation-1"
                   style="width: 100%; text-align: left;"
                 >

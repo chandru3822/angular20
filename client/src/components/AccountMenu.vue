@@ -1,35 +1,37 @@
 <template id="account-menu">
   <v-menu data-app left offset-y class="account-menu">
-    <v-btn
-        class="account-menu-button"
-        slot="activator"
-        color="primaryCustom"
-        dark
-    >
-      <span v-if="!IS_MOBILE">{{userFirstName}} Account</span>
-      <v-avatar
-          :tile="false"
-          :size="40"
-          color="grey lighten-4"
-          class="account-img"
+    <template v-slot:activator="{ on }">
+      <v-btn
+          class="account-menu-button"
+          color="primaryCustom"
+          dark
+          v-on="on"
       >
-        <v-img name="accountImg" v-if="loadComplete && imageUrl" :src="imageUrl"></v-img>
-        <img name="accountImg" v-else src="../assets/user_img_placeholder.png">
-      </v-avatar>
-    </v-btn>
+        <span v-if="!IS_MOBILE">{{userFirstName}} Account</span>
+        <v-avatar
+            :tile="false"
+            :size="40"
+            color="grey lighten-4"
+            class="account-img"
+        >
+          <v-img name="accountImg" v-if="loadComplete && imageUrl" :src="imageUrl"></v-img>
+          <img name="accountImg" v-else src="../assets/user_img_placeholder.png">
+        </v-avatar>
+      </v-btn>
+    </template>
     <v-list>
-      <!-- <v-list-tile @click="changeRoute('preferences', {})">
-        <v-list-tile-title>Preferences</v-list-tile-title>
-        <v-list-tile-action class="account-menu-icon">
+      <!-- <v-list-item @click="changeRoute('preferences', {})">
+        <v-list-item-title>Preferences</v-list-item-title>
+        <v-list-item-action class="account-menu-icon">
           <v-icon>settings</v-icon>
-        </v-list-tile-action>
-      </v-list-tile> -->
-      <v-list-tile @click="logout()">
-        <v-list-tile-title>Logout</v-list-tile-title>
-        <v-list-tile-action class="account-menu-icon">
+        </v-list-item-action>
+      </v-list-item> -->
+      <v-list-item @click="logout()">
+        <v-list-item-title>Logout</v-list-item-title>
+        <v-list-item-action class="account-menu-icon">
           <v-icon>exit_to_app</v-icon>
-        </v-list-tile-action>
-      </v-list-tile>
+        </v-list-item-action>
+      </v-list-item>
     </v-list>
   </v-menu>
 </template>

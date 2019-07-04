@@ -27,15 +27,15 @@
                 >Fields</v-btn>
               </template>
               <v-list>
-                <v-list-tile
+                <v-list-item
                   v-for="header in headers"
                   :key="header.value"
                   @click="header.show = !header.show"
                 >
                   <v-icon class="mr-3" v-if="!header.show">add</v-icon>
                   <v-icon class="mr-3" v-if="header.show">remove</v-icon>
-                  <v-list-tile-title>{{ header.text }}</v-list-tile-title>
-                </v-list-tile>
+                  <v-list-item-title>{{ header.text }}</v-list-item-title>
+                </v-list-item>
               </v-list>
             </v-menu>
           </v-flex>
@@ -67,11 +67,11 @@
       <v-data-table
         :items="filteredOrgs"
         :headers="visibleHeaders"
-        :pagination.sync="pagination"
+        :options="pagination"
         item-key="id"
         class="elevation-1"
         v-model="selected"
-        select-all
+        show-select
       >
         <template #headers="{all, indeterminate, headers}">
           <tr>
@@ -116,15 +116,15 @@
                 v-model="filters[header.value].value"
               >
                 <template #prepend-item>
-                  <v-list-tile ripple>
-                    <v-list-tile-action>
+                  <v-list-item ripple>
+                    <v-list-item-action>
                       <v-icon
                         :color="filters[header.value].value.length > 0 ? 'primary' : ''"
                         @click="toggleSelectAllFilter(header.value)"
                       >{{ filterIcon(header.value) }}</v-icon>
-                    </v-list-tile-action>
-                    <v-list-tile-title>Select All</v-list-tile-title>
-                  </v-list-tile>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
                   <v-divider class="mt-2"></v-divider>
                 </template>
                 <template #selection="{item, index}">

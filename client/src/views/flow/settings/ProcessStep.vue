@@ -24,7 +24,7 @@
             label="Owning Org"
             item-text="orgName"
             item-value="id"
-            browser-autocomplete="new-password"
+            autocomplete="new-password"
             return-object
         ></v-autocomplete>
         <v-btn v-if="!processStepId" :disabled="!processStep.processStepName" @click="addProcessStep">Save</v-btn>

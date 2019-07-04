@@ -1,11 +1,11 @@
 <template>
   <v-layout row wrap class="custom-field-group-container">
     <v-flex xs-12>
-      <v-toolbar color="white" class="elevation-1">
+      <v-toolbar class="testing elevation-1">
         <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn flat :to="{ path: `/settings/processStep`}">
+          <v-btn text :to="{ path: `/settings/processStep`}">
             {{'Add New'}}
           </v-btn>
         </v-toolbar-items>
@@ -14,22 +14,22 @@
         <!--<v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')"-->
         <v-list v-for="(ps, index) in processSteps"
                 :key="index">
-          <v-list-tile>
-            <v-list-tile-content>
+          <v-list-item>
+            <v-list-item-content>
               {{ps.processStepName}}
-            </v-list-tile-content>
-            <v-list-tile-action class="clickable">
-              <v-btn :to="{ path: `/settings/processStep/${ps.id}`}" flat>
+            </v-list-item-content>
+            <v-list-item-action class="clickable" color="purple">
+              <v-btn :to="{ path: `/settings/processStep/${ps.id}`}" text>
                 <v-icon>edit</v-icon>
               </v-btn>
-            </v-list-tile-action>
+            </v-list-item-action>
             <v-dialog
                 v-model="ps.deleteConfirm"
                 width="500">
               <template v-slot:activator="{ on }">
-                <v-list-tile-action class="clickable" v-on="on">
+                <v-list-item-action class="clickable" v-on="on">
                   <v-icon>delete</v-icon>
-                </v-list-tile-action>
+                </v-list-item-action>
               </template>
               <v-card>
                 <v-card-title
@@ -53,14 +53,14 @@
                   </v-btn>
                   <v-btn
                       color="primary"
-                      flat
+                      text
                       @click="ps.archived = true; deleteProcessStep(ps.id)">
                     Yes
                   </v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
-          </v-list-tile>
+          </v-list-item>
         </v-list>
       </v-container>
     </v-flex>
@@ -101,5 +101,6 @@
 </script>
 
 <style scoped lang="scss">
+
 
 </style>

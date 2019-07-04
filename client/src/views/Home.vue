@@ -3,18 +3,18 @@
     <v-flex xs12>
       <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
       <!--non-mobile header...is this necessary?-->
-      <v-toolbar dense id="header" color="primaryCustom" app tabs dark extension-height="53">
+      <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="53">
         <v-toolbar-title class="app-title">Blue Raven Solar</v-toolbar-title>
         <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
         <v-toolbar-items>
           <AccountMenu :showImage="true"></AccountMenu>
         </v-toolbar-items>
-        <v-tabs color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondary">
+        <v-tabs color="secondaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
             {{tab.label}}
           </v-tab>
         </v-tabs>
-      </v-toolbar>
+      </v-app-bar>
       <v-content>
         <v-container class="router-container">
           <router-view class="router-view" />

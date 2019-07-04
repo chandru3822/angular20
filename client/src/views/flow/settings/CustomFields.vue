@@ -19,110 +19,113 @@
       <v-data-table
           :headers="headers"
           :items="customFields"
-          hide-actions
-          hide-headers
-          class="elevation-1"
+          :single-expand="true"
+          :expanded.sync="expanded"
           item-key="id"
-          :expand="false"
+          hide-default-footer
+          :items-per-page="-1"
+          hide-default-header
+          class="elevation-1"
       >
-        <template slot="items" slot-scope="props">
-          <tr v-if="!props.item.custom" :class="{ 'shaded-row': props.index % 2 }">
-            <td class="text-xs-right">{{ props.item.fieldName }}</td>
+        <template v-slot:body="{ items }">
+          <tr v-for="(item, index) in items" :key="item.id" v-if="!item.custom" :class="{ 'shaded-row': index % 2 }">
+            <td class="text-xs-right">{{ item.fieldName }}</td>
             <td class="">
-              <v-btn @click="props.expanded = !props.expanded; resetCustomField(props.item, props.expanded)">
-                {{ props.expanded ? 'Cancel' : 'Edit' }}
+              <v-btn @click="expanded.push(item); resetCustomField(item, item.expand)">
+                {{ item.expand ? 'Cancel' : 'Edit' }}
               </v-btn>
-              <v-btn flat @click="deleteField(props.item)" :loading="props.item.deleting">
+              <v-btn text @click="deleteField(item)" :loading="item.deleting">
                 <v-icon>delete</v-icon>
               </v-btn>
             </td>
           </tr>
-          <tr v-else :class="{ 'shaded-row': props.index % 2 }">
+          <tr v-else :class="{ 'shaded-row': index % 2 }">
             <td colspan="2" class="text-xs-center">
-              <v-btn  @click="props.expanded = !props.expanded; resetCustomField(props.item, props.expanded)">
-                <v-icon class="mr-1" v-if="props.expanded">cancel</v-icon>
+              <v-btn  @click="item.expanded = !item.expanded; resetCustomField(item, item.expanded)">
+                <v-icon class="mr-1" v-if="item.expanded">cancel</v-icon>
                 <v-icon v-else>add</v-icon>
-                {{props.expanded ? 'Cancel' : 'Add Field'}}
+                {{item.expanded ? 'Cancel' : 'Add Field'}}
               </v-btn>
             </td>
           </tr>
         </template>
-        <template v-slot:expand="props">
-          <v-flex justify-center class="flex-display pl-3 pr-3" :class="{'shaded-row': props.index % 2}">
+        <template v-slot:expanded-item="{headers}">
+          <td>Peek-a-boo!</td>
+          <!--<v-flex justify-center class="flex-display pl-3 pr-3" :class="{'shaded-row': item.index % 2}">-->
 
-            <v-card flat class="text-xs-center field-card one-hunned"  :color="props.index % 2 ? 'rowShadeCustom' : 'white'">
-              <v-card-text>{{props.item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
-              <v-text-field
-                  label="Field Name"
-                  tabindex=1
-                  v-model="props.item.fieldName"
-              ></v-text-field>
-              <v-autocomplete
-                  v-model="props.item.companyDataType"
-                  :items="dataTypes"
-                  :disabled="!props.item.custom"
-                  :readonly="!props.item.custom"
-                  tabindex=2
-                  label="Data Type"
-                  item-text="companyDataType"
-                  item-value="id"
-                  browser-autocomplete="new-password"
-                  return-object
-              ></v-autocomplete>
+            <!--<v-card text class="text-xs-center field-card one-hunned"  :color="item.index % 2 ? 'rowShadeCustom' : 'white'">-->
+              <!--<v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>-->
+              <!--<v-text-field-->
+                  <!--label="Field Name"-->
+                  <!--tabindex=1-->
+                  <!--v-model="item.fieldName"-->
+              <!--&gt;</v-text-field>-->
+              <!--<v-autocomplete-->
+                  <!--v-model="item.companyDataType"-->
+                  <!--:items="dataTypes"-->
+                  <!--:disabled="!item.custom"-->
+                  <!--:readonly="!item.custom"-->
+                  <!--tabindex=2-->
+                  <!--label="Data Type"-->
+                  <!--item-text="companyDataType"-->
+                  <!--item-value="id"-->
+                  <!--autocomplete="new-password"-->
+                  <!--return-object-->
+              <!--&gt;</v-autocomplete>-->
 
-              <v-flex class="options-container" fluid v-if="props.item.companyDataType && props.item.companyDataType.hasListValues">
-                <span>Selectable Options</span>
-                <draggable v-model="props.item.dropdownOptions"
-                           group="dropdownOptions" @start="drag=true" @end="drag=false">
-                  <v-list v-for="(ddo, index) in filterBy(props.item.dropdownOptions, false, 'archived')"
-                          :class="{'shaded-row': props.index % 2}"
-                          :key="index">
-                    <v-list-tile class="grab">
-                      <v-list-tile-content>
-                          <v-text-field
-                              class="one-hunned"
-                            :placeholder="ddo.placeholder"
-                            v-model="ddo.name" >
-                          </v-text-field>
-                      </v-list-tile-content>
-                      <v-list-tile-action>
-                        <v-icon>drag_handle</v-icon>
-                      </v-list-tile-action>
-                      <v-list-tile-action class="clickable" @click="ddo.archived = true">
-                        <v-icon>delete</v-icon>
-                      </v-list-tile-action>
-                    </v-list-tile>
-                  </v-list>
-                </draggable>
-                <v-btn
-                    @click="addOption(props.item.dropdownOptions)">
-                  Add Option
-                </v-btn>
-              </v-flex>
-              <v-flex class="options-container" fluid>
-                <div>Included Object Types</div>
-                <!--<v-container v-if="props.item.custom">-->
-                  <!--<v-checkbox v-for="(ot, index) in customFieldObjectTypes"-->
-                              <!--:key="index"-->
-                              <!--v-model="ot.archived"-->
-                              <!--:false-value="true" :true-value="false"-->
-                              <!--:label="ot.objectType"></v-checkbox>-->
+              <!--<v-flex class="options-container" fluid v-if="item.companyDataType && item.companyDataType.hasListValues">-->
+                <!--<span>Selectable Options</span>-->
+                <!--<draggable v-model="item.dropdownOptions"-->
+                           <!--group="dropdownOptions" @start="drag=true" @end="drag=false">-->
+                  <!--<v-list v-for="(ddo, index) in filterBy(item.dropdownOptions, false, 'archived')"-->
+                          <!--:class="{'shaded-row': item.index % 2}"-->
+                          <!--:key="index">-->
+                    <!--<v-list-item class="grab">-->
+                      <!--<v-list-item-content>-->
+                          <!--<v-text-field-->
+                              <!--class="one-hunned"-->
+                            <!--:placeholder="ddo.placeholder"-->
+                            <!--v-model="ddo.name" >-->
+                          <!--</v-text-field>-->
+                      <!--</v-list-item-content>-->
+                      <!--<v-list-item-action>-->
+                        <!--<v-icon>drag_handle</v-icon>-->
+                      <!--</v-list-item-action>-->
+                      <!--<v-list-item-action class="clickable" @click="ddo.archived = true">-->
+                        <!--<v-icon>delete</v-icon>-->
+                      <!--</v-list-item-action>-->
+                    <!--</v-list-item>-->
+                  <!--</v-list>-->
+                <!--</draggable>-->
+                <!--<v-btn-->
+                    <!--@click="addOption(item.dropdownOptions)">-->
+                  <!--Add Option-->
+                <!--</v-btn>-->
+              <!--</v-flex>-->
+              <!--<v-flex class="options-container" fluid>-->
+                <!--<div>Included Object Types</div>-->
+                <!--&lt;!&ndash;<v-container v-if="props.item.custom">&ndash;&gt;-->
+                  <!--&lt;!&ndash;<v-checkbox v-for="(ot, index) in customFieldObjectTypes"&ndash;&gt;-->
+                              <!--&lt;!&ndash;:key="index"&ndash;&gt;-->
+                              <!--&lt;!&ndash;v-model="ot.archived"&ndash;&gt;-->
+                              <!--&lt;!&ndash;:false-value="true" :true-value="false"&ndash;&gt;-->
+                              <!--&lt;!&ndash;:label="ot.objectType"></v-checkbox>&ndash;&gt;-->
+                <!--&lt;!&ndash;</v-container>&ndash;&gt;-->
+                <!--<v-container>-->
+                  <!--<v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"-->
+                      <!--:key="index"-->
+                      <!--v-model="ot.archived"-->
+                      <!--:false-value="true" :true-value="false"-->
+                      <!--:label="ot.objectType"></v-checkbox>-->
                 <!--</v-container>-->
-                <v-container>
-                  <v-checkbox v-for="(ot, index) in props.item.customFieldObjectTypes"
-                      :key="index"
-                      v-model="ot.archived"
-                      :false-value="true" :true-value="false"
-                      :label="ot.objectType"></v-checkbox>
-                </v-container>
-              </v-flex>
-              <v-btn
-                  :disabled="invalid(props.item)"
-                  @click="saveChanges(props.item.custom, props.item); props.expanded = !props.expanded">
-                {{props.item.custom ? 'Add Field' : 'Save Changes'}}
-              </v-btn>
-            </v-card>
-          </v-flex>
+              <!--</v-flex>-->
+              <!--<v-btn-->
+                  <!--:disabled="invalid(item)"-->
+                  <!--@click="saveChanges(item.custom, item); item.expanded = !item.expanded">-->
+                <!--{{props.item.custom ? 'Add Field' : 'Save Changes'}}-->
+              <!--</v-btn>-->
+            <!--</v-card>-->
+          <!--</v-flex>-->
 
         </template>
       </v-data-table>
@@ -147,6 +150,8 @@ export default {
   data () {
     return {
       model: '',
+      expand: false,
+      expanded: [],
       // this is used so the expanded row uses the full width...bug in vuetify
       headers: Array(2).fill({}),
       customFields: [],

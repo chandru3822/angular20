@@ -5,7 +5,7 @@
         <v-toolbar-title class="app-title">Processes</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn flat @click="addNew = !addNew; newProject = {}">
+          <v-btn text @click="addNew = !addNew; newProject = {}">
             {{addNew ? 'Cancel' : 'Add New'}}
           </v-btn>
         </v-toolbar-items>
@@ -19,23 +19,23 @@
         <v-btn v-if="addNew" @click="addNewProcess">Save</v-btn>
         <v-list v-for="(p, index) in filterBy(processes, false, 'archived')"
                 :key="index">
-          <v-list-tile>
-            <v-list-tile-content>
+          <v-list-item>
+            <v-list-item-content>
               <v-text-field class="one-hunned" v-if="selectedProcessId === p.id" v-model="p.processName">
               </v-text-field>
               <div v-else>{{p.processName}}</div>
-            </v-list-tile-content>
-            <v-list-tile-action class="clickable">
+            </v-list-item-content>
+            <v-list-item-action class="clickable">
               <v-icon v-if="selectedProcessId === p.id" @click="saveProcess(p)">save</v-icon>
               <v-icon v-else @click="selectedProcessId = p.id">edit</v-icon>
-            </v-list-tile-action>
+            </v-list-item-action>
             <v-dialog
                 v-model="p.deleteConfirm"
                 width="500">
               <template v-slot:activator="{ on }">
-                <v-list-tile-action class="clickable" v-on="on">
+                <v-list-item-action class="clickable" v-on="on">
                   <v-icon>delete</v-icon>
-                </v-list-tile-action>
+                </v-list-item-action>
               </template>
               <v-card>
                 <v-card-title
@@ -59,14 +59,14 @@
                   </v-btn>
                   <v-btn
                       color="primary"
-                      flat
+                      text
                       @click="p.archived = true; deleteProcess(p.id)">
                     Yes
                   </v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
-          </v-list-tile>
+          </v-list-item>
         </v-list>
         <!--<v-btn v-else-if="groupOrderChanged" @click="saveGroupChanges">Save Changes</v-btn>-->
       </v-container>

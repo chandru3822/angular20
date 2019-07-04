@@ -119,18 +119,18 @@
                          group="submissionChecklist" @start="drag=true" @end="drag=false">
                 <v-list v-for="item in ahjPermit.submissionDetails.submissionChecklistItems"
                         :key="item.id">
-                  <v-list-tile v-show="ahjPermit.submissionDetails.submissionChecklistItems.length > 0"
+                  <v-list-item v-show="ahjPermit.submissionDetails.submissionChecklistItems.length > 0"
                                class="grab" v-bind:title="item.details">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                       <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
-                    </v-list-tile-action>
-                    <v-list-tile-content>
-                      <v-list-tile-title v-text="item.details"></v-list-tile-title>
-                    </v-list-tile-content>
-                    <v-list-tile-action>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title v-text="item.details"></v-list-item-title>
+                    </v-list-item-content>
+                    <v-list-item-action>
                       <v-icon>drag_handle</v-icon>
-                    </v-list-tile-action>
-                  </v-list-tile>
+                    </v-list-item-action>
+                  </v-list-item>
                 </v-list>
               </draggable>
               <div class="empty-list"
@@ -199,18 +199,18 @@
                          group="submissionChecklist" @start="drag=true" @end="drag=false">
                 <v-list v-for="item in ahjPermit.revisionSubmissionDetails.revisionSubmissionChecklistItems"
                         :key="item.id">
-                  <v-list-tile v-show="ahjPermit.revisionSubmissionDetails.revisionSubmissionChecklistItems.length > 0"
+                  <v-list-item v-show="ahjPermit.revisionSubmissionDetails.revisionSubmissionChecklistItems.length > 0"
                                class="grab" v-bind:title="item.details">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                       <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
-                    </v-list-tile-action>
-                    <v-list-tile-content>
-                      <v-list-tile-title v-text="item.details"></v-list-tile-title>
-                    </v-list-tile-content>
-                    <v-list-tile-action>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title v-text="item.details"></v-list-item-title>
+                    </v-list-item-content>
+                    <v-list-item-action>
                       <v-icon>drag_handle</v-icon>
-                    </v-list-tile-action>
-                  </v-list-tile>
+                    </v-list-item-action>
+                  </v-list-item>
                 </v-list>
               </draggable>
               <div class="empty-list"
@@ -280,18 +280,18 @@
                          group="submissionChecklist" @start="drag=true" @end="drag=false">
                 <v-list v-for="item in ahjPermit.asBuiltSubmissionDetails.asBuiltSubmissionChecklistItems"
                         :key="item.id">
-                  <v-list-tile v-show="ahjPermit.asBuiltSubmissionDetails.asBuiltSubmissionChecklistItems.length > 0"
+                  <v-list-item v-show="ahjPermit.asBuiltSubmissionDetails.asBuiltSubmissionChecklistItems.length > 0"
                                class="grab" v-bind:title="item.details">
-                    <v-list-tile-action>
+                    <v-list-item-action>
                       <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
-                    </v-list-tile-action>
-                    <v-list-tile-content>
-                      <v-list-tile-title v-text="item.details"></v-list-tile-title>
-                    </v-list-tile-content>
-                    <v-list-tile-action>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title v-text="item.details"></v-list-item-title>
+                    </v-list-item-content>
+                    <v-list-item-action>
                       <v-icon>drag_handle</v-icon>
-                    </v-list-tile-action>
-                  </v-list-tile>
+                    </v-list-item-action>
+                  </v-list-item>
                 </v-list>
               </draggable>
               <div class="empty-list"
@@ -358,16 +358,16 @@
               <v-list v-show="ahjPermit.deliveryDetails.documents.length > 0"
                       v-for="document in ahjPermit.deliveryDetails.documents"
                       :key="document.id">
-                <v-list-tile v-bind:title="document.name">
-                  <v-list-tile-content>
-                    <v-list-tile-title>
+                <v-list-item v-bind:title="document.name">
+                  <v-list-item-content>
+                    <v-list-item-title>
                       <a @click="downloadInspectionDocument(document.id)" class="list-link">{{document.name}}</a>
-                    </v-list-tile-title>
-                  </v-list-tile-content>
-                  <v-list-tile-action>
+                    </v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
                     <v-icon small class="mr-3" @click="deleteInspectionDocument(document.id)">delete</v-icon>
-                  </v-list-tile-action>
-                </v-list-tile>
+                  </v-list-item-action>
+                </v-list-item>
               </v-list>
               <div class="empty-list" v-show="ahjPermit.deliveryDetails.documents.length < 1">
                 No documents uploaded
@@ -484,16 +484,16 @@
           </v-form>
           <v-list v-show="submissionLinks.length > 0" v-for="link in submissionLinks"
                   :key="link.id" class="px-2">
-            <v-list-tile v-bind:title="link.name">
-              <v-list-tile-content class="flex-row-center">
-                <v-list-tile-action>
+            <v-list-item v-bind:title="link.name">
+              <v-list-item-content class="flex-row-center">
+                <v-list-item-action>
                   <v-icon small @click="editLink(link, 1)">edit</v-icon>
-                </v-list-tile-action>
-                <v-list-tile-title>
+                </v-list-item-action>
+                <v-list-item-title>
                   <a v-bind:href="link.url" class="list-link">{{link.name}}</a>
-                </v-list-tile-title>
-              </v-list-tile-content>
-            </v-list-tile>
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
           </v-list>
           <div class="empty-list" v-show="submissionLinks.length < 1">
             No links found
@@ -617,16 +617,16 @@
           </v-form>
           <v-list v-show="followUpAndDeliveryLinks.length > 0" v-for="link in followUpAndDeliveryLinks"
                   :key="link.id" class="px-2">
-            <v-list-tile v-bind:title="link.name">
-              <v-list-tile-content class="flex-row-center">
-                <v-list-tile-action>
+            <v-list-item v-bind:title="link.name">
+              <v-list-item-content class="flex-row-center">
+                <v-list-item-action>
                   <v-icon small @click="editLink(link, 2)">edit</v-icon>
-                </v-list-tile-action>
-                <v-list-tile-title>
+                </v-list-item-action>
+                <v-list-item-title>
                   <a v-bind:href="link.url" class="list-link">{{link.name}}</a>
-                </v-list-tile-title>
-              </v-list-tile-content>
-            </v-list-tile>
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
           </v-list>
           <div class="empty-list" v-show="followUpAndDeliveryLinks.length < 1">
             No links found
@@ -717,13 +717,13 @@
           </v-toolbar>
           <v-list v-show="servicingFots.length > 0" v-for="fot in servicingFots"
                   :key="fot.officeId" class="px-2">
-            <v-list-tile v-bind:title="fot.office">
-              <v-list-tile-content class="flex-row-center">
-                <v-list-tile-title>
+            <v-list-item v-bind:title="fot.office">
+              <v-list-item-content class="flex-row-center">
+                <v-list-item-title>
                   <a class="list-link">{{fot.office}}</a>
-                </v-list-tile-title>
-              </v-list-tile-content>
-            </v-list-tile>
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
           </v-list>
           <div class="empty-list" v-show="servicingFots.length < 1">
             No Servicing FOT's found
@@ -1512,9 +1512,9 @@
   .v-toolbar__title {
     font-size: 1em !important;
   }
-  .v-text-field, .v-select, .v-input /deep/ label {
-    font-size: 0.95em !important;
-  }
+  /*.v-text-field, .v-select, .v-input /deep/ label {*/
+    /*font-size: 0.95em !important;*/
+  /*}*/
   .v-list__tile__title {
     font-size: 0.8em !important;
   }

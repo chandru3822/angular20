@@ -9,9 +9,11 @@
  * OVERRIDES FOR VUETIFY THEMES
 */
 .theme--light,
+.theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
 .theme--light.v-input:not(.v-input--is-disabled) input,
 .theme--light.v-select .v-select__selections {
-  color: var(--v-primaryText-base) !important;
+  /*color: var(--v-primaryText-base) !important;*/
+  color: #1F3C73 !important;
 }
 /*.theme--light {*/
   /*color: var(--v-primaryText-base) !important;*/
@@ -31,7 +33,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  background-color: var(--v-secondaryMaster-base);
+  background-color: var(--v-secondary-base);
   min-height: 100vh;
 }
 .app-button{
@@ -100,7 +102,8 @@ label[for="adminOriginatorSelect"] {
 }
 
 .shaded-row{
-  background-color: var(--v-rowShadeCustom-base) !important;
+  /*background-color: var(--v-rowShadeCustom-base) !important;*/
+  background-color: #EAEAF4 !important;
 }
 
 .clickable {

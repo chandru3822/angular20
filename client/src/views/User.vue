@@ -461,7 +461,7 @@
                     :headers="assetsTableHeaders"
                     :items="assets"
                     item-key="id"
-                    hide-actions
+                    hide-default-footer
                   >
                     <template #items="props">
                       <tr>

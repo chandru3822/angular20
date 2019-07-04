@@ -73,15 +73,15 @@
                         @input="fetchUsers"
                       >
                         <template #prepend-item>
-                          <v-list-tile
+                          <v-list-item
                             ripple
                             @click="toggleSelectAllAreas"
                           >
-                            <v-list-tile-action>
+                            <v-list-item-action>
                               <v-icon :color="externalFilters.areaIds.length > 0 ? 'primary' : ''">{{ areaIcon }}</v-icon>
-                            </v-list-tile-action>
-                            <v-list-tile-title>Select All</v-list-tile-title>
-                          </v-list-tile>
+                            </v-list-item-action>
+                            <v-list-item-title>Select All</v-list-item-title>
+                          </v-list-item>
                           <v-divider class="mt-2"></v-divider>
                         </template>
                         <template #selection="{item, index}">
@@ -108,15 +108,15 @@
                         @input="fetchUsers"
                       >
                         <template #prepend-item>
-                          <v-list-tile
+                          <v-list-item
                             ripple
                             @click="toggleSelectAllRoles"
                           >
-                            <v-list-tile-action>
+                            <v-list-item-action>
                               <v-icon :color="externalFilters.roleIds.length > 0 ? 'primary' : ''">{{ roleIcon }}</v-icon>
-                            </v-list-tile-action>
-                            <v-list-tile-title>Select All</v-list-tile-title>
-                          </v-list-tile>
+                            </v-list-item-action>
+                            <v-list-item-title>Select All</v-list-item-title>
+                          </v-list-item>
                           <v-divider class="mt-2"></v-divider>
                         </template>
                         <template #selection="{item, index}">
@@ -192,15 +192,15 @@
                 </v-btn>
               </template>
               <v-list>
-                <v-list-tile
+                <v-list-item
                   v-for="(header, index) in headers"
                   :key="index"
                   @click="header.show = !header.show"
                 >
                   <v-icon class="mr-3" v-if="!header.show">add</v-icon>
                   <v-icon class="mr-3" v-if="header.show">remove</v-icon>
-                  <v-list-tile-title>{{ header.text }}</v-list-tile-title>
-                </v-list-tile>
+                  <v-list-item-title>{{ header.text }}</v-list-item-title>
+                </v-list-item>
               </v-list>
             </v-menu>
           </v-flex>
@@ -235,15 +235,15 @@
             @input="updateSelectStatuses"
           >
             <template #prepend-item>
-              <v-list-tile
+              <v-list-item
                 ripple
                 @click="toggleSelectAllStatuses"
               >
-                <v-list-tile-action>
+                <v-list-item-action>
                   <v-icon :color="selectedStatuses.length > 0 ? 'primary' : ''">{{ statusIcon }}</v-icon>
-                </v-list-tile-action>
-                <v-list-tile-title>Select All</v-list-tile-title>
-              </v-list-tile>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
               <v-divider class="mt-2"></v-divider>
             </template>
             <template #selection="{item, index}">
@@ -316,11 +316,11 @@
         <v-data-table
           :headers="visibleHeaders"
           :items="filteredUsers"
-          :pagination.sync="pagination"
+          :options="pagination"
           item-key="id"
           class="elevation-1"
           v-model="selected"
-          select-all
+          show-select
         >
           <template #headers="props">
             <tr>
@@ -368,17 +368,17 @@
                     @change="updateSearchFilters"
                   >
                     <template #prepend-item>
-                      <v-list-tile ripple>
-                        <v-list-tile-action>
+                      <v-list-item ripple>
+                        <v-list-item-action>
                           <v-icon
                             :color="inlineFilters[header.value].value.length > 0 ? 'primary' : ''"
                             :disabled="disableInlineFilterSelectAll(inlineFilters[header.value])"
                             @click="toggleSelectAllFilter(header.value)"
                           >{{ inlineFilterIcon(header.value) }}
                           </v-icon>
-                        </v-list-tile-action>
-                        <v-list-tile-title>Select All</v-list-tile-title>
-                      </v-list-tile>
+                        </v-list-item-action>
+                        <v-list-item-title>Select All</v-list-item-title>
+                      </v-list-item>
                       <v-divider class="mt-2"></v-divider>
                     </template>
 
