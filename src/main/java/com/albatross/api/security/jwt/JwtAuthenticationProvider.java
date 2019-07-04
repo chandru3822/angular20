@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -45,6 +46,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
                 "Cannot initialize without SecurityService");
         userCache = CacheBuilder.newBuilder()
                                 .maximumSize(500)
+                                .expireAfterWrite(30, TimeUnit.SECONDS)
                                 .build(CacheLoader.from(securityService::getUserDetailsById));
     }
 
