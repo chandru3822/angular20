@@ -28,5 +28,11 @@ public class OrgService {
     List<Org> results = sqlCache.query("org.getAllForCompany", params, Org.class);
     return results;
   }
+  public List<Org> getOwningOrgsForCompany(Long companyId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    List<Org> results = sqlCache.query("org.getOwningOrgsForCompany", params, Org.class);
+    return results;
+  }
 
 }

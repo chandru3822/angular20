@@ -37,4 +37,9 @@ public class ProcessStepController {
   public void deleteStep(@PathVariable Long id) {
     processStepService.deleteStep(id);
   }
+
+  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateStep(@RequestBody ProcessStep processStep) {
+    processStepService.updateStep(processStep);
+  }
 }

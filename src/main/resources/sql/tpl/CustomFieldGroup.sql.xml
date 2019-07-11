@@ -58,8 +58,8 @@
   ]]></customFieldGroup.getAvailableCustomFieldsInGroup>
 
   <customFieldGroup.insertCustomFieldGroupType><![CDATA[
-    insert into flow.custom_field_group_type(group_name, object_type_id, group_order)
-    values (:groupName, :objectTypeId, :groupOrder);
+    insert into flow.custom_field_group_type(group_name, object_type_id, group_order, process_step_id, process_step_custom_field_type_id)
+    values (:groupName, :objectTypeId, :groupOrder, :processStepId, :processStepCustomFieldTypeId);
   ]]></customFieldGroup.insertCustomFieldGroupType>
 
   <customFieldGroup.updateCustomFieldGroupType><![CDATA[
@@ -76,8 +76,8 @@
   ]]></customFieldGroup.deleteCustomFieldGroupType>
 
   <customFieldGroup.addFieldToGroup><![CDATA[
-    insert into flow.custom_field_group(custom_field_group_type_id, custom_field_id, process_step_custom_field_id, field_order)
-    values (:customFieldGroupTypeId, :customFieldId, :processStepCustomFieldId, :fieldOrder)
+    insert into flow.custom_field_group(custom_field_group_type_id, custom_field_id, ancillary_custom_field_group_id, field_order)
+    values (:customFieldGroupTypeId, :customFieldId, :ancillaryCustomFieldGroupId, :fieldOrder)
   ]]></customFieldGroup.addFieldToGroup>
 
   <customFieldGroup.updateFieldInGroup><![CDATA[
@@ -91,6 +91,12 @@
       set archived = true
     where id = :id
   ]]></customFieldGroup.deleteFieldFromGroup>
+
+  <customFieldGroup.deleteAllFieldsInGroup><![CDATA[
+    update flow.custom_field_group
+      set archived = true
+    where custom_field_group_type_id = :id
+  ]]></customFieldGroup.deleteAllFieldsInGroup>
 
 
 

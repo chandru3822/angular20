@@ -11,8 +11,7 @@
         </v-toolbar-items>
       </v-toolbar>
       <v-container>
-        <!--<v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')"-->
-        <v-list v-for="(ps, index) in processSteps"
+        <v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')"
                 :key="index">
           <v-list-item>
             <v-list-item-content>

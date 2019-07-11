@@ -101,6 +101,10 @@ label[for="adminOriginatorSelect"] {
   font-weight: 600;
 }
 
+.fix-opacity {
+  opacity: 100 !important;
+}
+
 .shaded-row{
   /*background-color: var(--v-rowShadeCustom-base) !important;*/
   background-color: #EAEAF4 !important;
@@ -146,8 +150,9 @@ label[for="adminOriginatorSelect"] {
     display: flex;
   }
   .router-view{
-    margin-left: 107px !important;
-    margin-right: 107px !important;
+    /* @joe - do we even need this?  lets just use the full screen till they complain. i hate the white space on the sides */
+    /*margin-left: 107px !important;*/
+    /*margin-right: 107px !important;*/
   }
   .page-header{
     font-size: 40px;

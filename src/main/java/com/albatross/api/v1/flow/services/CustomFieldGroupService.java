@@ -2,7 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldGroupType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("customFieldGroupTypeId", customField.getCustomFieldGroupTypeId());
     params.put("customFieldId", customField.getId());
-    params.put("processStepCustomFieldId", null);
+    params.put("ancillaryCustomFieldGroupId", customField.getAncillaryCustomFieldGroupId());
     params.put("fieldOrder", customField.getFieldOrder());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.addFieldToGroup", params, "id").longValue();
@@ -39,6 +39,12 @@ public class CustomFieldGroupService {
     // do i need to return anything?
   }
 
+  public void deleteAllFieldsInGroup(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    sqlCache.update("customFieldGroup.deleteAllFieldsInGroup", params);
+  }
 
   public void deleteFieldFromGroup(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -61,11 +67,11 @@ public class CustomFieldGroupService {
     }
   }
 
-  public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId(Long objectTypeId) {
+  public List<CustomFieldGroupType> getCustomFieldGroupsByObjectTypeId(Long objectTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("objectTypeId", objectTypeId);
 
-    List<CustomFieldGroup> results = sqlCache.query("customFieldGroup.getByObjectTypeId", params, CustomFieldGroup.class);
+    List<CustomFieldGroupType> results = sqlCache.query("customFieldGroup.getByObjectTypeId", params, CustomFieldGroupType.class);
     return results;
   }
 
@@ -86,16 +92,18 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public CustomFieldGroup addCustomFieldGroupType(CustomFieldGroup customFieldGroup) {
+  public CustomFieldGroupType addCustomFieldGroupType(CustomFieldGroupType customFieldGroupType) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("groupName", customFieldGroup.getGroupName());
-    params.put("objectTypeId", customFieldGroup.getObjectTypeId());
-    params.put("groupOrder", customFieldGroup.getGroupOrder());
+    params.put("groupName", customFieldGroupType.getGroupName());
+    params.put("objectTypeId", customFieldGroupType.getObjectTypeId());
+    params.put("groupOrder", customFieldGroupType.getGroupOrder());
+    params.put("processStepId", customFieldGroupType.getProcessStepId());
+    params.put("processStepCustomFieldTypeId", customFieldGroupType.getProcessStepCustomFieldTypeId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroupType", params, "id").longValue();
     params.put("id", id);
 
-    Optional<CustomFieldGroup> group = sqlCache.get("customFieldGroup.getOne", params, CustomFieldGroup.class);
+    Optional<CustomFieldGroupType> group = sqlCache.get("customFieldGroup.getOne", params, CustomFieldGroupType.class);
 
     return group.orElse(null);
   }
@@ -107,21 +115,21 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroup.deleteCustomFieldGroupType", params);
   }
 
-  public CustomFieldGroup updateCustomFieldGroupType(CustomFieldGroup customFieldGroup) {
+  public CustomFieldGroupType updateCustomFieldGroupType(CustomFieldGroupType customFieldGroupType) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", customFieldGroup.getId());
-    params.put("groupOrder", customFieldGroup.getGroupOrder());
-    params.put("groupName", customFieldGroup.getGroupName());
+    params.put("id", customFieldGroupType.getId());
+    params.put("groupOrder", customFieldGroupType.getGroupOrder());
+    params.put("groupName", customFieldGroupType.getGroupName());
 
     sqlCache.update("customFieldGroup.updateCustomFieldGroupType", params);
 
-    Optional<CustomFieldGroup> group = sqlCache.get("customFieldGroup.getOne", params, CustomFieldGroup.class);
+    Optional<CustomFieldGroupType> group = sqlCache.get("customFieldGroup.getOne", params, CustomFieldGroupType.class);
 
     return group.orElse(null);
   }
 
-  public void updateCustomFieldGroupTypes(List<CustomFieldGroup> customFieldGroups) {
-    for(CustomFieldGroup cfg : customFieldGroups){
+  public void updateCustomFieldGroupTypes(List<CustomFieldGroupType> customFieldGroupTypes) {
+    for(CustomFieldGroupType cfg : customFieldGroupTypes){
       updateCustomFieldGroupType(cfg);
     }
   }

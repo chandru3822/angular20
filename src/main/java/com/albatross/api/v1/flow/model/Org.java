@@ -13,6 +13,6 @@ public class Org {
 
   private Long id, companyId, parentOrgId;
   private String orgName;
-  private Boolean activeFlag;
+  private Boolean activeFlag, owningOrg;
 }
 

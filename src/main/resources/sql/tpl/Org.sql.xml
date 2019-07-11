@@ -8,4 +8,14 @@
     ]]>
   </org.getAllForCompany>
 
+  <org.getOwningOrgsForCompany>
+    <![CDATA[
+      select o.*
+      from flow.org o
+      where o.company_id = :companyId
+        and o.owning_org is true
+      order by o.org_name
+    ]]>
+  </org.getOwningOrgsForCompany>
+
 </sql>

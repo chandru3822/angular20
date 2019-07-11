@@ -30,4 +30,9 @@ public class OrgController {
     return orgService.getOrgsForCompany(companyId);
   }
 
+  @RequestMapping(value = "/owning", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Org> getOwningOrgsForCompany(@PathVariable Long companyId) {
+    return orgService.getOwningOrgsForCompany(companyId);
+  }
+
 }

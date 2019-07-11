@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 public class CustomField {
 
-  private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById, customFieldGroupTypeId;
+  private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById, customFieldGroupTypeId, ancillaryCustomFieldGroupId;
   private String fieldName, objectType, groupName;
   private Boolean archived;
   private List<CustomFieldObjectType> customFieldObjectTypes;
