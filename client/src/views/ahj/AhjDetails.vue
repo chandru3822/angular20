@@ -92,4 +92,9 @@
     font-size: 20px;
     text-align: right;
   }
+  .v-tab--active {
+    /* this isn't working for some reason... so, temporary fix below! */
+    /*color: var(--v-primaryCustom-base) !important;*/
+    color: #1F3C73;
+  }
 </style>
