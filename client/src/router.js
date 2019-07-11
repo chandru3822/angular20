@@ -57,15 +57,15 @@ export default new Router({
         children: [
           {
             path: 'permit',
-            component: () => import (/* webpackChunkName: "permit" */ './views/ahj/components/AhjPermit.vue')
+            component: () => import (/* webpackChunkName: "permit" */ './views/ahj/AhjPermit.vue')
           },
           {
             path: 'inspection',
-            component: () => import (/* webpackChunkName: "inspection" */ './views/ahj/components/AhjInspection.vue')
+            component: () => import (/* webpackChunkName: "inspection" */ './views/ahj/AhjInspection.vue')
           },
           {
             path: 'design',
-            component: () => import (/* webpackChunkName: "design" */ './views/ahj/components/AhjDesign.vue')
+            component: () => import (/* webpackChunkName: "design" */ './views/ahj/AhjDesign.vue')
           }
         ]
       }, {

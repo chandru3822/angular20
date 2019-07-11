@@ -1,8 +1,9 @@
+<!--suppress CssInvalidPseudoSelector -->
 <template>
   <v-layout column nowrap fill-height>
     <v-flex xs12 text-xs-right fill-height>
       <a @click="resetForm()" class="cancel-link" style="margin-right: 10px">Cancel</a>
-      <v-btn id="save-btn" color="primaryButton" class="white--text">Save</v-btn>
+      <v-btn id="save-btn" color="primaryButton" class="white--text" @click="saveAhjPermit()">Save</v-btn>
     </v-flex>
 
     <v-layout row wrap>
@@ -13,72 +14,73 @@
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Submission Details
           </v-card-title>
-          <v-card-text>
-            <v-select label="Submittal Method" :items="submittalMethods" box
-                      v-model="ahjPermit.submissionDetails.submittalMethod"
+          <v-card-text class="mt-4">
+            <v-select label="Submittal Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.submittalTypeId"
             ></v-select>
-            <v-select label="HOA Approval Required for Submission" box
+            <v-select label="HOA Approval Required for Submission" filled
                       :items="approvalRequiredOptions"
-                      v-model="ahjPermit.submissionDetails.hoaApprovalRequired"
+                      v-model="ahjPermit.hoaApprovalRequiredTypeId"
             ></v-select>
-            <v-select label="NEM Approval Required for Submission" box
+            <v-select label="NEM Approval Required for Submission" filled
                       :items="approvalRequiredOptions"
-                      v-model="ahjPermit.submissionDetails.nemApprovalRequired"
+                      v-model="ahjPermit.nemApprovalRequiredTypeId"
             ></v-select>
-            <v-text-field v-model="ahjPermit.submissionDetails.depositAmount" type="number"
-                          label="Deposit Amount" prefix="$" box step="0.01" min="0.00"
+            <v-text-field v-model="ahjPermit.depositAmount" type="number"
+                          label="Deposit Amount" prepend-inner-icon="attach_money"
+                          filled step="0.01" min="0.00"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" box
-                      v-model="ahjPermit.submissionDetails.paymentMethod"
+            <v-select label="Payment Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.submissionPaymentTypeId"
             ></v-select>
             <div class="flex-row">
-              <v-text-field v-model="ahjPermit.submissionDetails.businessLicense"
-                            label="Business License" box
+              <v-text-field v-model="ahjPermit.businessLicense"
+                            label="Business License" filled
                             style="width: 50%; margin-right: 20px;"></v-text-field>
               <v-flex style="width: 50%">
                 <v-menu v-model="businessLicenseMenu" :close-on-content-click="false"
-                        :nudge-right="40" lazy transition="scale-transition" offset-y
+                        :nudge-right="40" transition="scale-transition" offset-y
                         full-width min-width="290px">
                   <template #activator="{on}">
-                    <v-text-field v-model="ahjPermit.submissionDetails.businessLicenseDate" box
+                    <v-text-field v-model="ahjPermit.businessLicenseExpirationDate" filled
                                   label="mm/dd/yyyy" append-icon="event" readonly v-on="on">
                     </v-text-field>
                   </template>
-                  <v-date-picker v-model="ahjPermit.submissionDetails.businessLicenseDate" @input="businessLicenseMenu=false"></v-date-picker>
+                  <v-date-picker v-model="ahjPermit.businessLicenseExpirationDate" @input="businessLicenseMenu=false"></v-date-picker>
                 </v-menu>
               </v-flex>
             </div>
             <div class="flex-row">
-              <v-text-field v-model="ahjPermit.submissionDetails.contractorLicense"
-                            label="Contractor License" box
+              <v-text-field v-model="ahjPermit.contractorLicense"
+                            label="Contractor License" filled
                             style="width: 50%; margin-right: 20px;"></v-text-field>
               <v-flex style="width: 50%">
                 <v-menu v-model="contractorLicenseMenu" :close-on-content-click="false"
-                        :nudge-right="40" lazy transition="scale-transition" offset-y
+                        :nudge-right="40" transition="scale-transition" offset-y
                         full-width min-width="290px">
                   <template #activator="{on}">
                     <v-text-field label="mm/dd/yyyy" append-icon="event" readonly
-                                  v-on="on" box
-                                  v-model="ahjPermit.submissionDetails.contractorLicenseDate"></v-text-field>
+                                  v-on="on" filled
+                                  v-model="ahjPermit.contractorLicenseExpirationDate"></v-text-field>
                   </template>
-                  <v-date-picker v-model="ahjPermit.submissionDetails.contractorLicenseDate" @input="contractorLicenseMenu=false"></v-date-picker>
+                  <v-date-picker v-model="ahjPermit.contractorLicenseExpirationDate" @input="contractorLicenseMenu=false"></v-date-picker>
                 </v-menu>
               </v-flex>
             </div>
             <div class="flex-row">
-              <v-text-field v-model="ahjPermit.submissionDetails.otherLicense"
-                            label="Other License" box
+              <v-text-field v-model="ahjPermit.otherLicense"
+                            label="Other License" filled
                             style="width: 50%; margin-right: 20px;"></v-text-field>
               <v-flex style="width: 50%">
                 <v-menu v-model="otherLicenseMenu" :close-on-content-click="false"
-                        :nudge-right="40" lazy transition="scale-transition"
+                        :nudge-right="40" transition="scale-transition"
                         offset-y full-width min-width="290px">
                   <template #activator="{on}">
-                    <v-text-field v-model="ahjPermit.submissionDetails.otherLicenseDate"
+                    <v-text-field v-model="ahjPermit.otherLicenseExpirationDate"
                                   label="mm/dd/yyyy" append-icon="event" readonly
-                                  v-on="on" box></v-text-field>
+                                  v-on="on" filled></v-text-field>
                   </template>
-                  <v-date-picker v-model="ahjPermit.submissionDetails.otherLicenseDate"
+                  <v-date-picker v-model="ahjPermit.otherLicenseExpirationDate"
                                  @input="otherLicenseMenu=false"></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -91,14 +93,14 @@
                 <v-spacer></v-spacer>
                 <v-btn icon color="#ddd" style="border-radius: 3px">
                   <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
-                          @click="addSubmissionChecklistItem()">add</v-icon>
+                          @click="addSubmissionChecklistItem()" class="white--text">add</v-icon>
                   <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
-                          @click="hideSubmissionChecklistCtrls()">remove</v-icon>
+                          @click="hideSubmissionChecklistCtrls()" class="white--text">remove</v-icon>
                 </v-btn>
               </v-toolbar>
               <div class="checklist-item-edit-ctrls"
                    v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls">
-                <v-textarea required label="Details" auto-grow box
+                <v-textarea required label="Details" auto-grow filled
                             style="margin: 15px 0 -15px 0"
                             v-model="editedSubmissionChecklistItem.details">
                 </v-textarea>
@@ -106,21 +108,21 @@
                   <a @click="hideSubmissionChecklistCtrls()"
                      class="cancel-link">Cancel</a>
                   <v-btn v-show="submissionChecklistEditCtrls" color="brRed"
-                         @click="deleteSubmissionChecklistItem()" style="color: #fff !important">
+                         @click="deleteSubmissionChecklistItem()" class="white--text">
                     Delete
                   </v-btn>
-                  <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton" style="color: #fff !important"
-                         v-bind:disabled="editedSubmissionChecklistItem.details === ''">
+                  <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton" class="white--text"
+                         :disabled="editedSubmissionChecklistItem.details === ''">
                     {{submissionChecklistEditCtrls ? 'Update' : 'Add'}}
                   </v-btn>
                 </div>
               </div>
-              <draggable v-model="ahjPermit.submissionDetails.submissionChecklistItems"
+              <draggable v-model="ahjPermit.submissionChecklist"
                          group="submissionChecklist" @start="drag=true" @end="drag=false">
-                <v-list v-for="item in ahjPermit.submissionDetails.submissionChecklistItems"
+                <v-list v-for="item in ahjPermit.submissionChecklist"
                         :key="item.id">
-                  <v-list-item v-show="ahjPermit.submissionDetails.submissionChecklistItems.length > 0"
-                               class="grab" v-bind:title="item.details">
+                  <v-list-item v-show="ahjPermit.submissionChecklist.length > 0"
+                               class="grab" :title="item.details">
                     <v-list-item-action>
                       <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
                     </v-list-item-action>
@@ -134,12 +136,12 @@
                 </v-list>
               </draggable>
               <div class="empty-list"
-                   v-show="ahjPermit.submissionDetails.submissionChecklistItems.length < 1">
+                   v-show="ahjPermit.submissionChecklist.length < 1">
                 This checklist doesn't have any items
               </div>
             </v-card>
-            <v-textarea label="Submission Instructions" box auto-grow
-                        v-model="ahjPermit.submissionDetails.submissionInstructions"
+            <v-textarea label="Submission Instructions" filled auto-grow
+                        v-model="ahjPermit.submissionNote"
                         style="margin-top: 30px"></v-textarea>
           </v-card-text>
         </v-card>
@@ -152,15 +154,16 @@
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Revision Submission Details
           </v-card-title>
-          <v-card-text>
-            <v-select label="Submittal Method" :items="submittalMethods" box
-                      v-model="ahjPermit.revisionSubmissionDetails.submittalMethod"
+          <v-card-text class="mt-4">
+            <v-select label="Submittal Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.revisionSubmittalTypeId"
             ></v-select>
-            <v-text-field label="Fee Amount" prefix="$" box type="number" step="0.01" min="0.00"
-                          v-model="ahjPermit.revisionSubmissionDetails.feeAmount"
+            <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
+                          filled type="number" step="0.01" min="0.00"
+                          v-model="ahjPermit.revisionFeeAmount"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" box
-                      v-model="ahjPermit.revisionSubmissionDetails.paymentMethod"
+            <v-select label="Payment Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.revisionPaymentTypeId"
             ></v-select>
             <v-card>
               <v-toolbar class="primaryCustom">
@@ -171,14 +174,14 @@
                 <v-spacer></v-spacer>
                 <v-btn icon color="#ddd" style="border-radius: 3px">
                 <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
-                        @click="addSubmissionChecklistItem()">add</v-icon>
+                        @click="addSubmissionChecklistItem()" class="white--text">add</v-icon>
                 <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
-                        @click="hideSubmissionChecklistCtrls()">remove</v-icon>
+                        @click="hideSubmissionChecklistCtrls()" class="white--text">remove</v-icon>
                 </v-btn>
               </v-toolbar>
               <div class="checklist-item-edit-ctrls"
                    v-show="revisionSubmissionChecklistAddCtrls || revisionSubmissionChecklistEditCtrls">
-                <v-textarea required label="Details" auto-grow box
+                <v-textarea required label="Details" auto-grow filled
                             style="margin: 15px 0 -15px 0"
                             v-model="editedRevisionSubmissionChecklistItem.details">
                 </v-textarea>
@@ -190,17 +193,17 @@
                     Delete
                   </v-btn>
                   <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton"
-                         v-bind:disabled="editedRevisionSubmissionChecklistItem.details === ''">
+                         :disabled="editedRevisionSubmissionChecklistItem.details === ''">
                     {{revisionSubmissionChecklistEditCtrls ? 'Update' : 'Add'}}
                   </v-btn>
                 </div>
               </div>
-              <draggable v-model="ahjPermit.revisionSubmissionDetails.revisionSubmissionChecklistItems"
+              <draggable v-model="ahjPermit.revisionChecklist"
                          group="submissionChecklist" @start="drag=true" @end="drag=false">
-                <v-list v-for="item in ahjPermit.revisionSubmissionDetails.revisionSubmissionChecklistItems"
+                <v-list v-for="item in ahjPermit.revisionChecklist"
                         :key="item.id">
-                  <v-list-item v-show="ahjPermit.revisionSubmissionDetails.revisionSubmissionChecklistItems.length > 0"
-                               class="grab" v-bind:title="item.details">
+                  <v-list-item v-show="ahjPermit.revisionChecklist.length > 0"
+                               class="grab" :title="item.details">
                     <v-list-item-action>
                       <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
                     </v-list-item-action>
@@ -214,13 +217,13 @@
                 </v-list>
               </draggable>
               <div class="empty-list"
-                   v-show="ahjPermit.revisionSubmissionDetails.revisionSubmissionChecklistItems.length < 1">
+                   v-show="ahjPermit.revisionChecklist.length < 1">
                 This checklist doesn't have any items
               </div>
             </v-card>
-            <v-textarea label="Revision Submission Instructions" box auto-grow
+            <v-textarea label="Revision Submission Instructions" filled auto-grow
                         style="margin-top: 30px"
-                        v-model="ahjPermit.revisionSubmissionDetails.submittalMethod">
+                        v-model="ahjPermit.revisionNote">
             </v-textarea>
           </v-card-text>
         </v-card>
@@ -233,15 +236,16 @@
           <v-card-title class="primaryCustom white--text font-weight-bold">
             As-Built Submission Details
           </v-card-title>
-          <v-card-text>
-            <v-select label="Submittal Method" :items="submittalMethods" box
-                      v-model="ahjPermit.asBuiltSubmissionDetails.submittalMethod"
+          <v-card-text class="mt-4">
+            <v-select label="Submittal Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.asBuiltSubmittalTypeId"
             ></v-select>
-            <v-text-field label="Fee Amount" prefix="$" box type="number" step="0.01" min="0.00"
-                          v-model="ahjPermit.asBuiltSubmissionDetails.feeAmount"
+            <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
+                          filled type="number" step="0.01" min="0.00"
+                          v-model="ahjPermit.asBuiltFeeAmount"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" box
-                      v-model="ahjPermit.asBuiltSubmissionDetails.paymentMethod"
+            <v-select label="Payment Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.asBuiltPaymentTypeId"
             ></v-select>
             <v-card>
               <v-toolbar class="primaryCustom">
@@ -252,14 +256,14 @@
                 <v-spacer></v-spacer>
                 <v-btn icon color="#ddd" style="border-radius: 3px">
                   <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
-                          @click="addSubmissionChecklistItem()">add</v-icon>
+                          @click="addSubmissionChecklistItem()" class="white--text">add</v-icon>
                   <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
-                          @click="hideSubmissionChecklistCtrls()">remove</v-icon>
+                          @click="hideSubmissionChecklistCtrls()" class="white--text">remove</v-icon>
                 </v-btn>
               </v-toolbar>
               <div class="checklist-item-edit-ctrls"
                    v-show="asBuiltSubmissionChecklistAddCtrls || asBuiltSubmissionChecklistEditCtrls">
-                <v-textarea required label="Details" auto-grow box
+                <v-textarea required label="Details" auto-grow filled
                             style="margin: 15px 0 -15px 0"
                             v-model="editedAsBuiltSubmissionChecklistItem.details">
                 </v-textarea>
@@ -271,17 +275,17 @@
                     Delete
                   </v-btn>
                   <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton" class="white--text"
-                         v-bind:disabled="editedAsBuiltSubmissionChecklistItem.details === ''">
+                         :disabled="editedAsBuiltSubmissionChecklistItem.details === ''">
                     {{asBuiltSubmissionChecklistEditCtrls ? 'Update' : 'Add'}}
                   </v-btn>
                 </div>
               </div>
-              <draggable v-model="ahjPermit.asBuiltSubmissionDetails.asBuiltSubmissionChecklistItems"
+              <draggable v-model="ahjPermit.asBuiltChecklist"
                          group="submissionChecklist" @start="drag=true" @end="drag=false">
-                <v-list v-for="item in ahjPermit.asBuiltSubmissionDetails.asBuiltSubmissionChecklistItems"
+                <v-list v-for="item in ahjPermit.asBuiltChecklist"
                         :key="item.id">
-                  <v-list-item v-show="ahjPermit.asBuiltSubmissionDetails.asBuiltSubmissionChecklistItems.length > 0"
-                               class="grab" v-bind:title="item.details">
+                  <v-list-item v-show="ahjPermit.asBuiltChecklist.length > 0"
+                               class="grab" :title="item.details">
                     <v-list-item-action>
                       <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
                     </v-list-item-action>
@@ -295,13 +299,13 @@
                 </v-list>
               </draggable>
               <div class="empty-list"
-                   v-show="ahjPermit.asBuiltSubmissionDetails.asBuiltSubmissionChecklistItems.length < 1">
+                   v-show="ahjPermit.asBuiltChecklist.length < 1">
                 This checklist doesn't have any items
               </div>
             </v-card>
-            <v-textarea label="As-Built Submission Instructions" box auto-grow
+            <v-textarea label="As-Built Submission Instructions" filled auto-grow
                         style="margin-top: 30px"
-                        v-model="ahjPermit.asBuiltSubmissionDetails.submittalMethod">
+                        v-model="ahjPermit.asBuiltNote">
             </v-textarea>
           </v-card-text>
         </v-card>
@@ -314,17 +318,18 @@
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Follow-up / Approval Details
           </v-card-title>
-          <v-card-text>
-            <v-text-field v-model="ahjPermit.followUpApprovalDetails.approvalTimeline"
-                          label="Approval Timeline" box></v-text-field>
-            <v-text-field label="Fee Amount" prefix="$" box type="number" step="0.01" min="0.00"
-                          v-model="ahjPermit.followUpApprovalDetails.feeAmount"
+          <v-card-text class="mt-4">
+            <v-text-field v-model="ahjPermit.approvalTimeline"
+                          label="Approval Timeline" filled></v-text-field>
+            <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
+                          filled type="number" step="0.01" min="0.00"
+                          v-model="ahjPermit.followUpFeeAmount"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" box
-                      v-model="ahjPermit.followUpApprovalDetails.paymentMethod"
+            <v-select label="Payment Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.followUpPaymentTypeId"
             ></v-select>
-            <v-text-field v-model="ahjPermit.followUpApprovalDetails.documentsAvailability"
-                          label="When are documents available?" box></v-text-field>
+            <v-text-field v-model="ahjPermit.documentsAvailable"
+                          label="When are documents available?" filled></v-text-field>
           </v-card-text>
         </v-card>
 
@@ -333,15 +338,16 @@
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Delivery Details
           </v-card-title>
-          <v-card-text>
-            <v-select label="Pickup Method" :items="submittalMethods" box
-                      v-model="ahjPermit.deliveryDetails.pickupMethod"
+          <v-card-text class="mt-4">
+            <v-select label="Pickup Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.deliveryPickupTypeId"
             ></v-select>
-            <v-text-field label="Fee Amount" prefix="$" box type="number" step="0.01" min="0.00"
-                          v-model="ahjPermit.deliveryDetails.feeAmount"
+            <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
+                          filled type="number" step="0.01" min="0.00"
+                          v-model="ahjPermit.deliveryFeeAmount"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" box
-                      v-model="ahjPermit.deliveryDetails.paymentMethod"
+            <v-select label="Payment Method" :items="submittalMethods" filled
+                      v-model="ahjPermit.deliveryPaymentTypeId"
             ></v-select>
             <v-card class="mb-4">
               <v-toolbar class="primaryCustom">
@@ -352,13 +358,13 @@
                 <v-spacer></v-spacer>
                 <v-btn icon color="#ddd" style="border-radius: 3px"
                        @click="addInspectionDocument()">
-                  <v-icon>add</v-icon>
+                  <v-icon class="white--text">add</v-icon>
                 </v-btn>
               </v-toolbar>
-              <v-list v-show="ahjPermit.deliveryDetails.documents.length > 0"
-                      v-for="document in ahjPermit.deliveryDetails.documents"
+              <v-list v-show="documents.length > 0"
+                      v-for="document in documents"
                       :key="document.id">
-                <v-list-item v-bind:title="document.name">
+                <v-list-item :title="document.name">
                   <v-list-item-content>
                     <v-list-item-title>
                       <a @click="downloadInspectionDocument(document.id)" class="list-link">{{document.name}}</a>
@@ -369,12 +375,12 @@
                   </v-list-item-action>
                 </v-list-item>
               </v-list>
-              <div class="empty-list" v-show="ahjPermit.deliveryDetails.documents.length < 1">
+              <div class="empty-list" v-show="documents.length < 1">
                 No documents uploaded
               </div>
             </v-card>
-            <v-textarea v-model="ahjPermit.deliveryDetails.deliveryInstructions"
-                        label="Delivery Instructions" auto-grow box></v-textarea>
+            <v-textarea v-model="ahjPermit.deliveryNote"
+                        label="Delivery Instructions" auto-grow filled></v-textarea>
           </v-card-text>
         </v-card>
 
@@ -383,8 +389,8 @@
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Permitting Cycle Times
           </v-card-title>
-          <v-card-text>
-            <v-select label="Viewing Data For:" :items="timePeriods" box
+          <v-card-text class="mt-4">
+            <v-select label="Viewing Data For:" :items="timePeriods" filled
                       v-model="permittingCycleTimes.timePeriod"
                       @change="setTimePeriodDates()"
             ></v-select>
@@ -446,85 +452,34 @@
       <h1 class="pb-2 mb-4" style="border-bottom: 1px solid #ccc; width: 100%;">Links and Contacts</h1>
       <!-- FIRST COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <v-card class="mb-3">
-          <v-toolbar class="primaryCustom">
-            <v-toolbar-title class="white--text font-weight-bold" title="Submission Links">
-              Submission Links
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="#ddd" style="border-radius: 3px">
-              <v-icon v-show="!submissionLinkAddCtrls" @click="addLink(1)">add</v-icon>
-              <v-icon v-show="submissionLinkAddCtrls"
-                      @click="submissionLinkAddCtrls=false">remove</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <v-form v-show="submissionLinkAddCtrls || submissionLinkEditCtrls"
-                  ref="submissionLinkForm" class="pa-3">
-            <v-text-field v-model="editedLink.name" required label="Name" box></v-text-field>
-            <v-text-field v-model="editedLink.url" required type="url"
-                          :rules="[urlRule]" label="URL" box></v-text-field>
-            <v-text-field v-model="editedLink.username" label="Username" box></v-text-field>
-            <v-text-field v-model="editedLink.password" label="Password" box></v-text-field>
-            <v-textarea label="Notes" auto-grow box
-                        style="margin: 15px 0 -15px 0"
-                        v-model="editedLink.notes">
-            </v-textarea>
-            <div class="link-btns">
-              <a @click="resetLinkCtrls(1)"
-                 class="cancel-link">Cancel</a>
-              <v-btn v-show="submissionLinkEditCtrls" dark
-                     @click="deleteLink(1)" class="error">
-                Delete
-              </v-btn>
-              <v-btn @click="saveLink(1)" color="primaryButton" style="color: #fff !important"
-                     v-bind:disabled="!linkInfoEntered">
-                {{submissionLinkEditCtrls ? 'Update' : 'Add'}}
-              </v-btn>
-            </div>
-          </v-form>
-          <v-list v-show="submissionLinks.length > 0" v-for="link in submissionLinks"
-                  :key="link.id" class="px-2">
-            <v-list-item v-bind:title="link.name">
-              <v-list-item-content class="flex-row-center">
-                <v-list-item-action>
-                  <v-icon small @click="editLink(link, 1)">edit</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>
-                  <a v-bind:href="link.url" class="list-link">{{link.name}}</a>
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-          <div class="empty-list" v-show="submissionLinks.length < 1">
-            No links found
-          </div>
-        </v-card>
+        <AhjPermitLinks title="Submission Links"
+                        :typeId="4"
+                        :permitId="ahjPermit.id"
+                        :links="ahjPermit.submissionLinks"></AhjPermitLinks>
 
-        <v-card class="pb-1">
+        <v-card class="pb-2">
           <v-toolbar class="primaryCustom mb-2">
             <v-toolbar-title class="white--text font-weight-bold" title="Submission Contacts">
               Submission Contacts
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn icon color="#ddd" style="border-radius: 3px">
-              <v-icon v-show="!submissionContactAddCtrls" @click="addContact(1)">add</v-icon>
+              <v-icon v-show="!submissionContactAddCtrls" @click="addContact(1)" class="white--text">add</v-icon>
               <v-icon v-show="submissionContactAddCtrls"
-                      @click="submissionContactAddCtrls=false">remove</v-icon>
+                      @click="submissionContactAddCtrls=false" class="white--text">remove</v-icon>
             </v-btn>
           </v-toolbar>
           <v-form v-show="submissionContactAddCtrls || submissionContactEditCtrls"
                   ref="submissionContactForm" class="pa-3">
-            <v-text-field v-model="editedContact.name" required label="Name" box></v-text-field>
-            <v-text-field v-model="editedContact.title" label="Title" box></v-text-field>
-            <v-text-field v-model="editedContact.phone" label="Phone" box></v-text-field>
-            <v-text-field v-model="editedContact.email" label="Email" type="email" box></v-text-field>
-            <v-text-field v-model="editedContact.hours" label="Hours" box></v-text-field>
-            <v-textarea label="Address" auto-grow box
-                        style="margin: 15px 0 -15px 0"
+            <v-text-field v-model="editedContact.name" required label="Name" filled></v-text-field>
+            <v-text-field v-model="editedContact.title" label="Title" filled></v-text-field>
+            <v-text-field v-model="editedContact.phone" label="Phone" filled></v-text-field>
+            <v-text-field v-model="editedContact.email" label="Email" type="email" filled></v-text-field>
+            <v-text-field v-model="editedContact.hours" label="Hours" filled></v-text-field>
+            <v-textarea label="Address" auto-grow filled
                         v-model="editedContact.address">
             </v-textarea>
-            <v-textarea label="Notes" auto-grow box
-                        style="margin: 15px 0 -15px 0"
+            <v-textarea label="Notes" auto-grow filled
                         v-model="editedContact.notes">
             </v-textarea>
             <div class="link-btns">
@@ -534,8 +489,8 @@
                      @click="deleteContact(1)" class="error">
                 Delete
               </v-btn>
-              <v-btn @click="saveContact(1)" color="primaryButton" style="color: #fff !important"
-                     v-bind:disabled="!editedContact.name">
+              <v-btn @click="saveContact(1)" color="primaryButton" class="white--text"
+                     :disabled="!editedContact.name">
                 {{submissionContactEditCtrls ? 'Update' : 'Add'}}
               </v-btn>
             </div>
@@ -561,8 +516,7 @@
               <dd>
                 <v-btn small color="primaryButton"
                        @click="editContact(contact, 1)"
-                       style="color: #fff !important"
-                       class="pa-0 mx-0 mt-2">Edit</v-btn>
+                       class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
               </dd>
             </dl>
             <v-spacer v-if="index !== submissionContacts.length - 1"
@@ -576,88 +530,34 @@
 
       <!-- SECOND COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <v-card class="mb-3">
-          <v-toolbar class="primaryCustom">
-            <v-toolbar-title class="white--text font-weight-bold" title="Follow-up and Delivery Links">
-              Follow-up and Delivery Links
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="#ddd" style="border-radius: 3px">
-              <v-icon v-show="!followUpAndDeliveryLinkAddCtrls" @click="addLink(2)">add</v-icon>
-              <v-icon v-show="followUpAndDeliveryLinkAddCtrls"
-                      @click="followUpAndDeliveryLinkAddCtrls=false">remove</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <v-form v-show="followUpAndDeliveryLinkAddCtrls || followUpAndDeliveryLinkEditCtrls"
-                  ref="followUpAndDeliveryLinkForm" class="pa-3">
-            <v-text-field v-model="editedLink.name" required
-                          label="Name" box></v-text-field>
-            <v-text-field v-model="editedLink.url" required type="url"
-                          :rules="[urlRule]" label="URL" box></v-text-field>
-            <v-text-field v-model="editedLink.username"
-                          label="Username" box></v-text-field>
-            <v-text-field v-model="editedLink.password"
-                          label="Password" box></v-text-field>
-            <v-textarea label="Notes" auto-grow box
-                        style="margin: 15px 0 -15px 0"
-                        v-model="editedLink.notes">
-            </v-textarea>
-            <div class="link-btns">
-              <a @click="resetLinkCtrls(2)"
-                 class="cancel-link">Cancel</a>
-              <v-btn v-show="followUpAndDeliveryLinkEditCtrls" dark
-                     @click="deleteLink(2)" class="error">
-                Delete
-              </v-btn>
-              <v-btn @click="saveLink(2)" color="primaryButton" style="color: #fff !important"
-                     v-bind:disabled="!linkInfoEntered">
-                {{followUpAndDeliveryLinkEditCtrls ? 'Update' : 'Add'}}
-              </v-btn>
-            </div>
-          </v-form>
-          <v-list v-show="followUpAndDeliveryLinks.length > 0" v-for="link in followUpAndDeliveryLinks"
-                  :key="link.id" class="px-2">
-            <v-list-item v-bind:title="link.name">
-              <v-list-item-content class="flex-row-center">
-                <v-list-item-action>
-                  <v-icon small @click="editLink(link, 2)">edit</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>
-                  <a v-bind:href="link.url" class="list-link">{{link.name}}</a>
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-          <div class="empty-list" v-show="followUpAndDeliveryLinks.length < 1">
-            No links found
-          </div>
-        </v-card>
+        <AhjPermitLinks title="Follow-up and Delivery Links"
+                        :typeId="5"
+                        :permitId="ahjPermit.id"
+                        :links="ahjPermit.followUpLinks"></AhjPermitLinks>
 
-        <v-card class="pb-1">
+        <v-card class="pb-2">
           <v-toolbar class="primaryCustom mb-2">
             <v-toolbar-title class="white--text font-weight-bold" title="Print Locations">
               Print Locations
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn icon color="#ddd" style="border-radius: 3px">
-              <v-icon v-show="!printLocationAddCtrls" @click="addPrintLocation()">add</v-icon>
+              <v-icon v-show="!printLocationAddCtrls" @click="addPrintLocation()" class="white--text">add</v-icon>
               <v-icon v-show="printLocationAddCtrls"
-                      @click="printLocationAddCtrls=false">remove</v-icon>
+                      @click="printLocationAddCtrls=false" class="white--text">remove</v-icon>
             </v-btn>
           </v-toolbar>
           <v-form v-show="printLocationAddCtrls || printLocationEditCtrls"
                   ref="printLocationForm" class="pa-3">
-            <v-text-field v-model="editedPrintLocation.storeName" required label="Store Name" box></v-text-field>
-            <v-text-field v-model="editedPrintLocation.storeNumber" label="Store Number" box></v-text-field>
-            <v-text-field v-model="editedPrintLocation.phone" label="Phone" box></v-text-field>
-            <v-text-field v-model="editedPrintLocation.email" label="Email" type="email" box></v-text-field>
-            <v-text-field v-model="editedPrintLocation.hours" label="Hours" box></v-text-field>
-            <v-textarea label="Address" auto-grow box
-                        style="margin: 15px 0 -15px 0"
+            <v-text-field v-model="editedPrintLocation.storeName" required label="Store Name" filled></v-text-field>
+            <v-text-field v-model="editedPrintLocation.storeNumber" label="Store Number" filled></v-text-field>
+            <v-text-field v-model="editedPrintLocation.phone" label="Phone" filled></v-text-field>
+            <v-text-field v-model="editedPrintLocation.email" label="Email" type="email" filled></v-text-field>
+            <v-text-field v-model="editedPrintLocation.hours" label="Hours" filled></v-text-field>
+            <v-textarea label="Address" auto-grow filled
                         v-model="editedPrintLocation.address">
             </v-textarea>
-            <v-textarea label="Notes" auto-grow box
-                        style="margin: 15px 0 -15px 0"
+            <v-textarea label="Notes" auto-grow filled
                         v-model="editedPrintLocation.notes">
             </v-textarea>
             <div class="link-btns">
@@ -667,8 +567,8 @@
                      @click="deletePrintLocation()" class="error">
                 Delete
               </v-btn>
-              <v-btn @click="savePrintLocation()" color="primaryButton" style="color: #fff !important"
-                     v-bind:disabled="!editedPrintLocation.storeName">
+              <v-btn @click="savePrintLocation()" color="primaryButton" class="white--text"
+                     :disabled="!editedPrintLocation.storeName">
                 {{printLocationEditCtrls ? 'Update' : 'Add'}}
               </v-btn>
             </div>
@@ -694,8 +594,7 @@
               <dd>
                 <v-btn small color="primaryButton"
                        @click="editPrintLocation(location, 2)"
-                       style="color: #fff !important"
-                       class="pa-0 mx-0 mt-2">Edit</v-btn>
+                       class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
               </dd>
             </dl>
             <v-spacer v-if="index !== printLocations.length - 1"
@@ -717,7 +616,7 @@
           </v-toolbar>
           <v-list v-show="servicingFots.length > 0" v-for="fot in servicingFots"
                   :key="fot.officeId" class="px-2">
-            <v-list-item v-bind:title="fot.office">
+            <v-list-item :title="fot.office">
               <v-list-item-content class="flex-row-center">
                 <v-list-item-title>
                   <a class="list-link">{{fot.office}}</a>
@@ -730,48 +629,46 @@
           </div>
         </v-card>
 
-        <v-card class="pb-1">
+        <v-card class="pb-2">
           <v-toolbar class="primaryCustom mb-2">
             <v-toolbar-title class="white--text font-weight-bold" title="Follow-up and Delivery Contacts">
               Follow-up and Delivery Contacts
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn icon color="#ddd" style="border-radius: 3px">
-              <v-icon v-show="!followUpAndDeliveryContactAddCtrls" @click="addContact(2)">add</v-icon>
-              <v-icon v-show="followUpAndDeliveryContactAddCtrls"
-                      @click="followUpAndDeliveryContactAddCtrls=false">remove</v-icon>
+              <v-icon v-show="!followUpContactAddCtrls" @click="addContact(2)" class="white--text">add</v-icon>
+              <v-icon v-show="followUpContactAddCtrls"
+                      @click="followUpContactAddCtrls=false" class="white--text">remove</v-icon>
             </v-btn>
           </v-toolbar>
-          <v-form v-show="followUpAndDeliveryContactAddCtrls || followUpAndDeliveryContactEditCtrls"
-                  ref="followUpAndDeliveryContactForm" class="pa-3">
-            <v-text-field v-model="editedContact.name" required label="Name" box></v-text-field>
-            <v-text-field v-model="editedContact.title" label="Title" box></v-text-field>
-            <v-text-field v-model="editedContact.phone" label="Phone" box></v-text-field>
-            <v-text-field v-model="editedContact.email" label="Email" type="email" box></v-text-field>
-            <v-text-field v-model="editedContact.hours" label="Hours" box></v-text-field>
-            <v-textarea label="Address" auto-grow box
-                        style="margin: 15px 0 -15px 0"
+          <v-form v-show="followUpContactAddCtrls || followUpContactEditCtrls"
+                  ref="followUpContactForm" class="pa-3">
+            <v-text-field v-model="editedContact.name" required label="Name" filled></v-text-field>
+            <v-text-field v-model="editedContact.title" label="Title" filled></v-text-field>
+            <v-text-field v-model="editedContact.phone" label="Phone" filled></v-text-field>
+            <v-text-field v-model="editedContact.email" label="Email" type="email" filled></v-text-field>
+            <v-text-field v-model="editedContact.hours" label="Hours" filled></v-text-field>
+            <v-textarea label="Address" auto-grow filled
                         v-model="editedContact.address">
             </v-textarea>
-            <v-textarea label="Notes" auto-grow box
-                        style="margin: 15px 0 -15px 0"
+            <v-textarea label="Notes" auto-grow filled
                         v-model="editedContact.notes">
             </v-textarea>
             <div class="link-btns">
               <a @click="resetContactCtrls(2)"
                  class="cancel-link">Cancel</a>
-              <v-btn v-show="followUpAndDeliveryContactEditCtrls" dark
+              <v-btn v-show="followUpContactEditCtrls" dark
                      @click="deleteContact(2)" class="error">
                 Delete
               </v-btn>
-              <v-btn @click="saveContact(2)" color="primaryButton" style="color: #fff !important"
-                     v-bind:disabled="!editedContact.name">
-                {{followUpAndDeliveryContactEditCtrls ? 'Update' : 'Add'}}
+              <v-btn @click="saveContact(2)" color="primaryButton" class="white--text"
+                     :disabled="!editedContact.name">
+                {{followUpContactEditCtrls ? 'Update' : 'Add'}}
               </v-btn>
             </div>
           </v-form>
-          <div v-for="(contact, index) in followUpAndDeliveryContacts" :key="contact.id"
-               v-show="followUpAndDeliveryContacts.length > 0" class="px-3 pt-1 pb-1">
+          <div v-for="(contact, index) in followUpContacts" :key="contact.id"
+               v-show="followUpContacts.length > 0" class="px-3 pt-1 pb-1">
             <dl class="horizontal-dl">
               <dt v-if="contact.name" class="font-weight-bold">Name</dt>
               <dd v-if="contact.name">{{contact.name}}</dd>
@@ -791,14 +688,13 @@
               <dd>
                 <v-btn small color="primaryButton"
                        @click="editContact(contact, 2)"
-                       style="color: #fff !important"
-                       class="pa-0 mx-0 mt-2">Edit</v-btn>
+                       class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
               </dd>
             </dl>
-            <v-spacer v-if="index !== followUpAndDeliveryContacts.length - 1"
+            <v-spacer v-if="index !== followUpContacts.length - 1"
                       class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
           </div>
-          <div class="empty-list" v-show="followUpAndDeliveryContacts.length < 1">
+          <div class="empty-list" v-show="followUpContacts.length < 1">
             No contacts found
           </div>
         </v-card>
@@ -812,11 +708,13 @@
   import draggable from 'vuedraggable'
   import max from 'lodash.max'
   import moment from 'moment'
+  import AhjPermitLinks from './components/AhjPermitLinks.vue'
 
   export default {
     name: 'ahjPermit',
     components: {
-      draggable
+      draggable,
+      AhjPermitLinks
     },
     data: () => ({
       submittalMethods: ['', 'Online', 'In-person', 'Other'],
@@ -892,137 +790,108 @@
       },
       asBuiltSubmissionCheckListItemToDelete: '',
       ahjPermit: {
-        submissionDetails: {
-          submittalMethod: null,
-          hoaApprovalRequired: null,
-          nemApprovalRequired: null,
-          depositAmount: null,
-          paymentMethod: null,
-          businessLicense: null,
-          businessLicenseDate: null,
-          contractorLicense: null,
-          contractorLicenseDate: null,
-          otherLicense: null,
-          otherLicenseDate: null,
-          submissionChecklistItems: [
+        approvalTimeline: null,
+        asBuiltChecklist: [],
+        asBuiltFeeAmount: null,
+        asBuiltNote: null,
+        asBuiltPaymentTypeId: null,
+        asBuiltPaymentTypeOther: null,
+        asBuiltSubmittalTypeId: null,
+        asBuiltSubmittalTypeOther: null,
+        averagePermitFee: null,
+        businessLicense: null,
+        businessLicenseExpirationDate: null,
+        contractorLicense: null,
+        contractorLicenseExpirationDate: null,
+        deliveryFeeAmount: null,
+        deliveryNote: null,
+        deliveryPaymentTypeId: null,
+        deliveryPaymentTypeOther: null,
+        deliveryPickupTypeId: null,
+        deliveryPickupTypeOther: null,
+        depositAmount: null,
+        documentsAvailable: null,
+        engineeringLetterRequired: null,
+        followUpContacts: [],
+        followUpFeeAmount: null,
+        followUpLinks: [
             {
               id: 1,
-              details: 'Obtain deposit from customer by 7/15/2019'
+              type: 5,
+              name: 'Outlook',
+              url: 'https://www.outlook.com/',
+              username: 'Username',
+              password: 'Password',
+              notes: 'Testing again'
             },
             {
               id: 2,
-              details: 'Make sure licenses are obtained'
-            },
-            {
-              id: 3,
-              details: 'Call customer about HOA Approval'
-            },
-            {
-              id: 4,
-              details: 'Call customer about NEM Approval'
+              type: 5,
+              name: 'Google',
+              url: 'https://www.google.com/',
+              username: 'Username',
+              password: 'Password',
+              notes: 'Testing'
             }
-          ],
-          submissionInstructions: null
-        },
-        revisionSubmissionDetails: {
-          submittalMethod: null,
-          feeAmount: null,
-          paymentMethod: null,
-          revisionSubmissionChecklistItems: [
-            {
-              id: 1,
-              details: 'Fee needs to be waived'
-            },
-            {
-              id: 2,
-              details: 'Customer will pay by credit card'
-            }
-          ],
-          revisionSubmissionInstructions: null
-        },
-        asBuiltSubmissionDetails: {
-          submittalMethod: null,
-          feeAmount: null,
-          paymentMethod: null,
-          asBuiltSubmissionChecklistItems: [],
-          asBuiltSubmissionInstructions: null
-        },
-        followUpApprovalDetails: {
-          approvalTimeline: null,
-          feeAmount: null,
-          paymentMethod: null,
-          documentsAvailability: null
-        },
-        deliveryDetails: {
-          pickupMethod: null,
-          feeAmount: null,
-          paymentMethod: null,
-          documents: [
-            {
-              id: 1,
-              name: 'instructions.txt'
-            },
-            {
-              id: 2,
-              name: 'importantDocument.docx'
-            }
-          ],
-          deliveryInstructions: null
-        }
+        ],
+        followUpPaymentTypeId: null,
+        followUpPaymentTypeOther: null,
+        hoaApprovalRequiredTypeId: null,
+        hoaApprovalRequiredTypeOther: null,
+        id: null,
+        nemApprovalRequiredTypeId: null,
+        nemApprovalRequiredTypeOther: null,
+        notes: [],
+        otherLicense: null,
+        otherLicenseExpirationDate: null,
+        paymentMethod: null,
+        printLocation: null,
+        printLocations: [],
+        revisionChecklist: [],
+        revisionFeeAmount: null,
+        revisionNote: null,
+        revisionPaymentTypeId: null,
+        revisionPaymentTypeOther: null,
+        revisionSubmittalTypeId: null,
+        revisionSubmittalTypeOther: null,
+        servicingFots: [],
+        stampedPlan: null,
+        submissionChecklist: [],
+        submissionContacts: [],
+        submissionLinks: [
+          {
+            id: 1,
+            type: 4,
+            name: 'Google',
+            url: 'https://www.google.com/',
+            username: 'Username',
+            password: 'Password',
+            notes: 'Testing'
+          },
+          {
+            id: 2,
+            type: 4,
+            name: 'Outlook',
+            url: 'https://www.outlook.com/',
+            username: 'Username',
+            password: 'Password',
+            notes: 'Testing again'
+          }
+        ],
+        submissionNote: null,
+        submissionPaymentTypeId: null,
+        submissionPaymentTypeOther: null,
+        submittalTypeId: null,
+        submittalTypeOther: null
       },
-      validUrl: false,
-      submissionLinkAddCtrls: false,
-      submissionLinkEditCtrls: false,
-      followUpAndDeliveryLinkAddCtrls: false,
-      followUpAndDeliveryLinkEditCtrls: false,
-      linkEditedIndex: -1,
-      editedLink: {
-        id: '',
-        type: '',
-        name: '',
-        url: '',
-        username: '',
-        password: '',
-        notes: ''
-      },
-      submissionLinks: [
+      documents: [
         {
           id: 1,
-          type: 1,
-          name: 'Google',
-          url: 'https://www.google.com/',
-          username: 'Username',
-          password: 'Password',
-          notes: 'Testing'
+          name: 'instructions.txt'
         },
         {
           id: 2,
-          type: 1,
-          name: 'Outlook',
-          url: 'https://www.outlook.com/',
-          username: 'Username',
-          password: 'Password',
-          notes: 'Testing again'
-        }
-      ],
-      followUpAndDeliveryLinks: [
-        {
-          id: 1,
-          type: 2,
-          name: 'Outlook',
-          url: 'https://www.outlook.com/',
-          username: 'Username',
-          password: 'Password',
-          notes: 'Testing again'
-        },
-        {
-          id: 2,
-          type: 2,
-          name: 'Google',
-          url: 'https://www.google.com/',
-          username: 'Username',
-          password: 'Password',
-          notes: 'Testing'
+          name: 'importantDocument.docx'
         }
       ],
       servicingFots: [
@@ -1053,8 +922,8 @@
       ],
       submissionContactAddCtrls: false,
       submissionContactEditCtrls: false,
-      followUpAndDeliveryContactAddCtrls: false,
-      followUpAndDeliveryContactEditCtrls: false,
+      followUpContactAddCtrls: false,
+      followUpContactEditCtrls: false,
       contactEditedIndex: -1,
       editedContact: {
         id: '',
@@ -1091,7 +960,7 @@
           notes: 'More testing'
         }
       ],
-      followUpAndDeliveryContacts: [
+      followUpContacts: [
         {
           id: 1,
           type: 2,
@@ -1162,15 +1031,8 @@
         }
       ]
     }),
-    computed: {
-      linkInfoEntered () {
-        return this.editedLink.name && this.editedLink.url && this.validUrl
-      }
-    },
     methods: {
       resetForm() {
-        /* TODO: Once the form data is being retrieved from the database, copy it to reset the form when the user clicks the "Cancel" link on the top right of the page
-        */
         console.log("Resetting the form...")
       },
       hideSubmissionChecklistCtrls() {
@@ -1188,27 +1050,27 @@
         if (this.submissionChecklistAddCtrls) {
           this.submissionChecklistAddCtrls = false
         }
-        this.submissionChecklistEditedIndex = this.ahjPermit.submissionDetails.submissionChecklistItems.indexOf(item)
+        this.submissionChecklistEditedIndex = this.ahjPermit.submissionChecklist.indexOf(item)
         this.editedSubmissionChecklistItem = Object.assign({}, item)
         this.submissionChecklistEditCtrls = true
       },
       deleteSubmissionChecklistItem() {
-        this.ahjPermit.submissionDetails.submissionChecklistItems.splice(this.submissionChecklistEditedIndex, 1)
+        this.ahjPermit.submissionChecklist.splice(this.submissionChecklistEditedIndex, 1)
         this.submissionChecklistEditCtrls = false
       },
       saveSubmissionChecklistItem() {
         if (this.submissionChecklistEditedIndex > -1) {
-          Object.assign(this.ahjPermit.submissionDetails.submissionChecklistItems[this.submissionChecklistEditedIndex], this.editedSubmissionChecklistItem)
+          Object.assign(this.ahjPermit.submissionChecklist[this.submissionChecklistEditedIndex], this.editedSubmissionChecklistItem)
           this.submissionChecklistEditCtrls = false
         } else {
-          if (this.ahjPermit.submissionDetails.submissionChecklistItems.length > 0) {
+          if (this.ahjPermit.submissionChecklist.length > 0) {
             let idsArray = []
-            this.ahjPermit.submissionDetails.submissionChecklistItems.forEach(item => idsArray.push(item.id))
+            this.ahjPermit.submissionChecklist.forEach(item => idsArray.push(item.id))
             this.editedSubmissionChecklistItem.id = max(idsArray) + 1
           } else {
             this.editedSubmissionChecklistItem.id = 1
           }
-          this.ahjPermit.submissionDetails.submissionChecklistItems.push(this.editedSubmissionChecklistItem)
+          this.ahjPermit.submissionChecklist.push(this.editedSubmissionChecklistItem)
           this.submissionChecklistAddCtrls = false
         }
       },
@@ -1257,112 +1119,6 @@
             break
         }
       },
-      resetLinkCtrls(type) {
-        switch (type) {
-          case 1:
-            this.submissionLinkAddCtrls = false
-            this.submissionLinkEditCtrls = false
-            this.$refs.submissionLinkForm.reset()
-            break
-          case 2:
-            this.followUpAndDeliveryLinkAddCtrls = false
-            this.followUpAndDeliveryLinkEditCtrls = false
-            this.$refs.followUpAndDeliveryLinkForm.reset()
-            break
-        }
-      },
-      addLink(type) {
-        this.submissionLinkEditCtrls = false
-        this.followUpAndDeliveryLinkEditCtrls = false
-
-        switch (type) {
-          case 1:
-            this.submissionLinkAddCtrls = true
-            this.followUpAndDeliveryLinkAddCtrls = false
-            this.$refs.submissionLinkForm.reset()
-            break
-          case 2:
-            this.submissionLinkAddCtrls = false
-            this.followUpAndDeliveryLinkAddCtrls = true
-            this.$refs.followUpAndDeliveryLinkForm.reset()
-        }
-      },
-      editLink(link, type) {
-        this.submissionLinkAddCtrls = false
-        this.followUpAndDeliveryLinkAddCtrls = false
-
-        switch (type) {
-          case 1:
-            this.submissionLinkEditCtrls = true
-            this.followUpAndDeliveryLinkEditCtrls = false
-            this.linkEditedIndex = this.submissionLinks.indexOf(link)
-            break
-          case 2:
-            this.submissionLinkEditCtrls = false
-            this.followUpAndDeliveryLinkEditCtrls = true
-            this.linkEditedIndex = this.followUpAndDeliveryLinks.indexOf(link)
-            break
-        }
-        this.editedLink = Object.assign({}, link)
-        this.editedLink.type = type
-      },
-      deleteLink(type) {
-        switch (type) {
-          case 1:
-            this.submissionLinks.splice(this.linkEditedIndex, 1)
-            this.submissionLinkEditCtrls = false
-            break
-          case 2:
-            this.followUpAndDeliveryLinks.splice(this.linkEditedIndex, 1)
-            this.followUpAndDeliveryLinkEditCtrls = false
-            break
-        }
-      },
-      saveLink(type) {
-        switch (type) {
-          case 1:
-            if (this.linkEditedIndex > -1) {
-              Object.assign(this.submissionLinks[this.linkEditedIndex], this.editedLink)
-              this.submissionLinkEditCtrls = false
-            } else {
-              if (this.submissionLinks.length > 0) {
-                let idsArray = []
-                this.submissionLinks.forEach(item => idsArray.push(item.id))
-                this.editedLink.id = max(idsArray) + 1
-              } else {
-                this.editedLink.id = 1
-              }
-              this.submissionLinks.push(this.editedLink)
-              this.submissionLinkAddCtrls = false
-            }
-            break
-          case 2:
-            if (this.linkEditedIndex > -1) {
-              Object.assign(this.followUpAndDeliveryLinks[this.linkEditedIndex], this.editedLink)
-              this.followUpAndDeliveryLinkEditCtrls = false
-            } else {
-              if (this.followUpAndDeliveryLinks.length > 0) {
-                let idsArray = []
-                this.followUpAndDeliveryLinks.forEach(item => idsArray.push(item.id))
-                this.editedLink.id = max(idsArray) + 1
-              } else {
-                this.editedLink.id = 1
-              }
-              this.followUpAndDeliveryLinks.push(this.editedLink)
-              this.followUpAndDeliveryLinkAddCtrls = false
-            }
-            break
-        }
-      },
-      urlRule(url) {
-        if (url && (!url.includes('http://') && !url.includes('https://'))) {
-          this.validUrl = false
-          return 'Valid URL is required'
-        } else {
-          this.validUrl = true
-          return true
-        }
-      },
       resetContactCtrls(type) {
         switch (type) {
           case 1:
@@ -1371,42 +1127,42 @@
             this.$refs.submissionContactForm.reset()
             break
           case 2:
-            this.followUpAndDeliveryContactAddCtrls = false
-            this.followUpAndDeliveryContactEditCtrls = false
-            this.$refs.followUpAndDeliveryContactForm.reset()
+            this.followUpContactAddCtrls = false
+            this.followUpContactEditCtrls = false
+            this.$refs.followUpContactForm.reset()
             break
         }
       },
       addContact(type) {
         this.submissionContactEditCtrls = false
-        this.followUpAndDeliveryContactEditCtrls = false
+        this.followUpContactEditCtrls = false
 
         switch (type) {
           case 1:
             this.submissionContactAddCtrls = true
-            this.followUpAndDeliveryContactAddCtrls = false
+            this.followUpContactAddCtrls = false
             this.$refs.submissionContactForm.reset()
             break
           case 2:
             this.submissionContactAddCtrls = false
-            this.followUpAndDeliveryContactAddCtrls = true
-            this.$refs.followUpAndDeliveryContactForm.reset()
+            this.followUpContactAddCtrls = true
+            this.$refs.followUpContactForm.reset()
         }
       },
       editContact(contact, type) {
         this.submissionContactAddCtrls = false
-        this.followUpAndDeliveryContactAddCtrls = false
+        this.followUpContactAddCtrls = false
 
         switch (type) {
           case 1:
             this.submissionContactEditCtrls = true
-            this.followUpAndDeliveryContactEditCtrls = false
+            this.followUpContactEditCtrls = false
             this.contactEditedIndex = this.submissionContacts.indexOf(contact)
             break
           case 2:
             this.submissionContactEditCtrls = false
-            this.followUpAndDeliveryContactEditCtrls = true
-            this.contactEditedIndex = this.followUpAndDeliveryContacts.indexOf(contact)
+            this.followUpContactEditCtrls = true
+            this.contactEditedIndex = this.followUpContacts.indexOf(contact)
             break
         }
         this.editedContact = Object.assign({}, contact)
@@ -1419,8 +1175,8 @@
             this.submissionContactEditCtrls = false
             break
           case 2:
-            this.followUpAndDeliveryContacts.splice(this.contactEditedIndex, 1)
-            this.followUpAndDeliveryContactEditCtrls = false
+            this.followUpContacts.splice(this.contactEditedIndex, 1)
+            this.followUpContactEditCtrls = false
             break
         }
       },
@@ -1444,18 +1200,18 @@
             break
           case 2:
             if (this.contactEditedIndex > -1) {
-              Object.assign(this.followUpAndDeliveryContacts[this.contactEditedIndex], this.editedContact)
-              this.followUpAndDeliveryContactEditCtrls = false
+              Object.assign(this.followUpContacts[this.contactEditedIndex], this.editedContact)
+              this.followUpContactEditCtrls = false
             } else {
-              if (this.followUpAndDeliveryContacts.length > 0) {
+              if (this.followUpContacts.length > 0) {
                 let idsArray = []
-                this.followUpAndDeliveryContacts.forEach(item => idsArray.push(item.id))
+                this.followUpContacts.forEach(item => idsArray.push(item.id))
                 this.editedContact.id = max(idsArray) + 1
               } else {
                 this.editedContact.id = 1
               }
-              this.followUpAndDeliveryContacts.push(this.editedContact)
-              this.followUpAndDeliveryContactAddCtrls = false
+              this.followUpContacts.push(this.editedContact)
+              this.followUpContactAddCtrls = false
             }
             break
         }
@@ -1495,7 +1251,14 @@
           this.printLocations.push(this.editedPrintLocation)
           this.printLocationAddCtrls = false
         }
+      },
+      saveAhjPermit() {
+        console.log("Saving AHJ Permit...")
+        console.log("AHJ Permit:", this.ahjPermit)
       }
+    },
+    created () {
+      this.ahjPermit.id = parseInt(this.$route.params.ahjId)
     }
   }
 </script>
@@ -1512,11 +1275,18 @@
   .v-toolbar__title {
     font-size: 1em !important;
   }
-  /*.v-text-field, .v-select, .v-input /deep/ label {*/
-    /*font-size: 0.95em !important;*/
-  /*}*/
-  .v-list__tile__title {
-    font-size: 0.8em !important;
+  .v-text-field,
+  .v-select,
+  .v-input ::v-deep label,
+  .v-list-item__title,
+  .list-link {
+    font-size: 0.95em !important;
+  }
+  .cancel-link,
+  .empty-list,
+  .horizontal-dl,
+  table {
+    font-size: 0.85em !important;
   }
   .checklist-btns,
   .link-btns {
@@ -1531,7 +1301,6 @@
   #save-btn {
     margin: 10px 5px 10px 0;
     text-transform: capitalize;
-    color: #fff !important;
   }
   .checklist-item-edit-ctrls {
     margin: 5px;
@@ -1540,7 +1309,6 @@
   }
   .empty-list {
     padding: 20px;
-    font-size: 0.95em;
   }
   .list-link {
     text-decoration: none;

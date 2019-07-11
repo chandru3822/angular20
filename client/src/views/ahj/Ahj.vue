@@ -1,7 +1,7 @@
 <template>
   <v-layout column fill-height>
     <v-flex xs12 shrink>
-      <v-layout align-center row fill-height style="width: 100%">
+      <v-layout align-center row fill-height mb-1 style="width: 100%">
         <v-flex xs6 text-xs-left fill-height>
           <v-tabs
             v-model="tabs"
@@ -14,9 +14,8 @@
         </v-flex>
         <v-flex xs6 text-xs-right fill-height>
           <v-btn
-            dark
             color="primaryButton"
-            class="app-button"
+            class="app-button white--text"
             @click="addItem"
           >Add New</v-btn>
         </v-flex>
@@ -89,61 +88,86 @@
               </v-dialog>
 
               <v-layout mt-5 fill-height>
-                <v-data-table
-                  :items="filteredAhjs"
-                  :headers="visibleHeaders"
-                  :options="pagination"
-                  class="elevation-1"
-                  style="width: 100%; text-align: left;"
-                >
-                  <template #headers="props">
-                    <tr>
-                      <th
-                        v-for="header in props.headers"
-                        :key="header.text"
-                        :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
-                        @click="changeSort(header.value)"
-                      >
-                        {{ header.text }}
-                        <v-icon small>arrow_upward</v-icon>
-                      </th>
-                      <th></th>
-                    </tr>
-                    <tr>
-                      <th
-                        style="padding-top: 10px;"
-                        v-for="header in props.headers"
-                        :key="header.text"
-                      >
-                        <v-text-field
-                          v-if="ahjFilters[header.value].type === FILTER_TYPE.TEXT"
-                          v-model="ahjFilters[header.value].value" box
-                        />
-                        <v-select
-                          v-else-if="ahjFilters[header.value].type === FILTER_TYPE.SELECT"
-                          :items="ahjSearchFilters[header.value]"
-                          v-model="ahjFilters[header.value].value" box
-                        ></v-select>
-                      </th>
-                      <th></th>
-                    </tr>
-                  </template>
+                <v-card style="width: 100% !important">
+                  <v-card-title>
+                    <v-spacer></v-spacer>
+                    <v-text-field
+                      v-model="ahjSearch"
+                      append-icon="search"
+                      label="Search"
+                      single-line
+                      hide-details
+                    ></v-text-field>
+                  </v-card-title>
+                  <v-data-table
+                    :headers="visibleHeaders"
+                    :items="filteredAhjs"
+                    :search="ahjSearch"
+                    :options="pagination"
+                    :items-per-page="-1"
+                    fixed-header
+                    dense
+                    hide-default-footer
+                    class="elevation-1"
+                    style="width: 100%"
+                  >
+<!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
+<!--                    <template #header="{ headers }">-->
+<!--                      <thead>-->
+<!--                        <tr-->
+<!--                          v-for="header in headers"-->
+<!--                          :key="header.text"-->
+<!--                        >-->
+<!--                          <th-->
+<!--                            :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"-->
+<!--                            @click="changeSort(header.value)"-->
+<!--                          >-->
+<!--                            {{ header.text }}-->
+<!--                            <v-icon small>arrow_upward</v-icon>-->
+<!--                          </th>-->
+<!--                        </tr>-->
+<!--                        <tr-->
+<!--                          v-for="header in headers"-->
+<!--                          :key="header.text"-->
+<!--                          style="padding-top: 10px"-->
+<!--                        >-->
+<!--                          <td>-->
+<!--                            <v-text-field-->
+<!--                              v-if="ahjFilters[header.value].type === FILTER_TYPE.TEXT"-->
+<!--                              v-model="ahjFilters[header.value].value"-->
+<!--                              filled-->
+<!--                            />-->
+<!--                            <v-select-->
+<!--                              v-else-if="ahjFilters[header.value].type === FILTER_TYPE.SELECT"-->
+<!--                              :items="ahjSearchFilters[header.value]"-->
+<!--                              v-model="ahjFilters[header.value].value"-->
+<!--                              filled-->
+<!--                            ></v-select>-->
+<!--                          </td>-->
+<!--                        </tr>-->
+<!--                      </thead>-->
+<!--                    </template>-->
 
-                  <template #items="props">
-                    <tr>
-                      <td>{{ props.item.name }}</td>
-                      <td>{{ props.item.metroArea }}</td>
-                      <td>{{ props.item.state }}</td>
-                      <td>
-                        <a :href="'ahj/' + props.item.id + '/permit'" class="mr-3 rmv-underline blue-txt">Permit</a>
-                        <a :href="'ahj/' + props.item.id + '/inspection'" class="mr-3 rmv-underline blue-txt">Inspection</a>
-                        <a :href="'ahj/' + props.item.id + '/design'" class="mr-3 rmv-underline blue-txt">Design</a>
-                        <v-icon small class="mr-3 blue-txt" @click="editAhj(props.item)">edit</v-icon>
-                        <v-icon small class="blue-txt" @click="deleteAhj(props.item)">delete</v-icon>
-                      </td>
-                    </tr>
-                  </template>
-                </v-data-table>
+                    <template #body="{ items }" class="table-body">
+                      <tr
+                        v-for="ahj in items"
+                        :key="ahj.id"
+                        class="text-sm-left"
+                      >
+                        <td v-if="ahj.name">{{ ahj.name }}</td>
+                        <td v-if="ahj.metroArea">{{ ahj.metroArea }}</td>
+                        <td v-if="ahj.state">{{ ahj.state }}</td>
+                        <td>
+                          <a v-if="ahj.id" :href="'ahj/' + ahj.id + '/permit'" class="mr-3 rmv-underline blue-txt">Permit</a>
+                          <a v-if="ahj.id" :href="'ahj/' + ahj.id + '/inspection'" class="mr-3 rmv-underline blue-txt">Inspection</a>
+                          <a v-if="ahj.id" :href="'ahj/' + ahj.id + '/design'" class="mr-3 rmv-underline blue-txt">Design</a>
+                          <v-icon small class="mr-3 blue-txt" @click="editAhj(ahj)">edit</v-icon>
+                          <v-icon small class="blue-txt" @click="deleteAhj(ahj)">delete</v-icon>
+                        </td>
+                      </tr>
+                    </template>
+                  </v-data-table>
+                </v-card>
               </v-layout>
             </v-tab-item>
 
@@ -158,13 +182,13 @@
                     <v-container grid-list-md>
                       <v-layout column nowrap>
                         <v-flex xs12 sm6 md4>
-                          <v-text-field v-model="editedItem.name" label="Name" box></v-text-field>
+                          <v-text-field v-model="editedItem.name" label="Name" filled></v-text-field>
                         </v-flex>
                         <v-flex xs12 sm6 md4>
-                          <v-text-field v-model="editedItem.metroArea" label="Metro Area" box></v-text-field>
+                          <v-text-field v-model="editedItem.metroArea" label="Metro Area" filled></v-text-field>
                         </v-flex>
                         <v-flex xs12 sm6 md4>
-                          <v-text-field v-model="editedItem.state" label="State" box></v-text-field>
+                          <v-text-field v-model="editedItem.state" label="State" filled></v-text-field>
                         </v-flex>
                       </v-layout>
                     </v-container>
@@ -182,55 +206,77 @@
               </v-dialog>
 
               <v-layout mt-5 fill-height>
-                <v-data-table
-                  :items="filteredAhjUtilities"
-                  :headers="visibleHeaders"
-                  :options="pagination"
-                  class="elevation-1"
-                  style="width: 100%; text-align: left;"
-                >
-                  <template #headers="props">
-                    <tr>
-                      <th
-                        v-for="header in props.headers"
-                        :key="header.text"
-                        :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
-                        @click="changeSort(header.value)"
-                      >
-                        {{ header.text }}
-                        <v-icon small>arrow_upward</v-icon>
-                      </th>
-                      <th></th>
-                    </tr>
-                    <tr>
-                      <th
-                        v-for="header in props.headers"
-                        :key="header.text"
-                      >
-                        <v-text-field style="margin-top: 10px"
-                          v-model="ahjUtilityFilters[header.value].value" box
-                        />
-                      </th>
-                      <th></th>
-                    </tr>
-                  </template>
+                <v-card style="width: 100% !important">
+                  <v-card-title>
+                    <v-spacer></v-spacer>
+                    <v-text-field
+                      v-model="ahjUtilitySearch"
+                      append-icon="search"
+                      label="Search"
+                      single-line
+                      hide-details
+                    ></v-text-field>
+                  </v-card-title>
+                  <v-data-table
+                    :headers="visibleHeaders"
+                    :items="ahjUtilities"
+                    :search="ahjUtilitySearch"
+                    :options="pagination"
+                    :items-per-page="-1"
+                    fixed-header
+                    dense
+                    hide-default-footer
+                    class="elevation-1"
+                    style="width: 100%"
+                  >
+<!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
+<!--                    <template #header="{ headers }">-->
+<!--                      <tr>-->
+<!--                        <th-->
+<!--                          v-for="header in headers"-->
+<!--                          :key="header.text"-->
+<!--                          :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"-->
+<!--                          @click="changeSort(header.value)"-->
+<!--                        >-->
+<!--                          {{ header.text }}-->
+<!--                          <v-icon small>arrow_upward</v-icon>-->
+<!--                        </th>-->
+<!--                        <th></th>-->
+<!--                      </tr>-->
+<!--                      <tr>-->
+<!--                        <th-->
+<!--                          v-for="header in headers"-->
+<!--                          :key="header.text"-->
+<!--                        >-->
+<!--                          <v-text-field style="margin-top: 10px"-->
+<!--                            v-model="ahjUtilityFilters[header.value].value" box-->
+<!--                          />-->
+<!--                        </th>-->
+<!--                        <th></th>-->
+<!--                      </tr>-->
+<!--                    </template>-->
 
-                  <template #items="props">
-                    <tr>
-                      <td>{{ props.item.name }}</td>
-                      <td>{{ props.item.metroArea }}</td>
-                      <td>{{ props.item.state }}</td>
-                      <td>
-                        <a :href="'ahj/utility/' + props.item.id + '/details'" class="mr-3 rmv-underline blue-txt">Details</a>
-                        <v-icon small class="mr-3 blue-txt" @click="editAhjUtility(props.item)">edit</v-icon>
-                      </td>
-                    </tr>
-                  </template>
-                </v-data-table>
-              </v-layout>
-            </v-tab-item>
-          </v-tabs-items>
-        </v-flex>
+                      <template #body="{ items }" class="table-body">
+                        <tr
+                          v-for="ahjUtility in items"
+                          :key="ahjUtility.id"
+                          class="text-sm-left"
+                        >
+                          <td v-if="ahjUtility.name">{{ ahjUtility.name }}</td>
+                          <td v-if="ahjUtility.metroArea">{{ ahjUtility.metroArea }}</td>
+                          <td v-if="ahjUtility.state">{{ ahjUtility.state }}</td>
+                          <td>
+                            <a v-if="ahjUtility.id" :href="'ahj/utility/' + ahjUtility.id + '/details'" class="mr-3 rmv-underline blue-txt">Details</a>
+                            <v-icon small class="mr-3 blue-txt" @click="editAhjUtility(ahjUtility)">edit</v-icon>
+                          </td>
+                        </tr>
+                      </template>
+                    </v-data-table>
+                  </v-card>
+                </v-layout>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-flex>
       </v-layout>
     </v-flex>
   </v-layout>
@@ -250,6 +296,117 @@
     state: {value: [], type: FILTER_TYPE.SELECT, model: 'state'}
   }
 
+  const ahjItems = [
+    {
+        id: 1,
+        name: 'Conejos County',
+        metroArea: 'Colorado Springs',
+        metroAreaId: 4,
+        state: 'Colorado',
+        stateAbrv: 'CO'
+    },
+    {
+        id: 2,
+        name: 'Fremont County',
+        metroArea: 'Colorado Springs',
+        metroAreaId: 4,
+        state: 'Colorado',
+        stateAbrv: 'CO'
+    },
+    {
+        id: 3,
+        name: 'Town of Limon',
+        metroArea: 'Colorado Springs',
+        metroAreaId: 4,
+        state: 'Colorado',
+        stateAbrv: 'CO'
+    },
+    {
+        id: 4,
+        name: 'Town of Romeo',
+        metroArea: 'Colorado Springs',
+        metroAreaId: 4,
+        state: 'Colorado',
+        stateAbrv: 'CO'
+    },
+    {
+        id: 5,
+        name: 'Adams County',
+        metroArea: 'Denver',
+        metroAreaId: 8,
+        state: 'Colorado',
+        stateAbrv: 'CO'
+    },
+    {
+        id: 6,
+        name: 'Arapahoe County',
+        metroArea: 'Denver',
+        metroAreaId: 8,
+        state: 'Colorado',
+        stateAbrv: 'CO'
+    },
+    {
+        id: 7,
+        name: 'Boulder County',
+        metroArea: 'Denver',
+        metroAreaId: 8,
+        state: 'Colorado',
+        stateAbrv: 'CO'
+    }
+  ]
+
+  const ahjUtilityItems = [
+    {
+        id: 100,
+        name: 'AEP Ohio',
+        metroArea: 'Columbus',
+        metroAreaId: 1,
+        state: 'OH'
+    },
+    {
+        id: 101,
+        name: 'Berkeley Electric Cooperative (BEC)',
+        metroArea: 'Charleston',
+        metroAreaId: 2,
+        state: 'SC'
+    },
+    {
+        id: 102,
+        name: 'Brigham City Utility',
+        metroArea: 'Davis County',
+        metroAreaId: 3,
+        state: 'UT'
+    },
+    {
+        id: 103,
+        name: 'Colorado Springs Utilities (CSU)',
+        metroArea: 'Colorado Springs',
+        metroAreaId: 4,
+        state: 'CO'
+    },
+    {
+        id: 104,
+        name: 'ComEd',
+        metroArea: 'Chicago',
+        metroAreaId: 5,
+        state: 'IL'
+    },
+    {
+        id: 105,
+        name: 'Duke Energy FL',
+        metroArea: 'Orlando',
+        metroAreaId: 6,
+        state: 'FL'
+    },
+    {
+        id: 106,
+        name: 'Duke Energy NC',
+        metroArea: 'Charlotte',
+        metroAreaId: 7,
+        state: 'NC'
+    }
+  ]
+
   export default {
     name: 'ahjs',
     data: () => ({
@@ -261,117 +418,13 @@
       headers: [
         { text: 'Name', value: 'name', show: true },
         { text: 'Metro Area', value: 'metroArea', show: true },
-        { text: 'State', value: 'state', show: true }
+        { text: 'State', value: 'state', show: true },
+        { text: null, value: null, sortable: false, show: true }
       ],
-      ahjs: [
-        {
-         id: 1,
-         name: 'Conejos County',
-         metroArea: 'Colorado Springs',
-         metroAreaId: 4,
-         state: 'Colorado',
-         stateAbrv: 'CO'
-        },
-        {
-         id: 2,
-         name: 'Fremont County',
-         metroArea: 'Colorado Springs',
-         metroAreaId: 4,
-         state: 'Colorado',
-         stateAbrv: 'CO'
-        },
-        {
-         id: 3,
-         name: 'Town of Limon',
-         metroArea: 'Colorado Springs',
-         metroAreaId: 4,
-         state: 'Colorado',
-         stateAbrv: 'CO'
-        },
-        {
-         id: 4,
-         name: 'Town of Romeo',
-         metroArea: 'Colorado Springs',
-         metroAreaId: 4,
-         state: 'Colorado',
-         stateAbrv: 'CO'
-        },
-        {
-         id: 5,
-         name: 'Adams County',
-         metroArea: 'Denver',
-         metroAreaId: 8,
-         state: 'Colorado',
-         stateAbrv: 'CO'
-        },
-        {
-         id: 6,
-         name: 'Arapahoe County',
-         metroArea: 'Denver',
-         metroAreaId: 8,
-         state: 'Colorado',
-         stateAbrv: 'CO'
-        },
-        {
-         id: 7,
-         name: 'Boulder County',
-         metroArea: 'Denver',
-         metroAreaId: 8,
-         state: 'Colorado',
-         stateAbrv: 'CO'
-        }
-      ],
-      ahjUtilities: [
-        {
-          id: 100,
-          name: 'AEP Ohio',
-          metroArea: 'Columbus',
-          metroAreaId: 1,
-          state: 'OH'
-        },
-        {
-          id: 101,
-          name: 'Berkeley Electric Cooperative (BEC)',
-          metroArea: 'Charleston',
-          metroAreaId: 2,
-          state: 'SC'
-        },
-        {
-          id: 102,
-          name: 'Brigham City Utility',
-          metroArea: 'Davis County',
-          metroAreaId: 3,
-          state: 'UT'
-        },
-        {
-          id: 103,
-          name: 'Colorado Springs Utilities (CSU)',
-          metroArea: 'Colorado Springs',
-          metroAreaId: 4,
-          state: 'CO'
-        },
-        {
-          id: 104,
-          name: 'ComEd',
-          metroArea: 'Chicago',
-          metroAreaId: 5,
-          state: 'IL'
-        },
-        {
-          id: 105,
-          name: 'Duke Energy FL',
-          metroArea: 'Orlando',
-          metroAreaId: 6,
-          state: 'FL'
-        },
-        {
-          id: 106,
-          name: 'Duke Energy NC',
-          metroArea: 'Charlotte',
-          metroAreaId: 7,
-          state: 'NC'
-        }
-      ],
+      ahjSearch: '',
+      ahjUtilitySearch: '',
+      ahjs: ahjItems,
+      ahjUtilities: ahjUtilityItems,
       ahjEditedIndex: -1,
       ahjUtilityEditedIndex: -1,
       editedItem: {
@@ -640,10 +693,21 @@
 </script>
 
 <style lang="scss" scoped>
+  .v-data-table table > tr {
+    &:nth-of-type(odd) {
+      background-color: rgba(0, 0, 0, .05);
+    }
+    &:hover {
+      background-color: lightblue;
+    }
+  }
   .rmv-underline {
     text-decoration: none;
   }
   .blue-txt {
     color: #337ab7;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 </style>
