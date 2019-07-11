@@ -1,0 +1,42 @@
+<sql>
+  <attachment.getTypesForCompany><![CDATA[
+    select *
+    from flow.attachment_type
+    where company_id = :companyId
+    and archived is not true
+  ]]></attachment.getTypesForCompany>
+
+  <attachment.getType>
+    <![CDATA[
+      select id,
+             attachment_type,
+             company_id,
+             archived
+      from flow.attachment_type
+      where company_id = :companyId
+        and id = :typeId
+      order by attachment_type.attachment_type;
+    ]]>
+  </attachment.getType>
+  <attachment.deleteType>
+    <![CDATA[
+        update flow.attachment_type
+        set archived = true
+        where id = :id
+    ]]>
+  </attachment.deleteType>
+  <attachment.updateType>
+    <![CDATA[
+      update flow.attachment_type
+        set attachment_type = :attachmentType
+      where id = :id
+    ]]>
+  </attachment.updateType>
+  <attachment.insertType>
+    <![CDATA[
+      insert into flow.attachment_type(attachment_type, company_id)
+        values (:attachmentType, :companyId)
+      returning id;
+    ]]>
+  </attachment.insertType>
+</sql>
