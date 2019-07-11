@@ -21,5 +21,6 @@ public class ProcessStep {
   private Date dateCreated, dateModified;
 
   private List<CustomFieldGroupType> customFieldGroupTypes;
+  private List<ProcessStepAttachmentType> attachmentTypes;
 }
 

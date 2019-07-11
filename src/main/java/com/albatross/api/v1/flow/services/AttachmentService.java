@@ -1,7 +1,10 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
+import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,9 @@ public class AttachmentService {
   @Autowired
   SqlCache sqlCache;
 
+  @Autowired
+  SecurityService securityService;
+
   public List<AttachmentType> getAttachmentTypesForCompany(Long companyId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
@@ -32,11 +38,46 @@ public class AttachmentService {
     return attachmentTypes;
   }
 
+  public List<AttachmentType> getAvailableTypesForProcessStep(Long companyId, Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("id", id);
+
+    List<AttachmentType> attachmentTypes = sqlCache.query("attachment.getAvailableTypesForProcessStep", params, AttachmentType.class);
+    return attachmentTypes;
+  }
+
   public Optional<AttachmentType> getType(Long companyId, Long typeId) {
     return sqlCache.get("attachment.getType",
         ImmutableMap.of("companyId", companyId,
             "typeId", typeId),
         AttachmentType.class);
+  }
+
+  public void deleteProcessStepType(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    sqlCache.update("attachment.deleteProcessStepType",
+        ImmutableMap.of("id", id,
+            "modifiedById", currentUser.getId()));
+  }
+
+  public Optional<ProcessStepAttachmentType> getProcessStepType(Long id) {
+    Optional<ProcessStepAttachmentType> result = sqlCache.get("attachment.getProcessStepType",
+        ImmutableMap.of("id", id), ProcessStepAttachmentType.class);
+
+    return result;
+  }
+
+  public Optional<ProcessStepAttachmentType> insertProcessStepType(ProcessStepAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    Long id = sqlCache.updateReturningId("attachment.insertProcessStepType",
+        ImmutableMap.of("createdById", currentUser.getId(),
+            "attachmentTypeId", attachmentType.getAttachmentTypeId(),
+            "processStepId", attachmentType.getProcessStepId()), "id").longValue();
+
+    return getProcessStepType(id);
   }
 
   public void deleteType(Long typeId) {

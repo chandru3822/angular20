@@ -1,10 +1,15 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldGroupType;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -26,6 +31,9 @@ public class CustomFieldGroupService {
 
   @Autowired
   CustomFieldService customFieldService;
+
+  @Autowired
+  ObjectMapper om;
 
   public void addFieldToGroup(CustomField customField) {
     HashMap<String, Object> params = new HashMap<>();
@@ -98,12 +106,11 @@ public class CustomFieldGroupService {
     params.put("objectTypeId", customFieldGroupType.getObjectTypeId());
     params.put("groupOrder", customFieldGroupType.getGroupOrder());
     params.put("processStepId", customFieldGroupType.getProcessStepId());
-    params.put("processStepCustomFieldTypeId", customFieldGroupType.getProcessStepCustomFieldTypeId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroupType", params, "id").longValue();
     params.put("id", id);
 
-    Optional<CustomFieldGroupType> group = sqlCache.get("customFieldGroup.getOne", params, CustomFieldGroupType.class);
+    Optional<CustomFieldGroupType> group = sqlCache.get("customFieldGroup.getOne", params, new CustomFieldGroupMapper<>(CustomFieldGroupType.class, om));
 
     return group.orElse(null);
   }
@@ -131,6 +138,23 @@ public class CustomFieldGroupService {
   public void updateCustomFieldGroupTypes(List<CustomFieldGroupType> customFieldGroupTypes) {
     for(CustomFieldGroupType cfg : customFieldGroupTypes){
       updateCustomFieldGroupType(cfg);
+    }
+  }
+
+  public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public CustomFieldGroupMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<CustomField>> customFieldTypeRef = new TypeReference<List<CustomField>>() {};
+
+      bw.registerCustomEditor(List.class, "customFields",
+          new JsonCollectionDeserializer(customFieldTypeRef, objectMapper));
     }
   }
 

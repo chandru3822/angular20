@@ -10,14 +10,14 @@
             tabindex=1
             v-model="newGroup.groupName"
         ></v-text-field>
-        <v-radio-group v-model="newGroup.processStepCustomFieldTypeId">
-          <v-radio
-              label="Fields in this group are native to this process step"
-              value="1"></v-radio>
-          <v-radio
-              label="Fields in this group are ancillary (view only from other process steps or objects)"
-              value="2"></v-radio>
-        </v-radio-group>
+        <!--<v-radio-group v-model="newGroup.processStepCustomFieldTypeId">-->
+          <!--<v-radio-->
+              <!--label="Fields in this group are native to this process step"-->
+              <!--value="1"></v-radio>-->
+          <!--<v-radio-->
+              <!--label="Fields in this group are ancillary (view only from other process steps or objects)"-->
+              <!--value="2"></v-radio>-->
+        <!--</v-radio-group>-->
         <!--<v-flex class="options-container" fluid-->
                 <!--v-if="item.companyDataType && item.companyDataType.hasListValues">-->
           <!--<span>Selectable Options</span>-->
@@ -51,7 +51,7 @@
         <v-btn
             color="primary"
             class="white--text mr-2"
-            :disabled="!newGroup.groupName || !newGroup.processStepCustomFieldTypeId"
+            :disabled="!newGroup.groupName"
             @click="$emit('update', false); saveFieldGroup()">
           Save
         </v-btn>
@@ -72,7 +72,9 @@
             <template v-slot:activator>
               <v-list-item class="grab">
                 <v-list-item-content>
-                  {{cfg.groupName}}
+                  <div>{{cfg.groupName}}
+                    <span v-if="cfg.ancillaryCustomFieldGroupId != null">(Ancillary)</span>
+                  </div>
                 </v-list-item-content>
                 <v-list-item-action>
                   <v-icon>drag_handle</v-icon>
@@ -122,17 +124,44 @@
             <v-list-item>
               <v-list-item-content>
                 <v-flex justify-center class="flex-display pl-3 pr-3" :class="{'shaded-row': index % 2}">
-                  <v-select v-if="addField"
-                            v-model="newField"
-                            :items="availableCustomFields"
-                            label="New Custom Field"
-                            item-text="fieldName"
-                            return-object
-                            @input="assignCustomField(cfg)"
-                  ></v-select>
-                  <v-btn @click="addField = !addField; fetchAvailableCustomFields(cfg.objectTypeId, cfg.id)">
-                    {{addField ? 'Cancel' : 'Add Field'}}
-                  </v-btn>
+                  <v-container>
+                    <v-radio-group v-model="newFieldType" v-if="addField">
+                    <v-radio label="Native Field"
+                        value="native"></v-radio>
+                    <v-radio label="Ancillary Field: viewed only from other process steps or objects"
+                        value="ancillary"></v-radio>
+                    </v-radio-group>
+                    <v-select v-if="addField && newFieldType === 'native'"
+                              v-model="newField"
+                              :items="availableCustomFields"
+                              label="New Custom Field"
+                              item-text="fieldName"
+                              return-object
+                              @input="assignCustomField(cfg)"
+                    ></v-select>
+
+                    <v-select v-if="addField && newFieldType === 'ancillary'"
+                              v-model="parent"
+                              :items="parentObjects"
+                              label="Parent Object"
+                              item-text="name"
+                              return-object
+                              @input="loadFieldsByParent(cfg)"
+                    ></v-select>
+                    <v-select v-if="addField && newFieldType === 'ancillary'"
+                              v-model="selectedAncillaryField"
+                              :items="ancillaryCustomFields"
+                              label="Custom Field"
+                              item-text="fieldName"
+                              return-object
+                              @input="assignAncillaryCustomField()"
+                    ></v-select>
+                    <v-btn @click="addField = !addField; fetchAvailableCustomFields(cfg.objectTypeId, cfg.id)">
+                      {{addField ? 'Cancel' : 'Add Field'}}
+                    </v-btn>
+                  </v-container>
+                </v-flex>
+                <v-flex justify-center class="flex-display pl-3 pr-3" :class="{'shaded-row': index % 2}">
                   <v-container>
                     <draggable v-model="cfg.customFields" v-if="cfg.customFields && cfg.customFields.length > 0"
                                group="customFields" @start="drag=true" @end="drag=false" @change="changeFieldOrder">
@@ -222,9 +251,21 @@
       return {
         newGroup: {},
         newField: {},
+        newFieldType: 'native',
         addField: false,
         selectedGroupId: null,
-        availableCustomFields: []
+        availableCustomFields: [],
+        parent: {},
+        parentObjects: [
+          {id: 1, name: 'testing 1'},
+          {id: 2, name: 'testing 2'},
+        ],
+        selectedAncillaryField: {},
+        ancillaryCustomFields: [
+          {id: 1, fieldName: 'will populate'},
+          {id: 2, fieldName: 'with real values'},
+          {id: 3, fieldName: 'later'},
+        ]
       }
     },
     // watch:{
@@ -284,6 +325,12 @@
         cfg.customFields.push(this.newField)
         this.newField = {}
       },
+      async loadFieldsByParent () {
+        console.log('we will load by parent')
+      },
+      async assignAncillaryCustomField () {
+        console.log('we will save this ANCILLARY', this.selectedAncillaryField)
+      }
     }
 
   }

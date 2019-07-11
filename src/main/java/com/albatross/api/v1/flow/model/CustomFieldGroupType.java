@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class CustomFieldGroupType {
 
-  private Long id, objectTypeId, groupOrder, processStepCustomFieldTypeId, processStepId;
+  private Long id, objectTypeId, groupOrder, processStepId;
   // originalGroupName used for frontend validation (without having to loop to populate it on frontend)
   private String groupName, objectType, originalGroupName;
   private Boolean archived;

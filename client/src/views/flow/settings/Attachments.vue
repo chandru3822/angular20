@@ -16,7 +16,7 @@
                       placeholder="Enter a type"
                       label="Attachment Type">
         </v-text-field>
-        <v-btn v-if="addNew" @click="addNewType">Save</v-btn>
+        <v-btn v-if="addNew" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
         <v-list v-for="(a, index) in filterBy(attachmentTypes, false, 'archived')"
                 :key="index">
           <v-list-item>
@@ -99,7 +99,7 @@ export default {
   methods: {
     async getAttachmentTypes () {
       const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/attachment/types`)
-      this.attachmentTypes = data
+      this.attachmentTypes = orderBy(data, [a => a.attachmentType.toLowerCase()])
     },
     async deleteType (typeId) {
       await deleteRequest(`/api/v1/flow/companies/${this.companyId}/attachment/type/${typeId}`)

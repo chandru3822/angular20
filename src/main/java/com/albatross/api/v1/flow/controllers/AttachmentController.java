@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,23 +30,33 @@ public class AttachmentController {
     return attachmentService.getAttachmentTypesForCompany(companyId);
   }
 
-  @RequestMapping(value = "/type/{typeId}",
-      method = RequestMethod.DELETE,
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/typesForStep/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getAvailableTypesForStep (@PathVariable Long companyId,
+                                                        @PathVariable Long id) {
+    return attachmentService.getAvailableTypesForProcessStep(companyId, id);
+  }
+
+  @RequestMapping(value = "/processStepType/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteProcessStepType(@PathVariable Long id) {
+    attachmentService.deleteProcessStepType(id);
+  }
+
+  @RequestMapping(value = "/processStepType", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepAttachmentType> insertProcessStepType(@RequestBody ProcessStepAttachmentType attachmentType) {
+    return attachmentService.insertProcessStepType(attachmentType);
+  }
+
+  @RequestMapping(value = "/type/{typeId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long typeId) {
     attachmentService.deleteType(typeId);
   }
 
-  @RequestMapping(value = "/type",
-      method = RequestMethod.PUT,
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/type", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateProcess(@RequestBody AttachmentType type) {
     attachmentService.updateType(type);
   }
 
-  @RequestMapping(value = "/type",
-      method = RequestMethod.POST,
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/type", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<AttachmentType> insertProcess(@RequestBody AttachmentType type) {
     return attachmentService.insertType(type);
   }

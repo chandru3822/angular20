@@ -7,7 +7,20 @@
 
   <customFieldGroup.getOne><![CDATA[
     select cfgt.*,
-       ot.object_type
+      ot.object_type,
+      coalesce((
+               SELECT array_to_json(array_agg(row_to_json(customFields)))
+               FROM (
+                      SELECT cfg.id,
+                             cfg.custom_field_group_type_id as "customFieldGroupTypeId",
+                             cfg.custom_field_id as "customFieldId",
+                             cfg.ancillary_custom_field_group_id as "ancillaryCustomFieldGroupId",
+                             cfg.field_order as "fieldOrder",
+                             cfg.archived,
+                             cf.field_name as "fieldName"
+                      FROM flow.custom_field_group cfg
+                             inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+                      WHERE cfg.custom_field_group_type_id = cfgt.id AND cfg.archived is not true) customFields), '[]') AS "customFields"
     from flow.custom_field_group_type cfgt
            inner join flow.object_type ot on ot.id = cfgt.object_type_id
     where cfgt.id = :id
@@ -58,8 +71,8 @@
   ]]></customFieldGroup.getAvailableCustomFieldsInGroup>
 
   <customFieldGroup.insertCustomFieldGroupType><![CDATA[
-    insert into flow.custom_field_group_type(group_name, object_type_id, group_order, process_step_id, process_step_custom_field_type_id)
-    values (:groupName, :objectTypeId, :groupOrder, :processStepId, :processStepCustomFieldTypeId);
+    insert into flow.custom_field_group_type(group_name, object_type_id, group_order, process_step_id)
+    values (:groupName, :objectTypeId, :groupOrder, :processStepId);
   ]]></customFieldGroup.insertCustomFieldGroupType>
 
   <customFieldGroup.updateCustomFieldGroupType><![CDATA[

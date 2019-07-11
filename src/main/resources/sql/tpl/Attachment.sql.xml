@@ -6,6 +6,40 @@
     and archived is not true
   ]]></attachment.getTypesForCompany>
 
+  <attachment.getAvailableTypesForProcessStep><![CDATA[
+    select at.*
+      from flow.attachment_type at
+    where at.archived is not true
+      and at.company_id = :companyId
+      and not exists (
+        select process_step_id
+        from flow.process_step_attachment_type psat
+        where psat.attachment_type_id = at.id
+          and psat.process_step_id = :id
+          and archived is not true
+      )
+     order by at.attachment_type
+
+  ]]></attachment.getAvailableTypesForProcessStep>
+
+  <attachment.getProcessStepType><![CDATA[
+    SELECT psat.id,
+       psat.attachment_type_id as "attachmentTypeId",
+       psat.created_by_id as "createdById",
+       psat.process_step_id as "processStepId",
+       psat.modified_by_id as "modifiedById",
+       at.attachment_type as "attachmentType",
+       psat.archived
+    FROM flow.process_step_attachment_type psat
+           inner join flow.attachment_type at on at.id = psat.attachment_type_id
+    where psat.id = :id
+  ]]></attachment.getProcessStepType>
+
+  <attachment.insertProcessStepType><![CDATA[
+    insert into flow.process_step_attachment_type (attachment_type_id, process_step_id, created_by_id, date_created)
+    values (:attachmentTypeId, :processStepId, :createdById, now())
+  ]]></attachment.insertProcessStepType>
+
   <attachment.getType>
     <![CDATA[
       select id,
@@ -18,6 +52,15 @@
       order by attachment_type.attachment_type;
     ]]>
   </attachment.getType>
+  <attachment.deleteProcessStepType>
+    <![CDATA[
+        update flow.process_step_attachment_type
+        set archived = true,
+          modified_by_id = :modifiedById,
+          date_updated = now()
+        where id = :id
+    ]]>
+  </attachment.deleteProcessStepType>
   <attachment.deleteType>
     <![CDATA[
         update flow.attachment_type
