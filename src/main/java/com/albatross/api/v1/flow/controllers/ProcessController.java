@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ApiProcess;
+import com.albatross.api.v1.flow.model.ProcessStep;
+import com.albatross.api.v1.flow.model.ProcessStepProcess;
 import com.albatross.api.v1.flow.services.ProcessService;
 import com.albatross.api.v1.flow.services.dto.DtoProcess;
 import lombok.extern.slf4j.Slf4j;
@@ -84,5 +86,25 @@ public class ProcessController {
                 .withRel("/rels/process/projects"));
 
         return p;
+    }
+
+    // process step process stuff, put in different controller??
+    @RequestMapping(value = "/processStepProcess/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteProcessStepFromProcess(@PathVariable Long companyId,
+                              @PathVariable("id") Long processStepProcessId) {
+        processService.deleteProcessStepFromProcess(companyId, processStepProcessId);
+    }
+
+    @RequestMapping(value = "/availableProcessSteps/{processId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ProcessStep> availableProcessStepsForProcess(@PathVariable Long companyId,
+                                                             @PathVariable Long processId) {
+        return processService.availableProcessSteps(companyId, processId);
+    }
+
+    @RequestMapping(value = "/{processId}/processStep/{processStepId}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Optional<ProcessStepProcess> insertProcessStepProcess(@PathVariable Long companyId,
+                                                                 @PathVariable Long processId,
+                                                                 @PathVariable Long processStepId) {
+        return processService.insertProcessStepProcess(companyId, processId, processStepId);
     }
 }

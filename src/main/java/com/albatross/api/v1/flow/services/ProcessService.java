@@ -1,15 +1,25 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.StatusType;
 import com.albatross.api.v1.flow.model.ApiProcess;
+import com.albatross.api.v1.flow.model.ProcessStep;
+import com.albatross.api.v1.flow.model.ProcessStepProcess;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.dto.DtoProcess;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -17,6 +27,12 @@ import java.util.Optional;
 public class ProcessService {
     @Autowired
     private SqlCache sqlCache;
+
+    @Autowired
+    ObjectMapper om;
+
+    @Autowired
+    SecurityService securityService;
 
     public Collection<DtoProcess> getProcessesForCompany(Long companyId) {
         return sqlCache.query("process.getAllForCompany",
@@ -28,7 +44,7 @@ public class ProcessService {
         return sqlCache.get("process.get",
                 ImmutableMap.of("companyId", companyId,
                                 "processId", processId),
-                DtoProcess.class);
+            new ProcessMapper<>(DtoProcess.class, om));
     }
 
     public void deleteProcess(Long companyId, Long processId) {
@@ -66,5 +82,58 @@ public class ProcessService {
                 "statusTypeId", StatusType.ACTIVE.id));
 
         return getProcess(process.getCompanyId(), id);
+    }
+
+    public static class ProcessMapper<T> extends BeanPropertyRowMapper<T> {
+        private final ObjectMapper objectMapper;
+
+        public ProcessMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+            super(mappedClass);
+            this.objectMapper = objectMapper;
+        }
+
+        @Override
+        protected void initBeanWrapper(BeanWrapper bw) {
+            TypeReference<List<ProcessStepProcess>> processStepProcessRef = new TypeReference<List<ProcessStepProcess>>() {};
+
+            bw.registerCustomEditor(List.class, "processStepProcesses",
+                new JsonCollectionDeserializer(processStepProcessRef, objectMapper));
+        }
+    }
+
+    // process step process stuff, put in other service??
+    public void deleteProcessStepFromProcess(Long companyId, Long processStepProcessId) {
+        User currentUser = securityService.getCurrentUser();
+
+        sqlCache.update("process.deleteProcessStepFromProcess",
+            ImmutableMap.of("companyId", companyId,
+                "processStepProcessId", processStepProcessId,
+                "modifiedById", currentUser.getId()));
+    }
+
+    public List<ProcessStep> availableProcessSteps(Long companyId, Long processId) {
+        List<ProcessStep> results = sqlCache.query("process.availableProcessSteps",
+            ImmutableMap.of("processId", processId), ProcessStep.class);
+
+        return results;
+    }
+
+    public Optional<ProcessStepProcess> getOneProcessStepProcess(Long id) {
+        Optional<ProcessStepProcess> result = sqlCache.get("process.getOneProcessStepProcess",
+            ImmutableMap.of("id", id), ProcessStepProcess.class);
+
+        return result;
+    }
+
+    public Optional<ProcessStepProcess> insertProcessStepProcess(Long companyId, Long processId, Long processStepId) {
+        User currentUser = securityService.getCurrentUser();
+
+        Long id = sqlCache.updateReturningId("process.insertProcessStepProcess",
+            ImmutableMap.of("processId", processId,
+                            "createdById", currentUser.getId(),
+                            "orgId", 248,
+                            "processStepId", processStepId), "id").longValue();
+
+        return getOneProcessStepProcess(id);
     }
 }

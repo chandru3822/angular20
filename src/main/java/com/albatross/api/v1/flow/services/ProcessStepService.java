@@ -64,7 +64,6 @@ public class ProcessStepService {
     params.put("id", processStep.getId());
     params.put("modifiedById", currentUser.getId());
     params.put("name", processStep.getProcessStepName());
-    params.put("orgId", processStep.getOrgId());
     sqlCache.update("processStep.update", params);
   }
 

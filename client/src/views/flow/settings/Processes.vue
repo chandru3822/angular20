@@ -26,8 +26,9 @@
               <div v-else>{{p.processName}}</div>
             </v-list-item-content>
             <v-list-item-action class="clickable">
-              <v-icon v-if="selectedProcessId === p.id" @click="saveProcess(p)">save</v-icon>
-              <v-icon v-else @click="selectedProcessId = p.id">edit</v-icon>
+              <v-btn :to="{ path: `/settings/process/${p.id}`}" text>
+                <v-icon>edit</v-icon>
+              </v-btn>
             </v-list-item-action>
             <v-dialog
                 v-model="p.deleteConfirm"
@@ -119,11 +120,11 @@ export default {
       this.addNew = false
       this.newProcess = {}
     },
-    async saveProcess (p) {
-      this.selectedProcessId = null
-      p.modifiedById = this.userId
-      await putRequest(`/api/v1/flow/companies/${this.companyId}/processes`, p)
-    }
+    // async saveProcess (p) {
+    //   this.selectedProcessId = null
+    //   p.modifiedById = this.userId
+    //   await putRequest(`/api/v1/flow/companies/${this.companyId}/processes`, p)
+    // }
   },
   async created () {
     this.getProcesses()

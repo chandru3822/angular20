@@ -11,7 +11,7 @@
       </v-toolbar>
       <v-toolbar color="white" class="elevation-1">
         <v-toolbar-title class="app-title">
-          {{ this.processStepId ? this.processStep.processStepName : 'New Process Step'}}
+          {{ processStepId ? processStep.processStepName : 'New Process Step'}}
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>

@@ -17,7 +17,7 @@
             <v-list-item-content>
               {{ps.processStepName}}
             </v-list-item-content>
-            <v-list-item-action class="clickable" color="purple">
+            <v-list-item-action class="clickable">
               <v-btn :to="{ path: `/settings/processStep/${ps.id}`}" text>
                 <v-icon>edit</v-icon>
               </v-btn>

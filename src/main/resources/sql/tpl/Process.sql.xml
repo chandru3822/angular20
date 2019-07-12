@@ -16,17 +16,37 @@
   </process.getAllForCompany>
   <process.get>
     <![CDATA[
-             select process.id,
-                    process.process_name,
-                    company_process.company_id,
-                    process.created_by_id,
-                    company_process.archived,
-                    process.parent_company_id
-             from flow.company_process
-             inner join flow.process on process.id = company_process.process_id
-             where company_id = :companyId
-               and process_id = :processId
-             order by process.process_name;
+     select p.id,
+       p.process_name,
+       cp.company_id,
+       p.created_by_id,
+       cp.archived,
+       p.parent_company_id,
+       coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(processSteps)))
+                  FROM (
+                       select psp.id,
+                              psp.process_id as "processId",
+                              psp.process_step_id as "processStepId",
+                              ps.company_id as "companyId",
+                              psp.org_id as "orgId",
+                              o.org_name as "orgName",
+                              psp.date_created as "dateCreated",
+                              psp.created_by_id as "createdById",
+                              psp.date_updated as "dateUpdated",
+                              psp.modified_by_id as "modifiedById",
+                              psp.archived,
+                              ps.process_step_name as "processStepName"
+                       from flow.process_step_process psp
+                            inner join flow.process_step ps on ps.id = psp.process_step_id
+                            inner join flow.org o on o.id = psp.org_id
+                       where psp.process_id = p.id and psp.archived is not true
+                       order by ps.process_step_name) processSteps), '[]') AS "processStepProcesses"
+      from flow.company_process cp
+          inner join flow.process p on p.id = cp.process_id
+      where company_id = :companyId
+        and process_id = :processId
+      order by p.process_name;
     ]]>
   </process.get>
   <process.delete>
@@ -66,4 +86,53 @@
         values (:companyId, :processId, :statusTypeId)
     ]]>
   </process.insertCompanyProcess>
+  <process.deleteProcessStepFromProcess>
+    <![CDATA[
+      update flow.process_step_process
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_updated = now()
+      where id = :processStepProcessId
+    ]]>
+  </process.deleteProcessStepFromProcess>
+  <process.availableProcessSteps>
+    <![CDATA[
+      select ps.*
+      from flow.process_step ps
+      where ps.archived is not true
+        and not exists (
+          select process_step_id
+          from flow.process_step_process psp
+          where psp.process_step_id = ps.id
+            and psp.process_id = :processId
+            and archived is not true
+        )
+    ]]>
+  </process.availableProcessSteps>
+  <process.insertProcessStepProcess>
+    <![CDATA[
+      insert into flow.process_step_process (process_id, process_step_id, org_id, created_by_id, date_created)
+      values (:processId, :processStepId, :orgId, :createdById, now())
+    ]]>
+  </process.insertProcessStepProcess>
+  <process.getOneProcessStepProcess>
+    <![CDATA[
+      select psp.id,
+       psp.process_id as "processId",
+       psp.process_step_id as "processStepId",
+       ps.company_id as "companyId",
+       psp.org_id as "orgId",
+       o.org_name as "orgName",
+       psp.date_created as "dateCreated",
+       psp.created_by_id as "createdById",
+       psp.date_updated as "dateUpdated",
+       psp.modified_by_id as "modifiedById",
+       psp.archived,
+       ps.process_step_name as "processStepName"
+      from flow.process_step_process psp
+             inner join flow.process_step ps on ps.id = psp.process_step_id
+             inner join flow.org o on o.id = psp.org_id
+      where psp.id = :id
+    ]]>
+  </process.getOneProcessStepProcess>
 </sql>
