@@ -46,6 +46,10 @@ export default new Router({
         props: true,
         component: () => import (/* webpackChunkName: "org" */ './views/Org.vue')
       }, {
+        path: '/ahjTest',
+        name: 'ahjTest',
+        component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj_Test.vue')
+      }, {
           path: '/ahj',
           name: 'ahj',
           component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')

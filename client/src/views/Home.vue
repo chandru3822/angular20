@@ -54,6 +54,10 @@ export default {
         path: '/ahj',
         display: true
       }, {
+      //   label: 'AHJ Database TEST',
+      //   path: '/ahjTest',
+      //   display: true
+      // }, {
         label: 'Settings',
         path: '/settings',
         display: true
