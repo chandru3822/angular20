@@ -101,10 +101,10 @@ public class ProcessController {
         return processService.availableProcessSteps(companyId, processId);
     }
 
-    @RequestMapping(value = "/{processId}/processStep/{processStepId}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{processId}/processStep", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public Optional<ProcessStepProcess> insertProcessStepProcess(@PathVariable Long companyId,
                                                                  @PathVariable Long processId,
-                                                                 @PathVariable Long processStepId) {
-        return processService.insertProcessStepProcess(companyId, processId, processStepId);
+                                                                 @RequestBody ProcessStepProcess processStepProcess) {
+        return processService.insertProcessStepProcess(processId, processStepProcess);
     }
 }

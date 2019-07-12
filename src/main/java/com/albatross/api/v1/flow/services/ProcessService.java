@@ -125,14 +125,14 @@ public class ProcessService {
         return result;
     }
 
-    public Optional<ProcessStepProcess> insertProcessStepProcess(Long companyId, Long processId, Long processStepId) {
+    public Optional<ProcessStepProcess> insertProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {
         User currentUser = securityService.getCurrentUser();
 
         Long id = sqlCache.updateReturningId("process.insertProcessStepProcess",
             ImmutableMap.of("processId", processId,
                             "createdById", currentUser.getId(),
-                            "orgId", 248,
-                            "processStepId", processStepId), "id").longValue();
+                            "orgId", processStepProcess.getOrgId(),
+                            "processStepId", processStepProcess.getProcessStepId()), "id").longValue();
 
         return getOneProcessStepProcess(id);
     }

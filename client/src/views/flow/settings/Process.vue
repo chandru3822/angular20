@@ -15,20 +15,27 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text @click="getAvailableProcessSteps">
+          <v-btn text @click="getAvailableProcessSteps(); getOwningOrgs()">
             {{addNew ? 'Cancel' : 'Add Process Step'}}
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-container v-if="addNew">
-        <v-select v-model="newProcessStepId"
+        <v-select v-model="newProcessStep.processStepId"
                   :items="availableProcessSteps"
-                  label="Select a Process Step"
                   no-data-text="No Steps Available"
+                  label="Select a Process Step"
                   item-text="processStepName"
                   item-value="id"
-                  @input="assignProcessStep"
         ></v-select>
+        <v-select v-model="newProcessStep.orgId"
+                  :items="owningOrgs"
+                  no-data-text="No Orgs Available"
+                  label="Select an Owning Org"
+                  item-text="orgName"
+                  item-value="id"
+        ></v-select>
+        <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>
       </v-container>
       <v-data-table
           :headers="headers"
@@ -37,9 +44,18 @@
           hide-default-footer
           class="elevation-1"
       >
+        <template v-slot:no-data>
+          NO DATA HERE!
+        </template>
+
+        <template v-slot:no-results>
+          NO RESULTS HERE!
+        </template>
+
         <template #body="{ items }">
           <tr v-for="(item, index) in filterBy(items, false, 'archived')" :key="item.id" v-if="!item.custom" :class="{ 'shaded-row': index % 2 }">
             <td>{{ item.processStepName }}</td>
+            <td>{{ item.orgName }}</td>
             <td>{{ item.dateCreated | formatDate('M/D/YYYY') }}</td>
             <td>{{ item.dateUpdated | formatDate('M/D/YYYY') }}</td>
             <td>
@@ -99,8 +115,9 @@ export default {
   data () {
     return {
       addNew: false,
-      newProcessStepId: null,
+      newProcessStep: {},
       availableProcessSteps: [],
+      owningOrgs: [],
       processId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
       changesMade: false,
@@ -115,6 +132,7 @@ export default {
       ],
       headers: [
         { text: 'Name', value: 'processStepName'},
+        { text: 'Owning Org', value: 'orgName'},
         { text: 'Created', value: 'dateCreated'},
         { text: 'Last Modified', value: 'dateUpdated'},
         { text: null, value: null},
@@ -135,11 +153,18 @@ export default {
       console.log('will save process here')
     },
     async deleteStepFromProcess (id) {
+      //reset the addNew field in case they delete one while it is open
+      this.addNew = false
       await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processes/processStepProcess/${id}`)
     },
-    async getAvailableProcessSteps (processId) {
+    async getOwningOrgs () {
+      console.log('will load orgs here')
+      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/org/owning`)
+      this.owningOrgs = data
+    },
+    async getAvailableProcessSteps () {
       //reset field in case they hit cancel
-      this.newProcessStepId = null
+      this.newProcessStep = {}
       this.addNew = !this.addNew
       if(this.addNew) {
         const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processes/availableProcessSteps/${this.processId}`)
@@ -147,12 +172,12 @@ export default {
       }
     },
     async assignProcessStep () {
-      const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processes/${this.processId}/processStep/${this.newProcessStepId}`)
+      const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processes/${this.processId}/processStep`, this.newProcessStep)
       console.log('randaLogger', data)
       this.process.processStepProcesses.push(data)
       this.process.processStepProcesses = orderBy(this.process.processStepProcesses, p => p.processStepName.toLowerCase())
       this.addNew = false
-      this.newProcessStepId = null
+      this.newProcessStep = {}
     }
   },
 }

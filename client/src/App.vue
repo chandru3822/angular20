@@ -12,8 +12,8 @@
 .theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
 .theme--light.v-input:not(.v-input--is-disabled) input,
 .theme--light.v-select .v-select__selections {
-  /*color: var(--v-primaryText-base) !important;*/
-  color: #1F3C73 !important;
+  color: var(--v-primaryText-base) !important;
+  /*color: #1F3C73 !important;*/
 }
 /*.theme--light {*/
   /*color: var(--v-primaryText-base) !important;*/

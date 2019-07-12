@@ -112,13 +112,14 @@ export default {
 
       const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processes`, this.newProcess)
 
-      // add it to the records already on the screen
-      this.processes.push(data)
-      this.processes = orderBy(this.processes, [p => p.processName.toLowerCase()])
-
-      // reset the new process fields
-      this.addNew = false
-      this.newProcess = {}
+      this.$router.push({name: 'process', params: {id: data.id}})
+      // // add it to the records already on the screen
+      // this.processes.push(data)
+      // this.processes = orderBy(this.processes, [p => p.processName.toLowerCase()])
+      //
+      // // reset the new process fields
+      // this.addNew = false
+      // this.newProcess = {}
     },
     // async saveProcess (p) {
     //   this.selectedProcessId = null

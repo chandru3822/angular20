@@ -7,11 +7,15 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 Vue.use(Vuetify)
 
 export default new Vuetify({
-  iconfont: 'md',
-  options: {
-    customProperties: true
+  icons: {
+    iconfont: 'md'
   },
+  // iconfont: 'md',
+
   theme: {
+    options: {
+      customProperties: true
+    },
     themes: {
       light: {
         primary: '#1F3C73',
