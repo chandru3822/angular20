@@ -87,7 +87,7 @@
                 </v-card>
               </v-dialog>
 
-              <v-layout mt-5 fill-height>
+              <v-layout my-5 fill-height>
                 <v-card style="width: 100% !important">
                   <v-card-title>
                     <v-spacer></v-spacer>
@@ -150,19 +150,19 @@
 
                     <template #body="{ items }" class="table-body">
                       <tr
-                        v-for="ahj in items"
+                        v-for="(ahj, index) in items"
                         :key="ahj.id"
-                        class="text-sm-left"
+                        :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
                       >
                         <td>{{ ahj.name ? ahj.name : '' }}</td>
                         <td>{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
                         <td>{{ ahj.state ? ahj.state : '' }}</td>
                         <td>
-                          <a :href="'ahj/' + ahj.id + '/permit'" class="mr-3 rmv-underline blue-txt">Permit</a>
-                          <a :href="'ahj/' + ahj.id + '/inspection'" class="mr-3 rmv-underline blue-txt">Inspection</a>
-                          <a :href="'ahj/' + ahj.id + '/design'" class="mr-3 rmv-underline blue-txt">Design</a>
-                          <v-icon small class="mr-3 blue-txt" @click="editAhj(ahj)">edit</v-icon>
-                          <v-icon small class="blue-txt" @click="deleteAhj(ahj)">delete</v-icon>
+                          <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
+                          <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
+                          <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
+                          <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">edit</v-icon>
+                          <v-icon small class="ahj-link-icon" @click="deleteAhj(ahj)">delete</v-icon>
                         </td>
                       </tr>
                     </template>
@@ -205,7 +205,7 @@
                 </v-card>
               </v-dialog>
 
-              <v-layout mt-5 fill-height>
+              <v-layout my-5 fill-height>
                 <v-card style="width: 100% !important">
                   <v-card-title>
                     <v-spacer></v-spacer>
@@ -258,16 +258,16 @@
 
                       <template #body="{ items }" class="table-body">
                         <tr
-                          v-for="ahjUtility in items"
+                          v-for="(ahjUtility, index) in items"
                           :key="ahjUtility.id"
-                          class="text-sm-left"
+                          :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
                         >
                           <td>{{ ahjUtility.name ? ahjUtility.name : '' }}</td>
                           <td>{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
                           <td>{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
                           <td>
-                            <a :href="'ahj/utility/' + ahjUtility.id + '/details'" class="mr-3 rmv-underline blue-txt">Details</a>
-                            <v-icon small class="mr-3 blue-txt" @click="editAhjUtility(ahjUtility)">edit</v-icon>
+                            <router-link :to="'ahj/utility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
+                            <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">edit</v-icon>
                           </td>
                         </tr>
                       </template>
@@ -594,21 +594,18 @@
 </script>
 
 <style lang="scss" scoped>
-  .v-data-table table > tr {
-    &:nth-of-type(odd) {
-      background-color: rgba(0, 0, 0, .05);
-    }
-    &:hover {
-      background-color: lightblue;
-    }
-  }
-  .rmv-underline {
+  .ahj-link {
+    color: var(--v-brBlue-base);
     text-decoration: none;
-  }
-  .blue-txt {
-    color: #337ab7;
     &:hover {
       text-decoration: underline;
+      color: var(--v-primaryText-base);
+    }
+  }
+  .ahj-link-icon {
+    color: var(--v-brBlue-base) !important;
+    &:hover {
+      color: var(--v-primaryText-base) !important;
     }
   }
 </style>
