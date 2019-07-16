@@ -87,7 +87,7 @@
                 </v-card>
               </v-dialog>
 
-              <v-layout mt-5 fill-height>
+              <v-layout my-5 fill-height>
                 <v-card style="width: 100% !important">
                   <v-card-title>
                     <v-spacer></v-spacer>
@@ -150,19 +150,19 @@
 
                     <template #body="{ items }" class="table-body">
                       <tr
-                        v-for="ahj in items"
+                        v-for="(ahj, index) in items"
                         :key="ahj.id"
-                        class="text-sm-left"
+                        :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
                       >
-                        <td v-if="ahj.name">{{ ahj.name }}</td>
-                        <td v-if="ahj.metroArea">{{ ahj.metroArea }}</td>
-                        <td v-if="ahj.state">{{ ahj.state }}</td>
+                        <td>{{ ahj.name ? ahj.name : '' }}</td>
+                        <td>{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
+                        <td>{{ ahj.state ? ahj.state : '' }}</td>
                         <td>
-                          <a v-if="ahj.id" :href="'ahj/' + ahj.id + '/permit'" class="mr-3 rmv-underline blue-txt">Permit</a>
-                          <a v-if="ahj.id" :href="'ahj/' + ahj.id + '/inspection'" class="mr-3 rmv-underline blue-txt">Inspection</a>
-                          <a v-if="ahj.id" :href="'ahj/' + ahj.id + '/design'" class="mr-3 rmv-underline blue-txt">Design</a>
-                          <v-icon small class="mr-3 blue-txt" @click="editAhj(ahj)">edit</v-icon>
-                          <v-icon small class="blue-txt" @click="deleteAhj(ahj)">delete</v-icon>
+                          <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
+                          <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
+                          <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
+                          <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">edit</v-icon>
+                          <v-icon small class="ahj-link-icon" @click="deleteAhj(ahj)">delete</v-icon>
                         </td>
                       </tr>
                     </template>
@@ -205,7 +205,7 @@
                 </v-card>
               </v-dialog>
 
-              <v-layout mt-5 fill-height>
+              <v-layout my-5 fill-height>
                 <v-card style="width: 100% !important">
                   <v-card-title>
                     <v-spacer></v-spacer>
@@ -219,7 +219,7 @@
                   </v-card-title>
                   <v-data-table
                     :headers="visibleHeaders"
-                    :items="ahjUtilities"
+                    :items="filteredAhjUtilities"
                     :search="ahjUtilitySearch"
                     :options="pagination"
                     :items-per-page="-1"
@@ -258,16 +258,16 @@
 
                       <template #body="{ items }" class="table-body">
                         <tr
-                          v-for="ahjUtility in items"
+                          v-for="(ahjUtility, index) in items"
                           :key="ahjUtility.id"
-                          class="text-sm-left"
+                          :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
                         >
-                          <td v-if="ahjUtility.name">{{ ahjUtility.name }}</td>
-                          <td v-if="ahjUtility.metroArea">{{ ahjUtility.metroArea }}</td>
-                          <td v-if="ahjUtility.state">{{ ahjUtility.state }}</td>
+                          <td>{{ ahjUtility.name ? ahjUtility.name : '' }}</td>
+                          <td>{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
+                          <td>{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
                           <td>
-                            <a v-if="ahjUtility.id" :href="'ahj/utility/' + ahjUtility.id + '/details'" class="mr-3 rmv-underline blue-txt">Details</a>
-                            <v-icon small class="mr-3 blue-txt" @click="editAhjUtility(ahjUtility)">edit</v-icon>
+                            <router-link :to="'ahj/utility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
+                            <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">edit</v-icon>
                           </td>
                         </tr>
                       </template>
@@ -284,6 +284,9 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
+  import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import { mapState } from 'vuex'
+  import { AppMutations } from '@/stores/AppStore'
 
   const FILTER_TYPE = {
     TEXT: 'text',
@@ -295,117 +298,6 @@
     metroArea: {value: [], type: FILTER_TYPE.TEXT, model: 'metroArea'},
     state: {value: [], type: FILTER_TYPE.SELECT, model: 'state'}
   }
-
-  const ahjItems = [
-    {
-        id: 1,
-        name: 'Conejos County',
-        metroArea: 'Colorado Springs',
-        metroAreaId: 4,
-        state: 'Colorado',
-        stateAbrv: 'CO'
-    },
-    {
-        id: 2,
-        name: 'Fremont County',
-        metroArea: 'Colorado Springs',
-        metroAreaId: 4,
-        state: 'Colorado',
-        stateAbrv: 'CO'
-    },
-    {
-        id: 3,
-        name: 'Town of Limon',
-        metroArea: 'Colorado Springs',
-        metroAreaId: 4,
-        state: 'Colorado',
-        stateAbrv: 'CO'
-    },
-    {
-        id: 4,
-        name: 'Town of Romeo',
-        metroArea: 'Colorado Springs',
-        metroAreaId: 4,
-        state: 'Colorado',
-        stateAbrv: 'CO'
-    },
-    {
-        id: 5,
-        name: 'Adams County',
-        metroArea: 'Denver',
-        metroAreaId: 8,
-        state: 'Colorado',
-        stateAbrv: 'CO'
-    },
-    {
-        id: 6,
-        name: 'Arapahoe County',
-        metroArea: 'Denver',
-        metroAreaId: 8,
-        state: 'Colorado',
-        stateAbrv: 'CO'
-    },
-    {
-        id: 7,
-        name: 'Boulder County',
-        metroArea: 'Denver',
-        metroAreaId: 8,
-        state: 'Colorado',
-        stateAbrv: 'CO'
-    }
-  ]
-
-  const ahjUtilityItems = [
-    {
-        id: 100,
-        name: 'AEP Ohio',
-        metroArea: 'Columbus',
-        metroAreaId: 1,
-        state: 'OH'
-    },
-    {
-        id: 101,
-        name: 'Berkeley Electric Cooperative (BEC)',
-        metroArea: 'Charleston',
-        metroAreaId: 2,
-        state: 'SC'
-    },
-    {
-        id: 102,
-        name: 'Brigham City Utility',
-        metroArea: 'Davis County',
-        metroAreaId: 3,
-        state: 'UT'
-    },
-    {
-        id: 103,
-        name: 'Colorado Springs Utilities (CSU)',
-        metroArea: 'Colorado Springs',
-        metroAreaId: 4,
-        state: 'CO'
-    },
-    {
-        id: 104,
-        name: 'ComEd',
-        metroArea: 'Chicago',
-        metroAreaId: 5,
-        state: 'IL'
-    },
-    {
-        id: 105,
-        name: 'Duke Energy FL',
-        metroArea: 'Orlando',
-        metroAreaId: 6,
-        state: 'FL'
-    },
-    {
-        id: 106,
-        name: 'Duke Energy NC',
-        metroArea: 'Charlotte',
-        metroAreaId: 7,
-        state: 'NC'
-    }
-  ]
 
   export default {
     name: 'ahjs',
@@ -423,8 +315,8 @@
       ],
       ahjSearch: '',
       ahjUtilitySearch: '',
-      ahjs: ahjItems,
-      ahjUtilities: ahjUtilityItems,
+      ahjs: [],
+      ahjUtilities: [],
       ahjEditedIndex: -1,
       ahjUtilityEditedIndex: -1,
       editedItem: {
@@ -508,7 +400,10 @@
       },
       ahjUtilityBtnTxt () {
         return this.ahjUtilityEditedIndex === -1 ? 'Add' : 'Update'
-      }
+      },
+      ...mapState({
+        loading: state => state.app.loading
+      })
     },
     watch: {
       ahjDialog (val) {
@@ -519,11 +414,13 @@
       }
     },
     methods: {
-      fetchAhjs () {
-        return this.ahjs
+      async fetchAhjs () {
+        const {data} = await getRequest('/api/v1/company/blueraven/ahj')
+        this.ahjs = cloneDeep(data)
       },
-      fetchAhjUtilities () {
-        return this.ahjUtilities
+      async fetchAhjUtilities () {
+        const {data} = await getRequest('/api/v1/company/blueraven/ahjUtility/list/all')
+        this.ahjUtilities = cloneDeep(data)
       },
       initFilters () {
         this.ahjFilters = cloneDeep(FILTER_DEFAULTS)
@@ -597,7 +494,7 @@
         }
         this.close()
         this.initFilters()
-        this.ahjs = this.fetchAhjs()
+        this.fetchAhjs()
         this.fetchAhjSearchFilters()
       },
       saveAhjUtility () {
@@ -617,7 +514,7 @@
 
         this.close()
         this.initFilters()
-        this.ahjs = this.fetchAhjs()
+        this.fetchAhjs()
         this.fetchAhjSearchFilters()
       },
       fetchAhjSearchFilters () {
@@ -668,9 +565,13 @@
       }
     },
     created () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       this.initFilters()
-      this.ahjs = this.fetchAhjs()
-      this.ahjUtilities = this.fetchAhjUtilities()
+
+      Promise.all([
+        this.fetchAhjs(),
+        this.fetchAhjUtilities()
+      ]).then(() => this.$store.commit(AppMutations.SET_LOADING, false))
 
       if (this.ahjs.length > 0) {
         this.fetchAhjSearchFilters()
@@ -693,21 +594,18 @@
 </script>
 
 <style lang="scss" scoped>
-  .v-data-table table > tr {
-    &:nth-of-type(odd) {
-      background-color: rgba(0, 0, 0, .05);
-    }
-    &:hover {
-      background-color: lightblue;
-    }
-  }
-  .rmv-underline {
+  .ahj-link {
+    color: var(--v-brBlue-base);
     text-decoration: none;
-  }
-  .blue-txt {
-    color: #337ab7;
     &:hover {
       text-decoration: underline;
+      color: var(--v-primaryText-base);
+    }
+  }
+  .ahj-link-icon {
+    color: var(--v-brBlue-base) !important;
+    &:hover {
+      color: var(--v-primaryText-base) !important;
     }
   }
 </style>

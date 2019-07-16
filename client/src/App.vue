@@ -106,7 +106,10 @@ label[for="adminOriginatorSelect"] {
 
 .shaded-row{
   background-color: var(--v-rowShadeCustom-base) !important;
-  /*background-color: #EAEAF4 !important;*/
+}
+
+.row-hover:hover {
+  background-color: var(--v-rowHoverCustom-base) !important;
 }
 
 .clickable {

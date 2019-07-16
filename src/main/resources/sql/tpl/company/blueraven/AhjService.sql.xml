@@ -1,0 +1,19 @@
+<sql>
+  <ahj.list>
+    <![CDATA[
+      SELECT
+        ahj.id,
+        ahj.name,
+        st.id as state_id,
+        st.state,
+        ahj.metro_area_id,
+        ma.metro_area
+      FROM brs.ahj ahj
+        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
+        INNER JOIN brs.sales_area sa ON ma.sales_area_id = sa.id
+        INNER JOIN flow.state st ON sa.state_id = st.id
+      WHERE ahj.archived IS NOT TRUE
+      ORDER BY st.state, ma.metro_area, ahj.name
+    ]]>
+  </ahj.list>
+</sql>

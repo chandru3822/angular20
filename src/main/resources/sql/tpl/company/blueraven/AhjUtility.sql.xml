@@ -1,0 +1,19 @@
+<sql>
+  <ahj.utility.list.all>
+    <![CDATA[
+      SELECT
+        au.id,
+        au.name,
+        au.metro_area_id,
+        ma.metro_area,
+        s.id as state_id,
+        s.abbreviation as state,
+        au.active
+      FROM brs.ahj_utility au
+        LEFT JOIN brs.metro_area ma ON ma.id = au.metro_area_id
+        LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
+        LEFT JOIN flow.state s ON s.id = sa.state_id
+      ORDER BY au.name
+    ]]>
+  </ahj.utility.list.all>
+</sql>

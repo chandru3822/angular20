@@ -22,6 +22,8 @@ export default new Vuetify({
         secondaryCustom: '#f2f2f2',
         rowShade: '#EAEAF4',
         rowShadeCustom: '#EAEAF4',
+        rowHover: '#ADD8E6',
+        rowHoverCustom: '#ADD8E6',
         brGreen: '#73d697',
         brRed: '#ee6f6a',
         brBlue: '#2292cc',
