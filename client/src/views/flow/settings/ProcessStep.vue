@@ -40,11 +40,67 @@
       <v-divider></v-divider>
       <v-flex v-if="processStepId">
         <h3>Links</h3>
-        <v-btn>
-          <v-icon>add</v-icon>
-          Create Group
+        <v-btn @click="getLinksForProcessStep">
+          <v-icon v-if="!addNewLink">add</v-icon>
+          {{ addNewLink ? 'Cancel' : 'Add Type'}}
         </v-btn>
-      </v-flex><v-divider></v-divider>
+        <v-select v-if="addNewLink"
+                  v-model="newLink.linkId"
+                  :items="availableLinks"
+                  label="Select Link"
+                  item-text="link"
+                  item-value="id"
+                  @input="assignNewLink"
+        ></v-select>
+        <v-container>
+          <v-list v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
+                  :key="index">
+            <v-list-item>
+              <v-list-item-content>
+                {{a.link}} | {{ a.url }}
+              </v-list-item-content>
+              <v-dialog
+                  v-model="a.deleteConfirm"
+                  width="500">
+                <template v-slot:activator="{ on }">
+                  <v-list-item-action class="clickable" v-on="on">
+                    <v-icon>delete</v-icon>
+                  </v-list-item-action>
+                </template>
+                <v-card>
+                  <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title
+                  >
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text>
+                    Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        @click="a.deleteConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                        color="primary"
+                        text
+                        @click="a.archived = true; deleteLinkFromStep(a.id)">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-list-item>
+          </v-list>
+        </v-container>
+      </v-flex>
+      <v-divider></v-divider>
       <v-flex v-if="processStepId">
         <h3>Attachments</h3>
         <v-btn @click="getAttachmentTypesForProcessStep">
@@ -130,6 +186,9 @@
         changesMade: false,
         addNewType: false,
         newType: {},
+        addNewLink: false,
+        newLink: {},
+        availableLinks: [],
         processStepId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
         processStep: {},
@@ -193,6 +252,28 @@
         this.addNewType = false
         console.log('deleting')
         await deleteRequest(`/api/v1/flow/companies/${this.companyId}/attachment/processStepType/${id}`)
+        // this.availableAttachmentTypes = data
+      },
+      async getLinksForProcessStep () {
+        this.addNewLink = !this.addNewLink
+        if(this.addNewLink){
+          const { data } = await getRequest(`/api/v1/flow/companies/${this.companyId}/links/processStep/${this.$route.params.id}`)
+          this.availableLinks = data
+        }
+      },
+      async assignNewLink () {
+        this.newLink.processStepId = this.$route.params.id
+        const { data } = await postRequest(`/api/v1/flow/companies/${this.companyId}/links/processStep`, this.newLink)
+        console.log('randaLogger', data)
+        this.processStep.links.push(data)
+        // reset fields
+        this.addNewLink = false
+        this.newLink = {}
+      },
+      async deleteLinkFromStep (id) {
+        this.addNewLink = false
+        console.log('deleting')
+        await deleteRequest(`/api/v1/flow/companies/${this.companyId}/links/processStep/${id}`)
         // this.availableAttachmentTypes = data
       }
     }

@@ -79,12 +79,16 @@ public class ProcessStepService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<CustomFieldGroupType>> customFieldGroupTypeRef = new TypeReference<List<CustomFieldGroupType>>() {};
       TypeReference<List<ProcessStepAttachmentType>> processStepAttachmentTypeRef = new TypeReference<List<ProcessStepAttachmentType>>() {};
+      TypeReference<List<ProcessStepLink>> processStepLinkRef = new TypeReference<List<ProcessStepLink>>() {};
 
       bw.registerCustomEditor(List.class, "customFieldGroupTypes",
           new JsonCollectionDeserializer(customFieldGroupTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "attachmentTypes",
           new JsonCollectionDeserializer(processStepAttachmentTypeRef, objectMapper));
+
+      bw.registerCustomEditor(List.class, "links",
+          new JsonCollectionDeserializer(processStepLinkRef, objectMapper));
     }
   }
 

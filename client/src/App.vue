@@ -9,15 +9,14 @@
  * OVERRIDES FOR VUETIFY THEMES
 */
 .theme--light,
+.theme--light.application,
+.theme--light.application .text--primary,
 .theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled),
 .theme--light.v-input:not(.v-input--is-disabled) input,
 .theme--light.v-select .v-select__selections {
   color: var(--v-primaryText-base) !important;
   /*color: #1F3C73 !important;*/
 }
-/*.theme--light {*/
-  /*color: var(--v-primaryText-base) !important;*/
-/*}*/
 /*
  * not sure what to do about this. this makes the date time picker look way nicer and doesn't
  * seem to affect anything else so far.  will have to figure out a solution later if it does
@@ -106,8 +105,8 @@ label[for="adminOriginatorSelect"] {
 }
 
 .shaded-row{
-  /*background-color: var(--v-rowShadeCustom-base) !important;*/
-  background-color: #EAEAF4 !important;
+  background-color: var(--v-rowShadeCustom-base) !important;
+  /*background-color: #EAEAF4 !important;*/
 }
 
 .clickable {

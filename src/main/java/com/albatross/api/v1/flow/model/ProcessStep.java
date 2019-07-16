@@ -22,5 +22,6 @@ public class ProcessStep {
 
   private List<CustomFieldGroupType> customFieldGroupTypes;
   private List<ProcessStepAttachmentType> attachmentTypes;
+  private List<ProcessStepLink> links;
 }
 

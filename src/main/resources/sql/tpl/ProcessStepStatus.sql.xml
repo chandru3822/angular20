@@ -1,0 +1,44 @@
+<sql>
+  <processStepStatus.getTypesForCompany><![CDATA[
+    select *
+    from flow.process_step_status_type
+    where company_id = :companyId
+      and archived is not true
+  ]]></processStepStatus.getTypesForCompany>
+
+   <processStepStatus.getType>
+    <![CDATA[
+      select id,
+             process_step_status_type,
+             archived
+      from flow.process_step_status_type st
+      where id = :typeId
+      order by st.process_step_status_type;
+    ]]>
+  </processStepStatus.getType>
+  <processStepStatus.deleteType>
+    <![CDATA[
+        update flow.process_step_status_type
+        set archived = true,
+            modified_by_id = :modifiedById,
+            date_updated = now()
+        where id = :id
+    ]]>
+  </processStepStatus.deleteType>
+  <processStepStatus.updateType>
+    <![CDATA[
+      update flow.process_step_status_type
+        set process_step_status_type = :statusType,
+            modified_by_id = :modifiedById,
+            date_updated = now()
+      where id = :id
+    ]]>
+  </processStepStatus.updateType>
+  <processStepStatus.insertType>
+    <![CDATA[
+      insert into flow.process_step_status_type(process_step_status_type, created_by_id, company_id, date_created)
+        values (:statusType, :createdById, :companyId, now())
+      returning id;
+    ]]>
+  </processStepStatus.insertType>
+</sql>

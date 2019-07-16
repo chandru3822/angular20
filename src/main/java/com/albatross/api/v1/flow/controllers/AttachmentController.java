@@ -52,12 +52,12 @@ public class AttachmentController {
   }
 
   @RequestMapping(value = "/type", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateProcess(@RequestBody AttachmentType type) {
+  public void updateType(@RequestBody AttachmentType type) {
     attachmentService.updateType(type);
   }
 
   @RequestMapping(value = "/type", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<AttachmentType> insertProcess(@RequestBody AttachmentType type) {
+  public Optional<AttachmentType> insertType(@RequestBody AttachmentType type) {
     return attachmentService.insertType(type);
   }
 

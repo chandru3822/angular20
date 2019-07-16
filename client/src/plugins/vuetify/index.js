@@ -10,8 +10,6 @@ export default new Vuetify({
   icons: {
     iconfont: 'md'
   },
-  // iconfont: 'md',
-
   theme: {
     options: {
       customProperties: true
@@ -30,7 +28,7 @@ export default new Vuetify({
         primaryButton: '#1F3C73',
         secondaryButton: '#878787',
         calendarBorder: '#f2f5f8',
-        primaryText: '#1F3C73'
+        primaryText: '#1F3C73',
       },
       // dark: {
       //   primary: '#1F3C73',

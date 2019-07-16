@@ -292,7 +292,7 @@
         data.forEach(d => d.archived = true)
         this.customFieldObjectTypes = cloneDeep(data)
         this.objectFilters = data
-        this.objectFilters.unshift({id: -2, objectType: 'Unused'})
+        this.objectFilters.unshift({id: -2, objectType: 'Unassigned'})
         this.objectFilters.unshift({id: -1, objectType: 'All'},)
       },
       async getCompanyDataTypes() {
@@ -336,6 +336,16 @@
 
         object.companyDataTypeId = object.companyDataType.id
         object.modifiedById = this.$store.state.user.details.id
+
+        // set the values of customFieldObjectTypes to be saved in db
+        if(object.custom) {
+          object.customFieldObjectTypes = this.customFieldObjectTypes.filter(cfot => {
+            cfot.objectTypeId = cfot.id
+            return !cfot.archived
+          })
+        }
+
+        console.log('randaLogger', object)
 
         const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/customField`, object)
         data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
