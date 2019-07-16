@@ -110,7 +110,7 @@
                 v-else-if="filters[header.value].type === FILTER_TYPE.SELECT"
                 :items="searchFilters[header.value]"
                 item-value="id"
-                :item-text="`${filters[header.value].model}`"
+                :item-text="`${com.albatross.api.v1.company.blueraven.models}`"
                 multiple
                 return-object
                 v-model="filters[header.value].value"
@@ -129,7 +129,7 @@
                 </template>
                 <template #selection="{item, index}">
                   <v-chip v-if="index === 0 && filters[header.value].value.length < 2">
-                    <span>{{ item[`${filters[header.value].model}`] }}</span>
+                    <span>{{ item[`${com.albatross.api.v1.company.blueraven.models}`] }}</span>
                   </v-chip>
                   <span
                     v-if="index === 1 && filters[header.value].value.length >= 2"
@@ -175,7 +175,7 @@ const FILTER_TYPE = {
   SELECT: 'select'
 }
 
-// @TODO: I don't necessarily like how I've tied this to the model
+// @TODO: I don't necessarily like how I've tied this to the models
 const FILTER_DEFAULTS = {
   orgName: {value: [], type: FILTER_TYPE.TEXT, model: 'orgName'},
   calendarOid: {value: [], type: FILTER_TYPE.SELECT, model: 'name'},
@@ -235,7 +235,7 @@ export default {
             case FILTER_TYPE.TEXT:
               return org[filterName].toLowerCase().includes(filter.value.toLowerCase())
             case FILTER_TYPE.SELECT:
-              selectedItems = filter.value.map(f => f[`${filter.model}`])
+              selectedItems = filter.value.map(f => f[`${com.albatross.api.v1.company.blueraven.models}`])
               return selectedItems.includes(org[filterName])
           }
         })

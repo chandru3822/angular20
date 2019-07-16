@@ -1,0 +1,70 @@
+<sql>
+    <ahj.permit.create>
+        <![CDATA[
+            INSERT INTO brs.ahj_permit (ahj_id, deposit_amount, average_permit_fee,
+              engineering_letter_required, print_location, stamped_plan, created, created_by_id,
+              updated, updated_by_id, business_license, contractor_license,
+              business_license_expiration_date, contractor_license_expiration_date)
+            VALUES (:ahjId, :depositAmount, :averagePermitFee, :engineeringLetterRequired,
+                    :printLocation, :stampedPlan, now(), :currentUser, now(), :currentUser,
+                    :businessLicense, :contractorLicense, :businessLicenseExpirationDate,
+                    :contractorLicenseExpirationDate)
+        ]]>
+    </ahj.permit.create>
+    <ahj.permit.update>
+        <![CDATA[
+            UPDATE brs.ahj_permit
+            SET
+              ahj_id = :ahjId,
+              deposit_amount = :depositAmount,
+              average_permit_fee = :averagePermitFee,
+              engineering_letter_required = :engineeringLetterRequired,
+              print_location = :printLocation,
+              stamped_plan = :stampedPlan,
+              updated = NOW(),
+              updated_by_id = :currentUser,
+              business_license = :businessLicense,
+              contractor_license = :contractorLicense,
+              business_license_expiration_date = :businessLicenseExpirationDate,
+              contractor_license_expiration_date = :contractorLicenseExpirationDate,
+              other_license = :otherLicense,
+              other_license_expiration_date = :otherLicenseExpirationDate,
+              
+              submission_note = :submissionNote, 
+              revision_note = :revisionNote, 
+              as_built_note = :asBuiltNote, 
+              delivery_note = :deliveryNote,
+              
+              submittal_type_id = :submittalTypeId,
+              revision_submittal_type_id = :revisionSubmittalTypeId,
+              as_built_submittal_type_id = :asBuiltSubmittalTypeId,
+              delivery_pickup_type_id = :deliveryPickupTypeId,
+              submission_payment_type_id = :submissionPaymentTypeId,
+              revision_payment_type_id = :revisionPaymentTypeId,
+              as_built_payment_type_id = :asBuiltPaymentTypeId,
+              follow_up_payment_type_id = :followUpPaymentTypeId,
+              delivery_payment_type_id = :deliveryPaymentTypeId,
+              hoa_approval_required_type_id = :hoaApprovalRequiredTypeId, 
+              nem_approval_required_type_id = :nemApprovalRequiredTypeId,
+              
+              submittal_type_other = :submittalTypeOther,
+              revision_submittal_type_other = :revisionSubmittalTypeOther,
+              as_built_submittal_type_other = :asBuiltSubmittalTypeOther,
+              delivery_pickup_type_other = :deliveryPickupTypeOther,
+              submission_payment_type_other = :submissionPaymentTypeOther,
+              revision_payment_type_other = :revisionPaymentTypeOther,
+              as_built_payment_type_other = :asBuiltPaymentTypeOther,
+              follow_up_payment_type_other = :followUpPaymentTypeOther,
+              delivery_payment_type_other = :deliveryPaymentTypeOther,
+              hoa_approval_required_type_other = :hoaApprovalRequiredTypeOther,
+              nem_approval_required_type_other = :nemApprovalRequiredTypeOther,
+              revision_fee_amount = :revisionFeeAmount,
+              as_built_fee_amount = :asBuiltFeeAmount,
+              follow_up_fee_amount = :followUpFeeAmount,
+              delivery_fee_amount = :deliveryFeeAmount,
+              approval_timeline = :approvalTimeline,
+              documents_available = :documentsAvailable
+            WHERE id = :id
+        ]]>
+    </ahj.permit.update>
+</sql>

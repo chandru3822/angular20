@@ -10,7 +10,7 @@
             tabindex=1
             v-model="newGroup.groupName"
         ></v-text-field>
-        <!--<v-radio-group v-model="newGroup.processStepCustomFieldTypeId">-->
+        <!--<v-radio-group v-models="newGroup.processStepCustomFieldTypeId">-->
           <!--<v-radio-->
               <!--label="Fields in this group are native to this process step"-->
               <!--value="1"></v-radio>-->
@@ -21,7 +21,7 @@
         <!--<v-flex class="options-container" fluid-->
                 <!--v-if="item.companyDataType && item.companyDataType.hasListValues">-->
           <!--<span>Selectable Options</span>-->
-          <!--<draggable v-model="item.dropdownOptions"-->
+          <!--<draggable v-models="item.dropdownOptions"-->
                      <!--group="dropdownOptions" @start="drag=true" @end="drag=false">-->
             <!--<v-list v-for="(ddo, index) in filterBy(item.dropdownOptions, false, 'archived')"-->
                     <!--:class="{'shaded-row': item.index % 2}"-->
@@ -31,7 +31,7 @@
                   <!--<v-text-field-->
                       <!--class="one-hunned"-->
                       <!--:placeholder="ddo.placeholder"-->
-                      <!--v-model="ddo.name">-->
+                      <!--v-models="ddo.name">-->
                   <!--</v-text-field>-->
                 <!--</v-list-item-content>-->
                 <!--<v-list-item-action>-->

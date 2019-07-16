@@ -43,7 +43,7 @@
                         <v-flex xs12 sm6 md4>
                           <v-select
                             label="Metro Area"
-                            :items="ahjOptions"
+                            :items="metroAreas"
                             v-model="editedItem.metroAreaId"
                             required
                           ></v-select>
@@ -73,7 +73,7 @@
                     <v-container grid-list-md>
                       <v-layout column nowrap>
                         <v-flex xs12 sm6 md4>
-                          Are you sure you want to delete the AHJ for {{ ahjToDelete }}?
+                          Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
                         </v-flex>
                       </v-layout>
                     </v-container>
@@ -82,7 +82,8 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-                    <v-btn color="brRed" style="color: #fff !important" raised @click="confirmDeleteAhj">Yes</v-btn>
+                    <v-btn color="brRed" style="color: #fff !important" raised
+                           @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -134,13 +135,13 @@
 <!--                          <td>-->
 <!--                            <v-text-field-->
 <!--                              v-if="ahjFilters[header.value].type === FILTER_TYPE.TEXT"-->
-<!--                              v-model="ahjFilters[header.value].value"-->
+<!--                              v-models="ahjFilters[header.value].value"-->
 <!--                              filled-->
 <!--                            />-->
 <!--                            <v-select-->
 <!--                              v-else-if="ahjFilters[header.value].type === FILTER_TYPE.SELECT"-->
 <!--                              :items="ahjSearchFilters[header.value]"-->
-<!--                              v-model="ahjFilters[header.value].value"-->
+<!--                              v-models="ahjFilters[header.value].value"-->
 <!--                              filled-->
 <!--                            ></v-select>-->
 <!--                          </td>-->
@@ -162,7 +163,7 @@
                           <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
                           <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
                           <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">edit</v-icon>
-                          <v-icon small class="ahj-link-icon" @click="deleteAhj(ahj)">delete</v-icon>
+                          <v-icon small class="ahj-link-icon" @click="deleteItem(ahj)">delete</v-icon>
                         </td>
                       </tr>
                     </template>
@@ -249,7 +250,7 @@
 <!--                          :key="header.text"-->
 <!--                        >-->
 <!--                          <v-text-field style="margin-top: 10px"-->
-<!--                            v-model="ahjUtilityFilters[header.value].value" box-->
+<!--                            v-models="ahjUtilityFilters[header.value].value" box-->
 <!--                          />-->
 <!--                        </th>-->
 <!--                        <th></th>-->
@@ -321,19 +322,12 @@
       ahjUtilityEditedIndex: -1,
       editedItem: {
         name: '',
-        metroArea: '',
-        metroAreaId: '',
-        state: '',
-        stateAbrv: ''
+        metroAreaId: ''
       },
       defaultItem: {
         name: '',
-        metroArea: '',
-        metroAreaId: '',
-        state: '',
-        stateAbrv: ''
+        metroAreaId: ''
       },
-      ahjToDelete: '',
       ahjFilters: [],
       ahjUtilityFilters: [],
       ahjSearchFilters: {
@@ -346,8 +340,9 @@
         metroArea: [],
         state: []
       },
+      ahjToDelete: {},
       pagination: {},
-      ahjOptions: []
+      metroAreas: []
     }),
     computed: {
       visibleHeaders () {
@@ -390,10 +385,10 @@
         })
       },
       ahjFormTitle () {
-        return this.ahjEditedIndex === -1 ? 'Create AHJ' : 'Update AHJ'
+        return this.editedItem.id === -1 ? 'Create AHJ' : 'Update AHJ'
       },
       ahjBtnTxt () {
-        return this.ahjEditedIndex === -1 ? 'Add' : 'Update'
+        return this.editedItem.id === -1 ? 'Add' : 'Update'
       },
       ahjUtilityFormTitle () {
         return this.ahjUtilityEditedIndex === -1 ? 'Create Utility' : 'Update Utility'
@@ -422,20 +417,31 @@
         const {data} = await getRequest('/api/v1/company/blueraven/ahjUtility/list/all')
         this.ahjUtilities = cloneDeep(data)
       },
+      async getActiveMetroAreas () {
+        const {data} = await getRequest('/api/v1/company/blueraven/metro/getActive')
+        data.forEach(item => {
+          let option = {
+            text: item.metroArea + ' (' + item.area + ')',
+            value: item.id
+          }
+          this.metroAreas.push(option)
+        })
+      },
       initFilters () {
         this.ahjFilters = cloneDeep(FILTER_DEFAULTS)
         this.ahjUtilityFilters = cloneDeep(FILTER_DEFAULTS)
       },
       addItem () {
         if (this.tabs === 0) {
+          this.getActiveMetroAreas()
           this.ahjDialog = true
         } else {
           this.ahjUtilityDialog = true
         }
       },
       editAhj (item) {
-        this.ahjEditedIndex = this.ahjs.indexOf(item)
         this.editedItem = Object.assign({}, item)
+        this.getActiveMetroAreas()
         this.ahjDialog = true
       },
       editAhjUtility (item) {
@@ -443,59 +449,41 @@
         this.editedItem = Object.assign({}, item)
         this.ahjUtilityDialog = true
       },
-      deleteAhj (item) {
-        this.ahjDeleteIndex = this.ahjs.indexOf(item)
-        this.ahjToDelete = item.name
+      deleteItem (item) {
+        if (this.tabs === 0) {
+          this.ahjToDelete = {
+            id: item.id,
+            name: item.name
+          }
+        } else {
+          //call ahjUtilities delete endpoint
+        }
         this.deleteAhjDialog = true
       },
       close () {
-        if (this.ahjDialog) {
-          this.ahjDialog = false
-        } else if (this.ahjUtilityDialog) {
-          this.ahjUtilityDialog = false
-        } else {
-          this.deleteAhjDialog = false
-        }
-        setTimeout(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          if (this.ahjEditedIndex !== -1) {
-            this.ahjEditedIndex = -1
-          } else if (this.ahjUtilityEditedIndex !== -1) {
-            this.ahjUtilityEditedIndex = -1
-          } else {
-            this.ahjDeleteIndex = -1
-            this.ahjToDelete = ''
-          }
-        }, 300)
+        this.ahjDialog = false
+        this.ahjUtilityDialog = false
+        this.deleteAhjDialog = false
       },
-      saveAhj () {
-        // this.editedItem.currentUser = this.$store.state.user.details.id
-        switch (this.editedItem.metroAreaId) {
-          case 4:
-            this.editedItem.metroArea = 'Colorado Springs'
-            this.editedItem.state = 'Colorado'
-            this.editedItem.stateAbrv = 'CO'
-            break;
-          case 8:
-            this.editedItem.metroArea = 'Denver'
-            this.editedItem.state = 'Colorado'
-            this.editedItem.stateAbrv = 'CO'
-            break;
-          default:
-            this.editedItem.metroArea = 'Not Specified'
-            this.editedItem.state = 'Not Specified'
-            this.editedItem.stateAbrv = 'Not Specified'
-        }
-
-        if (this.ahjEditedIndex > -1) {
-          Object.assign(this.ahjs[this.ahjEditedIndex], this.editedItem)
+      async saveAhj () {
+        if (!this.editedItem.id) {
+          await postRequest(`/api/v1/company/blueraven/ahj/${this.currentUser}`, this.editedItem)
         } else {
-          this.ahjs.push(this.editedItem)
+          await putRequest(`/api/v1/company/blueraven/ahj/${this.editedItem.id}/user/${this.currentUser}`, this.editedItem)
         }
         this.close()
         this.initFilters()
         this.fetchAhjs()
         this.fetchAhjSearchFilters()
+        this.editedItem = {}
+      },
+      async deleteAhj (id) {
+        await deleteRequest(`/api/v1/company/blueraven/ahj/${id}`)
+        this.close()
+        this.initFilters()
+        this.fetchAhjs()
+        this.fetchAhjSearchFilters()
+        this.ahjToDelete = {}
       },
       saveAhjUtility () {
         if (this.ahjUtilityEditedIndex > -1) {
@@ -508,14 +496,6 @@
         this.initFilters()
         this.ahjUtilities = this.fetchAhjUtilities()
         this.fetchAhjUtilitySearchFilters()
-      },
-      confirmDeleteAhj () {
-        this.ahjs.splice(this.ahjDeleteIndex, 1)
-
-        this.close()
-        this.initFilters()
-        this.fetchAhjs()
-        this.fetchAhjSearchFilters()
       },
       fetchAhjSearchFilters () {
         let ahjNames = []
@@ -566,6 +546,7 @@
     },
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
+      this.currentUser = this.$store.state.user.details.id
       this.initFilters()
 
       Promise.all([
@@ -575,15 +556,6 @@
 
       if (this.ahjs.length > 0) {
         this.fetchAhjSearchFilters()
-
-        this.ahjs.forEach(ahj => {
-          this.ahjOptions.push({ text: ahj.metroArea + " (" + ahj.stateAbrv + ")", value: ahj.metroAreaId })
-        })
-        this.ahjOptions.sort((a, b) => {
-          let textA = a.text.toUpperCase()
-          let textB = b.text.toUpperCase()
-          return (textA < textB) ? -1 : (textA > textB) ? 1 : 0
-        })
       }
 
       if (this.ahjUtilities.length > 0) {

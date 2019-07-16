@@ -1,12 +1,11 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.model.AhjUtility;
+import com.albatross.api.v1.company.blueraven.models.AhjUtility;
 import com.albatross.api.v1.company.blueraven.services.AhjUtilityService;
-//import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-//import javax.inject.Inject;
 import java.util.List;
 
 /**
@@ -14,13 +13,12 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/ahjUtility")
-//@RequiredArgsConstructor(onConstructor = @__({@Inject}))
 public class AhjUtilityController {
 
     @Autowired
     private AhjUtilityService ahjUtilityService;
 
-    @RequestMapping(value = "list/all", method = RequestMethod.GET)
+    @RequestMapping(value = "/list/all", method = RequestMethod.GET)
     public List<AhjUtility> getAllAhjUtilities() {
         return ahjUtilityService.getAllAhjUtilities();
     }

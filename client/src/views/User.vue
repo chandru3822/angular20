@@ -467,7 +467,7 @@
                       <tr>
                         <td>{{ props.item.tag }}</td>
                         <td>{{ props.item.assetType }}</td>
-                        <td>{{ props.item.model }}</td>
+                        <td>{{ com.albatross.api.v1.company.blueraven.models }}</td>
                         <td>{{ (props.item.active) ? 'Yes' : 'No' }}</td>
                       </tr>
                     </template>
@@ -507,7 +507,7 @@ export default {
       assetsTableHeaders: [
         {text: 'Tag#', value: 'tag'},
         {text: 'Type', value: 'type'},
-        {text: 'Model', value: 'model'},
+        {text: 'Model', value: 'models'},
         {text: 'Active', value: 'active'}
       ],
       imageUrl: '',

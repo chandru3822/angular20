@@ -16,4 +16,66 @@
       ORDER BY st.state, ma.metro_area, ahj.name
     ]]>
   </ahj.list>
+
+  <ahj.findById>
+    <![CDATA[
+      SELECT
+        ahj.id,
+        ahj.name,
+        st.id as state_id,
+        st.state,
+        ahj.metro_area_id,
+        ma.metro_area
+      FROM brs.ahj ahj
+        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
+        INNER JOIN brs.sales_area sa ON ma.sales_area_id = sa.id
+        INNER JOIN flow.state st ON sa.state_id = st.id
+      WHERE ahj.id = :id
+    ]]>
+  </ahj.findById>
+
+  <ahj.checkForDuplicate>
+    <![CDATA[
+      SELECT
+        ahj.id,
+        ahj.name,
+        st.id as state_id,
+        st.state,
+        ahj.metro_area_id,
+        ma.metro_area
+      FROM brs.ahj ahj
+        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
+        INNER JOIN brs.sales_area sa ON ma.sales_area_id = sa.id
+        INNER JOIN flow.state st ON sa.state_id = st.id
+      WHERE ahj.name = :name
+        AND ahj.metro_area_id = :metroAreaId
+        AND ahj.archived is not true
+    ]]>
+  </ahj.checkForDuplicate>
+
+  <ahj.create>
+    <![CDATA[
+      INSERT INTO brs.ahj (name, metro_area_id, created, created_by_id, updated, updated_by_id)
+      VALUES (:name, :metroAreaId, now(), :currentUser, now(), :currentUser)
+    ]]>
+  </ahj.create>
+
+  <ahj.update>
+    <![CDATA[
+      UPDATE brs.ahj
+      SET name = :name,
+        metro_area_id = :metroAreaId,
+        updated = now(),
+        updated_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.update>
+
+  <ahj.delete>
+    <![CDATA[
+      update brs.ahj
+      SET archived = true
+      where id = :id
+    ]]>
+  </ahj.delete>
 </sql>
