@@ -6,7 +6,7 @@
           <v-tabs
             v-model="tabs"
             color="rgba(0,0,0,0)"
-            slider-color="#337ab7"
+            slider-color="primaryCustom"
           >
             <v-tab to="/ahj">AHJ</v-tab>
             <v-tab to="/ahjUtility" class="text-capitalize">Utility</v-tab>
@@ -35,13 +35,28 @@
                 <v-container grid-list-md>
                   <v-layout column nowrap>
                     <v-flex xs12 sm6 md4>
-                      <v-text-field v-model="editedItem.name" label="Name" filled></v-text-field>
+                      <v-text-field
+                        v-model="editedItem.name"
+                        label="Name"
+                        required
+                        filled
+                      ></v-text-field>
                     </v-flex>
                     <v-flex xs12 sm6 md4>
-                      <v-text-field v-model="editedItem.metroArea" label="Metro Area" filled></v-text-field>
+                      <v-select
+                        label="Metro Area"
+                        :items="metroAreas"
+                        v-model="editedItem.metroAreaId"
+                        required
+                        filled
+                      ></v-select>
                     </v-flex>
                     <v-flex xs12 sm6 md4>
-                      <v-text-field v-model="editedItem.state" label="State" filled></v-text-field>
+                      <v-checkbox
+                        v-if="!addingNewUtility"
+                        label="Active"
+                        v-model="editedItem.active"
+                      ></v-checkbox>
                     </v-flex>
                   </v-layout>
                 </v-container>
@@ -51,7 +66,7 @@
                 <v-spacer></v-spacer>
                 <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
                 <v-btn color="primaryButton" style="color: #fff !important" raised @click="saveAhjUtility"
-                       :disabled="!editedItem.name || !editedItem.metroArea || !editedItem.state">
+                       :disabled="!editedItem.name || !editedItem.metroAreaId">
                   {{ ahjUtilityBtnTxt }}
                 </v-btn>
               </v-card-actions>
@@ -115,12 +130,18 @@
                       :key="ahjUtility.id"
                       :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
                     >
-                      <td>{{ ahjUtility.name ? ahjUtility.name : '' }}</td>
+                      <td :class="{ 'strike': !ahjUtility.active}">
+                        {{ ahjUtility.name ? ahjUtility.name : '' }}
+                      </td>
                       <td>{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
                       <td>{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
                       <td>
-                        <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
-                        <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">edit</v-icon>
+                        <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">
+                          Details
+                        </router-link>
+                        <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">
+                          edit
+                        </v-icon>
                       </td>
                     </tr>
                   </template>
@@ -135,7 +156,7 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import { getRequest, putRequest, postRequest } from '@/helpers/helpers'
   import { mapState } from 'vuex'
   import { AppMutations } from '@/stores/AppStore'
 
@@ -154,8 +175,6 @@
     name: 'ahjUtilities',
     data: () => ({
       FILTER_TYPE,
-      ahjUtilityDialog: false,
-      deleteAhjUtilityDialog: false,
       tabs: [
         {
           label: 'AHJ',
@@ -174,25 +193,23 @@
         { text: 'State', value: 'state', show: true },
         { text: null, value: null, sortable: false, show: true }
       ],
-      ahjUtilitySearch: '',
       ahjUtilities: [],
-      ahjUtilityEditedIndex: -1,
+      ahjUtilitySearch: '',
       editedItem: {
-        name: '',
-        metroAreaId: ''
+        utilityName: '',
+        metroAreaId: '',
+        active: ''
       },
-      defaultItem: {
-        name: '',
-        metroAreaId: ''
-      },
+      ahjUtilityDialog: false,
+      addingNewUtility: false,
       ahjUtilityFilters: [],
       ahjUtilitySearchFilters: {
         name: [],
         metroArea: [],
         state: []
       },
-      ahjUtilityToDelete: {},
-      pagination: {}
+      pagination: {},
+      metroAreas: []
     }),
     computed: {
       visibleHeaders () {
@@ -217,10 +234,10 @@
         })
       },
       ahjUtilityFormTitle () {
-        return this.ahjUtilityEditedIndex === -1 ? 'Create Utility' : 'Update Utility'
+        return this.addingNewUtility ? 'Create Utility' : 'Update Utility'
       },
       ahjUtilityBtnTxt () {
-        return this.ahjUtilityEditedIndex === -1 ? 'Add' : 'Update'
+        return this.addingNewUtility ? 'Add' : 'Update'
       },
       ...mapState({
         loading: state => state.app.loading
@@ -236,36 +253,46 @@
         const {data} = await getRequest('/api/v1/company/blueraven/ahjUtility/list/all')
         this.ahjUtilities = cloneDeep(data)
       },
+      async getActiveMetroAreas () {
+        const {data} = await getRequest('/api/v1/company/blueraven/metro/getActive')
+        data.forEach(item => {
+          let option = {
+            text: item.metroArea + ' (' + item.area + ')',
+            value: item.id
+          }
+          this.metroAreas.push(option)
+        })
+      },
       initFilters () {
         this.ahjUtilityFilters = cloneDeep(FILTER_DEFAULTS)
       },
       addItem () {
+        this.getActiveMetroAreas()
+        this.addingNewUtility = true
         this.ahjUtilityDialog = true
       },
       editAhjUtility (item) {
-        this.ahjUtilityEditedIndex = this.ahjUtilities.indexOf(item)
         this.editedItem = Object.assign({}, item)
+        this.getActiveMetroAreas()
         this.ahjUtilityDialog = true
-      },
-      deleteItem (item) {
-        //call ahjUtilities delete endpoint
-        this.deleteAhjUtilityDialog = true
       },
       close () {
         this.ahjUtilityDialog = false
-        this.deleteAhjUtilityDialog = false
+        this.addingNewUtility = false
+        this.editedItem = {}
       },
-      saveAhjUtility () {
-        if (this.ahjUtilityEditedIndex > -1) {
-          Object.assign(this.ahjUtilities[this.ahjUtilityEditedIndex], this.editedItem)
+      async saveAhjUtility () {
+        if (this.addingNewUtility) {
+          await postRequest('/api/v1/company/blueraven/ahjUtility/', this.editedItem)
         } else {
-          this.ahjUtilities.push(this.editedItem)
+          await putRequest('/api/v1/company/blueraven/ahjUtility/simpleUpdate', this.editedItem)
         }
 
         this.close()
         this.initFilters()
         this.fetchAhjUtilities()
         this.fetchAhjUtilitySearchFilters()
+        this.editedItem = {}
       },
       fetchAhjUtilitySearchFilters () {
         let ahjUtilityNames = []
@@ -297,7 +324,6 @@
     },
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.currentUser = this.$store.state.user.details.id
       this.initFilters()
 
       Promise.all([
@@ -325,5 +351,8 @@
     &:hover {
       color: var(--v-primaryText-base) !important;
     }
+  }
+  .strike {
+    text-decoration: line-through;
   }
 </style>

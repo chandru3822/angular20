@@ -17,6 +17,6 @@ public class MetroAreaController {
 
     @RequestMapping(value = "/getActive", method = RequestMethod.GET)
     public List<MetroArea> getAllActiveMetroAreas() {
-      return metroAreaService.getAllActiveMetroAreas();
+        return metroAreaService.getAllActiveMetroAreas();
     }
 }

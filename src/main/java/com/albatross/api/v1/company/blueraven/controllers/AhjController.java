@@ -18,7 +18,7 @@ public class AhjController {
   @Autowired
   private AhjService ahjService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET)
+  @RequestMapping(value = "/", method = RequestMethod.GET)
   public List<AhjSummary> getAhjList() {
     return ahjService.getAhjList();
   }

@@ -6,7 +6,7 @@
           <v-tabs
             v-model="tabs"
             color="rgba(0,0,0,0)"
-            slider-color="#337ab7"
+            slider-color="primaryCustom"
           >
             <v-tab to="/ahj">AHJ</v-tab>
             <v-tab to="/ahjUtility" class="text-capitalize">Utility</v-tab>
@@ -35,7 +35,12 @@
                 <v-container grid-list-md>
                   <v-layout column nowrap>
                     <v-flex xs12 sm6 md4>
-                      <v-text-field v-model="editedItem.name" label="Name" required></v-text-field>
+                      <v-text-field
+                        v-model="editedItem.name"
+                        label="Name"
+                        required
+                        filled
+                      ></v-text-field>
                     </v-flex>
                     <v-flex xs12 sm6 md4>
                       <v-select
@@ -43,6 +48,7 @@
                         :items="metroAreas"
                         v-model="editedItem.metroAreaId"
                         required
+                        filled
                       ></v-select>
                     </v-flex>
                   </v-layout>
@@ -53,14 +59,14 @@
                 <v-spacer></v-spacer>
                 <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
                 <v-btn color="primaryButton" raised @click="saveAhj" style="color: #fff !important"
-                       :disabled="!editedItem.metroAreaId || !editedItem.name">
+                       :disabled="!editedItem.name || !editedItem.metroAreaId">
                   {{ ahjBtnTxt }}
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
 
-          <v-dialog v-model="deleteAhjDialog" max-width="500px">
+          <v-dialog v-model="ahjDeleteDialog" max-width="500px">
             <v-card>
               <v-card-title>
                 <span class="headline">Confirm</span>
@@ -156,11 +162,21 @@
                     <td>{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
                     <td>{{ ahj.state ? ahj.state : '' }}</td>
                     <td>
-                      <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
-                      <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
-                      <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
-                      <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">edit</v-icon>
-                      <v-icon small class="ahj-link-icon" @click="deleteItem(ahj)">delete</v-icon>
+                      <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">
+                        Permit
+                      </router-link>
+                      <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">
+                        Inspection
+                      </router-link>
+                      <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">
+                        Design
+                      </router-link>
+                      <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">
+                        edit
+                      </v-icon>
+                      <v-icon small class="ahj-link-icon" @click="deleteItem(ahj)">
+                        delete
+                      </v-icon>
                     </td>
                   </tr>
                 </template>
@@ -194,8 +210,6 @@
     name: 'ahjs',
     data: () => ({
       FILTER_TYPE,
-      ahjDialog: false,
-      deleteAhjDialog: false,
       tabs: [
         {
           label: 'AHJ',
@@ -214,17 +228,14 @@
         { text: 'State', value: 'state', show: true },
         { text: null, value: null, sortable: false, show: true }
       ],
-      ahjSearch: '',
       ahjs: [],
-      ahjEditedIndex: -1,
+      ahjSearch: '',
       editedItem: {
         name: '',
         metroAreaId: ''
       },
-      defaultItem: {
-        name: '',
-        metroAreaId: ''
-      },
+      ahjDialog: false,
+      ahjDeleteDialog: false,
       ahjFilters: [],
       ahjSearchFilters: {
         name: [],
@@ -274,7 +285,7 @@
     },
     methods: {
       async fetchAhjs () {
-        const {data} = await getRequest('/api/v1/company/blueraven/ahj')
+        const {data} = await getRequest('/api/v1/company/blueraven/ahj/')
         this.ahjs = cloneDeep(data)
       },
       async getActiveMetroAreas () {
@@ -304,11 +315,11 @@
           id: item.id,
           name: item.name
         }
-        this.deleteAhjDialog = true
+        this.ahjDeleteDialog = true
       },
       close () {
         this.ahjDialog = false
-        this.deleteAhjDialog = false
+        this.ahjDeleteDialog = false
       },
       async saveAhj () {
         if (!this.editedItem.id) {
@@ -316,6 +327,7 @@
         } else {
           await putRequest(`/api/v1/company/blueraven/ahj/${this.editedItem.id}/user/${this.currentUser}`, this.editedItem)
         }
+
         this.close()
         this.initFilters()
         this.fetchAhjs()
