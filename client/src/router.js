@@ -73,7 +73,11 @@ export default new Router({
           }
         ]
       }, {
-        path: '/ahj/utility/:ahjUtilityId/details',
+        path: '/ahjUtility',
+        name: 'ahjUtilities',
+        component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/utility/AhjUtility.vue')
+      }, {
+        path: '/ahjUtility/:ahjUtilityId/details',
         name: 'ahjUtilityDetails',
         props: true,
         component: () => import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
