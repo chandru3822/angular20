@@ -400,25 +400,25 @@
             <thead>
               <tr>
                 <th>{{ permittingCycleTimes.headers.approvedHeaders[0] }}</th>
-                <th style="text-align: center" class="pr-1">{{ permittingCycleTimes.headers.approvedHeaders[1] }}</th>
-                <th style="text-align: center">{{ permittingCycleTimes.headers.approvedHeaders[2] }}</th>
+                <th class="pr-1 centered">{{ permittingCycleTimes.headers.approvedHeaders[1] }}</th>
+                <th class="centered">{{ permittingCycleTimes.headers.approvedHeaders[2] }}</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>{{ permittingCycleTimes.headers.approvedSubheaders[0] }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.approvedPermits.permits.avgTime }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.approvedPermits.asBuilts.avgTime }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.avgTime }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.avgTime }}</td>
               </tr>
               <tr>
                 <td>{{ permittingCycleTimes.headers.approvedSubheaders[1] }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.approvedPermits.permits.medianTime }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.approvedPermits.asBuilts.medianTime }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.medianTime }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.medianTime }}</td>
               </tr>
               <tr>
                 <td>{{ permittingCycleTimes.headers.approvedSubheaders[2] }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.approvedPermits.permits.approvals }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.approvedPermits.asBuilts.approvals }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.approvals }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.approvals }}</td>
               </tr>
             </tbody>
             <thead>
@@ -1334,7 +1334,6 @@
     width: 20%;
   }
   .horizontal-dl dd {
-    text-align: left;
     width: 75%;
   }
   /*End definition list styles*/

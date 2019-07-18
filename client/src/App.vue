@@ -31,7 +31,6 @@ body {
   letter-spacing: .4px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   background-color: var(--v-secondary-base);
   min-height: 100vh;
 }

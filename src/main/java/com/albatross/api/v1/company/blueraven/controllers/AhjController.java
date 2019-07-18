@@ -1,14 +1,13 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.model.AhjSummary;
+import com.albatross.api.v1.company.blueraven.models.AhjSummary;
 import com.albatross.api.v1.company.blueraven.services.AhjService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Joseph Canto on 2019-07-12.
@@ -16,12 +15,31 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/ahj")
 public class AhjController {
-
   @Autowired
   private AhjService ahjService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET)
+  @RequestMapping(value = "/", method = RequestMethod.GET)
   public List<AhjSummary> getAhjList() {
     return ahjService.getAhjList();
+  }
+
+  @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+  public Optional<AhjSummary> getAhjById(@PathVariable Long id) {
+    return ahjService.getAhjById(id);
+  }
+
+  @RequestMapping(value = "/{userId}", method = RequestMethod.POST)
+  public Optional<AhjSummary> createAhj(@RequestBody AhjSummary ahjSummary, @PathVariable Long userId) {
+    return ahjService.createAhj(ahjSummary, userId);
+  }
+
+  @RequestMapping(value = "/{id}/user/{userId}", method = RequestMethod.PUT)
+  public Optional<AhjSummary> updateAhj(@PathVariable Long id, @PathVariable Long userId, @RequestBody AhjSummary ahj) {
+    return ahjService.saveAhj(id, userId, ahj);
+  }
+
+  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+  public void deleteAhj(@PathVariable Long id) {
+    ahjService.deleteAhj(id);
   }
 }
