@@ -67,6 +67,27 @@ public class ProcessStepService {
     sqlCache.update("processStep.update", params);
   }
 
+  public ProcessStep insertStep(Long companyId, ProcessStep processStep) {
+    // this is going to have to change when process steps are shared between companies
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("createdById", currentUser.getId());
+    params.put("name", processStep.getProcessStepName());
+    Long id = sqlCache.updateReturningId("processStep.insert", params, "id").longValue();
+
+    return getProcessStep(id);
+  }
+
+  public List<ProcessStep> getParentObjects(Long companyId, Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("id", id);
+
+    List<ProcessStep> results = sqlCache.query("processStep.getParentObjects", params, ProcessStep.class);
+    return results;
+  }
+
   public static class ProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

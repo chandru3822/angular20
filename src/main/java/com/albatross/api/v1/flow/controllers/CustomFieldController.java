@@ -44,4 +44,10 @@ public class CustomFieldController {
   public void deleteField(@PathVariable Long id) {
     customFieldService.deleteField(id);
   }
+
+  @RequestMapping(value = "/getByParentProcessStep/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomField> getByParentProcessStep(@PathVariable Long companyId,
+                                                  @PathVariable Long id) {
+    return customFieldService.getByParentProcessStep(companyId, id);
+  }
 }

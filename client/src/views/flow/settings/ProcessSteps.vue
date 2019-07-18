@@ -5,12 +5,18 @@
         <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text :to="{ path: `/settings/processStep`}">
+          <v-btn text @click="addNew = !addNew; newStep = {}">
             {{'Add New'}}
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-container>
+        <v-text-field v-if="addNew"
+            label="Process Step Name"
+            tabindex=1
+            v-model="newStep.processStepName"
+        ></v-text-field>
+        <v-btn v-if="addNew" :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
         <v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')"
                 :key="index">
           <v-list-item>
@@ -18,7 +24,7 @@
               {{ps.processStepName}}
             </v-list-item-content>
             <v-list-item-action class="clickable">
-              <v-btn :to="{ path: `/settings/processStep/${ps.id}`}" text>
+              <v-btn :to="{ path: `/settings/processStep/${ps.id}/components`}" text>
                 <v-icon>edit</v-icon>
               </v-btn>
             </v-list-item-action>
@@ -76,6 +82,8 @@
     mixins: [Vue2Filters.mixin],
     data () {
       return {
+        addNew: false,
+        newStep: {},
         selectedProcessStepId: null,
         companyId: this.$store.state.user.details.companyId,
         userId: this.$store.state.user.details.id,
@@ -91,7 +99,11 @@
       },
       async deleteProcessStep (processStepId) {
         await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${processStepId}`)
-      }
+      },
+      async addProcessStep () {
+        const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processStep`, this.newStep)
+        this.$router.push({path: `/settings/processStep/${data.id}/components`})
+      },
     },
     async created () {
       this.getProcessSteps()

@@ -107,9 +107,19 @@ export default new Router({
             path: 'processSteps',
             component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/ProcessSteps.vue')
           }, {
-            path: 'processStep/:id?',
+            path: 'processStep/:id',
+            name: 'processStep',
             props: true,
-            component: () => import (/* webpackChunkName: "processStep" */ './views/flow/settings/ProcessStep.vue')
+            component: () => import (/* webpackChunkName: "processStep" */ './views/flow/settings/ProcessStep.vue'),
+            children: [
+              {
+                path: 'components',
+                component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/ProcessStepComponents.vue'),
+              }, {
+                path: 'actions',
+                component: () => import (/* webpackChunkName: "processStepActions" */ './views/flow/settings/ProcessStepActions.vue'),
+              }
+            ]
           }, {
             path: 'statuses',
             component: () => import (/* webpackChunkName: "statuses" */ './views/flow/settings/Statuses.vue')

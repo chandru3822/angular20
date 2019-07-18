@@ -42,4 +42,16 @@ public class ProcessStepController {
   public void updateStep(@RequestBody ProcessStep processStep) {
     processStepService.updateStep(processStep);
   }
+
+  @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStep insertStep(@PathVariable Long companyId,
+                         @RequestBody ProcessStep processStep) {
+    return processStepService.insertStep(companyId, processStep);
+  }
+
+  @RequestMapping(value = "/{id}/getParentObjects", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStep> getParentObjects (@PathVariable Long companyId,
+                                             @PathVariable Long id) {
+    return processStepService.getParentObjects(companyId, id);
+  }
 }

@@ -181,6 +181,14 @@ public class CustomFieldService {
     sqlCache.update("customFieldGroup.archiveRows", params);
   }
 
+  public List<CustomField> getByParentProcessStep(Long companyId, Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("id", id);
+    List<CustomField> result = sqlCache.query("customField.getByParentProcessStep", params, new CustomFieldMapper<>(CustomField.class, om));
+    return result;
+  }
+
   public static class CustomFieldMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
