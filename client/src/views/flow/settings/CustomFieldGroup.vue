@@ -17,7 +17,7 @@
           label="Custom Field Group">
       </v-text-field>
       <!--<v-select v-else-->
-          <!--v-models="selectedGroup"-->
+          <!--v-model="selectedGroup"-->
           <!--:items="customFieldGroupTypes"-->
           <!--label="Custom Field Group"-->
           <!--item-text="groupName"-->

@@ -25,7 +25,7 @@
           <template v-slot:activator>
             <v-list-item-content>
               <v-list-item-title v-if="item.custom">Add New</v-list-item-title>
-              <!--<v-text-field class="one-hunned" v-if="selectedFieldId === item.id" v-models="item.fieldName"-->
+              <!--<v-text-field class="one-hunned" v-if="selectedFieldId === item.id" v-model="item.fieldName"-->
                             <!--@input="item.nameChanged = true">-->
               <!--</v-text-field>-->
               <v-list-item-title v-else>{{item.fieldName}}</v-list-item-title>
@@ -163,10 +163,10 @@
       <!--<v-text-field-->
       <!--label="Field Name"-->
       <!--tabindex=1-->
-      <!--v-models="item.fieldName"-->
+      <!--v-model="item.fieldName"-->
       <!--&gt;</v-text-field>-->
       <!--<v-autocomplete-->
-      <!--v-models="item.companyDataType"-->
+      <!--v-model="item.companyDataType"-->
       <!--:items="dataTypes"-->
       <!--:disabled="!item.custom"-->
       <!--:readonly="!item.custom"-->
@@ -180,7 +180,7 @@
 
       <!--<v-flex class="options-container" fluid v-if="item.companyDataType && item.companyDataType.hasListValues">-->
       <!--<span>Selectable Options</span>-->
-      <!--<draggable v-models="item.dropdownOptions"-->
+      <!--<draggable v-model="item.dropdownOptions"-->
       <!--group="dropdownOptions" @start="drag=true" @end="drag=false">-->
       <!--<v-list v-for="(ddo, index) in filterBy(item.dropdownOptions, false, 'archived')"-->
       <!--:class="{'shaded-row': item.index % 2}"-->
@@ -190,7 +190,7 @@
       <!--<v-text-field-->
       <!--class="one-hunned"-->
       <!--:placeholder="ddo.placeholder"-->
-      <!--v-models="ddo.name" >-->
+      <!--v-model="ddo.name" >-->
       <!--</v-text-field>-->
       <!--</v-list-item-content>-->
       <!--<v-list-item-action>-->
@@ -212,14 +212,14 @@
       <!--&lt;!&ndash;<v-container v-if="props.item.custom">&ndash;&gt;-->
       <!--&lt;!&ndash;<v-checkbox v-for="(ot, index) in customFieldObjectTypes"&ndash;&gt;-->
       <!--&lt;!&ndash;:key="index"&ndash;&gt;-->
-      <!--&lt;!&ndash;v-models="ot.archived"&ndash;&gt;-->
+      <!--&lt;!&ndash;v-model="ot.archived"&ndash;&gt;-->
       <!--&lt;!&ndash;:false-value="true" :true-value="false"&ndash;&gt;-->
       <!--&lt;!&ndash;:label="ot.objectType"></v-checkbox>&ndash;&gt;-->
       <!--&lt;!&ndash;</v-container>&ndash;&gt;-->
       <!--<v-container>-->
       <!--<v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"-->
       <!--:key="index"-->
-      <!--v-models="ot.archived"-->
+      <!--v-model="ot.archived"-->
       <!--:false-value="true" :true-value="false"-->
       <!--:label="ot.objectType"></v-checkbox>-->
       <!--</v-container>-->

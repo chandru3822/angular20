@@ -9,5 +9,5 @@ import lombok.Data;
 public class AhjLink {
     private Long id;
     private Long linkTypeId;
-    private String name, link, username, password, notes;
+    private String name, url, username, password, notes;
 }

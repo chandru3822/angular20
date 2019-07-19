@@ -117,7 +117,7 @@
 <!--                          :key="header.text"-->
 <!--                        >-->
 <!--                          <v-text-field style="margin-top: 10px"-->
-<!--                            v-models="ahjUtilityFilters[header.value].value" box-->
+<!--                            v-model="ahjUtilityFilters[header.value].value" box-->
 <!--                          />-->
 <!--                        </th>-->
 <!--                        <th></th>-->

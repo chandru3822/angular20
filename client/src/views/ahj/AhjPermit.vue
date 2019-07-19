@@ -85,61 +85,12 @@
                 </v-menu>
               </v-flex>
             </div>
-            <v-card>
-              <v-toolbar class="primaryCustom">
-                <v-toolbar-title class="white--text font-weight-bold" title="Submission Checklist">
-                  Submission Checklist
-                </v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-btn icon color="#ddd" style="border-radius: 3px">
-                  <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
-                          @click="addSubmissionChecklistItem()" class="white--text">add</v-icon>
-                  <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
-                          @click="hideSubmissionChecklistCtrls()" class="white--text">remove</v-icon>
-                </v-btn>
-              </v-toolbar>
-              <div class="checklist-item-edit-ctrls"
-                   v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls">
-                <v-textarea required label="Details" auto-grow filled
-                            style="margin: 15px 0 -15px 0"
-                            v-model="editedSubmissionChecklistItem.details">
-                </v-textarea>
-                <div class="checklist-btns">
-                  <a @click="hideSubmissionChecklistCtrls()"
-                     class="cancel-link">Cancel</a>
-                  <v-btn v-show="submissionChecklistEditCtrls" color="brRed"
-                         @click="deleteSubmissionChecklistItem()" class="white--text">
-                    Delete
-                  </v-btn>
-                  <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton" class="white--text"
-                         :disabled="editedSubmissionChecklistItem.details === ''">
-                    {{submissionChecklistEditCtrls ? 'Update' : 'Add'}}
-                  </v-btn>
-                </div>
-              </div>
-              <draggable v-model="ahjPermit.submissionChecklist"
-                         group="submissionChecklist" @start="drag=true" @end="drag=false">
-                <v-list v-for="item in ahjPermit.submissionChecklist"
-                        :key="item.id">
-                  <v-list-item v-show="ahjPermit.submissionChecklist.length > 0"
-                               class="grab" :title="item.details">
-                    <v-list-item-action>
-                      <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="item.details"></v-list-item-title>
-                    </v-list-item-content>
-                    <v-list-item-action>
-                      <v-icon>drag_handle</v-icon>
-                    </v-list-item-action>
-                  </v-list-item>
-                </v-list>
-              </draggable>
-              <div class="empty-list"
-                   v-show="ahjPermit.submissionChecklist.length < 1">
-                This checklist doesn't have any items
-              </div>
-            </v-card>
+            <AhjChecklist
+              title="Submission Checklist"
+              :typeId="1"
+              :permitId="ahjPermit.id"
+              :checklistItems="ahjPermit.submissionChecklist"
+            ></AhjChecklist>
             <v-textarea label="Submission Instructions" filled auto-grow
                         v-model="ahjPermit.submissionNote"
                         style="margin-top: 30px"></v-textarea>
@@ -165,62 +116,12 @@
             <v-select label="Payment Method" :items="submittalMethods" filled
                       v-model="ahjPermit.revisionPaymentTypeId"
             ></v-select>
-            <v-card>
-              <v-toolbar class="primaryCustom">
-                <v-toolbar-title class="white--text font-weight-bold"
-                                 title="Revision Submission Checklist">
-                  Revision Submission Checklist
-                </v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-btn icon color="#ddd" style="border-radius: 3px">
-                <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
-                        @click="addSubmissionChecklistItem()" class="white--text">add</v-icon>
-                <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
-                        @click="hideSubmissionChecklistCtrls()" class="white--text">remove</v-icon>
-                </v-btn>
-              </v-toolbar>
-              <div class="checklist-item-edit-ctrls"
-                   v-show="revisionSubmissionChecklistAddCtrls || revisionSubmissionChecklistEditCtrls">
-                <v-textarea required label="Details" auto-grow filled
-                            style="margin: 15px 0 -15px 0"
-                            v-model="editedRevisionSubmissionChecklistItem.details">
-                </v-textarea>
-                <div class="checklist-btns">
-                  <a @click="hideSubmissionChecklistCtrls()"
-                     class="cancel-link">Cancel</a>
-                  <v-btn v-show="revisionSubmissionChecklistEditCtrls" dark
-                         @click="deleteSubmissionChecklistItem()" class="error">
-                    Delete
-                  </v-btn>
-                  <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton"
-                         :disabled="editedRevisionSubmissionChecklistItem.details === ''">
-                    {{revisionSubmissionChecklistEditCtrls ? 'Update' : 'Add'}}
-                  </v-btn>
-                </div>
-              </div>
-              <draggable v-model="ahjPermit.revisionChecklist"
-                         group="submissionChecklist" @start="drag=true" @end="drag=false">
-                <v-list v-for="item in ahjPermit.revisionChecklist"
-                        :key="item.id">
-                  <v-list-item v-show="ahjPermit.revisionChecklist.length > 0"
-                               class="grab" :title="item.details">
-                    <v-list-item-action>
-                      <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="item.details"></v-list-item-title>
-                    </v-list-item-content>
-                    <v-list-item-action>
-                      <v-icon>drag_handle</v-icon>
-                    </v-list-item-action>
-                  </v-list-item>
-                </v-list>
-              </draggable>
-              <div class="empty-list"
-                   v-show="ahjPermit.revisionChecklist.length < 1">
-                This checklist doesn't have any items
-              </div>
-            </v-card>
+            <AhjChecklist
+              title="Revision Submission Checklist"
+              :typeId="2"
+              :permitId="ahjPermit.id"
+              :checklist-items="ahjPermit.revisionChecklist"
+            ></AhjChecklist>
             <v-textarea label="Revision Submission Instructions" filled auto-grow
                         style="margin-top: 30px"
                         v-model="ahjPermit.revisionNote">
@@ -247,62 +148,12 @@
             <v-select label="Payment Method" :items="submittalMethods" filled
                       v-model="ahjPermit.asBuiltPaymentTypeId"
             ></v-select>
-            <v-card>
-              <v-toolbar class="primaryCustom">
-                <v-toolbar-title class="white--text font-weight-bold"
-                                 title="As-Built Submission Checklist">
-                  As-Built Submission Checklist
-                </v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-btn icon color="#ddd" style="border-radius: 3px">
-                  <v-icon v-show="!submissionChecklistAddCtrls && !submissionChecklistEditCtrls"
-                          @click="addSubmissionChecklistItem()" class="white--text">add</v-icon>
-                  <v-icon v-show="submissionChecklistAddCtrls || submissionChecklistEditCtrls"
-                          @click="hideSubmissionChecklistCtrls()" class="white--text">remove</v-icon>
-                </v-btn>
-              </v-toolbar>
-              <div class="checklist-item-edit-ctrls"
-                   v-show="asBuiltSubmissionChecklistAddCtrls || asBuiltSubmissionChecklistEditCtrls">
-                <v-textarea required label="Details" auto-grow filled
-                            style="margin: 15px 0 -15px 0"
-                            v-model="editedAsBuiltSubmissionChecklistItem.details">
-                </v-textarea>
-                <div class="checklist-btns">
-                  <a @click="hideSubmissionChecklistCtrls()"
-                     class="cancel-link">Cancel</a>
-                  <v-btn v-show="asBuiltSubmissionChecklistEditCtrls" dark
-                         @click="deleteSubmissionChecklistItem()" class="error">
-                    Delete
-                  </v-btn>
-                  <v-btn @click="saveSubmissionChecklistItem()" color="primaryButton" class="white--text"
-                         :disabled="editedAsBuiltSubmissionChecklistItem.details === ''">
-                    {{asBuiltSubmissionChecklistEditCtrls ? 'Update' : 'Add'}}
-                  </v-btn>
-                </div>
-              </div>
-              <draggable v-model="ahjPermit.asBuiltChecklist"
-                         group="submissionChecklist" @start="drag=true" @end="drag=false">
-                <v-list v-for="item in ahjPermit.asBuiltChecklist"
-                        :key="item.id">
-                  <v-list-item v-show="ahjPermit.asBuiltChecklist.length > 0"
-                               class="grab" :title="item.details">
-                    <v-list-item-action>
-                      <v-icon small class="mr-3" @click="editSubmissionChecklistItem(item)">edit</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="item.details"></v-list-item-title>
-                    </v-list-item-content>
-                    <v-list-item-action>
-                      <v-icon>drag_handle</v-icon>
-                    </v-list-item-action>
-                  </v-list-item>
-                </v-list>
-              </draggable>
-              <div class="empty-list"
-                   v-show="ahjPermit.asBuiltChecklist.length < 1">
-                This checklist doesn't have any items
-              </div>
-            </v-card>
+            <AhjChecklist
+              title="As-Built Submission Checklist"
+              :typeId="3"
+              :permitId="ahjPermit.id"
+              :checklist-items="ahjPermit.asBuiltChecklist"
+            ></AhjChecklist>
             <v-textarea label="As-Built Submission Instructions" filled auto-grow
                         style="margin-top: 30px"
                         v-model="ahjPermit.asBuiltNote">
@@ -452,10 +303,12 @@
       <h1 class="pb-2 mb-4" style="border-bottom: 1px solid #ccc; width: 100%;">Links and Contacts</h1>
       <!-- FIRST COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <AhjPermitLinks title="Submission Links"
-                        :typeId="4"
-                        :permitId="ahjPermit.id"
-                        :links="ahjPermit.submissionLinks"></AhjPermitLinks>
+        <AhjPermitLinks
+          title="Submission Links"
+          :typeId="4"
+          :permitId="ahjPermit.id"
+          :links="ahjPermit.submissionLinks"
+        ></AhjPermitLinks>
 
         <v-card class="pb-2">
           <v-toolbar class="primaryCustom mb-2">
@@ -473,7 +326,7 @@
                   ref="submissionContactForm" class="pa-3">
             <v-text-field v-model="editedContact.name" required label="Name" filled></v-text-field>
             <v-text-field v-model="editedContact.title" label="Title" filled></v-text-field>
-            <v-text-field v-model="editedContact.phone" label="Phone" filled></v-text-field>
+            <v-text-field v-model="editedContact.phoneNumber" label="Phone" filled></v-text-field>
             <v-text-field v-model="editedContact.email" label="Email" type="email" filled></v-text-field>
             <v-text-field v-model="editedContact.hours" label="Hours" filled></v-text-field>
             <v-textarea label="Address" auto-grow filled
@@ -495,15 +348,15 @@
               </v-btn>
             </div>
           </v-form>
-          <div v-for="(contact, index) in submissionContacts" :key="contact.id"
-               v-show="submissionContacts.length > 0" class="px-3 pt-1 pb-1">
+          <div v-for="(contact, index) in ahjPermit.submissionContacts" :key="contact.id"
+               v-show="ahjPermit.submissionContacts.length > 0" class="px-3 pt-1 pb-1">
             <dl class="horizontal-dl">
               <dt v-if="contact.name" class="font-weight-bold">Name</dt>
               <dd v-if="contact.name">{{contact.name}}</dd>
               <dt v-if="contact.title" class="font-weight-bold">Title</dt>
               <dd v-if="contact.title">{{contact.title}}</dd>
-              <dt v-if="contact.phone" class="font-weight-bold">Phone</dt>
-              <dd v-if="contact.phone">{{contact.phone}}</dd>
+              <dt v-if="contact.phoneNumber" class="font-weight-bold">Phone</dt>
+              <dd v-if="contact.phoneNumber">{{contact.phoneNumber}}</dd>
               <dt v-if="contact.email" class="font-weight-bold">Email</dt>
               <dd v-if="contact.email">{{contact.email}}</dd>
               <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
@@ -519,10 +372,10 @@
                        class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
               </dd>
             </dl>
-            <v-spacer v-if="index !== submissionContacts.length - 1"
+            <v-spacer v-if="index !== ahjPermit.submissionContacts.length - 1"
                       class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
           </div>
-          <div class="empty-list" v-show="submissionContacts.length < 1">
+          <div class="empty-list" v-show="ahjPermit.submissionContacts.length < 1">
             No contacts found
           </div>
         </v-card>
@@ -530,10 +383,12 @@
 
       <!-- SECOND COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <AhjPermitLinks title="Follow-up and Delivery Links"
-                        :typeId="5"
-                        :permitId="ahjPermit.id"
-                        :links="ahjPermit.followUpLinks"></AhjPermitLinks>
+        <AhjPermitLinks
+          title="Follow-up and Delivery Links"
+          :typeId="5"
+          :permitId="ahjPermit.id"
+          :links="ahjPermit.followUpLinks"
+        ></AhjPermitLinks>
 
         <v-card class="pb-2">
           <v-toolbar class="primaryCustom mb-2">
@@ -576,9 +431,9 @@
           <div v-for="(location, index) in printLocations" :key="location.id"
                v-show="printLocations.length > 0" class="px-3 pt-1 pb-1">
             <dl class="horizontal-dl">
-              <dt v-if="location.storeName" class="font-weight-bold">Name</dt>
+              <dt v-if="location.storeName" class="font-weight-bold">Store Name</dt>
               <dd v-if="location.storeName">{{location.storeName}}</dd>
-              <dt v-if="location.storeNumber" class="font-weight-bold">Title</dt>
+              <dt v-if="location.storeNumber" class="font-weight-bold">Store Number</dt>
               <dd v-if="location.storeNumber">{{location.storeNumber}}</dd>
               <dt v-if="location.phone" class="font-weight-bold">Phone</dt>
               <dd v-if="location.phone">{{location.phone}}</dd>
@@ -645,7 +500,7 @@
                   ref="followUpContactForm" class="pa-3">
             <v-text-field v-model="editedContact.name" required label="Name" filled></v-text-field>
             <v-text-field v-model="editedContact.title" label="Title" filled></v-text-field>
-            <v-text-field v-model="editedContact.phone" label="Phone" filled></v-text-field>
+            <v-text-field v-model="editedContact.phoneNumber" label="Phone" filled></v-text-field>
             <v-text-field v-model="editedContact.email" label="Email" type="email" filled></v-text-field>
             <v-text-field v-model="editedContact.hours" label="Hours" filled></v-text-field>
             <v-textarea label="Address" auto-grow filled
@@ -674,8 +529,8 @@
               <dd v-if="contact.name">{{contact.name}}</dd>
               <dt v-if="contact.title" class="font-weight-bold">Title</dt>
               <dd v-if="contact.title">{{contact.title}}</dd>
-              <dt v-if="contact.phone" class="font-weight-bold">Phone</dt>
-              <dd v-if="contact.phone">{{contact.phone}}</dd>
+              <dt v-if="contact.phoneNumber" class="font-weight-bold">Phone</dt>
+              <dd v-if="contact.phoneNumber">{{contact.phoneNumber}}</dd>
               <dt v-if="contact.email" class="font-weight-bold">Email</dt>
               <dd v-if="contact.email">{{contact.email}}</dd>
               <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
@@ -705,15 +560,17 @@
 </template>
 
 <script>
-  import draggable from 'vuedraggable'
+  import cloneDeep from 'lodash.clonedeep'
   import max from 'lodash.max'
   import moment from 'moment'
+  import AhjChecklist from './components/AhjChecklist.vue'
   import AhjPermitLinks from './components/AhjPermitLinks.vue'
+  import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
   export default {
     name: 'ahjPermit',
     components: {
-      draggable,
+      AhjChecklist,
       AhjPermitLinks
     },
     data: () => ({
@@ -768,30 +625,25 @@
       businessLicenseMenu: false,
       contractorLicenseMenu: false,
       otherLicenseMenu: false,
-      submissionChecklistAddCtrls: false,
-      submissionChecklistEditCtrls: false,
-      submissionChecklistEditedIndex: -1,
-      editedSubmissionChecklistItem: {
-        details: ''
-      },
-      submissionCheckListItemToDelete: '',
-      revisionSubmissionChecklistAddCtrls: false,
-      revisionSubmissionChecklistEditCtrls: false,
-      revisionSubmissionChecklistEditedIndex: -1,
-      editedRevisionSubmissionChecklistItem: {
-        details: ''
-      },
-      revisionSubmissionCheckListItemToDelete: '',
-      asBuiltSubmissionChecklistAddCtrls: false,
-      asBuiltSubmissionChecklistEditCtrls: false,
-      asBuiltSubmissionChecklistEditedIndex: -1,
-      editedAsBuiltSubmissionChecklistItem: {
-        details: ''
-      },
-      asBuiltSubmissionCheckListItemToDelete: '',
       ahjPermit: {
         approvalTimeline: null,
-        asBuiltChecklist: [],
+        asBuiltChecklist: [
+          // {
+          //   id: 1,
+          //   type: 3,
+          //   details: 'Do something'
+          // },
+          // {
+          //   id: 2,
+          //   type: 3,
+          //   details: 'Do something else'
+          // },
+          // {
+          //   id: 3,
+          //   type: 3,
+          //   details: 'Coming up with test data is hard sometimes'
+          // }
+        ],
         asBuiltFeeAmount: null,
         asBuiltNote: null,
         asBuiltPaymentTypeId: null,
@@ -815,24 +667,24 @@
         followUpContacts: [],
         followUpFeeAmount: null,
         followUpLinks: [
-            {
-              id: 1,
-              type: 5,
-              name: 'Outlook',
-              url: 'https://www.outlook.com/',
-              username: 'Username',
-              password: 'Password',
-              notes: 'Testing again'
-            },
-            {
-              id: 2,
-              type: 5,
-              name: 'Google',
-              url: 'https://www.google.com/',
-              username: 'Username',
-              password: 'Password',
-              notes: 'Testing'
-            }
+          // {
+          //   id: 1,
+          //   type: 5,
+          //   name: 'Outlook',
+          //   url: 'https://www.outlook.com/',
+          //   username: 'Username',
+          //   password: 'Password',
+          //   notes: 'Testing again'
+          // },
+          // {
+          //   id: 2,
+          //   type: 5,
+          //   name: 'Google',
+          //   url: 'https://www.google.com/',
+          //   username: 'Username',
+          //   password: 'Password',
+          //   notes: 'Testing'
+          // }
         ],
         followUpPaymentTypeId: null,
         followUpPaymentTypeOther: null,
@@ -856,27 +708,43 @@
         revisionSubmittalTypeOther: null,
         servicingFots: [],
         stampedPlan: null,
-        submissionChecklist: [],
+        submissionChecklist: [
+          // {
+          //   id: 1,
+          //   type: 3,
+          //   details: 'Do something'
+          // },
+          // {
+          //   id: 2,
+          //   type: 3,
+          //   details: 'Do something else'
+          // },
+          // {
+          //   id: 3,
+          //   type: 3,
+          //   details: 'Coming up with test data is hard sometimes'
+          // }
+        ],
         submissionContacts: [],
         submissionLinks: [
-          {
-            id: 1,
-            type: 4,
-            name: 'Google',
-            url: 'https://www.google.com/',
-            username: 'Username',
-            password: 'Password',
-            notes: 'Testing'
-          },
-          {
-            id: 2,
-            type: 4,
-            name: 'Outlook',
-            url: 'https://www.outlook.com/',
-            username: 'Username',
-            password: 'Password',
-            notes: 'Testing again'
-          }
+          // {
+          //   id: 1,
+          //   type: 4,
+          //   name: 'Google',
+          //   url: 'https://www.google.com/',
+          //   username: 'Username',
+          //   password: 'Password',
+          //   notes: 'Testing'
+          // },
+          // {
+          //   id: 2,
+          //   type: 4,
+          //   name: 'Outlook',
+          //   url: 'https://www.outlook.com/',
+          //   username: 'Username',
+          //   password: 'Password',
+          //   notes: 'Testing again'
+          // }
         ],
         submissionNote: null,
         submissionPaymentTypeId: null,
@@ -885,40 +753,40 @@
         submittalTypeOther: null
       },
       documents: [
-        {
-          id: 1,
-          name: 'instructions.txt'
-        },
-        {
-          id: 2,
-          name: 'importantDocument.docx'
-        }
+        // {
+        //   id: 1,
+        //   name: 'instructions.txt'
+        // },
+        // {
+        //   id: 2,
+        //   name: 'importantDocument.docx'
+        // }
       ],
       servicingFots: [
-        {
-          id: 1,
-          firstName: 'Test',
-          lastName: 'Guy 1',
-          fullName: 'Test Guy 1',
-          office: 'Test Office 1',
-          officeId: 1
-        },
-        {
-          id: 2,
-          firstName: 'Test',
-          lastName: 'Guy 2',
-          fullName: 'Test Guy 2',
-          office: 'Test Office 2',
-          officeId: 2
-        },
-        {
-          id: 3,
-          firstName: 'Test',
-          lastName: 'Guy 3',
-          fullName: 'Test Guy 3',
-          office: 'Test Office 3',
-          officeId: 3
-        }
+        // {
+        //   id: 1,
+        //   firstName: 'Test',
+        //   lastName: 'Guy 1',
+        //   fullName: 'Test Guy 1',
+        //   office: 'Test Office 1',
+        //   officeId: 1
+        // },
+        // {
+        //   id: 2,
+        //   firstName: 'Test',
+        //   lastName: 'Guy 2',
+        //   fullName: 'Test Guy 2',
+        //   office: 'Test Office 2',
+        //   officeId: 2
+        // },
+        // {
+        //   id: 3,
+        //   firstName: 'Test',
+        //   lastName: 'Guy 3',
+        //   fullName: 'Test Guy 3',
+        //   office: 'Test Office 3',
+        //   officeId: 3
+        // }
       ],
       submissionContactAddCtrls: false,
       submissionContactEditCtrls: false,
@@ -930,70 +798,70 @@
         type: '',
         name: '',
         title: '',
-        phone: '',
+        phoneNumber: '',
         email: '',
         hours: '',
         address: '',
         notes: ''
       },
       submissionContacts: [
-        {
-          id: 1,
-          type: 1,
-          name: 'Bob',
-          title: 'Store Manager',
-          phone: '111-111-1111',
-          email: 'bob@test.com',
-          hours: 'M-F 8am-4pm',
-          address: '111 Test St, Indianapolis, IN 11111',
-          notes: 'Testing'
-        },
-        {
-          id: 2,
-          type: 1,
-          name: 'Sarah',
-          title: 'Store Manager',
-          phone: '222-222-2222',
-          email: 'sarah@test.com',
-          hours: 'M-F 9am-5pm',
-          address: '222 Test St, Indianapolis, IN 22222',
-          notes: 'More testing'
-        }
+        // {
+        //   id: 1,
+        //   type: 1,
+        //   name: 'Bob',
+        //   title: 'Store Manager',
+        //   phoneNumber: '111-111-1111',
+        //   email: 'bob@test.com',
+        //   hours: 'M-F 8am-4pm',
+        //   address: '111 Test St, Indianapolis, IN 11111',
+        //   notes: 'Testing'
+        // },
+        // {
+        //   id: 2,
+        //   type: 1,
+        //   name: 'Sarah',
+        //   title: 'Store Manager',
+        //   phoneNumber: '222-222-2222',
+        //   email: 'sarah@test.com',
+        //   hours: 'M-F 9am-5pm',
+        //   address: '222 Test St, Indianapolis, IN 22222',
+        //   notes: 'More testing'
+        // }
       ],
       followUpContacts: [
-        {
-          id: 1,
-          type: 2,
-          name: 'John',
-          title: 'FedEx Delivery Truck Driver',
-          phone: '333-333-3333',
-          email: 'john@test.com',
-          hours: 'M-F 9am-5pm',
-          address: '333 Test Ave, New York City, NY 33333',
-          notes: 'Another test'
-        },
-        {
-          id: 2,
-          type: 2,
-          name: 'Jacob',
-          title: 'Professional Mover',
-          phone: '444-444-4444',
-          email: 'jacob@test.com',
-          hours: 'M-F 8am-4pm',
-          address: '444 Test Rd, Seattle, WA 99999',
-          notes: 'Testing some more'
-        },
-        {
-          id: 3,
-          type: 2,
-          name: 'Scott',
-          title: 'Test Contact',
-          phone: '555-555-5555',
-          email: 'scott@test.com',
-          hours: 'M-F 10am-6pm',
-          address: '555 Test Pl, Redmond, WA 88888',
-          notes: 'Doing more testing'
-        }
+        // {
+        //   id: 1,
+        //   type: 2,
+        //   name: 'John',
+        //   title: 'FedEx Delivery Truck Driver',
+        //   phoneNumber: '333-333-3333',
+        //   email: 'john@test.com',
+        //   hours: 'M-F 9am-5pm',
+        //   address: '333 Test Ave, New York City, NY 33333',
+        //   notes: 'Another test'
+        // },
+        // {
+        //   id: 2,
+        //   type: 2,
+        //   name: 'Jacob',
+        //   title: 'Professional Mover',
+        //   phoneNumber: '444-444-4444',
+        //   email: 'jacob@test.com',
+        //   hours: 'M-F 8am-4pm',
+        //   address: '444 Test Rd, Seattle, WA 99999',
+        //   notes: 'Testing some more'
+        // },
+        // {
+        //   id: 3,
+        //   type: 2,
+        //   name: 'Scott',
+        //   title: 'Test Contact',
+        //   phoneNumber: '555-555-5555',
+        //   email: 'scott@test.com',
+        //   hours: 'M-F 10am-6pm',
+        //   address: '555 Test Pl, Redmond, WA 88888',
+        //   notes: 'Doing more testing'
+        // }
       ],
       printLocationAddCtrls: false,
       printLocationEditCtrls: false,
@@ -1009,70 +877,31 @@
         notes: ''
       },
       printLocations: [
-        {
-          id: 1,
-          storeName: 'Alphagraphics',
-          storeNumber: '111',
-          phone: '111-111-1111',
-          email: 'alphagraphics@test.com',
-          hours: 'M-F 10am-7pm',
-          address: '111 Test Ave, Seattle, WA 99999',
-          notes: 'Testing'
-        },
-        {
-          id: 2,
-          storeName: 'Zippy\'s Quick Ship \'N Copy',
-          storeNumber: '222',
-          phone: '222-222-2222',
-          email: 'zippys@test.com',
-          hours: 'M-F 9am-5pm',
-          address: '222 Test St, Indianapolis, IN 22222',
-          notes: 'More testing'
-        }
+        // {
+        //   id: 1,
+        //   storeName: 'Alphagraphics',
+        //   storeNumber: '111',
+        //   phone: '111-111-1111',
+        //   email: 'alphagraphics@test.com',
+        //   hours: 'M-F 10am-7pm',
+        //   address: '111 Test Ave, Seattle, WA 99999',
+        //   notes: 'Testing'
+        // },
+        // {
+        //   id: 2,
+        //   storeName: 'Zippy\'s Quick Ship \'N Copy',
+        //   storeNumber: '222',
+        //   phone: '222-222-2222',
+        //   email: 'zippys@test.com',
+        //   hours: 'M-F 9am-5pm',
+        //   address: '222 Test St, Indianapolis, IN 22222',
+        //   notes: 'More testing'
+        // }
       ]
     }),
     methods: {
       resetForm() {
         console.log("Resetting the form...")
-      },
-      hideSubmissionChecklistCtrls() {
-        this.submissionChecklistAddCtrls = false
-        this.submissionChecklistEditCtrls = false
-      },
-      addSubmissionChecklistItem() {
-        this.editedSubmissionChecklistItem.details = ''
-        if (this.submissionChecklistEditCtrls) {
-          this.submissionChecklistEditCtrls = !this.submissionChecklistEditCtrls
-        }
-        this.submissionChecklistAddCtrls = true
-      },
-      editSubmissionChecklistItem(item) {
-        if (this.submissionChecklistAddCtrls) {
-          this.submissionChecklistAddCtrls = false
-        }
-        this.submissionChecklistEditedIndex = this.ahjPermit.submissionChecklist.indexOf(item)
-        this.editedSubmissionChecklistItem = Object.assign({}, item)
-        this.submissionChecklistEditCtrls = true
-      },
-      deleteSubmissionChecklistItem() {
-        this.ahjPermit.submissionChecklist.splice(this.submissionChecklistEditedIndex, 1)
-        this.submissionChecklistEditCtrls = false
-      },
-      saveSubmissionChecklistItem() {
-        if (this.submissionChecklistEditedIndex > -1) {
-          Object.assign(this.ahjPermit.submissionChecklist[this.submissionChecklistEditedIndex], this.editedSubmissionChecklistItem)
-          this.submissionChecklistEditCtrls = false
-        } else {
-          if (this.ahjPermit.submissionChecklist.length > 0) {
-            let idsArray = []
-            this.ahjPermit.submissionChecklist.forEach(item => idsArray.push(item.id))
-            this.editedSubmissionChecklistItem.id = max(idsArray) + 1
-          } else {
-            this.editedSubmissionChecklistItem.id = 1
-          }
-          this.ahjPermit.submissionChecklist.push(this.editedSubmissionChecklistItem)
-          this.submissionChecklistAddCtrls = false
-        }
       },
       addInspectionDocument() {
         console.log("Adding inspection document...")
@@ -1257,8 +1086,11 @@
         console.log("AHJ Permit:", this.ahjPermit)
       }
     },
-    created () {
-      this.ahjPermit.id = parseInt(this.$route.params.ahjId)
+    async created () {
+      let ahjId = parseInt(this.$route.params.ahjId)
+      const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${ahjId}/permit/`)
+      this.ahjPermit = cloneDeep(data)
+      console.log("AHJ Permit:", this.ahjPermit)
     }
   }
 </script>
@@ -1288,7 +1120,6 @@
   table {
     font-size: 0.85em !important;
   }
-  .checklist-btns,
   .link-btns {
     display: flex;
     flex-flow: row nowrap;
@@ -1301,11 +1132,6 @@
   #save-btn {
     margin: 10px 5px 10px 0;
     text-transform: capitalize;
-  }
-  .checklist-item-edit-ctrls {
-    margin: 5px;
-    display: flex;
-    flex-flow: column nowrap;
   }
   .empty-list {
     padding: 20px;
@@ -1331,10 +1157,10 @@
   }
   .horizontal-dl dt {
     text-align: right;
-    width: 20%;
+    width: 30%;
   }
   .horizontal-dl dd {
-    width: 75%;
+    width: 65%;
   }
   /*End definition list styles*/
 </style>

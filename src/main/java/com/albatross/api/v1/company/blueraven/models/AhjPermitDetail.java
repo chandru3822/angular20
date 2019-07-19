@@ -10,9 +10,9 @@ import java.util.List;
  */
 @Data
 public class AhjPermitDetail extends AhjPermit {
-    private List<AhjLink> links, followUpLinks;
-    private List<AhjChecklistItem> checklist, revisionChecklist, asBuiltChecklist;
+    private List<AhjLink> submissionLinks, followUpLinks;
+    private List<AhjChecklistItem> submissionChecklist, revisionChecklist, asBuiltChecklist;
     private List<AhjNote> notes;
-    private List<AhjContact> contacts, followUpContacts, printLocations;
+    private List<AhjContact> submissionContacts, followUpContacts, printLocations;
     private List<User> servicingFots;
 }

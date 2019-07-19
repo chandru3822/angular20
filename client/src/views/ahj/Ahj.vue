@@ -138,13 +138,13 @@
 <!--                          <td>-->
 <!--                            <v-text-field-->
 <!--                              v-if="ahjFilters[header.value].type === FILTER_TYPE.TEXT"-->
-<!--                              v-models="ahjFilters[header.value].value"-->
+<!--                              v-model="ahjFilters[header.value].value"-->
 <!--                              filled-->
 <!--                            />-->
 <!--                            <v-select-->
 <!--                              v-else-if="ahjFilters[header.value].type === FILTER_TYPE.SELECT"-->
 <!--                              :items="ahjSearchFilters[header.value]"-->
-<!--                              v-models="ahjFilters[header.value].value"-->
+<!--                              v-model="ahjFilters[header.value].value"-->
 <!--                              filled-->
 <!--                            ></v-select>-->
 <!--                          </td>-->

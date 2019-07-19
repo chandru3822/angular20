@@ -1,17 +1,60 @@
-<template>
-  <div>
-    <h1>This is the AHJ Utility Detail component for AHJ Utility {{ ahjUtilityId }}</h1>
-  </div>
+<template #items="props">
+  <v-layout column fill-height>
+    <v-flex xs12 shrink>
+      <v-layout space-between row fill-height full-width>
+        <v-flex xs12 text-xs-left fill-height>
+          <v-btn id="back-btn" color="primaryButton" class="white--text my-2" :to="'/ahjUtility'">
+            <v-icon dark>arrow_left</v-icon>
+            Back to menu
+          </v-btn>
+
+          <v-layout row nowrap justify-space-between align-center style="width: 100%">
+            <div class="page-title">Utility</div>
+            <div class="page-info">
+              <div>{{ testAhj.name }}</div>
+              <div>{{ testAhj.metroArea }}, {{ testAhj.state }}</div>
+            </div>
+          </v-layout>
+
+          <v-divider></v-divider>
+
+          <v-tabs>
+            <v-tab class="text-capitalize" style="cursor: default" :ripple="false">Details</v-tab>
+          </v-tabs>
+
+          <v-divider></v-divider>
+
+          <router-view />
+        </v-flex>
+      </v-layout>
+    </v-flex>
+  </v-layout>
 </template>
 
 <script>
   export default {
     name: 'ahjUtilityDetails',
     data: () => ({
-      testDataItem: ''
+      testAhj: {
+        name: 'AEP Ohio',
+        metroArea: 'Columbus',
+        state: 'OH'
+      }
     }),
     created () {
       this.ahjUtilityId = this.$route.params.ahjUtilityId
     }
   }
 </script>
+
+<style scoped lang="scss">
+  .page-title {
+    font-size: 32px;
+    font-weight: 200;
+  }
+  .page-info {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 20px;
+    text-align: right;
+  }
+</style>

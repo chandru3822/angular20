@@ -3,7 +3,7 @@
     <v-flex xs12 shrink>
       <v-layout space-between row fill-height full-width>
         <v-flex xs12 text-xs-left fill-height>
-          <v-btn id="back-btn" color="primaryButton" class="white--text" :to="'/ahj'">
+          <v-btn id="back-btn" color="primaryButton" :to="'/ahj'">
             <v-icon dark>arrow_left</v-icon>
             Back to menu
           </v-btn>
@@ -19,7 +19,7 @@
 
           <v-divider></v-divider>
 
-          <v-tabs color="transparent">
+          <v-tabs>
             <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path" class="text-capitalize">
               {{ tab.label }}
             </v-tab>

@@ -6,7 +6,7 @@ import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.BeanWrapper;
@@ -25,6 +25,8 @@ import java.util.Optional;
 public class AhjPermitService {
   @Autowired
   private SqlCache sqlCache;
+
+  @Autowired
   private ObjectMapper om;
 
   public Optional<AhjPermitDetail> getAhjPermitDetailByAhjId(Long ahjId) {
@@ -46,73 +48,73 @@ public class AhjPermitService {
     return null;
   }
 
-  @Transactional
-  public Optional<AhjPermitDetail> createAhjPermit(Long ahjId, Long userId, AhjPermit permit) {
-    return saveAhjPermit(ahjId, userId, null, permit);
-  }
-
-  @Transactional
-  public Optional<AhjPermitDetail> saveAhjPermit(Long ahjId, Long userId, Long permitId, AhjPermit permit) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjId", ahjId);
-    params.put("depositAmount", permit.getDepositAmount());
-    params.put("averagePermitFee", permit.getAveragePermitFee());
-    params.put("engineeringLetterRequired", permit.getEngineeringLetterRequired());
-    params.put("printLocation", permit.getPrintLocation());
-    params.put("stampedPlan", permit.getStampedPlan());
-    params.put("businessLicense", permit.getBusinessLicense());
-    params.put("contractorLicense", permit.getContractorLicense());
-    params.put("businessLicenseExpirationDate", permit.getBusinessLicenseExpirationDate());
-    params.put("contractorLicenseExpirationDate", permit.getContractorLicenseExpirationDate());
-    params.put("currentUser", userId);
-    params.put("otherLicense", permit.getOtherLicense());
-    params.put("otherLicenseExpirationDate", permit.getOtherLicenseExpirationDate());
-
-    // NOTES
-    params.put("submissionNote", permit.getSubmissionNote());
-    params.put("revisionNote", permit.getRevisionNote());
-    params.put("asBuiltNote", permit.getAsBuiltNote());
-    params.put("deliveryNote", permit.getDeliveryNote());
-
-    params.put("submittalTypeId", permit.getSubmittalTypeId());
-    params.put("revisionSubmittalTypeId", permit.getRevisionSubmittalTypeId());
-    params.put("asBuiltSubmittalTypeId", permit.getAsBuiltSubmittalTypeId());
-    params.put("deliveryPickupTypeId", permit.getDeliveryPickupTypeId());
-    params.put("submissionPaymentTypeId", permit.getSubmissionPaymentTypeId());
-    params.put("revisionPaymentTypeId", permit.getRevisionPaymentTypeId());
-    params.put("asBuiltPaymentTypeId", permit.getAsBuiltPaymentTypeId());
-    params.put("followUpPaymentTypeId", permit.getFollowUpPaymentTypeId());
-    params.put("deliveryPaymentTypeId", permit.getDeliveryPaymentTypeId());
-    params.put("hoaApprovalRequiredTypeId", permit.getHoaApprovalRequiredTypeId());
-    params.put("nemApprovalRequiredTypeId", permit.getNemApprovalRequiredTypeId());
-    params.put("submittalTypeOther", permit.getSubmittalTypeOther());
-    params.put("revisionSubmittalTypeOther", permit.getRevisionSubmittalTypeOther());
-    params.put("asBuiltSubmittalTypeOther", permit.getAsBuiltSubmittalTypeOther());
-    params.put("deliveryPickupTypeOther", permit.getDeliveryPickupTypeOther());
-    params.put("submissionPaymentTypeOther", permit.getSubmissionPaymentTypeOther());
-    params.put("revisionPaymentTypeOther", permit.getRevisionPaymentTypeOther());
-    params.put("asBuiltPaymentTypeOther", permit.getAsBuiltPaymentTypeOther());
-    params.put("followUpPaymentTypeOther", permit.getFollowUpPaymentTypeOther());
-    params.put("deliveryPaymentTypeOther", permit.getDeliveryPaymentTypeOther());
-    params.put("hoaApprovalRequiredTypeOther", permit.getHoaApprovalRequiredTypeOther());
-    params.put("nemApprovalRequiredTypeOther", permit.getNemApprovalRequiredTypeOther());
-    params.put("revisionFeeAmount", permit.getRevisionFeeAmount());
-    params.put("asBuiltFeeAmount", permit.getAsBuiltFeeAmount());
-    params.put("followUpFeeAmount", permit.getFollowUpFeeAmount());
-    params.put("deliveryFeeAmount", permit.getDeliveryFeeAmount());
-    params.put("approvalTimeline", permit.getApprovalTimeline());
-    params.put("documentsAvailable", permit.getDocumentsAvailable());
-
-    if (permitId == null) {
-      sqlCache.update("ahj.permit.create", params);
-
-    } else {
-      params.put("id", permitId);
-      sqlCache.update("ahj.permit.update", params);
-    }
-
-    return getAhjPermitDetailByAhjId(ahjId);
-  }
+//  @Transactional
+//  public Optional<AhjPermitDetail> createAhjPermit(Long ahjId, Long userId, AhjPermit permit) {
+//    return saveAhjPermit(ahjId, userId, null, permit);
+//  }
+//
+//  @Transactional
+//  public Optional<AhjPermitDetail> saveAhjPermit(Long ahjId, Long userId, Long permitId, AhjPermit permit) {
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("ahjId", ahjId);
+//    params.put("depositAmount", permit.getDepositAmount());
+//    params.put("averagePermitFee", permit.getAveragePermitFee());
+//    params.put("engineeringLetterRequired", permit.getEngineeringLetterRequired());
+//    params.put("printLocation", permit.getPrintLocation());
+//    params.put("stampedPlan", permit.getStampedPlan());
+//    params.put("businessLicense", permit.getBusinessLicense());
+//    params.put("contractorLicense", permit.getContractorLicense());
+//    params.put("businessLicenseExpirationDate", permit.getBusinessLicenseExpirationDate());
+//    params.put("contractorLicenseExpirationDate", permit.getContractorLicenseExpirationDate());
+//    params.put("currentUser", userId);
+//    params.put("otherLicense", permit.getOtherLicense());
+//    params.put("otherLicenseExpirationDate", permit.getOtherLicenseExpirationDate());
+//
+//    // NOTES
+//    params.put("submissionNote", permit.getSubmissionNote());
+//    params.put("revisionNote", permit.getRevisionNote());
+//    params.put("asBuiltNote", permit.getAsBuiltNote());
+//    params.put("deliveryNote", permit.getDeliveryNote());
+//
+//    params.put("submittalTypeId", permit.getSubmittalTypeId());
+//    params.put("revisionSubmittalTypeId", permit.getRevisionSubmittalTypeId());
+//    params.put("asBuiltSubmittalTypeId", permit.getAsBuiltSubmittalTypeId());
+//    params.put("deliveryPickupTypeId", permit.getDeliveryPickupTypeId());
+//    params.put("submissionPaymentTypeId", permit.getSubmissionPaymentTypeId());
+//    params.put("revisionPaymentTypeId", permit.getRevisionPaymentTypeId());
+//    params.put("asBuiltPaymentTypeId", permit.getAsBuiltPaymentTypeId());
+//    params.put("followUpPaymentTypeId", permit.getFollowUpPaymentTypeId());
+//    params.put("deliveryPaymentTypeId", permit.getDeliveryPaymentTypeId());
+//    params.put("hoaApprovalRequiredTypeId", permit.getHoaApprovalRequiredTypeId());
+//    params.put("nemApprovalRequiredTypeId", permit.getNemApprovalRequiredTypeId());
+//    params.put("submittalTypeOther", permit.getSubmittalTypeOther());
+//    params.put("revisionSubmittalTypeOther", permit.getRevisionSubmittalTypeOther());
+//    params.put("asBuiltSubmittalTypeOther", permit.getAsBuiltSubmittalTypeOther());
+//    params.put("deliveryPickupTypeOther", permit.getDeliveryPickupTypeOther());
+//    params.put("submissionPaymentTypeOther", permit.getSubmissionPaymentTypeOther());
+//    params.put("revisionPaymentTypeOther", permit.getRevisionPaymentTypeOther());
+//    params.put("asBuiltPaymentTypeOther", permit.getAsBuiltPaymentTypeOther());
+//    params.put("followUpPaymentTypeOther", permit.getFollowUpPaymentTypeOther());
+//    params.put("deliveryPaymentTypeOther", permit.getDeliveryPaymentTypeOther());
+//    params.put("hoaApprovalRequiredTypeOther", permit.getHoaApprovalRequiredTypeOther());
+//    params.put("nemApprovalRequiredTypeOther", permit.getNemApprovalRequiredTypeOther());
+//    params.put("revisionFeeAmount", permit.getRevisionFeeAmount());
+//    params.put("asBuiltFeeAmount", permit.getAsBuiltFeeAmount());
+//    params.put("followUpFeeAmount", permit.getFollowUpFeeAmount());
+//    params.put("deliveryFeeAmount", permit.getDeliveryFeeAmount());
+//    params.put("approvalTimeline", permit.getApprovalTimeline());
+//    params.put("documentsAvailable", permit.getDocumentsAvailable());
+//
+//    if (permitId == null) {
+//      sqlCache.update("ahj.permit.create", params);
+//
+//    } else {
+//      params.put("id", permitId);
+//      sqlCache.update("ahj.permit.update", params);
+//    }
+//
+//    return getAhjPermitDetailByAhjId(ahjId);
+//  }
 
   public static class BaseAhjDetailMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
@@ -134,7 +136,7 @@ public class AhjPermitService {
       bw.registerCustomEditor(List.class, "baseNoteTemplates",
         new JsonCollectionDeserializer(baseNoteTemplateTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "contacts",
+      bw.registerCustomEditor(List.class, "submissionContacts",
         new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "followUpContacts",
@@ -167,7 +169,7 @@ public class AhjPermitService {
       bw.registerCustomEditor(List.class, "obtainingResultsNotes",
         new JsonCollectionDeserializer(noteTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "checklist",
+      bw.registerCustomEditor(List.class, "submissionChecklist",
         new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "revisionChecklist",
@@ -224,7 +226,7 @@ public class AhjPermitService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjLink>> linkRef = new TypeReference<>() {};
 
-      bw.registerCustomEditor(List.class, "links",
+      bw.registerCustomEditor(List.class, "submissionLinks",
         new JsonCollectionDeserializer(linkRef, super.objectMapper));
 
       bw.registerCustomEditor(List.class, "followUpLinks",
