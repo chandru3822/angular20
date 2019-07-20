@@ -1,12 +1,21 @@
 package com.albatross.api.v1.company.blueraven.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.flow.model.User;
+
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.models.AhjInspection;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -16,13 +25,38 @@ import java.util.Optional;
 public class AhjInspectionService {
   @Autowired
   private SqlCache sqlCache;
+
+  @Autowired
   private ObjectMapper om;
 
-  public Optional<AhjInspection> createAhjInspection(Long ahjId, Long userId, AhjInspection inspection) {
-    return saveAhjInspection(ahjId, userId, null, inspection);
+  @Autowired
+  private SecurityService securityService;
+
+  public Optional<AhjInspectionDetail> getAhjInspectionDetailByAhjId(Long ahjId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjId", ahjId);
+
+    Optional<AhjInspectionDetail> inspection = sqlCache.get("ahj.inspection.detailByAhj", params, new AhjInspectionDetailMapper<>(AhjInspectionDetail.class, om));
+    if (inspection.isPresent()) {
+      return inspection;
+    } else {
+      //add a blank inspection and return that
+      Integer id = sqlCache.get("ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
+      if (id != null) {
+        Optional<AhjInspectionDetail> inspection2 = sqlCache.get("ahj.inspection.detailByAhj", params, new AhjInspectionDetailMapper<>(AhjInspectionDetail.class, om));
+        return inspection2;
+      }
+    }
+    return null;
   }
 
-  public Optional<AhjInspection> saveAhjInspection(Long ahjId, Long userId, Long inspectionId, AhjInspection inspection) {
+  public Optional<AhjInspection> createAhjInspection(Long ahjId, AhjInspection inspection) {
+    return saveAhjInspection(ahjId, null, inspection);
+  }
+
+  public Optional<AhjInspection> saveAhjInspection(Long ahjId, Long inspectionId, AhjInspection inspection) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
     params.put("inspectionFee", inspection.getInspectionFee());
@@ -41,7 +75,7 @@ public class AhjInspectionService {
     params.put("businessLicense", inspection.getBusinessLicense());
     params.put("contractorLicense", inspection.getContractorLicense());
     params.put("homeownerRequiredOnSite", inspection.getHomeownerRequiredOnSite());
-    params.put("currentUser", userId);
+    params.put("currentUser", currentUser.getId());
     params.put("callForTimeWindow", inspection.getCallForTimeWindow());
     params.put("ladderRequired", inspection.getLadderRequired());
     params.put("timeWindow", inspection.getTimeWindow());
@@ -62,7 +96,7 @@ public class AhjInspectionService {
     params.put("homeownerRequired", inspection.getHomeownerRequired());
     params.put("brsTechRequired", inspection.getBrsTechRequired());
 
-    //all the various type related fields
+    //all the various type-related fields
     params.put("schedulingMethodTypeId", inspection.getSchedulingMethodTypeId());
     params.put("schedulingMethodTypeOther", inspection.getSchedulingMethodTypeOther());
     params.put("handyInformationTypeId", inspection.getHandyInformationTypeId());
@@ -107,5 +141,90 @@ public class AhjInspectionService {
     keyParam.put("id", inspectionId);
 
     return sqlCache.get("ahj.inspection.findById", keyParam, AhjInspection.class);
+  }
+
+  // CONTACTS
+  public void saveInspectionContact(Long inspectionId, Long contactId) {
+    HashMap<String, Object> params = new HashMap<>();
+
+    params.put("ahjInspectionId", inspectionId);
+    params.put("ahjContactId", contactId);
+    sqlCache.update("ahj.inspection.contact.create", params);
+  }
+
+  @SuppressWarnings({"WeakerAccess"})
+  public static class BaseAhjDetailMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public BaseAhjDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+  }
+
+  @SuppressWarnings({"Duplicates", "unchecked", "WeakerAccess"})
+  public static class AhjInspectionDetailMapper<T> extends AhjInspectionService.BaseAhjDetailMapper<T> {
+
+    public AhjInspectionDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass, objectMapper);
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
+      TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjBaseNoteTemplate>> baseNoteTemplateTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
+      TypeReference<List<User>> userRef = new TypeReference<>() {};
+
+      bw.registerCustomEditor(List.class, "schedulingLinks",
+              new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "fotLinks",
+              new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "resultsLinks",
+              new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "failureChecklist",
+              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "schedulingChecklist",
+              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "obtainingResultsChecklist",
+              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "reinspectionsChecklist",
+              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "schedulingWithAhjChecklist",
+              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "schedulingWithBrsTechnicianChecklist",
+              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "installationRequirements",
+              new JsonCollectionDeserializer(requirementTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "baseNoteTemplates",
+              new JsonCollectionDeserializer(baseNoteTemplateTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "utilityServiceDeptContacts",
+              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "schedulingContacts",
+              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "obtainingResultsContacts",
+              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "feeContacts",
+              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+
+      bw.registerCustomEditor(List.class, "servicingFots",
+              new JsonCollectionDeserializer(userRef, super.objectMapper));
+    }
   }
 }

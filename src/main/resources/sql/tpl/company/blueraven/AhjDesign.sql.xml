@@ -1,0 +1,215 @@
+<sql>
+    <ahj.design.detailByAhj>
+        <![CDATA[
+            SELECT
+              d.*,
+              coalesce((
+                         SELECT array_to_json(array_agg(row_to_json(contacts)))
+                         FROM (
+                                SELECT
+                                  c.id,
+                                  c.name,
+                                  c.title,
+                                  c.email,
+                                  c.phone_number AS "phoneNumber",
+                                  c.address,
+                                  c.notes,
+                                  c.hours
+                                FROM brs.ahj_contact c
+                                  INNER JOIN brs.ahj_design_contact adc ON c.id = adc.ahj_contact_id
+                                WHERE adc.ahj_design_id = d.id AND c.archived IS FALSE AND c.contact_type_id = 5) contacts), '[]') AS contacts,
+              coalesce((
+                         SELECT array_to_json(array_agg(row_to_json(requirements)))
+                         FROM (
+                                 WITH open_challenge AS (
+                                    SELECT ahj_id,
+                                      original_requirement_id,
+                                      status_id
+                                    FROM brs.ahj_requirements ar
+                                    WHERE status_id = 3
+                                )
+                                SELECT ar.ahj_id AS "ahjId",
+                                    ar.position,
+                                    ar.status_id AS "statusId",
+                                    ars.name status,
+                                    ar.complete,
+                                    ar.date_created AS "dateCreated",
+                                    ar.created_by_id AS "createdById",
+                                    u.first_name || ' ' || u.last_name AS "createdBy",
+                                    ar.date_updated AS "dateUpdated",
+                                    ar.updated_by_id AS "updatedById",
+                                    ar.archived,
+                                    u2.first_name || ' ' || u2.last_name AS "updatedBy",
+                                    r.id,
+                                    r.description,
+                                    r.requirement_type_id AS "requirementTypeId",
+                                    ar.original_requirement_id AS "originalRequirementId",
+                                    art.name AS "requirementType",
+                                    CASE
+                                      WHEN oc.original_requirement_id IS NOT NULL THEN TRUE
+                                      ELSE false
+                                    END AS "hasOpenChallenge"
+                                FROM brs.ahj_requirements ar
+                                    LEFT JOIN open_challenge oc ON oc.ahj_id = ar.ahj_id and oc.original_requirement_id = ar.original_requirement_id
+                                    INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
+                                    INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
+                                    INNER JOIN flow."user" u ON u.id = ar.created_by_id
+                                    INNER JOIN flow."user" u2 ON u2.id = ar.updated_by_id
+                                    INNER JOIN brs.ahj_requirement_status ars ON ars.id = ar.status_id
+                                WHERE ar.ahj_id = d.ahj_id
+                                      and art.id = 1
+                                      and ar.status_id = 1
+                                      and ar.archived IS NOT TRUE
+                                ORDER BY ar.position) requirements), '[]') AS electricalRequirements,
+              coalesce((
+                         SELECT array_to_json(array_agg(row_to_json(requirements)))
+                         FROM (
+                                WITH open_challenge AS (
+                                    SELECT ahj_id,
+                                      original_requirement_id,
+                                      status_id
+                                    FROM brs.ahj_requirements ar
+                                    WHERE status_id = 3
+                                )
+                                SELECT ar.ahj_id AS "ahjId",
+                                    ar.position,
+                                    ar.status_id AS "statusId",
+                                    ars.name status,
+                                    ar.complete,
+                                    ar.date_created AS "dateCreated",
+                                    ar.created_by_id AS "createdById",
+                                    u.first_name || ' ' || u.last_name AS "createdBy",
+                                    ar.date_updated AS "dateUpdated",
+                                    ar.updated_by_id AS "updatedById",
+                                    ar.archived,
+                                    u2.first_name || ' ' || u2.last_name AS "updatedBy",
+                                    r.id,
+                                    r.description,
+                                    r.requirement_type_id AS "requirementTypeId",
+                                    ar.original_requirement_id "originalRequirementId",
+                                    art.name AS "requirementType",
+                                    CASE
+                                      WHEN oc.original_requirement_id IS NOT NULL THEN TRUE
+                                      ELSE false
+                                    END AS "hasOpenChallenge"
+                                FROM brs.ahj_requirements ar
+                                    LEFT JOIN open_challenge oc ON oc.ahj_id = ar.ahj_id and oc.original_requirement_id = ar.original_requirement_id
+                                    INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
+                                    INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
+                                    INNER JOIN flow."user" u ON u.id = ar.created_by_id
+                                    INNER JOIN flow."user" u2 ON u2.id = ar.updated_by_id
+                                    INNER JOIN brs.ahj_requirement_status ars ON ars.id = ar.status_id
+                                WHERE ar.ahj_id = d.ahj_id
+                                      and art.id = 2
+                                      and ar.status_id = 1
+                                      and ar.archived IS NOT TRUE
+                                ORDER BY ar.position) requirements), '[]') AS structuralRequirements,
+              coalesce((
+                         SELECT array_to_json(array_agg(row_to_json(requirements)))
+                         FROM (
+                                WITH open_challenge AS (
+                                    SELECT ahj_id,
+                                      original_requirement_id,
+                                      status_id
+                                    FROM brs.ahj_requirements ar
+                                    WHERE status_id = 3
+                                )
+                                SELECT ar.ahj_id AS "ahjId",
+                                    ar.position,
+                                    ar.status_id AS "statusId",
+                                    ars.name status,
+                                    ar.complete,
+                                    ar.date_created AS "dateCreated",
+                                    ar.created_by_id AS "createdById",
+                                    u.first_name || ' ' || u.last_name AS "createdBy",
+                                    ar.date_updated AS "dateUpdated",
+                                    ar.updated_by_id AS "updatedById",
+                                    ar.archived,
+                                    u2.first_name || ' ' || u2.last_name "updatedBy",
+                                    r.id,
+                                    r.description,
+                                    r.requirement_type_id AS "requirementTypeId",
+                                    ar.original_requirement_id AS "originalRequirementId",
+                                    art.name AS "requirementType",
+                                    CASE
+                                      WHEN oc.original_requirement_id IS NOT NULL THEN TRUE
+                                      ELSE false
+                                    END AS "hasOpenChallenge"
+                                FROM brs.ahj_requirements ar
+                                    LEFT JOIN open_challenge oc ON oc.ahj_id = ar.ahj_id and oc.original_requirement_id = ar.original_requirement_id
+                                    INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
+                                    INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
+                                    INNER JOIN flow."user" u ON u.id = ar.created_by_id
+                                    INNER JOIN flow."user" u2 ON u2.id = ar.updated_by_id
+                                    INNER JOIN brs.ahj_requirement_status ars ON ars.id = ar.status_id
+                                WHERE ar.ahj_id = d.ahj_id
+                                      and art.id = 3
+                                      and ar.status_id = 1
+                                      and ar.archived IS NOT TRUE
+                                ORDER BY ar.position) requirements), '[]') AS designRequirements
+            FROM brs.ahj_design d
+            WHERE d.ahj_id = :ahjId;
+        ]]>
+    </ahj.design.detailByAhj>
+    <ahj.design.findById>
+        <![CDATA[
+          SELECT * FROM brs.ahj_design WHERE id = :id
+        ]]>
+    </ahj.design.findById>
+
+    <ahj.design.createBlank>
+        INSERT INTO brs.ahj_design(ahj_id, codes, note) VALUES
+        (:ahjId, null, null)
+        RETURNING id;
+    </ahj.design.createBlank>
+    <ahj.design.create>
+        <![CDATA[
+            INSERT INTO brs.ahj_design (ahj_id, codes, note, reference_standards, electrical_code_id,
+                building_code_id, electrical_engineer_id, structural_engineer_id, stamp_type_id, standard_racking_equipment_id,
+                railless_landscape_attachment_spacing_id, fire_setbacks_id, railless_portrait_attachment_spacing_id,
+                standard_conduit_run_id, warning_labels_id, supplemental_ground_rod_required_id, load_standard_id, wood_standard_id,
+                ground_snow_load, wind_speed, ult_id, seismic_design_category_id, roof_snow_load, roof_snow_load_ahj_override_id,
+                snow_load_reduction_allowed_id, wind_exposure_factor_id, wind_exposure_factor_ahj_override_id, risk_category_id)
+            VALUES (:ahjId, :codes, :note, :referenceStandards, :electricalCodeId, :buildingCodeId, :electricalEngineerId,
+                :structuralEngineerId, :stampTypeId, :standardRackingEquipmentId, :raillessLandscapeAttachmentSpacingId, :fireSetbacksId,
+                :raillessPortraitAttachmentSpacingId, :standardConduitRunId, :warningLabelsId, :supplementalGroundRodRequiredId,
+                :loadStandardId, :woodStandardId, :groundSnowLoad, :windSpeed, :ultId, :seismicDesignCategoryId, :roofSnowLoad,
+                :roofSnowLoadAhjOverrideId, :snowLoadReductionAllowedId, :windExposureFactorId, :windExposureFactorAhjOverrideId, :riskCategoryId)
+        ]]>
+    </ahj.design.create>
+    <ahj.design.update>
+        <![CDATA[
+            UPDATE brs.ahj_design
+            SET ahj_id = :ahjId,
+                codes = :codes,
+                note = :note,
+                reference_standards = :referenceStandards,
+                electrical_code_id = :electricalCodeId,
+                building_code_id = :buildingCodeId,
+                electrical_engineer_id = :electricalEngineerId,
+                structural_engineer_id = :structuralEngineerId,
+                stamp_type_id = :stampTypeId,
+                standard_racking_equipment_id = :standardRackingEquipmentId,
+                railless_landscape_attachment_spacing_id = :raillessLandscapeAttachmentSpacingId,
+                fire_setbacks_id = :fireSetbacksId,
+                railless_portrait_attachment_spacing_id = :raillessPortraitAttachmentSpacingId,
+                standard_conduit_run_id = :standardConduitRunId,
+                warning_labels_id = :warningLabelsId,
+                supplemental_ground_rod_required_id = :supplementalGroundRodRequiredId,
+                load_standard_id = :loadStandardId,
+                wood_standard_id = :woodStandardId,
+                ground_snow_load = :groundSnowLoad,
+                wind_speed = :windSpeed,
+                ult_id = :ultId,
+                seismic_design_category_id = :seismicDesignCategoryId,
+                roof_snow_load = :roofSnowLoad,
+                roof_snow_load_ahj_override_id = :roofSnowLoadAhjOverrideId,
+                snow_load_reduction_allowed_id = :snowLoadReductionAllowedId,
+                wind_exposure_factor_id = :windExposureFactorId,
+                wind_exposure_factor_ahj_override_id = :windExposureFactorAhjOverrideId,
+                risk_category_id = :riskCategoryId,
+                structural_post_install_letter_required_id = :structuralPostInstallLetterRequiredId
+            WHERE id = :id
+        ]]>
+    </ahj.design.update>
+</sql>

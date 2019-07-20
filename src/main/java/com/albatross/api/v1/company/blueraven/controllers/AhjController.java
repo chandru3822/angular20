@@ -18,7 +18,7 @@ public class AhjController {
   @Autowired
   private AhjService ahjService;
 
-  @RequestMapping(value = "/", method = RequestMethod.GET)
+  @RequestMapping(value = "", method = RequestMethod.GET)
   public List<AhjSummary> getAhjList() {
     return ahjService.getAhjList();
   }
@@ -28,14 +28,14 @@ public class AhjController {
     return ahjService.getAhjById(id);
   }
 
-  @RequestMapping(value = "/{userId}", method = RequestMethod.POST)
-  public Optional<AhjSummary> createAhj(@RequestBody AhjSummary ahjSummary, @PathVariable Long userId) {
-    return ahjService.createAhj(ahjSummary, userId);
+  @RequestMapping(value = "", method = RequestMethod.POST)
+  public Optional<AhjSummary> createAhj(@RequestBody AhjSummary ahjSummary) {
+    return ahjService.createAhj(ahjSummary);
   }
 
-  @RequestMapping(value = "/{id}/user/{userId}", method = RequestMethod.PUT)
-  public Optional<AhjSummary> updateAhj(@PathVariable Long id, @PathVariable Long userId, @RequestBody AhjSummary ahj) {
-    return ahjService.saveAhj(id, userId, ahj);
+  @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+  public Optional<AhjSummary> updateAhj(@PathVariable Long id, @RequestBody AhjSummary ahj) {
+    return ahjService.saveAhj(id, ahj);
   }
 
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)

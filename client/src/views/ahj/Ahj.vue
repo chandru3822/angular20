@@ -162,15 +162,9 @@
                     <td>{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
                     <td>{{ ahj.state ? ahj.state : '' }}</td>
                     <td>
-                      <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">
-                        Permit
-                      </router-link>
-                      <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">
-                        Inspection
-                      </router-link>
-                      <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">
-                        Design
-                      </router-link>
+                      <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
+                      <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
+                      <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
                       <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">
                         edit
                       </v-icon>
@@ -285,7 +279,7 @@
     },
     methods: {
       async fetchAhjs () {
-        const {data} = await getRequest('/api/v1/company/blueraven/ahj/')
+        const {data} = await getRequest('/api/v1/company/blueraven/ahj')
         this.ahjs = cloneDeep(data)
       },
       async getActiveMetroAreas () {
@@ -323,9 +317,9 @@
       },
       async saveAhj () {
         if (!this.editedItem.id) {
-          await postRequest(`/api/v1/company/blueraven/ahj/${this.currentUser}`, this.editedItem)
+          await postRequest('/api/v1/company/blueraven/ahj', this.editedItem)
         } else {
-          await putRequest(`/api/v1/company/blueraven/ahj/${this.editedItem.id}/user/${this.currentUser}`, this.editedItem)
+          await putRequest(`/api/v1/company/blueraven/ahj/${this.editedItem.id}`, this.editedItem)
         }
 
         this.close()

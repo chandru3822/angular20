@@ -11,9 +11,9 @@
           <v-layout row nowrap justify-space-between align-center style="width: 100%">
             <div class="page-title">AHJ</div>
             <div class="page-info">
-              <div>{{ testAhj.name }}</div>
-              <div>{{ testAhj.metroArea }}</div>
-              <div>{{ testAhj.state }}</div>
+              <div>{{ ahj.name }}</div>
+              <div>{{ ahj.metroArea }}</div>
+              <div>{{ ahj.state }}</div>
             </div>
           </v-layout>
 
@@ -35,14 +35,13 @@
 </template>
 
 <script>
+  import cloneDeep from 'lodash.clonedeep'
+  import { getRequest } from '@/helpers/helpers'
+
   export default {
     name: 'ahjDetails',
     data: () => ({
-      testAhj: {
-        name: 'Conejos County',
-        metroArea: 'Colorado Springs',
-        state: 'Colorado'
-      }
+      ahj: {}
     }),
     computed: {
       ahjDetailTabs () {
@@ -62,8 +61,10 @@
         ]
       }
     },
-    created () {
-      this.ahjId = this.$route.params.ahjId
+    async created () {
+      this.ahjId = parseInt(this.$route.params.ahjId)
+      const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}`)
+      this.ahj = cloneDeep(data)
     }
   }
 </script>

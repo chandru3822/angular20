@@ -49,7 +49,7 @@
         INNER JOIN flow.state st ON sa.state_id = st.id
       WHERE ahj.name = :name
         AND ahj.metro_area_id = :metroAreaId
-        AND ahj.archived is not true
+        AND ahj.archived IS NOT TRUE
     ]]>
   </ahj.checkForDuplicate>
 
@@ -73,9 +73,9 @@
 
   <ahj.delete>
     <![CDATA[
-      update brs.ahj
+      UPDATE brs.ahj
       SET archived = true
-      where id = :id
+      WHERE id = :id
     ]]>
   </ahj.delete>
 </sql>

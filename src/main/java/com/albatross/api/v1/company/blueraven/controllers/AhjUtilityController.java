@@ -29,7 +29,7 @@ public class AhjUtilityController {
         return ahjUtilityService.getUtilityById(id);
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.POST)
+    @RequestMapping(value = "", method = RequestMethod.POST)
     public Optional<AhjUtilityDetail> createUtility(@RequestBody AhjUtility utility) {
         return ahjUtilityService.updateUtility(utility);
     }
@@ -39,7 +39,7 @@ public class AhjUtilityController {
         return ahjUtilityService.simpleUpdateUtility(utility);
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.PUT)
+    @RequestMapping(value = "", method = RequestMethod.PUT)
     public Optional<AhjUtilityDetail> editUtility(@RequestBody AhjUtility utility) {
         return ahjUtilityService.updateUtility(utility);
     }

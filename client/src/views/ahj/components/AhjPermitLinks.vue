@@ -1,4 +1,4 @@
-<!--suppress CssInvalidPseudoSelector -->
+<!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-permit-links">
   <v-card class="mb-3">
     <v-toolbar class="primaryCustom">
@@ -32,7 +32,7 @@
         </v-btn>
         <v-btn @click="saveLink" color="primaryButton" style="color: #fff !important"
                :disabled="!linkInfoEntered">
-          {{editMode ? 'Update' : 'Add'}}
+          {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
       </div>
     </v-form>
@@ -56,6 +56,8 @@
 </template>
 
 <script>
+  import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+
   export default {
     name: "AhjPermitLinks",
     props: {
@@ -98,42 +100,39 @@
       }
     },
     methods: {
-      resetLinkCtrls() {
+      hideCtrls() {
         this.addMode = false
         this.editMode = false
-        this.$refs.linkForm.reset()
       },
       addLink() {
         this.editMode = false
-        this.addMode = true
+        // this.contact.address = ''
+        // this.contact.email = ''
+        // this.contact.hours = ''
+        // this.contact.name = ''
+        // this.contact.notes = ''
+        // this.contact.phoneNumber = ''
+        // this.contact.title = ''
         this.$refs.linkForm.reset()
+        this.addMode = true
       },
-      editLink(link) {
+      editLink(contact) {
         this.addMode = false
-        this.link = Object.assign({}, link)
+        this.contact = Object.assign({}, contact)
         this.editMode = true
       },
-      deleteLink() {
-        this.links.splice(this.linkEditedIndex, 1)
-        this.editMode = false
-      },
-      saveLink() {
-        if (this.editMode) {
-          Object.assign(this.links[this.linkEditedIndex], this.link)
-          this.editMode = false
-        } else {
-          this.links.push(this.link)
+      async saveLink() {
+        if (this.addMode) {
+          await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links`, this.link)
           this.addMode = false
+        } else {
+          await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`, this.link)
+          this.editMode = false
         }
       },
-      urlRule(url) {
-        if (url && (!url.includes('http://') && !url.includes('https://'))) {
-          this.validUrl = false
-          return 'Valid URL is required'
-        } else {
-          this.validUrl = true
-          return true
-        }
+      async deleteLink() {
+        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`)
+        this.editMode = false
       }
     }
   }

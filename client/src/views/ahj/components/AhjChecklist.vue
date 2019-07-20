@@ -1,8 +1,8 @@
-<!--suppress CssInvalidPseudoSelector -->
+<!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-checklist">
   <v-card>
     <v-toolbar class="primaryCustom">
-      <v-toolbar-title class="white--text font-weight-bold" title="Submission Checklist">
+      <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{title}}
       </v-toolbar-title>
       <v-spacer></v-spacer>
@@ -113,15 +113,15 @@
         this.editMode = true
       },
       async deleteItem() {
-        await deleteRequest(`/api/v1/company/blueraven/ahjPermit/${this.checklistItem.id}`)
+        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit/${this.checklistItem.id}`)
         this.editMode = false
       },
       async saveItem() {
         if (this.addMode) {
-          await postRequest('/api/v1/company/blueraven/ahjPermit/', this.checklistItem)
+          await postRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit`, this.checklistItem)
           this.addMode = false
         } else {
-          await putRequest('/api/v1/company/blueraven/ahjPermit/', this.checklistItem)
+          await putRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit`, this.checklistItem)
           this.editMode = false
         }
       }

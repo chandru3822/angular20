@@ -26,9 +26,8 @@
                       :items="approvalRequiredOptions"
                       v-model="ahjPermit.nemApprovalRequiredTypeId"
             ></v-select>
-            <v-text-field v-model="ahjPermit.depositAmount" type="number"
+            <v-text-field v-model="ahjPermit.depositAmount" filled
                           label="Deposit Amount" prepend-inner-icon="attach_money"
-                          filled step="0.01" min="0.00"
             ></v-text-field>
             <v-select label="Payment Method" :items="submittalMethods" filled
                       v-model="ahjPermit.submissionPaymentTypeId"
@@ -110,8 +109,7 @@
                       v-model="ahjPermit.revisionSubmittalTypeId"
             ></v-select>
             <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
-                          filled type="number" step="0.01" min="0.00"
-                          v-model="ahjPermit.revisionFeeAmount"
+                          filled v-model="ahjPermit.revisionFeeAmount"
             ></v-text-field>
             <v-select label="Payment Method" :items="submittalMethods" filled
                       v-model="ahjPermit.revisionPaymentTypeId"
@@ -142,8 +140,7 @@
                       v-model="ahjPermit.asBuiltSubmittalTypeId"
             ></v-select>
             <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
-                          filled type="number" step="0.01" min="0.00"
-                          v-model="ahjPermit.asBuiltFeeAmount"
+                          filled v-model="ahjPermit.asBuiltFeeAmount"
             ></v-text-field>
             <v-select label="Payment Method" :items="submittalMethods" filled
                       v-model="ahjPermit.asBuiltPaymentTypeId"
@@ -173,8 +170,7 @@
             <v-text-field v-model="ahjPermit.approvalTimeline"
                           label="Approval Timeline" filled></v-text-field>
             <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
-                          filled type="number" step="0.01" min="0.00"
-                          v-model="ahjPermit.followUpFeeAmount"
+                          filled v-model="ahjPermit.followUpFeeAmount"
             ></v-text-field>
             <v-select label="Payment Method" :items="submittalMethods" filled
                       v-model="ahjPermit.followUpPaymentTypeId"
@@ -194,8 +190,7 @@
                       v-model="ahjPermit.deliveryPickupTypeId"
             ></v-select>
             <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
-                          filled type="number" step="0.01" min="0.00"
-                          v-model="ahjPermit.deliveryFeeAmount"
+                          filled v-model="ahjPermit.deliveryFeeAmount"
             ></v-text-field>
             <v-select label="Payment Method" :items="submittalMethods" filled
                       v-model="ahjPermit.deliveryPaymentTypeId"
@@ -303,92 +298,30 @@
       <h1 class="pb-2 mb-4" style="border-bottom: 1px solid #ccc; width: 100%;">Links and Contacts</h1>
       <!-- FIRST COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <AhjPermitLinks
+        <AhjPermitLink
           title="Submission Links"
           :typeId="4"
           :permitId="ahjPermit.id"
           :links="ahjPermit.submissionLinks"
-        ></AhjPermitLinks>
+        ></AhjPermitLink>
 
-        <v-card class="pb-2">
-          <v-toolbar class="primaryCustom mb-2">
-            <v-toolbar-title class="white--text font-weight-bold" title="Submission Contacts">
-              Submission Contacts
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="#ddd" style="border-radius: 3px">
-              <v-icon v-show="!submissionContactAddCtrls" @click="addContact(1)" class="white--text">add</v-icon>
-              <v-icon v-show="submissionContactAddCtrls"
-                      @click="submissionContactAddCtrls=false" class="white--text">remove</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <v-form v-show="submissionContactAddCtrls || submissionContactEditCtrls"
-                  ref="submissionContactForm" class="pa-3">
-            <v-text-field v-model="editedContact.name" required label="Name" filled></v-text-field>
-            <v-text-field v-model="editedContact.title" label="Title" filled></v-text-field>
-            <v-text-field v-model="editedContact.phoneNumber" label="Phone" filled></v-text-field>
-            <v-text-field v-model="editedContact.email" label="Email" type="email" filled></v-text-field>
-            <v-text-field v-model="editedContact.hours" label="Hours" filled></v-text-field>
-            <v-textarea label="Address" auto-grow filled
-                        v-model="editedContact.address">
-            </v-textarea>
-            <v-textarea label="Notes" auto-grow filled
-                        v-model="editedContact.notes">
-            </v-textarea>
-            <div class="link-btns">
-              <a @click="resetContactCtrls(1)"
-                 class="cancel-link">Cancel</a>
-              <v-btn v-show="submissionContactEditCtrls" dark
-                     @click="deleteContact(1)" class="error">
-                Delete
-              </v-btn>
-              <v-btn @click="saveContact(1)" color="primaryButton" class="white--text"
-                     :disabled="!editedContact.name">
-                {{submissionContactEditCtrls ? 'Update' : 'Add'}}
-              </v-btn>
-            </div>
-          </v-form>
-          <div v-for="(contact, index) in ahjPermit.submissionContacts" :key="contact.id"
-               v-show="ahjPermit.submissionContacts.length > 0" class="px-3 pt-1 pb-1">
-            <dl class="horizontal-dl">
-              <dt v-if="contact.name" class="font-weight-bold">Name</dt>
-              <dd v-if="contact.name">{{contact.name}}</dd>
-              <dt v-if="contact.title" class="font-weight-bold">Title</dt>
-              <dd v-if="contact.title">{{contact.title}}</dd>
-              <dt v-if="contact.phoneNumber" class="font-weight-bold">Phone</dt>
-              <dd v-if="contact.phoneNumber">{{contact.phoneNumber}}</dd>
-              <dt v-if="contact.email" class="font-weight-bold">Email</dt>
-              <dd v-if="contact.email">{{contact.email}}</dd>
-              <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
-              <dd v-if="contact.hours">{{contact.hours}}</dd>
-              <dt v-if="contact.address" class="font-weight-bold">Address</dt>
-              <dd v-if="contact.address">{{contact.address}}</dd>
-              <dt v-if="contact.notes"></dt>
-              <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
-              <dt></dt>
-              <dd>
-                <v-btn small color="primaryButton"
-                       @click="editContact(contact, 1)"
-                       class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
-              </dd>
-            </dl>
-            <v-spacer v-if="index !== ahjPermit.submissionContacts.length - 1"
-                      class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
-          </div>
-          <div class="empty-list" v-show="ahjPermit.submissionContacts.length < 1">
-            No contacts found
-          </div>
-        </v-card>
+        <AhjContact
+          title="Submission Contacts"
+          :typeId="1"
+          :permitId="ahjPermit.id"
+          :ahjId="ahjId"
+          :contacts="ahjPermit.submissionContacts"
+        ></AhjContact>
       </v-flex>
 
       <!-- SECOND COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
-        <AhjPermitLinks
+        <AhjPermitLink
           title="Follow-up and Delivery Links"
           :typeId="5"
           :permitId="ahjPermit.id"
           :links="ahjPermit.followUpLinks"
-        ></AhjPermitLinks>
+        ></AhjPermitLink>
 
         <v-card class="pb-2">
           <v-toolbar class="primaryCustom mb-2">
@@ -428,8 +361,8 @@
               </v-btn>
             </div>
           </v-form>
-          <div v-for="(location, index) in printLocations" :key="location.id"
-               v-show="printLocations.length > 0" class="px-3 pt-1 pb-1">
+          <div v-for="(location, index) in ahjPermit.printLocations" :key="location.id"
+               v-show="ahjPermit.printLocations.length > 0" class="px-3 pt-1 pb-1">
             <dl class="horizontal-dl">
               <dt v-if="location.storeName" class="font-weight-bold">Store Name</dt>
               <dd v-if="location.storeName">{{location.storeName}}</dd>
@@ -452,10 +385,10 @@
                        class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
               </dd>
             </dl>
-            <v-spacer v-if="index !== printLocations.length - 1"
+            <v-spacer v-if="index !== ahjPermit.printLocations.length - 1"
                       class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
           </div>
-          <div class="empty-list" v-show="printLocations.length < 1">
+          <div class="empty-list" v-show="ahjPermit.printLocations.length < 1">
             No locations found
           </div>
         </v-card>
@@ -469,7 +402,7 @@
               Servicing FOT's
             </v-toolbar-title>
           </v-toolbar>
-          <v-list v-show="servicingFots.length > 0" v-for="fot in servicingFots"
+          <v-list v-show="ahjPermit.servicingFots.length > 0" v-for="fot in ahjPermit.servicingFots"
                   :key="fot.officeId" class="px-2">
             <v-list-item :title="fot.office">
               <v-list-item-content class="flex-row-center">
@@ -479,80 +412,18 @@
               </v-list-item-content>
             </v-list-item>
           </v-list>
-          <div class="empty-list" v-show="servicingFots.length < 1">
+          <div class="empty-list" v-show="ahjPermit.servicingFots.length < 1">
             No Servicing FOT's found
           </div>
         </v-card>
 
-        <v-card class="pb-2">
-          <v-toolbar class="primaryCustom mb-2">
-            <v-toolbar-title class="white--text font-weight-bold" title="Follow-up and Delivery Contacts">
-              Follow-up and Delivery Contacts
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="#ddd" style="border-radius: 3px">
-              <v-icon v-show="!followUpContactAddCtrls" @click="addContact(2)" class="white--text">add</v-icon>
-              <v-icon v-show="followUpContactAddCtrls"
-                      @click="followUpContactAddCtrls=false" class="white--text">remove</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <v-form v-show="followUpContactAddCtrls || followUpContactEditCtrls"
-                  ref="followUpContactForm" class="pa-3">
-            <v-text-field v-model="editedContact.name" required label="Name" filled></v-text-field>
-            <v-text-field v-model="editedContact.title" label="Title" filled></v-text-field>
-            <v-text-field v-model="editedContact.phoneNumber" label="Phone" filled></v-text-field>
-            <v-text-field v-model="editedContact.email" label="Email" type="email" filled></v-text-field>
-            <v-text-field v-model="editedContact.hours" label="Hours" filled></v-text-field>
-            <v-textarea label="Address" auto-grow filled
-                        v-model="editedContact.address">
-            </v-textarea>
-            <v-textarea label="Notes" auto-grow filled
-                        v-model="editedContact.notes">
-            </v-textarea>
-            <div class="link-btns">
-              <a @click="resetContactCtrls(2)"
-                 class="cancel-link">Cancel</a>
-              <v-btn v-show="followUpContactEditCtrls" dark
-                     @click="deleteContact(2)" class="error">
-                Delete
-              </v-btn>
-              <v-btn @click="saveContact(2)" color="primaryButton" class="white--text"
-                     :disabled="!editedContact.name">
-                {{followUpContactEditCtrls ? 'Update' : 'Add'}}
-              </v-btn>
-            </div>
-          </v-form>
-          <div v-for="(contact, index) in followUpContacts" :key="contact.id"
-               v-show="followUpContacts.length > 0" class="px-3 pt-1 pb-1">
-            <dl class="horizontal-dl">
-              <dt v-if="contact.name" class="font-weight-bold">Name</dt>
-              <dd v-if="contact.name">{{contact.name}}</dd>
-              <dt v-if="contact.title" class="font-weight-bold">Title</dt>
-              <dd v-if="contact.title">{{contact.title}}</dd>
-              <dt v-if="contact.phoneNumber" class="font-weight-bold">Phone</dt>
-              <dd v-if="contact.phoneNumber">{{contact.phoneNumber}}</dd>
-              <dt v-if="contact.email" class="font-weight-bold">Email</dt>
-              <dd v-if="contact.email">{{contact.email}}</dd>
-              <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
-              <dd v-if="contact.hours">{{contact.hours}}</dd>
-              <dt v-if="contact.address" class="font-weight-bold">Address</dt>
-              <dd v-if="contact.address">{{contact.address}}</dd>
-              <dt v-if="contact.notes"></dt>
-              <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
-              <dt></dt>
-              <dd>
-                <v-btn small color="primaryButton"
-                       @click="editContact(contact, 2)"
-                       class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
-              </dd>
-            </dl>
-            <v-spacer v-if="index !== followUpContacts.length - 1"
-                      class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
-          </div>
-          <div class="empty-list" v-show="followUpContacts.length < 1">
-            No contacts found
-          </div>
-        </v-card>
+        <AhjContact
+          title="Follow-up and Delivery Contacts"
+          :typeId="1"
+          :permitId="ahjPermit.id"
+          :ahjId="ahjId"
+          :contacts="ahjPermit.followUpContacts"
+        ></AhjContact>
       </v-flex>
     </v-layout>
 
@@ -561,17 +432,18 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import max from 'lodash.max'
   import moment from 'moment'
   import AhjChecklist from './components/AhjChecklist.vue'
-  import AhjPermitLinks from './components/AhjPermitLinks.vue'
+  import AhjContact from './components/AhjContacts.vue'
+  import AhjPermitLink from './components/AhjPermitLinks.vue'
   import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
   export default {
     name: 'ahjPermit',
     components: {
       AhjChecklist,
-      AhjPermitLinks
+      AhjContact,
+      AhjPermitLink
     },
     data: () => ({
       submittalMethods: ['', 'Online', 'In-person', 'Other'],
@@ -626,278 +498,13 @@
       contractorLicenseMenu: false,
       otherLicenseMenu: false,
       ahjPermit: {
-        approvalTimeline: null,
-        asBuiltChecklist: [
-          // {
-          //   id: 1,
-          //   type: 3,
-          //   details: 'Do something'
-          // },
-          // {
-          //   id: 2,
-          //   type: 3,
-          //   details: 'Do something else'
-          // },
-          // {
-          //   id: 3,
-          //   type: 3,
-          //   details: 'Coming up with test data is hard sometimes'
-          // }
-        ],
-        asBuiltFeeAmount: null,
-        asBuiltNote: null,
-        asBuiltPaymentTypeId: null,
-        asBuiltPaymentTypeOther: null,
-        asBuiltSubmittalTypeId: null,
-        asBuiltSubmittalTypeOther: null,
-        averagePermitFee: null,
-        businessLicense: null,
-        businessLicenseExpirationDate: null,
-        contractorLicense: null,
-        contractorLicenseExpirationDate: null,
-        deliveryFeeAmount: null,
-        deliveryNote: null,
-        deliveryPaymentTypeId: null,
-        deliveryPaymentTypeOther: null,
-        deliveryPickupTypeId: null,
-        deliveryPickupTypeOther: null,
-        depositAmount: null,
-        documentsAvailable: null,
-        engineeringLetterRequired: null,
-        followUpContacts: [],
-        followUpFeeAmount: null,
-        followUpLinks: [
-          // {
-          //   id: 1,
-          //   type: 5,
-          //   name: 'Outlook',
-          //   url: 'https://www.outlook.com/',
-          //   username: 'Username',
-          //   password: 'Password',
-          //   notes: 'Testing again'
-          // },
-          // {
-          //   id: 2,
-          //   type: 5,
-          //   name: 'Google',
-          //   url: 'https://www.google.com/',
-          //   username: 'Username',
-          //   password: 'Password',
-          //   notes: 'Testing'
-          // }
-        ],
-        followUpPaymentTypeId: null,
-        followUpPaymentTypeOther: null,
-        hoaApprovalRequiredTypeId: null,
-        hoaApprovalRequiredTypeOther: null,
-        id: null,
-        nemApprovalRequiredTypeId: null,
-        nemApprovalRequiredTypeOther: null,
-        notes: [],
-        otherLicense: null,
-        otherLicenseExpirationDate: null,
-        paymentMethod: null,
-        printLocation: null,
         printLocations: [],
-        revisionChecklist: [],
-        revisionFeeAmount: null,
-        revisionNote: null,
-        revisionPaymentTypeId: null,
-        revisionPaymentTypeOther: null,
-        revisionSubmittalTypeId: null,
-        revisionSubmittalTypeOther: null,
-        servicingFots: [],
-        stampedPlan: null,
-        submissionChecklist: [
-          // {
-          //   id: 1,
-          //   type: 3,
-          //   details: 'Do something'
-          // },
-          // {
-          //   id: 2,
-          //   type: 3,
-          //   details: 'Do something else'
-          // },
-          // {
-          //   id: 3,
-          //   type: 3,
-          //   details: 'Coming up with test data is hard sometimes'
-          // }
-        ],
-        submissionContacts: [],
-        submissionLinks: [
-          // {
-          //   id: 1,
-          //   type: 4,
-          //   name: 'Google',
-          //   url: 'https://www.google.com/',
-          //   username: 'Username',
-          //   password: 'Password',
-          //   notes: 'Testing'
-          // },
-          // {
-          //   id: 2,
-          //   type: 4,
-          //   name: 'Outlook',
-          //   url: 'https://www.outlook.com/',
-          //   username: 'Username',
-          //   password: 'Password',
-          //   notes: 'Testing again'
-          // }
-        ],
-        submissionNote: null,
-        submissionPaymentTypeId: null,
-        submissionPaymentTypeOther: null,
-        submittalTypeId: null,
-        submittalTypeOther: null
+        servicingFots: []
       },
-      documents: [
-        // {
-        //   id: 1,
-        //   name: 'instructions.txt'
-        // },
-        // {
-        //   id: 2,
-        //   name: 'importantDocument.docx'
-        // }
-      ],
-      servicingFots: [
-        // {
-        //   id: 1,
-        //   firstName: 'Test',
-        //   lastName: 'Guy 1',
-        //   fullName: 'Test Guy 1',
-        //   office: 'Test Office 1',
-        //   officeId: 1
-        // },
-        // {
-        //   id: 2,
-        //   firstName: 'Test',
-        //   lastName: 'Guy 2',
-        //   fullName: 'Test Guy 2',
-        //   office: 'Test Office 2',
-        //   officeId: 2
-        // },
-        // {
-        //   id: 3,
-        //   firstName: 'Test',
-        //   lastName: 'Guy 3',
-        //   fullName: 'Test Guy 3',
-        //   office: 'Test Office 3',
-        //   officeId: 3
-        // }
-      ],
-      submissionContactAddCtrls: false,
-      submissionContactEditCtrls: false,
-      followUpContactAddCtrls: false,
-      followUpContactEditCtrls: false,
-      contactEditedIndex: -1,
-      editedContact: {
-        id: '',
-        type: '',
-        name: '',
-        title: '',
-        phoneNumber: '',
-        email: '',
-        hours: '',
-        address: '',
-        notes: ''
-      },
-      submissionContacts: [
-        // {
-        //   id: 1,
-        //   type: 1,
-        //   name: 'Bob',
-        //   title: 'Store Manager',
-        //   phoneNumber: '111-111-1111',
-        //   email: 'bob@test.com',
-        //   hours: 'M-F 8am-4pm',
-        //   address: '111 Test St, Indianapolis, IN 11111',
-        //   notes: 'Testing'
-        // },
-        // {
-        //   id: 2,
-        //   type: 1,
-        //   name: 'Sarah',
-        //   title: 'Store Manager',
-        //   phoneNumber: '222-222-2222',
-        //   email: 'sarah@test.com',
-        //   hours: 'M-F 9am-5pm',
-        //   address: '222 Test St, Indianapolis, IN 22222',
-        //   notes: 'More testing'
-        // }
-      ],
-      followUpContacts: [
-        // {
-        //   id: 1,
-        //   type: 2,
-        //   name: 'John',
-        //   title: 'FedEx Delivery Truck Driver',
-        //   phoneNumber: '333-333-3333',
-        //   email: 'john@test.com',
-        //   hours: 'M-F 9am-5pm',
-        //   address: '333 Test Ave, New York City, NY 33333',
-        //   notes: 'Another test'
-        // },
-        // {
-        //   id: 2,
-        //   type: 2,
-        //   name: 'Jacob',
-        //   title: 'Professional Mover',
-        //   phoneNumber: '444-444-4444',
-        //   email: 'jacob@test.com',
-        //   hours: 'M-F 8am-4pm',
-        //   address: '444 Test Rd, Seattle, WA 99999',
-        //   notes: 'Testing some more'
-        // },
-        // {
-        //   id: 3,
-        //   type: 2,
-        //   name: 'Scott',
-        //   title: 'Test Contact',
-        //   phoneNumber: '555-555-5555',
-        //   email: 'scott@test.com',
-        //   hours: 'M-F 10am-6pm',
-        //   address: '555 Test Pl, Redmond, WA 88888',
-        //   notes: 'Doing more testing'
-        // }
-      ],
+      documents: [],
       printLocationAddCtrls: false,
       printLocationEditCtrls: false,
-      printLocationEditedIndex: -1,
-      editedPrintLocation: {
-        id: '',
-        storeName: '',
-        storeNumber: '',
-        phone: '',
-        email: '',
-        hours: '',
-        address: '',
-        notes: ''
-      },
-      printLocations: [
-        // {
-        //   id: 1,
-        //   storeName: 'Alphagraphics',
-        //   storeNumber: '111',
-        //   phone: '111-111-1111',
-        //   email: 'alphagraphics@test.com',
-        //   hours: 'M-F 10am-7pm',
-        //   address: '111 Test Ave, Seattle, WA 99999',
-        //   notes: 'Testing'
-        // },
-        // {
-        //   id: 2,
-        //   storeName: 'Zippy\'s Quick Ship \'N Copy',
-        //   storeNumber: '222',
-        //   phone: '222-222-2222',
-        //   email: 'zippys@test.com',
-        //   hours: 'M-F 9am-5pm',
-        //   address: '222 Test St, Indianapolis, IN 22222',
-        //   notes: 'More testing'
-        // }
-      ]
+      editedPrintLocation: []
     }),
     methods: {
       resetForm() {
@@ -948,147 +555,14 @@
             break
         }
       },
-      resetContactCtrls(type) {
-        switch (type) {
-          case 1:
-            this.submissionContactAddCtrls = false
-            this.submissionContactEditCtrls = false
-            this.$refs.submissionContactForm.reset()
-            break
-          case 2:
-            this.followUpContactAddCtrls = false
-            this.followUpContactEditCtrls = false
-            this.$refs.followUpContactForm.reset()
-            break
-        }
-      },
-      addContact(type) {
-        this.submissionContactEditCtrls = false
-        this.followUpContactEditCtrls = false
-
-        switch (type) {
-          case 1:
-            this.submissionContactAddCtrls = true
-            this.followUpContactAddCtrls = false
-            this.$refs.submissionContactForm.reset()
-            break
-          case 2:
-            this.submissionContactAddCtrls = false
-            this.followUpContactAddCtrls = true
-            this.$refs.followUpContactForm.reset()
-        }
-      },
-      editContact(contact, type) {
-        this.submissionContactAddCtrls = false
-        this.followUpContactAddCtrls = false
-
-        switch (type) {
-          case 1:
-            this.submissionContactEditCtrls = true
-            this.followUpContactEditCtrls = false
-            this.contactEditedIndex = this.submissionContacts.indexOf(contact)
-            break
-          case 2:
-            this.submissionContactEditCtrls = false
-            this.followUpContactEditCtrls = true
-            this.contactEditedIndex = this.followUpContacts.indexOf(contact)
-            break
-        }
-        this.editedContact = Object.assign({}, contact)
-        this.editedContact.type = type
-      },
-      deleteContact(type) {
-        switch (type) {
-          case 1:
-            this.submissionContacts.splice(this.contactEditedIndex, 1)
-            this.submissionContactEditCtrls = false
-            break
-          case 2:
-            this.followUpContacts.splice(this.contactEditedIndex, 1)
-            this.followUpContactEditCtrls = false
-            break
-        }
-      },
-      saveContact(type) {
-        switch (type) {
-          case 1:
-            if (this.contactEditedIndex > -1) {
-              Object.assign(this.submissionContacts[this.contactEditedIndex], this.editedContact)
-              this.submissionContactEditCtrls = false
-            } else {
-              if (this.submissionContacts.length > 0) {
-                let idsArray = []
-                this.submissionContacts.forEach(item => idsArray.push(item.id))
-                this.editedContact.id = max(idsArray) + 1
-              } else {
-                this.editedContact.id = 1
-              }
-              this.submissionContacts.push(this.editedContact)
-              this.submissionContactAddCtrls = false
-            }
-            break
-          case 2:
-            if (this.contactEditedIndex > -1) {
-              Object.assign(this.followUpContacts[this.contactEditedIndex], this.editedContact)
-              this.followUpContactEditCtrls = false
-            } else {
-              if (this.followUpContacts.length > 0) {
-                let idsArray = []
-                this.followUpContacts.forEach(item => idsArray.push(item.id))
-                this.editedContact.id = max(idsArray) + 1
-              } else {
-                this.editedContact.id = 1
-              }
-              this.followUpContacts.push(this.editedContact)
-              this.followUpContactAddCtrls = false
-            }
-            break
-        }
-      },
-      resetPrintLocationCtrls() {
-        this.printLocationAddCtrls = false
-        this.printLocationEditCtrls = false
-        this.$refs.printLocationForm.reset()
-      },
-      addPrintLocation() {
-        this.printLocationEditCtrls = false
-        this.printLocationAddCtrls = true
-        this.$refs.printLocationForm.reset()
-      },
-      editPrintLocation(location) {
-        this.printLocationAddCtrls = false
-        this.printLocationEditCtrls = true
-        this.printLocationEditedIndex = this.printLocations.indexOf(location)
-        this.editedPrintLocation = Object.assign({}, location)
-      },
-      deletePrintLocation() {
-        this.printLocations.splice(this.printLocationEditedIndex, 1)
-        this.printLocationEditCtrls = false
-      },
-      savePrintLocation() {
-        if (this.printLocationEditedIndex > -1) {
-          Object.assign(this.printLocations[this.printLocationEditedIndex], this.editedPrintLocation)
-          this.printLocationEditCtrls = false
-        } else {
-          if (this.printLocations.length > 0) {
-            let idsArray = []
-            this.printLocations.forEach(item => idsArray.push(item.id))
-            this.editedPrintLocation.id = max(idsArray) + 1
-          } else {
-            this.editedPrintLocation.id = 1
-          }
-          this.printLocations.push(this.editedPrintLocation)
-          this.printLocationAddCtrls = false
-        }
-      },
       saveAhjPermit() {
         console.log("Saving AHJ Permit...")
         console.log("AHJ Permit:", this.ahjPermit)
       }
     },
     async created () {
-      let ahjId = parseInt(this.$route.params.ahjId)
-      const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${ahjId}/permit/`)
+      this.ahjId = parseInt(this.$route.params.ahjId)
+      const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit`)
       this.ahjPermit = cloneDeep(data)
       console.log("AHJ Permit:", this.ahjPermit)
     }

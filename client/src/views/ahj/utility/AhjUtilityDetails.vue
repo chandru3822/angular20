@@ -11,8 +11,8 @@
           <v-layout row nowrap justify-space-between align-center style="width: 100%">
             <div class="page-title">Utility</div>
             <div class="page-info">
-              <div>{{ testAhj.name }}</div>
-              <div>{{ testAhj.metroArea }}, {{ testAhj.state }}</div>
+              <div>{{ ahjUtility.name }}</div>
+              <div>{{ ahjUtility.metroArea }}, {{ ahjUtility.state }}</div>
             </div>
           </v-layout>
 
@@ -32,17 +32,19 @@
 </template>
 
 <script>
+  import cloneDeep from 'lodash.clonedeep'
+  import { getRequest } from '@/helpers/helpers'
+
   export default {
     name: 'ahjUtilityDetails',
     data: () => ({
-      testAhj: {
-        name: 'AEP Ohio',
-        metroArea: 'Columbus',
-        state: 'OH'
-      }
+      ahjUtility: {}
     }),
-    created () {
-      this.ahjUtilityId = this.$route.params.ahjUtilityId
+    async created () {
+      this.ahjUtilityId = parseInt(this.$route.params.ahjUtilityId)
+      const {data} = await getRequest(`/api/v1/company/blueraven/ahjUtility/${this.ahjUtilityId}`)
+      this.ahjUtility = cloneDeep(data)
+      console.log("AHJ Utility:", this.ahjUtility)
     }
   }
 </script>

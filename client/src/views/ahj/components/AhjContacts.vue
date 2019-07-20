@@ -1,0 +1,190 @@
+<!-- suppress CssInvalidPseudoSelector -->
+<template id="ahj-contacts">
+  <v-card class="pb-2">
+    <v-toolbar class="primaryCustom mb-2">
+      <v-toolbar-title class="white--text font-weight-bold" :title="title">
+        {{title}}
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn icon color="#ddd" style="border-radius: 3px">
+        <v-icon v-show="!addMode" @click="addContact" class="white--text">add</v-icon>
+        <v-icon v-show="addMode"
+                @click="addMode=false" class="white--text">remove</v-icon>
+      </v-btn>
+    </v-toolbar>
+    <v-form v-show="addMode || editMode"
+            ref="contactForm" class="pa-3">
+      <v-text-field v-model="contact.name" required label="Name" filled></v-text-field>
+      <v-text-field v-model="contact.title" label="Title" filled></v-text-field>
+      <v-text-field v-model="contact.phoneNumber" label="Phone" filled></v-text-field>
+      <v-text-field v-model="contact.email" label="Email" type="email" filled></v-text-field>
+      <v-text-field v-model="contact.hours" label="Hours" filled></v-text-field>
+      <v-textarea label="Address" auto-grow filled
+                  v-model="contact.address">
+      </v-textarea>
+      <v-textarea label="Notes" auto-grow filled
+                  v-model="contact.notes">
+      </v-textarea>
+      <div class="contact-btns">
+        <a @click="hideCtrls"
+           class="cancel-link">Cancel</a>
+        <v-btn v-show="editMode" dark
+               @click="deleteContact" class="error">
+          Delete
+        </v-btn>
+        <v-btn @click="saveContact" color="primaryButton" class="white--text"
+               :disabled="!contact.name">
+          {{ addMode ? 'Add' : 'Update' }}
+        </v-btn>
+      </div>
+    </v-form>
+    <div v-for="(contact, index) in contacts" :key="contact.id"
+         v-show="contacts.length > 0" class="px-3 pt-1 pb-1">
+      <dl class="horizontal-dl">
+        <dt v-if="contact.name" class="font-weight-bold">Name</dt>
+        <dd v-if="contact.name">{{contact.name}}</dd>
+        <dt v-if="contact.title" class="font-weight-bold">Title</dt>
+        <dd v-if="contact.title">{{contact.title}}</dd>
+        <dt v-if="contact.phoneNumber" class="font-weight-bold">Phone</dt>
+        <dd v-if="contact.phoneNumber">{{contact.phoneNumber}}</dd>
+        <dt v-if="contact.email" class="font-weight-bold">Email</dt>
+        <dd v-if="contact.email">{{contact.email}}</dd>
+        <dt v-if="contact.hours" class="font-weight-bold">Hours</dt>
+        <dd v-if="contact.hours">{{contact.hours}}</dd>
+        <dt v-if="contact.address" class="font-weight-bold">Address</dt>
+        <dd v-if="contact.address">{{contact.address}}</dd>
+        <dt v-if="contact.notes"></dt>
+        <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
+        <dt></dt>
+        <dd>
+          <v-btn small color="primaryButton"
+                 @click="editContact(contact)"
+                 class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
+        </dd>
+      </dl>
+      <v-spacer v-if="index !== contacts.length - 1"
+                class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
+    </div>
+    <div class="empty-list" v-show="contacts.length < 1">
+      No contacts found
+    </div>
+  </v-card>
+</template>
+
+<script>
+  import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+
+  export default {
+    name: "AhjContact",
+    props: {
+      title: {
+        type: String,
+        default: null
+      },
+      typeId: {
+        type: Number,
+        default: null
+      },
+      permitId: {
+        type: Number,
+        default: null
+      },
+      ahjId: {
+        type: Number,
+        default: null
+      },
+      contacts: {
+        type: Array,
+        default: null
+      }
+    },
+    data () {
+      return {
+        contact: {
+          id: null,
+          address: null,
+          contactTypeId: null,
+          email: null,
+          hours: null,
+          name: null,
+          notes: null,
+          phoneNumber: null,
+          title: null
+        },
+        addMode: false,
+        editMode: false
+      }
+    },
+    methods: {
+      hideCtrls() {
+        this.addMode = false
+        this.editMode = false
+      },
+      addContact() {
+        this.editMode = false
+        // this.contact.address = ''
+        // this.contact.email = ''
+        // this.contact.hours = ''
+        // this.contact.name = ''
+        // this.contact.notes = ''
+        // this.contact.phoneNumber = ''
+        // this.contact.title = ''
+        this.$refs.contactForm.reset()
+        this.addMode = true
+      },
+      editContact(contact) {
+        this.addMode = false
+        this.contact = Object.assign({}, contact)
+        this.editMode = true
+      },
+      async saveContact() {
+        if (this.addMode) {
+          await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts`, this.contact)
+          this.addMode = false
+        } else {
+          await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`, this.contact)
+          this.editMode = false
+        }
+      },
+      async deleteContact() {
+        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`)
+        this.editMode = false
+      }
+    }
+  }
+</script>
+
+<style scoped lang="scss">
+  .cancel-link {
+    font-size: 0.85em !important;
+    text-decoration: none;
+  }
+  .cancel-link:hover {
+    text-decoration: underline;
+  }
+  .v-card__title,
+  .v-toolbar__title {
+    font-size: 1em !important;
+  }
+  .v-text-field,
+  .v-input ::v-deep label {
+    font-size: 0.95em !important;
+  }
+  .v-list-item__action {
+    margin: 0 !important;
+    max-width: 24px;
+  }
+  .contact-btns {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    button {
+      margin: 0 0 0 7px;
+    }
+  }
+  .empty-list {
+    padding: 20px;
+    font-size: 0.95em;
+  }
+</style>

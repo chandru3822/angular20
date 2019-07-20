@@ -1,6 +1,9 @@
 package com.albatross.api.v1.company.blueraven.services;
 
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.v1.company.blueraven.enums.AhjType;
 import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.flow.model.User;
 
 import com.albatross.api.utils.SqlCache;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,21 +22,39 @@ import java.util.Optional;
 public class AhjService {
   @Autowired
   private SqlCache sqlCache;
+
+  @Autowired
   private ObjectMapper om;
+
+  @Autowired
+  private SecurityService securityService;
+
+  @Autowired
+  private AhjPermitService ahjPermitService;
+
+  @Autowired
+  private AhjInspectionService ahjInspectionService;
+
+  @Autowired
+  private AhjDesignService ahjDesignService;
+
+  @Autowired
+  private AhjUtilityService ahjUtilityService;
 
   public List<AhjSummary> getAhjList() {
     return sqlCache.query("ahj.list", new HashMap<>(), AhjSummary.class);
   }
 
   @Transactional
-  public Optional<AhjSummary> createAhj(AhjSummary ahjSummary, Long userId) {
-    return saveAhj(ahjSummary.getId(), userId, ahjSummary);
+  public Optional<AhjSummary> createAhj(AhjSummary ahjSummary) {
+    return saveAhj(ahjSummary.getId(), ahjSummary);
   }
 
   @Transactional
-  public Optional<AhjSummary> saveAhj(Long id, Long userId, AhjSummary ahjSummary) {
+  public Optional<AhjSummary> saveAhj(Long id, AhjSummary ahjSummary) {
+    User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUser", userId);
+    params.put("currentUser", currentUser.getId());
     params.put("name", ahjSummary.getName());
     params.put("metroAreaId", ahjSummary.getMetroAreaId());
 
@@ -43,9 +64,9 @@ public class AhjService {
       if (!ahj.isPresent()) {
         id = sqlCache.updateReturningId("ahj.create", params, "id").longValue();
 
-        //create an empty permit and inspection tied to the ahj - only required for new
-//        createAhjPermit(id, userId, new AhjPermit());
-//        createAhjInspection(id, userId, new AhjInspection());
+        // create an empty permit and inspection tied to the ahj - only required for new
+        ahjPermitService.createAhjPermit(id, new AhjPermit());
+        ahjInspectionService.createAhjInspection(id, new AhjInspection());
       } else {
         return Optional.empty();
       }
@@ -70,5 +91,65 @@ public class AhjService {
     params.put("id", id);
 
     return sqlCache.get("ahj.findById", params, AhjSummary.class);
+  }
+
+  // CONTACTS
+  public Optional<AhjContact> getAhjContactById(Long contactId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", contactId);
+
+    return sqlCache.get("ahj.contact.findById", params, AhjContact.class);
+  }
+
+  @Transactional
+  public Optional<AhjContact> createAhjContact(Long ahjId, AhjContact contact, AhjType ahjType) {
+    return saveAhjContact(ahjId, null, contact, ahjType);
+  }
+
+  @Transactional
+  public Optional<AhjContact> saveAhjContact(Long id, Long contactId, AhjContact contact, AhjType ahjType) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUser", currentUser.getId());
+    params.put("name", contact.getName());
+    params.put("title", contact.getTitle());
+    params.put("email", contact.getEmail());
+    params.put("phoneNumber", contact.getPhoneNumber());
+    params.put("address", contact.getAddress());
+    params.put("notes", contact.getNotes());
+    params.put("hours", contact.getHours());
+    params.put("contactTypeId", contact.getContactTypeId());
+
+    if (contactId == null) {
+
+      contactId = sqlCache.updateReturningId("ahj.contact.create", params, "id").longValue();
+
+      if (AhjType.PERMIT.equals(ahjType)) {
+        ahjPermitService.savePermitContact(id, contactId);
+      } else if (AhjType.INSPECTION.equals(ahjType)) {
+        ahjInspectionService.saveInspectionContact(id, contactId);
+      } else if (AhjType.DESIGN.equals(ahjType)){
+        ahjDesignService.saveDesignContact(id, contactId);
+      } else {
+        ahjUtilityService.saveUtilityContact(id, contactId);
+      }
+
+    } else {
+      params.put("contactId", contactId);
+      sqlCache.update("ahj.contact.update", params);
+    }
+
+    return getAhjContactById(contactId);
+  }
+
+  public void deleteAhjContact(Long id, Long contactId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    params.put("currentUser", currentUser.getId());
+
+    sqlCache.update("ahj.contact.delete", params);
   }
 }

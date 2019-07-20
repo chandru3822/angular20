@@ -89,192 +89,194 @@
     ]]>
   </ahj.utility.insert>
 
-<!--  <ahj.utility.detailById>-->
-<!--    <![CDATA[-->
-<!--      SELECT-->
-<!--        u.*,-->
-<!--        ma.metro_area,-->
-<!--        s.id AS state_id,-->
-<!--        s.abbreviation AS state,-->
-<!--        coalesce((-->
-<!--          SELECT array_to_json(array_agg(row_to_json(contacts)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              c.id,-->
-<!--              c.name,-->
-<!--              c.title,-->
-<!--              c.email,-->
-<!--              c.phone_number AS "phoneNumber",-->
-<!--              c.address,-->
-<!--              c.notes,-->
-<!--              c.hours-->
-<!--            FROM brs.ahj_contact c-->
-<!--              INNER JOIN brs.ahj_utility_contact auc ON c.id = auc.ahj_contact_id-->
-<!--            WHERE auc.ahj_utility_id = u.id AND c.archived IS FALSE AND c.contact_type_id = 8-->
-<!--          ) contacts), '[]') AS contacts,-->
-<!--        coalesce((-->
-<!--          SELECT array_to_json(array_agg(row_to_json(checklist)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              ac.id,-->
-<!--              ac.description,-->
-<!--              ac.display_order AS "displayOrder"-->
-<!--            FROM brs.ahj_checklist ac-->
-<!--              INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id-->
-<!--            WHERE ac.archived IS FALSE-->
-<!--              AND ac.checklist_type_id = 4-->
-<!--              AND auc.ahj_utility_id = u.id-->
-<!--            ORDER BY ac.display_order-->
-<!--          ) checklist), '[]') AS submission_checklist,-->
-<!--        coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              ac.id,-->
-<!--              ac.description,-->
-<!--              ac.display_order AS "displayOrder"-->
-<!--            FROM brs.ahj_checklist ac-->
-<!--              INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id-->
-<!--            WHERE ac.archived IS FALSE-->
-<!--              AND ac.checklist_type_id = 5-->
-<!--              AND auc.ahj_utility_id = u.id-->
-<!--            ORDER BY ac.display_order) checklist-->
-<!--          ), '[]') AS approval_checklist,-->
-<!--        coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              ac.id,-->
-<!--              ac.description,-->
-<!--              ac.display_order AS "displayOrder"-->
-<!--            FROM brs.ahj_checklist ac-->
-<!--              INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id-->
-<!--            WHERE ac.archived IS FALSE-->
-<!--              AND ac.checklist_type_id = 6-->
-<!--              AND auc.ahj_utility_id = u.id-->
-<!--            ORDER BY ac.display_order) checklist-->
-<!--          ), '[]') AS pto_checklist,-->
-<!--        coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              ac.id,-->
-<!--              ac.description,-->
-<!--              ac.display_order AS "displayOrder"-->
-<!--            FROM brs.ahj_checklist ac-->
-<!--              INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id-->
-<!--            WHERE ac.archived IS FALSE-->
-<!--              AND ac.checklist_type_id = 7-->
-<!--              AND auc.ahj_utility_id = u.id-->
-<!--            ORDER BY ac.display_order) checklist-->
-<!--          ), '[]') AS utility_inspection_checklist,-->
-<!--        coalesce((-->
-<!--          SELECT array_to_json(array_agg(row_to_json(links)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              apl.id,-->
-<!--              apl.name,-->
-<!--              apl.link,-->
-<!--              apl.username,-->
-<!--              apl.link_type_id AS "linkTypeId",-->
-<!--              apl.password,-->
-<!--              apl.notes-->
-<!--            FROM brs.ahj_utility_link apl-->
-<!--            WHERE apl.archived IS FALSE-->
-<!--              AND apl.link_type_id = 6-->
-<!--              AND apl.ahj_utility_id = u.id) links-->
-<!--          ), '[]') AS customer_signature_links,-->
-<!--        coalesce((-->
-<!--          SELECT array_to_json(array_agg(row_to_json(links)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              apl.id,-->
-<!--              apl.name,-->
-<!--              apl.link,-->
-<!--              apl.username,-->
-<!--              apl.link_type_id AS "linkTypeId",-->
-<!--              apl.password,-->
-<!--              apl.notes-->
-<!--            FROM brs.ahj_utility_link apl-->
-<!--            WHERE apl.archived IS FALSE-->
-<!--              AND apl.link_type_id = 7-->
-<!--              AND apl.ahj_utility_id = u.id) links-->
-<!--          ), '[]') AS pto_links,-->
-<!--        coalesce((-->
-<!--          SELECT array_to_json(array_agg(row_to_json(links)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              apl.id,-->
-<!--              apl.name,-->
-<!--              apl.link,-->
-<!--              apl.username,-->
-<!--              apl.link_type_id AS "linkTypeId",-->
-<!--              apl.password,-->
-<!--              apl.notes-->
-<!--            FROM brs.ahj_utility_link apl-->
-<!--            WHERE apl.archived IS FALSE-->
-<!--              AND apl.link_type_id = 8-->
-<!--              AND apl.ahj_utility_id = u.id) links-->
-<!--          ), '[]') AS pto_followup_links,-->
-<!--        coalesce((-->
-<!--          SELECT array_to_json(array_agg(row_to_json(links)))-->
-<!--          FROM (-->
-<!--            SELECT-->
-<!--              apl.id,-->
-<!--              apl.name,-->
-<!--              apl.link,-->
-<!--              apl.username,-->
-<!--              apl.link_type_id AS "linkTypeId",-->
-<!--              apl.password,-->
-<!--              apl.notes-->
-<!--            FROM brs.ahj_utility_link apl-->
-<!--            WHERE apl.archived IS FALSE-->
-<!--              AND apl.link_type_id = 9-->
-<!--              AND apl.ahj_utility_id = u.id) links-->
-<!--          ), '[]') AS submission_links,-->
-<!--        coalesce((-->
-<!--                   SELECT array_to_json(array_agg(row_to_json(requirements)))-->
-<!--                   FROM (-->
-<!--                     with open_challenge AS (-->
-<!--                         select utility_id,-->
-<!--                           original_requirement_id,-->
-<!--                           status_id-->
-<!--                         FROM brs.ahj_utility_requirements ar-->
-<!--                         where status_id = 3-->
-<!--                     )-->
-<!--                     select aur.utility_id AS "utilityId",-->
-<!--                       aur.position,-->
-<!--                       aur.status_id AS "statusId",-->
-<!--                       ars.name status,-->
-<!--                       aur.complete,-->
-<!--                       aur.date_created AS "dateCreated",-->
-<!--                       aur.created_by_id AS "createdById",-->
-<!--                       u.first_name || ' ' || u.last_name  AS "createdBy",-->
-<!--                       aur.date_updated AS "dateUpdated",-->
-<!--                       aur.updated_by_id AS "updatedById",-->
-<!--                       u.first_name || ' ' || u.last_name AS "updatedBy",-->
-<!--                       ar.id,-->
-<!--                       ar.description,-->
-<!--                       ar.requirement_type_id AS "requirementTypeId",-->
-<!--                       aur.original_requirement_id AS "originalRequirementId",-->
-<!--                       CASE-->
-<!--                       WHEN oc.original_requirement_id IS NOT NULL THEN TRUE-->
-<!--                       ELSE FALSE-->
-<!--                       END AS "hasOpenChallenge"-->
-<!--                     FROM brs.ahj_utility_requirements aur-->
-<!--                       LEFT JOIN open_challenge oc ON oc.utility_id = aur.utility_id and oc.original_requirement_id = aur.original_requirement_id-->
-<!--                       INNER JOIN brs.ahj_requirement ar ON ar.id = aur.requirement_id-->
-<!--                       INNER JOIN brs."user" u ON u.id = aur.created_by_id-->
-<!--                       INNER JOIN brs."user" u2 ON u2.id = aur.updated_by_id-->
-<!--                       INNER JOIN brs.ahj_requirement_status ars ON ars.id = aur.status_id-->
-<!--                     where aur.utility_id = :id-->
-<!--                           and aur.status_id = 1-->
-<!--                           and aur.archived IS NOT TRUE-->
-<!--                     ORDER BY aur.position) requirements-->
-<!--                 ),'[]') AS utility_requirements-->
-
-<!--      FROM brs.ahj_utility u-->
-<!--        LEFT JOIN brs.metro_area ma ON ma.id = u.metro_area_id-->
-<!--        LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id-->
-<!--        LEFT JOIN flow.state s ON s.id = sa.state_id-->
-<!--      WHERE u.id = :id-->
-<!--    ]]>-->
-<!--  </ahj.utility.detailById>-->
+  <ahj.utility.detailById>
+    <![CDATA[
+      SELECT
+        u.*,
+        ma.metro_area,
+        s.id AS "state_id",
+        s.abbreviation AS "state",
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(contacts)))
+          FROM (
+            SELECT
+              c.id,
+              c.name,
+              c.title,
+              c.email,
+              c.phone_number AS "phoneNumber",
+              c.address,
+              c.notes,
+              c.hours
+            FROM brs.ahj_contact c
+              INNER JOIN brs.ahj_utility_contact auc ON c.id = auc.ahj_contact_id
+            WHERE auc.ahj_utility_id = u.id AND c.archived IS FALSE AND c.contact_type_id = 8
+          ) contacts), '[]') AS contacts,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(checklist)))
+          FROM (
+            SELECT
+              ac.id,
+              ac.description,
+              ac.display_order AS "displayOrder"
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
+            WHERE ac.archived IS FALSE
+              AND ac.checklist_type_id = 4
+              AND auc.ahj_utility_id = u.id
+            ORDER BY ac.display_order
+          ) checklist), '[]') AS submission_checklist,
+        coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
+          FROM (
+            SELECT
+              ac.id,
+              ac.description,
+              ac.display_order AS "displayOrder"
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
+            WHERE ac.archived IS FALSE
+              AND ac.checklist_type_id = 5
+              AND auc.ahj_utility_id = u.id
+            ORDER BY ac.display_order) checklist
+          ), '[]') AS approval_checklist,
+        coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
+          FROM (
+            SELECT
+              ac.id,
+              ac.description,
+              ac.display_order AS "displayOrder"
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
+            WHERE ac.archived IS FALSE
+              AND ac.checklist_type_id = 6
+              AND auc.ahj_utility_id = u.id
+            ORDER BY ac.display_order) checklist
+          ), '[]') AS pto_checklist,
+        coalesce((SELECT array_to_json(array_agg(row_to_json(checklist)))
+          FROM (
+            SELECT
+              ac.id,
+              ac.description,
+              ac.display_order AS "displayOrder"
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_utility_checklist auc ON ac.id = auc.ahj_checklist_id
+            WHERE ac.archived IS FALSE
+              AND ac.checklist_type_id = 7
+              AND auc.ahj_utility_id = u.id
+            ORDER BY ac.display_order) checklist
+          ), '[]') AS utility_inspection_checklist,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(links)))
+          FROM (
+            SELECT
+              apl.id,
+              apl.name,
+              apl.link,
+              apl.username,
+              apl.link_type_id AS "linkTypeId",
+              apl.password,
+              apl.notes
+            FROM brs.ahj_utility_link apl
+            WHERE apl.archived IS FALSE
+              AND apl.link_type_id = 6
+              AND apl.ahj_utility_id = u.id) links
+          ), '[]') AS customer_signature_links,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(links)))
+          FROM (
+            SELECT
+              apl.id,
+              apl.name,
+              apl.link,
+              apl.username,
+              apl.link_type_id AS "linkTypeId",
+              apl.password,
+              apl.notes
+            FROM brs.ahj_utility_link apl
+            WHERE apl.archived IS FALSE
+              AND apl.link_type_id = 7
+              AND apl.ahj_utility_id = u.id) links
+          ), '[]') AS pto_links,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(links)))
+          FROM (
+            SELECT
+              apl.id,
+              apl.name,
+              apl.link,
+              apl.username,
+              apl.link_type_id AS "linkTypeId",
+              apl.password,
+              apl.notes
+            FROM brs.ahj_utility_link apl
+            WHERE apl.archived IS FALSE
+              AND apl.link_type_id = 8
+              AND apl.ahj_utility_id = u.id) links
+          ), '[]') AS pto_followup_links,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(links)))
+          FROM (
+            SELECT
+              apl.id,
+              apl.name,
+              apl.link,
+              apl.username,
+              apl.link_type_id AS "linkTypeId",
+              apl.password,
+              apl.notes
+            FROM brs.ahj_utility_link apl
+            WHERE apl.archived IS FALSE
+              AND apl.link_type_id = 9
+              AND apl.ahj_utility_id = u.id) links
+          ), '[]') AS submission_links,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(requirements)))
+          FROM (
+            WITH open_challenge AS (
+              SELECT
+                utility_id,
+                original_requirement_id,
+                status_id
+              FROM brs.ahj_utility_requirements ar
+              WHERE status_id = 3
+          )
+          SELECT
+            aur.utility_id AS "utilityId",
+            aur.position,
+            aur.status_id AS "statusId",
+            ars.name status,
+            aur.complete,
+            aur.date_created AS "dateCreated",
+            aur.created_by_id AS "createdById",
+            u.first_name || ' ' || u.last_name AS "createdBy",
+            aur.date_updated AS "dateUpdated",
+            aur.updated_by_id AS "updatedById",
+            u.first_name || ' ' || u.last_name AS "updatedBy",
+            ar.id,
+            ar.description,
+            ar.requirement_type_id AS "requirementTypeId",
+            aur.original_requirement_id AS "originalRequirementId",
+          CASE
+            WHEN oc.original_requirement_id IS NOT NULL THEN TRUE
+            ELSE FALSE
+          END AS "hasOpenChallenge"
+          FROM brs.ahj_utility_requirements aur
+            LEFT JOIN open_challenge oc ON oc.utility_id = aur.utility_id
+              AND oc.original_requirement_id = aur.original_requirement_id
+            INNER JOIN brs.ahj_requirement ar ON ar.id = aur.requirement_id
+            INNER JOIN flow."user" u ON u.id = aur.created_by_id
+            INNER JOIN flow."user" u2 ON u2.id = aur.updated_by_id
+            INNER JOIN brs.ahj_requirement_status ars ON ars.id = aur.status_id
+          WHERE aur.utility_id = :id
+            AND aur.status_id = 1
+            AND aur.archived IS NOT TRUE
+          ORDER BY aur.position) requirements
+        ), '[]') AS utility_requirements
+      FROM brs.ahj_utility u
+        LEFT JOIN brs.metro_area ma ON ma.id = u.metro_area_id
+        LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
+        LEFT JOIN flow.state s ON s.id = sa.state_id
+      WHERE u.id = :id
+    ]]>
+  </ahj.utility.detailById>
 </sql>

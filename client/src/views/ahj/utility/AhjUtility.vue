@@ -136,9 +136,7 @@
                       <td>{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
                       <td>{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
                       <td>
-                        <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">
-                          Details
-                        </router-link>
+                        <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
                         <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">
                           edit
                         </v-icon>
@@ -283,7 +281,7 @@
       },
       async saveAhjUtility () {
         if (this.addingNewUtility) {
-          await postRequest('/api/v1/company/blueraven/ahjUtility/', this.editedItem)
+          await postRequest('/api/v1/company/blueraven/ahjUtility', this.editedItem)
         } else {
           await putRequest('/api/v1/company/blueraven/ahjUtility/simpleUpdate', this.editedItem)
         }

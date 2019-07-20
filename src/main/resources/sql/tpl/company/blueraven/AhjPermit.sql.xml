@@ -15,8 +15,8 @@
               c.address,
               c.notes,
               c.hours
-            FROM blueraven.ahj_contact c
-              INNER JOIN blueraven.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
+            FROM brs.ahj_contact c
+              INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
             WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 1
           ) contacts), '[]'
         ) AS submissionContacts,
@@ -32,8 +32,8 @@
               c.address,
               c.notes,
               c.hours
-            FROM blueraven.ahj_contact c
-              INNER JOIN blueraven.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
+            FROM brs.ahj_contact c
+              INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
             WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 6
           ) contacts), '[]'
         ) AS followUpContacts,
@@ -49,8 +49,8 @@
               c.address,
               c.notes,
               c.hours
-            FROM blueraven.ahj_contact c
-              INNER JOIN blueraven.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
+            FROM brs.ahj_contact c
+              INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
             WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 7
           ) contacts), '[]'
         ) AS printLocations,
@@ -66,10 +66,10 @@
               created_by.first_name || ' ' || created_by.last_name AS "createdBy",
               n.updated_by_id                                      AS "updatedById",
               updated_by.first_name || ' ' || updated_by.last_name AS "updatedBy"
-            FROM blueraven.ahj_note n
+            FROM brs.ahj_note n
               INNER JOIN flow."user" created_by ON n.created_by_id = created_by.id
               INNER JOIN flow."user" updated_by ON n.updated_by_id = updated_by.id
-              INNER JOIN blueraven.ahj_permit_note apn ON n.id = apn.ahj_note_id
+              INNER JOIN brs.ahj_permit_note apn ON n.id = apn.ahj_note_id
             WHERE apn.ahj_permit_id = p.id AND n.archived IS FALSE AND n.note_type_id = 1
           ) AS notes), '[]'
         ) AS notes,
@@ -80,8 +80,8 @@
               ac.id,
               ac.description,
               ac.display_order AS "displayOrder"
-            FROM blueraven.ahj_checklist ac
-              INNER JOIN blueraven.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
             WHERE ac.archived IS FALSE
               AND ac.checklist_type_id = 1
               AND apc.ahj_permit_id = p.id
@@ -95,8 +95,8 @@
               ac.id,
               ac.description,
               ac.display_order AS "displayOrder"
-            FROM blueraven.ahj_checklist ac
-              INNER JOIN blueraven.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
             WHERE ac.archived IS FALSE
               AND ac.checklist_type_id = 2
               AND apc.ahj_permit_id = p.id
@@ -110,8 +110,8 @@
               ac.id,
               ac.description,
               ac.display_order AS "displayOrder"
-            FROM blueraven.ahj_checklist ac
-              INNER JOIN blueraven.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
             WHERE ac.archived IS FALSE
               AND ac.checklist_type_id = 3
               AND apc.ahj_permit_id = p.id
@@ -128,7 +128,7 @@
               apl.username,
               apl.password,
               apl.notes
-            FROM blueraven.ahj_permit_link apl
+            FROM brs.ahj_permit_link apl
             WHERE apl.archived IS FALSE
               AND apl.link_type_id = 4
               AND apl.ahj_permit_id = p.id) links
@@ -144,7 +144,7 @@
               apl.username,
               apl.password,
               apl.notes
-            FROM blueraven.ahj_permit_link apl
+            FROM brs.ahj_permit_link apl
             WHERE apl.archived IS FALSE
               AND apl.link_type_id = 5
               AND apl.ahj_permit_id = p.id) links
@@ -171,14 +171,14 @@
               AND ahj.id = p.ahj_id) fots
           ), '[]'
         ) AS servicingFots
-      FROM blueraven.ahj_permit p
+      FROM brs.ahj_permit p
       WHERE p.ahj_id = :ahjId
     ]]>
   </ahj.permit.detail>
 
   <ahj.permit.createBlank>
     <![CDATA[
-      INSERT INTO blueraven.ahj_permit(ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
+      INSERT INTO brs.ahj_permit(ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
                                        print_location, stamped_plan, archived, created, created_by_id, updated,
                                        updated_by_id, business_license_expiration_date,
                                        contractor_license_expiration_date, business_license,
@@ -190,7 +190,7 @@
 
   <ahj.permit.create>
     <![CDATA[
-      INSERT INTO blueraven.ahj_permit (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
+      INSERT INTO brs.ahj_permit (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
                                   print_location, stamped_plan, created, created_by_id, updated,
                                   updated_by_id, business_license, contractor_license,
                                   business_license_expiration_date, contractor_license_expiration_date)
@@ -203,7 +203,7 @@
 
   <ahj.permit.update>
     <![CDATA[
-      UPDATE blueraven.ahj_permit
+      UPDATE brs.ahj_permit
       SET
         ahj_id = :ahjId,
         deposit_amount = :depositAmount,
