@@ -13,8 +13,8 @@
                 @click="hideCtrls" class="white--text">remove</v-icon>
       </v-btn>
     </v-toolbar>
-    <div class="checklist-item-edit-ctrls px-3"
-         v-show="addMode || editMode">
+    <form class="checklist-item-edit-ctrls px-3"
+          ref="checklistForm" v-show="addMode || editMode">
       <v-textarea required label="Description" auto-grow filled
                   style="margin: 15px 0 -15px 0"
                   v-model="checklistItem.description">
@@ -31,7 +31,7 @@
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
       </div>
-    </div>
+    </form>
     <draggable v-model="checklistItems"
                group="checklistGroup" @start="drag=true" @end="drag=false">
       <v-list v-for="item in checklistItems"
@@ -101,20 +101,17 @@
       hideCtrls() {
         this.addMode = false
         this.editMode = false
+        this.$refs.checklistForm.reset()
       },
       addItem() {
+        this.$refs.checklistForm.reset()
         this.editMode = false
-        this.checklistItem.description = ''
         this.addMode = true
       },
       editItem(item) {
-        this.addMode = false
         this.checklistItem = Object.assign({}, item)
+        this.addMode = false
         this.editMode = true
-      },
-      async deleteItem() {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit/${this.checklistItem.id}`)
-        this.editMode = false
       },
       async saveItem() {
         if (this.addMode) {
@@ -124,6 +121,10 @@
           await putRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit`, this.checklistItem)
           this.editMode = false
         }
+      },
+      async deleteItem() {
+        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit/${this.checklistItem.id}`)
+        this.editMode = false
       }
     }
   }

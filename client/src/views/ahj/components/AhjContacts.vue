@@ -3,7 +3,7 @@
   <v-card class="pb-2">
     <v-toolbar class="primaryCustom mb-2">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
-        {{title}}
+        {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon color="#ddd" style="border-radius: 3px">
@@ -14,8 +14,12 @@
     </v-toolbar>
     <v-form v-show="addMode || editMode"
             ref="contactForm" class="pa-3">
-      <v-text-field v-model="contact.name" required label="Name" filled></v-text-field>
-      <v-text-field v-model="contact.title" label="Title" filled></v-text-field>
+      <v-text-field v-model="contact.name" required filled
+                    :label="contactTypeId === 7 ? 'Store Name' : 'Name'"
+      ></v-text-field>
+      <v-text-field v-model="contact.title" filled
+                    :label="contactTypeId === 7 ? 'Store Number' : 'Title'"
+      ></v-text-field>
       <v-text-field v-model="contact.phoneNumber" label="Phone" filled></v-text-field>
       <v-text-field v-model="contact.email" label="Email" type="email" filled></v-text-field>
       <v-text-field v-model="contact.hours" label="Hours" filled></v-text-field>
@@ -66,7 +70,7 @@
                 class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
     </div>
     <div class="empty-list" v-show="contacts.length < 1">
-      No contacts found
+      {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
     </div>
   </v-card>
 </template>
@@ -81,7 +85,7 @@
         type: String,
         default: null
       },
-      typeId: {
+      contactTypeId: {
         type: Number,
         default: null
       },
@@ -119,22 +123,16 @@
       hideCtrls() {
         this.addMode = false
         this.editMode = false
+        this.$refs.contactForm.reset()
       },
       addContact() {
-        this.editMode = false
-        // this.contact.address = ''
-        // this.contact.email = ''
-        // this.contact.hours = ''
-        // this.contact.name = ''
-        // this.contact.notes = ''
-        // this.contact.phoneNumber = ''
-        // this.contact.title = ''
         this.$refs.contactForm.reset()
+        this.editMode = false
         this.addMode = true
       },
       editContact(contact) {
-        this.addMode = false
         this.contact = Object.assign({}, contact)
+        this.addMode = false
         this.editMode = true
       },
       async saveContact() {
@@ -185,6 +183,22 @@
   }
   .empty-list {
     padding: 20px;
-    font-size: 0.95em;
+    font-size: 0.85em;
   }
+  /*Definition list styles*/
+  .horizontal-dl {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 0.85em;
+  }
+  .horizontal-dl dt {
+    text-align: right;
+    width: 30%;
+  }
+  .horizontal-dl dd {
+    width: 65%;
+  }
+  /*End definition list styles*/
 </style>

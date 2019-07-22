@@ -3,11 +3,11 @@
   <v-card class="mb-3">
     <v-toolbar class="primaryCustom">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
-        {{title}}
+        {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon color="#ddd" style="border-radius: 3px">
-        <v-icon v-show="!addMode" @click="addLink(1)" class="white--text">add</v-icon>
+        <v-icon v-show="!addMode" @click="addLink" class="white--text">add</v-icon>
         <v-icon v-show="addMode"
                 @click="addMode=false" class="white--text">remove</v-icon>
       </v-btn>
@@ -24,7 +24,7 @@
                   v-model="link.notes">
       </v-textarea>
       <div class="link-btns">
-        <a @click="resetLinkCtrls"
+        <a @click="hideCtrls"
            class="cancel-link">Cancel</a>
         <v-btn v-show="editMode" dark
                @click="deleteLink" class="error">
@@ -44,7 +44,7 @@
             <v-icon small @click="editLink(link)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-title>
-            <a :href="link.url" class="list-link">{{link.name}}</a>
+            <a :href="link.url" class="list-link">{{ link.name }}</a>
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -100,25 +100,28 @@
       }
     },
     methods: {
+      urlRule(url) {
+        if (url && (!url.includes('http://') && !url.includes('https://'))) {
+          this.validUrl = false
+          return 'Valid URL is required'
+        } else {
+          this.validUrl = true
+          return true
+        }
+      },
       hideCtrls() {
         this.addMode = false
         this.editMode = false
+        this.$refs.linkForm.reset()
       },
       addLink() {
-        this.editMode = false
-        // this.contact.address = ''
-        // this.contact.email = ''
-        // this.contact.hours = ''
-        // this.contact.name = ''
-        // this.contact.notes = ''
-        // this.contact.phoneNumber = ''
-        // this.contact.title = ''
         this.$refs.linkForm.reset()
+        this.editMode = false
         this.addMode = true
       },
-      editLink(contact) {
+      editLink(link) {
+        this.link = Object.assign({}, link)
         this.addMode = false
-        this.contact = Object.assign({}, contact)
         this.editMode = true
       },
       async saveLink() {
@@ -179,6 +182,6 @@
   }
   .empty-list {
     padding: 20px;
-    font-size: 0.95em;
+    font-size: 0.85em;
   }
 </style>

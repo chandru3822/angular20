@@ -2,8 +2,8 @@
 <template>
   <v-layout column nowrap fill-height>
     <v-flex xs12 text-xs-right fill-height>
-      <a @click="resetForm()" class="cancel-link" style="margin-right: 10px">Cancel</a>
-      <v-btn id="save-btn" color="primaryButton" class="white--text" @click="saveAhjPermit()">Save</v-btn>
+      <a @click="resetForm" class="cancel-link" style="margin-right: 10px">Cancel</a>
+      <v-btn id="save-btn" color="primaryButton" class="white--text" @click="saveAhjPermit">Save</v-btn>
     </v-flex>
 
     <v-layout row wrap>
@@ -203,7 +203,7 @@
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-btn icon color="#ddd" style="border-radius: 3px"
-                       @click="addInspectionDocument()">
+                       @click="addInspectionDocument">
                   <v-icon class="white--text">add</v-icon>
                 </v-btn>
               </v-toolbar>
@@ -238,7 +238,7 @@
           <v-card-text class="mt-4">
             <v-select label="Viewing Data For:" :items="timePeriods" filled
                       v-model="permittingCycleTimes.timePeriod"
-                      @change="setTimePeriodDates()"
+                      @change="setTimePeriodDates"
             ></v-select>
             <p style="margin: -15px 0">{{permittingCycleTimes.startDate}} to {{permittingCycleTimes.endDate}}</p>
           </v-card-text>
@@ -307,7 +307,7 @@
 
         <AhjContact
           title="Submission Contacts"
-          :typeId="1"
+          :contactTypeId="1"
           :permitId="ahjPermit.id"
           :ahjId="ahjId"
           :contacts="ahjPermit.submissionContacts"
@@ -323,75 +323,13 @@
           :links="ahjPermit.followUpLinks"
         ></AhjPermitLink>
 
-        <v-card class="pb-2">
-          <v-toolbar class="primaryCustom mb-2">
-            <v-toolbar-title class="white--text font-weight-bold" title="Print Locations">
-              Print Locations
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-btn icon color="#ddd" style="border-radius: 3px">
-              <v-icon v-show="!printLocationAddCtrls" @click="addPrintLocation()" class="white--text">add</v-icon>
-              <v-icon v-show="printLocationAddCtrls"
-                      @click="printLocationAddCtrls=false" class="white--text">remove</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <v-form v-show="printLocationAddCtrls || printLocationEditCtrls"
-                  ref="printLocationForm" class="pa-3">
-            <v-text-field v-model="editedPrintLocation.storeName" required label="Store Name" filled></v-text-field>
-            <v-text-field v-model="editedPrintLocation.storeNumber" label="Store Number" filled></v-text-field>
-            <v-text-field v-model="editedPrintLocation.phone" label="Phone" filled></v-text-field>
-            <v-text-field v-model="editedPrintLocation.email" label="Email" type="email" filled></v-text-field>
-            <v-text-field v-model="editedPrintLocation.hours" label="Hours" filled></v-text-field>
-            <v-textarea label="Address" auto-grow filled
-                        v-model="editedPrintLocation.address">
-            </v-textarea>
-            <v-textarea label="Notes" auto-grow filled
-                        v-model="editedPrintLocation.notes">
-            </v-textarea>
-            <div class="link-btns">
-              <a @click="resetPrintLocationCtrls()"
-                 class="cancel-link">Cancel</a>
-              <v-btn v-show="printLocationEditCtrls" dark
-                     @click="deletePrintLocation()" class="error">
-                Delete
-              </v-btn>
-              <v-btn @click="savePrintLocation()" color="primaryButton" class="white--text"
-                     :disabled="!editedPrintLocation.storeName">
-                {{printLocationEditCtrls ? 'Update' : 'Add'}}
-              </v-btn>
-            </div>
-          </v-form>
-          <div v-for="(location, index) in ahjPermit.printLocations" :key="location.id"
-               v-show="ahjPermit.printLocations.length > 0" class="px-3 pt-1 pb-1">
-            <dl class="horizontal-dl">
-              <dt v-if="location.storeName" class="font-weight-bold">Store Name</dt>
-              <dd v-if="location.storeName">{{location.storeName}}</dd>
-              <dt v-if="location.storeNumber" class="font-weight-bold">Store Number</dt>
-              <dd v-if="location.storeNumber">{{location.storeNumber}}</dd>
-              <dt v-if="location.phone" class="font-weight-bold">Phone</dt>
-              <dd v-if="location.phone">{{location.phone}}</dd>
-              <dt v-if="location.email" class="font-weight-bold">Email</dt>
-              <dd v-if="location.email">{{location.email}}</dd>
-              <dt v-if="location.hours" class="font-weight-bold">Hours</dt>
-              <dd v-if="location.hours">{{location.hours}}</dd>
-              <dt v-if="location.address" class="font-weight-bold">Address</dt>
-              <dd v-if="location.address">{{location.address}}</dd>
-              <dt v-if="location.notes"></dt>
-              <dd v-if="location.notes" class="pa-2" style="background-color: #eee">{{location.notes}}</dd>
-              <dt></dt>
-              <dd>
-                <v-btn small color="primaryButton"
-                       @click="editPrintLocation(location, 2)"
-                       class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
-              </dd>
-            </dl>
-            <v-spacer v-if="index !== ahjPermit.printLocations.length - 1"
-                      class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
-          </div>
-          <div class="empty-list" v-show="ahjPermit.printLocations.length < 1">
-            No locations found
-          </div>
-        </v-card>
+        <AhjContact
+          title="Print Locations"
+          :contactTypeId="7"
+          :permitId="ahjPermit.id"
+          :ahjId="ahjId"
+          :contacts="ahjPermit.printLocations"
+        ></AhjContact>
       </v-flex>
 
       <!-- THIRD COLUMN -->
@@ -413,13 +351,13 @@
             </v-list-item>
           </v-list>
           <div class="empty-list" v-show="ahjPermit.servicingFots.length < 1">
-            No Servicing FOT's found
+            No FOT's found
           </div>
         </v-card>
 
         <AhjContact
           title="Follow-up and Delivery Contacts"
-          :typeId="1"
+          :contactTypeId="1"
           :permitId="ahjPermit.id"
           :ahjId="ahjId"
           :contacts="ahjPermit.followUpContacts"
@@ -498,13 +436,17 @@
       contractorLicenseMenu: false,
       otherLicenseMenu: false,
       ahjPermit: {
+        submissionChecklist: [],
+        revisionChecklist: [],
+        asBuiltChecklist: [],
+        submissionLinks: [],
+        followUpLinks: [],
+        submissionContacts: [],
         printLocations: [],
+        followUpContacts: [],
         servicingFots: []
       },
-      documents: [],
-      printLocationAddCtrls: false,
-      printLocationEditCtrls: false,
-      editedPrintLocation: []
+      documents: []
     }),
     methods: {
       resetForm() {
@@ -622,19 +564,4 @@
     flex-flow: row nowrap;
     align-items: center;
   }
-  /*Definition list styles*/
-  .horizontal-dl {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    width: 100%;
-  }
-  .horizontal-dl dt {
-    text-align: right;
-    width: 30%;
-  }
-  .horizontal-dl dd {
-    width: 65%;
-  }
-  /*End definition list styles*/
 </style>
