@@ -151,11 +151,6 @@ public class AhjService {
   }
 
   @Transactional
-  public Optional<AhjContact> createAhjContact(Long ahjId, AhjContact contact, AhjType ahjType) {
-    return saveAhjContact(ahjId, null, contact, ahjType);
-  }
-
-  @Transactional
   public Optional<AhjContact> saveAhjContact(Long id, Long contactId, AhjContact contact, AhjType ahjType) {
     User currentUser = securityService.getCurrentUser();
 
@@ -177,11 +172,11 @@ public class AhjService {
       if (AhjType.PERMIT.equals(ahjType)) {
         ahjPermitService.savePermitContact(id, contactId);
       } else if (AhjType.INSPECTION.equals(ahjType)) {
-        ahjInspectionService.saveInspectionContact(id, contactId);
+//        ahjInspectionService.saveInspectionContact(id, contactId);
       } else if (AhjType.DESIGN.equals(ahjType)){
-        ahjDesignService.saveDesignContact(id, contactId);
+//        ahjDesignService.saveDesignContact(id, contactId);
       } else {
-        ahjUtilityService.saveUtilityContact(id, contactId);
+//        ahjUtilityService.saveUtilityContact(id, contactId);
       }
 
     } else {

@@ -264,4 +264,11 @@
       VALUES (:ahjPermitId, :ahjChecklistId)
     ]]>
   </ahj.permit.checklist.create>
+
+  <ahj.permit.contact.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_permit_contact (ahj_permit_id, ahj_contact_id)
+      VALUES (:ahjPermitId, :ahjContactId)
+    ]]>
+  </ahj.permit.contact.create>
 </sql>

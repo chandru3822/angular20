@@ -64,24 +64,24 @@ public class AhjPermitController {
     }
 
     // CONTACTS
-//    @RequestMapping(value = "/{id}/contacts", method = RequestMethod.POST)
-//    public Optional<AhjContact> addAhjContact(@PathVariable Long id,
-//                                              @RequestBody AhjContact ahjContact) {
-//        return ahjService.createAhjContact(id, ahjContact, AhjType.PERMIT);
-//    }
-//
-//    @RequestMapping(value = "/{id}/contacts/{contactId}", method = RequestMethod.PUT)
-//    public Optional<AhjContact> updateAhjContact(@PathVariable Long id,
-//                                                 @PathVariable Long contactId,
-//                                                 @RequestBody AhjContact ahjContact) {
-//        return ahjService.saveAhjContact(id, contactId, ahjContact, AhjType.PERMIT);
-//    }
-//
-//    @RequestMapping(value = "/{id}/contacts/{contactId}", method = RequestMethod.DELETE)
-//    public void removeAhjContact(@PathVariable Long id,
-//                                 @PathVariable Long contactId) {
-//        ahjService.deleteAhjContact(id, contactId);
-//    }
+    @RequestMapping(value = "/{permitId}/contacts", method = RequestMethod.POST)
+    public Optional<AhjContact> addAhjContact(@PathVariable Long permitId,
+                                              @RequestBody AhjContact ahjContact) {
+        return ahjService.saveAhjContact(permitId, null, ahjContact, AhjType.PERMIT);
+    }
+
+    @RequestMapping(value = "/{permitId}/contacts/{contactId}", method = RequestMethod.PUT)
+    public Optional<AhjContact> updateAhjContact(@PathVariable Long permitId,
+                                                 @PathVariable Long contactId,
+                                                 @RequestBody AhjContact ahjContact) {
+        return ahjService.saveAhjContact(permitId, contactId, ahjContact, AhjType.PERMIT);
+    }
+
+    @RequestMapping(value = "/{permitId}/contacts/{contactId}", method = RequestMethod.DELETE)
+    public void removeAhjContact(@PathVariable Long permitId,
+                                 @PathVariable Long contactId) {
+        ahjService.deleteAhjContact(permitId, contactId);
+    }
 
     // LINKS
 //    @RequestMapping(value = "/{id}/links", method = RequestMethod.POST)

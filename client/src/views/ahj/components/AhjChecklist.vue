@@ -73,7 +73,7 @@
       title: {
         type: String
       },
-      typeId: {
+      checklistTypeId: {
         type: Number
       },
       permitId: {
@@ -123,7 +123,7 @@
         this.checklistItem = Object.assign({}, item)
       },
       async saveItem() {
-        this.checklistItem.checklistTypeId = this.typeId
+        this.checklistItem.checklistTypeId = this.checklistTypeId
 
         if (this.addMode) {
           this.checklistItem.displayOrder = this.checklistItemsCopy.length

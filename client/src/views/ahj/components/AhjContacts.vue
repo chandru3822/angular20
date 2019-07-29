@@ -7,9 +7,9 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon color="#ddd" style="border-radius: 3px">
-        <v-icon v-show="!addMode" @click="addContact" class="white--text">add</v-icon>
-        <v-icon v-show="addMode"
-                @click="addMode=false" class="white--text">remove</v-icon>
+        <v-icon v-show="!addMode && !editMode" @click="addContact" class="white--text">add</v-icon>
+        <v-icon v-show="addMode || editMode"
+                @click="hideCtrls" class="white--text">remove</v-icon>
       </v-btn>
     </v-toolbar>
     <v-form v-show="addMode || editMode"
@@ -37,7 +37,7 @@
           Delete
         </v-btn>
         <v-btn @click="saveContact" color="primaryButton" class="white--text"
-               :disabled="!contact.name">
+               :disabled="contact.name === ''">
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
       </div>
@@ -76,6 +76,7 @@
 </template>
 
 <script>
+  import cloneDeep from 'lodash.clonedeep'
   import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
   export default {
@@ -116,36 +117,49 @@
           title: null
         },
         addMode: false,
-        editMode: false
+        editMode: false,
+        contactsCopy: this.contacts
       }
     },
     methods: {
       hideCtrls() {
         this.addMode = false
         this.editMode = false
-        this.$refs.contactForm.reset()
       },
       addContact() {
-        this.$refs.contactForm.reset()
         this.editMode = false
         this.addMode = true
+        this.$refs.contactForm.reset()
       },
       editContact(contact) {
-        this.contact = Object.assign({}, contact)
         this.addMode = false
         this.editMode = true
+        this.contact = Object.assign({}, contact)
       },
       async saveContact() {
+        this.contact.contactTypeId = this.contactTypeId
+
         if (this.addMode) {
-          await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts`, this.contact)
+          const{data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts`, this.contact)
+          this.contactsCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`, this.contact)
+          const{data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`, this.contact)
+          let updatedContactIndex = this.contactsCopy.findIndex(i => i.id === data.id)
+          this.contactsCopy[updatedContactIndex].name = data.name
+          this.contactsCopy[updatedContactIndex].title = data.title
+          this.contactsCopy[updatedContactIndex].phoneNumber = data.phoneNumber
+          this.contactsCopy[updatedContactIndex].email = data.email
+          this.contactsCopy[updatedContactIndex].hours = data.hours
+          this.contactsCopy[updatedContactIndex].address = data.address
+          this.contactsCopy[updatedContactIndex].notes = data.notes
           this.editMode = false
         }
       },
       async deleteContact() {
         await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`)
+        let deletedContactIndex = this.contactsCopy.findIndex(i => i.id === this.contact.id)
+        this.contactsCopy.splice([deletedContactIndex], 1)
         this.editMode = false
       }
     }

@@ -87,7 +87,7 @@
             <AhjChecklist
               v-if="dataReady"
               title="Submission Checklist"
-              :typeId="1"
+              :checklistTypeId="1"
               :permitId="ahjPermit.id"
               :ahjId="ahjId"
               :checklistItems="ahjPermit.submissionChecklist"
@@ -119,7 +119,7 @@
             <AhjChecklist
               v-if="dataReady"
               title="Revision Submission Checklist"
-              :typeId="2"
+              :checklistTypeId="2"
               :permitId="ahjPermit.id"
               :ahjId="ahjId"
               :checklist-items="ahjPermit.revisionChecklist"
@@ -152,7 +152,7 @@
             <AhjChecklist
               v-if="dataReady"
               title="As-Built Submission Checklist"
-              :typeId="3"
+              :checklistTypeId="3"
               :permitId="ahjPermit.id"
               :ahjId="ahjId"
               :checklist-items="ahjPermit.asBuiltChecklist"
@@ -305,14 +305,16 @@
       <!-- FIRST COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
         <AhjPermitLink
+          v-if="dataReady"
           title="Submission Links"
-          :typeId="4"
+          :linkTypeId="4"
           :permitId="ahjPermit.id"
           :ahjId="ahjId"
           :links="ahjPermit.submissionLinks"
         ></AhjPermitLink>
 
         <AhjContact
+          v-if="dataReady"
           title="Submission Contacts"
           :contactTypeId="1"
           :permitId="ahjPermit.id"
@@ -324,14 +326,16 @@
       <!-- SECOND COLUMN -->
       <v-flex xs12 md4 mb-3 class="padded-sides">
         <AhjPermitLink
+          v-if="dataReady"
           title="Follow-up and Delivery Links"
-          :typeId="5"
+          :linkTypeId="5"
           :permitId="ahjPermit.id"
           :ahjId="ahjId"
           :links="ahjPermit.followUpLinks"
         ></AhjPermitLink>
 
         <AhjContact
+          v-if="dataReady"
           title="Print Locations"
           :contactTypeId="7"
           :permitId="ahjPermit.id"
@@ -364,8 +368,9 @@
         </v-card>
 
         <AhjContact
+          v-if="dataReady"
           title="Follow-up and Delivery Contacts"
-          :contactTypeId="1"
+          :contactTypeId="6"
           :permitId="ahjPermit.id"
           :ahjId="ahjId"
           :contacts="ahjPermit.followUpContacts"
