@@ -7,15 +7,15 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon color="#ddd" style="border-radius: 3px">
-        <v-icon v-show="!addMode" @click="addLink" class="white--text">add</v-icon>
-        <v-icon v-show="addMode"
-                @click="addMode=false" class="white--text">remove</v-icon>
+        <v-icon v-show="!addMode && !editMode" @click="addLink" class="white--text">add</v-icon>
+        <v-icon v-show="addMode || editMode"
+                @click="hideCtrls" class="white--text">remove</v-icon>
       </v-btn>
     </v-toolbar>
     <v-form v-show="addMode || editMode"
             ref="linkForm" class="px-3 pt-4 pb-3">
       <v-text-field v-model="link.name" required label="Name" filled></v-text-field>
-      <v-text-field v-model="link.url" required type="url"
+      <v-text-field v-model="link.link" required type="url"
                     :rules="[urlRule]" label="URL" filled></v-text-field>
       <v-text-field v-model="link.username" label="Username" filled></v-text-field>
       <v-text-field v-model="link.password" label="Password" filled></v-text-field>
@@ -44,7 +44,7 @@
             <v-icon small @click="editLink(link)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-title>
-            <a :href="link.url" class="list-link">{{ link.name }}</a>
+            <a :href="link.link" class="list-link">{{ link.name }}</a>
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -57,6 +57,7 @@
 
 <script>
   import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import cloneDeep from 'lodash.clonedeep'
 
   export default {
     name: "AhjPermitLinks",
@@ -65,7 +66,7 @@
         type: String,
         default: null
       },
-      typeId: {
+      linkTypeId: {
         type: Number,
         default: null
       },
@@ -88,19 +89,20 @@
           id: null,
           linkTypeId: this.type,
           name: null,
-          url: null,
+          link: null,
           username: null,
           password: null,
           notes: null
         },
         addMode: false,
         editMode: false,
-        validUrl: false
+        validUrl: false,
+        linksCopy: this.links
       }
     },
     computed: {
       linkInfoEntered() {
-        return this.link.name && this.link.url && this.validUrl
+        return this.link.name && this.link.link && this.validUrl
       }
     },
     methods: {
@@ -116,29 +118,38 @@
       hideCtrls() {
         this.addMode = false
         this.editMode = false
-        this.$refs.linkForm.reset()
       },
       addLink() {
-        this.$refs.linkForm.reset()
         this.editMode = false
         this.addMode = true
+        this.$refs.linkForm.reset()
       },
       editLink(link) {
-        this.link = Object.assign({}, link)
         this.addMode = false
         this.editMode = true
+        this.link = Object.assign({}, link)
       },
       async saveLink() {
+        this.link.linkTypeId = this.linkTypeId
+
         if (this.addMode) {
-          await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links`, this.link)
+          const{data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links`, this.link)
+          this.linksCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`, this.link)
+          const{data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`, this.link)
+          let updatedLinkIndex = this.linksCopy.findIndex(i => i.id === data.id)
+          this.linksCopy[updatedLinkIndex].name = data.name
+          this.linksCopy[updatedLinkIndex].link = data.link
+          this.linksCopy[updatedLinkIndex].username = data.username
+          this.linksCopy[updatedLinkIndex].password = data.password
+          this.linksCopy[updatedLinkIndex].notes = data.notes
           this.editMode = false
         }
       },
       async deleteLink() {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`)
+        let deletedLinkIndex = await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`)
+        this.linksCopy.splice([deletedLinkIndex], 1)
         this.editMode = false
       }
     }

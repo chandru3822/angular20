@@ -84,25 +84,25 @@ public class AhjPermitController {
     }
 
     // LINKS
-//    @RequestMapping(value = "/{id}/links", method = RequestMethod.POST)
-//    public Optional<AhjLink> addPermitLink(@PathVariable Long ahjId,
-//                                           @PathVariable Long id,
-//                                           @RequestBody AhjLink link) {
-//        return ahjPermitService.addPermitLink(ahjId, id, link);
-//    }
-//
-//    @RequestMapping(value = "/{id}/links/{linkId}", method = RequestMethod.PUT)
-//    public Optional<AhjLink> updatePermitLink(@PathVariable Long ahjId,
-//                                              @PathVariable Long id,
-//                                              @PathVariable Long linkId,
-//                                              @RequestBody AhjLink link) {
-//        return ahjPermitService.updatePermitLink(ahjId, id, linkId, link);
-//    }
-//
-//    @RequestMapping(value = "/{id}/links/{linkId}", method = RequestMethod.DELETE)
-//    public void deletePermitLink(@PathVariable Long ahjId,
-//                                 @PathVariable Long id,
-//                                 @PathVariable Long linkId) {
-//        ahjPermitService.deletePermitLink(ahjId, id, linkId);
-//    }
+    @RequestMapping(value = "/{permitId}/links", method = RequestMethod.POST)
+    public Optional<AhjLink> addPermitLink(@PathVariable Long ahjId,
+                                           @PathVariable Long permitId,
+                                           @RequestBody AhjLink link) {
+        return ahjPermitService.savePermitLink(ahjId, permitId, null, link);
+    }
+
+    @RequestMapping(value = "/{permitId}/links/{linkId}", method = RequestMethod.PUT)
+    public Optional<AhjLink> updatePermitLink(@PathVariable Long ahjId,
+                                              @PathVariable Long permitId,
+                                              @PathVariable Long linkId,
+                                              @RequestBody AhjLink link) {
+        return ahjPermitService.savePermitLink(ahjId, permitId, linkId, link);
+    }
+
+    @RequestMapping(value = "/{permitId}/links/{linkId}", method = RequestMethod.DELETE)
+    public void deletePermitLink(@PathVariable Long ahjId,
+                                 @PathVariable Long permitId,
+                                 @PathVariable Long linkId) {
+        ahjPermitService.deletePermitLink(ahjId, permitId, linkId);
+    }
 }

@@ -139,6 +139,42 @@ public class AhjPermitService {
     sqlCache.update("ahj.permit.contact.create", params);
   }
 
+  // PERMIT LINKS
+  public Optional<AhjLink> savePermitLink(Long ahjId, Long permitId, Long linkId, AhjLink link) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjPermitId", permitId);
+    params.put("name", link.getName());
+    params.put("link", link.getLink());
+    params.put("username", link.getUsername());
+    params.put("password", link.getPassword());
+    params.put("notes", link.getNotes());
+    params.put("currentUser", currentUser.getId());
+    params.put("linkTypeId", link.getLinkTypeId());
+
+    if (linkId == null) {
+      linkId = sqlCache.updateReturningId("ahj.permit.link.create", params, "id").longValue();
+    } else {
+      params.put("id", linkId);
+      sqlCache.update("ahj.permit.link.update", params);
+    }
+
+    HashMap<String, Object> idParam = new HashMap<>();
+    idParam.put("id", linkId);
+    return sqlCache.get("ahj.permit.link.findById", idParam, AhjLink.class);
+  }
+
+  public void deletePermitLink(Long ahjId, Long permitId, Long linkId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", linkId);
+    params.put("currentUser", currentUser.getId());
+
+    sqlCache.update("ahj.permit.link.delete", params);
+  }
+
   @SuppressWarnings({"Duplicates", "unchecked", "WeakerAccess"})
   public static class BaseAhjDetailMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;

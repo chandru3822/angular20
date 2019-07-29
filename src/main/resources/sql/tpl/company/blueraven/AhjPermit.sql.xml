@@ -271,4 +271,46 @@
       VALUES (:ahjPermitId, :ahjContactId)
     ]]>
   </ahj.permit.contact.create>
+
+  <!-- PERMIT LINKS STUFF -->
+  <ahj.permit.link.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_permit_link WHERE id = :id
+    ]]>
+  </ahj.permit.link.findById>
+
+  <ahj.permit.link.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_permit_link
+        (ahj_permit_id, name, link, username, password, notes, created, created_by_id, updated, updated_by_id, link_type_id)
+      VALUES
+        (:ahjPermitId, :name, :link, :username, :password, :notes, now(), :currentUser, now(), :currentUser, :linkTypeId)
+    ]]>
+  </ahj.permit.link.create>
+
+  <ahj.permit.link.update>
+    <![CDATA[
+      UPDATE brs.ahj_permit_link
+      SET
+        ahj_permit_id = :ahjPermitId,
+        name = :name,
+        link = :link,
+        username = :username,
+        password = :password,
+        notes = :notes,
+        updated = now(), updated_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.permit.link.update>
+
+  <ahj.permit.link.delete>
+    <![CDATA[
+      UPDATE brs.ahj_permit_link
+      SET
+        archived = TRUE,
+        updated = now(),
+        updated_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.permit.link.delete>
 </sql>
