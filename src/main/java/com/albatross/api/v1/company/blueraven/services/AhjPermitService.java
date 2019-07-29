@@ -121,11 +121,21 @@ public class AhjPermitService {
     return getAhjPermitDetailByAhjId(ahjId);
   }
 
+  // CHECKLISTS
+  public void createPermitChecklistItem(Long permitId, Long itemId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjPermitId", permitId);
+    params.put("ahjChecklistId", itemId);
+
+    sqlCache.update("ahj.permit.checklist.create", params);
+  }
+
+  // CONTACTS
   public void savePermitContact(Long permitId, Long contactId) {
     HashMap<String, Object> params = new HashMap<>();
-
     params.put("ahjPermitId", permitId);
     params.put("ahjContactId", contactId);
+
     sqlCache.update("ahj.permit.contact.create", params);
   }
 

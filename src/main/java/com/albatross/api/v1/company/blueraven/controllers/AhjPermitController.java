@@ -33,29 +33,76 @@ public class AhjPermitController {
         return ahjPermitService.createAhjPermit(ahjId, permit);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{permitId}", method = RequestMethod.PUT)
     public Optional<AhjPermitDetail> updateAhjPermit(@PathVariable Long ahjId,
-                                                     @PathVariable Long id,
+                                                     @PathVariable Long permitId,
                                                      @RequestBody AhjPermit permit) {
-        return ahjPermitService.saveAhjPermit(ahjId, id, permit);
+        return ahjPermitService.saveAhjPermit(ahjId, permitId, permit);
+    }
+
+    // CHECKLISTS
+    @RequestMapping(value = "/{permitId}/checklist", method = RequestMethod.POST)
+    public Optional<AhjChecklistItem> addPermitChecklistItem(@PathVariable Long ahjId,
+                                                             @PathVariable Long permitId,
+                                                             @RequestBody AhjChecklistItem item) {
+        return ahjService.saveChecklistItem(ahjId, permitId, null, item, AhjType.PERMIT);
+    }
+
+    @RequestMapping(value = "/{permitId}/checklist/{itemId}", method = RequestMethod.PUT)
+    public Optional<AhjChecklistItem> updatePermitChecklistItem(@PathVariable Long ahjId,
+                                                                @PathVariable Long permitId,
+                                                                @PathVariable Long itemId,
+                                                                @RequestBody AhjChecklistItem item) {
+        return ahjService.saveChecklistItem(ahjId, permitId, itemId, item, AhjType.PERMIT);
+    }
+
+    @RequestMapping(value = "/{permitId}/checklist/{itemId}", method = RequestMethod.DELETE)
+    public void deletePermitChecklistItem(@PathVariable Long ahjId,
+                                          @PathVariable Long permitId,
+                                          @PathVariable Long itemId) {
+        ahjService.deleteChecklistItem(ahjId, permitId, itemId);
     }
 
     // CONTACTS
-    @RequestMapping(value = "/{id}/contacts", method = RequestMethod.POST)
-    public Optional<AhjContact> addAhjContact(@PathVariable Long id,
-                                              @RequestBody AhjContact ahjContact) {
-        return ahjService.createAhjContact(id, ahjContact, AhjType.PERMIT);
-    }
+//    @RequestMapping(value = "/{id}/contacts", method = RequestMethod.POST)
+//    public Optional<AhjContact> addAhjContact(@PathVariable Long id,
+//                                              @RequestBody AhjContact ahjContact) {
+//        return ahjService.createAhjContact(id, ahjContact, AhjType.PERMIT);
+//    }
+//
+//    @RequestMapping(value = "/{id}/contacts/{contactId}", method = RequestMethod.PUT)
+//    public Optional<AhjContact> updateAhjContact(@PathVariable Long id,
+//                                                 @PathVariable Long contactId,
+//                                                 @RequestBody AhjContact ahjContact) {
+//        return ahjService.saveAhjContact(id, contactId, ahjContact, AhjType.PERMIT);
+//    }
+//
+//    @RequestMapping(value = "/{id}/contacts/{contactId}", method = RequestMethod.DELETE)
+//    public void removeAhjContact(@PathVariable Long id,
+//                                 @PathVariable Long contactId) {
+//        ahjService.deleteAhjContact(id, contactId);
+//    }
 
-    @RequestMapping(value = "/{id}/contacts/{contactId}", method = RequestMethod.PUT)
-    public Optional<AhjContact> updateAhjContact(@PathVariable Long id,
-                                                 @PathVariable Long contactId,
-                                                 @RequestBody AhjContact ahjContact) {
-        return ahjService.saveAhjContact(id, contactId, ahjContact, AhjType.PERMIT);
-    }
-
-    @RequestMapping(value = "/{id}/contacts/{contactId}", method = RequestMethod.DELETE)
-    public void removeAhjContact(@PathVariable Long id, @PathVariable Long contactId) {
-        ahjService.deleteAhjContact(id, contactId);
-    }
+    // LINKS
+//    @RequestMapping(value = "/{id}/links", method = RequestMethod.POST)
+//    public Optional<AhjLink> addPermitLink(@PathVariable Long ahjId,
+//                                           @PathVariable Long id,
+//                                           @RequestBody AhjLink link) {
+//        return ahjPermitService.addPermitLink(ahjId, id, link);
+//    }
+//
+//    @RequestMapping(value = "/{id}/links/{linkId}", method = RequestMethod.PUT)
+//    public Optional<AhjLink> updatePermitLink(@PathVariable Long ahjId,
+//                                              @PathVariable Long id,
+//                                              @PathVariable Long linkId,
+//                                              @RequestBody AhjLink link) {
+//        return ahjPermitService.updatePermitLink(ahjId, id, linkId, link);
+//    }
+//
+//    @RequestMapping(value = "/{id}/links/{linkId}", method = RequestMethod.DELETE)
+//    public void deletePermitLink(@PathVariable Long ahjId,
+//                                 @PathVariable Long id,
+//                                 @PathVariable Long linkId) {
+//        ahjPermitService.deletePermitLink(ahjId, id, linkId);
+//    }
 }

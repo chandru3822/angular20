@@ -257,4 +257,11 @@
       WHERE id = :id
     ]]>
   </ahj.permit.update>
+
+  <ahj.permit.checklist.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_permit_checklist (ahj_permit_id, ahj_checklist_id)
+      VALUES (:ahjPermitId, :ahjChecklistId)
+    ]]>
+  </ahj.permit.checklist.create>
 </sql>

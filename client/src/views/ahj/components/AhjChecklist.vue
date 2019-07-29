@@ -22,21 +22,21 @@
       <div class="checklist-btns">
         <a @click="hideCtrls"
            class="cancel-link">Cancel</a>
-        <v-btn v-show="editMode" color="brRed"
-               @click="deleteItem" class="white--text">
+        <v-btn v-show="editMode" color="brRed" small
+               @click="deleteItem" class="white--text py-1 px-2">
           Delete
         </v-btn>
-        <v-btn @click="saveItem" color="primaryButton" class="white--text"
-               :disabled="checklistItem.description === ''">
+        <v-btn @click="saveItem" color="primaryButton" class="white--text py-1 px-2"
+               :disabled="checklistItem.description === ''" small>
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
       </div>
     </form>
-    <draggable v-model="checklistItems"
-               group="checklistGroup" @start="drag=true" @end="drag=false">
-      <v-list v-for="item in checklistItems"
+    <draggable v-model="checklistItemsCopy" group="checklistGroup"
+               @start="drag=true" @end="reorderChecklistItems">
+      <v-list v-for="item in checklistItemsCopy"
               :key="item.id">
-        <v-list-item v-show="checklistItems.length > 0"
+        <v-list-item v-show="checklistItemsCopy.length > 0"
                      class="grab" :title="item.description">
           <v-list-item-action>
             <v-icon small class="mr-3" @click="editItem(item)">edit</v-icon>
@@ -53,13 +53,14 @@
       </v-list>
     </draggable>
     <div class="empty-list"
-         v-show="checklistItems.length < 1">
+         v-show="checklistItemsCopy.length < 1">
       This checklist doesn't have any items
     </div>
   </v-card>
 </template>
 
 <script>
+  import cloneDeep from 'lodash.clonedeep'
   import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
   import draggable from 'vuedraggable'
 
@@ -70,20 +71,19 @@
     },
     props: {
       title: {
-        type: String,
-        default: null
+        type: String
       },
       typeId: {
-        type: Number,
-        default: null
+        type: Number
       },
       permitId: {
-        type: Number,
-        default: null
+        type: Number
+      },
+      ahjId: {
+        type: Number
       },
       checklistItems: {
-        type: Array,
-        default: null
+        type: Array
       }
     },
     data () {
@@ -94,36 +94,53 @@
           description: null
         },
         addMode: false,
-        editMode: false
+        editMode: false,
+        drag: false,
+        checklistItemsCopy: this.checklistItems
       }
     },
     methods: {
       hideCtrls() {
         this.addMode = false
         this.editMode = false
-        this.$refs.checklistForm.reset()
+      },
+      reorderChecklistItems() {
+        this.drag = false
+        for(let i = 0; i < this.checklistItemsCopy.length; i++) {
+          this.checklistItem = this.checklistItemsCopy[i]
+          this.checklistItem.displayOrder = i
+          this.saveItem()
+        }
       },
       addItem() {
-        this.$refs.checklistForm.reset()
         this.editMode = false
         this.addMode = true
+        this.checklistItem.description = ''
       },
       editItem(item) {
-        this.checklistItem = Object.assign({}, item)
         this.addMode = false
         this.editMode = true
+        this.checklistItem = Object.assign({}, item)
       },
       async saveItem() {
+        this.checklistItem.checklistTypeId = this.typeId
+
         if (this.addMode) {
-          await postRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit`, this.checklistItem)
+          this.checklistItem.displayOrder = this.checklistItemsCopy.length
+          const{data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist`, this.checklistItem)
+          this.checklistItemsCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          await putRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit`, this.checklistItem)
+          const{data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist/${this.checklistItem.id}`, this.checklistItem)
+          let updatedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === data.id)
+          this.checklistItemsCopy[updatedItemIndex].description = data.description
           this.editMode = false
         }
       },
       async deleteItem() {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.permitId}/permit/${this.checklistItem.id}`)
+        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist/${this.checklistItem.id}`)
+        let deletedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === this.checklistItem.id)
+        this.checklistItemsCopy.splice([deletedItemIndex], 1)
         this.editMode = false
       }
     }

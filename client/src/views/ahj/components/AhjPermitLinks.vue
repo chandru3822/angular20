@@ -73,6 +73,10 @@
         type: Number,
         default: null
       },
+      ahjId: {
+        type: Number,
+        default: null
+      },
       links: {
         type: Array,
         default: null

@@ -11,7 +11,7 @@ import java.util.Date;
 @Data
 public class AhjChecklistItem {
     private Long id, displayOrder, checklistTypeId, failedInspectionResourceId;
-    private String description, failedInspectionProject, resource;
+    private String description, failedInspectionProject;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date failedInspectionDate;

@@ -85,9 +85,11 @@
               </v-flex>
             </div>
             <AhjChecklist
+              v-if="dataReady"
               title="Submission Checklist"
               :typeId="1"
               :permitId="ahjPermit.id"
+              :ahjId="ahjId"
               :checklistItems="ahjPermit.submissionChecklist"
             ></AhjChecklist>
             <v-textarea label="Submission Instructions" filled auto-grow
@@ -115,9 +117,11 @@
                       v-model="ahjPermit.revisionPaymentTypeId"
             ></v-select>
             <AhjChecklist
+              v-if="dataReady"
               title="Revision Submission Checklist"
               :typeId="2"
               :permitId="ahjPermit.id"
+              :ahjId="ahjId"
               :checklist-items="ahjPermit.revisionChecklist"
             ></AhjChecklist>
             <v-textarea label="Revision Submission Instructions" filled auto-grow
@@ -146,9 +150,11 @@
                       v-model="ahjPermit.asBuiltPaymentTypeId"
             ></v-select>
             <AhjChecklist
+              v-if="dataReady"
               title="As-Built Submission Checklist"
               :typeId="3"
               :permitId="ahjPermit.id"
+              :ahjId="ahjId"
               :checklist-items="ahjPermit.asBuiltChecklist"
             ></AhjChecklist>
             <v-textarea label="As-Built Submission Instructions" filled auto-grow
@@ -302,6 +308,7 @@
           title="Submission Links"
           :typeId="4"
           :permitId="ahjPermit.id"
+          :ahjId="ahjId"
           :links="ahjPermit.submissionLinks"
         ></AhjPermitLink>
 
@@ -320,6 +327,7 @@
           title="Follow-up and Delivery Links"
           :typeId="5"
           :permitId="ahjPermit.id"
+          :ahjId="ahjId"
           :links="ahjPermit.followUpLinks"
         ></AhjPermitLink>
 
@@ -384,6 +392,7 @@
       AhjPermitLink
     },
     data: () => ({
+      dataReady: false,
       submittalMethods: ['', 'Online', 'In-person', 'Other'],
       approvalRequiredOptions: ['', 'No', 'Yes', 'Unknown', 'Other'],
       timePeriods: [
@@ -507,6 +516,7 @@
       const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit`)
       this.ahjPermit = cloneDeep(data)
       console.log("AHJ Permit:", this.ahjPermit)
+      this.dataReady = true
     }
   }
 </script>
