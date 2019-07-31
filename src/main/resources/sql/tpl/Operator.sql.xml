@@ -1,0 +1,8 @@
+<sql>
+  <operator.getTypes><![CDATA[
+    select *
+    from flow.operator_type
+    where archived is not true
+  ]]></operator.getTypes>
+
+</sql>

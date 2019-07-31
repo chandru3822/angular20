@@ -9,7 +9,7 @@
         <v-toolbar-items>
           <AccountMenu :showImage="true"></AccountMenu>
         </v-toolbar-items>
-        <v-tabs color="secondaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
+        <v-tabs color="secondaryCustom" background-color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
             {{tab.label}}
           </v-tab>
