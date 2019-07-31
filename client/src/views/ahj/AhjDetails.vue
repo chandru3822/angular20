@@ -1,26 +1,26 @@
 <template #items="props">
-  <v-layout column fill-height>
-    <v-flex xs12 shrink>
-      <v-layout space-between row fill-height full-width>
-        <v-flex xs12 text-xs-left fill-height>
-          <v-btn id="back-btn" color="primaryButton" :to="'/ahj'">
+  <v-row>
+    <v-col cols="12">
+      <v-row justify="space-between">
+        <v-col class="text-left" cols="12">
+          <v-btn id="back-btn" color="primaryButton" class="white--text my-2" :to="'/ahj'">
             <v-icon dark>arrow_left</v-icon>
             Back to menu
           </v-btn>
 
-          <v-layout row nowrap justify-space-between align-center style="width: 100%">
+          <v-row justify="space-between" align="center" no-gutters>
             <div class="page-title">AHJ</div>
             <div class="page-info">
               <div>{{ ahj.name }}</div>
               <div>{{ ahj.metroArea }}</div>
               <div>{{ ahj.state }}</div>
             </div>
-          </v-layout>
+          </v-row>
 
           <v-divider></v-divider>
 
-          <v-tabs>
-            <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path" class="text-capitalize">
+          <v-tabs background-color="rgba(0,0,0,0)">
+            <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path" class="text-capitalize ma-0">
               {{ tab.label }}
             </v-tab>
           </v-tabs>
@@ -28,10 +28,10 @@
           <v-divider></v-divider>
 
           <router-view />
-        </v-flex>
-      </v-layout>
-    </v-flex>
-  </v-layout>
+        </v-col>
+      </v-row>
+    </v-col>
+  </v-row>
 </template>
 
 <script>

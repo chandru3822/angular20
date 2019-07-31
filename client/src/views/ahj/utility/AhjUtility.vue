@@ -1,102 +1,52 @@
 <template>
-  <v-layout column fill-height>
-    <v-flex xs12 shrink>
-      <v-layout align-center row fill-height mb-1 style="width: 100%">
-        <v-flex xs6 text-xs-left fill-height>
+  <v-row no-gutters style="width: 100% !important">
+    <v-col cols="12">
+      <v-row class="mb-1 px-3" align="center">
+        <v-col class="pa-0 text-left" cols="6">
           <v-tabs
             v-model="tabs"
-            color="rgba(0,0,0,0)"
+            background-color="rgba(0,0,0,0)"
             slider-color="primaryCustom"
           >
-            <v-tab to="/ahj">AHJ</v-tab>
+            <v-tab to="/ahj" class="ma-0">AHJ</v-tab>
             <v-tab to="/ahjUtility" class="text-capitalize">Utility</v-tab>
           </v-tabs>
-        </v-flex>
-        <v-flex xs6 text-xs-right fill-height>
+        </v-col>
+        <v-col class="pa-0 text-right" cols="6">
           <v-btn
             color="primaryButton"
-            class="app-button white--text"
+            class="ma-0 app-button white--text"
             @click="addItem"
           >Add New</v-btn>
-        </v-flex>
-      </v-layout>
+        </v-col>
+      </v-row>
 
       <v-divider></v-divider>
 
-      <v-layout column fill-height>
-        <v-flex xs12>
-          <v-dialog v-model="ahjUtilityDialog" max-width="500px">
-            <v-card>
-              <v-card-title>
-                <span class="headline">{{ ahjUtilityFormTitle }}</span>
-              </v-card-title>
-
-              <v-card-text>
-                <v-container grid-list-md>
-                  <v-layout column nowrap>
-                    <v-flex xs12 sm6 md4>
-                      <v-text-field
-                        v-model="editedItem.name"
-                        label="Name"
-                        required
-                        filled
-                      ></v-text-field>
-                    </v-flex>
-                    <v-flex xs12 sm6 md4>
-                      <v-select
-                        label="Metro Area"
-                        :items="metroAreas"
-                        v-model="editedItem.metroAreaId"
-                        required
-                        filled
-                      ></v-select>
-                    </v-flex>
-                    <v-flex xs12 sm6 md4>
-                      <v-checkbox
-                        v-if="!addingNewUtility"
-                        label="Active"
-                        v-model="editedItem.active"
-                      ></v-checkbox>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card-text>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-                <v-btn color="primaryButton" style="color: #fff !important" raised @click="saveAhjUtility"
-                       :disabled="!editedItem.name || !editedItem.metroAreaId">
-                  {{ ahjUtilityBtnTxt }}
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-          <v-layout my-5 fill-height>
-            <v-card style="width: 100% !important">
-              <v-card-title>
-                <v-spacer></v-spacer>
-                <v-text-field
-                  v-model="ahjUtilitySearch"
-                  append-icon="search"
-                  label="Search"
-                  single-line
-                  hide-details
-                ></v-text-field>
-              </v-card-title>
-              <v-data-table
-                :headers="visibleHeaders"
-                :items="filteredAhjUtilities"
-                :search="ahjUtilitySearch"
-                :options="pagination"
-                :items-per-page="-1"
-                fixed-header
-                dense
-                hide-default-footer
-                class="elevation-1"
-                style="width: 100%"
-              >
+      <v-row no-gutters class="my-5">
+        <v-col cols="12">
+          <v-card>
+            <v-card-title>
+              <v-spacer></v-spacer>
+              <v-text-field
+                v-model="ahjUtilitySearch"
+                append-icon="search"
+                label="Search"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-card-title>
+            <v-data-table
+              :headers="visibleHeaders"
+              :items="filteredAhjUtilities"
+              :search="ahjUtilitySearch"
+              :options="pagination"
+              :items-per-page="-1"
+              fixed-header
+              dense
+              hide-default-footer
+              class="elevation-1"
+            >
 <!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
 <!--                    <template #header="{ headers }">-->
 <!--                      <tr>-->
@@ -124,32 +74,69 @@
 <!--                      </tr>-->
 <!--                    </template>-->
 
-                  <template #body="{ items }" class="table-body">
-                    <tr
-                      v-for="(ahjUtility, index) in items"
-                      :key="ahjUtility.id"
-                      :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
-                    >
-                      <td :class="{ 'strike': !ahjUtility.active}">
-                        {{ ahjUtility.name ? ahjUtility.name : '' }}
-                      </td>
-                      <td>{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
-                      <td>{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
-                      <td>
-                        <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
-                        <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">
-                          edit
-                        </v-icon>
-                      </td>
-                    </tr>
-                  </template>
-                </v-data-table>
+                <template #body="{ items }" class="table-body">
+                  <tr
+                    v-for="(ahjUtility, index) in items"
+                    :key="ahjUtility.id"
+                    :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
+                  >
+                    <td :class="{ 'strike': !ahjUtility.active}">
+                      {{ ahjUtility.name ? ahjUtility.name : '' }}
+                    </td>
+                    <td>{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
+                    <td>{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
+                    <td>
+                      <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
+                      <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">
+                        edit
+                      </v-icon>
+                    </td>
+                  </tr>
+                </template>
+              </v-data-table>
+
+            <v-dialog v-model="ahjUtilityDialog" max-width="500px">
+              <v-card>
+                <v-card-title>
+                  <span class="headline">{{ ahjUtilityFormTitle }}</span>
+                </v-card-title>
+
+                <v-card-text>
+                  <v-text-field
+                    label="Name"
+                    v-model="editedItem.name"
+                    required
+                    filled
+                  ></v-text-field>
+                  <v-select
+                    label="Metro Area"
+                    :items="metroAreas"
+                    v-model="editedItem.metroAreaId"
+                    required
+                    filled
+                  ></v-select>
+                  <v-checkbox
+                    v-if="!addMode"
+                    label="Active"
+                    v-model="editedItem.active"
+                  ></v-checkbox>
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
+                  <v-btn color="primaryButton" class="white--text" raised @click="saveAhjUtility"
+                         :disabled="!editedItem.name || !editedItem.metroAreaId">
+                    {{ ahjUtilityBtnTxt }}
+                  </v-btn>
+                </v-card-actions>
               </v-card>
-            </v-layout>
-          </v-flex>
-      </v-layout>
-    </v-flex>
-  </v-layout>
+            </v-dialog>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -199,7 +186,7 @@
         active: ''
       },
       ahjUtilityDialog: false,
-      addingNewUtility: false,
+      addMode: false,
       ahjUtilityFilters: [],
       ahjUtilitySearchFilters: {
         name: [],
@@ -232,10 +219,10 @@
         })
       },
       ahjUtilityFormTitle () {
-        return this.addingNewUtility ? 'Create Utility' : 'Update Utility'
+        return this.addMode ? 'Create Utility' : 'Update Utility'
       },
       ahjUtilityBtnTxt () {
-        return this.addingNewUtility ? 'Add' : 'Update'
+        return this.addMode ? 'Add' : 'Update'
       },
       ...mapState({
         loading: state => state.app.loading
@@ -266,21 +253,21 @@
       },
       addItem () {
         this.getActiveMetroAreas()
-        this.addingNewUtility = true
+        this.addMode = true
         this.ahjUtilityDialog = true
       },
       editAhjUtility (item) {
         this.editedItem = Object.assign({}, item)
         this.getActiveMetroAreas()
+        this.addMode = false
         this.ahjUtilityDialog = true
       },
       close () {
         this.ahjUtilityDialog = false
-        this.addingNewUtility = false
         this.editedItem = {}
       },
       async saveAhjUtility () {
-        if (this.addingNewUtility) {
+        if (this.addMode) {
           await postRequest('/api/v1/company/blueraven/ahjUtility', this.editedItem)
         } else {
           await putRequest('/api/v1/company/blueraven/ahjUtility/simpleUpdate', this.editedItem)

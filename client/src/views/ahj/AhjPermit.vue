@@ -1,14 +1,14 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-layout column nowrap fill-height>
-    <v-flex xs12 text-xs-right fill-height>
+  <v-row dense>
+    <v-col class="text-right" cols="12">
       <a @click="resetForm" class="cancel-link" style="margin-right: 10px">Cancel</a>
-      <v-btn id="save-btn" color="primaryButton" class="white--text" @click="saveAhjPermit">Save</v-btn>
-    </v-flex>
+      <v-btn id="save-btn" color="primaryButton" class="white--text mr-0" @click="saveAhjPermit">Save</v-btn>
+    </v-col>
 
-    <v-layout row wrap>
+    <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-flex xs12 md3 mb-3 class="padded-sides">
+      <v-col cols="12" md="3" class="px-1 mb-3">
         <!-- SUBMISSION DETAILS -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -36,45 +36,45 @@
               <v-text-field v-model="ahjPermit.businessLicense"
                             label="Business License" filled
                             style="width: 50%; margin-right: 20px;"></v-text-field>
-              <v-flex style="width: 50%">
+              <v-col style="width: 50%">
                 <v-menu v-model="businessLicenseMenu" :close-on-content-click="false"
                         :nudge-right="40" transition="scale-transition" offset-y
                         full-width min-width="290px">
-                  <template #activator="{on}">
+                  <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.businessLicenseExpirationDate" filled
                                   label="mm/dd/yyyy" append-icon="event" readonly v-on="on">
                     </v-text-field>
                   </template>
                   <v-date-picker v-model="ahjPermit.businessLicenseExpirationDate" @input="businessLicenseMenu=false"></v-date-picker>
                 </v-menu>
-              </v-flex>
+              </v-col>
             </div>
             <div class="flex-row">
               <v-text-field v-model="ahjPermit.contractorLicense"
                             label="Contractor License" filled
                             style="width: 50%; margin-right: 20px;"></v-text-field>
-              <v-flex style="width: 50%">
+              <v-col style="width: 50%">
                 <v-menu v-model="contractorLicenseMenu" :close-on-content-click="false"
                         :nudge-right="40" transition="scale-transition" offset-y
                         full-width min-width="290px">
-                  <template #activator="{on}">
+                  <template v-slot:activator="{ on }">
                     <v-text-field label="mm/dd/yyyy" append-icon="event" readonly
                                   v-on="on" filled
                                   v-model="ahjPermit.contractorLicenseExpirationDate"></v-text-field>
                   </template>
                   <v-date-picker v-model="ahjPermit.contractorLicenseExpirationDate" @input="contractorLicenseMenu=false"></v-date-picker>
                 </v-menu>
-              </v-flex>
+              </v-col>
             </div>
             <div class="flex-row">
               <v-text-field v-model="ahjPermit.otherLicense"
                             label="Other License" filled
                             style="width: 50%; margin-right: 20px;"></v-text-field>
-              <v-flex style="width: 50%">
+              <v-col style="width: 50%">
                 <v-menu v-model="otherLicenseMenu" :close-on-content-click="false"
                         :nudge-right="40" transition="scale-transition"
                         offset-y full-width min-width="290px">
-                  <template #activator="{on}">
+                  <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.otherLicenseExpirationDate"
                                   label="mm/dd/yyyy" append-icon="event" readonly
                                   v-on="on" filled></v-text-field>
@@ -82,7 +82,7 @@
                   <v-date-picker v-model="ahjPermit.otherLicenseExpirationDate"
                                  @input="otherLicenseMenu=false"></v-date-picker>
                 </v-menu>
-              </v-flex>
+              </v-col>
             </div>
             <AhjChecklist
               v-if="dataReady"
@@ -97,10 +97,10 @@
                         style="margin-top: 30px"></v-textarea>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
 
       <!-- SECOND COLUMN -->
-      <v-flex xs12 md3 mb-3 class="padded-sides">
+      <v-col cols="12" md="3" class="px-1 mb-3">
         <!-- REVISION SUBMISSION DETAILS -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -130,10 +130,10 @@
             </v-textarea>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
 
       <!-- THIRD COLUMN -->
-      <v-flex xs12 md3 mb-3 class="padded-sides">
+      <v-col cols="12" md="3" class="px-1 mb-3">
         <!-- AS-BUILT SUBMISSION DETAILS -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -163,10 +163,10 @@
             </v-textarea>
           </v-card-text>
         </v-card>
-      </v-flex>
+      </v-col>
 
       <!-- FOURTH COLUMN -->
-      <v-flex xs12 md3 mb-3 class="padded-sides">
+      <v-col cols="12" md="3" class="px-1 mb-3">
         <!-- FOLLOW-UP / APPROVAL DETAILS -->
         <v-card class="mb-3">
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -297,13 +297,13 @@
             </tbody>
           </table>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
 
-    <v-layout row wrap>
-      <h1 class="pb-2 mb-4" style="border-bottom: 1px solid #ccc; width: 100%;">Links and Contacts</h1>
+    <h1 class="pb-2 mb-4" style="border-bottom: 1px solid #ccc; width: 100%;">Links and Contacts</h1>
+    <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-flex xs12 md4 mb-3 class="padded-sides">
+      <v-col cols="12" md="4" class="px-1 mb-3">
         <AhjPermitLink
           v-if="dataReady"
           title="Submission Links"
@@ -321,10 +321,10 @@
           :ahjId="ahjId"
           :contacts="ahjPermit.submissionContacts"
         ></AhjContact>
-      </v-flex>
+      </v-col>
 
       <!-- SECOND COLUMN -->
-      <v-flex xs12 md4 mb-3 class="padded-sides">
+      <v-col cols="12" md="4" class="px-1 mb-3">
         <AhjPermitLink
           v-if="dataReady"
           title="Follow-up and Delivery Links"
@@ -342,10 +342,10 @@
           :ahjId="ahjId"
           :contacts="ahjPermit.printLocations"
         ></AhjContact>
-      </v-flex>
+      </v-col>
 
       <!-- THIRD COLUMN -->
-      <v-flex xs12 md4 mb-3 class="padded-sides">
+      <v-col cols="12" md="4" class="px-1 mb-3">
         <v-card class="mb-3">
           <v-toolbar class="primaryCustom">
             <v-toolbar-title class="white--text font-weight-bold" title="Servicing FOT's">
@@ -375,10 +375,10 @@
           :ahjId="ahjId"
           :contacts="ahjPermit.followUpContacts"
         ></AhjContact>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
 
-  </v-layout>
+  </v-row>
 </template>
 
 <script>

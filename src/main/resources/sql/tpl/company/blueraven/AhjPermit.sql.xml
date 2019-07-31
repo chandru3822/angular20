@@ -123,8 +123,9 @@
           FROM (
             SELECT
               apl.id,
+              apl.link_type_id,
               apl.name,
-              apl.link AS "url",
+              apl.link,
               apl.username,
               apl.password,
               apl.notes
@@ -139,8 +140,9 @@
           FROM (
             SELECT
               apl.id,
+              apl.link_type_id,
               apl.name,
-              apl.link AS "url",
+              apl.link,
               apl.username,
               apl.password,
               apl.notes

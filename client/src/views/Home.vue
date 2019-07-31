@@ -1,6 +1,6 @@
 <template>
-  <v-layout column id="portal" v-if="loadComplete">
-    <v-flex xs12>
+  <v-row id="portal" v-if="loadComplete">
+    <v-col cols="12" class="pa-0">
       <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
       <!--non-mobile header...is this necessary?-->
       <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="53">
@@ -9,8 +9,8 @@
         <v-toolbar-items>
           <AccountMenu :showImage="true"></AccountMenu>
         </v-toolbar-items>
-        <v-tabs color="secondaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
-          <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
+        <v-tabs color="secondaryCustom" v-model="model" slot="extension" slider-color="secondaryCustom" background-color="primaryCustom">
+          <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path" class="ma-0">
             {{tab.label}}
           </v-tab>
         </v-tabs>
@@ -20,8 +20,8 @@
           <router-view class="router-view" />
         </v-container>
       </v-content>
-    </v-flex>
-  </v-layout>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
