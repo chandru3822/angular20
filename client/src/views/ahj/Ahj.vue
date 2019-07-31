@@ -1,120 +1,53 @@
 <template>
-  <v-layout column fill-height>
-    <v-flex xs12 shrink>
-      <v-layout align-center row fill-height mb-1 style="width: 100%">
-        <v-flex xs6 text-xs-left fill-height>
+  <v-row no-gutters style="width: 100% !important">
+    <v-col cols="12">
+      <v-row class="mb-1 px-3" align="center">
+        <v-col class="pa-0 text-left" cols="6">
           <v-tabs
             v-model="tabs"
-            color="rgba(0,0,0,0)"
+            background-color="rgba(0,0,0,0)"
             slider-color="primaryCustom"
           >
-            <v-tab to="/ahj">AHJ</v-tab>
+            <v-tab to="/ahj" class="ma-0">AHJ</v-tab>
             <v-tab to="/ahjUtility" class="text-capitalize">Utility</v-tab>
           </v-tabs>
-        </v-flex>
-        <v-flex xs6 text-xs-right fill-height>
+        </v-col>
+        <v-col class="pa-0 text-right" cols="6">
           <v-btn
             color="primaryButton"
-            class="app-button white--text"
+            class="ma-0 app-button white--text"
             @click="addItem"
           >Add New</v-btn>
-        </v-flex>
-      </v-layout>
+        </v-col>
+      </v-row>
 
       <v-divider></v-divider>
 
-      <v-layout column fill-height>
-        <v-flex xs12>
-          <v-dialog v-model="ahjDialog" max-width="500px">
-            <v-card>
-              <v-card-title>
-                <span class="headline">{{ ahjFormTitle }}</span>
-              </v-card-title>
-
-              <v-card-text>
-                <v-container grid-list-md>
-                  <v-layout column nowrap>
-                    <v-flex xs12 sm6 md4>
-                      <v-text-field
-                        v-model="editedItem.name"
-                        label="Name"
-                        required
-                        filled
-                      ></v-text-field>
-                    </v-flex>
-                    <v-flex xs12 sm6 md4>
-                      <v-select
-                        label="Metro Area"
-                        :items="metroAreas"
-                        v-model="editedItem.metroAreaId"
-                        required
-                        filled
-                      ></v-select>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card-text>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-                <v-btn color="primaryButton" raised @click="saveAhj" style="color: #fff !important"
-                       :disabled="!editedItem.name || !editedItem.metroAreaId">
-                  {{ ahjBtnTxt }}
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-          <v-dialog v-model="ahjDeleteDialog" max-width="500px">
-            <v-card>
-              <v-card-title>
-                <span class="headline">Confirm</span>
-              </v-card-title>
-
-              <v-card-text>
-                <v-container grid-list-md>
-                  <v-layout column nowrap>
-                    <v-flex xs12 sm6 md4>
-                      Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card-text>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-                <v-btn color="brRed" style="color: #fff !important" raised
-                       @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-          <v-layout my-5 fill-height>
-            <v-card style="width: 100% !important">
-              <v-card-title>
-                <v-spacer></v-spacer>
-                <v-text-field
-                  v-model="ahjSearch"
-                  append-icon="search"
-                  label="Search"
-                  single-line
-                  hide-details
-                ></v-text-field>
-              </v-card-title>
-              <v-data-table
-                :headers="visibleHeaders"
-                :items="filteredAhjs"
-                :search="ahjSearch"
-                :options="pagination"
-                :items-per-page="-1"
-                fixed-header
-                dense
-                hide-default-footer
-                class="elevation-1"
-                style="width: 100%"
-              >
+      <v-row no-gutters class="my-5">
+        <v-col cols="12">
+          <v-card>
+            <v-card-title>
+              <v-spacer></v-spacer>
+              <v-text-field
+                v-model="ahjSearch"
+                append-icon="search"
+                label="Search"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-card-title>
+            <v-data-table
+              :headers="visibleHeaders"
+              :items="filteredAhjs"
+              :search="ahjSearch"
+              :options="pagination"
+              :items-per-page="-1"
+              fixed-header
+              dense
+              hide-default-footer
+              class="elevation-1"
+              style="width: 100%"
+            >
 <!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
 <!--                    <template #header="{ headers }">-->
 <!--                      <thead>-->
@@ -152,35 +85,86 @@
 <!--                      </thead>-->
 <!--                    </template>-->
 
-                <template #body="{ items }" class="table-body">
-                  <tr
-                    v-for="(ahj, index) in items"
-                    :key="ahj.id"
-                    :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
-                  >
-                    <td>{{ ahj.name ? ahj.name : '' }}</td>
-                    <td>{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
-                    <td>{{ ahj.state ? ahj.state : '' }}</td>
-                    <td>
-                      <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
-                      <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
-                      <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
-                      <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">
-                        edit
-                      </v-icon>
-                      <v-icon small class="ahj-link-icon" @click="deleteItem(ahj)">
-                        delete
-                      </v-icon>
-                    </td>
-                  </tr>
-                </template>
-              </v-data-table>
-            </v-card>
-          </v-layout>
-          </v-flex>
-      </v-layout>
-    </v-flex>
-  </v-layout>
+              <template #body="{ items }" class="table-body">
+                <tr
+                  v-for="(ahj, index) in items"
+                  :key="ahj.id"
+                  :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
+                >
+                  <td>{{ ahj.name ? ahj.name : '' }}</td>
+                  <td>{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
+                  <td>{{ ahj.state ? ahj.state : '' }}</td>
+                  <td>
+                    <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
+                    <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
+                    <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
+                    <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">
+                      edit
+                    </v-icon>
+                    <v-icon small class="ahj-link-icon" @click="deleteItem(ahj)">
+                      delete
+                    </v-icon>
+                  </td>
+                </tr>
+              </template>
+            </v-data-table>
+
+            <v-dialog v-model="ahjDialog" max-width="500px">
+              <v-card>
+                <v-card-title>
+                  <span class="headline">{{ ahjFormTitle }}</span>
+                </v-card-title>
+
+                <v-card-text>
+                  <v-text-field
+                    label="Name"
+                    v-model="editedItem.name"
+                    required
+                    filled
+                  ></v-text-field>
+                  <v-select
+                    label="Metro Area"
+                    :items="metroAreas"
+                    v-model="editedItem.metroAreaId"
+                    required
+                    filled
+                  ></v-select>
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
+                  <v-btn color="primaryButton" raised @click="saveAhj" class="white--text"
+                         :disabled="!editedItem.name || !editedItem.metroAreaId">
+                    {{ ahjBtnTxt }}
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+
+            <v-dialog v-model="ahjDeleteDialog" max-width="500px">
+              <v-card>
+                <v-card-title>
+                  <span class="headline">Confirm</span>
+                </v-card-title>
+
+                <v-card-text>
+                  Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
+                  <v-btn color="brRed" class="white--text" raised
+                         @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -230,6 +214,7 @@
       },
       ahjDialog: false,
       ahjDeleteDialog: false,
+      addMode: false,
       ahjFilters: [],
       ahjSearchFilters: {
         name: [],
@@ -263,10 +248,10 @@
         })
       },
       ahjFormTitle () {
-        return this.editedItem.id === -1 ? 'Create AHJ' : 'Update AHJ'
+        return this.addMode ? 'Create AHJ' : 'Update AHJ'
       },
       ahjBtnTxt () {
-        return this.editedItem.id === -1 ? 'Add' : 'Update'
+        return this.addMode ? 'Add' : 'Update'
       },
       ...mapState({
         loading: state => state.app.loading
@@ -297,11 +282,13 @@
       },
       addItem () {
         this.getActiveMetroAreas()
+        this.addMode = true
         this.ahjDialog = true
       },
       editAhj (item) {
         this.editedItem = Object.assign({}, item)
         this.getActiveMetroAreas()
+        this.addMode = false
         this.ahjDialog = true
       },
       deleteItem (item) {

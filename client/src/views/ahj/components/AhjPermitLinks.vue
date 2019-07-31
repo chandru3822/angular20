@@ -30,7 +30,7 @@
                @click="deleteLink" class="error">
           Delete
         </v-btn>
-        <v-btn @click="saveLink" color="primaryButton" style="color: #fff !important"
+        <v-btn @click="saveLink" color="primaryButton" class="white--text"
                :disabled="!linkInfoEntered">
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
