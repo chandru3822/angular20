@@ -5,7 +5,9 @@ export const AppMutations = {
 
 export const AppStore = {
   state: {
-    loading: false
+    loading: false,
+    allFileTypes: "doc,docx,csv,xls,xlsx,jpg,jpeg,gif,png,tiff,pdf",
+    imageFileTypes: "jpg,jpeg,gif,png,tiff,pdf"
   },
   mutations: {
     [AppMutations.SET_LOADING]: (state, loading) => (state.loading = loading)

@@ -37,12 +37,12 @@ public class ProcessStepRequirementController {
   public void deleteType(@PathVariable Long requirementId) {
     processStepRequirementService.deleteRequirement(requirementId);
   }
-//
-//  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-//  public void updateProcess(@RequestBody ProcessStepStatusType type) {
-//    processStepRequirementService.updateType(type);
-//  }
-//
+
+  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateProcess(@RequestBody ProcessStepRequirement requirement) {
+    processStepRequirementService.updateRequirement(requirement);
+  }
+
   @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStepRequirement insertProcess(@RequestBody ProcessStepRequirement requirement) {
     return processStepRequirementService.insertRequirement(requirement);

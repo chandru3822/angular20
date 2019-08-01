@@ -63,6 +63,21 @@ public class ProcessStepRequirementService {
     return result.orElse(null);
   }
 
+  public ProcessStepRequirement updateRequirement(ProcessStepRequirement requirement) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("requirementTypeId", requirement.getProcessStepRequirementTypeId());
+    params.put("operatorTypeId", requirement.getOperatorTypeId());
+    params.put("requirementValue", requirement.getProcessRequirementValue());
+    params.put("customFieldGroupId", requirement.getCustomFieldGroupId());
+    params.put("companyFunctionId", requirement.getCompanyFunctionId());
+    params.put("requirementNbr", requirement.getRequirementNbr());
+    params.put("createdById", currentUser.getId());
+
+    Long id = sqlCache.updateReturningId("processStepRequirement.insertRequirement", params, "id").longValue();
+    return getRequirementById(id);
+  }
+
   public ProcessStepRequirement insertRequirement(ProcessStepRequirement requirement) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

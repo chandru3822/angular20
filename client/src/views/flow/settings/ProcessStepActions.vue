@@ -28,7 +28,6 @@
                   label="Function"
                   item-text="functionName"
                   item-value="id"
-                  @input="loadOperatorTypes"
         ></v-select>
         <v-select v-if="parent.id"
                   v-model="newRequirement.customFieldGroupId"
@@ -36,7 +35,6 @@
                   label="Custom Field"
                   item-text="fieldName"
                   item-value="customFieldGroupId"
-                  @input="loadOperatorTypes"
         ></v-select>
         <v-select v-if="(newRequirement.processStepRequirementTypeId === 1 && newRequirement.customFieldGroupId) || (newRequirement.processStepRequirementTypeId === 2 && newRequirement.companyFunctionId)"
                   v-model="newRequirement.operatorTypeId"
@@ -51,7 +49,7 @@
                       label="Value">
         </v-text-field>
         <v-btn v-if="newRequirement.processRequirementValue"
-               @click="saveRequirementType">
+               @click="saveNewRequirement">
           <v-icon>save</v-icon>
           Save
         </v-btn>
@@ -64,7 +62,6 @@
             :items="requirements"
             :items-per-page="-1"
             single-expand
-            show-expand
             :expanded.sync="expanded"
             hide-default-footer
             class="elevation-1"
@@ -77,65 +74,80 @@
             No requirements for this process step
           </template>
 
-          <template v-slot:expanded-item="{ headers }">
-            <td :colspan="headers.length">Peek-a-boo!</td>
+<!--          <template v-slot:expanded-item="{ headers, item }">-->
+<!--            <td :colspan="headers.length">Peek-a-boo!</td>-->
+<!--          </template>-->
+
+          <template v-slot:expanded-item="{ headers, item }">
+              <td :colspan="headers.length" class="pa-4">
+                <v-select v-model="item.operatorTypeId"
+                          :items="operatorTypes"
+                          class="one-hunned"
+                          label="Operator"
+                          item-text="operatorType"
+                          item-value="id"
+                ></v-select>
+                <v-text-field v-model="item.processRequirementValue"
+                              placeholder="Enter a value"
+                              label="Value">
+                </v-text-field>
+                <v-btn>
+                  <v-icon>save</v-icon>
+                  Save
+                </v-btn>
+              </td>
           </template>
 
-          <template #body="{ items }">
-            <tbody>
-              <tr v-for="(item, index) in filterBy(items, false, 'archived')" :key="item.id" v-if="!item.custom" :class="{ 'shaded-row': index % 2 }">
-                <td>{{ item.processStepRequirementType }}</td>
-                <td v-if="item.processStepRequirementTypeId === 1">
-                  {{ item.parentName }} | {{ item.fieldName }}
-                </td>
-                <td v-else>
-                  {{ item.companyFunction }}
-                </td>
-                <td>{{ item.operatorType }}</td>
-                <td>{{ item.processRequirementValue }}</td>
-                <td>
-                  <v-btn text>
-                    <v-icon>edit</v-icon>
+          <template #item.custom="{ item }">
+            <span v-if="item.processStepRequirementTypeId === 1">
+              {{ item.parentName }} | {{ item.fieldName }}
+            </span>
+            <span>
+              {{ item.companyFunction }}
+            </span>
+
+          </template>
+          <template #item.icons="{ item }">
+            <v-btn text @click="expanded = [item]" v-if="!expanded.includes(item)">
+              <v-icon>edit</v-icon>
+            </v-btn>
+            <v-btn text @click="expanded = []" v-if="expanded.includes(item)">cancel</v-btn>
+            <v-dialog
+                v-model="item.deleteConfirm"
+                width="500">
+              <template v-slot:activator="{ on }">
+                <v-btn text v-on="on">
+                  <v-icon>delete</v-icon>
+                </v-btn>
+              </template>
+              <v-card>
+                <v-card-title
+                    class="headline grey lighten-2"
+                    primary-title>
+                  Confirm
+                </v-card-title>
+
+                <v-card-text>
+                  Are you sure you want to delete this requirement?
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                      @click="item.deleteConfirm = false">
+                    No
                   </v-btn>
-                  <v-dialog
-                      v-model="item.deleteConfirm"
-                      width="500">
-                    <template v-slot:activator="{ on }">
-                      <v-btn text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                          class="headline grey lighten-2"
-                          primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Are you sure you want to delete this requirement?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            @click="item.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            text
-                            @click="item.archived = true; deleteRequirement(item.id)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </td>
-              </tr>
-            </tbody>
+                  <v-btn
+                      color="primary"
+                      text
+                      @click="item.archived = true; deleteRequirement(item.id)">
+                    Yes
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </template>
         </v-data-table>
 <!--        <v-list v-for="(r, index) in requirements"-->
@@ -277,7 +289,7 @@
           { text: 'Details', value: 'custom', show: true},
           { text: 'Operator', value: 'operatorType', show: true },
           { text: 'Value', value: 'processRequirementValue', show: true },
-          { text: null, value: null, show: true }
+          { text: null, value: 'icons', show: true }
         ],
         addNewRequirement: false,
         newRequirement: {},
@@ -304,6 +316,7 @@
     async created () {
       this.getRequirements()
       this.getActions()
+      this.loadOperatorTypes()
     },
     methods: {
       //requirements
@@ -339,7 +352,7 @@
         const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/operator`)
         this.operatorTypes = data
       },
-      async saveRequirementType() {
+      async saveNewRequirement() {
         console.log('SAVE WILL BE HERE', this.newRequirement)
         //todo: i dont know what this is
         this.newRequirement.requirementNbr = 1
@@ -350,6 +363,9 @@
         this.newRequirement = {}
         this.parent = {}
         this.availableFunctions = []
+      },
+      async updateRequirementType(requirement) {
+        putRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`, requirement)
       },
       async deleteRequirement(id) {
         await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement/${id}`)
