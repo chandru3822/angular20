@@ -14,9 +14,9 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 public class BeansConfiguration {
-    @Value("${aws.7oaks.accessKeyId}")
+    @Value("${aws.accessKeyId}")
     private String accessKey;
-    @Value("${aws.7oaks.secretKey}")
+    @Value("${aws.secretKey}")
     private String secretKey;
 
     @Bean
