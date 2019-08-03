@@ -209,7 +209,7 @@
                 </v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-btn icon color="#ddd" style="border-radius: 3px"
-                       @click="addInspectionDocument">
+                       @click="addDocument">
                   <v-icon class="white--text">add</v-icon>
                 </v-btn>
               </v-toolbar>
@@ -219,11 +219,11 @@
                 <v-list-item :title="document.name">
                   <v-list-item-content>
                     <v-list-item-title>
-                      <a @click="downloadInspectionDocument(document.id)" class="list-link">{{document.name}}</a>
+                      <a @click="downloadDocument(document.id)" class="list-link">{{document.name}}</a>
                     </v-list-item-title>
                   </v-list-item-content>
                   <v-list-item-action>
-                    <v-icon small class="mr-3" @click="deleteInspectionDocument(document.id)">delete</v-icon>
+                    <v-icon small class="mr-3" @click="deleteDocument(document.id)">delete</v-icon>
                   </v-list-item-action>
                 </v-list-item>
               </v-list>
@@ -466,14 +466,14 @@
       resetForm() {
         console.log("Resetting the form...")
       },
-      addInspectionDocument() {
-        console.log("Adding inspection document...")
+      addDocument() {
+        console.log("Adding document...")
       },
-      deleteInspectionDocument(documentId) {
-        console.log("Deleting inspection document with id " + documentId + "...")
+      deleteDocument(documentId) {
+        console.log("Deleting document with id " + documentId + "...")
       },
-      downloadInspectionDocument(documentId) {
-        console.log("Downloading inspection document with id " + documentId + "...")
+      downloadDocument(documentId) {
+        console.log("Downloading document with id " + documentId + "...")
       },
       setTimePeriodDates() {
         switch (this.permittingCycleTimes.timePeriod) {
