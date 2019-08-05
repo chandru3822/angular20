@@ -24,7 +24,6 @@ public class AttachmentTypeController {
   @Autowired
   private AttachmentTypeService attachmentTypeService;
 
-  // AttachmentType stuff (move to a different controller?)
   @RequestMapping(value = "/types", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
   public List<AttachmentType> getAttachmentTypes (@PathVariable Long companyId) {
     return attachmentTypeService.getAttachmentTypesForCompany(companyId);

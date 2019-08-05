@@ -1,33 +1,37 @@
 <sql>
   <processStepRequirement.getRequirementsForStep><![CDATA[
-      select psr.*,
-             false as archived,
-             ot.operator_type,
-             psrt.process_step_requirement_type,
-             ps.id as parent_id,
-             ps.process_step_name as parent_name,
-             cf.field_name,
-             null as company_function
-      from flow.process_step_requirement psr
-      inner join flow.custom_field_group cfg on cfg.id = psr.custom_field_group_id
-      inner join flow.custom_field cf on cf.id = cfg.custom_field_id
-      inner join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
-      inner join flow.process_step ps on ps.id = cfgt.process_step_id
-      inner join flow.operator_type ot on ot.id = psr.operator_type_id
-      inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
-      union all
-      select psr.*,
-             false as archived,
-             ot.operator_type,
-             psrt.process_step_requirement_type,
-             null,
-             null,
-             null,
-             'Testing'
-      from flow.process_step_requirement psr
-      inner join flow.operator_type ot on ot.id = psr.operator_type_id
-      inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
-      where psr.company_function_id is not null
+    select psr.*,
+           ot.operator_type,
+           psrt.process_step_requirement_type,
+           ps.id as parent_id,
+           ps.process_step_name as parent_name,
+           cf.field_name,
+           null as company_function_name
+    from flow.process_step_requirement psr
+             inner join flow.custom_field_group cfg on cfg.id = psr.custom_field_group_id
+             inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+             inner join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
+             inner join flow.process_step ps on ps.id = cfgt.process_step_id
+             inner join flow.operator_type ot on ot.id = psr.operator_type_id
+             inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
+    where psr.archived is not true
+        and psr.process_step_id = :processStepId
+    union all
+    select psr.*,
+           ot.operator_type,
+           psrt.process_step_requirement_type,
+           null,
+           null,
+           null,
+           cf.company_function_name
+    from flow.process_step_requirement psr
+             inner join flow.operator_type ot on ot.id = psr.operator_type_id
+             inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
+             inner join flow.company_function cf on cf.company_id = :companyId
+    where psr.company_function_id is not null
+        and psr.archived is not true
+      and psr.process_step_id = :processStepId
+    order by requirement_nbr
   ]]></processStepRequirement.getRequirementsForStep>
 
   <processStepRequirement.getRequirement><![CDATA[
@@ -48,9 +52,22 @@
     where archived is not true
   ]]></processStepRequirement.getRequirementTypes>
 
+  <processStepRequirement.updateRequirement><![CDATA[
+    update flow.process_step_requirement
+    set operator_type_id = :operatorTypeId,
+        requirement_value = :requirementValue,
+        modified_by_id = :modifiedById,
+        date_updated = now()
+    where id = :id
+  ]]></processStepRequirement.updateRequirement>
+
   <processStepRequirement.insertRequirement><![CDATA[
-    insert into flow.process_step_requirement(process_step_requirement_type_id, operator_type_id, process_requirement_value, custom_field_group_id, company_function_id, requirement_nbr, date_created, created_by_id) values
-    (:requirementTypeId, :operatorTypeId, :requirementValue, :customFieldGroupId, :companyFunctionId, :requirementNbr, now(), :createdById)
+    insert into flow.process_step_requirement(process_step_requirement_type_id, operator_type_id, requirement_value,
+                                          custom_field_group_id, company_function_id, requirement_nbr, date_created, created_by_id, process_step_id) values
+    (:requirementTypeId, :operatorTypeId, :requirementValue, :customFieldGroupId, :companyFunctionId,
+        (select coalesce(max(requirement_nbr),0) + 1
+           from flow.process_step_requirement
+         where process_step_id = :processStepId), now(), :createdById, :processStepId)
   ]]></processStepRequirement.insertRequirement>
 
 </sql>

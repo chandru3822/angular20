@@ -13,7 +13,7 @@ public class ProcessStepRequirement {
 
   private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupId, companyFunctionId,
       requirementNbr, processStepId, parentId;
-  private String processStepRequirementType, processRequirementValue, operatorType, parentName, fieldName, companyFunction;
+  private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName;
   private Boolean archived;
 }
 

@@ -26,7 +26,7 @@
                   v-model="newRequirement.companyFunctionId"
                   :items="availableFunctions"
                   label="Function"
-                  item-text="functionName"
+                  item-text="companyFunctionName"
                   item-value="id"
         ></v-select>
         <v-select v-if="parent.id"
@@ -44,11 +44,11 @@
                   item-value="id"
         ></v-select>
         <v-text-field v-if="newRequirement.operatorTypeId"
-                      v-model="newRequirement.processRequirementValue"
+                      v-model="newRequirement.requirementValue"
                       placeholder="Enter a value"
                       label="Value">
         </v-text-field>
-        <v-btn v-if="newRequirement.processRequirementValue"
+        <v-btn v-if="newRequirement.requirementValue"
                @click="saveNewRequirement">
           <v-icon>save</v-icon>
           Save
@@ -59,18 +59,18 @@
 <!--        <v-list v-for="(r, index) in filterBy(requirements, false, 'archived')"-->
         <v-data-table
             :headers="headers"
-            :items="requirements"
+            :items="filterRequirements()"
             :items-per-page="-1"
             single-expand
             :expanded.sync="expanded"
             hide-default-footer
             class="elevation-1"
         >
-          <template v-slot:no-data>
+          <template #no-data>
             NO DATA HERE!
           </template>
 
-          <template v-slot:no-results>
+          <template #no-results>
             No requirements for this process step
           </template>
 
@@ -78,7 +78,7 @@
 <!--            <td :colspan="headers.length">Peek-a-boo!</td>-->
 <!--          </template>-->
 
-          <template v-slot:expanded-item="{ headers, item }">
+          <template #expanded-item="{ headers, item }">
               <td :colspan="headers.length" class="pa-4">
                 <v-select v-model="item.operatorTypeId"
                           :items="operatorTypes"
@@ -87,11 +87,11 @@
                           item-text="operatorType"
                           item-value="id"
                 ></v-select>
-                <v-text-field v-model="item.processRequirementValue"
+                <v-text-field v-model="item.requirementValue"
                               placeholder="Enter a value"
                               label="Value">
                 </v-text-field>
-                <v-btn>
+                <v-btn @click="updateRequirement(item)">
                   <v-icon>save</v-icon>
                   Save
                 </v-btn>
@@ -103,7 +103,7 @@
               {{ item.parentName }} | {{ item.fieldName }}
             </span>
             <span>
-              {{ item.companyFunction }}
+              {{ item.companyFunctionName }}
             </span>
 
           </template>
@@ -115,7 +115,7 @@
             <v-dialog
                 v-model="item.deleteConfirm"
                 width="500">
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-btn text v-on="on">
                   <v-icon>delete</v-icon>
                 </v-btn>
@@ -154,7 +154,7 @@
 <!--                :key="index">-->
 <!--          <v-list-item>-->
 <!--            <v-list-item-content>-->
-<!--              {{r.processStepRequirementType}}| {{r.parentName}} | {{r.fieldName}}| {{r.operatorType}} | {{r.processRequirementValue}}-->
+<!--              {{r.processStepRequirementType}}| {{r.parentName}} | {{r.fieldName}}| {{r.operatorType}} | {{r.requirementValue}}-->
 <!--            </v-list-item-content>-->
 <!--            <v-dialog-->
 <!--                v-model="r.deleteConfirm"-->
@@ -232,7 +232,7 @@
             <v-dialog
                 v-model="a.deleteConfirm"
                 width="500">
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-list-item-action class="clickable" v-on="on">
                   <v-icon>delete</v-icon>
                 </v-list-item-action>
@@ -285,10 +285,11 @@
     data () {
       return {
         headers: [
+          { text: 'ID', value: 'requirementNbr', show: true },
           { text: 'Type', value: 'processStepRequirementType', show: true },
           { text: 'Details', value: 'custom', show: true},
           { text: 'Operator', value: 'operatorType', show: true },
-          { text: 'Value', value: 'processRequirementValue', show: true },
+          { text: 'Value', value: 'requirementValue', show: true },
           { text: null, value: 'icons', show: true }
         ],
         addNewRequirement: false,
@@ -324,6 +325,9 @@
         const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`)
         this.requirements = data
       },
+      filterRequirements () {
+        return this.requirements.filter(r => { return !r.archived})
+      },
       async getRequirementTypes () {
         this.addNewRequirement = !this.addNewRequirement
         if (this.addNewRequirement){
@@ -337,11 +341,8 @@
           const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/getParentObjects`)
           this.parentObjects = data
         } else {
-          console.log('WILL BE A FUNCTION')
-          this.availableFunctions = [
-            { id: 1, functionName: 'Your Mom'},
-            { id: 2, functionName: 'Your Dad'},
-          ]
+          const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/function`)
+          this.availableFunctions = data
         }
       },
       async loadFieldsByParent() {
@@ -354,8 +355,6 @@
       },
       async saveNewRequirement() {
         console.log('SAVE WILL BE HERE', this.newRequirement)
-        //todo: i dont know what this is
-        this.newRequirement.requirementNbr = 1
         this.newRequirement.processStepId = this.processStepId
         const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`, this.newRequirement)
         this.requirements.push(data)
@@ -364,8 +363,11 @@
         this.parent = {}
         this.availableFunctions = []
       },
-      async updateRequirementType(requirement) {
-        putRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`, requirement)
+      async updateRequirement(requirement) {
+        const {data} = await putRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`, requirement)
+        this.expanded = []
+        // this forces the list to update the operator displayed ... using requirement = data did not work
+        requirement.operatorType = data.operatorType
       },
       async deleteRequirement(id) {
         await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement/${id}`)

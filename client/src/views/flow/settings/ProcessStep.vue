@@ -16,10 +16,10 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-tabs>
-            <v-tab to="/settings/processStep/1/components">
+            <v-tab :to="`/settings/processStep/${processStepId}/components`">
               UI Components
             </v-tab>
-            <v-tab to="/settings/processStep/1/actions">
+            <v-tab :to="`/settings/processStep/${processStepId}/actions`">
               Actions
             </v-tab>
           </v-tabs>

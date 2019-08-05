@@ -24,8 +24,9 @@ public class ProcessStepRequirementController {
   private ProcessStepRequirementService processStepRequirementService;
 
   @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepRequirement> getRequirementsForStep (@PathVariable Long stepId) {
-    return processStepRequirementService.getRequirementsForStep(stepId);
+  public List<ProcessStepRequirement> getRequirementsForStep (@PathVariable Long companyId,
+                                                              @PathVariable Long stepId) {
+    return processStepRequirementService.getRequirementsForStep(companyId, stepId);
   }
 
   @RequestMapping(value = "/types", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,8 +40,8 @@ public class ProcessStepRequirementController {
   }
 
   @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateProcess(@RequestBody ProcessStepRequirement requirement) {
-    processStepRequirementService.updateRequirement(requirement);
+  public ProcessStepRequirement updateProcess(@RequestBody ProcessStepRequirement requirement) {
+    return processStepRequirementService.updateRequirement(requirement);
   }
 
   @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -30,12 +30,12 @@ public class ProcessStepRequirementService {
   @Autowired
   SecurityService securityService;
 
-  public List<ProcessStepRequirement> getRequirementsForStep(Long processStepId) {
+  public List<ProcessStepRequirement> getRequirementsForStep(Long companyId, Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
     params.put("processStepId", processStepId);
-    //todo: fix this query to exclude archived and get by processStepId
     //todo: and do union with requirements coming from functions
-    List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.getRequirementsForStep", Collections.emptyMap(), ProcessStepRequirement.class);
+    List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.getRequirementsForStep", params, ProcessStepRequirement.class);
     return results;
   }
 
@@ -66,15 +66,12 @@ public class ProcessStepRequirementService {
   public ProcessStepRequirement updateRequirement(ProcessStepRequirement requirement) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("requirementTypeId", requirement.getProcessStepRequirementTypeId());
     params.put("operatorTypeId", requirement.getOperatorTypeId());
-    params.put("requirementValue", requirement.getProcessRequirementValue());
-    params.put("customFieldGroupId", requirement.getCustomFieldGroupId());
-    params.put("companyFunctionId", requirement.getCompanyFunctionId());
-    params.put("requirementNbr", requirement.getRequirementNbr());
-    params.put("createdById", currentUser.getId());
+    params.put("requirementValue", requirement.getRequirementValue());
+    params.put("modifiedById", currentUser.getId());
+    params.put("id", requirement.getId());
 
-    Long id = sqlCache.updateReturningId("processStepRequirement.insertRequirement", params, "id").longValue();
+    Long id = sqlCache.updateReturningId("processStepRequirement.updateRequirement", params, "id").longValue();
     return getRequirementById(id);
   }
 
@@ -83,11 +80,12 @@ public class ProcessStepRequirementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("requirementTypeId", requirement.getProcessStepRequirementTypeId());
     params.put("operatorTypeId", requirement.getOperatorTypeId());
-    params.put("requirementValue", requirement.getProcessRequirementValue());
+    params.put("requirementValue", requirement.getRequirementValue());
     params.put("customFieldGroupId", requirement.getCustomFieldGroupId());
     params.put("companyFunctionId", requirement.getCompanyFunctionId());
     params.put("requirementNbr", requirement.getRequirementNbr());
     params.put("createdById", currentUser.getId());
+    params.put("processStepId", requirement.getProcessStepId());
 
     Long id = sqlCache.updateReturningId("processStepRequirement.insertRequirement", params, "id").longValue();
     return getRequirementById(id);

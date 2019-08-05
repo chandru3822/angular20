@@ -188,13 +188,13 @@
       async getAttachmentTypesForProcessStep () {
         this.addNewType = !this.addNewType
         if(this.addNewType){
-          const { data } = await getRequest(`/api/v1/flow/companies/${this.companyId}/attachment/typesForStep/${this.$route.params.id}`)
+          const { data } = await getRequest(`/api/v1/flow/companies/${this.companyId}/attachmentType/typesForStep/${this.$route.params.id}`)
           this.availableAttachmentTypes = data
         }
       },
       async assignNewType () {
         this.newType.processStepId = this.$route.params.id
-        const { data } = await postRequest(`/api/v1/flow/companies/${this.companyId}/attachment/processStepType`, this.newType)
+        const { data } = await postRequest(`/api/v1/flow/companies/${this.companyId}/attachmentType/processStepType`, this.newType)
         console.log('randaLogger', data)
         this.processStep.attachmentTypes.push(data)
         // reset fields
@@ -204,7 +204,7 @@
       async deleteTypeFromStep (id) {
         this.addNewType = false
         console.log('deleting')
-        await deleteRequest(`/api/v1/flow/companies/${this.companyId}/attachment/processStepType/${id}`)
+        await deleteRequest(`/api/v1/flow/companies/${this.companyId}/attachmentType/processStepType/${id}`)
         // this.availableAttachmentTypes = data
       },
       async getLinksForProcessStep () {

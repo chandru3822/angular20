@@ -34,7 +34,7 @@ public class AttachmentTypeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
 
-    List<AttachmentType> attachmentTypes = sqlCache.query("attachment.getTypesForCompany", params, AttachmentType.class);
+    List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getTypesForCompany", params, AttachmentType.class);
     return attachmentTypes;
   }
 
@@ -43,12 +43,12 @@ public class AttachmentTypeService {
     params.put("companyId", companyId);
     params.put("id", id);
 
-    List<AttachmentType> attachmentTypes = sqlCache.query("attachment.getAvailableTypesForProcessStep", params, AttachmentType.class);
+    List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getAvailableTypesForProcessStep", params, AttachmentType.class);
     return attachmentTypes;
   }
 
   public Optional<AttachmentType> getType(Long companyId, Long typeId) {
-    return sqlCache.get("attachment.getType",
+    return sqlCache.get("attachmentType.getType",
         ImmutableMap.of("companyId", companyId,
             "typeId", typeId),
         AttachmentType.class);
@@ -57,13 +57,13 @@ public class AttachmentTypeService {
   public void deleteProcessStepType(Long id) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update("attachment.deleteProcessStepType",
+    sqlCache.update("attachmentType.deleteProcessStepType",
         ImmutableMap.of("id", id,
             "modifiedById", currentUser.getId()));
   }
 
   public Optional<ProcessStepAttachmentType> getProcessStepType(Long id) {
-    Optional<ProcessStepAttachmentType> result = sqlCache.get("attachment.getProcessStepType",
+    Optional<ProcessStepAttachmentType> result = sqlCache.get("attachmentType.getProcessStepType",
         ImmutableMap.of("id", id), ProcessStepAttachmentType.class);
 
     return result;
@@ -72,7 +72,7 @@ public class AttachmentTypeService {
   public Optional<ProcessStepAttachmentType> insertProcessStepType(ProcessStepAttachmentType attachmentType) {
     User currentUser = securityService.getCurrentUser();
 
-    Long id = sqlCache.updateReturningId("attachment.insertProcessStepType",
+    Long id = sqlCache.updateReturningId("attachmentType.insertProcessStepType",
         ImmutableMap.of("createdById", currentUser.getId(),
             "attachmentTypeId", attachmentType.getAttachmentTypeId(),
             "processStepId", attachmentType.getProcessStepId()), "id").longValue();
@@ -81,19 +81,19 @@ public class AttachmentTypeService {
   }
 
   public void deleteType(Long typeId) {
-    sqlCache.update("attachment.deleteType",
+    sqlCache.update("attachmentType.deleteType",
         ImmutableMap.of("id", typeId));
   }
 
   public void updateType(AttachmentType attachmentType) {
-    sqlCache.update("attachment.updateType",
+    sqlCache.update("attachmentType.updateType",
         ImmutableMap.of("companyId", attachmentType.getCompanyId(),
             "id", attachmentType.getId(),
             "attachmentType", attachmentType.getAttachmentType()));
   }
 
   public Optional<AttachmentType> insertType(AttachmentType type) {
-    Long id = sqlCache.updateReturningId("attachment.insertType",
+    Long id = sqlCache.updateReturningId("attachmentType.insertType",
         ImmutableMap.of("attachmentType", type.getAttachmentType(),
             "companyId", type.getCompanyId()),
         "id").longValue();

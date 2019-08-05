@@ -1,0 +1,9 @@
+<sql>
+  <companyFunction.getFunctions><![CDATA[
+    select *
+    from flow.company_function cf
+    where cf.company_id = :companyId
+    and cf.archived is not true
+  ]]></companyFunction.getFunctions>
+
+</sql>
