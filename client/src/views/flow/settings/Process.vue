@@ -146,8 +146,10 @@ export default {
   },
   methods: {
     async getProcessDetails () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processes/${this.processId}`)
       this.process = data
+      this.$store.commit(AppMutations.SET_LOADING, false)
     },
     async saveProcess () {
       console.log('will save process here')

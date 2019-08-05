@@ -109,8 +109,10 @@
     },
     methods: {
       async getLinks () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/links`)
         this.links = orderBy(data, [a => a.link.toLowerCase()])
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteLink (typeId) {
         await deleteRequest(`/api/v1/flow/companies/${this.companyId}/links/${typeId}`)

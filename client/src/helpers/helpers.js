@@ -6,6 +6,36 @@ const {VUE_APP_BASE_API} = process.env
 export const IS_MOBILE = window.innerWidth <= 768
 export const SCREEN_WIDTH = window.innerWidth
 export const MAX_FILE_SIZE = 10485760
+export const SNACKBAR_ERROR = {
+  enabled: false,
+  y: 'top',
+  x: null,
+  mode: '',
+  timeout: 5000,
+  text: '',
+  color: 'brRed',
+  fontClass: 'secondary--text'
+}
+export const SNACKBAR_SUCCESS = {
+  enabled: false,
+  y: 'top',
+  x: null,
+  mode: '',
+  timeout: 5000,
+  text: '',
+  color: 'brGreen',
+  fontClass: 'secondary--text'
+}
+export const SNACKBAR_WARNING = {
+  enabled: false,
+  y: 'top',
+  x: null,
+  mode: '',
+  timeout: 5000,
+  text: '',
+  color: 'brYellow',
+  fontClass: 'secondary--text'
+}
 
 // functions
 export async function getRequest (path, optionalParams) {

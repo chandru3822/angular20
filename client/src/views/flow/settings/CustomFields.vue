@@ -279,6 +279,7 @@
     },
     methods: {
       async getCustomFields() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getAll`)
         data.forEach(d => {
           d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
@@ -286,6 +287,7 @@
         this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
         this.customFields = cloneDeep(this.allCustomFields)
         this.customFields.unshift(cloneDeep(this.blankNewObject))
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getCustomFieldObjectTypes() {
         const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getCustomFieldObjectTypes`)

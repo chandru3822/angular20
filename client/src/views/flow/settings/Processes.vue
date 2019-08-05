@@ -99,8 +99,10 @@ export default {
   },
   methods: {
     async getProcesses () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processes`)
       this.processes = data
+      this.$store.commit(AppMutations.SET_LOADING, false)
     },
     async deleteProcess (processId) {
       await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processes/${processId}`)

@@ -199,6 +199,7 @@
 <script>
   import Vue2Filters from 'vue2-filters'
   import draggable from 'vuedraggable'
+  import {AppMutations} from '@/stores/AppStore'
   import orderBy from 'lodash.orderby'
   import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
 
@@ -232,6 +233,7 @@
     async created() {},
     methods: {
       async saveFieldGroup() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         // todo: what is the best way to NOT hardcode this?  processStep objectTypeId = 4
         this.newGroup.objectTypeId = 4
         this.newGroup.groupOrder = 0
@@ -241,6 +243,7 @@
         this.customFieldGroups.push(data)
         this.newGroup = {}
         this.createNew = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       changeGroupOrder() {
         console.log('changed group order')

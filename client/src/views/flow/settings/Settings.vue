@@ -23,6 +23,9 @@
         <v-subheader :class="{'shaded-row': $route.path.includes('/settings/processStep')}">
           <router-link to="/settings/processSteps">Process Steps</router-link>
         </v-subheader>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/functions`}">
+          <router-link to="/settings/functions">Functions</router-link>
+        </v-subheader>
         <v-subheader :class="{'shaded-row': $route.path === `/settings/statuses`}">
           <router-link to="/settings/statuses">Statuses</router-link>
         </v-subheader>
@@ -60,8 +63,10 @@ export default {
   },
   methods: {
     async getCustomFieldObjectTypes () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getCustomFieldObjectTypes`)
       this.objectTypes = data
+      this.$store.commit(AppMutations.SET_LOADING, false)
     },
   },
   created () {

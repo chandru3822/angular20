@@ -127,7 +127,14 @@ export default new Router({
           }, {
             path: 'statuses',
             component: () => import (/* webpackChunkName: "statuses" */ './views/flow/settings/Statuses.vue')
+          }, {
+            path: 'functions',
+            component: () => import (/* webpackChunkName: "functions" */ './views/flow/settings/Functions.vue')
+          }, {
+            path: 'function/:id',
+            component: () => import (/* webpackChunkName: "function" */ './views/flow/settings/Function.vue')
           }
+
         ]
       }]
     }

@@ -157,6 +157,7 @@
 
 <script>
 import { IS_MOBILE } from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import orderBy from 'lodash.orderby'
@@ -206,6 +207,7 @@ export default {
   },
   methods: {
     async getCustomFieldGroupTypes () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
         params: {
           objectTypeId: this.$route.params.id
@@ -213,6 +215,7 @@ export default {
       })
       this.masterCustomFieldGroupTypes = data
       this.customFieldGroupTypes = cloneDeep(data)
+      this.$store.commit(AppMutations.SET_LOADING, false)
     },
     async fetchCustomFields () {
       const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getCustomFieldsInGroup`, {

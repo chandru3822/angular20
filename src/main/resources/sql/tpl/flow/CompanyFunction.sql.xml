@@ -1,9 +1,57 @@
 <sql>
+
   <companyFunction.getFunctions><![CDATA[
     select *
     from flow.company_function cf
     where cf.company_id = :companyId
     and cf.archived is not true
   ]]></companyFunction.getFunctions>
+
+  <companyFunction.getFunctionDetails><![CDATA[
+    select cf.*,
+           coalesce((
+                SELECT array_to_json(array_agg(row_to_json(params)))
+                FROM (
+                         select cfp.id,
+                                case when cfp.company_function_id is null then cf.id else cfp.company_function_id end as "companyFunctionId",
+                                cfp.archived,
+                                cfp.default_value as "defaultValue",
+                                cfp.system_value_id as "systemValueId",
+                                sv.system_value as "systemValue",
+                                dfp.id as "dbFunctionParamId",
+                                dfp.db_function_id as "dbFunctionId",
+                                dfp.parameter_name as "parameterName",
+                                dfp.display_order as "displayOrder",
+                                dfp.parameter_data_type_id as "parameterDataTypeId",
+                                dfp.system_value as "isSystemValue",
+                                dfp.default_value as "isDefaultValue"
+                         from flow.db_function_param dfp
+                          left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
+                          left join flow.system_value sv on sv.id = cfp.system_value_id
+                         where dfp.db_function_id = df.id
+                            and dfp.archived is not true
+                         order by dfp.display_order) params), '[]') AS "companyFunctionParams"
+    from flow.company_function cf
+             inner join flow.db_function df on df.id = cf.db_function_id
+    where cf.id = :id
+  ]]></companyFunction.getFunctionDetails>
+
+  <companyFunction.getSystemValues><![CDATA[
+    select *
+    from flow.system_value
+  ]]></companyFunction.getSystemValues>
+
+  <companyFunction.updateCompanyFunctionParam><![CDATA[
+    update flow.company_function_param
+    set custom_field_group_id = :customFieldGroupId,
+        default_value = :defaultValue,
+        system_value_id = :systemValueId
+    where id = :id
+  ]]></companyFunction.updateCompanyFunctionParam>
+
+  <companyFunction.insertCompanyFunctionParam><![CDATA[
+    insert into flow.company_function_param (company_function_id, custom_field_group_id, default_value, system_value_id, db_function_param_id) values
+      (:companyFunctionId, :customFieldGroupId, :defaultValue, :systemValueId, :dbFunctionParamId)
+  ]]></companyFunction.insertCompanyFunctionParam>
 
 </sql>

@@ -98,8 +98,10 @@
     },
     methods: {
       async getStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/status`)
         this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteType (typeId) {
         await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processStep/status/${typeId}`)

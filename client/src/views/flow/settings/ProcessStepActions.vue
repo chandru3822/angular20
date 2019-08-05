@@ -275,6 +275,7 @@
 
 <script>
   import Vue2Filters from 'vue2-filters'
+  import {AppMutations} from '@/stores/AppStore'
   import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
 
@@ -322,8 +323,10 @@
     methods: {
       //requirements
       async getRequirements() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`)
         this.requirements = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       filterRequirements () {
         return this.requirements.filter(r => { return !r.archived})
