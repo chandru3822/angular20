@@ -120,6 +120,9 @@ label[for="adminOriginatorSelect"] {
 .centered {
   text-align: center;
 }
+.text-left {
+  text-align: left;
+}
 .error-text {
   color: var(--v-error-base) !important;
 }

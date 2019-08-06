@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.SystemValue;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,13 @@ public class CompanyFunctionService {
     return results;
   }
 
+  public void deleteCompanyFunction(Long id) {
+//    todo: add updated by and date
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("companyFunction.deleteCompanyFunction", params);
+  }
+
   public CompanyFunction getFunctionDetails(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -52,26 +60,29 @@ public class CompanyFunctionService {
     return results.orElse(null);
   }
 
-  public void saveFunctionParams(Long functionId, List<CompanyFunctionParam> params) {
+  public void saveFunctionParams(Long functionId, CompanyFunctionParam param) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> queryParams = new HashMap<>();
     queryParams.put("functionId", functionId);
 
 //    todo: add values for date_updated and such when ready
 
-    for(CompanyFunctionParam param : params) {
-      queryParams.put("dbFunctionParamId", param.getDbFunctionParamId());
-      queryParams.put("companyFunctionId", param.getCompanyFunctionId());
-      queryParams.put("customFieldGroupId", param.getCustomFieldGroupId());
-      queryParams.put("defaultValue", param.getDefaultValue());
-      queryParams.put("systemValueId", param.getSystemValueId());
+    queryParams.put("dbFunctionParamId", param.getDbFunctionParamId());
+    queryParams.put("companyFunctionId", param.getCompanyFunctionId());
+    queryParams.put("customFieldGroupId", param.getCustomFieldGroupId());
+    queryParams.put("defaultValue", param.getDefaultValue());
+    queryParams.put("systemValueId", param.getSystemValueId());
+    queryParams.put("userId", currentUser.getId());
 
-      if(null != param.getId()) {
-        queryParams.put("id", param.getId());
-        sqlCache.update("companyFunction.updateCompanyFunctionParam", queryParams);
-      } else if (null != param.getCustomFieldGroupId() || null != param.getDefaultValue() || null != param.getSystemValueId()){
-        // don't insert a new row if all the possible input values are null
-        sqlCache.update("companyFunction.insertCompanyFunctionParam", queryParams);
-      }
+    if(null != param.getId()) {
+      queryParams.put("id", param.getId());
+
+      sqlCache.update("companyFunction.updateCompanyFunctionParam", queryParams);
+    } else if (null != param.getCustomFieldGroupId() || null != param.getDefaultValue() || null != param.getSystemValueId()){
+      // don't insert a new row if all the possible input values are null
+
+      sqlCache.update("companyFunction.insertCompanyFunctionParam", queryParams);
     }
   }
 

@@ -49,9 +49,9 @@ public class ProcessStepController {
     return processStepService.insertStep(companyId, processStep);
   }
 
-  @RequestMapping(value = "/{id}/getParentObjects", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/getParentObjects", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStep> getParentObjects (@PathVariable Long companyId,
-                                             @PathVariable Long id) {
+                                             @RequestParam(required = false) Long id) {
     return processStepService.getParentObjects(companyId, id);
   }
 }

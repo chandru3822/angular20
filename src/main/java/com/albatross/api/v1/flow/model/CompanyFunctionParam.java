@@ -11,8 +11,8 @@ import lombok.Setter;
 @Setter
 public class CompanyFunctionParam {
 
-  private Long id, companyFunctionId, customFieldGroupId, systemValueId, dbFunctionParamId, displayOrder, parameterDataTypeId;
-  private String companyFunctionName, defaultValue, systemValue, parameterName;
+  private Long id, companyFunctionId, customFieldGroupId, systemValueId, dbFunctionParamId, displayOrder, parameterDataTypeId, processStepId, createdById, modifiedById;
+  private String companyFunctionName, defaultValue, systemValue, parameterName, fieldName, processStepName;
   private Boolean archived, isSystemValue, isDefaultValue;
 }
 

@@ -341,7 +341,7 @@
       async selectRequirementType() {
         //1 == custom field, 2 == function
         if(this.newRequirement.processStepRequirementTypeId === 1){
-          const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/getParentObjects`)
+          const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
           this.parentObjects = data
         } else {
           const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/function`)

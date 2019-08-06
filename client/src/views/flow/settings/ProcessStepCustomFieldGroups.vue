@@ -269,7 +269,7 @@
           this.parentObjects = []
           this.ancillaryCustomFields = []
         } else if (this.addField && this.newFieldType === 'ancillary') {
-          const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/getParentObjects`)
+          const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
           this.selectedAncillaryField = {}
           this.parentObjects = data
           this.availableCustomFields = []

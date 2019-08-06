@@ -111,9 +111,9 @@
   <processStep.getParentObjects><![CDATA[
     select *
     from flow.process_step
-    where id != :id
+    where case when :id::integer is not null then id != :id else 1=1 end
       and company_id = :companyId
-    and archived is not true
+      and archived is not true
     order by process_step_name
   ]]></processStep.getParentObjects>
 </sql>
