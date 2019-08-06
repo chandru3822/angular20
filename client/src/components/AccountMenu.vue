@@ -89,6 +89,7 @@ export default {
     if(this.$store.state.user.details.timezone === null) {
       console.log('ttt', moment.tz.guess())
       this.timezone = moment.tz.guess()
+      this.$store.dispatch(UserActions.CHANGE_TIMEZONE, this.timezone)
     } else {
       this.timezone = this.$store.state.user.details.timezone
     }
