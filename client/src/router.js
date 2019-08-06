@@ -87,6 +87,9 @@ export default new Router({
         component: () => import (/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
         children: [
           {
+            path: 'userProfile',
+            component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
+          }, {
             path: 'customFields',
             component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue'),
           }, {

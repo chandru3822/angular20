@@ -65,13 +65,13 @@
           <tr  class="text-xs-left" :class="{'shaded-row': details.companyFunctionParams.indexOf(item) % 2}">
             <td class="text-left">{{ item.parameterName }}</td>
             <!-- customTypeColumn -->
-            <td class="text-left" v-if="!item.isDefaultValue && !item.isSystemValue">
+            <td class="text-left" v-if="item.parameterTypeId === 3">
               {{ item.processStepName || 'Custom Field'}}
             </td>
-            <td class="text-left" v-else-if="item.isSystemValue">
+            <td class="text-left" v-else-if="item.parameterTypeId === 1">
               System
             </td>
-            <td class="text-left" v-else-if="item.isDefaultValue">
+            <td class="text-left" v-else-if="item.parameterTypeId === 2">
               Default
             </td>
             <!-- customValueColumn -->

@@ -1,6 +1,7 @@
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
-  LOGOUT: 'logout'
+  LOGOUT: 'logout',
+  CHANGE_TIMEZONE: 'changeTimezone'
 }
 
 export const UserMutations = {
@@ -8,7 +9,7 @@ export const UserMutations = {
   AUTH_STATUS: 'authStatus',
   LOGIN_ERROR: 'setLoginError',
   INIT: 'storeInt',
-  SET_DETAILS: 'setDetails'
+  SET_DETAILS: 'setDetails',
 }
 
 export const UserStore = {
@@ -22,10 +23,14 @@ export const UserStore = {
     [UserMutations.SET_JWT]: (state, jwt) => (state.jwt = jwt),
     [UserMutations.AUTH_STATUS]: (state, status) => (state.authorized = status),
     [UserMutations.LOGIN_ERROR]: (state, err) => (state.loginError = err),
-    [UserMutations.SET_DETAILS]: (state, details) =>
-      (state.details = details)
+    [UserMutations.SET_DETAILS]: (state, details) => (state.details = details),
   },
   actions: {
+    [UserActions.CHANGE_TIMEZONE]: async ({ commit, getters, state }, timezone) => {
+      state.details.timezone = timezone
+
+      commit(UserMutations.SET_DETAILS, state.details)
+    },
     [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
       commit(UserMutations.LOGIN_ERROR, '')
 

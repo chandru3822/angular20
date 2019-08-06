@@ -7,7 +7,8 @@ import store from './store'
 import axios from 'axios'
 import { UserMutations } from './stores/UserStore'
 import JsonExcel from 'vue-json-excel'
-import moment from 'moment'
+// import moment from 'moment'
+import moment from 'moment-timezone'
 
 // @todo: make PWA awesomeness
 // import './registerServiceWorker'
@@ -21,12 +22,18 @@ Vue.component('downloadExcel', JsonExcel)
 
 Vue.use(Vue2Filters)
 
-Vue.filter('formatDate', function (value, format) {
+Vue.filter('formatDate', function (value, type, timezone, format) {
+  //types: 'date', 'timestamp'
+  if(!type || (type === 'timezone' && !timezone)) {
+    console.error('TYPE IS REQUIRED, TIMEZONE IS REQUIRED FOR TIMESTAMPS')
+    return
+  }
+
   if (value && format) {
-    return moment(String(value)).format(format)
+    return moment(String(value)).tz(timezone).format(format)
   } else if (value) {
-    // default format if none provided
-    return moment(String(value)).format('M/D/YYYY')
+    // default format if none provided, date doesn't do anything with timezone, just reformats the string
+    return type === 'date' ? moment(String(value)).format('M/D/YYYY') : moment(String(value)).tz(timezone).format('M/D/YYYY h:mm a')
   }
 })
 

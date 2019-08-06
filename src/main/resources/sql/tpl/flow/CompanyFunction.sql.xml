@@ -32,9 +32,8 @@
                                 dfp.db_function_id as "dbFunctionId",
                                 dfp.parameter_name as "parameterName",
                                 dfp.display_order as "displayOrder",
-                                dfp.parameter_data_type_id as "parameterDataTypeId",
-                                dfp.system_value as "isSystemValue",
-                                dfp.default_value as "isDefaultValue"
+                                dfp.data_type_id as "dataTypeId",
+                                dfp.parameter_type_id as "parameterTypeId"
                          from flow.db_function_param dfp
                           left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
                           left join flow.system_value sv on sv.id = cfp.system_value_id

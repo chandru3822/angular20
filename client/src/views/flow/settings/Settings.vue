@@ -4,7 +4,9 @@
     <v-flex xs4>
       <v-sheet  class="elevation-2 text-xs-left pa-4 br-10 testing">
         <h2>Preferences</h2>
-        <v-subheader>User Profile</v-subheader>
+        <v-subheader :class="{'shaded-row': $route.path === `/settings/userProfile`}">
+          <router-link to="/settings/userProfile">User Profile</router-link>
+        </v-subheader>
         <v-subheader>Account</v-subheader>
         <h2>Custom UI Components</h2>
         <v-subheader :class="{'shaded-row': $route.path === `/settings/customFields`}">
