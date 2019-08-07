@@ -2,8 +2,15 @@
 <template>
   <v-row dense>
     <v-col class="text-right" cols="12">
-      <a @click="resetForm" class="cancel-link" style="margin-right: 10px">Cancel</a>
-      <v-btn id="save-btn" color="primaryButton" class="white--text mr-0" @click="saveAhjPermit">Save</v-btn>
+      <a @click="resetForm"
+         class="cancel-link"
+         style="margin-right: 10px"
+      >Cancel</a>
+      <v-btn id="save-btn"
+             color="primaryButton"
+             class="white--text mr-0"
+             @click="saveAhjPermit"
+      >Save</v-btn>
     </v-col>
 
     <v-row no-gutters>
@@ -15,86 +22,134 @@
             Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Submittal Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.submittalTypeId"
+            <v-select v-model="ahjPermit.submittalTypeId"
+                      :items="submittalMethods"
+                      label="Submittal Method"
+                      filled
             ></v-select>
-            <v-select label="HOA Approval Required for Submission" filled
+            <v-select v-model="ahjPermit.hoaApprovalRequiredTypeId"
                       :items="approvalRequiredOptions"
-                      v-model="ahjPermit.hoaApprovalRequiredTypeId"
+                      label="HOA Approval Required for Submission"
+                      filled
             ></v-select>
-            <v-select label="NEM Approval Required for Submission" filled
+            <v-select v-model="ahjPermit.nemApprovalRequiredTypeId"
                       :items="approvalRequiredOptions"
-                      v-model="ahjPermit.nemApprovalRequiredTypeId"
+                      label="NEM Approval Required for Submission"
+                      filled
             ></v-select>
-            <v-text-field v-model="ahjPermit.depositAmount" filled
-                          label="Deposit Amount" prepend-inner-icon="attach_money"
+            <v-text-field v-model="ahjPermit.depositAmount"
+                          label="Deposit Amount"
+                          filled
+                          prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.submissionPaymentTypeId"
+            <v-select v-model="ahjPermit.submissionPaymentTypeId"
+                      :items="submittalMethods"
+                      label="Payment Method"
+                      filled
             ></v-select>
-            <div class="flex-row">
-              <v-text-field v-model="ahjPermit.businessLicense"
-                            label="Business License" filled
-                            style="width: 50%; margin-right: 20px;"></v-text-field>
-              <v-col style="width: 50%">
-                <v-menu v-model="businessLicenseMenu" :close-on-content-click="false"
-                        :nudge-right="40" transition="scale-transition" offset-y
-                        full-width min-width="290px">
+            <v-row>
+              <v-col cols="6">
+                <v-text-field v-model="ahjPermit.businessLicense"
+                              label="Business License"
+                              filled
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-menu v-model="businessLicenseMenu"
+                        :close-on-content-click="false"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        full-width
+                        min-width="290px">
                   <template v-slot:activator="{ on }">
-                    <v-text-field v-model="ahjPermit.businessLicenseExpirationDate" filled
-                                  label="mm/dd/yyyy" append-icon="event" readonly v-on="on">
+                    <v-text-field v-model="ahjPermit.businessLicenseExpirationDate"
+                                  label="mm/dd/yyyy"
+                                  filled
+                                  append-icon="event"
+                                  readonly
+                                  v-on="on">
                     </v-text-field>
                   </template>
-                  <v-date-picker v-model="ahjPermit.businessLicenseExpirationDate" @input="businessLicenseMenu=false"></v-date-picker>
+                  <v-date-picker v-model="ahjPermit.businessLicenseExpirationDate"
+                                 @input="businessLicenseMenu=false"
+                  ></v-date-picker>
                 </v-menu>
               </v-col>
-            </div>
-            <div class="flex-row">
-              <v-text-field v-model="ahjPermit.contractorLicense"
-                            label="Contractor License" filled
-                            style="width: 50%; margin-right: 20px;"></v-text-field>
-              <v-col style="width: 50%">
-                <v-menu v-model="contractorLicenseMenu" :close-on-content-click="false"
-                        :nudge-right="40" transition="scale-transition" offset-y
-                        full-width min-width="290px">
+            </v-row>
+            <v-row>
+              <v-col cols="6">
+                <v-text-field v-model="ahjPermit.contractorLicense"
+                              label="Contractor License"
+                              filled
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-menu v-model="contractorLicenseMenu"
+                        :close-on-content-click="false"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        full-width
+                        min-width="290px">
                   <template v-slot:activator="{ on }">
-                    <v-text-field label="mm/dd/yyyy" append-icon="event" readonly
-                                  v-on="on" filled
-                                  v-model="ahjPermit.contractorLicenseExpirationDate"></v-text-field>
+                    <v-text-field v-model="ahjPermit.contractorLicenseExpirationDate"
+                                  label="mm/dd/yyyy"
+                                  filled
+                                  append-icon="event"
+                                  readonly
+                                  v-on="on"
+                    ></v-text-field>
                   </template>
-                  <v-date-picker v-model="ahjPermit.contractorLicenseExpirationDate" @input="contractorLicenseMenu=false"></v-date-picker>
+                  <v-date-picker v-model="ahjPermit.contractorLicenseExpirationDate"
+                                 @input="contractorLicenseMenu=false"
+                  ></v-date-picker>
                 </v-menu>
               </v-col>
-            </div>
-            <div class="flex-row">
-              <v-text-field v-model="ahjPermit.otherLicense"
-                            label="Other License" filled
-                            style="width: 50%; margin-right: 20px;"></v-text-field>
-              <v-col style="width: 50%">
-                <v-menu v-model="otherLicenseMenu" :close-on-content-click="false"
-                        :nudge-right="40" transition="scale-transition"
-                        offset-y full-width min-width="290px">
+            </v-row>
+            <v-row>
+              <v-col cols="6">
+                <v-text-field v-model="ahjPermit.otherLicense"
+                              label="Other License"
+                              filled
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-menu v-model="otherLicenseMenu"
+                        :close-on-content-click="false"
+                        :nudge-right="40"
+                        transition="scale-transition"
+                        offset-y
+                        full-width
+                        min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.otherLicenseExpirationDate"
-                                  label="mm/dd/yyyy" append-icon="event" readonly
-                                  v-on="on" filled></v-text-field>
+                                  label="mm/dd/yyyy"
+                                  filled
+                                  append-icon="event"
+                                  readonly
+                                  v-on="on"
+                    ></v-text-field>
                   </template>
                   <v-date-picker v-model="ahjPermit.otherLicenseExpirationDate"
-                                 @input="otherLicenseMenu=false"></v-date-picker>
+                                 @input="otherLicenseMenu=false"
+                  ></v-date-picker>
                 </v-menu>
               </v-col>
-            </div>
-            <AhjChecklist
-              v-if="dataReady"
-              title="Submission Checklist"
-              :checklistTypeId="1"
-              :permitId="ahjPermit.id"
-              :ahjId="ahjId"
-              :checklistItems="ahjPermit.submissionChecklist"
+            </v-row>
+            <AhjChecklist v-if="dataReady"
+                          title="Submission Checklist"
+                          :checklistTypeId="1"
+                          :permitId="ahjPermit.id"
+                          :ahjId="ahjId"
+                          :checklistItems="ahjPermit.submissionChecklist"
             ></AhjChecklist>
-            <v-textarea label="Submission Instructions" filled auto-grow
-                        v-model="ahjPermit.submissionNote"
-                        style="margin-top: 30px"></v-textarea>
+            <v-textarea v-model="ahjPermit.submissionNote"
+                        label="Submission Instructions"
+                        filled
+                        auto-grow
+                        style="margin-top: 30px"
+            ></v-textarea>
           </v-card-text>
         </v-card>
       </v-col>
@@ -107,27 +162,34 @@
             Revision Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Submittal Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.revisionSubmittalTypeId"
+            <v-select v-model="ahjPermit.revisionSubmittalTypeId"
+                      :items="submittalMethods"
+                      label="Submittal Method"
+                      filled
             ></v-select>
-            <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
-                          filled v-model="ahjPermit.revisionFeeAmount"
+            <v-text-field v-model="ahjPermit.revisionFeeAmount"
+                          label="Fee Amount"
+                          filled
+                          prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.revisionPaymentTypeId"
+            <v-select v-model="ahjPermit.revisionPaymentTypeId"
+                      :items="submittalMethods"
+                      label="Payment Method"
+                      filled
             ></v-select>
-            <AhjChecklist
-              v-if="dataReady"
-              title="Revision Submission Checklist"
-              :checklistTypeId="2"
-              :permitId="ahjPermit.id"
-              :ahjId="ahjId"
-              :checklist-items="ahjPermit.revisionChecklist"
+            <AhjChecklist v-if="dataReady"
+                          title="Revision Submission Checklist"
+                          :checklistTypeId="2"
+                          :permitId="ahjPermit.id"
+                          :ahjId="ahjId"
+                          :checklist-items="ahjPermit.revisionChecklist"
             ></AhjChecklist>
-            <v-textarea label="Revision Submission Instructions" filled auto-grow
+            <v-textarea v-model="ahjPermit.revisionNote"
+                        label="Revision Submission Instructions"
+                        filled
+                        auto-grow
                         style="margin-top: 30px"
-                        v-model="ahjPermit.revisionNote">
-            </v-textarea>
+            ></v-textarea>
           </v-card-text>
         </v-card>
       </v-col>
@@ -140,27 +202,34 @@
             As-Built Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Submittal Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.asBuiltSubmittalTypeId"
+            <v-select v-model="ahjPermit.asBuiltSubmittalTypeId"
+                      :items="submittalMethods"
+                      label="Submittal Method"
+                      filled
             ></v-select>
-            <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
-                          filled v-model="ahjPermit.asBuiltFeeAmount"
+            <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
+                          label="Fee Amount"
+                          filled
+                          prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.asBuiltPaymentTypeId"
+            <v-select v-model="ahjPermit.asBuiltPaymentTypeId"
+                      :items="submittalMethods"
+                      label="Payment Method"
+                      filled
             ></v-select>
-            <AhjChecklist
-              v-if="dataReady"
-              title="As-Built Submission Checklist"
-              :checklistTypeId="3"
-              :permitId="ahjPermit.id"
-              :ahjId="ahjId"
-              :checklist-items="ahjPermit.asBuiltChecklist"
+            <AhjChecklist v-if="dataReady"
+                          title="As-Built Submission Checklist"
+                          :checklistTypeId="3"
+                          :permitId="ahjPermit.id"
+                          :ahjId="ahjId"
+                          :checklist-items="ahjPermit.asBuiltChecklist"
             ></AhjChecklist>
-            <v-textarea label="As-Built Submission Instructions" filled auto-grow
+            <v-textarea v-model="ahjPermit.asBuiltNote"
+                        label="As-Built Submission Instructions"
+                        filled
+                        auto-grow
                         style="margin-top: 30px"
-                        v-model="ahjPermit.asBuiltNote">
-            </v-textarea>
+            ></v-textarea>
           </v-card-text>
         </v-card>
       </v-col>
@@ -174,15 +243,23 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <v-text-field v-model="ahjPermit.approvalTimeline"
-                          label="Approval Timeline" filled></v-text-field>
-            <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
-                          filled v-model="ahjPermit.followUpFeeAmount"
+                          label="Approval Timeline"
+                          filled
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.followUpPaymentTypeId"
+            <v-text-field v-model="ahjPermit.followUpFeeAmount"
+                          label="Fee Amount"
+                          filled
+                          prepend-inner-icon="attach_money"
+            ></v-text-field>
+            <v-select v-model="ahjPermit.followUpPaymentTypeId"
+                      :items="submittalMethods"
+                      label="Payment Method"
+                      filled
             ></v-select>
             <v-text-field v-model="ahjPermit.documentsAvailable"
-                          label="When are documents available?" filled></v-text-field>
+                          label="When are documents available?"
+                          filled
+            ></v-text-field>
           </v-card-text>
         </v-card>
 
@@ -192,25 +269,33 @@
             Delivery Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Pickup Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.deliveryPickupTypeId"
+            <v-select v-model="ahjPermit.deliveryPickupTypeId"
+                      :items="submittalMethods"
+                      label="Pickup Method"
+                      filled
             ></v-select>
-            <v-text-field label="Fee Amount" prepend-inner-icon="attach_money"
-                          filled v-model="ahjPermit.deliveryFeeAmount"
+            <v-text-field v-model="ahjPermit.deliveryFeeAmount"
+                          label="Fee Amount"
+                          filled
+                          prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select label="Payment Method" :items="submittalMethods" filled
-                      v-model="ahjPermit.deliveryPaymentTypeId"
+            <v-select v-model="ahjPermit.deliveryPaymentTypeId"
+                      :items="submittalMethods"
+                      label="Payment Method"
+                      filled
             ></v-select>
-            <AhjDocument
-              v-if="dataReady"
-              title="Documents Required for Inspection"
-              :documentTypeId="1"
-              :sourceId="ahjPermit.id"
-              :ahjId="ahjId"
-              :documents="documents"
+            <AhjDocument v-if="dataReady"
+                         title="Documents Required for Inspection"
+                         :documentTypeId="1"
+                         :sourceId="ahjPermit.id"
+                         :ahjId="ahjId"
+                         :documents="documents"
             ></AhjDocument>
             <v-textarea v-model="ahjPermit.deliveryNote"
-                        label="Delivery Instructions" auto-grow filled></v-textarea>
+                        label="Delivery Instructions"
+                        filled
+                        auto-grow
+            ></v-textarea>
           </v-card-text>
         </v-card>
 
@@ -220,9 +305,11 @@
             Permitting Cycle Times
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Viewing Data For:" :items="timePeriods" filled
-                      v-model="permittingCycleTimes.timePeriod"
+            <v-select v-model="permittingCycleTimes.timePeriod"
+                      :items="timePeriods"
                       @change="setTimePeriodDates"
+                      label="Viewing Data For:"
+                      filled
             ></v-select>
             <p style="margin: -15px 0">{{permittingCycleTimes.startDate}} to {{permittingCycleTimes.endDate}}</p>
           </v-card-text>
@@ -278,47 +365,45 @@
       </v-col>
     </v-row>
 
-    <h1 class="pb-2 mb-4" style="border-bottom: 1px solid #ccc; width: 100%;">Links and Contacts</h1>
+    <h1 class="pb-2 mb-4"
+        style="border-bottom: 1px solid #ccc; width: 100%;"
+    >Links and Contacts</h1>
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
       <v-col cols="12" md="4" class="px-1 mb-3">
-        <AhjPermitLink
-          v-if="dataReady"
-          title="Submission Links"
-          :linkTypeId="4"
-          :permitId="ahjPermit.id"
-          :ahjId="ahjId"
-          :links="ahjPermit.submissionLinks"
+        <AhjPermitLink v-if="dataReady"
+                       title="Submission Links"
+                       :linkTypeId="4"
+                       :permitId="ahjPermit.id"
+                       :ahjId="ahjId"
+                       :links="ahjPermit.submissionLinks"
         ></AhjPermitLink>
 
-        <AhjContact
-          v-if="dataReady"
-          title="Submission Contacts"
-          :contactTypeId="1"
-          :permitId="ahjPermit.id"
-          :ahjId="ahjId"
-          :contacts="ahjPermit.submissionContacts"
+        <AhjContact v-if="dataReady"
+                    title="Submission Contacts"
+                    :contactTypeId="1"
+                    :permitId="ahjPermit.id"
+                    :ahjId="ahjId"
+                    :contacts="ahjPermit.submissionContacts"
         ></AhjContact>
       </v-col>
 
       <!-- SECOND COLUMN -->
       <v-col cols="12" md="4" class="px-1 mb-3">
-        <AhjPermitLink
-          v-if="dataReady"
-          title="Follow-up and Delivery Links"
-          :linkTypeId="5"
-          :permitId="ahjPermit.id"
-          :ahjId="ahjId"
-          :links="ahjPermit.followUpLinks"
+        <AhjPermitLink v-if="dataReady"
+                       title="Follow-up and Delivery Links"
+                       :linkTypeId="5"
+                       :permitId="ahjPermit.id"
+                       :ahjId="ahjId"
+                       :links="ahjPermit.followUpLinks"
         ></AhjPermitLink>
 
-        <AhjContact
-          v-if="dataReady"
-          title="Print Locations"
-          :contactTypeId="7"
-          :permitId="ahjPermit.id"
-          :ahjId="ahjId"
-          :contacts="ahjPermit.printLocations"
+        <AhjContact v-if="dataReady"
+                    title="Print Locations"
+                    :contactTypeId="7"
+                    :permitId="ahjPermit.id"
+                    :ahjId="ahjId"
+                    :contacts="ahjPermit.printLocations"
         ></AhjContact>
       </v-col>
 
@@ -326,12 +411,14 @@
       <v-col cols="12" md="4" class="px-1 mb-3">
         <v-card class="mb-3">
           <v-toolbar class="primaryCustom">
-            <v-toolbar-title class="white--text font-weight-bold" title="Servicing FOT's">
-              Servicing FOT's
-            </v-toolbar-title>
+            <v-toolbar-title class="white--text font-weight-bold"
+                             title="Servicing FOT's"
+            >Servicing FOT's</v-toolbar-title>
           </v-toolbar>
-          <v-list v-show="ahjPermit.servicingFots.length > 0" v-for="fot in ahjPermit.servicingFots"
-                  :key="fot.officeId" class="px-2">
+          <v-list v-show="ahjPermit.servicingFots.length > 0"
+                  v-for="fot in ahjPermit.servicingFots"
+                  :key="fot.officeId"
+                  class="px-2">
             <v-list-item :title="fot.office">
               <v-list-item-content class="flex-row-center">
                 <v-list-item-title>
@@ -340,18 +427,17 @@
               </v-list-item-content>
             </v-list-item>
           </v-list>
-          <div class="empty-list" v-show="ahjPermit.servicingFots.length < 1">
-            No FOT's found
-          </div>
+          <div class="empty-list"
+               v-show="ahjPermit.servicingFots.length < 1"
+          >No FOT's found</div>
         </v-card>
 
-        <AhjContact
-          v-if="dataReady"
-          title="Follow-up and Delivery Contacts"
-          :contactTypeId="6"
-          :permitId="ahjPermit.id"
-          :ahjId="ahjId"
-          :contacts="ahjPermit.followUpContacts"
+        <AhjContact v-if="dataReady"
+                    title="Follow-up and Delivery Contacts"
+                    :contactTypeId="6"
+                    :permitId="ahjPermit.id"
+                    :ahjId="ahjId"
+                    :contacts="ahjPermit.followUpContacts"
         ></AhjContact>
       </v-col>
     </v-row>
@@ -499,7 +585,7 @@
         console.log("AHJ Permit:", this.ahjPermit)
       }
     },
-    async created () {
+    async created() {
       this.ahjId = parseInt(this.$route.params.ahjId)
       this.getAhjPermit().then(() => {
         console.log("AHJ Permit:", this.ahjPermit)
@@ -514,10 +600,6 @@
 <style scoped lang="scss">
   .padded-sides {
     padding: 0 5px;
-  }
-  .flex-row {
-    display: flex;
-    flex-flow: row nowrap;
   }
   .v-card__title,
   .v-toolbar__title {
