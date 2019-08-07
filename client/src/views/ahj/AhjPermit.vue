@@ -201,36 +201,14 @@
             <v-select label="Payment Method" :items="submittalMethods" filled
                       v-model="ahjPermit.deliveryPaymentTypeId"
             ></v-select>
-            <v-card class="mb-4">
-              <v-toolbar class="primaryCustom">
-                <v-toolbar-title class="white--text font-weight-bold"
-                                 title="Documents Required for Inspection">
-                  Documents Required for Inspection
-                </v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-btn icon color="#ddd" style="border-radius: 3px"
-                       @click="addDocument">
-                  <v-icon class="white--text">add</v-icon>
-                </v-btn>
-              </v-toolbar>
-              <v-list v-show="documents.length > 0"
-                      v-for="document in documents"
-                      :key="document.id">
-                <v-list-item :title="document.name">
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      <a @click="downloadDocument(document.id)" class="list-link">{{document.name}}</a>
-                    </v-list-item-title>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-icon small class="mr-3" @click="deleteDocument(document.id)">delete</v-icon>
-                  </v-list-item-action>
-                </v-list-item>
-              </v-list>
-              <div class="empty-list" v-show="documents.length < 1">
-                No documents uploaded
-              </div>
-            </v-card>
+            <AhjDocument
+              v-if="dataReady"
+              title="Documents Required for Inspection"
+              :documentTypeId="1"
+              :sourceId="ahjPermit.id"
+              :ahjId="ahjId"
+              :documents="documents"
+            ></AhjDocument>
             <v-textarea v-model="ahjPermit.deliveryNote"
                         label="Delivery Instructions" auto-grow filled></v-textarea>
           </v-card-text>
@@ -386,14 +364,16 @@
   import moment from 'moment'
   import AhjChecklist from './components/AhjChecklist.vue'
   import AhjContact from './components/AhjContacts.vue'
+  import AhjDocument from './components/AhjDocuments.vue'
   import AhjPermitLink from './components/AhjPermitLinks.vue'
-  import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import { getRequest } from '@/helpers/helpers'
 
   export default {
     name: 'ahjPermit',
     components: {
       AhjChecklist,
       AhjContact,
+      AhjDocument,
       AhjPermitLink
     },
     data: () => ({
@@ -463,18 +443,6 @@
       documents: []
     }),
     methods: {
-      resetForm() {
-        console.log("Resetting the form...")
-      },
-      addDocument() {
-        console.log("Adding document...")
-      },
-      deleteDocument(documentId) {
-        console.log("Deleting document with id " + documentId + "...")
-      },
-      downloadDocument(documentId) {
-        console.log("Downloading document with id " + documentId + "...")
-      },
       setTimePeriodDates() {
         switch (this.permittingCycleTimes.timePeriod) {
           case 'This Week':
@@ -511,6 +479,21 @@
             break
         }
       },
+      async getAhjPermit() {
+        const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit`)
+        this.ahjPermit = cloneDeep(data)
+      },
+      async getDocuments() {
+        const params = {
+          sourceId: this.ahjPermit.id,
+          attachmentSourceTypeId: 1
+        }
+        const {data} = await getRequest('/api/v1/flow/document/getSourceAttachments', {params})
+        this.documents = cloneDeep(data)
+      },
+      resetForm() {
+        console.log("Resetting the form...")
+      },
       saveAhjPermit() {
         console.log("Saving AHJ Permit...")
         console.log("AHJ Permit:", this.ahjPermit)
@@ -518,10 +501,12 @@
     },
     async created () {
       this.ahjId = parseInt(this.$route.params.ahjId)
-      const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit`)
-      this.ahjPermit = cloneDeep(data)
-      console.log("AHJ Permit:", this.ahjPermit)
-      this.dataReady = true
+      this.getAhjPermit().then(() => {
+        console.log("AHJ Permit:", this.ahjPermit)
+        this.getDocuments().then(() => {
+          this.dataReady = true
+        })
+      })
     }
   }
 </script>

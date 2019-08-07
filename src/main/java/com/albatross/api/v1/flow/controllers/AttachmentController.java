@@ -24,7 +24,7 @@ public class AttachmentController {
   @Value("${aws.storageBucket}")
   private String bucket;
 
-  @Value("${aws.keyPattern}")
+  @Value("${aws.photos.keyPattern}")
   private String keyPattern;
 
   @Autowired
@@ -75,7 +75,7 @@ public class AttachmentController {
 
   @RequestMapping(value = "/getSourceAttachments", method = RequestMethod.GET)
   public List<Attachment> getAttachmentsBySourceIdAndType(@RequestParam Long sourceId,
-                                                          @RequestParam Long attachmentSourceTypeId, @PathVariable String companyId) {
+                                                          @RequestParam Long attachmentSourceTypeId) {
     return attachmentService.getAttachmentsBySourceIdAndType(bucket, sourceId, attachmentSourceTypeId);
   }
 }

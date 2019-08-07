@@ -1,13 +1,14 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.User;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.albatross.api.utils.SqlCache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,9 @@ public class AttachmentService {
 
     @Autowired
     private SqlCache sqlCache;
+
+    @Autowired
+    private SecurityService securityService;
 
     /**
      * Set the URL to find an Attachment in a custom S3 bucket.
@@ -224,16 +228,22 @@ public class AttachmentService {
     }
 
     public void delete(Long id) {
+        User currentUser = securityService.getCurrentUser();
+
         HashMap<String, Object> params = new HashMap<>();
         params.put("id", id);
+        params.put("modifiedById", currentUser.getId());
 
         sqlCache.update("attachment.deleteById", params);
     }
 
     public void deleteBySourceAndType(Long sourceId, Long attachmentSourceTypeId) {
+        User currentUser = securityService.getCurrentUser();
+
         HashMap<String, Object> params = new HashMap<>();
         params.put("sourceId", sourceId);
         params.put("attachmentSourceTypeId", attachmentSourceTypeId);
+        params.put("modifiedById", currentUser.getId());
 
         sqlCache.update("attachment.deleteBySourceAndType", params);
     }
@@ -267,16 +277,18 @@ public class AttachmentService {
 
         String url = s3.getUrl(bucket, key).toExternalForm();
 
+        User currentUser = securityService.getCurrentUser();
+
         HashMap<String, Object> params = new HashMap<>();
         params.put("filename", file.getOriginalFilename());
         params.put("contentType", file.getContentType());
-        params.put("size", file.getSize());
         params.put("key", key);
+        params.put("size", file.getSize());
+        params.put("createdById", currentUser.getId());
 
-        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-        sqlCache.update("attachment.create", params);
+        Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
 
-        return findById(bucket, keyHolder.getKey().longValue());
+        return findById(bucket, attachmentId);
     }
 
     public void addToJoinTable(Long attachmentId, Long sourceId, Long attachmentSourceTypeId, boolean deleteFirst) {

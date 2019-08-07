@@ -140,11 +140,11 @@
         this.contact.contactTypeId = this.contactTypeId
 
         if (this.addMode) {
-          const{data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts`, this.contact)
+          const {data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts`, this.contact)
           this.contactsCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          const{data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`, this.contact)
+          const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`, this.contact)
           let updatedContactIndex = this.contactsCopy.findIndex(i => i.id === data.id)
           this.contactsCopy[updatedContactIndex].name = data.name
           this.contactsCopy[updatedContactIndex].title = data.title

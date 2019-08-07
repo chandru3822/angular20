@@ -2,8 +2,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import { UserStore } from '@/stores/UserStore'
 import { AppStore } from '@/stores/AppStore'
-import axios from 'axios'
 import { MAX_FILE_SIZE } from '@/helpers/helpers'
+import { postRequest } from "./helpers/helpers";
 
 Vue.use(Vuex)
 
@@ -44,51 +44,16 @@ const store = new Vuex.Store({
           const error = { error: true, errorMsg: 'File size cannot exceed 10MB' }
           callback(error)
         } else {
-          // get the upload url from s3
-          // const { data } = await apolloClient.query({
-          //   query: UPLOAD_URL,
-          //   fetchPolicy: 'no-cache',
-          //   variables: {
-          //     uploadUrlInput: {
-          //       name: file.name,
-          //       type: file.type,
-          //       attachmentSourceTypeId
-          //     }
-          //   },
-          //   debounce: 500
-          // })
-          // const { uploadResponse } = data
-          // const { uploadURL, key, type, disposition } = uploadResponse
+          let formData = new FormData()
+          formData.append('file', file)
+          formData.append('attachmentSourceTypeId', attachmentSourceTypeId)
+          formData.append('sourceId', sourceId)
 
-          // upload the file to s3
-          const resp = await axios({
-            method: 'put',
-            // url: uploadURL,
-            // headers: { 'Content-Type': type, 'Content-Disposition': disposition },
-            data: new Blob([reader.result], { type: file.type })
-          })
+          const resp = await postRequest('/api/v1/flow/document/upload', formData)
 
-          // set our local s3 data so we have a record of the file
-          const { status } = resp
+          const {status} = resp
           if (status === 200) {
-            // const { data } = await apolloClient.query({
-            //   query: SET_LOCAL_S3_DATA,
-            //   fetchPolicy: 'no-cache',
-            //   variables: {
-            //     localS3Input: {
-            //       filename: file.name,
-            //       contentType: file.type,
-            //       fileSize: file.size,
-            //       // key,
-            //       attachmentSourceTypeId,
-            //       sourceId
-            //     }
-            //   },
-            //   debounce: 500
-            // })
-            //
-            // const { setLocalS3Data } = data
-            // callback(setLocalS3Data.asset)
+            callback(resp.data)
           }
         }
       })

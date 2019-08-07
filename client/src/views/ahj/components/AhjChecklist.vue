@@ -127,11 +127,11 @@
 
         if (this.addMode) {
           this.checklistItem.displayOrder = this.checklistItemsCopy.length
-          const{data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist`, this.checklistItem)
+          const {data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist`, this.checklistItem)
           this.checklistItemsCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          const{data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist/${this.checklistItem.id}`, this.checklistItem)
+          const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist/${this.checklistItem.id}`, this.checklistItem)
           let updatedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === data.id)
           this.checklistItemsCopy[updatedItemIndex].description = data.description
           this.editMode = false

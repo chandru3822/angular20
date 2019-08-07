@@ -133,11 +133,11 @@
         this.link.linkTypeId = this.linkTypeId
 
         if (this.addMode) {
-          const{data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links`, this.link)
+          const {data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links`, this.link)
           this.linksCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          const{data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`, this.link)
+          const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`, this.link)
           let updatedLinkIndex = this.linksCopy.findIndex(i => i.id === data.id)
           this.linksCopy[updatedLinkIndex].name = data.name
           this.linksCopy[updatedLinkIndex].link = data.link

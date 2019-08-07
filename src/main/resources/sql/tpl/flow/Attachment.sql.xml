@@ -17,10 +17,10 @@
         a.size,
         a.deleted,
         src.source_id,
-        a.created,
-        a.updated
+        a.date_created,
+        a.date_modified
       FROM flow.attachment a
-        INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
       WHERE a.id = :id
         AND a.deleted IS NOT TRUE
     ]]>
@@ -35,11 +35,11 @@
         a.s3_key,
         a.size,
         src.source_id,
-        a.created,
-        a.updated,
+        a.date_created,
+        a.date_modified,
         a.deleted
       FROM flow.attachment a
-        INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
       WHERE src.attachment_source_type_id = :attachmentSourceTypeId
         AND a.deleted = FALSE
     ]]>
@@ -55,10 +55,10 @@
         a.size,
         a.deleted,
         src.source_id,
-        a.created,
-        a.updated
+        a.date_created,
+        a.date_modified
       FROM flow.attachment a
-        INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
       WHERE src.source_id = :sourceId
         AND src.attachment_source_type_id = :attachmentSourceTypeId
         AND a.deleted = FALSE
@@ -77,7 +77,7 @@
         src.source_id,
         a.deleted
       FROM flow.attachment a
-        INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
       WHERE src.source_id = :sourceId
         AND src.attachment_source_type_id = :attachmentSourceTypeId
         AND a.deleted = FALSE
@@ -94,10 +94,10 @@
         a.size,
         a.deleted,
         src.source_id,
-        a.created,
-        a.updated
+        a.date_created,
+        a.date_modified
       FROM flow.attachment a
-        INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
       WHERE array[src.source_id] <@ ARRAY[ :sourceIds ]::INTEGER[]
         AND src.attachment_source_type_id = :attachmentSourceTypeId
         AND a.deleted = FALSE
@@ -107,15 +107,15 @@
   <attachment.create>
     <![CDATA[
       INSERT INTO flow.attachment
-        (filename, content_type, s3_key, size, created)
+        (filename, content_type, s3_key, size, date_created, created_by_id)
       VALUES
-        (:filename, :contentType, :key, :size, now())
+        (:filename, :contentType, :key, :size, now(), :createdById)
     ]]>
   </attachment.create>
 
   <attachment.addToJoinTable>
     <![CDATA[
-      INSERT INTO flow.attachment_source
+      INSERT INTO brs.attachment_source
         (attachment_id, source_id, attachment_source_type_id)
       VALUES
         (:attachmentId, :sourceId, :attachmentSourceTypeId)
@@ -124,7 +124,7 @@
 
   <attachment.deleteReimbursementBySourceAndType>
     <![CDATA[
-      DELETE FROM flow.attachment_source
+      DELETE FROM brs.attachment_source
       WHERE source_id = :sourceId
         AND attachment_source_type_id = :attachmentSourceTypeId
     ]]>
@@ -135,7 +135,8 @@
       UPDATE flow.attachment
       SET
         deleted = TRUE,
-        updated = now()
+        date_modified = now(),
+        modified_by_id = :modifiedById
       WHERE id = :id
     ]]>
   </attachment.deleteById>
@@ -145,10 +146,11 @@
       UPDATE flow.attachment a
       SET
         deleted = TRUE,
-        updated = now()
+        date_modified = now(),
+        modified_by_id = :modifiedById
       FROM (
         SELECT src.attachment_id
-        FROM flow.attachment_source src
+        FROM brs.attachment_source src
         WHERE src.source_id = :sourceId
           AND src.attachment_source_type_id = :attachmentSourceTypeId
       ) AS s
