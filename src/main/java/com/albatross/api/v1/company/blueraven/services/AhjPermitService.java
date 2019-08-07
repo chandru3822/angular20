@@ -53,11 +53,6 @@ public class AhjPermitService {
   }
 
   @Transactional
-  public Optional<AhjPermitDetail> createAhjPermit(Long ahjId, AhjPermit permit) {
-    return saveAhjPermit(ahjId, null, permit);
-  }
-
-  @Transactional
   public Optional<AhjPermitDetail> saveAhjPermit(Long ahjId, Long permitId, AhjPermit permit) {
     User currentUser = securityService.getCurrentUser();
 

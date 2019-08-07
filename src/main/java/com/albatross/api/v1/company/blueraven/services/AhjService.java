@@ -65,7 +65,7 @@ public class AhjService {
         id = sqlCache.updateReturningId("ahj.create", params, "id").longValue();
 
         // create an empty permit and inspection tied to the ahj - only required for new
-        ahjPermitService.createAhjPermit(id, new AhjPermit());
+        ahjPermitService.saveAhjPermit(id, null, new AhjPermit());
         ahjInspectionService.createAhjInspection(id, new AhjInspection());
       } else {
         return Optional.empty();

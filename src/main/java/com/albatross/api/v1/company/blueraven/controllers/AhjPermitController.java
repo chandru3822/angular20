@@ -30,7 +30,7 @@ public class AhjPermitController {
     @RequestMapping(value = "", method = RequestMethod.POST)
     public Optional<AhjPermitDetail> createAhjPermit(@PathVariable Long ahjId,
                                                      @RequestBody AhjPermit permit) {
-        return ahjPermitService.createAhjPermit(ahjId, permit);
+        return ahjPermitService.saveAhjPermit(ahjId, null, permit);
     }
 
     @RequestMapping(value = "/{permitId}", method = RequestMethod.PUT)

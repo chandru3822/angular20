@@ -68,8 +68,8 @@
                                   filled
                                   append-icon="event"
                                   readonly
-                                  v-on="on">
-                    </v-text-field>
+                                  v-on="on"
+                    ></v-text-field>
                   </template>
                   <v-date-picker v-model="ahjPermit.businessLicenseExpirationDate"
                                  @input="businessLicenseMenu=false"
@@ -452,7 +452,8 @@
   import AhjContact from './components/AhjContacts.vue'
   import AhjDocument from './components/AhjDocuments.vue'
   import AhjPermitLink from './components/AhjPermitLinks.vue'
-  import { getRequest } from '@/helpers/helpers'
+  import { AppMutations } from '@/stores/AppStore'
+  import { getRequest, putRequest } from '@/helpers/helpers'
 
   export default {
     name: 'ahjPermit',
@@ -577,20 +578,29 @@
         const {data} = await getRequest('/api/v1/flow/document/getSourceAttachments', {params})
         this.documents = cloneDeep(data)
       },
-      resetForm() {
-        console.log("Resetting the form...")
+      async resetForm() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.dataReady = false
+        this.getAhjPermit().then(() => {
+          this.getDocuments().then(() => {
+            this.dataReady = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          })
+        })
       },
-      saveAhjPermit() {
-        console.log("Saving AHJ Permit...")
-        console.log("AHJ Permit:", this.ahjPermit)
+      async saveAhjPermit() {
+        console.log("this.ahjPermit:", this.ahjPermit)
+        // const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit)
+        // this.ahjPermit = cloneDeep(data)
       }
     },
     async created() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       this.ahjId = parseInt(this.$route.params.ahjId)
       this.getAhjPermit().then(() => {
-        console.log("AHJ Permit:", this.ahjPermit)
         this.getDocuments().then(() => {
           this.dataReady = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
         })
       })
     }
