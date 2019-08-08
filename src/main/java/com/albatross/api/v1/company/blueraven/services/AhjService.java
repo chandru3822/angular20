@@ -8,9 +8,11 @@ import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.utils.SqlCache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -91,6 +93,11 @@ public class AhjService {
     params.put("id", id);
 
     return sqlCache.get("ahj.findById", params, AhjSummary.class);
+  }
+
+  public String getInspectionTypeFields() {
+    Optional<String> results = sqlCache.get("ahj.getInspectionTypeFields", Collections.emptyMap(), new SingleColumnRowMapper<>(String.class));
+    return results.orElse("");
   }
 
   // CHECKLISTS

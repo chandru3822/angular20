@@ -4,7 +4,7 @@
       SELECT
         ahj.id,
         ahj.name,
-        st.id as state_id,
+        st.id AS "state_id",
         st.state,
         ahj.metro_area_id,
         ma.metro_area
@@ -22,7 +22,7 @@
       SELECT
         ahj.id,
         ahj.name,
-        st.id as state_id,
+        st.id AS "state_id",
         st.state,
         ahj.metro_area_id,
         ma.metro_area
@@ -39,7 +39,7 @@
       SELECT
         ahj.id,
         ahj.name,
-        st.id as state_id,
+        st.id AS "state_id",
         st.state,
         ahj.metro_area_id,
         ma.metro_area
@@ -79,6 +79,129 @@
       WHERE id = :id
     ]]>
   </ahj.delete>
+
+  <ahj.getInspectionTypeFields>
+    <![CDATA[
+      SELECT
+        coalesce((
+         SELECT array_to_json(array_agg(row_to_json(allTypes)))
+          FROM (
+            SELECT
+              coalesce((
+              SELECT array_to_json(array_agg(row_to_json(types)))
+              FROM (
+                     SELECT
+                       t.id,
+                       t.name
+                     FROM blueraven.ahj_scheduling_method_type t) types), '[]') AS scheduling_methods,
+              coalesce((
+                         SELECT array_to_json(array_agg(row_to_json(types)))
+                         FROM (
+                                SELECT
+                                  t.id,
+                                  t.name
+                                FROM blueraven.ahj_handy_information_type t) types), '[]') AS handy_information,
+              coalesce((
+              SELECT array_to_json(array_agg(row_to_json(types)))
+              FROM (
+                     SELECT
+                       t.id,
+                       t.name
+                     FROM blueraven.ahj_scheduling_lead_time_type t) types), '[]') AS scheduling_lead_times,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_inspection_capacity_type t) types), '[]') AS inspection_capacity,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_site_access_type t) types), '[]') AS site_access,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_rough_inspection_required_type t) types), '[]') AS rough_inspection,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_soladeck_access_type t) types), '[]') AS soladeck_access,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_placard_required_type t) types), '[]') AS placard_required,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_representative_required_onsite_type t) types), '[]') AS representative_onsite,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_special_equipment_type t) types), '[]') AS special_equipment_types,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_plans_required_type t) types), '[]') AS plans_required,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_special_documents_type t) types), '[]') AS special_documents,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_results_documentation_type t) types), '[]') AS results_documentation,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_reinspection_fee_type t) types), '[]') AS reinspection_fee,
+              coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_submit_type t) types), '[]') AS submit_types,
+                                        coalesce((
+                   SELECT array_to_json(array_agg(row_to_json(types)))
+                   FROM (
+                          SELECT
+                            t.id,
+                            t.name
+                          FROM blueraven.ahj_simple_list_type t) types), '[]') AS simple_list
+        ) allTypes), '[]') AS types
+    ]]>
+  </ahj.getInspectionTypeFields>
 
   <!-- CHECKLISTS STUFF -->
   <ahj.checklist.findById>

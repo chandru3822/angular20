@@ -24,16 +24,22 @@
           <v-card-text class="mt-4">
             <v-select v-model="ahjPermit.submittalTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Submittal Method"
                       filled
             ></v-select>
             <v-select v-model="ahjPermit.hoaApprovalRequiredTypeId"
                       :items="approvalRequiredOptions"
+                      item-text="name"
+                      item-value="id"
                       label="HOA Approval Required for Submission"
                       filled
             ></v-select>
             <v-select v-model="ahjPermit.nemApprovalRequiredTypeId"
                       :items="approvalRequiredOptions"
+                      item-text="name"
+                      item-value="id"
                       label="NEM Approval Required for Submission"
                       filled
             ></v-select>
@@ -44,6 +50,8 @@
             ></v-text-field>
             <v-select v-model="ahjPermit.submissionPaymentTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Payment Method"
                       filled
             ></v-select>
@@ -164,6 +172,8 @@
           <v-card-text class="mt-4">
             <v-select v-model="ahjPermit.revisionSubmittalTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Submittal Method"
                       filled
             ></v-select>
@@ -174,6 +184,8 @@
             ></v-text-field>
             <v-select v-model="ahjPermit.revisionPaymentTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Payment Method"
                       filled
             ></v-select>
@@ -204,6 +216,8 @@
           <v-card-text class="mt-4">
             <v-select v-model="ahjPermit.asBuiltSubmittalTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Submittal Method"
                       filled
             ></v-select>
@@ -214,6 +228,8 @@
             ></v-text-field>
             <v-select v-model="ahjPermit.asBuiltPaymentTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Payment Method"
                       filled
             ></v-select>
@@ -253,6 +269,8 @@
             ></v-text-field>
             <v-select v-model="ahjPermit.followUpPaymentTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Payment Method"
                       filled
             ></v-select>
@@ -271,6 +289,8 @@
           <v-card-text class="mt-4">
             <v-select v-model="ahjPermit.deliveryPickupTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Pickup Method"
                       filled
             ></v-select>
@@ -281,6 +301,8 @@
             ></v-text-field>
             <v-select v-model="ahjPermit.deliveryPaymentTypeId"
                       :items="submittalMethods"
+                      item-text="name"
+                      item-value="id"
                       label="Payment Method"
                       filled
             ></v-select>
@@ -465,8 +487,8 @@
     },
     data: () => ({
       dataReady: false,
-      submittalMethods: ['', 'Online', 'In-person', 'Other'],
-      approvalRequiredOptions: ['', 'No', 'Yes', 'Unknown', 'Other'],
+      approvalRequiredOptions: [{ id: null, name: '' }],
+      submittalMethods: [{ id: null, name: '' }],
       timePeriods: [
         'This Week',
         'This Period',
@@ -566,6 +588,12 @@
             break
         }
       },
+      reformatDates() {
+        // Reformat dates to remove timestamps
+        this.ahjPermit.businessLicenseExpirationDate = this.ahjPermit.businessLicenseExpirationDate ? moment(this.ahjPermit.businessLicenseExpirationDate).format('YYYY-MM-DD') : null
+        this.ahjPermit.contractorLicenseExpirationDate = this.ahjPermit.contractorLicenseExpirationDate ? moment(this.ahjPermit.contractorLicenseExpirationDate).format('YYYY-MM-DD') : null
+        this.ahjPermit.otherLicenseExpirationDate = this.ahjPermit.otherLicenseExpirationDate ? moment(this.ahjPermit.otherLicenseExpirationDate).format('YYYY-MM-DD') : null
+      },
       async getAhjPermit() {
         const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit`)
         this.ahjPermit = cloneDeep(data)
@@ -582,22 +610,31 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataReady = false
         this.getAhjPermit().then(() => {
-          this.getDocuments().then(() => {
-            this.dataReady = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          })
+          this.reformatDates()
+          this.dataReady = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
         })
       },
       async saveAhjPermit() {
-        console.log("this.ahjPermit:", this.ahjPermit)
-        // const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit)
-        // this.ahjPermit = cloneDeep(data)
+        const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit)
+        this.ahjPermit = cloneDeep(data)
       }
     },
     async created() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.ahjId = parseInt(this.$route.params.ahjId)
+
+      const {data} = await getRequest('/api/v1/company/blueraven/ahj/getInspectionTypeFields')
+      this.types = cloneDeep(data[0])
+      this.types.simple_list.forEach(item => {
+        this.approvalRequiredOptions.push(item)
+      })
+      this.types.submit_types.forEach(item => {
+        this.submittalMethods.push(item)
+      })
+
       this.getAhjPermit().then(() => {
+        this.reformatDates()
         this.getDocuments().then(() => {
           this.dataReady = true
           this.$store.commit(AppMutations.SET_LOADING, false)

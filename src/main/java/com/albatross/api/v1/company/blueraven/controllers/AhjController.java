@@ -42,4 +42,9 @@ public class AhjController {
   public void deleteAhj(@PathVariable Long id) {
     ahjService.deleteAhj(id);
   }
+
+  @RequestMapping(value = "/getInspectionTypeFields", method = RequestMethod.GET)
+  public String getInspectionTypeFields() {
+    return ahjService.getInspectionTypeFields();
+  }
 }
