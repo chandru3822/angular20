@@ -1,878 +1,876 @@
 <template>
-<v-layout column align-center justify-start fill-height>
-  <v-flex shrink xs12>
-    <v-layout row wrap align-center>
-      <v-flex
-        xs6
-        text-xs-left
-        class="display-1"
-      >Users</v-flex>
-      <v-flex xs6 text-xs-right>
-        <v-layout row align-center fill-height justify-end>
-          <v-flex shrink>
-            <v-menu
-              offset-y
-              left
-              :close-on-content-click="false"
-            >
-              <template #activator="{on}">
-                <v-btn
-                  class="app-button"
-                  v-on="on"
-                >Adv. Search</v-btn>
-              </template>
+  <v-row class="fill-height" align="center" justify="start">
+    <v-col class="shrink" cols="12">
+      <v-row align="center">
+        <v-col
+          cols="6"
+          class="display-1 text-left"
+        >Users</v-col>
+        <v-col class="text-right" cols="6" >
+          <v-row class="fill-height" align="center" justify="end">
+            <v-col class="shrink">
+              <v-menu
+                offset-y
+                left
+                :close-on-content-click="false"
+              >
+                <template #activator="{on}">
+                  <v-btn
+                    class="app-button"
+                    v-on="on"
+                  >Adv. Search</v-btn>
+                </template>
 
-              <v-card>
-                <div class="advanced-search">
-                  <v-layout column align-start>
-                    <v-flex xs12>
-                      <v-menu>
-                        <template #activator="{on}">
-                          <v-text-field
-                            label="Hire Date After"
-                            readonly
-                            v-model="dateAfterFormatted"
-                            v-on="on"
-                          ></v-text-field>
-                        </template>
+                <v-card>
+                  <div class="advanced-search">
+                    <v-row align="start">
+                      <v-col cols="12">
+                        <v-menu>
+                          <template #activator="{on}">
+                            <v-text-field
+                              label="Hire Date After"
+                              readonly
+                              v-model="dateAfterFormatted"
+                              v-on="on"
+                            ></v-text-field>
+                          </template>
 
-                        <v-date-picker
-                          v-model="externalFilters.dateAfter"
+                          <v-date-picker
+                            v-model="externalFilters.dateAfter"
+                            @input="fetchUsers"
+                          ></v-date-picker>
+                        </v-menu>
+                      </v-col>
+
+                      <v-col class="xs 12">
+                        <v-menu>
+                          <template #activator="{on}">
+                            <v-text-field
+                              label="Hire Date Before"
+                              readonly
+                              v-model="dateBeforeFormatted"
+                              v-on="on"
+                            ></v-text-field>
+                          </template>
+
+                          <v-date-picker
+                            v-model="externalFilters.dateBefore"
+                            @input="fetchUsers"
+                          ></v-date-picker>
+                        </v-menu>
+                      </v-col>
+
+                      <v-col cols="12">
+                        <v-select
+                          v-model="externalFilters.areaIds"
+                          :items="salesAreas"
+                          item-value="id"
+                          item-text="area"
+                          multiple
+                          outline
+                          label="Area"
                           @input="fetchUsers"
-                        ></v-date-picker>
-                      </v-menu>
-                    </v-flex>
+                        >
+                          <template #prepend-item>
+                            <v-list-item
+                              ripple
+                              @click="toggleSelectAllAreas"
+                            >
+                              <v-list-item-action>
+                                <v-icon :color="externalFilters.areaIds.length > 0 ? 'primary' : ''">{{ areaIcon }}</v-icon>
+                              </v-list-item-action>
+                              <v-list-item-title>Select All</v-list-item-title>
+                            </v-list-item>
+                            <v-divider class="mt-2"></v-divider>
+                          </template>
+                          <template #selection="{item, index}">
+                            <v-chip v-if="index === 0 && externalFilters.areaIds.length < 2">
+                              <span>{{ item.area }}</span>
+                            </v-chip>
+                            <span
+                              v-if="index === 1 && externalFilters.areaIds.length >= 2"
+                              class="primary--text caption"
+                            >{{ externalFilters.areaIds.length }} selected</span>
+                          </template>
+                        </v-select>
+                      </v-col>
 
-                    <v-flex xs 12>
-                      <v-menu>
-                        <template #activator="{on}">
-                          <v-text-field
-                            label="Hire Date Before"
-                            readonly
-                            v-model="dateBeforeFormatted"
-                            v-on="on"
-                          ></v-text-field>
-                        </template>
-
-                        <v-date-picker
-                          v-model="externalFilters.dateBefore"
+                      <v-col class="grow" cols="12">
+                        <v-select
+                          v-model="externalFilters.roleIds"
+                          :items="roles"
+                          item-value="id"
+                          item-text="name"
+                          multiple
+                          outline
+                          label="Role"
                           @input="fetchUsers"
-                        ></v-date-picker>
-                      </v-menu>
-                    </v-flex>
+                        >
+                          <template #prepend-item>
+                            <v-list-item
+                              ripple
+                              @click="toggleSelectAllRoles"
+                            >
+                              <v-list-item-action>
+                                <v-icon :color="externalFilters.roleIds.length > 0 ? 'primary' : ''">{{ roleIcon }}</v-icon>
+                              </v-list-item-action>
+                              <v-list-item-title>Select All</v-list-item-title>
+                            </v-list-item>
+                            <v-divider class="mt-2"></v-divider>
+                          </template>
+                          <template #selection="{item, index}">
+                            <v-chip v-if="index === 0 && externalFilters.roleIds.length < 2">
+                              <span>{{ item.name }}</span>
+                            </v-chip>
+                            <span
+                              v-if="index === 1 && externalFilters.roleIds.length >= 2"
+                              class="primary--text caption"
+                            >{{ externalFilters.roleIds.length }} selected</span>
+                          </template>
+                        </v-select>
+                      </v-col>
 
-                    <v-flex xs12>
-                      <v-select
-                        v-model="externalFilters.areaIds"
-                        :items="salesAreas"
-                        item-value="id"
-                        item-text="area"
-                        multiple
-                        outline
-                        label="Area"
-                        @input="fetchUsers"
-                      >
-                        <template #prepend-item>
-                          <v-list-item
-                            ripple
-                            @click="toggleSelectAllAreas"
-                          >
-                            <v-list-item-action>
-                              <v-icon :color="externalFilters.areaIds.length > 0 ? 'primary' : ''">{{ areaIcon }}</v-icon>
-                            </v-list-item-action>
-                            <v-list-item-title>Select All</v-list-item-title>
-                          </v-list-item>
-                          <v-divider class="mt-2"></v-divider>
-                        </template>
-                        <template #selection="{item, index}">
-                          <v-chip v-if="index === 0 && externalFilters.areaIds.length < 2">
-                            <span>{{ item.area }}</span>
-                          </v-chip>
-                          <span
-                            v-if="index === 1 && externalFilters.areaIds.length >= 2"
-                            class="primary--text caption"
-                          >{{ externalFilters.areaIds.length }} selected</span>
-                        </template>
-                      </v-select>
-                    </v-flex>
+                      <v-col cols="12">
+                        <v-row class="fill-height" align="center" justify="start">
+                          <v-col>
+                            <v-checkbox
+                              height="1"
+                              v-model="externalFilters.missingData"></v-checkbox>
+                          </v-col>
+                          <v-col class="grow">Missing Data</v-col>
+                        </v-row>
+                      </v-col>
 
-                    <v-flex xs12 grow>
-                      <v-select
-                        v-model="externalFilters.roleIds"
-                        :items="roles"
-                        item-value="id"
-                        item-text="name"
-                        multiple
-                        outline
-                        label="Role"
-                        @input="fetchUsers"
-                      >
-                        <template #prepend-item>
-                          <v-list-item
-                            ripple
-                            @click="toggleSelectAllRoles"
-                          >
-                            <v-list-item-action>
-                              <v-icon :color="externalFilters.roleIds.length > 0 ? 'primary' : ''">{{ roleIcon }}</v-icon>
-                            </v-list-item-action>
-                            <v-list-item-title>Select All</v-list-item-title>
-                          </v-list-item>
-                          <v-divider class="mt-2"></v-divider>
-                        </template>
-                        <template #selection="{item, index}">
-                          <v-chip v-if="index === 0 && externalFilters.roleIds.length < 2">
-                            <span>{{ item.name }}</span>
-                          </v-chip>
-                          <span
-                            v-if="index === 1 && externalFilters.roleIds.length >= 2"
-                            class="primary--text caption"
-                          >{{ externalFilters.roleIds.length }} selected</span>
-                        </template>
-                      </v-select>
-                    </v-flex>
+                      <v-col cols="12">
+                        <v-row class="fill-height" align="center" justify="start">
+                          <v-col>
+                            <v-checkbox
+                              height="1"
+                              v-model="externalFilters.missingPrimary"
+                              @change="updateMissingExternalFilters(MissingFilterType.PRIMARY)"
+                            ></v-checkbox>
+                          </v-col>
+                          <v-col>Missing Primary</v-col>
+                        </v-row>
+                      </v-col>
 
-                    <v-flex xs12>
-                      <v-layout row align-center justify-start fill-height>
-                        <v-flex>
-                          <v-checkbox
-                            height="1"
-                            v-model="externalFilters.missingData"></v-checkbox>
-                        </v-flex>
-                        <v-flex grow>Missing Data</v-flex>
-                      </v-layout>
-                    </v-flex>
-
-                    <v-flex xs12>
-                      <v-layout row align-center justify-start fill-height>
-                        <v-flex>
-                          <v-checkbox
-                            height="1"
-                            v-model="externalFilters.missingPrimary"
-                            @change="updateMissingExternalFilters(MissingFilterType.PRIMARY)"
-                          ></v-checkbox>
-                        </v-flex>
-                        <v-flex grow>Missing Primary</v-flex>
-                      </v-layout>
-                    </v-flex>
-
-                    <v-flex xs12>
-                      <v-layout row align-center justify-start fill-height>
-                        <v-flex>
-                          <v-checkbox
-                            height="1"
-                            v-model="externalFilters.missingPosition"
-                            @change="updateMissingExternalFilters(MissingFilterType.POSITION)"
-                          ></v-checkbox>
-                        </v-flex>
-                        <v-flex grow>Missing Position</v-flex>
-                      </v-layout>
-                    </v-flex>
-                  </v-layout>
-                </div>
-              </v-card>
-            </v-menu>
-          </v-flex>
-          <v-flex shrink>
-            <v-btn
-              class="app-button"
-              @click="hideExternalFilters = !hideExternalFilters"
-            >Hide Filters</v-btn>
-          </v-flex>
-          <v-flex shrink>
-            <v-menu
-              offset-y
-              left
-            >
-              <template #activator="{on}">
-                <v-btn
-                  class="app-button"
-                  v-on="on"
-                >
-                  <span>Fields</span>
-                </v-btn>
-              </template>
-              <v-list>
-                <v-list-item
-                  v-for="(header, index) in headers"
-                  :key="index"
-                  @click="header.show = !header.show"
-                >
-                  <v-icon class="mr-3" v-if="!header.show">add</v-icon>
-                  <v-icon class="mr-3" v-if="header.show">remove</v-icon>
-                  <v-list-item-title>{{ header.text }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </v-flex>
-        </v-layout>
-      </v-flex>
-    </v-layout>
-    <v-divider></v-divider>
-    <v-layout
-      row
-      wrap
-      mt-5
-      v-if="!hideExternalFilters">
-      <v-flex xs4>
-        <v-flex d-flex xs12>
-          <v-text-field
-            append-icon="search"
-            label="Search..."
-            v-model="externalFilters.searchQuery"
-            @input="debounceFetchUsers"
-          ></v-text-field>
-        </v-flex>
-        <v-flex d-flex xs12>
-          <v-select
-            v-model="selectedStatuses"
-            :items="statuses"
-            item-text="userStatusType"
-            item-value="id"
-            multiple
-            return-object
-            outline
-            label="Status"
-            @input="updateSelectStatuses"
-          >
-            <template #prepend-item>
-              <v-list-item
-                ripple
-                @click="toggleSelectAllStatuses"
+                      <v-col cols="12">
+                        <v-row class="fill-height" align="center" justify="start">
+                          <v-col>
+                            <v-checkbox
+                              height="1"
+                              v-model="externalFilters.missingPosition"
+                              @change="updateMissingExternalFilters(MissingFilterType.POSITION)"
+                            ></v-checkbox>
+                          </v-col>
+                          <v-col>Missing Position</v-col>
+                        </v-row>
+                      </v-col>
+                    </v-row>
+                  </div>
+                </v-card>
+              </v-menu>
+            </v-col>
+            <v-col class="shrink">
+              <v-btn
+                class="app-button"
+                @click="hideExternalFilters = !hideExternalFilters"
+              >Hide Filters</v-btn>
+            </v-col>
+            <v-col class="shrink">
+              <v-menu
+                offset-y
+                left
               >
-                <v-list-item-action>
-                  <v-icon :color="selectedStatuses.length > 0 ? 'primary' : ''">{{ statusIcon }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider class="mt-2"></v-divider>
-            </template>
-            <template #selection="{item, index}">
-              <v-chip v-if="index === 0 && selectedStatuses.length < 2">
-                <span>{{ item.userStatusType }}</span>
-              </v-chip>
-              <span
-                v-if="index === 1 && selectedStatuses.length >= 2"
-                class="primary--text caption"
-              >{{ selectedStatuses.length }} selected</span>
-            </template>
-          </v-select>
-        </v-flex>
-      </v-flex>
-      <v-flex xs4 offset-xs1>
-        <v-layout wrap>
-          <v-flex xs12 class="subheading">Positions</v-flex>
-          <v-flex xs12 sm6>
-            <v-radio-group
-              v-model="positions.slot"
-              @change="updatePositionFilters"
-            >
-              <v-radio
-                :value="SlotValues.PRIMARY"
-                :label="`Primary Only`"
-              ></v-radio>
-              <v-radio
-                :value="SlotValues.SECONDARY"
-                :label="`Secondary Only`"
-              ></v-radio>
-              <v-radio
-                :value="SlotValues.BOTH"
-                :label="`Both`"
-              ></v-radio>
-            </v-radio-group>
-          </v-flex>
-          <v-flex xs12 sm6>
-            <v-radio-group
-              v-model="positions.status"
-              @change="updatePositionFilters"
-            >
-              <v-radio
-                :value="StatusValues.ACTIVE"
-                :label="`Active Only`"
-              ></v-radio>
-              <v-radio
-                :value="StatusValues.INACTIVE"
-                :label="`Inactive Only`"
-              ></v-radio>
-              <v-radio
-                :value="StatusValues.BOTH"
-                :label="`Both`"
-              ></v-radio>
-            </v-radio-group>
-          </v-flex>
-        </v-layout>
-      </v-flex>
-      <v-flex xs3 class="text-xs-right">
-        <v-btn
-          class="app-button"
-          @click="resetFilters"
-        >Reset Search</v-btn>
-      </v-flex>
-    </v-layout>
-    <v-layout column align-start justify-start mt-5>
-      <v-flex xs12>
-        Users: {{ this.filteredUsers.length }} Selected Users: {{ this.selected.length }}
-      </v-flex>
-      <v-flex xs12 mt-2>
-        <v-data-table
-          :headers="visibleHeaders"
-          :items="filteredUsers"
-          :options="pagination"
-          item-key="id"
-          class="elevation-1"
-          v-model="selected"
-          show-select
-        >
-          <template #headers="props">
-            <tr>
-              <th>
-                <v-checkbox
-                  :input-value="props.all"
-                  :indeterminate="props.indeterminate"
-                  primary
-                  hide-details
-                  @click.stop="toggleSelectAllUsers"
-                ></v-checkbox>
-              </th>
-              <th
-                v-for="header in props.headers"
-                :key="header.text"
-                :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
-                @click="changeSort(header.value)"
-              >
-                <span>{{ header.text }}</span>
-                <v-icon small>arrow_upward</v-icon>
-              </th>
-            </tr>
-            <tr>
-              <th></th>
-              <th
-                v-for="header in props.headers"
-                :key="header.text"
-              >
-
-                <div v-if="inlineFilters.hasOwnProperty(header.value)">
-                  <v-text-field
-                    v-if="inlineFilters[header.value].type === FilterType.TEXT"
-                    :label="header.text"
-                    v-model="inlineFilters[header.value].value"
-                  />
-                  <v-select
-                    v-else-if="inlineFilters[header.value].type === FilterType.SELECT"
-                    :items="searchFilters[inlineFilters[header.value].searchFilter]"
-                    :disabled="searchFilters[inlineFilters[header.value].searchFilter] === null"
-                    item-value="id"
-                    item-text="name"
-                    multiple
-                    return-object
-                    v-model="inlineFilters[header.value].value"
-                    @change="updateSearchFilters"
+                <template #activator="{on}">
+                  <v-btn
+                    class="app-button"
+                    v-on="on"
                   >
-                    <template #prepend-item>
-                      <v-list-item ripple>
-                        <v-list-item-action>
-                          <v-icon
-                            :color="inlineFilters[header.value].value.length > 0 ? 'primary' : ''"
-                            :disabled="disableInlineFilterSelectAll(inlineFilters[header.value])"
-                            @click="toggleSelectAllFilter(header.value)"
-                          >{{ inlineFilterIcon(header.value) }}
-                          </v-icon>
-                        </v-list-item-action>
-                        <v-list-item-title>Select All</v-list-item-title>
-                      </v-list-item>
-                      <v-divider class="mt-2"></v-divider>
-                    </template>
-
-                    <template #selection="{item, index}">
-                      <v-chip v-if="index === 0 && inlineFilters[header.value].value.length < 2">
-                        <span>{{ item.name }}</span>
-                      </v-chip>
-                      <span
-                        v-if="index === 1 && inlineFilters[header.value].value.length >= 2"
-                        class="primary--text caption"
-                      >{{ inlineFilters[header.value].value.length }} selected</span>
-                    </template>
-                  </v-select>
-                </div>
-              </th>
-            </tr>
-          </template>
-          <!-- Vuetify data tables as of 1.5.7 are (undocumentedly) unable to handle destructured slot props. aka #item="{selected, item}" -->
-          <template #items="props">
-            <tr :active="props.selected" @click="editUser(props.item.id)">
-              <td @click.stop>
-                <v-checkbox
-                  v-model="props.selected"
-                  primary
-                  hide-details
-                ></v-checkbox>
-              </td>
-              <td
-                v-for="header in visibleHeaders"
-                :key="header.value"
+                    <span>Fields</span>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item
+                    v-for="(header, index) in headers"
+                    :key="index"
+                    @click="header.show = !header.show"
+                  >
+                    <v-icon class="mr-3" v-if="!header.show">add</v-icon>
+                    <v-icon class="mr-3" v-if="header.show">remove</v-icon>
+                    <v-list-item-title>{{ header.text }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </v-col>
+          </v-row>
+        </v-col>
+      </v-row>
+      <v-divider></v-divider>
+      <v-row class="mt-5"
+        v-if="!hideExternalFilters">
+        <v-col cols="4">
+          <v-col class="d-flex" cols="12">
+            <v-text-field
+              append-icon="search"
+              label="Search..."
+              v-model="externalFilters.searchQuery"
+              @input="debounceFetchUsers"
+            ></v-text-field>
+          </v-col>
+          <v-col class="d-flex" cols="12">
+            <v-select
+              v-model="selectedStatuses"
+              :items="statuses"
+              item-text="userStatusType"
+              item-value="id"
+              multiple
+              return-object
+              outline
+              label="Status"
+              @input="updateSelectStatuses"
+            >
+              <template #prepend-item>
+                <v-list-item
+                  ripple
+                  @click="toggleSelectAllStatuses"
+                >
+                  <v-list-item-action>
+                    <v-icon :color="selectedStatuses.length > 0 ? 'primary' : ''">{{ statusIcon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+              <template #selection="{item, index}">
+                <v-chip v-if="index === 0 && selectedStatuses.length < 2">
+                  <span>{{ item.userStatusType }}</span>
+                </v-chip>
+                <span
+                  v-if="index === 1 && selectedStatuses.length >= 2"
+                  class="primary--text caption"
+                >{{ selectedStatuses.length }} selected</span>
+              </template>
+            </v-select>
+          </v-col>
+        </v-col>
+        <v-col cols="4" offset="1">
+          <v-row>
+            <v-col cols="12" class="subheading">Positions</v-col>
+            <v-col cols="12" sm="6">
+              <v-radio-group
+                v-model="positions.slot"
+                @change="updatePositionFilters"
               >
-                {{ props.item[header.value] }}
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-flex>
-    </v-layout>
-  </v-flex>
-</v-layout>
+                <v-radio
+                  :value="SlotValues.PRIMARY"
+                  :label="`Primary Only`"
+                ></v-radio>
+                <v-radio
+                  :value="SlotValues.SECONDARY"
+                  :label="`Secondary Only`"
+                ></v-radio>
+                <v-radio
+                  :value="SlotValues.BOTH"
+                  :label="`Both`"
+                ></v-radio>
+              </v-radio-group>
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-radio-group
+                v-model="positions.status"
+                @change="updatePositionFilters"
+              >
+                <v-radio
+                  :value="StatusValues.ACTIVE"
+                  :label="`Active Only`"
+                ></v-radio>
+                <v-radio
+                  :value="StatusValues.INACTIVE"
+                  :label="`Inactive Only`"
+                ></v-radio>
+                <v-radio
+                  :value="StatusValues.BOTH"
+                  :label="`Both`"
+                ></v-radio>
+              </v-radio-group>
+            </v-col>
+          </v-row>
+        </v-col>
+        <v-col cols="3" class="text-right">
+          <v-btn
+            class="app-button"
+            @click="resetFilters"
+          >Reset Search</v-btn>
+        </v-col>
+      </v-row>
+      <v-row class="mt-5" align="start" justify="start">
+        <v-col cols="12">
+          Users: {{ this.filteredUsers.length }} Selected Users: {{ this.selected.length }}
+        </v-col>
+        <v-col class="mt-2" cols="12">
+          <v-data-table
+            :headers="visibleHeaders"
+            :items="filteredUsers"
+            :options="pagination"
+            item-key="id"
+            class="elevation-1"
+            v-model="selected"
+            show-select
+          >
+            <template #headers="props">
+              <tr>
+                <th>
+                  <v-checkbox
+                    :input-value="props.all"
+                    :indeterminate="props.indeterminate"
+                    primary
+                    hide-details
+                    @click.stop="toggleSelectAllUsers"
+                  ></v-checkbox>
+                </th>
+                <th
+                  v-for="header in props.headers"
+                  :key="header.text"
+                  :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
+                  @click="changeSort(header.value)"
+                >
+                  <span>{{ header.text }}</span>
+                  <v-icon small>arrow_upward</v-icon>
+                </th>
+              </tr>
+              <tr>
+                <th></th>
+                <th
+                  v-for="header in props.headers"
+                  :key="header.text"
+                >
+
+                  <div v-if="inlineFilters.hasOwnProperty(header.value)">
+                    <v-text-field
+                      v-if="inlineFilters[header.value].type === FilterType.TEXT"
+                      :label="header.text"
+                      v-model="inlineFilters[header.value].value"
+                    />
+                    <v-select
+                      v-else-if="inlineFilters[header.value].type === FilterType.SELECT"
+                      :items="searchFilters[inlineFilters[header.value].searchFilter]"
+                      :disabled="searchFilters[inlineFilters[header.value].searchFilter] === null"
+                      item-value="id"
+                      item-text="name"
+                      multiple
+                      return-object
+                      v-model="inlineFilters[header.value].value"
+                      @change="updateSearchFilters"
+                    >
+                      <template #prepend-item>
+                        <v-list-item ripple>
+                          <v-list-item-action>
+                            <v-icon
+                              :color="inlineFilters[header.value].value.length > 0 ? 'primary' : ''"
+                              :disabled="disableInlineFilterSelectAll(inlineFilters[header.value])"
+                              @click="toggleSelectAllFilter(header.value)"
+                            >{{ inlineFilterIcon(header.value) }}
+                            </v-icon>
+                          </v-list-item-action>
+                          <v-list-item-title>Select All</v-list-item-title>
+                        </v-list-item>
+                        <v-divider class="mt-2"></v-divider>
+                      </template>
+
+                      <template #selection="{item, index}">
+                        <v-chip v-if="index === 0 && inlineFilters[header.value].value.length < 2">
+                          <span>{{ item.name }}</span>
+                        </v-chip>
+                        <span
+                          v-if="index === 1 && inlineFilters[header.value].value.length >= 2"
+                          class="primary--text caption"
+                        >{{ inlineFilters[header.value].value.length }} selected</span>
+                      </template>
+                    </v-select>
+                  </div>
+                </th>
+              </tr>
+            </template>
+            <!-- Vuetify data tables as of 1.5.7 are (undocumentedly) unable to handle destructured slot props. aka #item="{selected, item}" -->
+            <template #items="props">
+              <tr :active="props.selected" @click="editUser(props.item.id)">
+                <td @click.stop>
+                  <v-checkbox
+                    v-model="props.selected"
+                    primary
+                    hide-details
+                  ></v-checkbox>
+                </td>
+                <td
+                  v-for="header in visibleHeaders"
+                  :key="header.value"
+                >
+                  {{ props.item[header.value] }}
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
+        </v-col>
+      </v-row>
+    </v-col>
+  </v-row>
 </template>
+
 <script>
-import cloneDeep from 'lodash.clonedeep'
-// import debounce from 'lodash.debounce'
-import moment from 'moment'
-import {mapState} from 'vuex'
+  import cloneDeep from 'lodash.clonedeep'
+  // import debounce from 'lodash.debounce'
+  import moment from 'moment'
+  import {mapState} from 'vuex'
 
 
-const FilterType = {
-  TEXT: 'text',
-  SELECT: 'select'
-}
+  const FilterType = {
+    TEXT: 'text',
+    SELECT: 'select'
+  }
 
-const MissingFilterType = {
-  PRIMARY: 'primary',
-  POSITION: 'position'
-}
+  const MissingFilterType = {
+    PRIMARY: 'primary',
+    POSITION: 'position'
+  }
 
-const SlotValues = {
-  PRIMARY: 'primary',
-  SECONDARY: 'secondary',
-  BOTH: 'both'
-}
+  const SlotValues = {
+    PRIMARY: 'primary',
+    SECONDARY: 'secondary',
+    BOTH: 'both'
+  }
 
-const StatusValues = {
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-  BOTH: 'both'
-}
+  const StatusValues = {
+    ACTIVE: 'active',
+    INACTIVE: 'inactive',
+    BOTH: 'both'
+  }
 
-const InitExternalFilters = {
-  searchQuery: '',
-  statusIds: [1],
-  areaIds: [],
-  dateBefore: null,
-  dateAfter: null,
-  roleIds: [],
-  primaryOnly: true,
-  secondaryOnly: false,
-  activeOnly: false,
-  inactiveOnly: false,
-  missingPrimary: false,
-  missingPosition: false,
-  missingData: false,
-  userId: null
-}
+  const InitExternalFilters = {
+    searchQuery: '',
+    statusIds: [1],
+    areaIds: [],
+    dateBefore: null,
+    dateAfter: null,
+    roleIds: [],
+    primaryOnly: true,
+    secondaryOnly: false,
+    activeOnly: false,
+    inactiveOnly: false,
+    missingPrimary: false,
+    missingPosition: false,
+    missingData: false,
+    userId: null
+  }
 
-const InitInlineFilters = {
-  firstName: {value: [], type: FilterType.TEXT},
-  lastName: {value: [], type: FilterType.TEXT},
-  email: {value: [], type: FilterType.TEXT},
-  phoneNumber: {value: [], type: FilterType.TEXT},
-  userStatusType: {value: [], type: FilterType.TEXT},
-  organization: {value: [], type: FilterType.SELECT, searchFilter: 'organizations'},
-  department: {value: [], type: FilterType.SELECT, searchFilter: 'departments'},
-  region: {value: [], type: FilterType.SELECT, searchFilter: 'regions'},
-  office: {value: [], type: FilterType.SELECT, searchFilter: 'offices'},
-  positionName: {value: [], type: FilterType.SELECT, searchFilter: 'positions'}
-}
+  const InitInlineFilters = {
+    firstName: {value: [], type: FilterType.TEXT},
+    lastName: {value: [], type: FilterType.TEXT},
+    email: {value: [], type: FilterType.TEXT},
+    phoneNumber: {value: [], type: FilterType.TEXT},
+    userStatusType: {value: [], type: FilterType.TEXT},
+    organization: {value: [], type: FilterType.SELECT, searchFilter: 'organizations'},
+    department: {value: [], type: FilterType.SELECT, searchFilter: 'departments'},
+    region: {value: [], type: FilterType.SELECT, searchFilter: 'regions'},
+    office: {value: [], type: FilterType.SELECT, searchFilter: 'offices'},
+    positionName: {value: [], type: FilterType.SELECT, searchFilter: 'positions'}
+  }
 
-const InitPositions = {
-  slot: 'primary',
-  status: 'both'
-}
+  const InitPositions = {
+    slot: 'primary',
+    status: 'both'
+  }
 
-export default {
-  name: 'users',
-  data () {
-    return {
-      FilterType,
-      MissingFilterType,
-      SlotValues,
-      StatusValues,
-      hideExternalFilters: false,
-      pagination: {},
-      // I would like to rename this to something like `selectedUsers`. It's not documented, but testing shows Vuetify needs this to be called `selected`
-      selected: [],
-      selectedStatuses: [],
-      positions: {},
-      statuses: [],
-      salesAreas: [],
-      roles: [],
-      users: [],
-      headers: [
-        { text: 'First Name', value: 'firstName', show: true},
-        { text: 'Last Name', value: 'lastName', show: true},
-        { text: 'Email', value: 'email', show: true},
-        { text: 'Phone', value: 'phoneNumber', show: true},
-        { text: 'Organization', value: 'organization', show: true},
-        { text: 'Department', value: 'department', show: true},
-        { text: 'Region', value: 'region', show: true},
-        { text: 'Office', value: 'office', show: true},
-        { text: 'Position', value: 'positionName', show: true},
-        { text: 'Status', value: 'userStatusType', show: true}
-      ],
-      inlineFilters: {},
-      searchFilters: {},
-      searchFiltersDefault: {},
-      externalFilters: {}
-    }
-  },
-  computed: {
-    filteredUsers () {
-      return this.users && this.users.filter(user => {
+  export default {
+    name: 'users',
+    data () {
+      return {
+        FilterType,
+        MissingFilterType,
+        SlotValues,
+        StatusValues,
+        hideExternalFilters: false,
+        pagination: {},
+        // I would like to rename this to something like `selectedUsers`. It's not documented, but testing shows Vuetify needs this to be called `selected`
+        selected: [],
+        selectedStatuses: [],
+        positions: {},
+        statuses: [],
+        salesAreas: [],
+        roles: [],
+        users: [],
+        headers: [
+          { text: 'First Name', value: 'firstName', show: true},
+          { text: 'Last Name', value: 'lastName', show: true},
+          { text: 'Email', value: 'email', show: true},
+          { text: 'Phone', value: 'phoneNumber', show: true},
+          { text: 'Organization', value: 'organization', show: true},
+          { text: 'Department', value: 'department', show: true},
+          { text: 'Region', value: 'region', show: true},
+          { text: 'Office', value: 'office', show: true},
+          { text: 'Position', value: 'positionName', show: true},
+          { text: 'Status', value: 'userStatusType', show: true}
+        ],
+        inlineFilters: {},
+        searchFilters: {},
+        searchFiltersDefault: {},
+        externalFilters: {}
+      }
+    },
+    computed: {
+      filteredUsers () {
+        return this.users && this.users.filter(user => {
 
-        if (this.externalFilters.missingData && user.valid === true) {
-          return false
+          if (this.externalFilters.missingData && user.valid === true) {
+            return false
+          }
+
+          return Object.keys(this.inlineFilters).every(f => {
+
+            if (this.inlineFilters[f].value.length < 1) {
+              return true
+            }
+
+            let selectedNames;
+
+            switch (this.inlineFilters[f].type) {
+              case FilterType.TEXT:
+                return user[f].toLowerCase().includes(this.inlineFilters[f].value.toLowerCase())
+              case FilterType.SELECT:
+                selectedNames = this.inlineFilters[f].value.map(filter => filter.name)
+                return selectedNames.includes(user[f])
+            }
+          })
+        })
+      },
+      visibleHeaders () {
+        return this.headers.filter(header => header.show === true)
+      },
+      isAllStatusesSelected () {
+        return this.statuses && this.selectedStatuses.length === this.statuses.length
+      },
+      isSomeStatusesSelected () {
+        return this.selectedStatuses.length > 0 && !this.isAllStatusesSelected
+      },
+      isAllAreasSelected () {
+        return this.externalFilters.areaIds && this.externalFilters.areaIds.length === this.salesAreas.length
+      },
+      isSomeAreasSelected () {
+        return this.externalFilters.areaIds.length > 0 && !this.isAllAreasSelected
+      },
+      isAllRolesSelected () {
+        return this.externalFilters.roleIds && this.externalFilters.roleIds.length === this.roles.length
+      },
+      isSomeRolesSelected () {
+        return this.externalFilters.roleIds.length > 0 && !this.isAllRolesSelected
+      },
+      statusIcon () {
+        let icon
+
+        if (this.isAllStatusesSelected) {
+          icon = 'check_box'
+        } else if (this.isSomeStatusesSelected) {
+          icon = 'indeterminate_check_box'
+        } else {
+          icon = 'check_box_outline_blank'
         }
 
-        return Object.keys(this.inlineFilters).every(f => {
+        return icon
+      },
+      areaIcon () {
+        let icon
 
-          if (this.inlineFilters[f].value.length < 1) {
-            return true
-          }
+        if (this.isAllAreasSelected) {
+          icon = 'check_box'
+        } else if (this.isSomeAreasSelected) {
+          icon = 'indeterminate_check_box'
+        } else {
+          icon = 'check_box_outline_blank'
+        }
 
-          let selectedNames;
+        return icon
+      },
+      roleIcon () {
+        let icon
 
-          switch (this.inlineFilters[f].type) {
-            case FilterType.TEXT:
-              return user[f].toLowerCase().includes(this.inlineFilters[f].value.toLowerCase())
-            case FilterType.SELECT:
-              selectedNames = this.inlineFilters[f].value.map(filter => filter.name)
-              return selectedNames.includes(user[f])
-          }
-        })
+        if (this.isAllRolesSelected) {
+          icon = 'check_box'
+        } else if (this.isSomeRolesSelected) {
+          icon = 'indeterminate_check_box'
+        } else {
+          icon = 'check_box_outline_blank'
+        }
+
+        return icon
+      },
+      dateAfterFormatted () {
+        const date = moment(this.externalFilters.dateAfter)
+        return date.isValid() ? date.format('M/DD/YYYY') : ''
+      },
+      dateBeforeFormatted () {
+        const date = moment(this.externalFilters.dateBefore)
+        return date.isValid() ? date.format('M/DD/YYYY') : ''
+      },
+      ...mapState({
+        userDetails: state => state.user.details
       })
     },
-    visibleHeaders () {
-      return this.headers.filter(header => header.show === true)
-    },
-    isAllStatusesSelected () {
-      return this.statuses && this.selectedStatuses.length === this.statuses.length
-    },
-    isSomeStatusesSelected () {
-      return this.selectedStatuses.length > 0 && !this.isAllStatusesSelected
-    },
-    isAllAreasSelected () {
-      return this.externalFilters.areaIds && this.externalFilters.areaIds.length === this.salesAreas.length
-    },
-    isSomeAreasSelected () {
-      return this.externalFilters.areaIds.length > 0 && !this.isAllAreasSelected
-    },
-    isAllRolesSelected () {
-      return this.externalFilters.roleIds && this.externalFilters.roleIds.length === this.roles.length
-    },
-    isSomeRolesSelected () {
-      return this.externalFilters.roleIds.length > 0 && !this.isAllRolesSelected
-    },
-    statusIcon () {
-      let icon
+    methods: {
+      async fetchUsers () {
 
-      if (this.isAllStatusesSelected) {
-        icon = 'check_box'
-      } else if (this.isSomeStatusesSelected) {
-        icon = 'indeterminate_check_box'
-      } else {
-        icon = 'check_box_outline_blank'
-      }
+        // const dateAfter = moment(this.externalFilters.dateAfter)
+        // const dateBefore = moment(this.externalFilters.dateBefore)
 
-      return icon
-    },
-    areaIcon () {
-      let icon
+        //todo fix company id and fix `length of undefined` error
+        // const { data } = await this.$apollo.query({
+        //   query: USER_SEARCH,
+        //   fetchPolicy: 'no-cache',
+        //   variables: {
+        //     userSearchInput: {...this.externalFilters, ...{
+        //         dateAfter: (dateAfter.isValid()) ? dateAfter.toISOString() : null,
+        //         dateBefore: (dateBefore.isValid()) ? dateBefore.toISOString() : null,
+        //         // companyId: this.userDetails.companyId,
+        //         companyId: 1,
+        //         userId: this.userDetails.userId
+        //       }}
+        //   },
+        //   debounce: 500
+        // })
+        // const { users } = data
+        // this.users = users
 
-      if (this.isAllAreasSelected) {
-        icon = 'check_box'
-      } else if (this.isSomeAreasSelected) {
-        icon = 'indeterminate_check_box'
-      } else {
-        icon = 'check_box_outline_blank'
-      }
+      },
+      async fetchStatuses () {
+        // const { data } = await this.$apollo.query({
+        //   query: USER_STATUSES,
+        //   fetchPolicy: 'no-cache',
+        //   variables: {},
+        //   debounce: 500
+        // })
+        // const { userStatuses } = data
+        // this.statuses = userStatuses
+      },
+      async fetchSearchFilters () {
 
-      return icon
-    },
-    roleIcon () {
-      let icon
-
-      if (this.isAllRolesSelected) {
-        icon = 'check_box'
-      } else if (this.isSomeRolesSelected) {
-        icon = 'indeterminate_check_box'
-      } else {
-        icon = 'check_box_outline_blank'
-      }
-
-      return icon
-    },
-    dateAfterFormatted () {
-      const date = moment(this.externalFilters.dateAfter)
-      return date.isValid() ? date.format('M/DD/YYYY') : ''
-    },
-    dateBeforeFormatted () {
-      const date = moment(this.externalFilters.dateBefore)
-      return date.isValid() ? date.format('M/DD/YYYY') : ''
-    },
-    ...mapState({
-      userDetails: state => state.user.details
-    })
-  },
-  methods: {
-    async fetchUsers () {
-
-      // const dateAfter = moment(this.externalFilters.dateAfter)
-      // const dateBefore = moment(this.externalFilters.dateBefore)
-
-      //todo fix company id and fix `length of undefined` error
-      // const { data } = await this.$apollo.query({
-      //   query: USER_SEARCH,
-      //   fetchPolicy: 'no-cache',
-      //   variables: {
-      //     userSearchInput: {...this.externalFilters, ...{
-      //         dateAfter: (dateAfter.isValid()) ? dateAfter.toISOString() : null,
-      //         dateBefore: (dateBefore.isValid()) ? dateBefore.toISOString() : null,
-      //         // companyId: this.userDetails.companyId,
-      //         companyId: 1,
-      //         userId: this.userDetails.userId
-      //       }}
-      //   },
-      //   debounce: 500
-      // })
-      // const { users } = data
-      // this.users = users
-
-    },
-    async fetchStatuses () {
-      // const { data } = await this.$apollo.query({
-      //   query: USER_STATUSES,
-      //   fetchPolicy: 'no-cache',
-      //   variables: {},
-      //   debounce: 500
-      // })
-      // const { userStatuses } = data
-      // this.statuses = userStatuses
-    },
-    async fetchSearchFilters () {
-
-      let selectedFilterOptions = {
-        positionIds: this.inlineFilters.positionName.value.map(f => f.id),
-        organizationIds: this.inlineFilters.organization.value.map(f => f.id),
-        departmentIds: this.inlineFilters.department.value.map(f => f.id),
-        regionIds: this.inlineFilters.region.value.map(f => f.id),
-        officeIds: this.inlineFilters.office.value.map(f => f.id),
-        userStatusTypeIds: this.externalFilters.statusIds,
-        primaryOnly: this.externalFilters.primaryOnly,
-        secondaryOnly: this.externalFilters.secondaryOnly,
-        activeOnly: this.externalFilters.activeOnly,
-        inactiveOnly: this.externalFilters.inactiveOnly,
-        // companyId: this.userDetails.companyId
-      }
-
-      let startingPoint = null
-      const hasPositions = selectedFilterOptions.positionIds.length > 0,
-            hasOrgs = selectedFilterOptions.organizationIds.length > 0,
-            hasDepartments = selectedFilterOptions.departmentIds.length > 0,
-            hasRegions = selectedFilterOptions.regionIds.length > 0,
-            hasOffices = selectedFilterOptions.officeIds.length > 0
-
-      if (hasPositions || hasDepartments || hasRegions || hasOffices) {
-        if (hasPositions) {
-          startingPoint = 'positions'
-        } else if (hasOrgs) {
-          startingPoint = 'organizations'
-        } else if (hasDepartments) {
-          startingPoint = 'departments'
-        } else if (hasRegions) {
-          startingPoint = 'regions'
-        } else if (hasOffices) {
-          startingPoint = 'offices'
+        let selectedFilterOptions = {
+          positionIds: this.inlineFilters.positionName.value.map(f => f.id),
+          organizationIds: this.inlineFilters.organization.value.map(f => f.id),
+          departmentIds: this.inlineFilters.department.value.map(f => f.id),
+          regionIds: this.inlineFilters.region.value.map(f => f.id),
+          officeIds: this.inlineFilters.office.value.map(f => f.id),
+          userStatusTypeIds: this.externalFilters.statusIds,
+          primaryOnly: this.externalFilters.primaryOnly,
+          secondaryOnly: this.externalFilters.secondaryOnly,
+          activeOnly: this.externalFilters.activeOnly,
+          inactiveOnly: this.externalFilters.inactiveOnly,
+          // companyId: this.userDetails.companyId
         }
-      }
 
-      selectedFilterOptions.startingPoint = startingPoint
-      selectedFilterOptions.companyId = 1
+        let startingPoint = null
+        const hasPositions = selectedFilterOptions.positionIds.length > 0,
+              hasOrgs = selectedFilterOptions.organizationIds.length > 0,
+              hasDepartments = selectedFilterOptions.departmentIds.length > 0,
+              hasRegions = selectedFilterOptions.regionIds.length > 0,
+              hasOffices = selectedFilterOptions.officeIds.length > 0
 
-      // const { data } = await this.$apollo.query({
-      //   query: SEARCH_FILTERS,
-      //   fetchPolicy: 'no-cache',
-      //   variables: {
-      //     searchFilterInput: selectedFilterOptions
-      //   },
-      //   debounce: 500
-      // })
-      // const { userSearchFilters } = data
-      // this.searchFilters = userSearchFilters
-    },
-    async fetchSalesAreas () {
-      // const { data } = await this.$apollo.query({
-      //   query: SALES_AREAS,
-      //   fetchPolicy: 'no-cache',
-      //   variables: {},
-      //   debounce: 500
-      // })
-      // const { salesAreas } = data
-      // this.salesAreas = salesAreas
-    },
-    async fetchRoles () {
-      // const { data } = await this.$apollo.query({
-      //   query: ROLES,
-      //   fetchPolicy: 'no-cache',
-      //   variables: {},
-      //   debounce: 500
-      // })
-      // const { roles } = data
-      // this.roles = roles
-    },
-    debounceFetchUsers () {
-      // @TODO: get debounce working
-      // debounce(this.fetchUsers, 500)
-      this.fetchUsers()
-    },
-    updatePositionFilters () {
+        if (hasPositions || hasDepartments || hasRegions || hasOffices) {
+          if (hasPositions) {
+            startingPoint = 'positions'
+          } else if (hasOrgs) {
+            startingPoint = 'organizations'
+          } else if (hasDepartments) {
+            startingPoint = 'departments'
+          } else if (hasRegions) {
+            startingPoint = 'regions'
+          } else if (hasOffices) {
+            startingPoint = 'offices'
+          }
+        }
 
-      switch (this.positions.slot) {
-        case SlotValues.PRIMARY:
-          this.externalFilters.primaryOnly = true
-          this.externalFilters.secondaryOnly = false
-          break
-        case SlotValues.SECONDARY:
-          this.externalFilters.primaryOnly = false
-          this.externalFilters.secondaryOnly = true
-          break
-        case SlotValues.BOTH:
-          this.externalFilters.primaryOnly = false
-          this.externalFilters.secondaryOnly = false
-      }
+        selectedFilterOptions.startingPoint = startingPoint
+        selectedFilterOptions.companyId = 1
 
-      switch (this.positions.status) {
-        case StatusValues.ACTIVE:
-          this.externalFilters.activeOnly = true
-          this.externalFilters.inactiveOnly = false
-          break
-        case StatusValues.INACTIVE:
-          this.externalFilters.activeOnly = false
-          this.externalFilters.inactiveOnly = true
-          break
-        case StatusValues.BOTH:
-          this.externalFilters.activeOnly = false
-          this.externalFilters.inactiveOnly = false
-      }
+        // const { data } = await this.$apollo.query({
+        //   query: SEARCH_FILTERS,
+        //   fetchPolicy: 'no-cache',
+        //   variables: {
+        //     searchFilterInput: selectedFilterOptions
+        //   },
+        //   debounce: 500
+        // })
+        // const { userSearchFilters } = data
+        // this.searchFilters = userSearchFilters
+      },
+      async fetchSalesAreas () {
+        // const { data } = await this.$apollo.query({
+        //   query: SALES_AREAS,
+        //   fetchPolicy: 'no-cache',
+        //   variables: {},
+        //   debounce: 500
+        // })
+        // const { salesAreas } = data
+        // this.salesAreas = salesAreas
+      },
+      async fetchRoles () {
+        // const { data } = await this.$apollo.query({
+        //   query: ROLES,
+        //   fetchPolicy: 'no-cache',
+        //   variables: {},
+        //   debounce: 500
+        // })
+        // const { roles } = data
+        // this.roles = roles
+      },
+      debounceFetchUsers () {
+        // @TODO: get debounce working
+        // debounce(this.fetchUsers, 500)
+        this.fetchUsers()
+      },
+      updatePositionFilters () {
 
-      this.fetchUsers();
-    },
-    updateSelectStatuses () {
-      this.externalFilters.statusIds = this.selectedStatuses.map(s => s.id)
-      this.fetchUsers()
-    },
-    updateSearchFilters () {
-      this.fetchSearchFilters()
-    },
-    updateMissingExternalFilters (updatedFilter) {
-      if (updatedFilter === MissingFilterType.PRIMARY && this.externalFilters.missingPrimary === true) {
-        this.externalFilters.missingPosition = false
-      }
+        switch (this.positions.slot) {
+          case SlotValues.PRIMARY:
+            this.externalFilters.primaryOnly = true
+            this.externalFilters.secondaryOnly = false
+            break
+          case SlotValues.SECONDARY:
+            this.externalFilters.primaryOnly = false
+            this.externalFilters.secondaryOnly = true
+            break
+          case SlotValues.BOTH:
+            this.externalFilters.primaryOnly = false
+            this.externalFilters.secondaryOnly = false
+        }
 
-      if (updatedFilter === MissingFilterType.POSITION && this.externalFilters.missingPosition === true) {
-        this.externalFilters.missingPrimary = false
-      }
-      this.fetchUsers()
-    },
-    changeSort (column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending
-      } else {
-        this.pagination.sortBy = column
-        this.pagination.descending = false
-      }
-    },
-    toggleSelectAllUsers () {
-      this.selected = (this.selected.length) ? [] : this.filteredUsers.slice()
-    },
-    toggleSelectAllStatuses () {
-      this.$nextTick(() => {
-        // @TODO: Don't need selectedStatuses. this.externalFilters.statusIds IS the selected statuses
-        this.selectedStatuses = (this.isAllStatusesSelected) ? [] : this.statuses.slice()
+        switch (this.positions.status) {
+          case StatusValues.ACTIVE:
+            this.externalFilters.activeOnly = true
+            this.externalFilters.inactiveOnly = false
+            break
+          case StatusValues.INACTIVE:
+            this.externalFilters.activeOnly = false
+            this.externalFilters.inactiveOnly = true
+            break
+          case StatusValues.BOTH:
+            this.externalFilters.activeOnly = false
+            this.externalFilters.inactiveOnly = false
+        }
+
+        this.fetchUsers();
+      },
+      updateSelectStatuses () {
         this.externalFilters.statusIds = this.selectedStatuses.map(s => s.id)
         this.fetchUsers()
-      })
-    },
-    toggleSelectAllAreas () {
-      this.$nextTick(() => {
-        this.externalFilters.areaIds = (this.isAllAreasSelected) ? [] : this.salesAreas.map(area => area.id).slice()
+      },
+      updateSearchFilters () {
+        this.fetchSearchFilters()
+      },
+      updateMissingExternalFilters (updatedFilter) {
+        if (updatedFilter === MissingFilterType.PRIMARY && this.externalFilters.missingPrimary === true) {
+          this.externalFilters.missingPosition = false
+        }
+
+        if (updatedFilter === MissingFilterType.POSITION && this.externalFilters.missingPosition === true) {
+          this.externalFilters.missingPrimary = false
+        }
         this.fetchUsers()
-      })
-    },
-    toggleSelectAllRoles () {
-      this.$nextTick(() => {
-        this.externalFilters.roleIds = (this.isAllRolesSelected) ? [] : this.roles.map(role => role.id).slice()
-        this.fetchUsers()
-      })
-    },
-    toggleSelectAllFilter (filterName) {
-      this.$nextTick(() => {
-        let changedFilter = this.inlineFilters[filterName]
-        const searchFilter = this.searchFilters[changedFilter.searchFilter]
+      },
+      changeSort (column) {
+        if (this.pagination.sortBy === column) {
+          this.pagination.descending = !this.pagination.descending
+        } else {
+          this.pagination.sortBy = column
+          this.pagination.descending = false
+        }
+      },
+      toggleSelectAllUsers () {
+        this.selected = (this.selected.length) ? [] : this.filteredUsers.slice()
+      },
+      toggleSelectAllStatuses () {
+        this.$nextTick(() => {
+          // @TODO: Don't need selectedStatuses. this.externalFilters.statusIds IS the selected statuses
+          this.selectedStatuses = (this.isAllStatusesSelected) ? [] : this.statuses.slice()
+          this.externalFilters.statusIds = this.selectedStatuses.map(s => s.id)
+          this.fetchUsers()
+        })
+      },
+      toggleSelectAllAreas () {
+        this.$nextTick(() => {
+          this.externalFilters.areaIds = (this.isAllAreasSelected) ? [] : this.salesAreas.map(area => area.id).slice()
+          this.fetchUsers()
+        })
+      },
+      toggleSelectAllRoles () {
+        this.$nextTick(() => {
+          this.externalFilters.roleIds = (this.isAllRolesSelected) ? [] : this.roles.map(role => role.id).slice()
+          this.fetchUsers()
+        })
+      },
+      toggleSelectAllFilter (filterName) {
+        this.$nextTick(() => {
+          let changedFilter = this.inlineFilters[filterName]
+          const searchFilter = this.searchFilters[changedFilter.searchFilter]
 
-        changedFilter.value = (changedFilter.value.length > 0 && changedFilter.value.length === searchFilter.length) ? [] : searchFilter.slice()
-        this.updateSearchFilters()
-      })
-    },
-    disableInlineFilterSelectAll (inlineFilter) {
-      const searchFilter = this.searchFilters[inlineFilter.searchFilter]
-      return typeof searchFilter === 'undefined' || searchFilter === null || searchFilter.length < 1
-    },
-    inlineFilterIcon (filterName) {
-      const inlineFilter = this.inlineFilters[filterName],
-            searchFilter = this.searchFilters[inlineFilter.searchFilter]
-      let icon
+          changedFilter.value = (changedFilter.value.length > 0 && changedFilter.value.length === searchFilter.length) ? [] : searchFilter.slice()
+          this.updateSearchFilters()
+        })
+      },
+      disableInlineFilterSelectAll (inlineFilter) {
+        const searchFilter = this.searchFilters[inlineFilter.searchFilter]
+        return typeof searchFilter === 'undefined' || searchFilter === null || searchFilter.length < 1
+      },
+      inlineFilterIcon (filterName) {
+        const inlineFilter = this.inlineFilters[filterName],
+              searchFilter = this.searchFilters[inlineFilter.searchFilter]
+        let icon
 
-      if (inlineFilter.value.length < 1) {
-        icon = 'check_box_outline_blank'
-      } else if (searchFilter !== null && inlineFilter.value.length === searchFilter.length) {
-        icon = 'check_box'
-      } else {
-        icon = 'indeterminate_check_box'
-      }
+        if (inlineFilter.value.length < 1) {
+          icon = 'check_box_outline_blank'
+        } else if (searchFilter !== null && inlineFilter.value.length === searchFilter.length) {
+          icon = 'check_box'
+        } else {
+          icon = 'indeterminate_check_box'
+        }
 
-      return icon
-    },
-    initFilters () {
-      this.selected = []
-      this.inlineFilters = cloneDeep(InitInlineFilters)
-      this.externalFilters = cloneDeep(InitExternalFilters)
-      this.searchFilters = cloneDeep(this.searchFiltersDefault)
-      this.positions = cloneDeep(InitPositions)
-    },
-    resetFilters () {
-      this.initFilters()
-      this.selectedStatuses = this.statuses.filter(s => s.id === 1)
-      this.fetchUsers()
-    },
-    editUser (id) {
-      this.$router.push({name: 'user', params: {id}})
-    }
-  },
-  created () {
-    this.initFilters()
-    this.fetchSalesAreas()
-    this.fetchRoles()
-    this.fetchSearchFilters()
-      .then((filterDefaults) => {
-        this.searchFiltersDefault = filterDefaults
-      })
-    this.fetchStatuses()
-      .then(() => {
+        return icon
+      },
+      initFilters () {
+        this.selected = []
+        this.inlineFilters = cloneDeep(InitInlineFilters)
+        this.externalFilters = cloneDeep(InitExternalFilters)
+        this.searchFilters = cloneDeep(this.searchFiltersDefault)
+        this.positions = cloneDeep(InitPositions)
+      },
+      resetFilters () {
+        this.initFilters()
         this.selectedStatuses = this.statuses.filter(s => s.id === 1)
         this.fetchUsers()
-      })
+      },
+      editUser (id) {
+        this.$router.push({name: 'user', params: {id}})
+      }
+    },
+    created () {
+      this.initFilters()
+      this.fetchSalesAreas()
+      this.fetchRoles()
+      this.fetchSearchFilters()
+        .then((filterDefaults) => {
+          this.searchFiltersDefault = filterDefaults
+        })
+      this.fetchStatuses()
+        .then(() => {
+          this.selectedStatuses = this.statuses.filter(s => s.id === 1)
+          this.fetchUsers()
+        })
+    }
   }
-}
 </script>
+
 <style lang="scss" scoped>
-.advanced-search {
-  margin-left: 15px;
-  margin-right: 15px;
-  max-width: 200px;
-}
+  .advanced-search {
+    margin-left: 15px;
+    margin-right: 15px;
+    max-width: 200px;
+  }
 </style>
