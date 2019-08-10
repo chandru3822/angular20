@@ -1,9 +1,11 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.models.*;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,9 @@ public class AhjUtilityService {
     @Autowired
     private ObjectMapper om;
 
+    @Autowired
+    private SecurityService securityService;
+
     public List<AhjUtility> getAllAhjUtilities() {
         HashMap<String, Object> params = new HashMap<>();
         return sqlCache.query("ahj.utility.list.all", params, AhjUtility.class);
@@ -41,10 +46,13 @@ public class AhjUtilityService {
     }
 
     public Optional<AhjUtilityDetail> simpleUpdateUtility(AhjUtility utility) {
+        User currentUser = securityService.getCurrentUser();
+
         HashMap<String, Object> params = new HashMap<>();
+        params.put("currentUser", currentUser.getId());
         params.put("utilityName", utility.getName());
         params.put("metroAreaId", utility.getMetroAreaId());
-        params.put("active", utility.getActive());
+        params.put("archived", utility.getArchived());
         params.put("id", utility.getId());
 
         sqlCache.update("ahj.utility.simple.update", params);
@@ -52,7 +60,10 @@ public class AhjUtilityService {
     }
 
     public Optional<AhjUtilityDetail> updateUtility(AhjUtility utility) {
+        User currentUser = securityService.getCurrentUser();
+
         HashMap<String, Object> params = new HashMap<>();
+        params.put("currentUser", currentUser.getId());
         params.put("utilityName", utility.getName());
         params.put("metroAreaId", utility.getMetroAreaId());
         params.put("acDisconnectRequired", utility.getAcDisconnectRequired());
@@ -98,7 +109,7 @@ public class AhjUtilityService {
         params.put("timelines", utility.getTimelines());
         params.put("ptoFollowupInstructions", utility.getPtoFollowupInstructions());
         params.put("finalCompletionInstructions", utility.getFinalCompletionInstructions());
-        params.put("active", utility.getActive());
+        params.put("archived", utility.getArchived());
 
         Long id;
 

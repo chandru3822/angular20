@@ -7,8 +7,8 @@
         au.metro_area_id,
         ma.metro_area,
         s.id AS state_id,
-        s.abbreviation AS state,
-        au.active
+        s.abbreviation AS "state",
+        au.archived
       FROM brs.ahj_utility au
         LEFT JOIN brs.metro_area ma ON ma.id = au.metro_area_id
         LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
@@ -21,9 +21,10 @@
     <![CDATA[
       UPDATE brs.ahj_utility
       SET name = :utilityName,
-        active = :active,
+        archived = :archived,
         metro_area_id = :metroAreaId,
-        date_updated = now()
+        date_modified = now(),
+        modified_by_id = :currentUser
       WHERE id = :id
     ]]>
   </ahj.utility.simple.update>
@@ -31,15 +32,17 @@
   <ahj.utility.update>
     <![CDATA[
       UPDATE brs.ahj_utility
-      SET name = :utilityName,
-        active = :active,
+      SET
+        name = :utilityName,
+        archived = :archived,
         metro_area_id = :metroAreaId,
         ac_disconnect_required = :acDisconnectRequired,
         meter_can_taps_allowed = :meterCanTapsAllowed,
         pv_production_meter_required = :pvProductionMeterRequired,
         pv_ac_swap_locations = :pvacSwapLocations,
         utility_warning_labels_override = :utilityWarningLabelsOverride,
-        date_updated = now(),
+        date_modified = now(),
+        modified_by_id = :currentUser,
         timelines_and_stages = :timelinesAndStages,
         regulated_by = :regulatedBy,
         monthly_facility_charge = :monthlyFacilityCharge,
@@ -84,8 +87,8 @@
 
   <ahj.utility.insert>
     <![CDATA[
-      INSERT INTO brs.ahj_utility(name, active, date_created, date_updated, metro_area_id)
-        VALUES (:utilityName, true, now(), now(), :metroAreaId)
+      INSERT INTO brs.ahj_utility(name, archived, date_created, created_by_id, metro_area_id)
+        VALUES (:utilityName, false, now(), :currentUser, :metroAreaId)
     ]]>
   </ahj.utility.insert>
 
@@ -169,65 +172,65 @@
           SELECT array_to_json(array_agg(row_to_json(links)))
           FROM (
             SELECT
-              apl.id,
-              apl.name,
-              apl.link,
-              apl.username,
-              apl.link_type_id AS "linkTypeId",
-              apl.password,
-              apl.notes
-            FROM brs.ahj_utility_link apl
-            WHERE apl.archived IS FALSE
-              AND apl.link_type_id = 6
-              AND apl.ahj_utility_id = u.id) links
+              aul.id,
+              aul.name,
+              aul.link,
+              aul.username,
+              aul.link_type_id AS "linkTypeId",
+              aul.password,
+              aul.notes
+            FROM brs.ahj_utility_link aul
+            WHERE aul.archived IS FALSE
+              AND aul.link_type_id = 6
+              AND aul.ahj_utility_id = u.id) links
           ), '[]') AS customer_signature_links,
         coalesce((
           SELECT array_to_json(array_agg(row_to_json(links)))
           FROM (
             SELECT
-              apl.id,
-              apl.name,
-              apl.link,
-              apl.username,
-              apl.link_type_id AS "linkTypeId",
-              apl.password,
-              apl.notes
-            FROM brs.ahj_utility_link apl
-            WHERE apl.archived IS FALSE
-              AND apl.link_type_id = 7
-              AND apl.ahj_utility_id = u.id) links
+              aul.id,
+              aul.name,
+              aul.link,
+              aul.username,
+              aul.link_type_id AS "linkTypeId",
+              aul.password,
+              aul.notes
+            FROM brs.ahj_utility_link aul
+            WHERE aul.archived IS FALSE
+              AND aul.link_type_id = 7
+              AND aul.ahj_utility_id = u.id) links
           ), '[]') AS pto_links,
         coalesce((
           SELECT array_to_json(array_agg(row_to_json(links)))
           FROM (
             SELECT
-              apl.id,
-              apl.name,
-              apl.link,
-              apl.username,
-              apl.link_type_id AS "linkTypeId",
-              apl.password,
-              apl.notes
-            FROM brs.ahj_utility_link apl
-            WHERE apl.archived IS FALSE
-              AND apl.link_type_id = 8
-              AND apl.ahj_utility_id = u.id) links
+              aul.id,
+              aul.name,
+              aul.link,
+              aul.username,
+              aul.link_type_id AS "linkTypeId",
+              aul.password,
+              aul.notes
+            FROM brs.ahj_utility_link aul
+            WHERE aul.archived IS FALSE
+              AND aul.link_type_id = 8
+              AND aul.ahj_utility_id = u.id) links
           ), '[]') AS pto_followup_links,
         coalesce((
           SELECT array_to_json(array_agg(row_to_json(links)))
           FROM (
             SELECT
-              apl.id,
-              apl.name,
-              apl.link,
-              apl.username,
-              apl.link_type_id AS "linkTypeId",
-              apl.password,
-              apl.notes
-            FROM brs.ahj_utility_link apl
-            WHERE apl.archived IS FALSE
-              AND apl.link_type_id = 9
-              AND apl.ahj_utility_id = u.id) links
+              aul.id,
+              aul.name,
+              aul.link,
+              aul.username,
+              aul.link_type_id AS "linkTypeId",
+              aul.password,
+              aul.notes
+            FROM brs.ahj_utility_link aul
+            WHERE aul.archived IS FALSE
+              AND aul.link_type_id = 9
+              AND aul.ahj_utility_id = u.id) links
           ), '[]') AS submission_links,
         coalesce((
           SELECT array_to_json(array_agg(row_to_json(requirements)))
@@ -249,9 +252,9 @@
             aur.date_created AS "dateCreated",
             aur.created_by_id AS "createdById",
             u.first_name || ' ' || u.last_name AS "createdBy",
-            aur.date_updated AS "dateUpdated",
-            aur.updated_by_id AS "updatedById",
-            u.first_name || ' ' || u.last_name AS "updatedBy",
+            aur.date_modified AS "dateModified",
+            aur.modified_by_id AS "modifiedById",
+            u.first_name || ' ' || u.last_name AS "modifiedBy",
             ar.id,
             ar.description,
             ar.requirement_type_id AS "requirementTypeId",
@@ -265,11 +268,12 @@
               AND oc.original_requirement_id = aur.original_requirement_id
             INNER JOIN brs.ahj_requirement ar ON ar.id = aur.requirement_id
             INNER JOIN flow."user" u ON u.id = aur.created_by_id
-            INNER JOIN flow."user" u2 ON u2.id = aur.updated_by_id
+            INNER JOIN flow."user" u2 ON u2.id = aur.modified_by_id
             INNER JOIN brs.ahj_requirement_status ars ON ars.id = aur.status_id
           WHERE aur.utility_id = :id
             AND aur.status_id = 1
             AND aur.archived IS NOT TRUE
+            AND ars.archived IS NOT TRUE
           ORDER BY aur.position) requirements
         ), '[]') AS utility_requirements
       FROM brs.ahj_utility u

@@ -15,7 +15,7 @@
         a.filename,
         a.s3_key,
         a.size,
-        a.deleted,
+        a.archived,
         src.source_id,
         a.date_created,
         a.date_modified
@@ -37,7 +37,7 @@
         src.source_id,
         a.date_created,
         a.date_modified,
-        a.deleted
+        a.archived
       FROM flow.attachment a
         INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
       WHERE src.attachment_source_type_id = :attachmentSourceTypeId
@@ -53,7 +53,7 @@
         a.filename,
         a.s3_key,
         a.size,
-        a.deleted,
+        a.archived,
         src.source_id,
         a.date_created,
         a.date_modified
@@ -75,7 +75,7 @@
         a.s3_key,
         a.size,
         src.source_id,
-        a.deleted
+        a.archived
       FROM flow.attachment a
         INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
       WHERE src.source_id = :sourceId
@@ -92,7 +92,7 @@
         a.filename,
         a.s3_key,
         a.size,
-        a.deleted,
+        a.archived,
         src.source_id,
         a.date_created,
         a.date_modified
@@ -134,7 +134,7 @@
     <![CDATA[
       UPDATE flow.attachment
       SET
-        deleted = TRUE,
+        archived = TRUE,
         date_modified = now(),
         modified_by_id = :modifiedById
       WHERE id = :id
@@ -145,7 +145,7 @@
     <![CDATA[
       UPDATE flow.attachment a
       SET
-        deleted = TRUE,
+        archived = TRUE,
         date_modified = now(),
         modified_by_id = :modifiedById
       FROM (

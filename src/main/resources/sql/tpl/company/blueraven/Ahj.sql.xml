@@ -14,7 +14,7 @@
         INNER JOIN flow.state st ON sa.state_id = st.id
       WHERE ahj.archived IS NOT TRUE
       ORDER BY st.state, ma.metro_area, ahj.name
-    ]]>
+    ]]> 
   </ahj.list>
 
   <ahj.findById>
@@ -55,7 +55,7 @@
 
   <ahj.create>
     <![CDATA[
-      INSERT INTO brs.ahj (name, metro_area_id, created, created_by_id, updated, updated_by_id)
+      INSERT INTO brs.ahj (name, metro_area_id, date_created, created_by_id, date_modified, modified_by_id)
       VALUES (:name, :metroAreaId, now(), :currentUser, now(), :currentUser)
     ]]>
   </ahj.create>
@@ -66,8 +66,8 @@
       SET
         name = :name,
         metro_area_id = :metroAreaId,
-        updated = now(),
-        updated_by_id = :currentUser
+        date_modified = now(),
+        modified_by_id = :currentUser
       WHERE id = :id
     ]]>
   </ahj.update>
@@ -215,7 +215,7 @@
   <ahj.checklist.create>
     <![CDATA[
       INSERT INTO brs.ahj_checklist
-        (description, display_order, created, created_by_id, updated, updated_by_id, checklist_type_id,
+        (description, display_order, date_created, created_by_id, date_modified, modified_by_id, checklist_type_id,
          failed_inspection_resource_id, failed_inspection_date, failed_inspection_project)
       VALUES
         (:description, :displayOrder, now(), :currentUser, now(), :currentUser, :checklistTypeId,
@@ -229,8 +229,8 @@
       SET
         description = :description,
         display_order = :displayOrder,
-        updated_by_id = :currentUser,
-        updated = now(),
+        date_modified = now(),
+        modified_by_id = :currentUser,
         checklist_type_id = :checklistTypeId,
         failed_inspection_resource_id = :failedInspectionResourceId,
         failed_inspection_date = :failedInspectionDate,
@@ -244,8 +244,8 @@
       UPDATE brs.ahj_checklist
       SET
         archived = TRUE,
-        updated_by_id = :currentUser,
-        updated = now()
+        date_modified = now(),
+        modified_by_id = :currentUser
       WHERE id = :id
     ]]>
   </ahj.checklist.delete>
@@ -260,7 +260,7 @@
   <ahj.contact.create>
     <![CDATA[
       INSERT INTO brs.ahj_contact
-        (name, title, email, phone_number, address, notes, hours, created, created_by_id, updated, updated_by_id,
+        (name, title, email, phone_number, address, notes, hours, date_created, created_by_id, date_modified, modified_by_id,
          contact_type_id)
       VALUES
         (:name, :title, :email, :phoneNumber, :address, :notes, :hours, now(), :currentUser, now(), :currentUser,
@@ -279,8 +279,8 @@
         address = :address,
         notes = :notes,
         hours = :hours,
-        updated_by_id = :currentUser,
-        updated = now()
+        date_modified = now(),
+        modified_by_id = :currentUser
       WHERE id = :contactId
     ]]>
   </ahj.contact.update>
@@ -290,8 +290,8 @@
       UPDATE brs.ahj_contact
       SET
         archived = TRUE,
-        updated_by_id = :currentUser,
-        updated = now()
+        date_modified = now(),
+        modified_by_id = :currentUser
       WHERE id = :contactId
     ]]>
   </ahj.contact.delete>

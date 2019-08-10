@@ -60,15 +60,15 @@
             SELECT
               n.id,
               n.note,
-              n.created,
-              n.updated,
+              n.date_created,
+              n.date_modified,
               n.created_by_id                                      AS "createdById",
               created_by.first_name || ' ' || created_by.last_name AS "createdBy",
-              n.updated_by_id                                      AS "updatedById",
-              updated_by.first_name || ' ' || updated_by.last_name AS "updatedBy"
+              n.modified_by_id                                      AS "modifiedById",
+              modified_by.first_name || ' ' || modified_by.last_name AS "modifiedBy"
             FROM brs.ahj_note n
               INNER JOIN flow."user" created_by ON n.created_by_id = created_by.id
-              INNER JOIN flow."user" updated_by ON n.updated_by_id = updated_by.id
+              INNER JOIN flow."user" modified_by ON n.modified_by_id = modified_by.id
               INNER JOIN brs.ahj_permit_note apn ON n.id = apn.ahj_note_id
             WHERE apn.ahj_permit_id = p.id AND n.archived IS FALSE AND n.note_type_id = 1
           ) AS notes), '[]'
@@ -180,26 +180,30 @@
 
   <ahj.permit.createBlank>
     <![CDATA[
-      INSERT INTO brs.ahj_permit(ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
-                                       print_location, stamped_plan, archived, created, created_by_id, updated,
-                                       updated_by_id, business_license_expiration_date,
-                                       contractor_license_expiration_date, business_license,
-                                       contractor_license)
-      VALUES (:ahjId, null, null, null, null, null, false, null, null, null, null, null, null, null, null)
+      INSERT INTO brs.ahj_permit
+        (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
+         print_location, stamped_plan, archived, date_created, created_by_id,
+         business_license_expiration_date, contractor_license_expiration_date,
+         business_license, contractor_license)
+      VALUES
+        (:ahjId, null, null, null,
+         null, null, false, now(), :currentUser,
+         null, null,
+         null, null)
       RETURNING id
     ]]>
   </ahj.permit.createBlank>
 
   <ahj.permit.create>
     <![CDATA[
-      INSERT INTO brs.ahj_permit (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
-                                  print_location, stamped_plan, created, created_by_id, updated,
-                                  updated_by_id, business_license, contractor_license,
-                                  business_license_expiration_date, contractor_license_expiration_date)
-      VALUES (:ahjId, :depositAmount, :averagePermitFee, :engineeringLetterRequired,
-              :printLocation, :stampedPlan, now(), :currentUser, now(), :currentUser,
-              :businessLicense, :contractorLicense, :businessLicenseExpirationDate,
-              :contractorLicenseExpirationDate)
+      INSERT INTO brs.ahj_permit
+        (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
+         print_location, stamped_plan, date_created, created_by_id, business_license, contractor_license,
+         business_license_expiration_date, contractor_license_expiration_date)
+      VALUES
+        (:ahjId, :depositAmount, :averagePermitFee, :engineeringLetterRequired,
+         :printLocation, :stampedPlan, now(), :currentUser, :businessLicense, :contractorLicense,
+         :businessLicenseExpirationDate, :contractorLicenseExpirationDate)
     ]]>
   </ahj.permit.create>
 
@@ -213,8 +217,8 @@
         engineering_letter_required = :engineeringLetterRequired,
         print_location = :printLocation,
         stamped_plan = :stampedPlan,
-        updated = now(),
-        updated_by_id = :currentUser,
+        date_modified = now(),
+        modified_by_id = :currentUser,
         business_license = :businessLicense,
         contractor_license = :contractorLicense,
         business_license_expiration_date = :businessLicenseExpirationDate,
@@ -284,9 +288,9 @@
   <ahj.permit.link.create>
     <![CDATA[
       INSERT INTO brs.ahj_permit_link
-        (ahj_permit_id, name, link, username, password, notes, created, created_by_id, updated, updated_by_id, link_type_id)
+        (ahj_permit_id, name, link, username, password, notes, date_created, created_by_id, link_type_id)
       VALUES
-        (:ahjPermitId, :name, :link, :username, :password, :notes, now(), :currentUser, now(), :currentUser, :linkTypeId)
+        (:ahjPermitId, :name, :link, :username, :password, :notes, now(), :currentUser, :linkTypeId)
     ]]>
   </ahj.permit.link.create>
 
@@ -300,7 +304,8 @@
         username = :username,
         password = :password,
         notes = :notes,
-        updated = now(), updated_by_id = :currentUser
+        date_modified = now(),
+        modified_by_id = :currentUser
       WHERE id = :id
     ]]>
   </ahj.permit.link.update>
@@ -310,8 +315,8 @@
       UPDATE brs.ahj_permit_link
       SET
         archived = TRUE,
-        updated = now(),
-        updated_by_id = :currentUser
+        date_modified = now(),
+        modified_by_id = :currentUser
       WHERE id = :id
     ]]>
   </ahj.permit.link.delete>

@@ -15,7 +15,7 @@ public class AhjUtility {
         populationOfService, netMeteringRate, rebateRates, utilityRateNotes, customerSignatureInstructions,
         expectedApprovalTimeline, rejectionInstructions, notes, submissionInstructions, overviewOfSubmissionProcess,
         timelines, ptoFollowupInstructions, finalCompletionInstructions;
-    private Boolean active, archived;
+    private Boolean archived;
 
     //type table stuff
     private Long rebateProgramTypeId, signatureRequiredPriorTypeId, signatureRequestedAtTypeId,

@@ -159,6 +159,7 @@
                                       status_id
                                     FROM brs.ahj_requirements ar
                                     WHERE status_id = 3
+                                      AND ar.archived IS NOT TRUE
                                 )
                                 SELECT ar.ahj_id AS "ahjId",
                                     ar.position,
@@ -168,10 +169,10 @@
                                     ar.date_created AS "dateCreated",
                                     ar.created_by_id AS "createdById",
                                     u.first_name || ' ' || u.last_name AS "createdBy",
-                                    ar.date_updated AS "dateUpdated",
-                                    ar.updated_by_id AS "updatedById",
+                                    ar.date_modified AS "dateModified",
+                                    ar.modified_by_id AS "modifiedById",
                                     ar.archived,
-                                    u2.first_name || ' ' || u2.last_name AS "updatedBy",
+                                    u2.first_name || ' ' || u2.last_name AS "modifiedBy",
                                     r.id,
                                     r.description,
                                     r.requirement_type_id AS "requirementTypeId",
@@ -186,12 +187,14 @@
                                     INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
                                     INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
                                     INNER JOIN flow."user" u ON u.id = ar.created_by_id
-                                    INNER JOIN flow."user" u2 ON u2.id = ar.updated_by_id
+                                    INNER JOIN flow."user" u2 ON u2.id = ar.modified_by_id
                                     INNER JOIN brs.ahj_requirement_status ars ON ars.id = ar.status_id
                                 WHERE ar.ahj_id = i.ahj_id
                                       AND art.id = 5
                                       AND ar.status_id = 1
                                       AND ar.archived IS NOT TRUE
+                                      AND ars.archived IS NOT TRUE
+                                      and art.archived IS NOT TRUE
                                 ORDER BY ar.position) requirements), '[]') AS installationRequirements,
                 coalesce((
                          SELECT array_to_json(array_agg(row_to_json(links)))
@@ -283,89 +286,106 @@
     </ahj.inspection.findById>
 
     <ahj.inspection.createBlank>
-        INSERT INTO brs.ahj_inspection (ahj_id, inspection_fee, re_inspection_fee, payment_method, scheduling_method_type_id, inspection_time_window, homeowner_required_on_site, representative_required_onsite_type_id, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, created, created_by_id, updated, updated_by_id, call_for_time_window, rough_inspection_required_type_id, midpoint_inspection_lead_time_type_id, ladder_required, time_window, time_window_call_time, time_window_phone)
-        VALUES (:ahjId, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, false, null, null, null, null, null, null, null, null, null, null, null)
-        RETURNING id;
+        INSERT INTO brs.ahj_inspection
+          (ahj_id, inspection_fee, re_inspection_fee, payment_method, scheduling_method_type_id,
+           inspection_time_window, homeowner_required_on_site, representative_required_onsite_type_id,
+           brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method,
+           approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username,
+           obtaining_results_portal_password, business_license, contractor_license,
+           archived, date_created, created_by_id, date_modified, modified_by_id,
+           call_for_time_window, rough_inspection_required_type_id, midpoint_inspection_lead_time_type_id,
+           ladder_required, time_window, time_window_call_time, time_window_phone)
+        VALUES
+          (:ahjId, null, null, null, null,
+           null, null, null,
+           null, null, null, null, null,
+           null, null, null,
+           null, null, null,
+           false, now(), :currentUser, null, null,
+           null, null, null,
+           null, null, null, null)
+        RETURNING id
     </ahj.inspection.createBlank>
 
     <ahj.inspection.create>
-        <![CDATA[
-            INSERT INTO brs.ahj_inspection ( ahj_id )
-            VALUES ( :ahjId )
-        ]]>
+      <![CDATA[
+        INSERT INTO brs.ahj_inspection (ahj_id, date_created, created_by_id)
+        VALUES (:ahjId, now(), :currentUser)
+      ]]>
     </ahj.inspection.create>
 
     <ahj.inspection.update>
-        <![CDATA[
-            UPDATE brs.ahj_inspection
-            SET ahj_id = :ahjId,
-              inspection_fee = :inspectionFee,
-              re_inspection_fee = :reInspectionFee,
-              payment_method = :paymentMethod,
+      <![CDATA[
+        UPDATE brs.ahj_inspection
+        SET
+          ahj_id = :ahjId,
+          inspection_fee = :inspectionFee,
+          re_inspection_fee = :reInspectionFee,
+          payment_method = :paymentMethod,
 
-              scheduling_note = :schedulingNote,
-              technician_instruction_note = :technicianInstructionNote,
-              scheduling_with_customer_note = :schedulingWithCustomerNote,
-              obtaining_results_note = :obtainingResultsNote,
-              reinspection_note = :reinspectionNote,
-              documentation_note = :documentationNote,
-              mpu_inspection_note = :mpuInspectionNote,
+          scheduling_note = :schedulingNote,
+          technician_instruction_note = :technicianInstructionNote,
+          scheduling_with_customer_note = :schedulingWithCustomerNote,
+          obtaining_results_note = :obtainingResultsNote,
+          reinspection_note = :reinspectionNote,
+          documentation_note = :documentationNote,
+          mpu_inspection_note = :mpuInspectionNote,
 
-              homeowner_required = :homeownerRequired,
-              brs_tech_required = :brsTechRequired,
+          homeowner_required = :homeownerRequired,
+          brs_tech_required = :brsTechRequired,
 
-              scheduling_method_type_id = :schedulingMethodTypeId,
-              scheduling_method_type_other = :schedulingMethodTypeOther,
-              handy_information_type_id = :handyInformationTypeId,
-              handy_information_type_other = :handyInformationTypeOther,
-              scheduling_lead_time_type_id = :schedulingLeadTimeTypeId,
-              scheduling_lead_time_type_other = :schedulingLeadTimeTypeOther,
-              inspection_capacity_type_id = :inspectionCapacityTypeId,
-              inspection_capacity_type_other = :inspectionCapacityTypeOther,
-              site_access_type_id = :siteAccessTypeId,
-              site_access_type_other = :siteAccessTypeOther,
-              rough_inspection_required_type_id = :roughInspectionRequiredTypeId,
-              rough_inspection_required_type_other = :roughInspectionRequiredTypeOther,
-              midpoint_inspection_lead_time_type_id = :midpointInspectionLeadTimeTypeId,
-              midpoint_inspection_lead_time_type_other = :midpointInspectionLeadTimeTypeOther,
-              soladeck_access_type_id = :soladeckAccessTypeId,
-              soladeck_access_type_other = :soladeckAccessTypeOther,
-              placard_required_type_id = :placardRequiredTypeId,
-              placard_required_type_other = :placardRequiredTypeOther,
-              required_inspection_types = :requiredInspectionTypes,
-              representative_required_onsite_type_id = :representativeRequiredOnsiteTypeId,
-              representative_required_onsite_type_other = :representativeRequiredOnsiteTypeOther,
-              special_equipment_type_id = :specialEquipmentTypeId,
-              special_equipment_type_other = :specialEquipmentTypeOther,
-              plans_required_type_id = :plansRequiredTypeId,
-              plans_required_type_other = :plansRequiredTypeOther,
-              special_documents_type_id = :specialDocumentsTypeId,
-              special_documents_type_other = :specialDocumentsTypeOther,
-              results_documentation_type_id = :resultsDocumentationTypeId,
-              reinspection_fee_type_id = :reinspectionFeeTypeId,
+          scheduling_method_type_id = :schedulingMethodTypeId,
+          scheduling_method_type_other = :schedulingMethodTypeOther,
+          handy_information_type_id = :handyInformationTypeId,
+          handy_information_type_other = :handyInformationTypeOther,
+          scheduling_lead_time_type_id = :schedulingLeadTimeTypeId,
+          scheduling_lead_time_type_other = :schedulingLeadTimeTypeOther,
+          inspection_capacity_type_id = :inspectionCapacityTypeId,
+          inspection_capacity_type_other = :inspectionCapacityTypeOther,
+          site_access_type_id = :siteAccessTypeId,
+          site_access_type_other = :siteAccessTypeOther,
+          rough_inspection_required_type_id = :roughInspectionRequiredTypeId,
+          rough_inspection_required_type_other = :roughInspectionRequiredTypeOther,
+          midpoint_inspection_lead_time_type_id = :midpointInspectionLeadTimeTypeId,
+          midpoint_inspection_lead_time_type_other = :midpointInspectionLeadTimeTypeOther,
+          soladeck_access_type_id = :soladeckAccessTypeId,
+          soladeck_access_type_other = :soladeckAccessTypeOther,
+          placard_required_type_id = :placardRequiredTypeId,
+          placard_required_type_other = :placardRequiredTypeOther,
+          required_inspection_types = :requiredInspectionTypes,
+          representative_required_onsite_type_id = :representativeRequiredOnsiteTypeId,
+          representative_required_onsite_type_other = :representativeRequiredOnsiteTypeOther,
+          special_equipment_type_id = :specialEquipmentTypeId,
+          special_equipment_type_other = :specialEquipmentTypeOther,
+          plans_required_type_id = :plansRequiredTypeId,
+          plans_required_type_other = :plansRequiredTypeOther,
+          special_documents_type_id = :specialDocumentsTypeId,
+          special_documents_type_other = :specialDocumentsTypeOther,
+          results_documentation_type_id = :resultsDocumentationTypeId,
+          reinspection_fee_type_id = :reinspectionFeeTypeId,
 
-              inspection_time_window = :inspectionTimeWindow,
-              brs_inspection_rep = :brsInspectionRep,
-              portal_url = :portalUrl,
-              portal_username = :portalUsername,
-              portal_password = :portalPassword,
-              obtaining_results_method = :obtainingResultsMethod,
-              approval_document_method = :approvalDocumentMethod,
-              obtaining_results_portal_url = :obtainingResultsPortalUrl,
-              obtaining_results_portal_username = :obtainingResultsPortalUsername,
-              obtaining_results_portal_password = :obtainingResultsPortalPassword,
-              business_license = :businessLicense,
-              contractor_license = :contractorLicense,
-              homeowner_required_on_site = :homeownerRequiredOnSite,
-              fall_protection_required = :fallProtectionRequired,
-              call_for_time_window = :callForTimeWindow,
-              ladder_required = :ladderRequired,
-              time_window =  :timeWindow,
-              time_window_call_time = :timeWindowCallTime,
-              time_window_phone =  :timeWindowPhone,
-              updated = now(),
-              updated_by_id = :currentUser
-            WHERE id = :id
-        ]]>
+          inspection_time_window = :inspectionTimeWindow,
+          brs_inspection_rep = :brsInspectionRep,
+          portal_url = :portalUrl,
+          portal_username = :portalUsername,
+          portal_password = :portalPassword,
+          obtaining_results_method = :obtainingResultsMethod,
+          approval_document_method = :approvalDocumentMethod,
+          obtaining_results_portal_url = :obtainingResultsPortalUrl,
+          obtaining_results_portal_username = :obtainingResultsPortalUsername,
+          obtaining_results_portal_password = :obtainingResultsPortalPassword,
+          business_license = :businessLicense,
+          contractor_license = :contractorLicense,
+          homeowner_required_on_site = :homeownerRequiredOnSite,
+          fall_protection_required = :fallProtectionRequired,
+          call_for_time_window = :callForTimeWindow,
+          ladder_required = :ladderRequired,
+          time_window =  :timeWindow,
+          time_window_call_time = :timeWindowCallTime,
+          time_window_phone =  :timeWindowPhone,
+          date_modified = now(),
+          modified_by_id = :currentUser
+        WHERE id = :id
+      ]]>
     </ahj.inspection.update>
 </sql>

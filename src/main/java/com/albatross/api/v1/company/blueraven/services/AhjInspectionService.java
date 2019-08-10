@@ -40,6 +40,9 @@ public class AhjInspectionService {
     if (inspection.isPresent()) {
       return inspection;
     } else {
+      User currentUser = securityService.getCurrentUser();
+      params.put("currentUser", currentUser.getId());
+
       //add a blank inspection and return that
       Integer id = sqlCache.get("ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
       if (id != null) {

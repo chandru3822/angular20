@@ -11,8 +11,8 @@ import java.util.Date;
 public class AhjRequirement {
     private Long id;
 
-    private Long ahjId, requirementTypeId, originalRequirementId, position, utilityId, createdById, updatedById, statusId;
-    private String name, description, createdBy, updatedBy, status, requirementType;
-    private Date dateCreated, dateUpdated;
+    private Long ahjId, requirementTypeId, originalRequirementId, position, utilityId, createdById, modifiedById, statusId;
+    private String name, description, createdBy, modifiedBy, status, requirementType;
+    private Date dateCreated, dateModified;
     private Boolean complete, hasOpenChallenge, archived;
 }

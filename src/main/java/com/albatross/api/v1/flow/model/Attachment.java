@@ -11,5 +11,5 @@ import java.util.Date;
 public class Attachment {
     private Long id, size, sourceId;
     private String filename, contentType, s3Key, url, presignedUrl;
-    private Date date_created, date_updated;
+    private Date dateCreated, dateModified;
 }

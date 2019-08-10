@@ -10,5 +10,5 @@ public class MetroArea {
     private Long id;
     private String area, metroArea;
     private Long salesAreaId;
-    private Boolean active;
+    private Boolean archived;
 }

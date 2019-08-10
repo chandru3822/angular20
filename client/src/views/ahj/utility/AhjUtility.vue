@@ -80,7 +80,7 @@
                     :key="ahjUtility.id"
                     :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
                   >
-                    <td :class="{ 'strike': !ahjUtility.active}">
+                    <td :class="{ 'strike': ahjUtility.archived}">
                       {{ ahjUtility.name ? ahjUtility.name : '' }}
                     </td>
                     <td>{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
@@ -117,8 +117,8 @@
                   ></v-select>
                   <v-checkbox
                     v-if="!addMode"
-                    label="Active"
-                    v-model="editedItem.active"
+                    label="Archived"
+                    v-model="editedItem.archived"
                   ></v-checkbox>
                 </v-card-text>
 
@@ -183,7 +183,7 @@
       editedItem: {
         utilityName: '',
         metroAreaId: '',
-        active: ''
+        archived: ''
       },
       ahjUtilityDialog: false,
       addMode: false,

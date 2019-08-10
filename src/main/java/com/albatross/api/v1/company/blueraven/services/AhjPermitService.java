@@ -41,8 +41,10 @@ public class AhjPermitService {
     if (permit.isPresent()) {
       return permit;
     } else {
-      //add a blank permit and return that
+      User currentUser = securityService.getCurrentUser();
+      params.put("currentUser", currentUser.getId());
 
+      //add a blank permit and return that
       Integer id = sqlCache.get("ahj.permit.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
       if (id != null) {
         Optional<AhjPermitDetail> permit2 = sqlCache.get("ahj.permit.detail", params, new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));

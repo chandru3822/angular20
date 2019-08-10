@@ -27,6 +27,7 @@
                                       status_id
                                     FROM brs.ahj_requirements ar
                                     WHERE status_id = 3
+                                      AND ar.archived IS NOT TRUE
                                 )
                                 SELECT ar.ahj_id AS "ahjId",
                                     ar.position,
@@ -36,10 +37,10 @@
                                     ar.date_created AS "dateCreated",
                                     ar.created_by_id AS "createdById",
                                     u.first_name || ' ' || u.last_name AS "createdBy",
-                                    ar.date_updated AS "dateUpdated",
-                                    ar.updated_by_id AS "updatedById",
+                                    ar.date_modified AS "dateModified",
+                                    ar.modified_by_id AS "modifiedById",
                                     ar.archived,
-                                    u2.first_name || ' ' || u2.last_name AS "updatedBy",
+                                    u2.first_name || ' ' || u2.last_name AS "modifiedBy",
                                     r.id,
                                     r.description,
                                     r.requirement_type_id AS "requirementTypeId",
@@ -54,12 +55,14 @@
                                     INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
                                     INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
                                     INNER JOIN flow."user" u ON u.id = ar.created_by_id
-                                    INNER JOIN flow."user" u2 ON u2.id = ar.updated_by_id
+                                    INNER JOIN flow."user" u2 ON u2.id = ar.modified_by_id
                                     INNER JOIN brs.ahj_requirement_status ars ON ars.id = ar.status_id
                                 WHERE ar.ahj_id = d.ahj_id
                                       and art.id = 1
                                       and ar.status_id = 1
                                       and ar.archived IS NOT TRUE
+                                      and ars.archived IS NOT TRUE
+                                      and art.archived IS NOT TRUE
                                 ORDER BY ar.position) requirements), '[]') AS electricalRequirements,
               coalesce((
                          SELECT array_to_json(array_agg(row_to_json(requirements)))
@@ -70,6 +73,7 @@
                                       status_id
                                     FROM brs.ahj_requirements ar
                                     WHERE status_id = 3
+                                      AND ar.archived IS NOT TRUE
                                 )
                                 SELECT ar.ahj_id AS "ahjId",
                                     ar.position,
@@ -79,10 +83,10 @@
                                     ar.date_created AS "dateCreated",
                                     ar.created_by_id AS "createdById",
                                     u.first_name || ' ' || u.last_name AS "createdBy",
-                                    ar.date_updated AS "dateUpdated",
-                                    ar.updated_by_id AS "updatedById",
+                                    ar.date_modified AS "dateModified",
+                                    ar.modified_by_id AS "modifiedById",
                                     ar.archived,
-                                    u2.first_name || ' ' || u2.last_name AS "updatedBy",
+                                    u2.first_name || ' ' || u2.last_name AS "modifiedBy",
                                     r.id,
                                     r.description,
                                     r.requirement_type_id AS "requirementTypeId",
@@ -97,12 +101,14 @@
                                     INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
                                     INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
                                     INNER JOIN flow."user" u ON u.id = ar.created_by_id
-                                    INNER JOIN flow."user" u2 ON u2.id = ar.updated_by_id
+                                    INNER JOIN flow."user" u2 ON u2.id = ar.modified_by_id
                                     INNER JOIN brs.ahj_requirement_status ars ON ars.id = ar.status_id
                                 WHERE ar.ahj_id = d.ahj_id
                                       and art.id = 2
                                       and ar.status_id = 1
                                       and ar.archived IS NOT TRUE
+                                      and ars.archived IS NOT TRUE
+                                      and art.archived IS NOT TRUE
                                 ORDER BY ar.position) requirements), '[]') AS structuralRequirements,
               coalesce((
                          SELECT array_to_json(array_agg(row_to_json(requirements)))
@@ -113,6 +119,7 @@
                                       status_id
                                     FROM brs.ahj_requirements ar
                                     WHERE status_id = 3
+                                      AND ar.archived IS NOT TRUE
                                 )
                                 SELECT ar.ahj_id AS "ahjId",
                                     ar.position,
@@ -122,10 +129,10 @@
                                     ar.date_created AS "dateCreated",
                                     ar.created_by_id AS "createdById",
                                     u.first_name || ' ' || u.last_name AS "createdBy",
-                                    ar.date_updated AS "dateUpdated",
-                                    ar.updated_by_id AS "updatedById",
+                                    ar.date_modified AS "dateModified",
+                                    ar.modified_by_id AS "modifiedById",
                                     ar.archived,
-                                    u2.first_name || ' ' || u2.last_name "updatedBy",
+                                    u2.first_name || ' ' || u2.last_name "modifiedBy",
                                     r.id,
                                     r.description,
                                     r.requirement_type_id AS "requirementTypeId",
@@ -140,12 +147,14 @@
                                     INNER JOIN brs.ahj_requirement r ON r.id = ar.requirement_id
                                     INNER JOIN brs.ahj_requirement_type art ON art.id = r.requirement_type_id
                                     INNER JOIN flow."user" u ON u.id = ar.created_by_id
-                                    INNER JOIN flow."user" u2 ON u2.id = ar.updated_by_id
+                                    INNER JOIN flow."user" u2 ON u2.id = ar.modified_by_id
                                     INNER JOIN brs.ahj_requirement_status ars ON ars.id = ar.status_id
                                 WHERE ar.ahj_id = d.ahj_id
                                       and art.id = 3
                                       and ar.status_id = 1
                                       and ar.archived IS NOT TRUE
+                                      and ars.archived IS NOT TRUE
+                                      and art.archived IS NOT TRUE
                                 ORDER BY ar.position) requirements), '[]') AS designRequirements
             FROM brs.ahj_design d
             WHERE d.ahj_id = :ahjId;
@@ -158,9 +167,13 @@
     </ahj.design.findById>
 
     <ahj.design.createBlank>
-        INSERT INTO brs.ahj_design(ahj_id, codes, note) VALUES
-        (:ahjId, null, null)
-        RETURNING id;
+      <![CDATA[
+        INSERT INTO brs.ahj_design
+          (ahj_id, codes, note, archived, date_created, created_by_id)
+        VALUES
+          (:ahjId, null, null, false, now(), :currentUser)
+        RETURNING id
+      ]]>
     </ahj.design.createBlank>
     <ahj.design.create>
         <![CDATA[
@@ -169,12 +182,14 @@
                 railless_landscape_attachment_spacing_id, fire_setbacks_id, railless_portrait_attachment_spacing_id,
                 standard_conduit_run_id, warning_labels_id, supplemental_ground_rod_required_id, load_standard_id, wood_standard_id,
                 ground_snow_load, wind_speed, ult_id, seismic_design_category_id, roof_snow_load, roof_snow_load_ahj_override_id,
-                snow_load_reduction_allowed_id, wind_exposure_factor_id, wind_exposure_factor_ahj_override_id, risk_category_id)
+                snow_load_reduction_allowed_id, wind_exposure_factor_id, wind_exposure_factor_ahj_override_id, risk_category_id,
+                archived, date_created, created_by_id)
             VALUES (:ahjId, :codes, :note, :referenceStandards, :electricalCodeId, :buildingCodeId, :electricalEngineerId,
                 :structuralEngineerId, :stampTypeId, :standardRackingEquipmentId, :raillessLandscapeAttachmentSpacingId, :fireSetbacksId,
                 :raillessPortraitAttachmentSpacingId, :standardConduitRunId, :warningLabelsId, :supplementalGroundRodRequiredId,
                 :loadStandardId, :woodStandardId, :groundSnowLoad, :windSpeed, :ultId, :seismicDesignCategoryId, :roofSnowLoad,
-                :roofSnowLoadAhjOverrideId, :snowLoadReductionAllowedId, :windExposureFactorId, :windExposureFactorAhjOverrideId, :riskCategoryId)
+                :roofSnowLoadAhjOverrideId, :snowLoadReductionAllowedId, :windExposureFactorId, :windExposureFactorAhjOverrideId, :riskCategoryId,
+                false, now(), :currentUser)
         ]]>
     </ahj.design.create>
     <ahj.design.update>
@@ -208,7 +223,9 @@
                 wind_exposure_factor_id = :windExposureFactorId,
                 wind_exposure_factor_ahj_override_id = :windExposureFactorAhjOverrideId,
                 risk_category_id = :riskCategoryId,
-                structural_post_install_letter_required_id = :structuralPostInstallLetterRequiredId
+                structural_post_install_letter_required_id = :structuralPostInstallLetterRequiredId,
+                date_modified = now(),
+                modified_by_id = :currentUser
             WHERE id = :id
         ]]>
     </ahj.design.update>

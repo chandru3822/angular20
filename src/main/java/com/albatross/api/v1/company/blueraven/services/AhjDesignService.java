@@ -36,11 +36,13 @@ public class AhjDesignService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
 
-
     Optional<AhjDesignDetail> design = sqlCache.get("ahj.design.detailByAhj", params, new AhjDesignDetailMapper<>(AhjDesignDetail.class, om));
     if (design.isPresent()) {
       return design;
     } else {
+      User currentUser = securityService.getCurrentUser();
+      params.put("currentUser", currentUser.getId());
+
       //add a blank design and return that
       Integer id = sqlCache.get("ahj.design.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
       if (id != null) {

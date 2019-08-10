@@ -10,9 +10,7 @@ import java.util.Date;
  */
 @Data
 public class AhjNote {
-    private Long id, createdById, updatedById, noteTypeId;
-    private String note, createdBy, updatedBy;
-
-//    private DateTime created, updated;
-    private Date created, updated;
+    private Long id, createdById, modifiedById, noteTypeId;
+    private String note, createdBy, modifiedBy;
+    private Date dateCreated, dateModified;
 }
