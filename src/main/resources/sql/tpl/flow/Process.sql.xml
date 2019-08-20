@@ -33,7 +33,7 @@
                               o.org_name as "orgName",
                               psp.date_created as "dateCreated",
                               psp.created_by_id as "createdById",
-                              psp.date_updated as "dateUpdated",
+                              psp.date_modified as "dateModified",
                               psp.modified_by_id as "modifiedById",
                               psp.archived,
                               ps.process_step_name as "processStepName"

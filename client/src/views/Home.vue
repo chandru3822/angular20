@@ -29,6 +29,8 @@ import { IS_MOBILE } from '@/helpers/helpers'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
 
+//@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
+
 export default {
   name: 'home',
   components: {
@@ -60,6 +62,10 @@ export default {
       // }, {
         label: 'Settings',
         path: '/settings',
+        display: true
+      }, {
+        label: 'Customer',
+        path: '/customer',
         display: true
       }]
     }
