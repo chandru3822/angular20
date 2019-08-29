@@ -1,16 +1,21 @@
 <template>
   <v-layout row wrap class="custom-field-group-container">
     <v-flex xs-12>
-      <v-flex>
+      <v-flex class="mb-2">
         <ProcessStepCustomFieldGroups :customFieldGroups="processStep.customFieldGroupTypes"></ProcessStepCustomFieldGroups>
       </v-flex>
       <v-divider></v-divider>
       <v-flex>
-        <h3>Links</h3>
-        <v-btn @click="getLinksForProcessStep">
-          <v-icon v-if="!addNewLink">add</v-icon>
-          {{ addNewLink ? 'Cancel' : 'Add Link'}}
-        </v-btn>
+        <v-toolbar flat>
+          <v-toolbar-title class="app-title">Links</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="getLinksForProcessStep">
+              <v-icon v-if="!addNewLink">add</v-icon>
+              {{ addNewLink ? 'Cancel' : 'Add Link'}}
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
         <v-select v-if="addNewLink"
                   v-model="newLink.linkId"
                   :items="availableLinks"
@@ -19,7 +24,7 @@
                   item-value="id"
                   @input="assignNewLink"
         ></v-select>
-        <v-container>
+        <v-container v-if="processStep.links && processStep.links.length > 0">
           <v-list v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
                   :key="index">
             <v-list-item>
@@ -69,11 +74,16 @@
       </v-flex>
       <v-divider></v-divider>
       <v-flex v-if="processStepId">
-        <h3>Attachments</h3>
-        <v-btn @click="getAttachmentTypesForProcessStep">
-          <v-icon v-if="!addNewType">add</v-icon>
-          {{ addNewType ? 'Cancel' : 'Add Type'}}
-        </v-btn>
+        <v-toolbar flat>
+          <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="getAttachmentTypesForProcessStep">
+              <v-icon v-if="!addNewType">add</v-icon>
+              {{ addNewType ? 'Cancel' : 'Add Type'}}
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
         <v-select v-if="addNewType"
                   v-model="newType.attachmentTypeId"
                   :items="availableAttachmentTypes"
@@ -82,7 +92,7 @@
                   item-value="id"
                   @input="assignNewType"
         ></v-select>
-        <v-container>
+        <v-container v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
           <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')"
                   :key="index">
             <v-list-item>
