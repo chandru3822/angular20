@@ -6,7 +6,7 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-select
-              class="mt-2"
+              class="mt-4"
               v-model="selectedObjectType"
               :items="objectFilters"
               label="Filter by Object Type"
@@ -20,6 +20,7 @@
         <v-list-group
             v-for="(item, index) in customFields"
             :key="item.id"
+            no-action
             :class="{ 'shaded-row': index % 2 }"
         >
           <template v-slot:activator>
@@ -66,9 +67,9 @@
                     <span>Selectable Options</span>
                     <draggable v-model="item.dropdownOptions"
                                group="dropdownOptions" @start="drag=true" @end="drag=false">
-                      <v-list v-for="(ddo, index) in filterBy(item.dropdownOptions, false, 'archived')"
-                              :class="{'shaded-row': item.index % 2}"
-                              :key="index">
+                      <v-list v-for="(ddo, index2) in filterBy(item.dropdownOptions, false, 'archived')"
+                              :class="{'shaded-row': index % 2}"
+                              :key="index2">
                         <v-list-item class="grab">
                           <v-list-item-content>
                             <v-text-field
@@ -121,119 +122,6 @@
           </v-list-item>
         </v-list-group>
       </v-list>
-      <!--<v-data-table-->
-      <!--:headers="headers"-->
-      <!--:items="customFields"-->
-      <!--:single-expand="true"-->
-      <!--:expanded.sync="expanded"-->
-      <!--item-key="id"-->
-      <!--hide-default-footer-->
-      <!--:items-per-page="-1"-->
-      <!--hide-default-header-->
-      <!--class="elevation-1"-->
-      <!--&gt;-->
-      <!--<template v-slot:body="{ items }">-->
-      <!--<tr v-for="(item, index) in items" :key="item.id" v-if="!item.custom" :class="{ 'shaded-row': index % 2 }">-->
-      <!--<td class="text-xs-right">{{ item.fieldName }}</td>-->
-      <!--<td class="">-->
-      <!--<v-btn @click="expanded.push(item); resetCustomField(item, item.expand)">-->
-      <!--{{ item.expand ? 'Cancel' : 'Edit' }}-->
-      <!--</v-btn>-->
-      <!--<v-btn text @click="deleteField(item)" :loading="item.deleting">-->
-      <!--<v-icon>delete</v-icon>-->
-      <!--</v-btn>-->
-      <!--</td>-->
-      <!--</tr>-->
-      <!--<tr v-else :class="{ 'shaded-row': index % 2 }">-->
-      <!--<td colspan="2" class="text-xs-center">-->
-      <!--<v-btn  @click="item.expanded = !item.expanded; resetCustomField(item, item.expanded)">-->
-      <!--<v-icon class="mr-1" v-if="item.expanded">cancel</v-icon>-->
-      <!--<v-icon v-else>add</v-icon>-->
-      <!--{{item.expanded ? 'Cancel' : 'Add Field'}}-->
-      <!--</v-btn>-->
-      <!--</td>-->
-      <!--</tr>-->
-      <!--</template>-->
-      <!--<template v-slot:expanded-item="{headers}">-->
-      <!--<td>Peek-a-boo!</td>-->
-      <!--<v-flex justify-center class="flex-display pl-3 pr-3" :class="{'shaded-row': item.index % 2}">-->
-
-      <!--<v-card text class="text-xs-center field-card one-hunned"  :color="item.index % 2 ? 'rowShadeCustom' : 'white'">-->
-      <!--<v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>-->
-      <!--<v-text-field-->
-      <!--label="Field Name"-->
-      <!--tabindex=1-->
-      <!--v-model="item.fieldName"-->
-      <!--&gt;</v-text-field>-->
-      <!--<v-autocomplete-->
-      <!--v-model="item.companyDataType"-->
-      <!--:items="dataTypes"-->
-      <!--:disabled="!item.custom"-->
-      <!--:readonly="!item.custom"-->
-      <!--tabindex=2-->
-      <!--label="Data Type"-->
-      <!--item-text="companyDataType"-->
-      <!--item-value="id"-->
-      <!--autocomplete="new-password"-->
-      <!--return-object-->
-      <!--&gt;</v-autocomplete>-->
-
-      <!--<v-flex class="options-container" fluid v-if="item.companyDataType && item.companyDataType.hasListValues">-->
-      <!--<span>Selectable Options</span>-->
-      <!--<draggable v-model="item.dropdownOptions"-->
-      <!--group="dropdownOptions" @start="drag=true" @end="drag=false">-->
-      <!--<v-list v-for="(ddo, index) in filterBy(item.dropdownOptions, false, 'archived')"-->
-      <!--:class="{'shaded-row': item.index % 2}"-->
-      <!--:key="index">-->
-      <!--<v-list-item class="grab">-->
-      <!--<v-list-item-content>-->
-      <!--<v-text-field-->
-      <!--class="one-hunned"-->
-      <!--:placeholder="ddo.placeholder"-->
-      <!--v-model="ddo.name" >-->
-      <!--</v-text-field>-->
-      <!--</v-list-item-content>-->
-      <!--<v-list-item-action>-->
-      <!--<v-icon>drag_handle</v-icon>-->
-      <!--</v-list-item-action>-->
-      <!--<v-list-item-action class="clickable" @click="ddo.archived = true">-->
-      <!--<v-icon>delete</v-icon>-->
-      <!--</v-list-item-action>-->
-      <!--</v-list-item>-->
-      <!--</v-list>-->
-      <!--</draggable>-->
-      <!--<v-btn-->
-      <!--@click="addOption(item.dropdownOptions)">-->
-      <!--Add Option-->
-      <!--</v-btn>-->
-      <!--</v-flex>-->
-      <!--<v-flex class="options-container" fluid>-->
-      <!--<div>Included Object Types</div>-->
-      <!--&lt;!&ndash;<v-container v-if="props.item.custom">&ndash;&gt;-->
-      <!--&lt;!&ndash;<v-checkbox v-for="(ot, index) in customFieldObjectTypes"&ndash;&gt;-->
-      <!--&lt;!&ndash;:key="index"&ndash;&gt;-->
-      <!--&lt;!&ndash;v-model="ot.archived"&ndash;&gt;-->
-      <!--&lt;!&ndash;:false-value="true" :true-value="false"&ndash;&gt;-->
-      <!--&lt;!&ndash;:label="ot.objectType"></v-checkbox>&ndash;&gt;-->
-      <!--&lt;!&ndash;</v-container>&ndash;&gt;-->
-      <!--<v-container>-->
-      <!--<v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"-->
-      <!--:key="index"-->
-      <!--v-model="ot.archived"-->
-      <!--:false-value="true" :true-value="false"-->
-      <!--:label="ot.objectType"></v-checkbox>-->
-      <!--</v-container>-->
-      <!--</v-flex>-->
-      <!--<v-btn-->
-      <!--:disabled="invalid(item)"-->
-      <!--@click="saveChanges(item.custom, item); item.expanded = !item.expanded">-->
-      <!--{{props.item.custom ? 'Add Field' : 'Save Changes'}}-->
-      <!--</v-btn>-->
-      <!--</v-card>-->
-      <!--</v-flex>-->
-
-      <!--</template>-->
-      <!--</v-data-table>-->
     </v-flex>
   </v-layout>
 </template>
