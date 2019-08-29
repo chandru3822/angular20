@@ -2,16 +2,17 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.StatusType;
-import com.albatross.api.v1.flow.model.ApiProcess;
 import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.model.ProcessStepProcess;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.services.dto.DtoProcess;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,28 +24,22 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
 public class ProcessService {
-    @Autowired
-    private SqlCache sqlCache;
 
-    @Autowired
-    ObjectMapper om;
+    private final SqlCache sqlCache;
 
-    @Autowired
-    SecurityService securityService;
+    private final ObjectMapper om;
 
-    public Collection<DtoProcess> getProcessesForCompany(Long companyId) {
-        return sqlCache.query("process.getAllForCompany",
-                ImmutableMap.of("companyId", companyId),
-                DtoProcess.class);
+    private final SecurityService securityService;
+
+    public List<Process> getProcessesForCompany(Long companyId) {
+        return sqlCache.query("process.getAllForCompany", ImmutableMap.of("companyId", companyId), Process.class);
     }
 
-    public Optional<DtoProcess> getProcess(Long companyId, Long processId) {
-        return sqlCache.get("process.get",
-                ImmutableMap.of("companyId", companyId,
-                                "processId", processId),
-            new ProcessMapper<>(DtoProcess.class, om));
+    public Optional<Process> getProcess(Long companyId, Long processId) {
+        return sqlCache.get("process.get", ImmutableMap.of("companyId", companyId, "processId", processId), new ProcessMapper<>(Process.class, om));
     }
 
     public void deleteProcess(Long companyId, Long processId) {
@@ -58,7 +53,7 @@ public class ProcessService {
             ImmutableMap.of("processId", processId));
     }
 
-    public void updateProcess(ApiProcess process) {
+    public void updateProcess(Process process) {
         sqlCache.update("process.update",
                 ImmutableMap.of("companyId", process.getCompanyId(),
                     "id", process.getId(),
@@ -66,7 +61,7 @@ public class ProcessService {
                     "modifiedById", process.getModifiedById()));
     }
 
-    public Optional<DtoProcess> insertProcess(ApiProcess process) {
+    public Optional<Process> insertProcess(Process process) {
         // insert the row into process, this will likely change as we allow processes to be shared between companies
         // parentCompanyId will be used for sharing processes later on
         Long id = sqlCache.updateReturningId("process.insert",

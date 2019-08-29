@@ -1,107 +1,71 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.ApiProcess;
+import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.model.ProcessStepProcess;
 import com.albatross.api.v1.flow.services.ProcessService;
-import com.albatross.api.v1.flow.services.dto.DtoProcess;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/processes")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequestMapping(value = "/api/v1/flow/{companyId}/processes")
 public class ProcessController {
-    @Autowired
-    private ProcessService processService;
+    
+    private final ProcessService processService;
 
-    @RequestMapping(value = "",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ApiProcess>> getProcessesForCompany(@PathVariable Long companyId) {
-        List<ApiProcess> processes = processService.getProcessesForCompany(companyId)
-                .stream()
-                .map(ApiProcess::from)
-                .map(ProcessController::addLinks)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(processes);
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Process>> getProcessesForCompany(@PathVariable Long companyId) {
+        return new ResponseEntity<>(processService.getProcessesForCompany(companyId), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{processId}",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiProcess> getProcess(@PathVariable Long companyId,
-                                                 @PathVariable Long processId) {
+    @GetMapping(value = "/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Process> getProcess(@PathVariable Long companyId, @PathVariable Long processId) {
         return processService.getProcess(companyId, processId)
-                .map(ApiProcess::from)
-                .map(ProcessController::addLinks)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 
-    @RequestMapping(value = "/{processId}",
-        method = RequestMethod.DELETE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
-    public void deleteProcess(@PathVariable Long companyId,
-                              @PathVariable Long processId) {
+    @DeleteMapping(value = "/{processId}")
+    public ResponseEntity<?> deleteProcess(@PathVariable Long companyId, @PathVariable Long processId) {
         processService.deleteProcess(companyId, processId);
+        return ResponseEntity.noContent().build();
     }
 
-    @RequestMapping(value = "",
-        method = RequestMethod.PUT,
-        produces = MediaType.APPLICATION_JSON_VALUE)
-    public void updateProcess(@RequestBody ApiProcess process) {
+    @PutMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateProcess(@RequestBody Process process) {
         processService.updateProcess(process);
+        return ResponseEntity.noContent().build();
     }
 
-    @RequestMapping(value = "",
-        method = RequestMethod.POST,
-        produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<DtoProcess> insertProcess(@RequestBody ApiProcess process) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public Optional<Process> insertProcess(@RequestBody Process process) {
         return processService.insertProcess(process);
     }
 
-    private static ApiProcess addLinks(ApiProcess p) {
-        // self link
-        p.add(linkTo(methodOn(ProcessController.class).getProcess(p.getCompanyId(), p.getId()))
-                .withSelfRel());
-
-        // add company link
-        p.add(linkTo(methodOn(CompanyController.class).getCompany(p.getCompanyId()))
-                .withRel("/rels/company"));
-
-        // add processes link
-        p.add(linkTo(methodOn(ProjectController.class).getProjectsForProcess(p.getCompanyId(),
-                                                                             p.getId()))
-                .withRel("/rels/process/projects"));
-
-        return p;
-    }
-
     // process step process stuff, put in different controller??
-    @RequestMapping(value = "/processStepProcess/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public void deleteProcessStepFromProcess(@PathVariable Long companyId,
-                              @PathVariable("id") Long processStepProcessId) {
+    @DeleteMapping(value = "/processStepProcess/{id}")
+    public ResponseEntity<?> deleteProcessStepFromProcess(@PathVariable Long companyId, @PathVariable("id") Long processStepProcessId) {
         processService.deleteProcessStepFromProcess(companyId, processStepProcessId);
+        return ResponseEntity.noContent().build();
     }
 
-    @RequestMapping(value = "/availableProcessSteps/{processId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ProcessStep> availableProcessStepsForProcess(@PathVariable Long companyId,
-                                                             @PathVariable Long processId) {
+    @GetMapping(value = "/availableProcessSteps/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ProcessStep> availableProcessStepsForProcess(@PathVariable Long companyId, @PathVariable Long processId) {
         return processService.availableProcessSteps(companyId, processId);
     }
 
-    @RequestMapping(value = "/{processId}/processStep", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{processId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
     public Optional<ProcessStepProcess> insertProcessStepProcess(@PathVariable Long companyId,
                                                                  @PathVariable Long processId,
                                                                  @RequestBody ProcessStepProcess processStepProcess) {

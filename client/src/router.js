@@ -139,6 +139,11 @@ export default new Router({
           }
 
         ]
+      }, {
+        path: '/customer',
+        name: 'customer',
+        component: () => import (/*webpackChunkName: "customer" */ './views/flow/customer/Customer.vue'),
+        children: []
       }]
     }
   ]
