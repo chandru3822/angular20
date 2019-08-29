@@ -58,7 +58,7 @@
         update flow.process_step_link
         set archived = true,
           modified_by_id = :modifiedById,
-          date_updated = now()
+          date_modified = now()
         where id = :id
     ]]>
   </link.deleteProcessStepLink>

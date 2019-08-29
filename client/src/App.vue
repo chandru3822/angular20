@@ -103,6 +103,10 @@ label[for="adminOriginatorSelect"] {
   opacity: 100 !important;
 }
 
+.fix-column-width-bug table {
+  table-layout: fixed;
+}
+
 .shaded-row{
   background-color: var(--v-rowShadeCustom-base) !important;
 }

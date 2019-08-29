@@ -33,7 +33,7 @@
                               o.org_name as "orgName",
                               psp.date_created as "dateCreated",
                               psp.created_by_id as "createdById",
-                              psp.date_updated as "dateUpdated",
+                              psp.date_modified as "dateModified",
                               psp.modified_by_id as "modifiedById",
                               psp.archived,
                               ps.process_step_name as "processStepName"
@@ -68,7 +68,7 @@
     <![CDATA[
       update flow.process
         set process_name = :processName,
-            date_updated = now(),
+            date_modified = now(),
             modified_by_id = :modifiedById
       where id = :id
     ]]>
@@ -91,7 +91,7 @@
       update flow.process_step_process
       set archived = true,
           modified_by_id = :modifiedById,
-          date_updated = now()
+          date_modified = now()
       where id = :processStepProcessId
     ]]>
   </process.deleteProcessStepFromProcess>
@@ -125,7 +125,7 @@
        o.org_name as "orgName",
        psp.date_created as "dateCreated",
        psp.created_by_id as "createdById",
-       psp.date_updated as "dateUpdated",
+       psp.date_modified as "dateModified",
        psp.modified_by_id as "modifiedById",
        psp.archived,
        ps.process_step_name as "processStepName"

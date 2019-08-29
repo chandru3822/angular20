@@ -56,8 +56,8 @@
           <tr v-for="(item, index) in filterBy(items, false, 'archived')" :key="item.id" v-if="!item.custom" :class="{ 'shaded-row': index % 2 }">
             <td>{{ item.processStepName }}</td>
             <td>{{ item.orgName }}</td>
-            <td>{{ item.dateCreated | formatDate('M/D/YYYY') }}</td>
-            <td>{{ item.dateUpdated | formatDate('M/D/YYYY') }}</td>
+            <td>{{ item.dateCreated | formatDate('date', $store.state.user.details.timezone) }}</td>
+            <td>{{ item.dateModified | formatDate('date', $store.state.user.details.timezone) }}</td>
             <td>
               <v-dialog
                   v-model="item.deleteConfirm"
@@ -134,7 +134,7 @@ export default {
         { text: 'Name', value: 'processStepName'},
         { text: 'Owning Org', value: 'orgName'},
         { text: 'Created', value: 'dateCreated'},
-        { text: 'Last Modified', value: 'dateUpdated'},
+        { text: 'Last Modified', value: 'dateModified'},
         { text: null, value: null},
       ]
     }

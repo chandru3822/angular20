@@ -1,47 +1,47 @@
 <sql>
   <processStepRequirement.getRequirementsForStep><![CDATA[
     select psr.*,
-           ot.operator_type,
-           psrt.process_step_requirement_type,
-           ps.id as parent_id,
-           ps.process_step_name as parent_name,
-           cf.field_name,
-           null as company_function_name
+       ot.operator_type,
+       psrt.process_step_requirement_type,
+       ps.id as parent_id,
+       ps.process_step_name as parent_name,
+       cf.field_name,
+       cfn.company_function_name
     from flow.process_step_requirement psr
-             inner join flow.custom_field_group cfg on cfg.id = psr.custom_field_group_id
-             inner join flow.custom_field cf on cf.id = cfg.custom_field_id
-             inner join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
-             inner join flow.process_step ps on ps.id = cfgt.process_step_id
+             left join flow.custom_field_group cfg on cfg.id = psr.custom_field_group_id
+             left join flow.custom_field cf on cf.id = cfg.custom_field_id
+             left join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
+             left join flow.process_step ps on ps.id = cfgt.process_step_id
+             left join flow.company_function cfn on cfn.id = psr.company_function_id
              inner join flow.operator_type ot on ot.id = psr.operator_type_id
              inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
     where psr.archived is not true
-        and psr.process_step_id = :processStepId
-    union all
-    select psr.*,
-           ot.operator_type,
-           psrt.process_step_requirement_type,
-           null,
-           null,
-           null,
-           cf.company_function_name
-    from flow.process_step_requirement psr
-             inner join flow.operator_type ot on ot.id = psr.operator_type_id
-             inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
-             inner join flow.company_function cf on cf.company_id = :companyId
-    where psr.company_function_id is not null
-        and psr.archived is not true
       and psr.process_step_id = :processStepId
-    order by requirement_nbr
   ]]></processStepRequirement.getRequirementsForStep>
 
   <processStepRequirement.getRequirement><![CDATA[
-      select * from flow.get_process_step_requirement(:id);
+      select psr.*,
+       ot.operator_type,
+       psrt.process_step_requirement_type,
+       ps.id as parent_id,
+       ps.process_step_name as parent_name,
+       cf.field_name,
+       cfn.company_function_name
+      from flow.process_step_requirement psr
+               left join flow.custom_field_group cfg on cfg.id = psr.custom_field_group_id
+               left join flow.custom_field cf on cf.id = cfg.custom_field_id
+               left join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
+               left join flow.process_step ps on ps.id = cfgt.process_step_id
+               left join flow.company_function cfn on cfn.id = psr.company_function_id
+               inner join flow.operator_type ot on ot.id = psr.operator_type_id
+               inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
+      where psr.id = :id
   ]]></processStepRequirement.getRequirement>
 
   <processStepRequirement.deleteRequirement><![CDATA[
       update flow.process_step_requirement
         set modified_by_id = :modifiedById,
-            date_updated = now(),
+            date_modified = now(),
             archived = true
         where id = :requirementId
   ]]></processStepRequirement.deleteRequirement>
@@ -57,7 +57,7 @@
     set operator_type_id = :operatorTypeId,
         requirement_value = :requirementValue,
         modified_by_id = :modifiedById,
-        date_updated = now()
+        date_modified = now()
     where id = :id
   ]]></processStepRequirement.updateRequirement>
 

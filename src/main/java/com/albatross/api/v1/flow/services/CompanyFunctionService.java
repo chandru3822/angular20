@@ -60,13 +60,20 @@ public class CompanyFunctionService {
     return results.orElse(null);
   }
 
-  public void saveFunctionParams(Long functionId, CompanyFunctionParam param) {
+  public List<CompanyFunctionParam> getFunctionDefaultParams(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    List<CompanyFunctionParam> results = sqlCache.query("companyFunction.getFunctionDefaultParams", params, CompanyFunctionParam.class);
+    return results;
+  }
+
+  public CompanyFunctionParam saveFunctionParams(Long functionId, CompanyFunctionParam param) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> queryParams = new HashMap<>();
     queryParams.put("functionId", functionId);
 
-//    todo: add values for date_updated and such when ready
+//    todo: add values for date_modified and such when ready
 
     queryParams.put("dbFunctionParamId", param.getDbFunctionParamId());
     queryParams.put("companyFunctionId", param.getCompanyFunctionId());
@@ -75,15 +82,26 @@ public class CompanyFunctionService {
     queryParams.put("systemValueId", param.getSystemValueId());
     queryParams.put("userId", currentUser.getId());
 
+    Long id = null;
     if(null != param.getId()) {
+      id = param.getId();
       queryParams.put("id", param.getId());
 
       sqlCache.update("companyFunction.updateCompanyFunctionParam", queryParams);
     } else if (null != param.getCustomFieldGroupId() || null != param.getDefaultValue() || null != param.getSystemValueId()){
       // don't insert a new row if all the possible input values are null
 
-      sqlCache.update("companyFunction.insertCompanyFunctionParam", queryParams);
+      id = sqlCache.updateReturningId("companyFunction.insertCompanyFunctionParam", queryParams, "id").longValue();
     }
+
+    return getCompanyParam(id);
+  }
+
+  public CompanyFunctionParam getCompanyParam(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<CompanyFunctionParam> result = sqlCache.get("companyFunction.getCompanyParam", params, CompanyFunctionParam.class);
+    return result.orElse(null);
   }
 
   public List<SystemValue> getSystemValues() {

@@ -26,18 +26,13 @@
 
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': details.companyFunctionParams.indexOf(item) % 2}">
-            <v-text-field v-if="item.isDefaultValue"
-                          v-model="item.defaultValue"
-                          placeholder="Enter a value"
-                          label="Value">
-            </v-text-field>
-            <v-select v-else-if="item.isSystemValue"
+            <v-select v-if="item.parameterTypeId === 1"
                         v-model="item.systemValueId"
                         :items="systemValues"
                         label="System Value"
                         item-text="systemValue"
                         item-value="id"></v-select>
-            <div v-else>
+            <div v-else-if="item.parameterTypeId === 3">
               <v-select v-model="item.processStepId"
                         :items="parentObjects"
                         label="Parent Object"
@@ -89,10 +84,10 @@
             </td>
             <!-- icon column -->
             <td>
-              <v-btn text v-if="!expanded.includes(item)" @click="handleExpand(item, true)">
+              <v-btn text v-if="item.parameterTypeId !== 2 && !expanded.includes(item)" @click="handleExpand(item, true)">
                 <v-icon>edit</v-icon>
               </v-btn>
-              <v-btn text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
+              <v-btn text v-if="item.parameterTypeId !== 2 && expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
             </td>
           </tr>
         </template>
@@ -105,12 +100,6 @@
           <span v-else-if="item.systemValueId !== null">{{item.systemValue}}</span>
           <span v-else-if="item.defaultValue !== null">{{item.defaultValue}}</span>
           <span v-else-if="item.customFieldGroupId === null && item.systemValueId === null && item.defaultValue === null">n/a</span>
-        </template>
-        <template #item.icons="{ item }">
-          <v-btn text v-if="!expanded.includes(item)" @click="handleExpand(item, true)">
-            <v-icon>edit</v-icon>
-          </v-btn>
-          <v-btn text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
         </template>
       </v-data-table>
 
@@ -195,7 +184,14 @@
 
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await postRequest(`/api/v1/flow/companies/${this.companyId}/function/${this.functionId}/param`, item)
+          const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/function/${this.functionId}/param`, item)
+          console.log('randaLoggerData', data)
+          if(item.parameterTypeId === 1) {
+            item.systemValue = data.systemValue
+          }else if(item.parameterTypeId === 3) {
+            item.fieldName = data.fieldName
+            item.processStepName = data.processStepName
+          }
           this.expanded = []
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = SNACKBAR_SUCCESS

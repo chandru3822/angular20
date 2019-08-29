@@ -39,10 +39,15 @@ public class CompanyFunctionController {
     return companyFunctionService.getFunctionDetails(id);
   }
 
+  @RequestMapping(value = "/{id}/defaultParams", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyFunctionParam> getFunctionDefaultParams(@PathVariable Long id) {
+    return companyFunctionService.getFunctionDefaultParams(id);
+  }
+
   @RequestMapping(value = "/{id}/param", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveParams (@PathVariable("id") Long functionId,
+  public CompanyFunctionParam saveParams (@PathVariable("id") Long functionId,
                           @RequestBody CompanyFunctionParam param) {
-    companyFunctionService.saveFunctionParams(functionId, param);
+    return companyFunctionService.saveFunctionParams(functionId, param);
   }
 
   // this could be in a system value controller but i dont think it will be needed outside of functions??

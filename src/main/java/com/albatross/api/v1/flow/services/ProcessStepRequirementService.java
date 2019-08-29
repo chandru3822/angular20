@@ -34,7 +34,7 @@ public class ProcessStepRequirementService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("processStepId", processStepId);
-    //todo: and do union with requirements coming from functions
+    //@randa: i think i was being dumb when i wrote this and thought it had to be done with unions. but i think left joins would work. come back and check this later.
     List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.getRequirementsForStep", params, ProcessStepRequirement.class);
     return results;
   }
@@ -75,9 +75,10 @@ public class ProcessStepRequirementService {
     return getRequirementById(id);
   }
 
-  public ProcessStepRequirement insertRequirement(ProcessStepRequirement requirement) {
+  public ProcessStepRequirement insertRequirement(Long companyId, ProcessStepRequirement requirement) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", requirement.getProcessStepRequirementTypeId());
     params.put("requirementTypeId", requirement.getProcessStepRequirementTypeId());
     params.put("operatorTypeId", requirement.getOperatorTypeId());
     params.put("requirementValue", requirement.getRequirementValue());

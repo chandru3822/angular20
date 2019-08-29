@@ -49,6 +49,30 @@
     where cf.id = :id
   ]]></companyFunction.getFunctionDetails>
 
+  <companyFunction.getCompanyParam><![CDATA[
+    select cfp.*,
+           sv.system_value,
+           cf.field_name,
+           ps.id as "processStepId",
+           ps.process_step_name as "processStepName"
+    from flow.company_function_param cfp
+        left join flow.system_value sv on sv.id = cfp.system_value_id
+        left join flow.custom_field_group cfg on cfg.id = cfp.custom_field_group_id
+        left join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
+        left join flow.process_step ps on ps.id = cfgt.process_step_id
+        left join flow.custom_field cf on cf.id = cfg.custom_field_id
+    where cfp.id = :id
+  ]]></companyFunction.getCompanyParam>
+
+  <companyFunction.getFunctionDefaultParams><![CDATA[
+    select dfp.*,
+       null as default_value
+    from flow.db_function_param dfp
+    where dfp.db_function_id = 1
+    and dfp.archived is not true
+    and dfp.parameter_type_id = 2
+  ]]></companyFunction.getFunctionDefaultParams>
+
   <companyFunction.getSystemValues><![CDATA[
     select *
     from flow.system_value

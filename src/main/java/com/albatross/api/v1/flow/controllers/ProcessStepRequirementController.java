@@ -45,8 +45,9 @@ public class ProcessStepRequirementController {
   }
 
   @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ProcessStepRequirement insertProcess(@RequestBody ProcessStepRequirement requirement) {
-    return processStepRequirementService.insertRequirement(requirement);
+  public ProcessStepRequirement insertProcess(@PathVariable Long companyId,
+                                              @RequestBody ProcessStepRequirement requirement) {
+    return processStepRequirementService.insertRequirement(companyId, requirement);
   }
 
 }

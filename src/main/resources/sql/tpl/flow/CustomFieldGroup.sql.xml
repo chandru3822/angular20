@@ -45,7 +45,7 @@
            cf.date_created,
            cf.created_by_id,
            cf.modified_by_id,
-           cf.date_updated
+           cf.date_modified
     from flow.custom_field_group cfg
       inner join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
       inner join flow.custom_field cf on cf.id = cfg.custom_field_id
