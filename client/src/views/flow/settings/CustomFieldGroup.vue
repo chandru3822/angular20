@@ -52,7 +52,7 @@
         </template>
 
         <template #item.icons="{ item }">
-          <div style="display: flex;">
+          <div class="item-icons">
             <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]">
               <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
               <v-icon v-else>add</v-icon>
@@ -102,7 +102,7 @@
 
         <template #expanded-item="{ headers, item, index }">
           <td :colspan="headers.length" class="pb-4">
-            <v-flex xs12 justify-center class="pl-3 pr-3" :class="{'shaded-row': index % 2}">
+            <v-flex xs12 justify-center class="pl-3 pr-3" >
               <v-select v-if="addField"
                         v-model="newField"
                         :items="availableCustomFields"
@@ -419,6 +419,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-  .test {
+  .item-icons {
+    display: flex;
+    float: right;
   }
 </style>

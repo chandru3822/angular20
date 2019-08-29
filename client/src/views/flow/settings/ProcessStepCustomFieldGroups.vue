@@ -49,7 +49,7 @@
         </template>
 
         <template #item.icons="{ item }">
-          <div style="display: flex;">
+          <div class="item-icons">
             <v-btn small text @click="addField = !addField; expanded = [item]">
               <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
               <v-icon v-else>add</v-icon>
@@ -140,7 +140,7 @@
             </v-flex>
             <v-flex xs12 justify-center class="pl-3 pr-3" :class="{'shaded-row': index % 2}"
                     v-if="item.customFields && item.customFields.length > 0">
-              <h3 class="text-left">Assigned Custom Fields</h3>
+              <h3 class="text-left">Assigned Custom Fields Yo {{item.index + 'hi'}}</h3>
 <!--              <draggable v-model="item.customFields"-->
 <!--                         class="custom-field-group mt-2"-->
 <!--                         group="customFields" @start="drag=true" @end="drag=false" @change="changeFieldOrder">-->
@@ -492,5 +492,10 @@
 
   .custom-field-group-border {
     border-bottom: solid 1px var(--v-rowShadeCustom-base) !important;
+  }
+
+  .item-icons {
+    display: flex;
+    float: right;
   }
 </style>
