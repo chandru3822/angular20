@@ -20,7 +20,7 @@
         <v-list v-for="(s, index) in filterBy(statusTypes, false, 'archived')"
                 :key="index">
           <v-list-item>
-            <v-list-item-content  class="text--primary">
+            <v-list-item-content  class="text--primary text-left">
               <v-text-field class="one-hunned" v-if="selectedStatusTypeId === s.id" v-model="s.processStepStatusType">
               </v-text-field>
               <div v-else>{{s.processStepStatusType}}</div>

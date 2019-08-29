@@ -25,7 +25,7 @@
         <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
                 :key="index">
           <v-list-item>
-            <v-list-item-content>
+            <v-list-item-content class="text-left">
               <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
                             label="Link"
                             v-model="a.link">

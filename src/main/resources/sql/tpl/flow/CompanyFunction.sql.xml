@@ -25,7 +25,6 @@
                                 cf2.field_name as "fieldName",
                                 ps.id as "processStepId",
                                 ps.process_step_name as "processStepName",
-                                cfp.default_value as "defaultValue",
                                 cfp.system_value_id as "systemValueId",
                                 sv.system_value as "systemValue",
                                 dfp.id as "dbFunctionParamId",
@@ -81,14 +80,13 @@
   <companyFunction.updateCompanyFunctionParam><![CDATA[
     update flow.company_function_param
     set custom_field_group_id = :customFieldGroupId,
-        default_value = :defaultValue,
         system_value_id = :systemValueId
     where id = :id
   ]]></companyFunction.updateCompanyFunctionParam>
 
   <companyFunction.insertCompanyFunctionParam><![CDATA[
-    insert into flow.company_function_param (company_function_id, custom_field_group_id, default_value, system_value_id, db_function_param_id) values
-      (:companyFunctionId, :customFieldGroupId, :defaultValue, :systemValueId, :dbFunctionParamId)
+    insert into flow.company_function_param (company_function_id, custom_field_group_id, system_value_id, db_function_param_id) values
+      (:companyFunctionId, :customFieldGroupId, :systemValueId, :dbFunctionParamId)
   ]]></companyFunction.insertCompanyFunctionParam>
 
 </sql>

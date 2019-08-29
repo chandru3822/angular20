@@ -24,7 +24,7 @@
             :class="{ 'shaded-row': index % 2 }"
         >
           <template v-slot:activator>
-            <v-list-item-content>
+            <v-list-item-content class="text-left">
               <v-list-item-title v-if="item.custom">Add New</v-list-item-title>
               <!--<v-text-field class="one-hunned" v-if="selectedFieldId === item.id" v-model="item.fieldName"-->
                             <!--@input="item.nameChanged = true">-->

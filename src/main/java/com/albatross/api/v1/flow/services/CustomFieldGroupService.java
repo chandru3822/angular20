@@ -35,7 +35,7 @@ public class CustomFieldGroupService {
   @Autowired
   ObjectMapper om;
 
-  public void addFieldToGroup(CustomField customField) {
+  public CustomField addFieldToGroup(CustomField customField) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("customFieldGroupTypeId", customField.getCustomFieldGroupTypeId());
     params.put("customFieldId", customField.getId());
@@ -44,7 +44,14 @@ public class CustomFieldGroupService {
 
     Long id = sqlCache.updateReturningId("customFieldGroup.addFieldToGroup", params, "id").longValue();
 
-    // do i need to return anything?
+    return getCustomField(id);
+  }
+
+  public CustomField getCustomField(Long id){
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<CustomField> result = sqlCache.get("customFieldGroup.getCustomField", params, CustomField.class);
+    return result.orElse(null);
   }
 
   public void deleteAllFieldsInGroup(Long id) {

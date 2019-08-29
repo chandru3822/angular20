@@ -28,9 +28,9 @@
 
   <customFieldGroup.getByObjectTypeId><![CDATA[
     select cfgt.*,
-          cfgt.group_name as original_group_name,
-          ot.object_type,
-          coalesce((
+       cfgt.group_name as original_group_name,
+       ot.object_type,
+       coalesce((
                     SELECT array_to_json(array_agg(row_to_json(customFields)))
                     FROM (
                              SELECT cfg.id,
@@ -42,9 +42,11 @@
                                     cf.field_name as "fieldName"
                              FROM flow.custom_field_group cfg
                                       inner join flow.custom_field cf on cf.id = cfg.custom_field_id
-                             WHERE cfg.custom_field_group_type_id = cfgt.id AND cfg.archived is not true) customFields), '[]') AS "customFields"
+                             WHERE cfg.custom_field_group_type_id = cfgt.id
+                               AND cfg.archived is not true
+                             ORDER BY cfg.field_order) customFields), '[]') AS "customFields"
     from flow.custom_field_group_type cfgt
-           inner join flow.object_type ot on ot.id = cfgt.object_type_id
+             inner join flow.object_type ot on ot.id = cfgt.object_type_id
     where ot.id = :objectTypeId
       and cfgt.archived is not true
     order by cfgt.group_order, cfgt.group_name
@@ -100,6 +102,19 @@
       set archived = true
     where id = :id
   ]]></customFieldGroup.deleteCustomFieldGroupType>
+
+  <customFieldGroup.getCustomField><![CDATA[
+    SELECT cfg.id,
+       cfg.custom_field_group_type_id as "customFieldGroupTypeId",
+       cfg.custom_field_id as "customFieldId",
+       cfg.ancillary_custom_field_group_id as "ancillaryCustomFieldGroupId",
+       cfg.field_order as "fieldOrder",
+       cfg.archived,
+       cf.field_name as "fieldName"
+    FROM flow.custom_field_group cfg
+             inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+    WHERE cfg.id = :id
+  ]]></customFieldGroup.getCustomField>
 
   <customFieldGroup.addFieldToGroup><![CDATA[
     insert into flow.custom_field_group(custom_field_group_type_id, custom_field_id, ancillary_custom_field_group_id, field_order)

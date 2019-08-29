@@ -24,8 +24,8 @@ public class CustomFieldGroupController {
   private CustomFieldGroupService customFieldGroupService;
 
   @RequestMapping(value = "/addFieldToGroup", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void addFieldToGroup (@RequestBody CustomField customField) {
-    customFieldGroupService.addFieldToGroup(customField);
+  public CustomField addFieldToGroup (@RequestBody CustomField customField) {
+    return customFieldGroupService.addFieldToGroup(customField);
   }
 
   @RequestMapping(value = "/deleteFieldFromGroup/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -20,7 +20,7 @@
         <v-list v-for="(a, index) in filterBy(attachmentTypes, false, 'archived')"
                 :key="index">
           <v-list-item>
-            <v-list-item-content>
+            <v-list-item-content class="text-left">
               <v-text-field class="one-hunned" v-if="selectedAttachmentTypeId === a.id" v-model="a.attachmentType">
               </v-text-field>
               <div v-else>{{a.attachmentType}}</div>
