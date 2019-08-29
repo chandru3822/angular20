@@ -1,5 +1,5 @@
 <template>
-  <v-container id="customer-container">
+  <v-container id="project-container">
 
     <v-layout>
       <v-flex xs12>
@@ -37,13 +37,12 @@
 </template>
 
 <script>
-  //@TODO: The customer name is fluid and will probably change
-  export default {
-    name: 'Customer',
-    data () {
-      return {}
-    }
+export default {
+  name: 'Project',
+  data () {
+    return {}
   }
+}
 </script>
 
 <style lang="scss" scoped>
