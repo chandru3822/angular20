@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/processStep/{stepId}/action")
+@RequestMapping(value = "/api/v1/flow/{companyId}/processStep/{stepId}/action")
 public class ProcessStepActionController {
 
   @Autowired

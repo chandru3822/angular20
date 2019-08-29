@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}")
+@RequestMapping(value = "/api/v1/flow/{companyId}")
 public class CompanyDataSearchController {
 
   private final ProjectService projectService;

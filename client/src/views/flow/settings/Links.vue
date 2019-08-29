@@ -110,17 +110,17 @@
     methods: {
       async getLinks () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/links`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links`)
         this.links = orderBy(data, [a => a.link.toLowerCase()])
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteLink (typeId) {
-        await deleteRequest(`/api/v1/flow/companies/${this.companyId}/links/${typeId}`)
+        await deleteRequest(`/api/v1/flow/${this.companyId}/links/${typeId}`)
       },
       async addNewLink () {
         this.newLink.companyId = this.companyId
         // this.newProcess.createdById = this.userId
-        const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/links`, this.newLink)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/links`, this.newLink)
 
         // add it to the records already on the screen
         this.links.push(data)
@@ -133,7 +133,7 @@
       async saveLink (a) {
         this.selectedLinkId = null
         a.modifiedById = this.userId
-        await putRequest(`/api/v1/flow/companies/${this.companyId}/links`, a)
+        await putRequest(`/api/v1/flow/${this.companyId}/links`, a)
       }
     },
     async created () {

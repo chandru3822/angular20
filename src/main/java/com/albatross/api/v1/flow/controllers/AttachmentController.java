@@ -19,7 +19,7 @@ import java.util.List;
  * Created by Joseph Canto on 2019-08-01.
  */
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/attachment")
+@RequestMapping(value = "/api/v1/flow/{companyId}/attachment")
 public class AttachmentController {
   @Value("${aws.storageBucket}")
   private String bucket;

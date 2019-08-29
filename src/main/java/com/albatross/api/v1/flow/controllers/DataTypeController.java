@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/dataType")
+@RequestMapping(value = "/api/v1/flow/{companyId}/dataType")
 public class DataTypeController {
 
   @Autowired

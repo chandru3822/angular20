@@ -280,7 +280,7 @@
     methods: {
       async getCustomFields() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getAll`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getAll`)
         data.forEach(d => {
           d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
         })
@@ -290,7 +290,7 @@
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getCustomFieldObjectTypes() {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getCustomFieldObjectTypes`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getCustomFieldObjectTypes`)
         data.forEach(d => d.archived = true)
         this.customFieldObjectTypes = cloneDeep(data)
         this.objectFilters = data
@@ -298,12 +298,12 @@
         this.objectFilters.unshift({id: -1, objectType: 'All'},)
       },
       async getCompanyDataTypes() {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/dataType/getCompanyDataTypes`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/dataType/getCompanyDataTypes`)
         this.dataTypes = data
       },
       async deleteField(item) {
         item.archived = true
-        const {status} = await putRequest(`/api/v1/flow/customField/delete`, item)
+        const {status} = await putRequest(`/api/v1/flow/delete`, item)
         if (status === 200) {
           this.customFields = this.customFields.filter((cf) => {
             return cf.id !== item.id
@@ -349,7 +349,7 @@
 
         console.log('randaLogger', object)
 
-        const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/customField`, object)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customField`, object)
         data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
 
         // if it was a new field, reset the first index, then push it to both arrays

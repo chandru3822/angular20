@@ -79,7 +79,7 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("objectTypeId", objectTypeId);
 
-    List<CustomFieldGroupType> results = sqlCache.query("customFieldGroup.getByObjectTypeId", params, CustomFieldGroupType.class);
+    List<CustomFieldGroupType> results = sqlCache.query("customFieldGroup.getByObjectTypeId", params, new CustomFieldGroupMapper<>(CustomFieldGroupType.class, om));
     return results;
   }
 

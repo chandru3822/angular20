@@ -84,7 +84,7 @@
             class="elevation-1 fix-column-width-bug"
         >
           <template #no-data>
-            NO DATA HERE!
+            No requirements for this process step
           </template>
 
           <template #no-results>
@@ -219,7 +219,7 @@
             class="elevation-1 fix-column-width-bug"
         >
           <template #no-data>
-            NO DATA HERE!
+            No actions for this process step
           </template>
 
           <template #no-results>
@@ -327,7 +327,7 @@
                     <v-btn
                         color="primary"
                         text
-                        @click="item.archived = true; deleteAction(item.id)">
+                        @click="item.archived = true; deleteAction(item)">
                       Yes
                     </v-btn>
                   </v-card-actions>
@@ -363,7 +363,6 @@
           { text: null, value: 'icons', show: true }
         ],
         actionHeaders: [
-          { text: 'ID', value: 'id', width: '65px', show: true },
           { text: 'Name', value: 'actionName', show: true },
           { text: 'Type', value: 'actionType', show: true },
           { text: 'Parent Status Change', value: 'processStepStatusType', show: true },
@@ -411,7 +410,7 @@
       //requirements
       async getRequirements() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`)
         this.requirements = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -421,52 +420,47 @@
       async getRequirementTypes () {
         this.addNewRequirement = !this.addNewRequirement
         if (this.addNewRequirement){
-          const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement/types`)
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/types`)
           this.availableRequirementTypes = data
         }
       },
       async selectRequirementType() {
         //1 == custom field, 2 == function
         if(this.newRequirement.processStepRequirementTypeId === 1){
-          const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
           this.parentObjects = data
         } else {
-          const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/function`)
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function`)
           this.availableFunctions = data
         }
       },
       async loadFieldsByParent() {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getByParentProcessStep/${this.parent.id}`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${this.parent.id}`)
         this.customFields = data
       },
       async loadFunctionParams() {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/function/${this.newRequirement.companyFunctionId}/defaultParams`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/defaultParams`)
         console.log('randaLoggerDDD', data)
         this.newRequirement.functionParams = data
       },
       async loadOperatorTypes() {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/operator`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operator`)
         this.operatorTypes = data
       },
       validateRequirementForm() {
         let invalidParams = false
         if(this.newRequirement.functionParams.length > 0){
           this.newRequirement.functionParams.forEach(fp => {
-            console.log('randaLoggerFP', fp)
             if(!fp.defaultValue) {
               invalidParams = true
             }
           })
         }
-        console.log('vp', invalidParams)
-        console.log('rv', this.newRequirement.requirementValue)
-        console.log('all', invalidParams && !this.newRequirement.requirementValue)
         return invalidParams || !this.newRequirement.requirementValue
       },
       async saveNewRequirement() {
-        console.log('SAVE WILL BE HERE', this.newRequirement)
         this.newRequirement.processStepId = this.processStepId
-        const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`, this.newRequirement)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`, this.newRequirement)
         this.requirements.push(data)
         this.addNewRequirement = false
         this.newRequirement = {
@@ -476,54 +470,54 @@
         this.availableFunctions = []
       },
       async updateRequirement(requirement) {
-        const {data} = await putRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement`, requirement)
+        const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`, requirement)
         this.expanded = []
         // this forces the list to update the operator displayed ... using requirement = data did not work
         requirement.operatorType = data.operatorType
       },
       async deleteRequirement(id) {
-        await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/requirement/${id}`)
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/${id}`)
       },
       //ACTIONS
       async getActions () {
-        console.log('LOAD ACTIONS HERE')
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/action`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`)
         this.actions = data
       },
       filterActions () {
         return this.actions.filter(a => { return !a.archived})
       },
       async saveNewAction() {
-        console.log('SAVE WILL BE HERE', this.newAction)
         this.newAction.processStepId = this.processStepId
-        const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/action`, this.newAction)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`, this.newAction)
         this.actions.push(data)
         this.addNewAction = false
         this.newAction = {}
       },
       async updateAction(action) {
         action.processStepLogicList = action.processStepLogicList.filter(l => {return !l.archived})
-        console.log('update here', action)
 
-        const {data} = await putRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${this.processStepId}/action`, action)
+        const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`, action)
         // this forces the list to update the values displayed ... using action = data did not work
         action.actionType = data.actionType
         action.processStepStatusType = data.processStepStatusType
         this.actionExpanded = []
       },
       async getStatusTypes () {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/status`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
         this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
       },
       async getOperationTypes () {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/operation`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operation`)
         this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
       },
       async assignNewAction() {
         console.log('ASSIGN ACTION HERE')
+        //i dont know what i was writing this for
       },
-      async deleteAction(id) {
-        console.log('DELETE ACTION HERE', id)
+      async deleteAction(item) {
+        console.log('DELETE ACTION HERE', item)
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${item.id}`)
+        item.archived = true
       },
     }
 

@@ -99,17 +99,17 @@
     methods: {
       async getStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/status`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
         this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteType (typeId) {
-        await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processStep/status/${typeId}`)
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/status/${typeId}`)
       },
       async addNewType () {
         this.newType.companyId = this.companyId
         // this.newProcess.createdById = this.userId
-        const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processStep/status`, this.newType)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/status`, this.newType)
 
         // add it to the records already on the screen
         this.statusTypes.push(data)
@@ -122,7 +122,7 @@
       async saveType (s) {
         this.selectedStatusTypeId = null
         s.modifiedById = this.userId
-        await putRequest(`/api/v1/flow/companies/${this.companyId}/processStep/status`, s)
+        await putRequest(`/api/v1/flow/${this.companyId}/processStep/status`, s)
       }
     },
     async created () {

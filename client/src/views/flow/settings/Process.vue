@@ -147,7 +147,7 @@ export default {
   methods: {
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processes/${this.processId}`)
+      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes/${this.processId}`)
       this.process = data
       this.$store.commit(AppMutations.SET_LOADING, false)
     },
@@ -157,11 +157,11 @@ export default {
     async deleteStepFromProcess (id) {
       //reset the addNew field in case they delete one while it is open
       this.addNew = false
-      await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processes/processStepProcess/${id}`)
+      await deleteRequest(`/api/v1/flow/${this.companyId}/processes/processStepProcess/${id}`)
     },
     async getOwningOrgs () {
       console.log('will load orgs here')
-      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/org/owning`)
+      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/org/owning`)
       this.owningOrgs = data
     },
     async getAvailableProcessSteps () {
@@ -169,12 +169,12 @@ export default {
       this.newProcessStep = {}
       this.addNew = !this.addNew
       if(this.addNew) {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processes/availableProcessSteps/${this.processId}`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes/availableProcessSteps/${this.processId}`)
         this.availableProcessSteps = data
       }
     },
     async assignProcessStep () {
-      const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processes/${this.processId}/processStep`, this.newProcessStep)
+      const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processes/${this.processId}/processStep`, this.newProcessStep)
       console.log('randaLogger', data)
       this.process.processStepProcesses.push(data)
       this.process.processStepProcesses = orderBy(this.process.processStepProcesses, p => p.processStepName.toLowerCase())

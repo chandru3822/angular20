@@ -98,16 +98,16 @@ export default {
   },
   methods: {
     async getAttachmentTypes () {
-      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/attachmentType/types`)
+      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/attachmentType/types`)
       this.attachmentTypes = orderBy(data, [a => a.attachmentType.toLowerCase()])
     },
     async deleteType (typeId) {
-      await deleteRequest(`/api/v1/flow/companies/${this.companyId}/attachmentType/type/${typeId}`)
+      await deleteRequest(`/api/v1/flow/${this.companyId}/attachmentType/type/${typeId}`)
     },
     async addNewType () {
       this.newType.companyId = this.companyId
       // this.newProcess.createdById = this.userId
-      const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/attachmentType/type`, this.newType)
+      const {data} = await postRequest(`/api/v1/flow/${this.companyId}/attachmentType/type`, this.newType)
 
       // add it to the records already on the screen
       this.attachmentTypes.push(data)
@@ -120,7 +120,7 @@ export default {
     async saveType (a) {
       this.selectedAttachmentTypeId = null
       a.modifiedById = this.userId
-      await putRequest(`/api/v1/flow/companies/${this.companyId}/attachmentType/type`, a)
+      await putRequest(`/api/v1/flow/${this.companyId}/attachmentType/type`, a)
     }
   },
   async created () {

@@ -29,7 +29,20 @@
   <customFieldGroup.getByObjectTypeId><![CDATA[
     select cfgt.*,
           cfgt.group_name as original_group_name,
-       ot.object_type
+          ot.object_type,
+          coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(customFields)))
+                    FROM (
+                             SELECT cfg.id,
+                                    cfg.custom_field_group_type_id as "customFieldGroupTypeId",
+                                    cfg.custom_field_id as "customFieldId",
+                                    cfg.ancillary_custom_field_group_id as "ancillaryCustomFieldGroupId",
+                                    cfg.field_order as "fieldOrder",
+                                    cfg.archived,
+                                    cf.field_name as "fieldName"
+                             FROM flow.custom_field_group cfg
+                                      inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+                             WHERE cfg.custom_field_group_type_id = cfgt.id AND cfg.archived is not true) customFields), '[]') AS "customFields"
     from flow.custom_field_group_type cfgt
            inner join flow.object_type ot on ot.id = cfgt.object_type_id
     where ot.id = :objectTypeId

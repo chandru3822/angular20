@@ -17,7 +17,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/customField")
+@RequestMapping(value = "/api/v1/flow/{companyId}/customField")
 public class CustomFieldController {
 
   @Autowired

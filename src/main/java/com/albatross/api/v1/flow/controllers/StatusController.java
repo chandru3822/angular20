@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/status")
+@RequestMapping(value = "/api/v1/flow/{companyId}/status")
 public class StatusController {
 
   @Autowired

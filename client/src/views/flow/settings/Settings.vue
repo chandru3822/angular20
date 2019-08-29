@@ -66,7 +66,7 @@ export default {
   methods: {
     async getCustomFieldObjectTypes () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getCustomFieldObjectTypes`)
+      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getCustomFieldObjectTypes`)
       this.objectTypes = data
       this.$store.commit(AppMutations.SET_LOADING, false)
     },

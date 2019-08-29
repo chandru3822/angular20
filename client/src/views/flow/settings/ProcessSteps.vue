@@ -95,15 +95,15 @@
     methods: {
       async getProcessSteps () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep`)
         this.processSteps = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteProcessStep (processStepId) {
-        await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${processStepId}`)
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${processStepId}`)
       },
       async addProcessStep () {
-        const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/processStep`, this.newStep)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep`, this.newStep)
         this.$router.push({path: `/settings/processStep/${data.id}/components`})
       },
     },

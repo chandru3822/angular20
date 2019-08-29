@@ -79,12 +79,12 @@
     },
     methods: {
       async getFunctions () {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/function`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function`)
         this.functions = data
       },
       async deleteFunction (functionId) {
         console.log('will delete here')
-        // await deleteRequest(`/api/v1/flow/companies/${this.companyId}/processStep/${processStepId}`)
+        // await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${processStepId}`)
       }
     },
     async created () {

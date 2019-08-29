@@ -154,20 +154,20 @@
     methods: {
       async getFunctionDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/function/${this.functionId}`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.functionId}`)
         this.details = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getSystemValues () {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/function/systemValues`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/systemValues`)
         this.systemValues = data
       },
       async loadParentObjects () {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/processStep/getParentObjects`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`)
         this.parentObjects = data
       },
       async loadFieldsByParent(id) {
-        const {data} = await getRequest(`/api/v1/flow/companies/${this.companyId}/customField/getByParentProcessStep/${id}`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${id}`)
         this.availableCustomFields = data
       },
       async handleExpand (item, expand) {
@@ -184,7 +184,7 @@
 
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await postRequest(`/api/v1/flow/companies/${this.companyId}/function/${this.functionId}/param`, item)
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/function/${this.functionId}/param`, item)
           console.log('randaLoggerData', data)
           if(item.parameterTypeId === 1) {
             item.systemValue = data.systemValue

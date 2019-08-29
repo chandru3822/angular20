@@ -18,7 +18,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/operator")
+@RequestMapping(value = "/api/v1/flow/{companyId}/operator")
 public class OperatorController {
 
   @Autowired

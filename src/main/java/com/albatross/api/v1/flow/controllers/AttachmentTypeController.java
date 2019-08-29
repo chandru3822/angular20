@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/attachmentType")
+@RequestMapping(value = "/api/v1/flow/{companyId}/attachmentType")
 public class AttachmentTypeController {
 
   @Autowired

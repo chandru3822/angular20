@@ -19,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/companies/{companyId}/org")
+@RequestMapping(value = "/api/v1/flow/{companyId}/org")
 public class OrgController {
 
   @Autowired
