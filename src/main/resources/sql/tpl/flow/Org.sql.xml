@@ -1,0 +1,26 @@
+<sql>
+  <org.getAllForCompany>
+    <![CDATA[
+      select o.*
+      from flow.org o
+      where o.company_id = :companyId
+      order by o.org_name
+    ]]>
+  </org.getAllForCompany>
+
+  <org.getOwningOrgsForCompany>
+    <![CDATA[
+      with companyIds as (
+        select id
+        from flow.company
+        where (id = :companyId OR parent_company_id = :companyId)
+      )
+      select o.*
+      from flow.org o
+      inner join companyIds ci on ci.id = o.company_id
+      where o.owning_org is true
+      order by o.org_name
+    ]]>
+  </org.getOwningOrgsForCompany>
+
+</sql>

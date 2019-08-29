@@ -1,0 +1,90 @@
+package com.albatross.api.security.jwt;
+
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import static com.google.common.base.Preconditions.checkState;
+
+@Slf4j
+@Component
+public class JwtAuthenticationProvider implements AuthenticationProvider {
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private SecurityService securityService;
+
+    /**
+     * A cache of {@link UserAccountDetails} objects, so we don't have to retrieve
+     * user details of each request.
+     */
+    private LoadingCache<Long, Optional<UserAccountDetails>> userCache;
+
+    @PostConstruct
+    public void init() {
+        checkState(securityService != null,
+                "Cannot initialize without SecurityService");
+        userCache = CacheBuilder.newBuilder()
+                                .maximumSize(500)
+                                .expireAfterWrite(30, TimeUnit.SECONDS)
+                                .build(CacheLoader.from(securityService::getUserDetailsById));
+    }
+
+    @Override
+    public Authentication authenticate(Authentication auth) throws AuthenticationException {
+        auth.setAuthenticated(true);
+
+        String authHeader = (String) auth.getPrincipal();
+        JwtClaims token = jwtUtils.validateAuthHeader(authHeader);
+        Optional<UserAccountDetails> uad = retrieveUserAccountDetails(token);
+        if (!uad.isPresent()) {
+            log.warn("Attempted authentication on a JWT but could not find the specified user; token: "
+                     + authHeader);
+            throw new JwtUtils.JwtParseException("JWT appears corrupted.");
+        }
+
+        if (!uad.get().isAccountNonLocked()) {
+            throw new LockedException("Account is locked: " + uad.get().getUsername());
+        }
+
+        PreAuthenticatedAuthenticationToken result = new PreAuthenticatedAuthenticationToken(uad.get(), null,
+                uad.get().getAuthorities());
+        return result;
+    }
+
+    @Override
+    public boolean supports(Class<?> c) {
+        return PreAuthenticatedAuthenticationToken.class.equals(c);
+    }
+
+    public void logFailedAuthAttempt(HttpServletRequest request, HttpServletResponse response,
+                                     AuthenticationException e) throws IOException, ServletException {
+        log.info("Failed to authenticate request; exception: " + e.getMessage());
+    }
+
+    @SneakyThrows
+    private Optional<UserAccountDetails> retrieveUserAccountDetails(JwtClaims token) {
+        Long id = token.getUserId();
+        return userCache.get(id);
+    }
+}

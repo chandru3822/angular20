@@ -1,0 +1,72 @@
+<sql>
+  <processStepAction.getActionsForStep><![CDATA[
+    select psa.*,
+       psst.process_step_status_type,
+       at.action_type,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(logic)))
+                    FROM (
+                             SELECT psl.id,
+                                    psl.archived,
+                                    psl.process_step_requirement_id as "processStepRequirementId",
+                                    psl.operation_type_id as "operationTypeId",
+                                    ot.operation_type as "operationType",
+                                    psl.created_by_id as "createdById",
+                                    psl.modified_by_id as "modifiedById"
+                             FROM flow.process_step_logic psl
+                                left join flow.operation_type ot on ot.id = psl.operation_type_id
+                                left join flow.process_step_requirement psr on psr.id = psl.process_step_requirement_id
+                             WHERE psl.process_step_action_id = psa.id
+                             ORDER BY psl.sql_order ) logic), '[]') AS "processStepLogicList"
+      from flow.process_step_action psa
+               inner join flow.process_step_status_type psst on psst.id = psa.process_step_status_type_id
+               inner join flow.action_type at on at.id = psa.action_type_id
+    where psa.process_step_id = :processStepId
+    order by psa.action_name
+  ]]></processStepAction.getActionsForStep>
+
+  <processStepAction.getAction><![CDATA[
+    select psa.*,
+       psst.process_step_status_type,
+       at.action_type
+    from flow.process_step_action psa
+    inner join flow.process_step_status_type psst on psst.id = psa.process_step_status_type_id
+    inner join flow.action_type at on at.id = psa.action_type_id
+    where psa.id = :id
+  ]]></processStepAction.getAction>
+
+  <processStepAction.deleteAction><![CDATA[
+      update flow.process_step_action
+        set modified_by_id = :modifiedById,
+            date_modified = now(),
+            archived = true
+        where id = :actionId
+  ]]></processStepAction.deleteAction>
+
+  <processStepAction.updateAction><![CDATA[
+    update flow.process_step_action
+    set action_name = :actionName,
+        action_type_id = :actionTypeId,
+        process_step_status_type_id = :processStepStatusTypeId,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></processStepAction.updateAction>
+
+  <processStepAction.insertAction><![CDATA[
+    insert into flow.process_step_action(process_step_id, action_name, action_type_id, process_step_status_type_id, created_by_id, archived)
+      values (:processStepId, :actionName, :actionTypeId, :processStepStatusTypeId, :createdById, false)
+  ]]></processStepAction.insertAction>
+
+  <processStepAction.archiveOldLogic><![CDATA[
+    update flow.process_step_logic
+    set archived = true
+    where process_step_action_id = :id;
+  ]]></processStepAction.archiveOldLogic>
+
+  <processStepAction.insertLogic><![CDATA[
+    insert into flow.process_step_logic (process_step_requirement_id, operation_type_id, sql_order, process_step_action_id, date_created, created_by_id)
+    values (:processStepRequirementId, :operationTypeId, :sqlOrder, :id, now(), :createdById)
+  ]]></processStepAction.insertLogic>
+
+</sql>

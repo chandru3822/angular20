@@ -1,0 +1,102 @@
+<template>
+  <v-content>
+    <v-container fluid fill-height>
+      <v-layout align-center justify-center>
+        <v-flex xs12 sm8>
+          <v-card color="secondaryMaster" class="elevation-12">
+            <v-toolbar dark color="primary">
+              <v-toolbar-title>Albatross</v-toolbar-title>
+            </v-toolbar>
+            <v-card-text class="login-card-text">
+              <h2 class="error" v-if="$store.state.user.loginError">{{$store.state.user.loginError}}</h2>
+              <v-form ref="login" @submit.prevent="onSubmit()">
+                <v-text-field required color="primary" v-model="form.email" prepend-icon="person" name="login" label="Login" type="email"></v-text-field>
+                <v-text-field required color="primary" v-model="form.password" prepend-icon="lock" name="password" label="Password" id="password" type="password"></v-text-field>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn :loading="loginLoading" type="submit" color="primaryButton" dark>Login</v-btn>
+                </v-card-actions>
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </v-flex>
+      </v-layout>
+    </v-container>
+  </v-content>
+</template>
+
+<script>
+  import { UserActions, UserMutations } from '@/stores/UserStore'
+  import { postRequest } from '@/helpers/helpers'
+
+  export default {
+    data () {
+      return {
+        form: {
+          email: '',
+          password: ''
+        },
+        loginLoading: false
+      }
+    },
+    methods: {
+      async onSubmit () {
+        this.loginLoading = true
+        if (this.$refs.login.validate()) {
+          try {
+            const params = {
+              username: this.form.email,
+              password: this.form.password
+            }
+            const {data} = await postRequest('/auth/login', params)
+            console.log('login data', data)
+            const {token, details} = data
+            if (token) {
+              console.log('setting token', token)
+              this.$store.commit(UserMutations.SET_JWT, token)
+              this.loginSuccess(details)
+            } else {
+              this.loginLoading = false
+              this.$store.commit(
+                UserMutations.LOGIN_ERROR,
+                'Invalid Username or Password.'
+              )
+            }
+          } catch (e) {
+            this.loginLoading = false
+            this.$store.commit(
+              UserMutations.LOGIN_ERROR,
+              'Invalid Username/Password.'
+            )
+          }
+        } else {
+          console.log('Error in form')
+          this.loginLoading = false
+        }
+      },
+      async loginSuccess (details) {
+        // todo fix this
+        console.log('DO_THIS_HERE', details)
+        // let tempDetails = {
+        //   companyId: 1,
+        //   firstName: 'System',
+        //   id: 99999999
+        // }
+        await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
+        this.$router.push('/')
+      }
+    }
+  }
+</script>
+
+<style scoped lang="scss">
+  .logo{
+    max-width: 100%;
+  }
+
+  @media (min-width: 769px) {
+    .login-card-text {
+      padding: 65px;
+    }
+  }
+</style>

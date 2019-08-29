@@ -1,0 +1,16 @@
+<sql>
+    <metroArea.getAllActive>
+        <![CDATA[
+           SELECT
+             ma.id,
+             ma.metro_area,
+             ma.sales_area_id,
+             ma.archived,
+             sa.area
+           FROM brs.metro_area ma
+             LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
+           WHERE ma.archived IS FALSE
+           ORDER BY sa.area, ma.metro_area
+        ]]>
+    </metroArea.getAllActive>
+</sql>

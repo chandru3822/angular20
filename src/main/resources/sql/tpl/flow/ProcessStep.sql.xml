@@ -1,0 +1,119 @@
+<sql>
+  <processStep.getAllForCompany><![CDATA[
+      select ps.id,
+       ps.process_step_name,
+       ps.company_id,
+       ps.archived,
+       ps.date_created,
+       ps.date_modified,
+       ps.created_by_id,
+       ps.modified_by_id
+      from flow.process_step ps
+      where ps.company_id = :companyId
+        and ps.archived is not true
+  ]]></processStep.getAllForCompany>
+
+  <processStep.get><![CDATA[
+      select ps.id,
+             ps.process_step_name,
+             ps.company_id,
+             ps.archived,
+             ps.date_created,
+             ps.date_modified,
+             ps.created_by_id,
+             ps.modified_by_id,
+             coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(links)))
+                          FROM (
+                                   SELECT psl.id,
+                                          psl.link_id as "linkId",
+                                          psl.created_by_id as "createdById",
+                                          psl.modified_by_id as "modifiedById",
+                                          l.link,
+                                          l.url,
+                                          psl.archived
+                                   FROM flow.process_step_link psl
+                                            inner join flow.link l on l.id = psl.link_id
+                                   WHERE psl.process_step_id = ps.id AND psl.archived is not true) links), '[]') AS "links",
+             coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(attachmentTypes)))
+                          FROM (
+                                   SELECT psat.id,
+                                          psat.attachment_type_id as "attachmentTypeId",
+                                          psat.created_by_id as "createdById",
+                                          psat.modified_by_id as "modifiedById",
+                                          at.attachment_type as "attachmentType",
+                                          psat.archived
+                                   FROM flow.process_step_attachment_type psat
+                                            inner join flow.attachment_type at on at.id = psat.attachment_type_id
+                                   WHERE psat.process_step_id = ps.id AND psat.archived is not true) attachmentTypes), '[]') AS "attachmentTypes",
+             coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(cfGroups)))
+                          FROM (
+                                   SELECT cfgt.id,
+                                          cfgt.group_name as "groupName",
+                                          cfgt.object_type_id as "objectTypeId",
+                                          cfgt.archived,
+                                          cfgt.group_order as "groupOrder",
+                                          cfgt.process_step_id as "processStepId",
+                                          coalesce((
+                                                       SELECT array_to_json(array_agg(row_to_json(customFields)))
+                                                       FROM (
+                                                                SELECT cfg.id,
+                                                                       cfg.custom_field_group_type_id as "customFieldGroupTypeId",
+                                                                       cfg.custom_field_id as "customFieldId",
+                                                                       cfg.ancillary_custom_field_group_id as "ancillaryCustomFieldGroupId",
+                                                                       cfg.field_order as "fieldOrder",
+                                                                       cfg.archived,
+                                                                       cf.field_name as "fieldName"
+                                                                FROM flow.custom_field_group cfg
+                                                                         inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+                                                                WHERE cfg.custom_field_group_type_id = cfgt.id AND cfg.archived is not true
+                                                                union all
+                                                                SELECT cfg.id,
+                                                                       cfg.custom_field_group_type_id as "customFieldGroupTypeId",
+                                                                       cfg.custom_field_id as "customFieldId",
+                                                                       cfg.ancillary_custom_field_group_id as "ancillaryCustomFieldGroupId",
+                                                                       cfg.field_order as "fieldOrder",
+                                                                       cfg.archived,
+                                                                       cf.field_name as "fieldName"
+                                                                FROM flow.custom_field_group cfg
+                                                                         inner join flow.custom_field_group cfg2 on cfg2.id = cfg.ancillary_custom_field_group_id
+                                                                         inner join flow.custom_field cf on cf.id = cfg2.custom_field_id
+                                                                WHERE cfg.custom_field_group_type_id = cfgt.id AND cfg.archived is not true) customFields), '[]') AS "customFields"
+                                   FROM flow.custom_field_group_type cfgt
+                                   WHERE cfgt.process_step_id = ps.id AND cfgt.archived is not true) cfGroups), '[]') AS custom_field_group_types
+      from flow.process_step ps
+      where ps.id = :id
+  ]]></processStep.get>
+
+  <processStep.delete><![CDATA[
+      update flow.process_step
+      set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+      where id = :id
+  ]]></processStep.delete>
+
+  <processStep.update><![CDATA[
+      update flow.process_step
+      set modified_by_id = :modifiedById,
+          date_modified = now(),
+          process_step_name = :name
+      where id = :id;
+  ]]></processStep.update>
+
+  <processStep.insert><![CDATA[
+      insert into flow.process_step (company_id, process_step_name, created_by_id)
+        values (:companyId, :name, :createdById)
+  ]]></processStep.insert>
+
+  <processStep.getParentObjects><![CDATA[
+    select *
+    from flow.process_step
+    where case when :id::integer is not null then id != :id else 1=1 end
+      and company_id = :companyId
+      and archived is not true
+    order by process_step_name
+  ]]></processStep.getParentObjects>
+</sql>

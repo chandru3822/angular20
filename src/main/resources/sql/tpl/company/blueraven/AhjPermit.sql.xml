@@ -1,0 +1,323 @@
+<sql>
+  <ahj.permit.detail>
+    <![CDATA[
+      SELECT
+        p.*,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(contacts)))
+          FROM (
+            SELECT
+              c.id,
+              c.name,
+              c.title,
+              c.email,
+              c.phone_number AS "phoneNumber",
+              c.address,
+              c.notes,
+              c.hours
+            FROM brs.ahj_contact c
+              INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
+            WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 1
+          ) contacts), '[]'
+        ) AS submissionContacts,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(contacts)))
+          FROM (
+            SELECT
+              c.id,
+              c.name,
+              c.title,
+              c.email,
+              c.phone_number AS "phoneNumber",
+              c.address,
+              c.notes,
+              c.hours
+            FROM brs.ahj_contact c
+              INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
+            WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 6
+          ) contacts), '[]'
+        ) AS followUpContacts,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(contacts)))
+          FROM (
+            SELECT
+              c.id,
+              c.name,
+              c.title,
+              c.email,
+              c.phone_number AS "phoneNumber",
+              c.address,
+              c.notes,
+              c.hours
+            FROM brs.ahj_contact c
+              INNER JOIN brs.ahj_permit_contact apc ON c.id = apc.ahj_contact_id
+            WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 7
+          ) contacts), '[]'
+        ) AS printLocations,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(notes)))
+          FROM (
+            SELECT
+              n.id,
+              n.note,
+              n.date_created,
+              n.date_modified,
+              n.created_by_id                                      AS "createdById",
+              created_by.first_name || ' ' || created_by.last_name AS "createdBy",
+              n.modified_by_id                                      AS "modifiedById",
+              modified_by.first_name || ' ' || modified_by.last_name AS "modifiedBy"
+            FROM brs.ahj_note n
+              INNER JOIN flow."user" created_by ON n.created_by_id = created_by.id
+              INNER JOIN flow."user" modified_by ON n.modified_by_id = modified_by.id
+              INNER JOIN brs.ahj_permit_note apn ON n.id = apn.ahj_note_id
+            WHERE apn.ahj_permit_id = p.id AND n.archived IS FALSE AND n.note_type_id = 1
+          ) AS notes), '[]'
+        ) AS notes,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(checklist)))
+          FROM (
+            SELECT
+              ac.id,
+              ac.description,
+              ac.display_order AS "displayOrder"
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
+            WHERE ac.archived IS FALSE
+              AND ac.checklist_type_id = 1
+              AND apc.ahj_permit_id = p.id
+            ORDER BY ac.display_order) checklist
+          ), '[]'
+        ) AS submissionChecklist,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(checklist)))
+          FROM (
+            SELECT
+              ac.id,
+              ac.description,
+              ac.display_order AS "displayOrder"
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
+            WHERE ac.archived IS FALSE
+              AND ac.checklist_type_id = 2
+              AND apc.ahj_permit_id = p.id
+            ORDER BY ac.display_order) checklist
+          ), '[]'
+        ) AS revisionChecklist,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(checklist)))
+          FROM (
+            SELECT
+              ac.id,
+              ac.description,
+              ac.display_order AS "displayOrder"
+            FROM brs.ahj_checklist ac
+              INNER JOIN brs.ahj_permit_checklist apc ON ac.id = apc.ahj_checklist_id
+            WHERE ac.archived IS FALSE
+              AND ac.checklist_type_id = 3
+              AND apc.ahj_permit_id = p.id
+            ORDER BY ac.display_order) checklist
+          ), '[]'
+        ) AS asBuiltChecklist,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(links)))
+          FROM (
+            SELECT
+              apl.id,
+              apl.link_type_id,
+              apl.name,
+              apl.link,
+              apl.username,
+              apl.password,
+              apl.notes
+            FROM brs.ahj_permit_link apl
+            WHERE apl.archived IS FALSE
+              AND apl.link_type_id = 4
+              AND apl.ahj_permit_id = p.id) links
+            ), '[]'
+          ) AS submissionLinks,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(links)))
+          FROM (
+            SELECT
+              apl.id,
+              apl.link_type_id,
+              apl.name,
+              apl.link,
+              apl.username,
+              apl.password,
+              apl.notes
+            FROM brs.ahj_permit_link apl
+            WHERE apl.archived IS FALSE
+              AND apl.link_type_id = 5
+              AND apl.ahj_permit_id = p.id) links
+          ), '[]'
+        ) AS followUpLinks,
+        coalesce((
+          SELECT array_to_json(array_agg(row_to_json(fots)))
+          FROM (
+            SELECT
+              u.id,
+              u.first_name AS "firstName",
+              u.last_name AS "lastName",
+              u.first_name || ' ' || u.last_name AS "fullName",
+              o.org_name AS "office",
+              o.id AS "officeId"
+            FROM flow."user" u
+              INNER JOIN flow.user_position up ON up.user_id = u.id
+                AND ((now() at time zone 'US/Mountain')::date) BETWEEN up.start_date::date
+                AND coalesce(up.end_date::date, (now() at time zone 'US/Mountain')::date)
+              INNER JOIN flow.org o ON o.id = up.org_id
+              LEFT JOIN brs.org_metro_area oma ON oma.org_id = o.id
+              LEFT JOIN brs.ahj ON ahj.metro_area_id = oma.metro_area_id
+            WHERE o.org_type_id = 8
+              AND ahj.id = p.ahj_id) fots
+          ), '[]'
+        ) AS servicingFots
+      FROM brs.ahj_permit p
+      WHERE p.ahj_id = :ahjId
+    ]]>
+  </ahj.permit.detail>
+
+  <ahj.permit.createBlank>
+    <![CDATA[
+      INSERT INTO brs.ahj_permit
+        (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
+         print_location, stamped_plan, archived, date_created, created_by_id,
+         business_license_expiration_date, contractor_license_expiration_date,
+         business_license, contractor_license)
+      VALUES
+        (:ahjId, null, null, null,
+         null, null, false, now(), :currentUser,
+         null, null,
+         null, null)
+      RETURNING id
+    ]]>
+  </ahj.permit.createBlank>
+
+  <ahj.permit.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_permit
+        (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
+         print_location, stamped_plan, date_created, created_by_id, business_license, contractor_license,
+         business_license_expiration_date, contractor_license_expiration_date)
+      VALUES
+        (:ahjId, :depositAmount, :averagePermitFee, :engineeringLetterRequired,
+         :printLocation, :stampedPlan, now(), :currentUser, :businessLicense, :contractorLicense,
+         :businessLicenseExpirationDate, :contractorLicenseExpirationDate)
+    ]]>
+  </ahj.permit.create>
+
+  <ahj.permit.update>
+    <![CDATA[
+      UPDATE brs.ahj_permit
+      SET
+        ahj_id = :ahjId,
+        deposit_amount = :depositAmount,
+        average_permit_fee = :averagePermitFee,
+        engineering_letter_required = :engineeringLetterRequired,
+        print_location = :printLocation,
+        stamped_plan = :stampedPlan,
+        date_modified = now(),
+        modified_by_id = :currentUser,
+        business_license = :businessLicense,
+        contractor_license = :contractorLicense,
+        business_license_expiration_date = :businessLicenseExpirationDate,
+        contractor_license_expiration_date = :contractorLicenseExpirationDate,
+        other_license = :otherLicense,
+        other_license_expiration_date = :otherLicenseExpirationDate,
+
+        submission_note = :submissionNote,
+        revision_note = :revisionNote,
+        as_built_note = :asBuiltNote,
+        delivery_note = :deliveryNote,
+
+        submittal_type_id = :submittalTypeId,
+        revision_submittal_type_id = :revisionSubmittalTypeId,
+        as_built_submittal_type_id = :asBuiltSubmittalTypeId,
+        delivery_pickup_type_id = :deliveryPickupTypeId,
+        submission_payment_type_id = :submissionPaymentTypeId,
+        revision_payment_type_id = :revisionPaymentTypeId,
+        as_built_payment_type_id = :asBuiltPaymentTypeId,
+        follow_up_payment_type_id = :followUpPaymentTypeId,
+        delivery_payment_type_id = :deliveryPaymentTypeId,
+        hoa_approval_required_type_id = :hoaApprovalRequiredTypeId,
+        nem_approval_required_type_id = :nemApprovalRequiredTypeId,
+
+        submittal_type_other = :submittalTypeOther,
+        revision_submittal_type_other = :revisionSubmittalTypeOther,
+        as_built_submittal_type_other = :asBuiltSubmittalTypeOther,
+        delivery_pickup_type_other = :deliveryPickupTypeOther,
+        submission_payment_type_other = :submissionPaymentTypeOther,
+        revision_payment_type_other = :revisionPaymentTypeOther,
+        as_built_payment_type_other = :asBuiltPaymentTypeOther,
+        follow_up_payment_type_other = :followUpPaymentTypeOther,
+        delivery_payment_type_other = :deliveryPaymentTypeOther,
+        hoa_approval_required_type_other = :hoaApprovalRequiredTypeOther,
+        nem_approval_required_type_other = :nemApprovalRequiredTypeOther,
+        revision_fee_amount = :revisionFeeAmount,
+        as_built_fee_amount = :asBuiltFeeAmount,
+        follow_up_fee_amount = :followUpFeeAmount,
+        delivery_fee_amount = :deliveryFeeAmount,
+        approval_timeline = :approvalTimeline,
+        documents_available = :documentsAvailable
+      WHERE id = :id
+    ]]>
+  </ahj.permit.update>
+
+  <ahj.permit.checklist.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_permit_checklist (ahj_permit_id, ahj_checklist_id)
+      VALUES (:ahjPermitId, :ahjChecklistId)
+    ]]>
+  </ahj.permit.checklist.create>
+
+  <ahj.permit.contact.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_permit_contact (ahj_permit_id, ahj_contact_id)
+      VALUES (:ahjPermitId, :ahjContactId)
+    ]]>
+  </ahj.permit.contact.create>
+
+  <!-- PERMIT LINKS STUFF -->
+  <ahj.permit.link.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_permit_link WHERE id = :id
+    ]]>
+  </ahj.permit.link.findById>
+
+  <ahj.permit.link.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_permit_link
+        (ahj_permit_id, name, link, username, password, notes, date_created, created_by_id, link_type_id)
+      VALUES
+        (:ahjPermitId, :name, :link, :username, :password, :notes, now(), :currentUser, :linkTypeId)
+    ]]>
+  </ahj.permit.link.create>
+
+  <ahj.permit.link.update>
+    <![CDATA[
+      UPDATE brs.ahj_permit_link
+      SET
+        ahj_permit_id = :ahjPermitId,
+        name = :name,
+        link = :link,
+        username = :username,
+        password = :password,
+        notes = :notes,
+        date_modified = now(),
+        modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.permit.link.update>
+
+  <ahj.permit.link.delete>
+    <![CDATA[
+      UPDATE brs.ahj_permit_link
+      SET
+        archived = TRUE,
+        date_modified = now(),
+        modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.permit.link.delete>
+</sql>
