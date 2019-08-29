@@ -37,16 +37,30 @@
           No available field groups
         </template>
 
+        <template #item.groupName="{ item }">
+          <v-text-field text
+            v-if="item.edit"
+            v-model="item.groupName">
+            <template slot="append-outer">
+              <v-icon @click="saveGroupTypeName(item); item.edit = false">save</v-icon>
+              <v-icon @click="item.edit = false">clear</v-icon>
+            </template>
+          </v-text-field>
+          <a style="text-decoration: underline;" v-else @click="item.edit = true">
+            {{item.groupName}}
+          </a>
+        </template>
+
         <template #item.icons="{ item }">
           <div style="display: flex;">
             <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]">
               <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <v-btn small text @click="expanded = [item]" v-if="!expanded.includes(item)">
-              <v-icon>edit</v-icon>
+            <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]">
+              <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
+              <v-icon v-else>expand_more</v-icon>
             </v-btn>
-            <v-btn small text @click="expanded = []" v-if="expanded.includes(item)">cancel</v-btn>
             <v-dialog
                 v-model="item.deleteConfirm"
                 width="500">
@@ -380,9 +394,7 @@ export default {
     async saveGroupChanges () {
       // todo: redo this
     },
-    async saveGroupTypeName (index, groupType) {
-      // this updates the dom as needed
-      this.$set(this.customFieldGroupTypes, index, groupType)
+    async saveGroupTypeName (groupType) {
       await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroupType`, groupType)
     },
     async deleteGroup (groupTypeId) {

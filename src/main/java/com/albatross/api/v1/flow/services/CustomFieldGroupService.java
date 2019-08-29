@@ -130,7 +130,7 @@ public class CustomFieldGroupService {
 
     sqlCache.update("customFieldGroup.updateCustomFieldGroupType", params);
 
-    Optional<CustomFieldGroupType> group = sqlCache.get("customFieldGroup.getOne", params, CustomFieldGroupType.class);
+    Optional<CustomFieldGroupType> group = sqlCache.get("customFieldGroup.getOne", params, new CustomFieldGroupMapper<>(CustomFieldGroupType.class, om));
 
     return group.orElse(null);
   }

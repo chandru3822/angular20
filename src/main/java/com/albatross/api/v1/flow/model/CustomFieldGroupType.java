@@ -18,6 +18,9 @@ public class CustomFieldGroupType {
   private String groupName, objectType, originalGroupName;
   private Boolean archived;
 
-  List<CustomField> customFields;
+  private List<CustomField> customFields;
+
+  // todo: ask unicorn boy about this - can't update dom value of key not already stored on object. re: object types -> custom field groups -> edit group name
+  private Boolean edit = false;
 }
 
