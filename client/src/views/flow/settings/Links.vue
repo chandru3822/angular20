@@ -24,7 +24,7 @@
         <v-btn v-if="addNew" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
         <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
                 :key="index">
-          <v-list-item>
+          <v-list-item :class="{'shaded-row': index % 2}">
             <v-list-item-content class="text-left">
               <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
                             label="Link"

@@ -45,11 +45,11 @@
                   item-value="id"
                   @input="loadFunctionParams"
         ></v-select>
-        <div v-if="newRequirement.companyFunctionId && newRequirement.functionParams.length > 0">
+        <div v-if="newRequirement.companyFunctionId && newRequirement.requirementParamDefaultValues.length > 0">
           <h5 class="text-left">Default Function Parameters</h5>
           <v-container>
             <v-text-field
-                v-for="fp in newRequirement.functionParams"
+                v-for="fp in newRequirement.requirementParamDefaultValues"
                 placeholder="Enter a default value"
                 v-model="fp.defaultValue"
                 :label="fp.parameterName"></v-text-field>
@@ -96,7 +96,17 @@
 <!--          </template>-->
 
           <template #expanded-item="{ headers, item }">
-              <td :colspan="headers.length" class="pa-4">
+              <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">
+                <div v-if="item.requirementParamDefaultValues && item.requirementParamDefaultValues.length > 0">
+                  <h5 class="text-left">Default Function Parameters</h5>
+                  <v-container>
+                    <v-text-field
+                        v-for="fp in item.requirementParamDefaultValues"
+                        placeholder="Enter a default value"
+                        v-model="fp.defaultValue"
+                        :label="fp.parameterName"></v-text-field>
+                  </v-container>
+                </div>
                 <v-select v-model="item.operatorTypeId"
                           :items="operatorTypes"
                           class="one-hunned"
@@ -115,59 +125,119 @@
               </td>
           </template>
 
-          <template #item.custom="{ item }">
-            <span v-if="item.processStepRequirementTypeId === 1">
-              {{ item.parentName }} | {{ item.fieldName }}
-            </span>
-            <span>
-              {{ item.companyFunctionName }}
-            </span>
-
-          </template>
-          <template #item.icons="{ item }">
-            <div style="display: flex;">
-              <v-btn small text @click="expanded = [item]" v-if="!expanded.includes(item)">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn small text @click="expanded = []" v-if="expanded.includes(item)">cancel</v-btn>
-              <v-dialog
-                  v-model="item.deleteConfirm"
-                  width="500">
-                <template #activator="{ on }">
-                  <v-btn small text v-on="on">
-                    <v-icon>delete</v-icon>
+          <template #item="{ item, index }">
+            <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left" style="width: 65px">{{item.requirementNbr}}</td>
+              <td class="text-left">{{item.processStepRequirementType}}</td>
+              <td class="text-left">
+                <span v-if="item.processStepRequirementTypeId === 1">
+                  {{ item.parentName }} | {{ item.fieldName }}
+                </span>
+                <span>
+                  {{ item.companyFunctionName }}
+                </span>
+              </td>
+              <td class="text-left">{{item.operatorType}}</td>
+              <td class="text-left">{{item.requirementValue}}</td>
+              <td>
+                <div style="display: flex;">
+                  <v-btn small text @click="expanded = [item]; selectedRequirementIndex = index" v-if="!expanded.includes(item)">
+                    <v-icon>edit</v-icon>
                   </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title>
-                    Confirm
-                  </v-card-title>
+                  <v-btn small text @click="expanded = []; selectedRequirementIndex = index" v-if="expanded.includes(item)">cancel</v-btn>
+                  <v-dialog
+                      v-model="item.deleteConfirm"
+                      width="500">
+                    <template #activator="{ on }">
+                      <v-btn small text v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title>
+                        Confirm
+                      </v-card-title>
 
-                  <v-card-text>
-                    Are you sure you want to delete this requirement?
-                  </v-card-text>
+                      <v-card-text>
+                        Are you sure you want to delete this requirement?
+                      </v-card-text>
 
-                  <v-divider></v-divider>
+                      <v-divider></v-divider>
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        @click="item.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                        color="primary"
-                        text
-                        @click="item.archived = true; deleteRequirement(item.id)">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </div>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="item.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="item.archived = true; deleteRequirement(item.id)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+              </td>
+            </tr>
           </template>
+<!--          <template #item.custom="{ item }">-->
+<!--            <span v-if="item.processStepRequirementTypeId === 1">-->
+<!--              {{ item.parentName }} | {{ item.fieldName }}-->
+<!--            </span>-->
+<!--            <span>-->
+<!--              {{ item.companyFunctionName }}-->
+<!--            </span>-->
+
+<!--          </template>-->
+<!--          <template #item.icons="{ item }">-->
+<!--            <div style="display: flex;">-->
+<!--              <v-btn small text @click="expanded = [item]" v-if="!expanded.includes(item)">-->
+<!--                <v-icon>edit</v-icon>-->
+<!--              </v-btn>-->
+<!--              <v-btn small text @click="expanded = []" v-if="expanded.includes(item)">cancel</v-btn>-->
+<!--              <v-dialog-->
+<!--                  v-model="item.deleteConfirm"-->
+<!--                  width="500">-->
+<!--                <template #activator="{ on }">-->
+<!--                  <v-btn small text v-on="on">-->
+<!--                    <v-icon>delete</v-icon>-->
+<!--                  </v-btn>-->
+<!--                </template>-->
+<!--                <v-card>-->
+<!--                  <v-card-title-->
+<!--                      class="headline grey lighten-2"-->
+<!--                      primary-title>-->
+<!--                    Confirm-->
+<!--                  </v-card-title>-->
+
+<!--                  <v-card-text>-->
+<!--                    Are you sure you want to delete this requirement?-->
+<!--                  </v-card-text>-->
+
+<!--                  <v-divider></v-divider>-->
+
+<!--                  <v-card-actions>-->
+<!--                    <v-spacer></v-spacer>-->
+<!--                    <v-btn-->
+<!--                        @click="item.deleteConfirm = false">-->
+<!--                      No-->
+<!--                    </v-btn>-->
+<!--                    <v-btn-->
+<!--                        color="primary"-->
+<!--                        text-->
+<!--                        @click="item.archived = true; deleteRequirement(item.id)">-->
+<!--                      Yes-->
+<!--                    </v-btn>-->
+<!--                  </v-card-actions>-->
+<!--                </v-card>-->
+<!--              </v-dialog>-->
+<!--            </div>-->
+<!--          </template>-->
         </v-data-table>
       </v-container>
     </v-flex>
@@ -227,7 +297,7 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="actionHeaders.length" class="pb-4">
+            <td :colspan="actionHeaders.length" class="pb-4" :class="{'shaded-row': selectedActionIndex % 2}">
               <v-container>
                 <v-text-field v-model="item.actionName"
                               placeholder="Enter a name"
@@ -291,50 +361,101 @@
             </td>
           </template>
 
-          <template #item.icons="{ item }">
-            <div style="display: flex;">
-              <v-btn small text @click="actionExpanded = [item]" v-if="!actionExpanded.includes(item)">
-                <v-icon>edit</v-icon>
-              </v-btn>
-              <v-btn small text @click="actionExpanded = []" v-if="actionExpanded.includes(item)">cancel</v-btn>
-              <v-dialog
-                  v-model="item.deleteConfirm"
-                  width="500">
-                <template #activator="{ on }">
-                  <v-btn small text v-on="on">
-                    <v-icon>delete</v-icon>
+          <template #item="{ item, index }">
+            <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.actionName}}</td>
+              <td class="text-left">{{item.actionType}}</td>
+              <td class="text-left">{{item.processStepStatusType}}</td>
+              <td>
+                <div style="display: flex;">
+                  <v-btn small text @click="actionExpanded = [item]; selectedActionIndex = index" v-if="!actionExpanded.includes(item)">
+                    <v-icon>edit</v-icon>
                   </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title>
-                    Confirm
-                  </v-card-title>
+                  <v-btn small text @click="actionExpanded = []; selectedActionIndex = index" v-if="actionExpanded.includes(item)">cancel</v-btn>
+                  <v-dialog
+                      v-model="item.deleteConfirm"
+                      width="500">
+                    <template #activator="{ on }">
+                      <v-btn small text v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title>
+                        Confirm
+                      </v-card-title>
 
-                  <v-card-text>
-                    Are you sure you want to delete this action?
-                  </v-card-text>
+                      <v-card-text>
+                        Are you sure you want to delete this action?
+                      </v-card-text>
 
-                  <v-divider></v-divider>
+                      <v-divider></v-divider>
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        @click="item.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                        color="primary"
-                        text
-                        @click="item.archived = true; deleteAction(item)">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </div>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="item.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="item.archived = true; deleteAction(item)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+              </td>
+            </tr>
           </template>
+<!--          <template #item.icons="{ item }">-->
+<!--            <div style="display: flex;">-->
+<!--              <v-btn small text @click="actionExpanded = [item]" v-if="!actionExpanded.includes(item)">-->
+<!--                <v-icon>edit</v-icon>-->
+<!--              </v-btn>-->
+<!--              <v-btn small text @click="actionExpanded = []" v-if="actionExpanded.includes(item)">cancel</v-btn>-->
+<!--              <v-dialog-->
+<!--                  v-model="item.deleteConfirm"-->
+<!--                  width="500">-->
+<!--                <template #activator="{ on }">-->
+<!--                  <v-btn small text v-on="on">-->
+<!--                    <v-icon>delete</v-icon>-->
+<!--                  </v-btn>-->
+<!--                </template>-->
+<!--                <v-card>-->
+<!--                  <v-card-title-->
+<!--                      class="headline grey lighten-2"-->
+<!--                      primary-title>-->
+<!--                    Confirm-->
+<!--                  </v-card-title>-->
+
+<!--                  <v-card-text>-->
+<!--                    Are you sure you want to delete this action?-->
+<!--                  </v-card-text>-->
+
+<!--                  <v-divider></v-divider>-->
+
+<!--                  <v-card-actions>-->
+<!--                    <v-spacer></v-spacer>-->
+<!--                    <v-btn-->
+<!--                        @click="item.deleteConfirm = false">-->
+<!--                      No-->
+<!--                    </v-btn>-->
+<!--                    <v-btn-->
+<!--                        color="primary"-->
+<!--                        text-->
+<!--                        @click="item.archived = true; deleteAction(item)">-->
+<!--                      Yes-->
+<!--                    </v-btn>-->
+<!--                  </v-card-actions>-->
+<!--                </v-card>-->
+<!--              </v-dialog>-->
+<!--            </div>-->
+<!--          </template>-->
 
         </v-data-table>
       </v-container>
@@ -370,8 +491,10 @@
         ],
         addNewRequirement: false,
         newRequirement: {
-          functionParams: []
+          requirementParamDefaultValues: []
         },
+        selectedRequirementIndex: null,
+        selectedActionIndex: null,
         availableRequirementTypes: [],
         processStepId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
@@ -441,7 +564,7 @@
       async loadFunctionParams() {
         const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/defaultParams`)
         console.log('randaLoggerDDD', data)
-        this.newRequirement.functionParams = data
+        this.newRequirement.requirementParamDefaultValues = data
       },
       async loadOperatorTypes() {
         const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operator`)
@@ -449,8 +572,8 @@
       },
       validateRequirementForm() {
         let invalidParams = false
-        if(this.newRequirement.functionParams.length > 0){
-          this.newRequirement.functionParams.forEach(fp => {
+        if(this.newRequirement.requirementParamDefaultValues.length > 0){
+          this.newRequirement.requirementParamDefaultValues.forEach(fp => {
             if(!fp.defaultValue) {
               invalidParams = true
             }
@@ -464,7 +587,7 @@
         this.requirements.push(data)
         this.addNewRequirement = false
         this.newRequirement = {
-          functionParams: []
+          requirementParamDefaultValues: []
         }
         this.parent = {}
         this.availableFunctions = []

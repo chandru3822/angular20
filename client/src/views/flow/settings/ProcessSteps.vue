@@ -19,7 +19,7 @@
         <v-btn v-if="addNew" :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
         <v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')"
                 :key="index">
-          <v-list-item>
+          <v-list-item :class="{'shaded-row': index % 2}">
             <v-list-item-content>
               {{ps.processStepName}}
             </v-list-item-content>

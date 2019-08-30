@@ -27,7 +27,7 @@
         <v-container v-if="processStep.links && processStep.links.length > 0">
           <v-list v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
                   :key="index">
-            <v-list-item>
+            <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content>
                 {{a.link}} | {{ a.url }}
               </v-list-item-content>
@@ -95,7 +95,7 @@
         <v-container v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
           <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')"
                   :key="index">
-            <v-list-item>
+            <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content>
                 {{a.attachmentType}}
               </v-list-item-content>

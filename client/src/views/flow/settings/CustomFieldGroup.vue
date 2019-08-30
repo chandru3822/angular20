@@ -37,78 +37,148 @@
             No available field groups
           </template>
 
-          <template #item.groupName="{ item }">
-            <v-text-field text
-              v-if="item.edit"
-              v-model="item.groupName">
-              <template slot="append-outer">
-                <v-icon @click="saveGroupTypeName(item); item.edit = false">save</v-icon>
-                <v-icon @click="item.edit = false">clear</v-icon>
-              </template>
-            </v-text-field>
-            <a style="text-decoration: underline;" v-else @click="item.edit = true">
-              {{item.groupName}}
-            </a>
-          </template>
-
-          <template #item.draggable="{ item }">
-            <v-btn text icon small class="handle">
-              <v-icon>drag_handle</v-icon>
-            </v-btn>
-          </template>
-
-
-          <template #item.icons="{ item }">
-            <div class="item-icons">
-              <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]">
-                <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
-                <v-icon v-else>add</v-icon>
-              </v-btn>
-              <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]">
-                <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
-                <v-icon v-else>expand_more</v-icon>
-              </v-btn>
-              <v-dialog
-                  v-model="item.deleteConfirm"
-                  width="500">
-                <template #activator="{ on }">
-                  <v-btn small text v-on="on">
-                    <v-icon>delete</v-icon>
+          <template #item="{ item, index }">
+            <tr  :class="{'shaded-row': index % 2}">
+              <td style="width: 50px">
+                <v-btn text icon small class="handle">
+                  <v-icon>drag_handle</v-icon>
+                </v-btn>
+              </td>
+              <td class="text-left">
+                <v-text-field text
+                              v-if="item.edit"
+                              v-model="item.groupName">
+                  <template slot="append-outer">
+                    <v-icon @click="saveGroupTypeName(item); item.edit = false">save</v-icon>
+                    <v-icon @click="item.edit = false">clear</v-icon>
+                  </template>
+                </v-text-field>
+                <a style="text-decoration: underline;" v-else @click="item.edit = true">
+                  {{item.groupName}}
+                </a>
+              </td>
+              <td>
+                <div class="item-icons">
+                  <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]; selectedIndex = index">
+                    <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
+                    <v-icon v-else>add</v-icon>
                   </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title>
-                    Confirm
-                  </v-card-title>
+                  <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
+                    <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
+                    <v-icon v-else>expand_more</v-icon>
+                  </v-btn>
+                  <v-dialog
+                      v-model="item.deleteConfirm"
+                      width="500">
+                    <template #activator="{ on }">
+                      <v-btn small text v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title>
+                        Confirm
+                      </v-card-title>
 
-                  <v-card-text>
-                    Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
-                  </v-card-text>
+                      <v-card-text>
+                        Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
+                      </v-card-text>
 
-                  <v-divider></v-divider>
+                      <v-divider></v-divider>
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        @click="item.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                        color="primary"
-                        text
-                        @click="item.archived = true; deleteGroup(item.id)">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </div>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="item.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="item.archived = true; deleteGroup(item.id)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
+              </td>
+            </tr>
           </template>
+<!--          <template #item.groupName="{ item }">-->
+<!--            <v-text-field text-->
+<!--              v-if="item.edit"-->
+<!--              v-model="item.groupName">-->
+<!--              <template slot="append-outer">-->
+<!--                <v-icon @click="saveGroupTypeName(item); item.edit = false">save</v-icon>-->
+<!--                <v-icon @click="item.edit = false">clear</v-icon>-->
+<!--              </template>-->
+<!--            </v-text-field>-->
+<!--            <a style="text-decoration: underline;" v-else @click="item.edit = true">-->
+<!--              {{item.groupName}}-->
+<!--            </a>-->
+<!--          </template>-->
+
+<!--          <template #item.draggable="{ item }">-->
+<!--            <v-btn text icon small class="handle">-->
+<!--              <v-icon>drag_handle</v-icon>-->
+<!--            </v-btn>-->
+<!--          </template>-->
+
+
+<!--          <template #item.icons="{ item }">-->
+<!--            <div class="item-icons">-->
+<!--              <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]">-->
+<!--                <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>-->
+<!--                <v-icon v-else>add</v-icon>-->
+<!--              </v-btn>-->
+<!--              <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]">-->
+<!--                <v-icon v-if="expanded.includes(item)">expand_less</v-icon>-->
+<!--                <v-icon v-else>expand_more</v-icon>-->
+<!--              </v-btn>-->
+<!--              <v-dialog-->
+<!--                  v-model="item.deleteConfirm"-->
+<!--                  width="500">-->
+<!--                <template #activator="{ on }">-->
+<!--                  <v-btn small text v-on="on">-->
+<!--                    <v-icon>delete</v-icon>-->
+<!--                  </v-btn>-->
+<!--                </template>-->
+<!--                <v-card>-->
+<!--                  <v-card-title-->
+<!--                      class="headline grey lighten-2"-->
+<!--                      primary-title>-->
+<!--                    Confirm-->
+<!--                  </v-card-title>-->
+
+<!--                  <v-card-text>-->
+<!--                    Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?-->
+<!--                  </v-card-text>-->
+
+<!--                  <v-divider></v-divider>-->
+
+<!--                  <v-card-actions>-->
+<!--                    <v-spacer></v-spacer>-->
+<!--                    <v-btn-->
+<!--                        @click="item.deleteConfirm = false">-->
+<!--                      No-->
+<!--                    </v-btn>-->
+<!--                    <v-btn-->
+<!--                        color="primary"-->
+<!--                        text-->
+<!--                        @click="item.archived = true; deleteGroup(item.id)">-->
+<!--                      Yes-->
+<!--                    </v-btn>-->
+<!--                  </v-card-actions>-->
+<!--                </v-card>-->
+<!--              </v-dialog>-->
+<!--            </div>-->
+<!--          </template>-->
 
           <template #expanded-item="{ headers, item, index }">
-            <td :colspan="headers.length" class="pb-4">
+            <td :colspan="headers.length" class="pb-4"  :class="{'shaded-row': selectedIndex % 2}">
               <v-flex xs12 justify-center class="pl-3 pr-3" >
                 <v-select v-if="addField"
                           v-model="newField"
@@ -327,6 +397,7 @@ export default {
   data () {
     return {
       addNew: false,
+      selectedIndex: null,
       fieldOrderChanged: false,
       groupOrderChanged: false,
       newGroup: {

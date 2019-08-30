@@ -19,7 +19,7 @@
         <v-btn v-if="addNew" @click="addNewProcess">Save</v-btn>
         <v-list v-for="(p, index) in filterBy(processes, false, 'archived')"
                 :key="index">
-          <v-list-item>
+          <v-list-item :class="{'shaded-row': index % 2}">
             <v-list-item-content class="text-left">
               <v-text-field class="one-hunned" v-if="selectedProcessId === p.id" v-model="p.processName">
               </v-text-field>

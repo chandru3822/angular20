@@ -3,10 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CompanyFunction;
-import com.albatross.api.v1.flow.model.CompanyFunctionParam;
-import com.albatross.api.v1.flow.model.SystemValue;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -60,10 +57,12 @@ public class CompanyFunctionService {
     return results.orElse(null);
   }
 
-  public List<CompanyFunctionParam> getFunctionDefaultParams(Long id) {
+  public List<RequirementParamDefaultValue> getFunctionDefaultParams(Long id) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    List<CompanyFunctionParam> results = sqlCache.query("companyFunction.getFunctionDefaultParams", params, CompanyFunctionParam.class);
+    params.put("functionId", id);
+    // 2 = default value params - maybe we pass this in later if needed
+    params.put("parameterTypeId", 2);
+    List<RequirementParamDefaultValue> results = sqlCache.query("companyFunction.getFunctionDefaultParams", params, RequirementParamDefaultValue.class);
     return results;
   }
 

@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
+import com.albatross.api.v1.flow.model.RequirementParamDefaultValue;
 import com.albatross.api.v1.flow.model.SystemValue;
 import com.albatross.api.v1.flow.services.CompanyFunctionService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class CompanyFunctionController {
   }
 
   @RequestMapping(value = "/{id}/defaultParams", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyFunctionParam> getFunctionDefaultParams(@PathVariable Long id) {
+  public List<RequirementParamDefaultValue> getFunctionDefaultParams(@PathVariable Long id) {
     return companyFunctionService.getFunctionDefaultParams(id);
   }
 

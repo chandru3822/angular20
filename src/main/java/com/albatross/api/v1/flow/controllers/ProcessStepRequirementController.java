@@ -40,12 +40,12 @@ public class ProcessStepRequirementController {
   }
 
   @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ProcessStepRequirement updateProcess(@RequestBody ProcessStepRequirement requirement) {
+  public ProcessStepRequirement updateRequirement(@RequestBody ProcessStepRequirement requirement) {
     return processStepRequirementService.updateRequirement(requirement);
   }
 
   @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ProcessStepRequirement insertProcess(@PathVariable Long companyId,
+  public ProcessStepRequirement insertRequirement(@PathVariable Long companyId,
                                               @RequestBody ProcessStepRequirement requirement) {
     return processStepRequirementService.insertRequirement(companyId, requirement);
   }

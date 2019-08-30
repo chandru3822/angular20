@@ -71,18 +71,19 @@
   ]]></customFieldGroup.getCustomFieldsInGroup>
 
   <customFieldGroup.getAvailableCustomFieldsInGroup><![CDATA[
-    select cf.*,
-       cfot.object_type_id
+    select cf.id,cf.field_name, cfot.object_type_id
     from flow.custom_field_object_type cfot
-           inner join flow.custom_field cf on cf.id = cfot.custom_field_id
+             inner join flow.custom_field cf on cf.id = cfot.custom_field_id
     where cfot.object_type_id = :objectTypeId
       and cfot.archived is not true
-      and not exists (select custom_field_id
-                      from flow.custom_field_group cfg
-                      where cfg.custom_field_id = cf.id
-                        and cfg.custom_field_group_type_id = :groupTypeId
-                        and cfg.archived is not true)
-    order by cf.field_name
+        except
+    select cf.id,cf.field_name, cfgt.object_type_id
+    from flow.custom_field_group cfg
+             inner join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
+             inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+    where cfgt.object_type_id = :objectTypeId
+      and cfg.archived is not true
+    order by field_name
   ]]></customFieldGroup.getAvailableCustomFieldsInGroup>
 
   <customFieldGroup.insertCustomFieldGroupType><![CDATA[
