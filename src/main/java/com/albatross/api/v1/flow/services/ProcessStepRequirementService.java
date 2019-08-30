@@ -76,7 +76,7 @@ public class ProcessStepRequirementService {
     params.put("modifiedById", currentUser.getId());
     params.put("id", requirement.getId());
 
-    handleDefaultValueParams(requirement.getRequirementParamDefaultValues(), requirement.getId());
+    handleDynamicValueParams(requirement.getRequirementParamDynamicValues(), requirement.getId());
 
     Long id = sqlCache.updateReturningId("processStepRequirement.updateRequirement", params, "id").longValue();
     return getRequirementById(id);
@@ -97,28 +97,28 @@ public class ProcessStepRequirementService {
 
     Long id = sqlCache.updateReturningId("processStepRequirement.insertRequirement", params, "id").longValue();
 
-    handleDefaultValueParams(requirement.getRequirementParamDefaultValues(), id);
+    handleDynamicValueParams(requirement.getRequirementParamDynamicValues(), id);
 
     return getRequirementById(id);
   }
 
-  public void handleDefaultValueParams(List<RequirementParamDefaultValue> params, Long processStepRequirementId) {
+  public void handleDynamicValueParams(List<RequirementParamDynamicValue> params, Long processStepRequirementId) {
     if(!params.isEmpty()) {
       User currentUser = securityService.getCurrentUser();
 
-      for(RequirementParamDefaultValue p : params){
-        HashMap<String, Object> defaultParams = new HashMap<>();
-        defaultParams.put("dbFunctionParamId", p.getDbFunctionParamId());
-        defaultParams.put("processStepRequirementId", processStepRequirementId);
-        defaultParams.put("defaultValue", p.getDefaultValue());
+      for(RequirementParamDynamicValue p : params){
+        HashMap<String, Object> dynamicParams = new HashMap<>();
+        dynamicParams.put("dbFunctionParamId", p.getDbFunctionParamId());
+        dynamicParams.put("processStepRequirementId", processStepRequirementId);
+        dynamicParams.put("dynamicValue", p.getDynamicValue());
 
         if(null != p.getId()){
-          defaultParams.put("id", p.getId());
-          defaultParams.put("modifiedById", currentUser.getId());
-          sqlCache.update("processStepRequirement.updateRequirementParamDefaultValue", defaultParams);
+          dynamicParams.put("id", p.getId());
+          dynamicParams.put("modifiedById", currentUser.getId());
+          sqlCache.update("processStepRequirement.updateRequirementParamDynamicValue", dynamicParams);
         }else {
-          defaultParams.put("createdById", currentUser.getId());
-          sqlCache.update("processStepRequirement.insertRequirementParamDefaultValue", defaultParams);
+          dynamicParams.put("createdById", currentUser.getId());
+          sqlCache.update("processStepRequirement.insertRequirementParamDynamicValue", dynamicParams);
         }
       }
     }
@@ -134,10 +134,10 @@ public class ProcessStepRequirementService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<RequirementParamDefaultValue>> requirementParamDefaultValuesRef = new TypeReference<List<RequirementParamDefaultValue>>() {};
+      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<List<RequirementParamDynamicValue>>() {};
 
-      bw.registerCustomEditor(List.class, "requirementParamDefaultValues",
-          new JsonCollectionDeserializer(requirementParamDefaultValuesRef, objectMapper));
+      bw.registerCustomEditor(List.class, "requirementParamDynamicValues",
+          new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 
     }
   }

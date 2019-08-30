@@ -12,7 +12,7 @@ import lombok.Setter;
 public class CompanyFunctionParam {
 
   private Long id, companyFunctionId, customFieldGroupId, systemValueId, dbFunctionParamId, displayOrder, dataTypeId, processStepId, createdById, modifiedById, parameterTypeId;
-  private String companyFunctionName, defaultValue, systemValue, parameterName, fieldName, processStepName;
+  private String companyFunctionName, dynamicValue, systemValue, parameterName, fieldName, processStepName;
   private Boolean archived;
 }
 

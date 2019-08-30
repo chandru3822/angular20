@@ -9,10 +9,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class RequirementParamDefaultValue {
+public class RequirementParamDynamicValue {
 
   private Long id, dbFunctionParamId, processStepRequirementId, dbFunctionId;
-  private String defaultValue, parameterName;
+  private String dynamicValue, parameterName;
   private Boolean archived;
 
 

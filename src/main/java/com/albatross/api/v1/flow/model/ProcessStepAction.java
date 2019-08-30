@@ -14,7 +14,7 @@ import java.util.List;
 public class ProcessStepAction {
 
   private Long id, processStepId, processStepStatusTypeId, actionTypeId;
-  private String actionName, actionType, processStepStatusType, logicString;
+  private String actionName, actionType, processStepStatusType;
   private List<ProcessStepLogic> processStepLogicList;
   private Boolean archived;
 }

@@ -45,13 +45,13 @@
                   item-value="id"
                   @input="loadFunctionParams"
         ></v-select>
-        <div v-if="newRequirement.companyFunctionId && newRequirement.requirementParamDefaultValues.length > 0">
-          <h5 class="text-left">Default Function Parameters</h5>
+        <div v-if="newRequirement.companyFunctionId && newRequirement.requirementParamDynamicValues.length > 0">
+          <h5 class="text-left">Dynamic Function Parameters</h5>
           <v-container>
             <v-text-field
-                v-for="fp in newRequirement.requirementParamDefaultValues"
-                placeholder="Enter a default value"
-                v-model="fp.defaultValue"
+                v-for="fp in newRequirement.requirementParamDynamicValues"
+                placeholder="Enter a dynamic value"
+                v-model="fp.dynamicValue"
                 :label="fp.parameterName"></v-text-field>
           </v-container>
         </div>
@@ -97,13 +97,13 @@
 
           <template #expanded-item="{ headers, item }">
               <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">
-                <div v-if="item.requirementParamDefaultValues && item.requirementParamDefaultValues.length > 0">
-                  <h5 class="text-left">Default Function Parameters</h5>
+                <div v-if="item.requirementParamDynamicValues && item.requirementParamDynamicValues.length > 0">
+                  <h5 class="text-left">Dynamic Function Parameters</h5>
                   <v-container>
                     <v-text-field
-                        v-for="fp in item.requirementParamDefaultValues"
-                        placeholder="Enter a default value"
-                        v-model="fp.defaultValue"
+                        v-for="fp in item.requirementParamDynamicValues"
+                        placeholder="Enter a dynamic value"
+                        v-model="fp.dynamicValue"
                         :label="fp.parameterName"></v-text-field>
                   </v-container>
                 </div>
@@ -332,7 +332,7 @@
               <v-container class="text-left">
                 <v-btn small class="ml-1 mr-1 mt-1" v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
                        @click="l.archived = true">
-                  {{l.processStepRequirementId ? l.processStepRequirementId : l.operationType}}
+                  {{l.processStepRequirementId ? l.requirementNbr : l.operationType}}
                 </v-btn>
               </v-container>
               <v-toolbar flat dense color="transparent">
@@ -349,7 +349,7 @@
               </v-toolbar>
               <v-container class="text-left mb-4">
                 <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements"
-                    @click="item.processStepLogicList.push({ processStepRequirementId: r.id, archived: false })">
+                    @click="item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })">
                   {{r.requirementNbr}}
                 </v-btn>
               </v-container>
@@ -491,7 +491,7 @@
         ],
         addNewRequirement: false,
         newRequirement: {
-          requirementParamDefaultValues: []
+          requirementParamDynamicValues: []
         },
         selectedRequirementIndex: null,
         selectedActionIndex: null,
@@ -562,9 +562,9 @@
         this.customFields = data
       },
       async loadFunctionParams() {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/defaultParams`)
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/dynamicParams`)
         console.log('randaLoggerDDD', data)
-        this.newRequirement.requirementParamDefaultValues = data
+        this.newRequirement.requirementParamDynamicValues = data
       },
       async loadOperatorTypes() {
         const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operator`)
@@ -572,9 +572,9 @@
       },
       validateRequirementForm() {
         let invalidParams = false
-        if(this.newRequirement.requirementParamDefaultValues.length > 0){
-          this.newRequirement.requirementParamDefaultValues.forEach(fp => {
-            if(!fp.defaultValue) {
+        if(this.newRequirement.requirementParamDynamicValues.length > 0){
+          this.newRequirement.requirementParamDynamicValues.forEach(fp => {
+            if(!fp.dynamicValue) {
               invalidParams = true
             }
           })
@@ -587,7 +587,7 @@
         this.requirements.push(data)
         this.addNewRequirement = false
         this.newRequirement = {
-          requirementParamDefaultValues: []
+          requirementParamDynamicValues: []
         }
         this.parent = {}
         this.availableFunctions = []

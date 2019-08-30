@@ -57,12 +57,12 @@ public class CompanyFunctionService {
     return results.orElse(null);
   }
 
-  public List<RequirementParamDefaultValue> getFunctionDefaultParams(Long id) {
+  public List<RequirementParamDynamicValue> getFunctionDynamicParams(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("functionId", id);
-    // 2 = default value params - maybe we pass this in later if needed
+    // 2 = dynamic value params - maybe we pass this in later if needed
     params.put("parameterTypeId", 2);
-    List<RequirementParamDefaultValue> results = sqlCache.query("companyFunction.getFunctionDefaultParams", params, RequirementParamDefaultValue.class);
+    List<RequirementParamDynamicValue> results = sqlCache.query("companyFunction.getFunctionDynamicParams", params, RequirementParamDynamicValue.class);
     return results;
   }
 
@@ -77,7 +77,7 @@ public class CompanyFunctionService {
     queryParams.put("dbFunctionParamId", param.getDbFunctionParamId());
     queryParams.put("companyFunctionId", param.getCompanyFunctionId());
     queryParams.put("customFieldGroupId", param.getCustomFieldGroupId());
-    queryParams.put("defaultValue", param.getDefaultValue());
+    queryParams.put("dynamicValue", param.getDynamicValue());
     queryParams.put("systemValueId", param.getSystemValueId());
     queryParams.put("userId", currentUser.getId());
 
@@ -87,7 +87,7 @@ public class CompanyFunctionService {
       queryParams.put("id", param.getId());
 
       sqlCache.update("companyFunction.updateCompanyFunctionParam", queryParams);
-    } else if (null != param.getCustomFieldGroupId() || null != param.getDefaultValue() || null != param.getSystemValueId()){
+    } else if (null != param.getCustomFieldGroupId() || null != param.getDynamicValue() || null != param.getSystemValueId()){
       // don't insert a new row if all the possible input values are null
 
       id = sqlCache.updateReturningId("companyFunction.insertCompanyFunctionParam", queryParams, "id").longValue();

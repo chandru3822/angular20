@@ -67,7 +67,7 @@
               System
             </td>
             <td class="text-left" v-else-if="item.parameterTypeId === 2">
-              Default
+              Dynamic
             </td>
             <!-- customValueColumn -->
             <td class="text-left" v-if="item.customFieldGroupId !== null">
@@ -76,10 +76,10 @@
             <td class="text-left" v-else-if="item.systemValueId !== null">
               {{item.systemValue}}
             </td>
-            <td class="text-left" v-else-if="item.defaultValue !== null">
-              {{item.defaultValue}}
+            <td class="text-left" v-else-if="item.dynamicValue !== null">
+              {{item.dynamicValue}}
             </td>
-            <td class="text-left" v-else-if="item.customFieldGroupId === null && item.systemValueId === null && item.defaultValue === null">
+            <td class="text-left" v-else-if="item.customFieldGroupId === null && item.systemValueId === null && item.dynamicValue === null">
               n/a
             </td>
             <!-- icon column -->
@@ -98,8 +98,8 @@
         <template #item.customValueColumn="{ item }">
           <span v-if="item.customFieldGroupId !== null">{{item.fieldName}}</span>
           <span v-else-if="item.systemValueId !== null">{{item.systemValue}}</span>
-          <span v-else-if="item.defaultValue !== null">{{item.defaultValue}}</span>
-          <span v-else-if="item.customFieldGroupId === null && item.systemValueId === null && item.defaultValue === null">n/a</span>
+          <span v-else-if="item.dynamicValue !== null">{{item.dynamicValue}}</span>
+          <span v-else-if="item.customFieldGroupId === null && item.systemValueId === null && item.dynamicValue === null">n/a</span>
         </template>
       </v-data-table>
 

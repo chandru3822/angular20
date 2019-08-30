@@ -63,15 +63,15 @@
     where cfp.id = :id
   ]]></companyFunction.getCompanyParam>
 
-  <companyFunction.getFunctionDefaultParams><![CDATA[
+  <companyFunction.getFunctionDynamicParams><![CDATA[
     select dfp.id db_function_param_id,
        dfp.parameter_name,
-       null as default_value
+       null as dynamic_value
     from flow.db_function_param dfp
     where dfp.db_function_id = :functionId
       and dfp.archived is not true
       and dfp.parameter_type_id = :parameterTypeId
-  ]]></companyFunction.getFunctionDefaultParams>
+  ]]></companyFunction.getFunctionDynamicParams>
 
   <companyFunction.getSystemValues><![CDATA[
     select *

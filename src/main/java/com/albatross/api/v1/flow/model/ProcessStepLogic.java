@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class ProcessStepLogic {
 
-  private Long id, processStepRequirementId, operationTypeId, createdById, modifiedById, sqlOrder;
+  private Long id, processStepRequirementId, operationTypeId, createdById, modifiedById, sqlOrder, requirementNbr;
   private String operationType;
   private Boolean archived;
 }

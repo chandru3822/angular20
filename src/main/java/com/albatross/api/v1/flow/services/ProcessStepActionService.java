@@ -59,7 +59,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<ProcessStepAction> result = sqlCache.get("processStepAction.getAction", params, ProcessStepAction.class);
+    Optional<ProcessStepAction> result = sqlCache.get("processStepAction.getAction", params, new ProcessStepActionMapper<>(ProcessStepAction.class, om));
 
     return result.orElse(null);
   }

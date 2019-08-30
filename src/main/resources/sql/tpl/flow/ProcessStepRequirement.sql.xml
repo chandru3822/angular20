@@ -16,13 +16,13 @@
                   dfp.parameter_name as "parameterName",
                   rpdv.db_function_param_id as "dbFunctionParamId",
                   rpdv.process_step_requirement_id as "processStepRequirementId",
-                  rpdv.default_value as "defaultValue"
+                  rpdv.dynamic_value as "dynamicValue"
            from flow.db_function_param dfp
-                    left join flow.requirement_param_default_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
+                    left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
            where dfp.db_function_id = cfn.db_function_id
              and dfp.parameter_type_id = 2
              and rpdv.archived is not true
-       ) params), '[]') AS "requirementParamDefaultValues"
+       ) params), '[]') AS "requirementParamDynamicValues"
     from flow.process_step_requirement psr
              left join flow.custom_field_group cfg on cfg.id = psr.custom_field_group_id
              left join flow.custom_field cf on cf.id = cfg.custom_field_id
@@ -53,13 +53,13 @@
                   dfp.parameter_name as "parameterName",
                   rpdv.db_function_param_id as "dbFunctionParamId",
                   rpdv.process_step_requirement_id as "processStepRequirementId",
-                  rpdv.default_value as "defaultValue"
+                  rpdv.dynamic_value as "dynamicValue"
            from flow.db_function_param dfp
-                    left join flow.requirement_param_default_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
+                    left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
            where dfp.db_function_id = cfn.db_function_id
              and dfp.parameter_type_id = 2
              and rpdv.archived is not true
-       ) params), '[]') AS "requirementParamDefaultValues"
+       ) params), '[]') AS "requirementParamDynamicValues"
       from flow.process_step_requirement psr
                left join flow.custom_field_group cfg on cfg.id = psr.custom_field_group_id
                left join flow.custom_field cf on cf.id = cfg.custom_field_id
@@ -103,17 +103,17 @@
          where process_step_id = :processStepId), now(), :createdById, :processStepId)
   ]]></processStepRequirement.insertRequirement>
 
-  <processStepRequirement.insertRequirementParamDefaultValue><![CDATA[
-    insert into flow.requirement_param_default_value (db_function_param_id, process_step_requirement_id, default_value, created_by_id, date_created)
-    values (:dbFunctionParamId, :processStepRequirementId, :defaultValue, :createdById, now());
-  ]]></processStepRequirement.insertRequirementParamDefaultValue>
+  <processStepRequirement.insertRequirementParamDynamicValue><![CDATA[
+    insert into flow.requirement_param_dynamic_value (db_function_param_id, process_step_requirement_id, dynamic_value, created_by_id, date_created)
+    values (:dbFunctionParamId, :processStepRequirementId, :dynamicValue, :createdById, now());
+  ]]></processStepRequirement.insertRequirementParamDynamicValue>
 
-  <processStepRequirement.updateRequirementParamDefaultValue><![CDATA[
-    update flow.requirement_param_default_value
-    set default_value = :defaultValue,
+  <processStepRequirement.updateRequirementParamDynamicValue><![CDATA[
+    update flow.requirement_param_dynamic_value
+    set dynamic_value = :dynamicValue,
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
-  ]]></processStepRequirement.updateRequirementParamDefaultValue>
+  ]]></processStepRequirement.updateRequirementParamDynamicValue>
 
 </sql>

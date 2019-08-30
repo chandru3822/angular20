@@ -16,7 +16,7 @@ public class ProcessStepRequirement {
   private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupId, companyFunctionId,
       requirementNbr, processStepId, parentId;
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, processStepName;
-  private List<RequirementParamDefaultValue> requirementParamDefaultValues;
+  private List<RequirementParamDynamicValue> requirementParamDynamicValues;
   private Boolean archived;
 
 
