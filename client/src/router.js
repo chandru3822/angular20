@@ -140,9 +140,9 @@ export default new Router({
 
         ]
       }, {
-        path: '/customer',
-        name: 'customer',
-        component: () => import (/*webpackChunkName: "customer" */ './views/flow/customer/Customer.vue'),
+        path: '/project',
+        name: 'project',
+        component: () => import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue'),
         children: []
       }]
     }

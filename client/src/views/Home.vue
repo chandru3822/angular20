@@ -64,8 +64,8 @@ export default {
         path: '/settings',
         display: true
       }, {
-        label: 'Customer',
-        path: '/customer',
+        label: 'Project',
+        path: '/project',
         display: true
       }]
     }
