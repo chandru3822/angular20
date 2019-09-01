@@ -86,6 +86,23 @@
     order by field_name
   ]]></customFieldGroup.getAvailableCustomFieldsInGroup>
 
+  <customFieldGroup.getAvailableNativeFieldsForProcessStep><![CDATA[
+    select cf.id,cf.field_name, cfot.object_type_id
+    from flow.custom_field_object_type cfot
+             inner join flow.custom_field cf on cf.id = cfot.custom_field_id
+    where cfot.object_type_id = :objectTypeId
+      and cfot.archived is not true
+        except
+    select cf.id,cf.field_name, cfgt.object_type_id
+    from flow.custom_field_group cfg
+             inner join flow.custom_field_group_type cfgt on cfgt.id = cfg.custom_field_group_type_id
+             inner join flow.custom_field cf on cf.id = cfg.custom_field_id
+    where cfgt.object_type_id = :objectTypeId
+      and cfgt.process_step_id = :processStepId
+      and cfg.archived is not true
+    order by field_name
+  ]]></customFieldGroup.getAvailableNativeFieldsForProcessStep>
+
   <customFieldGroup.insertCustomFieldGroupType><![CDATA[
     insert into flow.custom_field_group_type(group_name, object_type_id, group_order, process_step_id)
     values (:groupName, :objectTypeId, :groupOrder, :processStepId);

@@ -98,12 +98,20 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public List<CustomField> getAvailableCustomFieldsInGroup(Long objectTypeId, Long groupTypeId) {
+  public List<CustomField> getAvailableCustomFieldsInGroup(Long objectTypeId, Long groupTypeId, Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("objectTypeId", objectTypeId);
     params.put("groupTypeId", groupTypeId);
 
-    List<CustomField> results = sqlCache.query("customFieldGroup.getAvailableCustomFieldsInGroup", params, CustomField.class);
+    List<CustomField> results;
+
+    if(null != processStepId) {
+      // as of right now, judson says a field can be native to multiple process steps, but not within the same process step, i think this query does that now
+      params.put("processStepId", processStepId);
+      results = sqlCache.query("customFieldGroup.getAvailableNativeFieldsForProcessStep", params, CustomField.class);
+    } else {
+      results = sqlCache.query("customFieldGroup.getAvailableCustomFieldsInGroup", params, CustomField.class);
+    }
     return results;
   }
 

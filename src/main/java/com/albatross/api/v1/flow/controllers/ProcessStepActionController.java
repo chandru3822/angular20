@@ -33,6 +33,11 @@ public class ProcessStepActionController {
     processStepActionService.deleteAction(actionId);
   }
 
+  @RequestMapping(value = "/{actionId}/deleteChildProcessFromAction/{childProcessId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteChildProcessFromAction(@PathVariable Long childProcessId) {
+    processStepActionService.deleteChildProcessFromAction(childProcessId);
+  }
+
   @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStepAction updateAction(@RequestBody ProcessStepAction action) {
     return processStepActionService.updateAction(action);

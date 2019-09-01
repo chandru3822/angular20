@@ -101,54 +101,6 @@
             </div></td>
           </tr>
         </template>
-<!--        <template #item.icons="{ item }">-->
-<!--          <div class="item-icons">-->
-<!--            <v-btn small text @click="addField = !addField; expanded = [item]; fetchAvailableCustomFields(item.objectTypeId, item.id)">-->
-<!--              <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>-->
-<!--              <v-icon v-else>add</v-icon>-->
-<!--            </v-btn>-->
-<!--            <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]">-->
-<!--              <v-icon v-if="expanded.includes(item)">expand_less</v-icon>-->
-<!--              <v-icon v-else>expand_more</v-icon>-->
-<!--            </v-btn>-->
-<!--            <v-dialog-->
-<!--                v-model="item.deleteConfirm"-->
-<!--                width="500">-->
-<!--              <template #activator="{ on }">-->
-<!--                <v-btn small text v-on="on">-->
-<!--                  <v-icon>delete</v-icon>-->
-<!--                </v-btn>-->
-<!--              </template>-->
-<!--              <v-card>-->
-<!--                <v-card-title-->
-<!--                    class="headline grey lighten-2"-->
-<!--                    primary-title>-->
-<!--                  Confirm-->
-<!--                </v-card-title>-->
-
-<!--                <v-card-text>-->
-<!--                  Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?-->
-<!--                </v-card-text>-->
-
-<!--                <v-divider></v-divider>-->
-
-<!--                <v-card-actions>-->
-<!--                  <v-spacer></v-spacer>-->
-<!--                  <v-btn-->
-<!--                      @click="item.deleteConfirm = false">-->
-<!--                    No-->
-<!--                  </v-btn>-->
-<!--                  <v-btn-->
-<!--                      color="primary"-->
-<!--                      text-->
-<!--                      @click="item.archived = true; deleteAction(item)">-->
-<!--                    Yes-->
-<!--                  </v-btn>-->
-<!--                </v-card-actions>-->
-<!--              </v-card>-->
-<!--            </v-dialog>-->
-<!--          </div>-->
-<!--        </template>-->
 
         <template #expanded-item="{ headers, item }">
           <td :colspan="headers.length" class="pb-4"  :class="{'shaded-row': selectedIndex % 2}">
@@ -319,10 +271,11 @@
       },
       async fetchAvailableCustomFields(objectTypeId, groupTypeId) {
         if (this.addField && this.newFieldType === 'native') {
-          const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFieldsInGroup`, {
+          const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
             params: {
               objectTypeId,
-              groupTypeId
+              groupTypeId,
+              processStepId: this.processStepId
             }
           })
           this.availableCustomFields = data

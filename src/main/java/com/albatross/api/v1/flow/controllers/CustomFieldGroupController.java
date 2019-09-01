@@ -55,10 +55,11 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getCustomFieldsInGroup(groupTypeId);
   }
 
-  @RequestMapping(value = "/getAvailableCustomFieldsInGroup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/getAvailableCustomFields", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long objectTypeId,
-                                                            @RequestParam Long groupTypeId) {
-    return customFieldGroupService.getAvailableCustomFieldsInGroup(objectTypeId, groupTypeId);
+                                                            @RequestParam Long groupTypeId,
+                                                            @RequestParam(required = false) Long processStepId) {
+    return customFieldGroupService.getAvailableCustomFieldsInGroup(objectTypeId, groupTypeId, processStepId);
   }
 
   @RequestMapping(value = "/addCustomFieldGroupType", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)

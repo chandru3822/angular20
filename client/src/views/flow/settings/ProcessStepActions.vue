@@ -27,7 +27,7 @@
                   label="Parent Object"
                   item-text="processStepName"
                   return-object
-                  @input="loadFieldsByParent"
+                  @input="loadFieldsByParent(parent)"
         ></v-select>
         <v-select v-if="parent.id"
                   v-model="newRequirement.customFieldGroupId"
@@ -90,10 +90,6 @@
           <template #no-results>
             No requirements for this process step
           </template>
-
-<!--          <template v-slot:expanded-item="{ headers, item }">-->
-<!--            <td :colspan="headers.length">Peek-a-boo!</td>-->
-<!--          </template>-->
 
           <template #expanded-item="{ headers, item }">
               <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">
@@ -185,59 +181,6 @@
               </td>
             </tr>
           </template>
-<!--          <template #item.custom="{ item }">-->
-<!--            <span v-if="item.processStepRequirementTypeId === 1">-->
-<!--              {{ item.parentName }} | {{ item.fieldName }}-->
-<!--            </span>-->
-<!--            <span>-->
-<!--              {{ item.companyFunctionName }}-->
-<!--            </span>-->
-
-<!--          </template>-->
-<!--          <template #item.icons="{ item }">-->
-<!--            <div style="display: flex;">-->
-<!--              <v-btn small text @click="expanded = [item]" v-if="!expanded.includes(item)">-->
-<!--                <v-icon>edit</v-icon>-->
-<!--              </v-btn>-->
-<!--              <v-btn small text @click="expanded = []" v-if="expanded.includes(item)">cancel</v-btn>-->
-<!--              <v-dialog-->
-<!--                  v-model="item.deleteConfirm"-->
-<!--                  width="500">-->
-<!--                <template #activator="{ on }">-->
-<!--                  <v-btn small text v-on="on">-->
-<!--                    <v-icon>delete</v-icon>-->
-<!--                  </v-btn>-->
-<!--                </template>-->
-<!--                <v-card>-->
-<!--                  <v-card-title-->
-<!--                      class="headline grey lighten-2"-->
-<!--                      primary-title>-->
-<!--                    Confirm-->
-<!--                  </v-card-title>-->
-
-<!--                  <v-card-text>-->
-<!--                    Are you sure you want to delete this requirement?-->
-<!--                  </v-card-text>-->
-
-<!--                  <v-divider></v-divider>-->
-
-<!--                  <v-card-actions>-->
-<!--                    <v-spacer></v-spacer>-->
-<!--                    <v-btn-->
-<!--                        @click="item.deleteConfirm = false">-->
-<!--                      No-->
-<!--                    </v-btn>-->
-<!--                    <v-btn-->
-<!--                        color="primary"-->
-<!--                        text-->
-<!--                        @click="item.archived = true; deleteRequirement(item.id)">-->
-<!--                      Yes-->
-<!--                    </v-btn>-->
-<!--                  </v-card-actions>-->
-<!--                </v-card>-->
-<!--              </v-dialog>-->
-<!--            </div>-->
-<!--          </template>-->
         </v-data-table>
       </v-container>
     </v-flex>
@@ -298,7 +241,7 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="actionHeaders.length" class="pb-4" :class="{'shaded-row': selectedActionIndex % 2}">
-              <v-container>
+              <v-container class="text-left">
                 <v-text-field v-model="item.actionName"
                               placeholder="Enter a name"
                               label="Action Name">
@@ -317,8 +260,85 @@
                           item-value="id"
                           @input=""
                 ></v-select>
+                <v-btn v-if="item.actionTypeId === 2 && !addChildProcess"
+                       @click="addChildProcess = true; loadParentObjects()">
+                  <v-icon>add</v-icon>
+                  Add Child Process
+                </v-btn>
+                <v-btn v-else-if="item.actionTypeId === 2 && addChildProcess"
+                      @click="addChildProcess = false">
+                  <v-icon>remove</v-icon>
+                  Cancel
+                </v-btn>
+                <v-select v-if="addChildProcess"
+                          v-model="actionParent"
+                          :items="parentObjects"
+                          label="Parent Object"
+                          item-text="processStepName"
+                          return-object
+                          @input="loadFieldsByParent(actionParent)"
+                ></v-select>
+                <v-select v-if="actionParent.id"
+                          v-model="item.customFieldGroupId"
+                          :items="customFields"
+                          label="Custom Field"
+                          item-text="fieldName"
+                          item-value="customFieldGroupId"
+                ></v-select>
               </v-container>
-              <v-divider></v-divider>
+              <!-- @randa - move requirements to their own component. it is confusing having them in this file -->
+              <v-flex xs12 justify-center class="pl-3 pr-3"
+                      v-if="item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
+                <h3 class="text-left">Child Process Steps</h3>
+                <v-list v-for="(cp, index) in filterBy(item.processStepActionChildProcesses, false, 'archived')"
+                        :key="index"
+                        :class="{ 'shaded-row': index % 2 }">
+                  <v-list-item class="grab">
+                    <v-list-item-content>
+                      {{item.actionName}}
+                    </v-list-item-content>
+                    <v-dialog
+                        v-model="cp.deleteConfirm"
+                        width="500">
+                      <template v-slot:activator="{ on }">
+                        <v-list-item-action class="clickable" v-on="on">
+                          <v-icon>delete</v-icon>
+                        </v-list-item-action>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                            class="headline grey lighten-2"
+                            primary-title
+                        >
+                          Confirm
+                        </v-card-title>
+
+                        <v-card-text>
+                          Are you sure you want to delete <strong>FIELD ID: {{ cp.processStepId }}</strong> from <strong>{{
+                          item.actionName }}</strong>?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                              @click="cp.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                              color="primary"
+                              text
+                              @click="cp.archived = true; deleteFieldFromAction(item.id, cp)">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </v-list-item>
+                </v-list>
+              </v-flex>
+              <v-divider class="mt-2"></v-divider>
               <v-toolbar flat dense color="transparent">
                 <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
                 <v-spacer></v-spacer>
@@ -412,50 +432,6 @@
               </td>
             </tr>
           </template>
-<!--          <template #item.icons="{ item }">-->
-<!--            <div style="display: flex;">-->
-<!--              <v-btn small text @click="actionExpanded = [item]" v-if="!actionExpanded.includes(item)">-->
-<!--                <v-icon>edit</v-icon>-->
-<!--              </v-btn>-->
-<!--              <v-btn small text @click="actionExpanded = []" v-if="actionExpanded.includes(item)">cancel</v-btn>-->
-<!--              <v-dialog-->
-<!--                  v-model="item.deleteConfirm"-->
-<!--                  width="500">-->
-<!--                <template #activator="{ on }">-->
-<!--                  <v-btn small text v-on="on">-->
-<!--                    <v-icon>delete</v-icon>-->
-<!--                  </v-btn>-->
-<!--                </template>-->
-<!--                <v-card>-->
-<!--                  <v-card-title-->
-<!--                      class="headline grey lighten-2"-->
-<!--                      primary-title>-->
-<!--                    Confirm-->
-<!--                  </v-card-title>-->
-
-<!--                  <v-card-text>-->
-<!--                    Are you sure you want to delete this action?-->
-<!--                  </v-card-text>-->
-
-<!--                  <v-divider></v-divider>-->
-
-<!--                  <v-card-actions>-->
-<!--                    <v-spacer></v-spacer>-->
-<!--                    <v-btn-->
-<!--                        @click="item.deleteConfirm = false">-->
-<!--                      No-->
-<!--                    </v-btn>-->
-<!--                    <v-btn-->
-<!--                        color="primary"-->
-<!--                        text-->
-<!--                        @click="item.archived = true; deleteAction(item)">-->
-<!--                      Yes-->
-<!--                    </v-btn>-->
-<!--                  </v-card-actions>-->
-<!--                </v-card>-->
-<!--              </v-dialog>-->
-<!--            </div>-->
-<!--          </template>-->
 
         </v-data-table>
       </v-container>
@@ -518,7 +494,9 @@
         actionTypes: [
           {id: 1, actionType: 'Link'},
           {id: 2, actionType: 'Button'}
-        ]
+        ],
+        addChildProcess: false,
+        actionParent: {}
       }
     },
     computed: {},
@@ -550,15 +528,20 @@
       async selectRequirementType() {
         //1 == custom field, 2 == function
         if(this.newRequirement.processStepRequirementTypeId === 1){
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
-          this.parentObjects = data
+          this.loadParentObjects()
         } else {
           const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function`)
           this.availableFunctions = data
         }
       },
-      async loadFieldsByParent() {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${this.parent.id}`)
+      async loadParentObjects() {
+        if(!this.parentObjects || this.parentObjects.length === 0){
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
+          this.parentObjects = data
+        }
+      },
+      async loadFieldsByParent(parent) {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${parent.id}`)
         this.customFields = data
       },
       async loadFunctionParams() {
@@ -642,6 +625,11 @@
         await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${item.id}`)
         item.archived = true
       },
+      async deleteFieldFromAction (actionId, cp) {
+        console.log('WILL DELETE HERE', cp.id)
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteChildProcessFromAction/${cp.id}`)
+        cp.archived = true
+      }
     }
 
   }

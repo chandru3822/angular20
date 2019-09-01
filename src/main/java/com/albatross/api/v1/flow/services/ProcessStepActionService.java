@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ProcessStepAction;
+import com.albatross.api.v1.flow.model.ProcessStepActionChildProcess;
 import com.albatross.api.v1.flow.model.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -41,6 +42,8 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("processStepId", processStepId);
+    params.put("id", null);
+    //@randa come back to this. i was annoyed to have to keep 2 queries up-to-date when they were basically doing the same thing. (single select by id, vs list select by process_step_id) but this requires both calls to pass in a null param, not sure i like this
     List<ProcessStepAction> results = sqlCache.query("processStepAction.getActionsForStep", params, new ProcessStepActionMapper<>(ProcessStepAction.class, om));
     return results;
   }
@@ -54,12 +57,22 @@ public class ProcessStepActionService {
     sqlCache.update("processStepAction.deleteAction", params);
   }
 
+  public void deleteChildProcessFromAction(Long childProcessId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.getId());
+    params.put("id", childProcessId);
+    sqlCache.update("processStepAction.deleteChildProcessFromAction", params);
+  }
+
   public ProcessStepAction getActionById(Long id) {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-
-    Optional<ProcessStepAction> result = sqlCache.get("processStepAction.getAction", params, new ProcessStepActionMapper<>(ProcessStepAction.class, om));
+    params.put("processStepId", null);
+    //@randa come back to this. i was annoyed to have to keep 2 queries up-to-date when they were basically doing the same thing. but this requires both calls to pass in a null param, not sure i like this
+    Optional<ProcessStepAction> result = sqlCache.get("processStepAction.getActionsForStep", params, new ProcessStepActionMapper<>(ProcessStepAction.class, om));
 
     return result.orElse(null);
   }
@@ -119,9 +132,12 @@ public class ProcessStepActionService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<ProcessStepLogic>> processStepLogicTypeRef = new TypeReference<List<ProcessStepLogic>>() {};
-
       bw.registerCustomEditor(List.class, "processStepLogicList",
           new JsonCollectionDeserializer(processStepLogicTypeRef, objectMapper));
+
+      TypeReference<List<ProcessStepActionChildProcess>> processStepActionChildProcessesRef = new TypeReference<List<ProcessStepActionChildProcess>>() {};
+      bw.registerCustomEditor(List.class, "processStepActionChildProcesses",
+          new JsonCollectionDeserializer(processStepActionChildProcessesRef, objectMapper));
     }
   }
 

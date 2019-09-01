@@ -454,7 +454,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, false)
     },
     async fetchAvailableCustomFields (groupTypeId) {
-      const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFieldsInGroup`, {
+      const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
         params: {
           objectTypeId: this.$route.params.id,
           groupTypeId
