@@ -23,7 +23,12 @@ Vue.component('downloadExcel', JsonExcel)
 Vue.use(Vue2Filters)
 
 Vue.filter('formatDate', function (value, type, timezone, format) {
-  //types: 'date', 'timestamp'
+  /*
+  //  this part of the code: `moment(String(value))` was throwing format warnings from moment with regular timestamp formats
+  //  i can probably handle more scenarios but for now these don't throw errors: .format('YYYY-MM-DD') OR .format('YYYY-MM-DDTHH:mm:ssZ')
+  //  TYPES: 'date', 'timestamp'
+  */
+  
   if(!type || (type === 'timezone' && !timezone)) {
     console.error('TYPE IS REQUIRED, TIMEZONE IS REQUIRED FOR TIMESTAMPS')
     return

@@ -6,6 +6,14 @@ const {VUE_APP_BASE_API} = process.env
 export const IS_MOBILE = window.innerWidth <= 768
 export const SCREEN_WIDTH = window.innerWidth
 export const MAX_FILE_SIZE = 10485760
+export const STANDARD_IMAGES_AND_DOCS = 'image/*, .doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
+export const STANDARD_IMAGES_ONLY = 'image/*'
+export const STANDARD_DOCS_ONLY = '.doc, .docx, .pdf, .xls, .xlsx, .csv, .txt'
+//TODO: rules likely need to be adjusted
+export const EMAIL_RULES = [
+  v => !!v || "E-mail is required",
+  v => /.+@.+/.test(v) || "E-mail must be valid"
+]
 export const SNACKBAR_ERROR = {
   enabled: false,
   y: 'top',
