@@ -1,8 +1,0 @@
-<sql>
-  <lead.getAllLeads><![CDATA[
-    select *
-    from flow.customer
-    where company_id = :companyId
-  ]]></lead.getAllLeads>
-
-</sql>
