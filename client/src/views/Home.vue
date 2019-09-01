@@ -67,6 +67,10 @@ export default {
         label: 'Project',
         path: '/project',
         display: true
+      }, {
+        label: 'Leads',
+        path: '/leads',
+        display: true
       }]
     }
   },

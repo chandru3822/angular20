@@ -144,6 +144,22 @@ export default new Router({
         name: 'project',
         component: () => import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue'),
         children: []
+      }, {
+        path: '/leads',
+        name: 'leads',
+        component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/Leads.vue'),
+        children: []
+      }, {
+        path: '/lead/:id',
+        name: 'lead',
+        props: true,
+        component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/Lead.vue'),
+        children: []
+      }, {
+        path: '/newLead',
+        name: 'newLead',
+        component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/NewLead.vue'),
+        children: []
       }]
     }
   ]

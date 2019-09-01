@@ -28,7 +28,7 @@ Vue.filter('formatDate', function (value, type, timezone, format) {
   //  i can probably handle more scenarios but for now these don't throw errors: .format('YYYY-MM-DD') OR .format('YYYY-MM-DDTHH:mm:ssZ')
   //  TYPES: 'date', 'timestamp'
   */
-  
+
   if(!type || (type === 'timezone' && !timezone)) {
     console.error('TYPE IS REQUIRED, TIMEZONE IS REQUIRED FOR TIMESTAMPS')
     return
