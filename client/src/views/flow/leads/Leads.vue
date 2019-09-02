@@ -34,7 +34,7 @@ export default {
   },
   methods: {
     async getLeads () {
-      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/leads`)
+      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer`)
       this.leads = data
     }
   }

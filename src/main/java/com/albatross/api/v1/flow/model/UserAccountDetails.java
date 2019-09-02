@@ -35,7 +35,7 @@ public class UserAccountDetails implements UserDetails {
 
     public UserAccountDetails(User user, List<UserPermission> permissions) {
         this.id = user.getId();
-        this.username = user.getEmail();
+        this.username = user.getUsername();
         this.password = user.getPassword();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();

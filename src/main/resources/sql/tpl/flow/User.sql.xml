@@ -1,17 +1,18 @@
 <sql>
-  <user.findByEmailIgnoreCase><![CDATA[
+  <user.findByUsernameIgnoreCase><![CDATA[
     select id,
       first_name,
       last_name,
       email,
+      username,
       password,
       company_id,
       null as "timezone",
       first_name || ' ' || last_name as full_name,
       user_status_type_id
     from flow.user
-    where lower(email) = lower(:email)
-  ]]></user.findByEmailIgnoreCase>
+    where lower(username) = lower(:username)
+  ]]></user.findByUsernameIgnoreCase>
 
   <user.findByUserUuid><![CDATA[
         select id,

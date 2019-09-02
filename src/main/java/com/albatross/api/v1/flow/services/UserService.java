@@ -22,10 +22,10 @@ public class UserService {
   @Autowired
   SqlCache sqlCache;
 
-  public User findByEmailIgnoreCase(String email) {
+  public User findByUsernameIgnoreCase(String username) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("email", email);
-    Optional<User> user = sqlCache.get("user.findByEmailIgnoreCase", params, User.class);
+    params.put("username", username);
+    Optional<User> user = sqlCache.get("user.findByUsernameIgnoreCase", params, User.class);
     return user.orElse(null);
   }
 
