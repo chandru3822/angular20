@@ -89,7 +89,7 @@ public class ProcessStepRequirementService {
     params.put("requirementTypeId", requirement.getProcessStepRequirementTypeId());
     params.put("operatorTypeId", requirement.getOperatorTypeId());
     params.put("requirementValue", requirement.getRequirementValue());
-    params.put("customFieldGroupId", requirement.getCustomFieldGroupId());
+    params.put("customFieldGroupAssignmentId", requirement.getCustomFieldGroupAssignmentId());
     params.put("companyFunctionId", requirement.getCompanyFunctionId());
     params.put("requirementNbr", requirement.getRequirementNbr());
     params.put("createdById", currentUser.getId());

@@ -30,11 +30,11 @@
                   @input="loadFieldsByParent(parent)"
         ></v-select>
         <v-select v-if="parent.id"
-                  v-model="newRequirement.customFieldGroupId"
+                  v-model="newRequirement.customFieldGroupAssignmentId"
                   :items="customFields"
                   label="Custom Field"
                   item-text="fieldName"
-                  item-value="customFieldGroupId"
+                  item-value="customFieldGroupAssignmentId"
         ></v-select>
         <!-- if it is a function -->
         <v-select v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
@@ -55,7 +55,7 @@
                 :label="fp.parameterName"></v-text-field>
           </v-container>
         </div>
-        <v-select v-if="(newRequirement.processStepRequirementTypeId === 1 && newRequirement.customFieldGroupId) || (newRequirement.processStepRequirementTypeId === 2 && newRequirement.companyFunctionId)"
+        <v-select v-if="(newRequirement.processStepRequirementTypeId === 1 && newRequirement.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && newRequirement.companyFunctionId)"
                   v-model="newRequirement.operatorTypeId"
                   :items="operatorTypes"
                   label="Operator"
@@ -260,33 +260,102 @@
                           item-value="id"
                           @input=""
                 ></v-select>
-                <v-btn v-if="item.actionTypeId === 2 && !addChildProcess"
-                       @click="addChildProcess = true; loadParentObjects()">
-                  <v-icon>add</v-icon>
-                  Add Child Process
-                </v-btn>
-                <v-btn v-else-if="item.actionTypeId === 2 && addChildProcess"
-                      @click="addChildProcess = false">
-                  <v-icon>remove</v-icon>
-                  Cancel
-                </v-btn>
-                <v-select v-if="addChildProcess"
-                          v-model="actionParent"
-                          :items="parentObjects"
-                          label="Parent Object"
-                          item-text="processStepName"
-                          return-object
-                          @input="loadFieldsByParent(actionParent)"
-                ></v-select>
-                <v-select v-if="actionParent.id"
-                          v-model="item.customFieldGroupId"
-                          :items="customFields"
-                          label="Custom Field"
-                          item-text="fieldName"
-                          item-value="customFieldGroupId"
-                ></v-select>
+                <!-- BUTTON -->
+                <div v-if="item.actionTypeId === 2">
+                  <v-btn v-if="!addChildProcess"
+                         @click="addChildProcess = true; loadParentObjects()">
+                    <v-icon>add</v-icon>
+                    Add Child Process
+                  </v-btn>
+                  <v-btn v-else="addChildProcess"
+                        @click="addChildProcess = false">
+                    <v-icon>remove</v-icon>
+                    Cancel
+                  </v-btn>
+                  <v-select v-if="addChildProcess"
+                            v-model="selectedProcessStep"
+                            :items="parentObjects"
+                            label="Parent Object"
+                            item-text="processStepName"
+                            return-object
+                            @input="saveProcessStepToAction(item)"
+                  ></v-select>
+                </div>
+                <!-- LINK -->
+                <div v-if="item.actionTypeId === 1">
+                  <v-btn v-if="!addChildLink"
+                         @click="addChildLink = true; loadLinks()">
+                    <v-icon>add</v-icon>
+                    Add Link
+                  </v-btn>
+                  <v-btn v-else
+                        @click="addChildLink = false">
+                    <v-icon>remove</v-icon>
+                    Cancel
+                  </v-btn>
+                  <v-select v-if="addChildLink"
+                            v-model="selectedLink"
+                            :items="availableLinks"
+                            label="Available Links"
+                            item-text="link"
+                            return-object
+                            @input="saveLinkToAction(item)"
+                  ></v-select>
+                </div>
               </v-container>
               <!-- @randa - move requirements to their own component. it is confusing having them in this file -->
+
+              <v-flex xs12 justify-center class="pl-3 pr-3"
+                      v-if="item.processStepActionLinks && item.processStepActionLinks.length > 0">
+                <h3 class="text-left">Child Links</h3>
+                <v-list v-for="(al, index) in filterBy(item.processStepActionLinks, false, 'archived')"
+                        :key="index"
+                        :class="{ 'shaded-row': index % 2 }">
+                  <v-list-item class="grab">
+                    <v-list-item-content class="text-left">
+                      {{al.link}}
+                    </v-list-item-content>
+                    <v-dialog
+                        v-model="al.deleteConfirm"
+                        width="500">
+                      <template v-slot:activator="{ on }">
+                        <v-list-item-action class="clickable" v-on="on">
+                          <v-icon>delete</v-icon>
+                        </v-list-item-action>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                            class="headline grey lighten-2"
+                            primary-title
+                        >
+                          Confirm
+                        </v-card-title>
+
+                        <v-card-text>
+                          Are you sure you want to delete <strong>{{ al.link }}</strong> from <strong>{{
+                          item.actionName }}</strong>?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                              @click="al.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                              color="primary"
+                              text
+                              @click="al.archived = true; deleteLinkFromAction(item.id, al.id)">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </v-list-item>
+                </v-list>
+              </v-flex>
               <v-flex xs12 justify-center class="pl-3 pr-3"
                       v-if="item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
                 <h3 class="text-left">Child Process Steps</h3>
@@ -294,8 +363,12 @@
                         :key="index"
                         :class="{ 'shaded-row': index % 2 }">
                   <v-list-item class="grab">
-                    <v-list-item-content>
-                      {{item.actionName}}
+                    <v-list-item-content class="text-left">
+                      <v-list-item-title>{{cp.processStepName}}</v-list-item-title>
+                      <v-list-item-subtitle>
+                        <input type="checkbox" v-model="cp.triggerAutomatically" @change="updateChildStep(item.id, cp)">
+                        Trigger Automatically
+                      </v-list-item-subtitle>
                     </v-list-item-content>
                     <v-dialog
                         v-model="cp.deleteConfirm"
@@ -314,7 +387,7 @@
                         </v-card-title>
 
                         <v-card-text>
-                          Are you sure you want to delete <strong>FIELD ID: {{ cp.processStepId }}</strong> from <strong>{{
+                          Are you sure you want to delete <strong>{{ cp.processStepName }}</strong> from <strong>{{
                           item.actionName }}</strong>?
                         </v-card-text>
 
@@ -329,7 +402,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="cp.archived = true; deleteFieldFromAction(item.id, cp)">
+                              @click="cp.archived = true; deleteChildProcessFromAction(item.id, cp.id)">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -342,7 +415,7 @@
               <v-toolbar flat dense color="transparent">
                 <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-toolbar-items>
+                <v-toolbar-items v-if="item.processStepLogicList && item.processStepLogicList.length > 0">
                   <v-btn text @click="item.processStepLogicList = []">
                     <v-icon>clear</v-icon>
                     Clear All
@@ -387,7 +460,7 @@
               <td class="text-left">{{item.actionType}}</td>
               <td class="text-left">{{item.processStepStatusType}}</td>
               <td>
-                <div style="display: flex;">
+                <div style="display: flex; float: right;">
                   <v-btn small text @click="actionExpanded = [item]; selectedActionIndex = index" v-if="!actionExpanded.includes(item)">
                     <v-icon>edit</v-icon>
                   </v-btn>
@@ -436,21 +509,27 @@
         </v-data-table>
       </v-container>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 <script>
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { SNACKBAR_SUCCESS, SNACKBAR_ERROR } from '@/helpers/helpers'
   import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
 
   export default {
     name: 'ProcessStepActions',
     mixins: [Vue2Filters.mixin],
-    components: {},
+    components: {
+      Snackbar
+    },
     data () {
       return {
+        snackbar: {},
         headers: [
           { text: 'ID', value: 'requirementNbr', width: '65px', show: true },
           { text: 'Type', value: 'processStepRequirementType', show: true },
@@ -496,7 +575,11 @@
           {id: 2, actionType: 'Button'}
         ],
         addChildProcess: false,
-        actionParent: {}
+        selectedProcessStep: {},
+
+        addChildLink: false,
+        selectedLink: {},
+        availableLinks: []
       }
     },
     computed: {},
@@ -546,7 +629,6 @@
       },
       async loadFunctionParams() {
         const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/dynamicParams`)
-        console.log('randaLoggerDDD', data)
         this.newRequirement.requirementParamDynamicValues = data
       },
       async loadOperatorTypes() {
@@ -616,19 +698,52 @@
         const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operation`)
         this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
       },
-      async assignNewAction() {
-        console.log('ASSIGN ACTION HERE')
-        //i dont know what i was writing this for
-      },
       async deleteAction(item) {
-        console.log('DELETE ACTION HERE', item)
         await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${item.id}`)
         item.archived = true
       },
-      async deleteFieldFromAction (actionId, cp) {
-        console.log('WILL DELETE HERE', cp.id)
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteChildProcessFromAction/${cp.id}`)
-        cp.archived = true
+      //child process steps
+      async saveProcessStepToAction (action) {
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
+          processStepId: this.selectedProcessStep.id,
+          displayOrder: 0,
+          triggerAutomatically: true
+        })
+        action.processStepActionChildProcesses.push(data)
+        this.selectedProcessStep = {}
+        this.addChildProcess = false
+      },
+      async deleteChildProcessFromAction (actionId, id) {
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
+      },
+      async updateChildStep (actionId, childStep) {
+        try {
+          this.snackbar = SNACKBAR_SUCCESS
+          this.snackbar.text = 'Successfully Saved Change'
+          this.snackbar.enabled = true
+          await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = SNACKBAR_ERROR
+          this.snackbar.text = 'Error Saving Change'
+          this.snackbar.enabled = true
+        }
+      },
+      // child links
+      async loadLinks() {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links`)
+        this.availableLinks = data
+      },
+      async saveLinkToAction (action) {
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
+          linkId: this.selectedLink.id
+        })
+        action.processStepActionLinks.push(data)
+        this.selectedLink = {}
+        this.addChildLink = false
+      },
+      async deleteLinkFromAction (actionId, id) {
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
       }
     }
 

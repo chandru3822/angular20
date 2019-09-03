@@ -151,7 +151,7 @@
                         :class="{ 'shaded-row': index % 2 }">
                   <v-list-item class="grab">
                     <v-list-item-content>
-                      {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupId == null ? '' : '(Ancillary)' }}
+                      {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
                     </v-list-item-content>
                     <v-dialog
                         v-model="cf.deleteConfirm"
@@ -251,7 +251,7 @@
         this.newGroup.groupOrder = 0
         this.newGroup.processStepId = this.$route.params.id
 
-        const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroupType`, this.newGroup)
+        const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroup`, this.newGroup)
         this.customFieldGroups.push(data)
         this.newGroup = {}
         this.createNew = false
@@ -263,18 +263,18 @@
       changeFieldOrder() {
         console.log('changed field order')
       },
-      async deleteGroupFromStep(groupTypeId) {
-        await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroupType/${groupTypeId}`)
+      async deleteGroupFromStep(groupId) {
+        await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
       },
       async deleteFieldFromGroup(fieldGroupId) {
         await deleteRequest(`/api/v1/flow/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
       },
-      async fetchAvailableCustomFields(objectTypeId, groupTypeId) {
+      async fetchAvailableCustomFields(objectTypeId, groupId) {
         if (this.addField && this.newFieldType === 'native') {
           const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
             params: {
               objectTypeId,
-              groupTypeId,
+              groupId,
               processStepId: this.processStepId
             }
           })
@@ -291,7 +291,7 @@
       async assignCustomField(cfg) {
         this.addField = false
         this.newField.fieldOrder = 0
-        this.newField.customFieldGroupTypeId = cfg.id
+        this.newField.customFieldGroupId = cfg.id
 
         await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, this.newField)
         cfg.customFields.push(this.newField)
@@ -301,11 +301,11 @@
         const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${this.parent.id}`)
         this.ancillaryCustomFields = data
       },
-      async assignAncillaryCustomField(customFieldGroupTypeId) {
+      async assignAncillaryCustomField(customFieldGroupId) {
         const params = {
-          customFieldGroupTypeId,
+          customFieldGroupId,
           id: null,
-          ancillaryCustomFieldGroupId: this.selectedAncillaryField.customFieldGroupId,
+          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
           fieldOrder: 0
         }
         await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, params)

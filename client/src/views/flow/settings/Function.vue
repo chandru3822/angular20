@@ -41,11 +41,11 @@
                         @input="loadFieldsByParent(item.processStepId)"
               ></v-select>
               <v-select v-if="item.processStepId"
-                        v-model="item.customFieldGroupId"
+                        v-model="item.customFieldGroupAssignmentId"
                         :items="availableCustomFields"
                         label="Custom Field"
                         item-text="fieldName"
-                        item-value="customFieldGroupId"
+                        item-value="customFieldGroupAssignmentId"
               ></v-select>
             </div>
             <v-btn @click="saveParam(item)">
@@ -70,7 +70,7 @@
               Dynamic
             </td>
             <!-- customValueColumn -->
-            <td class="text-left" v-if="item.customFieldGroupId !== null">
+            <td class="text-left" v-if="item.customFieldGroupAssignmentId !== null">
               {{item.fieldName}}
             </td>
             <td class="text-left" v-else-if="item.systemValueId !== null">
@@ -79,7 +79,7 @@
             <td class="text-left" v-else-if="item.dynamicValue !== null">
               {{item.dynamicValue}}
             </td>
-            <td class="text-left" v-else-if="item.customFieldGroupId === null && item.systemValueId === null && item.dynamicValue === null">
+            <td class="text-left" v-else-if="item.customFieldGroupAssignmentId === null && item.systemValueId === null && item.dynamicValue === null">
               n/a
             </td>
             <!-- icon column -->
@@ -96,10 +96,10 @@
 
         </template>
         <template #item.customValueColumn="{ item }">
-          <span v-if="item.customFieldGroupId !== null">{{item.fieldName}}</span>
+          <span v-if="item.customFieldGroupAssignmentId !== null">{{item.fieldName}}</span>
           <span v-else-if="item.systemValueId !== null">{{item.systemValue}}</span>
           <span v-else-if="item.dynamicValue !== null">{{item.dynamicValue}}</span>
-          <span v-else-if="item.customFieldGroupId === null && item.systemValueId === null && item.dynamicValue === null">n/a</span>
+          <span v-else-if="item.customFieldGroupAssignmentId === null && item.systemValueId === null && item.dynamicValue === null">n/a</span>
         </template>
       </v-data-table>
 

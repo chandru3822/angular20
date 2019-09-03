@@ -18,8 +18,8 @@
         </v-text-field>
         <v-text-field v-if="addNew"
                       v-model="newLink.url"
-                      placeholder="Enter a url"
-                      label="Url">
+                      placeholder="Enter a URL"
+                      label="URL">
         </v-text-field>
         <v-btn v-if="addNew" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
         <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
@@ -31,7 +31,7 @@
                             v-model="a.link">
               </v-text-field>
               <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
-                            label="Url"
+                            label="URL"
                             v-model="a.url">
               </v-text-field>
               <div v-else>{{a.link}}</div>

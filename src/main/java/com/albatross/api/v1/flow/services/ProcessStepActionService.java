@@ -3,10 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.ProcessStepAction;
-import com.albatross.api.v1.flow.model.ProcessStepActionChildProcess;
-import com.albatross.api.v1.flow.model.ProcessStepLogic;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -55,15 +52,6 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.getId());
     params.put("actionId", actionId);
     sqlCache.update("processStepAction.deleteAction", params);
-  }
-
-  public void deleteChildProcessFromAction(Long childProcessId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
-    params.put("id", childProcessId);
-    sqlCache.update("processStepAction.deleteChildProcessFromAction", params);
   }
 
   public ProcessStepAction getActionById(Long id) {
@@ -121,6 +109,79 @@ public class ProcessStepActionService {
     return getActionById(id);
   }
 
+  // CHILD PROCESSES
+  public ProcessStepActionChildProcess addChildStepToAction(Long actionId, ProcessStepActionChildProcess child) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", child.getProcessStepId());
+    params.put("processStepActionId", actionId);
+    params.put("triggerAutomatically", child.getTriggerAutomatically());
+    params.put("displayOrder", child.getDisplayOrder());
+    params.put("createdById", currentUser.getId());
+
+    Long id = sqlCache.updateReturningId("processStepAction.addChildStepToAction", params, "id").longValue();
+    return getActionChildStep(id);
+  }
+
+  public ProcessStepActionChildProcess getActionChildStep(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<ProcessStepActionChildProcess> result = sqlCache.get("processStepAction.getActionChildStep", params, ProcessStepActionChildProcess.class);
+    return result.orElse(null);
+  }
+
+  public void deleteChildProcessFromAction(Long childProcessId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.getId());
+    params.put("id", childProcessId);
+    sqlCache.update("processStepAction.deleteActionChildStep", params);
+  }
+
+  public void updateActionChildStep(Long actionId, ProcessStepActionChildProcess child) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.getId());
+    params.put("id", child.getId());
+    params.put("displayOrder", child.getDisplayOrder());
+    params.put("triggerAutomatically", child.getTriggerAutomatically());
+    sqlCache.update("processStepAction.updateActionChildStep", params);
+  }
+
+  // CHILD LINKS
+  public ProcessStepActionLink addLinkToAction(Long actionId, ProcessStepActionLink child) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("linkId", child.getLinkId());
+    params.put("processStepActionId", actionId);
+    params.put("createdById", currentUser.getId());
+
+    Long id = sqlCache.updateReturningId("processStepAction.addLinkToAction", params, "id").longValue();
+    return getActionChildLink(id);
+  }
+
+  public ProcessStepActionLink getActionChildLink(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<ProcessStepActionLink> result = sqlCache.get("processStepAction.getActionChildLink", params, ProcessStepActionLink.class);
+    return result.orElse(null);
+  }
+
+  public void deleteLinkFromAction(Long childLinkId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.getId());
+    params.put("id", childLinkId);
+    sqlCache.update("processStepAction.deleteLinkFromAction", params);
+  }
+
+
+  // MAPPER
   public static class ProcessStepActionMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -138,6 +199,10 @@ public class ProcessStepActionService {
       TypeReference<List<ProcessStepActionChildProcess>> processStepActionChildProcessesRef = new TypeReference<List<ProcessStepActionChildProcess>>() {};
       bw.registerCustomEditor(List.class, "processStepActionChildProcesses",
           new JsonCollectionDeserializer(processStepActionChildProcessesRef, objectMapper));
+
+      TypeReference<List<ProcessStepActionLink>> processStepActionLinksRef = new TypeReference<List<ProcessStepActionLink>>() {};
+      bw.registerCustomEditor(List.class, "processStepActionLinks",
+          new JsonCollectionDeserializer(processStepActionLinksRef, objectMapper));
     }
   }
 

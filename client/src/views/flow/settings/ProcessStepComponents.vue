@@ -2,7 +2,7 @@
   <v-layout row wrap class="custom-field-group-container">
     <v-flex xs-12>
       <v-flex class="mb-2">
-        <ProcessStepCustomFieldGroups :customFieldGroups="processStep.customFieldGroupTypes"></ProcessStepCustomFieldGroups>
+        <ProcessStepCustomFieldGroups :customFieldGroups="processStep.customFieldGroups"></ProcessStepCustomFieldGroups>
       </v-flex>
       <v-divider></v-divider>
       <v-flex>

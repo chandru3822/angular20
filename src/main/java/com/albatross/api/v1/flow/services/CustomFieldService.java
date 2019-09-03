@@ -177,8 +177,8 @@ public class CustomFieldService {
     // archive single custom field
     sqlCache.update("customField.deleteField", params);
 
-    // archive all custom_field_group rows
-    sqlCache.update("customFieldGroup.archiveRows", params);
+    // archive all custom_field_group_assignment rows
+    sqlCache.update("customFieldGroupAssignment.archiveRows", params);
   }
 
   public List<CustomField> getByParentProcessStep(Long companyId, Long id) {

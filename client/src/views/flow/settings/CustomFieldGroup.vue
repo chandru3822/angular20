@@ -15,13 +15,13 @@
             v-model="newGroup.groupName"
             placeholder="Enter new group name"
             append-outer-icon="save"
-            @click:append-outer="addCustomFieldGroupType"
+            @click:append-outer="addCustomFieldGroup"
             label="Custom Field Group">
         </v-text-field>
 
         <v-data-table
             :headers="headers"
-            :items="filterCustomFieldGroupTypes()"
+            :items="filterCustomFieldGroups()"
             :items-per-page="-1"
             single-expand
             :expanded.sync="expanded"
@@ -49,7 +49,7 @@
                               v-if="item.edit"
                               v-model="item.groupName">
                   <template slot="append-outer">
-                    <v-icon @click="saveGroupTypeName(item); item.edit = false">save</v-icon>
+                    <v-icon @click="saveGroupName(item); item.edit = false">save</v-icon>
                     <v-icon @click="item.edit = false">clear</v-icon>
                   </template>
                 </v-text-field>
@@ -107,76 +107,6 @@
               </td>
             </tr>
           </template>
-<!--          <template #item.groupName="{ item }">-->
-<!--            <v-text-field text-->
-<!--              v-if="item.edit"-->
-<!--              v-model="item.groupName">-->
-<!--              <template slot="append-outer">-->
-<!--                <v-icon @click="saveGroupTypeName(item); item.edit = false">save</v-icon>-->
-<!--                <v-icon @click="item.edit = false">clear</v-icon>-->
-<!--              </template>-->
-<!--            </v-text-field>-->
-<!--            <a style="text-decoration: underline;" v-else @click="item.edit = true">-->
-<!--              {{item.groupName}}-->
-<!--            </a>-->
-<!--          </template>-->
-
-<!--          <template #item.draggable="{ item }">-->
-<!--            <v-btn text icon small class="handle">-->
-<!--              <v-icon>drag_handle</v-icon>-->
-<!--            </v-btn>-->
-<!--          </template>-->
-
-
-<!--          <template #item.icons="{ item }">-->
-<!--            <div class="item-icons">-->
-<!--              <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]">-->
-<!--                <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>-->
-<!--                <v-icon v-else>add</v-icon>-->
-<!--              </v-btn>-->
-<!--              <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]">-->
-<!--                <v-icon v-if="expanded.includes(item)">expand_less</v-icon>-->
-<!--                <v-icon v-else>expand_more</v-icon>-->
-<!--              </v-btn>-->
-<!--              <v-dialog-->
-<!--                  v-model="item.deleteConfirm"-->
-<!--                  width="500">-->
-<!--                <template #activator="{ on }">-->
-<!--                  <v-btn small text v-on="on">-->
-<!--                    <v-icon>delete</v-icon>-->
-<!--                  </v-btn>-->
-<!--                </template>-->
-<!--                <v-card>-->
-<!--                  <v-card-title-->
-<!--                      class="headline grey lighten-2"-->
-<!--                      primary-title>-->
-<!--                    Confirm-->
-<!--                  </v-card-title>-->
-
-<!--                  <v-card-text>-->
-<!--                    Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?-->
-<!--                  </v-card-text>-->
-
-<!--                  <v-divider></v-divider>-->
-
-<!--                  <v-card-actions>-->
-<!--                    <v-spacer></v-spacer>-->
-<!--                    <v-btn-->
-<!--                        @click="item.deleteConfirm = false">-->
-<!--                      No-->
-<!--                    </v-btn>-->
-<!--                    <v-btn-->
-<!--                        color="primary"-->
-<!--                        text-->
-<!--                        @click="item.archived = true; deleteGroup(item.id)">-->
-<!--                      Yes-->
-<!--                    </v-btn>-->
-<!--                  </v-card-actions>-->
-<!--                </v-card>-->
-<!--              </v-dialog>-->
-<!--            </div>-->
-<!--          </template>-->
-
           <template #expanded-item="{ headers, item, index }">
             <td :colspan="headers.length" class="pb-4"  :class="{'shaded-row': selectedIndex % 2}">
               <v-flex xs12 justify-center class="pl-3 pr-3" >
@@ -199,7 +129,7 @@
                         <v-icon>drag_handle</v-icon>
                       </v-list-item-action>
                       <v-list-item-content>
-                        {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupId == null ? '' : '(Ancillary)' }}
+                        {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
                       </v-list-item-content>
                       <v-dialog
                           v-model="cf.deleteConfirm"
@@ -246,133 +176,6 @@
             </td>
           </template>
         </v-data-table>
-
-  <!--      <draggable v-if="customFieldGroupTypes.length > 0" v-model="customFieldGroupTypes"-->
-  <!--                 group="customFieldGroupTypes" @start="drag=true" @end="drag=false"  @change="changeGroupOrder">-->
-  <!--        <v-list v-for="(cfgt, index) in filterBy(customFieldGroupTypes, false, 'archived')"-->
-  <!--                :key="index">-->
-  <!--          <v-list-item class="grab" :class="{ 'shaded-row': cfgt.id === selectedGroupId }">-->
-  <!--            <v-list-item-content>-->
-  <!--              <v-text-field class="one-hunned" v-if="selectedGroupId === cfgt.id" v-model="cfgt.groupName" @input="cfgt.nameChanged = true">-->
-  <!--              </v-text-field>-->
-  <!--              <div v-else>{{cfgt.groupName}}</div>-->
-  <!--            </v-list-item-content>-->
-  <!--            <v-list-item-action>-->
-  <!--              <v-icon>drag_handle</v-icon>-->
-  <!--            </v-list-item-action>-->
-  <!--            <v-list-item-action class="clickable">-->
-  <!--              <v-icon v-if="selectedGroupId === cfgt.id && cfgt.originalGroupName !== cfgt.groupName" @click="cfgt.originalGroupName = cfgt.groupName; saveGroupTypeName(index, cfgt)">save</v-icon>-->
-  <!--              <v-icon v-else @click="selectedGroupId = cfgt.id; fetchCustomFields()">edit</v-icon>-->
-  <!--            </v-list-item-action>-->
-  <!--            <v-dialog-->
-  <!--                v-model="cfgt.deleteConfirm"-->
-  <!--                width="500">-->
-  <!--              <template v-slot:activator="{ on }">-->
-  <!--                <v-list-item-action class="clickable" v-on="on">-->
-  <!--                  <v-icon>delete</v-icon>-->
-  <!--                </v-list-item-action>-->
-  <!--              </template>-->
-  <!--              <v-card>-->
-  <!--                <v-card-title-->
-  <!--                    class="headline grey lighten-2"-->
-  <!--                    primary-title-->
-  <!--                >-->
-  <!--                  Confirm-->
-  <!--                </v-card-title>-->
-
-  <!--                <v-card-text>-->
-  <!--                  Are you sure you want to delete this group: <strong>{{ cfgt.groupName }}</strong>?-->
-  <!--                </v-card-text>-->
-
-  <!--                <v-divider></v-divider>-->
-
-  <!--                <v-card-actions>-->
-  <!--                  <v-spacer></v-spacer>-->
-  <!--                  <v-btn-->
-  <!--                      @click="cfgt.deleteConfirm = false">-->
-  <!--                    No-->
-  <!--                  </v-btn>-->
-  <!--                  <v-btn-->
-  <!--                      color="primary"-->
-  <!--                      text-->
-  <!--                      @click="cfgt.archived = true; deleteGroup(cfgt.id)">-->
-  <!--                    Yes-->
-  <!--                  </v-btn>-->
-  <!--                </v-card-actions>-->
-  <!--              </v-card>-->
-  <!--            </v-dialog>-->
-  <!--          </v-list-item>-->
-
-  <!--        </v-list>-->
-  <!--      </draggable>-->
-  <!--      <v-btn v-if="addNew" @click="addCustomFieldGroupType">Save</v-btn>-->
-  <!--      <v-btn v-else-if="groupOrderChanged" @click="saveGroupChanges">Save Changes</v-btn>-->
-  <!--    </v-container>-->
-  <!--    <v-container v-if="selectedGroupId !== null">-->
-  <!--      <h3>Custom Fields</h3>-->
-  <!--      <v-btn @click="addField = !addField; fetchAvailableCustomFields()">-->
-  <!--        {{addField ? 'Cancel' : 'Add Field'}}-->
-  <!--      </v-btn>-->
-  <!--      <v-select v-if="addField"-->
-  <!--                v-model="newField"-->
-  <!--                :items="availableCustomFields"-->
-  <!--                label="New Custom Field Group"-->
-  <!--                item-text="fieldName"-->
-  <!--                return-object-->
-  <!--                @input="assignCustomField"-->
-  <!--      ></v-select>-->
-  <!--      <draggable v-model="customFields" v-if="customFields.length > 0"-->
-  <!--                 group="customFields" @start="drag=true" @end="drag=false" @change="changeFieldOrder">-->
-  <!--        <v-list v-for="(cf, index) in filterBy(customFields, false, 'archived')"-->
-  <!--                :key="index">-->
-  <!--          <v-list-item class="grab">-->
-  <!--            <v-list-item-content>-->
-  <!--              {{cf.fieldName}}-->
-  <!--            </v-list-item-content>-->
-  <!--            <v-list-item-action>-->
-  <!--              <v-icon>drag_handle</v-icon>-->
-  <!--            </v-list-item-action>-->
-  <!--            <v-dialog-->
-  <!--                v-model="cf.deleteConfirm"-->
-  <!--                width="500">-->
-  <!--              <template v-slot:activator="{ on }">-->
-  <!--                <v-list-item-action class="clickable" v-on="on">-->
-  <!--                  <v-icon>delete</v-icon>-->
-  <!--                </v-list-item-action>-->
-  <!--              </template>-->
-  <!--              <v-card>-->
-  <!--                <v-card-title-->
-  <!--                    class="headline grey lighten-2"-->
-  <!--                    primary-title-->
-  <!--                >-->
-  <!--                  Confirm-->
-  <!--                </v-card-title>-->
-
-  <!--                <v-card-text>-->
-  <!--                  Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{ cf.groupName }}</strong>?-->
-  <!--                </v-card-text>-->
-
-  <!--                <v-divider></v-divider>-->
-
-  <!--                <v-card-actions>-->
-  <!--                  <v-spacer></v-spacer>-->
-  <!--                  <v-btn-->
-  <!--                      @click="cf.deleteConfirm = false">-->
-  <!--                    No-->
-  <!--                  </v-btn>-->
-  <!--                  <v-btn-->
-  <!--                      color="primary"-->
-  <!--                      text-->
-  <!--                      @click="cf.archived = true; deleteFieldFromGroup(cf.id)">-->
-  <!--                    Yes-->
-  <!--                  </v-btn>-->
-  <!--                </v-card-actions>-->
-  <!--              </v-card>-->
-  <!--            </v-dialog>-->
-  <!--          </v-list-item>-->
-  <!--        </v-list>-->
-  <!--      </draggable>-->
-  <!--      <v-btn v-if="fieldOrderChanged" @click="saveFieldChanges">Save Changes</v-btn>-->
       </v-container>
     </v-flex>
   </v-layout>
@@ -405,7 +208,7 @@ export default {
       },
       addField: false,
       newField: {},
-      customFieldGroupTypes: [],
+      customFieldGroups: [],
       availableCustomFields: [],
       companyId: this.$store.state.user.details.companyId,
       //if you set this to a value it doesn't update when the route param changes
@@ -424,10 +227,10 @@ export default {
     Sortable.create(table, {
       handle: '.handle',
       onEnd({ newIndex, oldIndex }) {
-        const rowSelected = _self.customFieldGroupTypes.splice(oldIndex, 1)[0]
-        _self.customFieldGroupTypes.splice(newIndex, 0, rowSelected)
-        console.log('sort event happened', _self.customFieldGroupTypes)
-        _self.saveGroupChanges(_self.customFieldGroupTypes)
+        const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
+        _self.customFieldGroups.splice(newIndex, 0, rowSelected)
+        console.log('sort event happened', _self.customFieldGroups)
+        _self.saveGroupChanges(_self.customFieldGroups)
       }
     })
   },
@@ -436,46 +239,46 @@ export default {
     '$route.params.id': function (oldObjectTypeId, newObjectTypeId) {
       // reset the selected group when the object type changes
       this.availableCustomFields = []
-      this.getCustomFieldGroupTypes()
+      this.customFieldGroups()
     }
   },
   created () {
-    this.getCustomFieldGroupTypes()
+    this.getCustomFieldGroups()
   },
   methods: {
-    async getCustomFieldGroupTypes () {
+    async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
         params: {
           objectTypeId: this.$route.params.id
         }
       })
-      this.customFieldGroupTypes = cloneDeep(data)
+      this.customFieldGroups = cloneDeep(data)
       this.$store.commit(AppMutations.SET_LOADING, false)
     },
-    async fetchAvailableCustomFields (groupTypeId) {
+    async fetchAvailableCustomFields (groupId) {
       const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
         params: {
           objectTypeId: this.$route.params.id,
-          groupTypeId
+          groupId
         }
       })
       this.availableCustomFields = data
     },
-    async addCustomFieldGroupType () {
+    async addCustomFieldGroup () {
       this.newGroup.objectTypeId = this.$route.params.id
       // setting groupOrder to 0, then they can sort later
       this.newGroup.groupOrder = 0
-      const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroupType`, this.newGroup)
+      const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroup`, this.newGroup)
       this.newGroup = {}
       this.addNew = false
       // add the new type to the list
-      this.customFieldGroupTypes.push(data)
+      this.customFieldGroups.push(data)
     },
     async assignCustomField (item) {
       this.addField = false
       this.newField.fieldOrder = 0
-      this.newField.customFieldGroupTypeId = item.id
+      this.newField.customFieldGroupId = item.id
       const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, this.newField)
       console.log('randaLogger d', data)
       console.log('randaLogger i', item)
@@ -486,13 +289,13 @@ export default {
       groups.forEach((g, idx) => {
         g.groupOrder = idx
       })
-      await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroupTypes`, groups)
+      await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroups`, groups)
     },
-    async saveGroupTypeName (groupType) {
-      await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroupType`, groupType)
+    async saveGroupName (group) {
+      await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroup`, group)
     },
-    async deleteGroup (groupTypeId) {
-      await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroupType/${groupTypeId}`)
+    async deleteGroup (groupId) {
+      await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
     },
     async deleteFieldFromGroup (fieldGroupId) {
       await deleteRequest(`/api/v1/flow/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
@@ -515,8 +318,8 @@ export default {
       }
 
     },
-    filterCustomFieldGroupTypes () {
-      return this.customFieldGroupTypes.filter(cfgt => { return !cfgt.archived})
+    filterCustomFieldGroups () {
+      return this.customFieldGroups.filter(cfgt => { return !cfgt.archived})
     },
   }
 }

@@ -180,7 +180,7 @@ export default {
           }
         })
       } catch(e) {
-        console.log('EEEEEEEEEEEEEEEEEEee', e)
+        console.error('*** ERROR ***', e)
         this.snackbar = SNACKBAR_ERROR
         this.snackbar.text = 'Error Uploading Document'
         this.snackbar.enabled = true

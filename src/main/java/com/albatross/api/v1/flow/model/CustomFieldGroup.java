@@ -11,7 +11,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class CustomFieldGroupType {
+public class CustomFieldGroup {
 
   private Long id, objectTypeId, groupOrder, processStepId;
   // originalGroupName used for frontend validation (without having to loop to populate it on frontend)

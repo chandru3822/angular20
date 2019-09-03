@@ -76,7 +76,7 @@ public class CompanyFunctionService {
 
     queryParams.put("dbFunctionParamId", param.getDbFunctionParamId());
     queryParams.put("companyFunctionId", param.getCompanyFunctionId());
-    queryParams.put("customFieldGroupId", param.getCustomFieldGroupId());
+    queryParams.put("customFieldGroupAssignmentId", param.getCustomFieldGroupAssignmentId());
     queryParams.put("dynamicValue", param.getDynamicValue());
     queryParams.put("systemValueId", param.getSystemValueId());
     queryParams.put("userId", currentUser.getId());
@@ -87,7 +87,7 @@ public class CompanyFunctionService {
       queryParams.put("id", param.getId());
 
       sqlCache.update("companyFunction.updateCompanyFunctionParam", queryParams);
-    } else if (null != param.getCustomFieldGroupId() || null != param.getDynamicValue() || null != param.getSystemValueId()){
+    } else if (null != param.getCustomFieldGroupAssignmentId() || null != param.getDynamicValue() || null != param.getSystemValueId()){
       // don't insert a new row if all the possible input values are null
 
       id = sqlCache.updateReturningId("companyFunction.insertCompanyFunctionParam", queryParams, "id").longValue();

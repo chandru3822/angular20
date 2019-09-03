@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class ProcessStepRequirement {
 
-  private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupId, companyFunctionId,
+  private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupAssignmentId, companyFunctionId,
       requirementNbr, processStepId, parentId;
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, processStepName;
   private List<RequirementParamDynamicValue> requirementParamDynamicValues;

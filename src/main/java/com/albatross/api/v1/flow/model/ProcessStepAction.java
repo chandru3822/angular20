@@ -17,6 +17,7 @@ public class ProcessStepAction {
   private String actionName, actionType, processStepStatusType;
   private List<ProcessStepLogic> processStepLogicList;
   private List<ProcessStepActionChildProcess> processStepActionChildProcesses;
+  private List<ProcessStepActionLink> processStepActionLinks;
   private Boolean archived;
 }
 

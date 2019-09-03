@@ -1,0 +1,150 @@
+<sql>
+  <customFieldGroupAssignment.archiveRows><![CDATA[
+    update flow.custom_field_group_assignment
+      set archived = true
+    where custom_field_id = :fieldId
+  ]]></customFieldGroupAssignment.archiveRows>
+
+  <customFieldGroupAssignment.getOne><![CDATA[
+    select cfg.*,
+      ot.object_type,
+      coalesce((
+               SELECT array_to_json(array_agg(row_to_json(customFields)))
+               FROM (
+                      SELECT cfga.id,
+                             cfga.custom_field_group_id as "customFieldGroupId",
+                             cfga.custom_field_id as "customFieldId",
+                             cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                             cfga.field_order as "fieldOrder",
+                             cfga.archived,
+                             cf.field_name as "fieldName"
+                      FROM flow.custom_field_group_assignment cfga
+                             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                      WHERE cfga.custom_field_group_id = cfg.id AND cfga.archived is not true) customFields), '[]') AS "customFields"
+    from flow.custom_field_group cfg
+           inner join flow.object_type ot on ot.id = cfg.object_type_id
+    where cfg.id = :id
+  ]]></customFieldGroupAssignment.getOne>
+
+  <customFieldGroupAssignment.getByObjectTypeId><![CDATA[
+    select cfg.*,
+       cfg.group_name as original_group_name,
+       ot.object_type,
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(customFields)))
+                    FROM (
+                             SELECT cfga.id,
+                                    cfga.custom_field_group_id as "customFieldGroupId",
+                                    cfga.custom_field_id as "customFieldId",
+                                    cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                    cfga.field_order as "fieldOrder",
+                                    cfga.archived,
+                                    cf.field_name as "fieldName"
+                             FROM flow.custom_field_group_assignment cfga
+                                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                             WHERE cfga.custom_field_group_id = cfg.id
+                               AND cfga.archived is not true
+                             ORDER BY cfga.field_order) customFields), '[]') AS "customFields"
+    from flow.custom_field_group cfg
+             inner join flow.object_type ot on ot.id = cfg.object_type_id
+    where ot.id = :objectTypeId
+      and cfg.archived is not true
+    order by cfg.group_order, cfg.group_name
+  ]]></customFieldGroupAssignment.getByObjectTypeId>
+
+  <customFieldGroupAssignment.getCustomFieldsInGroup><![CDATA[
+    select cfga.*,
+      cfg.group_name,
+       cf.field_name,
+           cf.company_data_type_id,
+           cf.date_created,
+           cf.created_by_id,
+           cf.modified_by_id,
+           cf.date_modified
+    from flow.custom_field_group_assignment cfga
+      inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where cfg.id = :groupId
+      and cfga.archived is not true
+      and cf.archived is not true
+    order by cfga.field_order
+  ]]></customFieldGroupAssignment.getCustomFieldsInGroup>
+
+  <customFieldGroupAssignment.getAvailableCustomFieldsInGroup><![CDATA[
+    select cf.id,cf.field_name, cfot.object_type_id
+    from flow.custom_field_object_type cfot
+             inner join flow.custom_field cf on cf.id = cfot.custom_field_id
+    where cfot.object_type_id = :objectTypeId
+      and cfot.archived is not true
+        except
+    select cf.id,cf.field_name, cfg.object_type_id
+    from flow.custom_field_group_assignment cfga
+             inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where cfg.object_type_id = :objectTypeId
+      and cfga.archived is not true
+    order by field_name
+  ]]></customFieldGroupAssignment.getAvailableCustomFieldsInGroup>
+
+  <customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep><![CDATA[
+    select cf.id,cf.field_name, cfot.object_type_id
+    from flow.custom_field_object_type cfot
+             inner join flow.custom_field cf on cf.id = cfot.custom_field_id
+    where cfot.object_type_id = :objectTypeId
+      and cfot.archived is not true
+        except
+    select cf.id,cf.field_name, cfg.object_type_id
+    from flow.custom_field_group_assignment cfga
+             inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where cfg.object_type_id = :objectTypeId
+      and cfg.process_step_id = :processStepId
+      and cfga.archived is not true
+    order by field_name
+  ]]></customFieldGroupAssignment.getAvailableNativeFieldsForProcessStep>
+
+  <customFieldGroupAssignment.getCustomField><![CDATA[
+    SELECT cfga.id,
+       cfga.custom_field_group_id as "customFieldGroupId",
+       cfga.custom_field_id as "customFieldId",
+       cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+       cfga.field_order as "fieldOrder",
+       cfga.archived,
+       cf.field_name as "fieldName"
+    FROM flow.custom_field_group_assignment cfga
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    WHERE cfga.id = :id
+  ]]></customFieldGroupAssignment.getCustomField>
+
+  <customFieldGroupAssignment.addFieldToGroup><![CDATA[
+    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id)
+    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, :fieldOrder, :createdById)
+  ]]></customFieldGroupAssignment.addFieldToGroup>
+
+  <customFieldGroupAssignment.updateFieldInGroup><![CDATA[
+    update flow.custom_field_group_assignment
+      set field_order = :fieldOrder,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+    where id = :id
+  ]]></customFieldGroupAssignment.updateFieldInGroup>
+
+  <customFieldGroupAssignment.deleteFieldFromGroup><![CDATA[
+    update flow.custom_field_group_assignment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+    where id = :id
+  ]]></customFieldGroupAssignment.deleteFieldFromGroup>
+
+  <customFieldGroupAssignment.deleteAllFieldsInGroup><![CDATA[
+    update flow.custom_field_group_assignment
+      set archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+    where custom_field_group_id = :id
+  ]]></customFieldGroupAssignment.deleteAllFieldsInGroup>
+
+
+
+</sql>

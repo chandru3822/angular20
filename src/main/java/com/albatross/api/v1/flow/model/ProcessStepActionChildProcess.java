@@ -12,6 +12,7 @@ import lombok.Setter;
 public class ProcessStepActionChildProcess {
 
   private Long id, processStepActionId, processStepId, createdById, modifiedById, displayOrder;
+  private String processStepName;
   private Boolean archived, triggerAutomatically;
 }
 
