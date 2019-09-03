@@ -2,13 +2,11 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.services.AttachmentService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
@@ -33,17 +31,14 @@ public class DocumentController {
     @RequestMapping(value = "/getSourceAttachments", method = RequestMethod.GET)
     public List<Attachment> getAttachmentsBySourceIdAndType(@RequestParam Long sourceId,
                                                             @RequestParam Long attachmentSourceTypeId) {
-        return attachmentService.getAttachmentsBySourceIdAndType(bucket, sourceId, attachmentSourceTypeId);
+        return attachmentService.getAttachmentsBySourceIdAndType(sourceId, attachmentSourceTypeId);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/upload")
     public Attachment uploadDocument(@RequestParam Long sourceId,
                                      @RequestParam Long attachmentSourceTypeId,
                                      @RequestParam("file") MultipartFile file) throws IOException {
-        Attachment attachment = attachmentService.create(bucket, keyPattern, file);
-
-        // Add to the join table
-        attachmentService.addToJoinTable(attachment.getId(), sourceId, attachmentSourceTypeId, false);
+        Attachment attachment = attachmentService.create(file, sourceId, attachmentSourceTypeId, false);
 
         return attachment;
     }

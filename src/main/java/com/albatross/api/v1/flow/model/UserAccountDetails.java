@@ -26,8 +26,8 @@ public class UserAccountDetails implements UserDetails {
     private String password;
     @JsonIgnore
     private boolean accountNonExpired, accountNonLocked, credentialsNonExpired, enabled;
-    private String firstName, lastName, fullName;
-    private Long masqueradeId;
+    private String firstName, lastName, fullName, awsBucket;
+    private Long masqueradeId, companyId;
     private Set<GrantedAuthority> authorities;
 
     public UserAccountDetails() {
@@ -40,6 +40,8 @@ public class UserAccountDetails implements UserDetails {
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.fullName = user.getFullName();
+        this.awsBucket = user.getAwsBucket();
+        this.companyId = user.getCompanyId();
 
         // TODO: determine expired, lock, enabled, etc.
         this.accountNonExpired = true;
@@ -112,6 +114,10 @@ public class UserAccountDetails implements UserDetails {
         return masqueradeId;
     }
 
+    public String getAwsBucket() {
+        return awsBucket;
+    }
+
     public String getFirstName() {
         return firstName;
     }
@@ -128,6 +134,17 @@ public class UserAccountDetails implements UserDetails {
         this.masqueradeId = masqueradeId;
     }
 
+    public void setAwsBucket(String awsBucket) {
+        this.awsBucket = awsBucket;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
 
     @JsonComponent
     public static class GrantedAuthorityJsonSerialized extends JsonSerializer<GrantedAuthority> {

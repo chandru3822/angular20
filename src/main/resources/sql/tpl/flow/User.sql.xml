@@ -1,16 +1,18 @@
 <sql>
   <user.findByUsernameIgnoreCase><![CDATA[
-    select id,
-      first_name,
-      last_name,
-      email,
-      username,
-      password,
-      company_id,
-      null as "timezone",
-      first_name || ' ' || last_name as full_name,
-      user_status_type_id
-    from flow.user
+    select u.id,
+       u.first_name,
+       u.last_name,
+       u.email,
+       u.username,
+       u.password,
+       u.company_id,
+       null as "timezone",
+       u.first_name || ' ' || u.last_name as full_name,
+       u.user_status_type_id,
+       c.aws_bucket
+    from flow.user u
+        inner join flow.company c on c.id = u.company_id
     where lower(username) = lower(:username)
   ]]></user.findByUsernameIgnoreCase>
 
@@ -26,13 +28,16 @@
 
   <user.findUserById>
     <![CDATA[
-        select id,
-          first_name,
-          last_name,
-          first_name || ' ' || last_name as full_name,
-          user_status_type_id
-        from flow.user
-        where id = :id
+        select u.id,
+          u.first_name,
+          u.last_name,
+          u.company_id,
+          c.aws_bucket,
+          u.first_name || ' ' || u.last_name as full_name,
+          u.user_status_type_id
+        from flow.user u
+         inner join flow.company c on c.id = u.company_id
+        where u.id = :id
       ]]>
   </user.findUserById>
 </sql>

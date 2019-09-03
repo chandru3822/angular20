@@ -10,7 +10,7 @@ import lombok.Setter;
 public class User {
 
     private Long id, companyId, parentCompanyId;
-    private String email, username, password, firstName, lastName, fullName, userStatusType, timezone;
+    private String email, username, password, firstName, lastName, fullName, userStatusType, timezone, awsBucket;
     private Long userStatusTypeId;
 
     @JsonIgnore

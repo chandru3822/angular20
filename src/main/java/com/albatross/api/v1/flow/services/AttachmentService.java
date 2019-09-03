@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.AttachmentSourceType;
 import com.albatross.api.v1.flow.model.User;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -73,15 +74,17 @@ public class AttachmentService {
      * @param sourceId ID of the source
      * @return
      */
-    public List<Attachment> getAttachmentsBySourceIdAndType(String bucket, Long sourceId, Long attachmentSourceTypeId) {
+    public List<Attachment> getAttachmentsBySourceIdAndType(Long sourceId, Long attachmentSourceTypeId) {
+        User currentUser = securityService.getCurrentUser();
+
         HashMap<String, Object> params = new HashMap<>();
         params.put("sourceId", sourceId);
         params.put("attachmentSourceTypeId", attachmentSourceTypeId);
 
         List<Attachment> attachments = sqlCache.query("attachment.getAttachmentsBySourceIdAndType", params, Attachment.class);
         attachments.forEach(attachment -> {
-            setAttachmentUrl(bucket, attachment);
-            setAttachmentPresignedUrl(bucket, attachment);
+            setAttachmentUrl(currentUser.getAwsBucket(), attachment);
+            setAttachmentPresignedUrl(currentUser.getAwsBucket(), attachment);
         });
 
         return attachments;
@@ -220,10 +223,12 @@ public class AttachmentService {
      * @param id     ID of the Attachment to find.
      * @return
      */
-    public String getAttachmentUrl(String bucket, Long id) {
-        Attachment attachment = findById(bucket, id);
+    public String getAttachmentUrl(Long id) {
+        User currentUser = securityService.getCurrentUser();
 
-        String url = s3.getUrl(bucket, attachment.getS3Key()).toExternalForm();
+        Attachment attachment = findById(currentUser.getAwsBucket(), id);
+
+        String url = s3.getUrl(currentUser.getAwsBucket(), attachment.getS3Key()).toExternalForm();
         return url;
     }
 
@@ -248,36 +253,44 @@ public class AttachmentService {
         sqlCache.update("attachment.deleteBySourceAndType", params);
     }
 
+    public AttachmentSourceType getAttachmentSourceType (Long id) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", id);
+
+        Optional<AttachmentSourceType> result = sqlCache.get("attachment.getAttachmentSourceType", params, AttachmentSourceType.class);
+        return result.orElse(null);
+    }
+
     /**
      * Upload a new Attachment to S3 using a custom S3 bucket name and key pattern.
      *
-     * @param bucket     Name of S3 bucket where the Attachment will be stored.
-     * @param keyPattern Pattern for the Attachment's S3 key. It should have a single %s for the Attachment's name.
      * @param file
      * @return
      * @throws IOException
      * @todo Generate a pre-signed URL
      */
-    public Attachment create(String bucket, String keyPattern, MultipartFile file) throws IOException {
+    public Attachment create(MultipartFile file, Long sourceId, Long attachmentSourceTypeId, Boolean deleteFirst) throws IOException {
+        User currentUser = securityService.getCurrentUser();
+
         if (file.isEmpty()) {
             throw new RuntimeException("File cannot be empty");
         }
 
-        String key = String.format(keyPattern, UUID.randomUUID());
+        //get keyPattern from attachmentSourceType
+        AttachmentSourceType attachmentSourceType = getAttachmentSourceType(attachmentSourceTypeId);
+        String key = String.format(attachmentSourceType.getKeyPattern(), UUID.randomUUID());
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());
         metadata.setCacheControl("public, max-age=31536000");
 
-        PutObjectRequest objectRequest = new PutObjectRequest(bucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+        PutObjectRequest objectRequest = new PutObjectRequest(currentUser.getAwsBucket(), key, new ByteArrayInputStream(file.getBytes()), metadata);
 
         PutObjectResult result = s3.putObject(objectRequest
                 .withCannedAcl(CannedAccessControlList.PublicRead));
 
-        String url = s3.getUrl(bucket, key).toExternalForm();
-
-        User currentUser = securityService.getCurrentUser();
+        String url = s3.getUrl(currentUser.getAwsBucket(), key).toExternalForm();
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("filename", file.getOriginalFilename());
@@ -288,18 +301,15 @@ public class AttachmentService {
 
         Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
 
-        return findById(bucket, attachmentId);
+        //add to join
+        addToJoinTable(attachmentId, sourceId, attachmentSourceTypeId, deleteFirst);
+
+        return findById(currentUser.getAwsBucket(), attachmentId);
     }
 
     public void addToJoinTable(Long attachmentId, Long sourceId, Long attachmentSourceTypeId, boolean deleteFirst) {
-        if(deleteFirst){
-            // When coming from the reimbursement controller there can only be one, delete it first then re-add
-            // Tried to use upsert but can't add unique constraint because most other tables are not limited to one
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("sourceId", sourceId);
-            params.put("attachmentSourceTypeId", attachmentSourceTypeId);
-
-            sqlCache.update("attachment.deleteReimbursementBySourceAndType", params);
+        if (deleteFirst){
+            deleteBySourceAndType(sourceId, attachmentSourceTypeId);
         }
 
         HashMap<String, Object> params = new HashMap<>();
