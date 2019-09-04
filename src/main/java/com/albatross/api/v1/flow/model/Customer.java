@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Customer  {
 
-  private Long id, companyId;
-  private String firstName, lastName, fullName, email, phone;
+  private Long id, contactBaseId, companyId, customerTypeId, stateId, countryId;
+  private String firstName, lastName, fullName, email,
+      street1, street2, city, state, postalCode, country,
+      mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
+      phone, mobile, customerType;
+  private Double latitude, longitude;
 }

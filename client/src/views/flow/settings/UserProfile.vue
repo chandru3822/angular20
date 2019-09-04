@@ -102,9 +102,8 @@
 import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
-import {getRequest, deleteRequest, putRequest, postRequest, EMAIL_RULES, STANDARD_IMAGES_ONLY} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, EMAIL_RULES, BASIC_REQUIRED_RULE, STANDARD_IMAGES_ONLY} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
-import { getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'UserProfile',
@@ -120,9 +119,7 @@ export default {
       // timeValue: moment.utc().format('YYYY-MM-DD HH:mm Z'),
       timeValue: moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'),
       user: this.$store.state.user.details,
-      requiredRules: [
-        v => !!v || 'Field is required'
-      ],
+      requiredRules: BASIC_REQUIRED_RULE,
       emailRules: EMAIL_RULES,
       acceptedFileTypes: STANDARD_IMAGES_ONLY,
       profileImage: {

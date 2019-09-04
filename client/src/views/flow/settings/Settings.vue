@@ -50,9 +50,8 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import { getSnackbar } from '@/helpers/helpers'
 import Vue2Filters from 'vue2-filters'
-import { getRequest } from '@/helpers/helpers'
+import { getRequest, getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'Settings',

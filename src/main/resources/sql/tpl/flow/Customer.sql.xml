@@ -24,4 +24,13 @@
     from flow.customer
     where id = :customerId;
   ]]></customer.getById>
+
+  <customer.updateCustomer><![CDATA[
+
+  ]]></customer.updateCustomer>
+
+  <customer.insertCustomer><![CDATA[
+    insert into flow.customer(customer_type_id, first_name, last_name, street1, city, state_id, postal_code, country_id, phone, email, mobile, created_by_id, company_id)
+    values (:customerTypeId, :firstName, :lastName, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId)
+  ]]></customer.insertCustomer>
 </sql>

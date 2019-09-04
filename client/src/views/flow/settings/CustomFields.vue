@@ -134,8 +134,7 @@
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getSnackbar } from '@/helpers/helpers'
-  import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'CustomFields',
@@ -273,8 +272,6 @@
               return !cfot.archived
             })
           }
-
-          console.log('randaLogger', object)
 
           const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customField`, object)
           data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)

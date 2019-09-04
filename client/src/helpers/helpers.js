@@ -15,6 +15,10 @@ export const EMAIL_RULES = [
   v => /.+@.+/.test(v) || "E-mail must be valid"
 ]
 
+export const BASIC_REQUIRED_RULE = [
+  v => !!v || 'Field is required'
+]
+
 export const SNACKBARS = {
   ERROR: {
     y: 'top',

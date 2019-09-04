@@ -80,8 +80,7 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
 import Snackbar from '@/components/Snackbar.vue'
-import { getSnackbar } from '@/helpers/helpers'
-import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
 export default {
   name: 'Attachments',

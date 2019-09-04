@@ -189,8 +189,7 @@ import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
-import { getSnackbar } from '@/helpers/helpers'
-import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'CustomFieldGroup',

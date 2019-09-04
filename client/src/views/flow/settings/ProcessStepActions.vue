@@ -527,8 +527,7 @@
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getSnackbar } from '@/helpers/helpers'
-  import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
 
   export default {
