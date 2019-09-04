@@ -70,22 +70,28 @@
         </v-list>
       </v-container>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 
 <script>
-  import {mapState} from 'vuex'
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getSnackbar } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
   import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
 
   export default {
     name: 'Statuses',
     mixins: [Vue2Filters.mixin],
+    components: {
+      Snackbar
+    },
     data () {
       return {
+        snackbar: {},
         statusTypes: [],
         addNew: false,
         newType: {},
@@ -99,30 +105,61 @@
     methods: {
       async getStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
-        this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
+          this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteType (typeId) {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/status/${typeId}`)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/status/${typeId}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async addNewType () {
-        this.newType.companyId = this.companyId
-        // this.newProcess.createdById = this.userId
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/status`, this.newType)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.newType.companyId = this.companyId
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/status`, this.newType)
 
-        // add it to the records already on the screen
-        this.statusTypes.push(data)
-        this.statusTypes = orderBy(this.statusTypes, [s => s.processStepStatusType.toLowerCase()])
+          // add it to the records already on the screen
+          this.statusTypes.push(data)
+          this.statusTypes = orderBy(this.statusTypes, [s => s.processStepStatusType.toLowerCase()])
 
-        // reset the new process fields
-        this.addNew = false
-        this.newType = {}
+          // reset the new process fields
+          this.addNew = false
+          this.newType = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Status Added')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Status')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async saveType (s) {
-        this.selectedStatusTypeId = null
-        s.modifiedById = this.userId
-        await putRequest(`/api/v1/flow/${this.companyId}/processStep/status`, s)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.selectedStatusTypeId = null
+          await putRequest(`/api/v1/flow/${this.companyId}/processStep/status`, s)
+          this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Status')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async created () {

@@ -72,20 +72,26 @@
         <!--<v-btn v-else-if="groupOrderChanged" @click="saveGroupChanges">Save Changes</v-btn>-->
       </v-container>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
-import orderBy from 'lodash.orderby'
+import Snackbar from '@/components/Snackbar.vue'
+import { getSnackbar } from '@/helpers/helpers'
 import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
 export default {
   name: 'Processes',
   mixins: [Vue2Filters.mixin],
+  components: {
+    Snackbar
+  },
   data () {
     return {
+      snackbar: {},
       addNew: false,
       selectedProcessId: null,
       newProcess: {},
@@ -100,34 +106,45 @@ export default {
   methods: {
     async getProcesses () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes`)
-      this.processes = data
-      this.$store.commit(AppMutations.SET_LOADING, false)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes`)
+        this.processes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async deleteProcess (processId) {
-      await deleteRequest(`/api/v1/flow/${this.companyId}/processes/${processId}`)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processes/${processId}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Process Deleted')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Process')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async addNewProcess () {
-      this.newProcess.companyId = this.companyId
-      this.newProcess.parentCompanyId = this.parentCompanyId ? this.parentCompanyId : this.companyId
-      this.newProcess.createdById = this.userId
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newProcess.companyId = this.companyId
+        this.newProcess.parentCompanyId = this.parentCompanyId ? this.parentCompanyId : this.companyId
+        this.newProcess.createdById = this.userId
 
-      const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processes`, this.newProcess)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processes`, this.newProcess)
 
-      this.$router.push({name: 'process', params: {id: data.id}})
-      // // add it to the records already on the screen
-      // this.processes.push(data)
-      // this.processes = orderBy(this.processes, [p => p.processName.toLowerCase()])
-      //
-      // // reset the new process fields
-      // this.addNew = false
-      // this.newProcess = {}
-    },
-    // async saveProcess (p) {
-    //   this.selectedProcessId = null
-    //   p.modifiedById = this.userId
-    //   await putRequest(`/api/v1/flow/${this.companyId}/processes`, p)
-    // }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$router.push({name: 'process', params: {id: data.id}})
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Process')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   },
   async created () {
     this.getProcesses()

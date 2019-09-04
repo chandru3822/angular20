@@ -113,7 +113,7 @@
   import Vue2Filters from 'vue2-filters'
   import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar.vue'
-  import { SNACKBAR_SUCCESS, SNACKBAR_ERROR } from '@/helpers/helpers'
+  import { getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'ProcessSteps',
@@ -154,21 +154,51 @@
     methods: {
       async getFunctionDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.functionId}`)
-        this.details = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.functionId}`)
+          this.details = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getSystemValues () {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/systemValues`)
-        this.systemValues = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/systemValues`)
+          this.systemValues = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async loadParentObjects () {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`)
-        this.parentObjects = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`)
+          this.parentObjects = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async loadFieldsByParent(id) {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${id}`)
-        this.availableCustomFields = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${id}`)
+          this.availableCustomFields = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async handleExpand (item, expand) {
         if(expand) {
@@ -194,14 +224,10 @@
           }
           this.expanded = []
           this.$store.commit(AppMutations.SET_LOADING, false)
-          this.snackbar = SNACKBAR_SUCCESS
-          this.snackbar.text = 'Successfully Updated Parameters'
-          this.snackbar.enabled = true
+          this.snackbar = getSnackbar('SUCCESS', 'Parameter Updated')
         } catch (e) {
           this.$store.commit(AppMutations.SET_LOADING, false)
-          this.snackbar = SNACKBAR_ERROR
-          this.snackbar.text = 'Error Saving Updates'
-          this.snackbar.enabled = true
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Parameter')
         }
 
       }

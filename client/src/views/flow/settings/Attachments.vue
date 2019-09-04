@@ -70,22 +70,28 @@
         </v-list>
       </v-container>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 
 <script>
-import {mapState} from 'vuex'
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
+import Snackbar from '@/components/Snackbar.vue'
+import { getSnackbar } from '@/helpers/helpers'
 import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
 
 export default {
   name: 'Attachments',
   mixins: [Vue2Filters.mixin],
+  components: {
+    Snackbar
+  },
   data () {
     return {
+      snackbar: {},
       attachmentTypes: [],
       addNew: false,
       newType: {},
@@ -98,29 +104,66 @@ export default {
   },
   methods: {
     async getAttachmentTypes () {
-      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/attachmentType/types`)
-      this.attachmentTypes = orderBy(data, [a => a.attachmentType.toLowerCase()])
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/attachmentType/types`)
+        this.attachmentTypes = orderBy(data, [a => a.attachmentType.toLowerCase()])
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Attachment Types')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async deleteType (typeId) {
-      await deleteRequest(`/api/v1/flow/${this.companyId}/attachmentType/type/${typeId}`)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await deleteRequest(`/api/v1/flow/${this.companyId}/attachmentType/type/${typeId}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Action Type')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async addNewType () {
-      this.newType.companyId = this.companyId
-      // this.newProcess.createdById = this.userId
-      const {data} = await postRequest(`/api/v1/flow/${this.companyId}/attachmentType/type`, this.newType)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newType.companyId = this.companyId
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/attachmentType/type`, this.newType)
 
-      // add it to the records already on the screen
-      this.attachmentTypes.push(data)
-      this.attachmentTypes = orderBy(this.attachmentTypes, [a => a.attachmentType.toLowerCase()])
+        this.snackbar = getSnackbar('SUCCESS', 'Action Type Added')
 
-      // reset the new process fields
-      this.addNew = false
-      this.newType = {}
+        // add it to the records already on the screen
+        this.attachmentTypes.push(data)
+        this.attachmentTypes = orderBy(this.attachmentTypes, [a => a.attachmentType.toLowerCase()])
+
+        // reset the new process fields
+        this.addNew = false
+        this.newType = {}
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async saveType (a) {
-      this.selectedAttachmentTypeId = null
-      a.modifiedById = this.userId
-      await putRequest(`/api/v1/flow/${this.companyId}/attachmentType/type`, a)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.selectedAttachmentTypeId = null
+        a.modifiedById = this.userId
+        await putRequest(`/api/v1/flow/${this.companyId}/attachmentType/type`, a)
+        this.snackbar = getSnackbar('SUCCESS')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   },
   async created () {

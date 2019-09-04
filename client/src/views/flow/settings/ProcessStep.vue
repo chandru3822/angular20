@@ -27,14 +27,15 @@
       </v-toolbar>
       <router-view/>
     </v-flex>
-
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import orderBy from 'lodash.orderby'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getSnackbar } from '@/helpers/helpers'
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
   import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
@@ -42,10 +43,12 @@
     name: 'ProcessStep',
     mixins: [Vue2Filters.mixin],
     components: {
-      ProcessStepCustomFieldGroups
+      ProcessStepCustomFieldGroups,
+      Snackbar
     },
     data () {
       return {
+        snackbar: {},
         changesMade: false,
         processStepId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
@@ -68,9 +71,15 @@
     methods: {
       async getProcessStepDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}`)
-        this.processStep = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}`)
+          this.processStep = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
     }
 

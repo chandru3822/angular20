@@ -198,6 +198,7 @@
         </template>
       </v-data-table>
     </v-container>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
@@ -205,20 +206,23 @@
   import Vue2Filters from 'vue2-filters'
   import draggable from 'vuedraggable'
   import {AppMutations} from '@/stores/AppStore'
-  import orderBy from 'lodash.orderby'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getSnackbar } from '@/helpers/helpers'
   import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
     mixins: [Vue2Filters.mixin],
     components: {
-      draggable
+      draggable,
+      Snackbar
     },
     props: {
       customFieldGroups: Array,
     },
     data() {
       return {
+        snackbar: {},
         newGroup: {},
         newField: {},
         // selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet.
@@ -242,20 +246,26 @@
       }
     },
     computed: {},
-    async created() {},
     methods: {
       async saveFieldGroup() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        // todo: what is the best way to NOT hardcode this?  processStep objectTypeId = 4
-        this.newGroup.objectTypeId = 4
-        this.newGroup.groupOrder = 0
-        this.newGroup.processStepId = this.$route.params.id
+        try {
+          // todo: what is the best way to NOT hardcode this?  processStep objectTypeId = 4
+          this.newGroup.objectTypeId = 4
+          this.newGroup.groupOrder = 0
+          this.newGroup.processStepId = this.$route.params.id
 
-        const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroup`, this.newGroup)
-        this.customFieldGroups.push(data)
-        this.newGroup = {}
-        this.createNew = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroup`, this.newGroup)
+          this.customFieldGroups.push(data)
+          this.newGroup = {}
+          this.createNew = false
+          this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Group')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       changeGroupOrder() {
         console.log('changed group order')
@@ -264,53 +274,105 @@
         console.log('changed field order')
       },
       async deleteGroupFromStep(groupId) {
-        await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Group Deleted From Step')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Group From Step')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteFieldFromGroup(fieldGroupId) {
-        await deleteRequest(`/api/v1/flow/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Field Deleted From Group')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Field From Group')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async fetchAvailableCustomFields(objectTypeId, groupId) {
-        if (this.addField && this.newFieldType === 'native') {
-          const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
-            params: {
-              objectTypeId,
-              groupId,
-              processStepId: this.processStepId
-            }
-          })
-          this.availableCustomFields = data
-          this.parentObjects = []
-          this.ancillaryCustomFields = []
-        } else if (this.addField && this.newFieldType === 'ancillary') {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
-          this.selectedAncillaryField = {}
-          this.parentObjects = data
-          this.availableCustomFields = []
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          if (this.addField && this.newFieldType === 'native') {
+            const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
+              params: {
+                objectTypeId,
+                groupId,
+                processStepId: this.processStepId
+              }
+            })
+            this.availableCustomFields = data
+            this.parentObjects = []
+            this.ancillaryCustomFields = []
+          } else if (this.addField && this.newFieldType === 'ancillary') {
+            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
+            this.selectedAncillaryField = {}
+            this.parentObjects = data
+            this.availableCustomFields = []
+          }
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async assignCustomField(cfg) {
-        this.addField = false
-        this.newField.fieldOrder = 0
-        this.newField.customFieldGroupId = cfg.id
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addField = false
+          this.newField.fieldOrder = 0
+          this.newField.customFieldGroupId = cfg.id
 
-        await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, this.newField)
-        cfg.customFields.push(this.newField)
-        this.newField = {}
+          await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, this.newField)
+          cfg.customFields.push(this.newField)
+          this.newField = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Assigning Custom Field')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async loadFieldsByParent() {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${this.parent.id}`)
-        this.ancillaryCustomFields = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${this.parent.id}`)
+          this.ancillaryCustomFields = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async assignAncillaryCustomField(customFieldGroupId) {
-        const params = {
-          customFieldGroupId,
-          id: null,
-          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
-          fieldOrder: 0
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {
+            customFieldGroupId,
+            id: null,
+            ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
+            fieldOrder: 0
+          }
+          await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, params)
+          this.selectedAncillaryField = {}
+          this.addField = false
+          this.snackbar = getSnackbar('SUCCESS', 'Ancillary Field Assigned')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Assigning Ancillary Field')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, params)
-        this.selectedAncillaryField = {}
-        this.addField = false
       },
       filterCustomFieldGroups () {
         return this.customFieldGroups.filter(cfg => { return !cfg.archived})

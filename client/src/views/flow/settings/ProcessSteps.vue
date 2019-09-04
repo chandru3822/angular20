@@ -69,19 +69,26 @@
         </v-list>
       </v-container>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getSnackbar } from '@/helpers/helpers'
   import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
   export default {
     name: 'ProcessSteps',
     mixins: [Vue2Filters.mixin],
+    components: {
+      Snackbar
+    },
     data () {
       return {
+        snackbar: {},
         addNew: false,
         newStep: {},
         selectedProcessStepId: null,
@@ -95,16 +102,40 @@
     methods: {
       async getProcessSteps () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep`)
-        this.processSteps = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep`)
+          this.processSteps = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteProcessStep (processStepId) {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${processStepId}`)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${processStepId}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Process Step Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Process Step')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async addProcessStep () {
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep`, this.newStep)
-        this.$router.push({path: `/settings/processStep/${data.id}/components`})
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep`, this.newStep)
+          this.$router.push({path: `/settings/processStep/${data.id}/components`})
+          this.snackbar = getSnackbar('SUCCESS', 'Process Step Added')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Process Step')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
     },
     async created () {

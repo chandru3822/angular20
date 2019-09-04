@@ -100,6 +100,7 @@
         </template>
       </v-data-table>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
@@ -107,13 +108,19 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
+import Snackbar from '@/components/Snackbar.vue'
+import { getSnackbar } from '@/helpers/helpers'
 import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
 export default {
   name: 'Process',
   mixins: [Vue2Filters.mixin],
+  components: {
+    Snackbar
+  },
   data () {
     return {
+      snackbar: {},
       addNew: false,
       newProcessStep: {},
       availableProcessSteps: [],
@@ -147,39 +154,78 @@ export default {
   methods: {
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes/${this.processId}`)
-      this.process = data
-      this.$store.commit(AppMutations.SET_LOADING, false)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes/${this.processId}`)
+        this.process = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async saveProcess () {
       console.log('will save process here')
     },
     async deleteStepFromProcess (id) {
       //reset the addNew field in case they delete one while it is open
-      this.addNew = false
-      await deleteRequest(`/api/v1/flow/${this.companyId}/processes/processStepProcess/${id}`)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNew = false
+        await deleteRequest(`/api/v1/flow/${this.companyId}/processes/processStepProcess/${id}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Step Deleted from Process')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Step From Process')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async getOwningOrgs () {
-      console.log('will load orgs here')
-      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/org/owning`)
-      this.owningOrgs = data
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/org/owning`)
+        this.owningOrgs = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async getAvailableProcessSteps () {
-      //reset field in case they hit cancel
-      this.newProcessStep = {}
-      this.addNew = !this.addNew
-      if(this.addNew) {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes/availableProcessSteps/${this.processId}`)
-        this.availableProcessSteps = data
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //reset field in case they hit cancel
+        this.newProcessStep = {}
+        this.addNew = !this.addNew
+        if(this.addNew) {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes/availableProcessSteps/${this.processId}`)
+          this.availableProcessSteps = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async assignProcessStep () {
-      const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processes/${this.processId}/processStep`, this.newProcessStep)
-      console.log('randaLogger', data)
-      this.process.processStepProcesses.push(data)
-      this.process.processStepProcesses = orderBy(this.process.processStepProcesses, p => p.processStepName.toLowerCase())
-      this.addNew = false
-      this.newProcessStep = {}
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processes/${this.processId}/processStep`, this.newProcessStep)
+        console.log('randaLogger', data)
+        this.process.processStepProcesses.push(data)
+        this.process.processStepProcesses = orderBy(this.process.processStepProcesses, p => p.processStepName.toLowerCase())
+        this.addNew = false
+        this.newProcessStep = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Process Step Assigned')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Assigning Process Step')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   },
 }

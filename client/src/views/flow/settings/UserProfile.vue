@@ -104,7 +104,7 @@ import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
 import {getRequest, deleteRequest, putRequest, postRequest, EMAIL_RULES, STANDARD_IMAGES_ONLY} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
-import { SNACKBAR_SUCCESS, SNACKBAR_ERROR } from '@/helpers/helpers'
+import { getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'UserProfile',
@@ -173,17 +173,13 @@ export default {
           callback: async (img) => {
             console.log('saved image', img)
             this.profileImage = img
-            this.snackbar = SNACKBAR_SUCCESS
-            this.snackbar.text = 'Successfully Uploaded Image'
-            this.snackbar.enabled = true
+            this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         })
       } catch(e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = SNACKBAR_ERROR
-        this.snackbar.text = 'Error Uploading Document'
-        this.snackbar.enabled = true
+        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

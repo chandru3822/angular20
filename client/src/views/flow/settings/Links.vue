@@ -81,22 +81,28 @@
         </v-list>
       </v-container>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 
 <script>
-  import {mapState} from 'vuex'
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getSnackbar } from '@/helpers/helpers'
   import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
 
   export default {
     name: 'Attachments',
     mixins: [Vue2Filters.mixin],
+    components: {
+      Snackbar
+    },
     data () {
       return {
+        snackbar: {},
         links: [],
         addNew: false,
         newLink: {},
@@ -110,30 +116,63 @@
     methods: {
       async getLinks () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links`)
-        this.links = orderBy(data, [a => a.link.toLowerCase()])
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links`)
+          this.links = orderBy(data, [a => a.link.toLowerCase()])
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteLink (typeId) {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/links/${typeId}`)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/${this.companyId}/links/${typeId}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async addNewLink () {
-        this.newLink.companyId = this.companyId
-        // this.newProcess.createdById = this.userId
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/links`, this.newLink)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.newLink.companyId = this.companyId
+          // this.newProcess.createdById = this.userId
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/links`, this.newLink)
 
-        // add it to the records already on the screen
-        this.links.push(data)
-        this.links = orderBy(this.links, [a => a.link.toLowerCase()])
+          // add it to the records already on the screen
+          this.links.push(data)
+          this.links = orderBy(this.links, [a => a.link.toLowerCase()])
 
-        // reset the new process fields
-        this.addNew = false
-        this.newLink = {}
+          // reset the new process fields
+          this.addNew = false
+          this.newLink = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Link Added')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async saveLink (a) {
-        this.selectedLinkId = null
-        a.modifiedById = this.userId
-        await putRequest(`/api/v1/flow/${this.companyId}/links`, a)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.selectedLinkId = null
+          a.modifiedById = this.userId
+          await putRequest(`/api/v1/flow/${this.companyId}/links`, a)
+          this.snackbar = getSnackbar('SUCCESS', 'Link Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Link')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async created () {

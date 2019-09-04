@@ -76,6 +76,19 @@ public class ProcessStepActionService {
 
     Long id = sqlCache.updateReturningId("processStepAction.updateAction", params, "id").longValue();
 
+    // delete childProcessSteps if it is a link (if they changed the type)
+    if(action.getActionTypeId() == 1L && !action.getProcessStepActionChildProcesses().isEmpty()) {
+      for(ProcessStepActionChildProcess child : action.getProcessStepActionChildProcesses()){
+        deleteChildProcessFromAction(child.getId());
+      }
+    }
+    // delete childLinks if it is a button (if they changed the type)
+    if(action.getActionTypeId() == 2L && !action.getProcessStepActionLinks().isEmpty()) {
+      for(ProcessStepActionLink link : action.getProcessStepActionLinks()){
+        deleteLinkFromAction(link.getId());
+      }
+    }
+
     if(!action.getProcessStepLogicList().isEmpty()) {
       // handle saving logic items.
       // archive all old ones
@@ -110,6 +123,16 @@ public class ProcessStepActionService {
   }
 
   // CHILD PROCESSES
+  public List<ProcessStep> getChildProcessStepsForAction(Long companyId, Long stepId, Long actionId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("stepId", stepId);
+    params.put("actionId", actionId);
+
+    List<ProcessStep> results = sqlCache.query("processStepAction.getChildProcessStepsForAction", params, ProcessStep.class);
+    return results;
+  }
+
   public ProcessStepActionChildProcess addChildStepToAction(Long actionId, ProcessStepActionChildProcess child) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

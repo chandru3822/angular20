@@ -43,20 +43,26 @@
       </v-sheet>
     </v-flex>
   </v-layout>
+  <Snackbar :snackbar="snackbar"></Snackbar>
 </v-container>
 </template>
 
 <script>
-import {mapState} from 'vuex'
 import {AppMutations} from '@/stores/AppStore'
+import Snackbar from '@/components/Snackbar.vue'
+import { getSnackbar } from '@/helpers/helpers'
 import Vue2Filters from 'vue2-filters'
 import { getRequest } from '@/helpers/helpers'
 
 export default {
   name: 'Settings',
   mixins: [Vue2Filters.mixin],
+  components: {
+    Snackbar
+  },
   data () {
     return {
+      snackbar: {},
       objectTypes: [],
       companyId: this.$store.state.user.details.companyId
     }
@@ -66,9 +72,15 @@ export default {
   methods: {
     async getCustomFieldObjectTypes () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getCustomFieldObjectTypes`)
-      this.objectTypes = data
-      this.$store.commit(AppMutations.SET_LOADING, false)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getCustomFieldObjectTypes`)
+        this.objectTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
   },
   created () {

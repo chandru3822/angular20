@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.model.ProcessStepAction;
 import com.albatross.api.v1.flow.model.ProcessStepActionChildProcess;
 import com.albatross.api.v1.flow.model.ProcessStepActionLink;
@@ -46,6 +47,14 @@ public class ProcessStepActionController {
   }
 
   // child process steps
+
+  @RequestMapping(value = "/{actionId}/childProcessSteps", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStep> getChildProcessStepsForAction (@PathVariable Long companyId,
+                                                          @PathVariable Long stepId,
+                                                          @PathVariable Long actionId) {
+    return processStepActionService.getChildProcessStepsForAction(companyId, stepId, actionId);
+  }
+
   @RequestMapping(value = "/{actionId}/addChildStepToAction", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStepActionChildProcess addChildStepToAction(@PathVariable Long actionId,
                                                             @RequestBody ProcessStepActionChildProcess child) {

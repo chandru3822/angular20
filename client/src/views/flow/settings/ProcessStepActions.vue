@@ -263,50 +263,60 @@
                 <!-- BUTTON -->
                 <div v-if="item.actionTypeId === 2">
                   <v-btn v-if="!addChildProcess"
-                         @click="addChildProcess = true; loadParentObjects()">
+                         @click="addChildProcess = true; loadChildProcessSteps(item.id)">
                     <v-icon>add</v-icon>
                     Add Child Process
                   </v-btn>
-                  <v-btn v-else="addChildProcess"
-                        @click="addChildProcess = false">
-                    <v-icon>remove</v-icon>
-                    Cancel
-                  </v-btn>
-                  <v-select v-if="addChildProcess"
-                            v-model="selectedProcessStep"
-                            :items="parentObjects"
-                            label="Parent Object"
-                            item-text="processStepName"
-                            return-object
-                            @input="saveProcessStepToAction(item)"
-                  ></v-select>
+                  <v-card class="pa-3" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
+                    <h3>Add Child Process</h3>
+                    <v-select v-model="selectedProcessStep"
+                              :items="childProcessSteps"
+                              label="Parent Object"
+                              item-text="processStepName"
+                              return-object
+                    ></v-select>
+                    <input type="checkbox" v-model="selectedProcessStep.triggerAutomatically">
+                    Trigger Automatically
+                    <div class="mt-3">
+                      <v-btn :disabled="!selectedProcessStep.id"
+                             @click="saveProcessStepToAction(item)">
+                        <v-icon>save</v-icon>
+                        Save
+                      </v-btn>
+                      <v-btn class="ml-3" @click="addChildProcess = false">
+                        <v-icon>remove</v-icon>
+                        Cancel
+                      </v-btn>
+                    </div>
+                  </v-card>
                 </div>
                 <!-- LINK -->
                 <div v-if="item.actionTypeId === 1">
                   <v-btn v-if="!addChildLink"
-                         @click="addChildLink = true; loadLinks()">
+                         @click="addChildLink = true; loadLinks(item.id)">
                     <v-icon>add</v-icon>
                     Add Link
                   </v-btn>
-                  <v-btn v-else
-                        @click="addChildLink = false">
-                    <v-icon>remove</v-icon>
-                    Cancel
-                  </v-btn>
-                  <v-select v-if="addChildLink"
-                            v-model="selectedLink"
-                            :items="availableLinks"
-                            label="Available Links"
-                            item-text="link"
-                            return-object
-                            @input="saveLinkToAction(item)"
-                  ></v-select>
+                  <v-card class="pa-3" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildLink">
+                    <h3>Add Link</h3>
+                    <v-select v-model="selectedLink"
+                              :items="availableLinks"
+                              label="Available Links"
+                              item-text="link"
+                              return-object
+                              @input="saveLinkToAction(item)"
+                    ></v-select>
+                    <v-btn @click="addChildLink = false">
+                      <v-icon>remove</v-icon>
+                      Cancel
+                    </v-btn>
+                  </v-card>
                 </div>
               </v-container>
               <!-- @randa - move requirements to their own component. it is confusing having them in this file -->
 
               <v-flex xs12 justify-center class="pl-3 pr-3"
-                      v-if="item.processStepActionLinks && item.processStepActionLinks.length > 0">
+                      v-if="item.actionTypeId === 1 && item.processStepActionLinks && item.processStepActionLinks.length > 0">
                 <h3 class="text-left">Child Links</h3>
                 <v-list v-for="(al, index) in filterBy(item.processStepActionLinks, false, 'archived')"
                         :key="index"
@@ -357,7 +367,7 @@
                 </v-list>
               </v-flex>
               <v-flex xs12 justify-center class="pl-3 pr-3"
-                      v-if="item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
+                      v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
                 <h3 class="text-left">Child Process Steps</h3>
                 <v-list v-for="(cp, index) in filterBy(item.processStepActionChildProcesses, false, 'archived')"
                         :key="index"
@@ -517,7 +527,7 @@
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import { SNACKBAR_SUCCESS, SNACKBAR_ERROR } from '@/helpers/helpers'
+  import { getSnackbar } from '@/helpers/helpers'
   import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
 
@@ -577,6 +587,7 @@
         addChildProcess: false,
         selectedProcessStep: {},
 
+        childProcessSteps: [],
         addChildLink: false,
         selectedLink: {},
         availableLinks: []
@@ -594,46 +605,94 @@
       //requirements
       async getRequirements() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`)
-        this.requirements = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`)
+          this.requirements = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       filterRequirements () {
         return this.requirements.filter(r => { return !r.archived})
       },
       async getRequirementTypes () {
-        this.addNewRequirement = !this.addNewRequirement
-        if (this.addNewRequirement){
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/types`)
-          this.availableRequirementTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addNewRequirement = !this.addNewRequirement
+          if (this.addNewRequirement){
+            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/types`)
+            this.availableRequirementTypes = data
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async selectRequirementType() {
-        //1 == custom field, 2 == function
-        if(this.newRequirement.processStepRequirementTypeId === 1){
-          this.loadParentObjects()
-        } else {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function`)
-          this.availableFunctions = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          //1 == custom field, 2 == function
+          if(this.newRequirement.processStepRequirementTypeId === 1){
+            this.loadParentObjects()
+          } else {
+            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function`)
+            this.availableFunctions = data
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async loadParentObjects() {
-        if(!this.parentObjects || this.parentObjects.length === 0){
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
-          this.parentObjects = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          if(!this.parentObjects || this.parentObjects.length === 0){
+            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
+            this.parentObjects = data
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async loadFieldsByParent(parent) {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${parent.id}`)
-        this.customFields = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${parent.id}`)
+          this.customFields = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async loadFunctionParams() {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/dynamicParams`)
-        this.newRequirement.requirementParamDynamicValues = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/dynamicParams`)
+          this.newRequirement.requirementParamDynamicValues = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async loadOperatorTypes() {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operator`)
-        this.operatorTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operator`)
+          this.operatorTypes = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       validateRequirementForm() {
         let invalidParams = false
@@ -647,103 +706,227 @@
         return invalidParams || !this.newRequirement.requirementValue
       },
       async saveNewRequirement() {
-        this.newRequirement.processStepId = this.processStepId
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`, this.newRequirement)
-        this.requirements.push(data)
-        this.addNewRequirement = false
-        this.newRequirement = {
-          requirementParamDynamicValues: []
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.newRequirement.processStepId = this.processStepId
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`, this.newRequirement)
+          this.requirements.push(data)
+          this.addNewRequirement = false
+          this.newRequirement = {
+            requirementParamDynamicValues: []
+          }
+          this.parent = {}
+          this.availableFunctions = []
+          this.snackbar = getSnackbar('SUCCESS', 'Requirement Added')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Requirement')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.parent = {}
-        this.availableFunctions = []
       },
       async updateRequirement(requirement) {
-        const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`, requirement)
-        this.expanded = []
-        // this forces the list to update the operator displayed ... using requirement = data did not work
-        requirement.operatorType = data.operatorType
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`, requirement)
+          this.expanded = []
+          // this forces the list to update the operator displayed ... using requirement = data did not work
+          requirement.operatorType = data.operatorType
+          this.snackbar = getSnackbar('SUCCESS', 'Requirement Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Requirement')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteRequirement(id) {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/${id}`)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/${id}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       //ACTIONS
       async getActions () {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`)
-        this.actions = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`)
+          this.actions = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       filterActions () {
         return this.actions.filter(a => { return !a.archived})
       },
       async saveNewAction() {
-        this.newAction.processStepId = this.processStepId
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`, this.newAction)
-        this.actions.push(data)
-        this.addNewAction = false
-        this.newAction = {}
-      },
-      async updateAction(action) {
-        action.processStepLogicList = action.processStepLogicList.filter(l => {return !l.archived})
-
-        const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`, action)
-        // this forces the list to update the values displayed ... using action = data did not work
-        action.actionType = data.actionType
-        action.processStepStatusType = data.processStepStatusType
-        this.actionExpanded = []
-      },
-      async getStatusTypes () {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
-        this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
-      },
-      async getOperationTypes () {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operation`)
-        this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
-      },
-      async deleteAction(item) {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${item.id}`)
-        item.archived = true
-      },
-      //child process steps
-      async saveProcessStepToAction (action) {
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
-          processStepId: this.selectedProcessStep.id,
-          displayOrder: 0,
-          triggerAutomatically: true
-        })
-        action.processStepActionChildProcesses.push(data)
-        this.selectedProcessStep = {}
-        this.addChildProcess = false
-      },
-      async deleteChildProcessFromAction (actionId, id) {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
-      },
-      async updateChildStep (actionId, childStep) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          this.snackbar = SNACKBAR_SUCCESS
-          this.snackbar.text = 'Successfully Saved Change'
-          this.snackbar.enabled = true
-          await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
+          this.newAction.processStepId = this.processStepId
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`, this.newAction)
+          this.actions.push(data)
+          this.addNewAction = false
+          this.newAction = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Action Added')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = SNACKBAR_ERROR
-          this.snackbar.text = 'Error Saving Change'
-          this.snackbar.enabled = true
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async updateAction(action) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          action.processStepLogicList = action.processStepLogicList.filter(l => {return !l.archived})
+
+          const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`, action)
+          // this forces the list to update the values displayed ... using action = data did not work
+          action.actionType = data.actionType
+          action.processStepStatusType = data.processStepStatusType
+          action.processStepActionChildProcesses = data.processStepActionChildProcesses
+          action.processStepActionLinks = data.processStepActionLinks
+          this.actionExpanded = []
+          this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
+          this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getOperationTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operation`)
+          this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteAction(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${item.id}`)
+          item.archived = true
+          this.snackbar = getSnackbar('SUCCESS', 'Action Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      //child process steps
+      async loadChildProcessSteps(actionId) {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/childProcessSteps`)
+        this.childProcessSteps = data
+      },
+      async saveProcessStepToAction (action) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
+            processStepId: this.selectedProcessStep.id,
+            displayOrder: 0,
+            triggerAutomatically: !!this.selectedProcessStep.triggerAutomatically
+          })
+          action.processStepActionChildProcesses.push(data)
+          this.selectedProcessStep = {}
+          this.addChildProcess = false
+          this.snackbar = getSnackbar('SUCCESS', 'Child Process Added To Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Child Process Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteChildProcessFromAction (actionId, id) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Child Process Deleted From Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Process From Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async updateChildStep (actionId, childStep) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
+          this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       // child links
-      async loadLinks() {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links`)
-        this.availableLinks = data
+      async loadLinks(actionId) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links/action/${actionId}`)
+          this.availableLinks = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async saveLinkToAction (action) {
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
-          linkId: this.selectedLink.id
-        })
-        action.processStepActionLinks.push(data)
-        this.selectedLink = {}
-        this.addChildLink = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
+            linkId: this.selectedLink.id
+          })
+          action.processStepActionLinks.push(data)
+          this.selectedLink = {}
+          this.addChildLink = false
+          this.snackbar = getSnackbar('SUCCESS', 'Link Added to Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Link to Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteLinkFromAction (actionId, id) {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Link Deleted From Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Link From Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     }
 

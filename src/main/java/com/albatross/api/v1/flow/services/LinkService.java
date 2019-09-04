@@ -103,5 +103,14 @@ public class LinkService {
     return getLink(link.getCompanyId(), id);
   }
 
+  public List<Link> getAvailableLinksForAction(Long companyId, Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("id", id);
+
+    List<Link> links = sqlCache.query("link.getAvailableLinksForAction", params, Link.class);
+    return links;
+  }
+
 
 }

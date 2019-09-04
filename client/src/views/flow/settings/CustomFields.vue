@@ -123,6 +123,7 @@
         </v-list-group>
       </v-list>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
@@ -132,16 +133,20 @@
   import cloneDeep from 'lodash.clonedeep'
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getSnackbar } from '@/helpers/helpers'
   import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
 
   export default {
     name: 'CustomFields',
     mixins: [Vue2Filters.mixin],
     components: {
-      draggable
+      draggable,
+      Snackbar
     },
     data() {
       return {
+        snackbar: {},
         model: '',
         expand: false,
         selectedFieldId: null,
@@ -168,34 +173,65 @@
     methods: {
       async getCustomFields() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getAll`)
-        data.forEach(d => {
-          d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
-        })
-        this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
-        this.customFields = cloneDeep(this.allCustomFields)
-        this.customFields.unshift(cloneDeep(this.blankNewObject))
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getAll`)
+          data.forEach(d => {
+            d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
+          })
+          this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
+          this.customFields = cloneDeep(this.allCustomFields)
+          this.customFields.unshift(cloneDeep(this.blankNewObject))
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getCustomFieldObjectTypes() {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getCustomFieldObjectTypes`)
-        data.forEach(d => d.archived = true)
-        this.customFieldObjectTypes = cloneDeep(data)
-        this.objectFilters = data
-        this.objectFilters.unshift({id: -2, objectType: 'Unassigned'})
-        this.objectFilters.unshift({id: -1, objectType: 'All'},)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getCustomFieldObjectTypes`)
+          data.forEach(d => d.archived = true)
+          this.customFieldObjectTypes = cloneDeep(data)
+          this.objectFilters = data
+          this.objectFilters.unshift({id: -2, objectType: 'Unassigned'})
+          this.objectFilters.unshift({id: -1, objectType: 'All'},)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getCompanyDataTypes() {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/dataType/getCompanyDataTypes`)
-        this.dataTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/dataType/getCompanyDataTypes`)
+          this.dataTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteField(item) {
-        item.archived = true
-        const {status} = await putRequest(`/api/v1/flow/delete`, item)
-        if (status === 200) {
-          this.customFields = this.customFields.filter((cf) => {
-            return cf.id !== item.id
-          })
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          item.archived = true
+          const {status} = await putRequest(`/api/v1/flow/delete`, item)
+          if (status === 200) {
+            this.customFields = this.customFields.filter((cf) => {
+              return cf.id !== item.id
+            })
+          }
+          this.snackbar = getSnackbar('SUCCESS', 'Field Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Field')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       changeSelectedObjectType() {
@@ -216,51 +252,49 @@
         this.customFields.unshift(cloneDeep(this.blankNewObject))
       },
       async saveChanges(editMode, object) {
-        // the 'Add Field' row had to have an id in order to use it in the data table repeat.  remove the id here
-        object.id = object.id === -1 ? null : object.id
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          // woah @randa, wtf is this?
+          // the 'Add Field' row had to have an id in order to use it in the data table repeat.  remove the id here
+          object.id = object.id === -1 ? null : object.id
 
-        // set the display order to save to DB
-        object.dropdownOptions.forEach((ddo, idx) => {
-          ddo.displayOrder = idx
-        })
-
-        object.companyDataTypeId = object.companyDataType.id
-        object.modifiedById = this.$store.state.user.details.id
-
-        // set the values of customFieldObjectTypes to be saved in db
-        if(object.custom) {
-          object.customFieldObjectTypes = this.customFieldObjectTypes.filter(cfot => {
-            cfot.objectTypeId = cfot.id
-            return !cfot.archived
+          // set the display order to save to DB
+          object.dropdownOptions.forEach((ddo, idx) => {
+            ddo.displayOrder = idx
           })
-        }
 
-        console.log('randaLogger', object)
+          object.companyDataTypeId = object.companyDataType.id
+          object.modifiedById = this.$store.state.user.details.id
 
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customField`, object)
-        data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
+          // set the values of customFieldObjectTypes to be saved in db
+          if(object.custom) {
+            object.customFieldObjectTypes = this.customFieldObjectTypes.filter(cfot => {
+              cfot.objectTypeId = cfot.id
+              return !cfot.archived
+            })
+          }
 
-        // if it was a new field, reset the first index, then push it to both arrays
-        if (null === object.id) {
-          object = cloneDeep(this.blankNewObject)
-          this.customFields[0] = object
-          this.allCustomFields.push(data)
-          this.customFields.push(data)
-        }
+          console.log('randaLogger', object)
 
-        // re-sort in case the fieldName changed
-        this.customFields = orderBy(this.customFields, cf => cf.fieldName.toLowerCase())
-      },
-      resetCustomField(item, expanded) {
-        // is this really the only way to reset the values if they cancel changes?  i tried resetting just the one index but the dom doesn't refresh
-        if (!expanded) {
-          // const idx = this.customFields.indexOf(item)
-          // console.log('randaLogger', idx)
-          // this.customFields[idx] = cloneDeep(this.allCustomFields[idx])
-          this.customFields = cloneDeep(this.allCustomFields)
-          this.customFields.unshift(cloneDeep(this.blankNewObject))
-        } else if (item.custom) {
-          item.customFieldObjectTypes = cloneDeep(this.customFieldObjectTypes)
+          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customField`, object)
+          data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
+
+          // if it was a new field, reset the first index, then push it to both arrays
+          if (null === object.id) {
+            object = cloneDeep(this.blankNewObject)
+            this.customFields[0] = object
+            this.allCustomFields.push(data)
+            this.customFields.push(data)
+          }
+
+          // re-sort in case the fieldName changed
+          this.customFields = orderBy(this.customFields, cf => cf.fieldName.toLowerCase())
+          this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       addOption(options) {

@@ -141,13 +141,15 @@
         </v-container>
       </v-flex>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
-  import orderBy from 'lodash.orderby'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getSnackbar } from '@/helpers/helpers'
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
   import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
@@ -155,10 +157,12 @@
     name: 'ProcessStepComponents',
     mixins: [Vue2Filters.mixin],
     components: {
-      ProcessStepCustomFieldGroups
+      ProcessStepCustomFieldGroups,
+      Snackbar
     },
     data () {
       return {
+        snackbar: {},
         addNewCustomFieldGroup: false,
         changesMade: false,
         addNewType: false,
@@ -188,57 +192,126 @@
     methods: {
       async getProcessStepDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}`)
-        this.processStep = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}`)
+          this.processStep = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async saveProcessStep () {
-        const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep`, this.processStep)
-        this.changesMade = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep`, this.processStep)
+          this.changesMade = false
+          this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getAttachmentTypesForProcessStep () {
-        this.addNewType = !this.addNewType
-        if(this.addNewType){
-          const { data } = await getRequest(`/api/v1/flow/${this.companyId}/attachmentType/typesForStep/${this.$route.params.id}`)
-          this.availableAttachmentTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addNewType = !this.addNewType
+          if(this.addNewType){
+            const { data } = await getRequest(`/api/v1/flow/${this.companyId}/attachmentType/typesForStep/${this.$route.params.id}`)
+            this.availableAttachmentTypes = data
+          }
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async assignNewType () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
         this.newType.processStepId = this.$route.params.id
-        const { data } = await postRequest(`/api/v1/flow/${this.companyId}/attachmentType/processStepType`, this.newType)
-        console.log('randaLogger', data)
-        this.processStep.attachmentTypes.push(data)
-        // reset fields
-        this.addNewType = false
-        this.newType = {}
+          const { data } = await postRequest(`/api/v1/flow/${this.companyId}/attachmentType/processStepType`, this.newType)
+          console.log('randaLogger', data)
+          this.processStep.attachmentTypes.push(data)
+          // reset fields
+          this.addNewType = false
+          this.newType = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteTypeFromStep (id) {
-        this.addNewType = false
-        console.log('deleting')
-        await deleteRequest(`/api/v1/flow/${this.companyId}/attachmentType/processStepType/${id}`)
-        // this.availableAttachmentTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addNewType = false
+          console.log('deleting')
+          await deleteRequest(`/api/v1/flow/${this.companyId}/attachmentType/processStepType/${id}`)
+          // this.availableAttachmentTypes = data
+          this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getLinksForProcessStep () {
-        this.addNewLink = !this.addNewLink
-        if(this.addNewLink){
-          const { data } = await getRequest(`/api/v1/flow/${this.companyId}/links/processStep/${this.$route.params.id}`)
-          this.availableLinks = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addNewLink = !this.addNewLink
+          if(this.addNewLink){
+            const { data } = await getRequest(`/api/v1/flow/${this.companyId}/links/processStep/${this.$route.params.id}`)
+            this.availableLinks = data
+          }
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async assignNewLink () {
-        this.newLink.processStepId = this.$route.params.id
-        const { data } = await postRequest(`/api/v1/flow/${this.companyId}/links/processStep`, this.newLink)
-        console.log('randaLogger', data)
-        this.processStep.links.push(data)
-        // reset fields
-        this.addNewLink = false
-        this.newLink = {}
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.newLink.processStepId = this.$route.params.id
+          const { data } = await postRequest(`/api/v1/flow/${this.companyId}/links/processStep`, this.newLink)
+          console.log('randaLogger', data)
+          this.processStep.links.push(data)
+          // reset fields
+          this.addNewLink = false
+          this.newLink = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Link Added')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteLinkFromStep (id) {
-        this.addNewLink = false
-        console.log('deleting')
-        await deleteRequest(`/api/v1/flow/${this.companyId}/links/processStep/${id}`)
-        // this.availableAttachmentTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addNewLink = false
+          console.log('deleting')
+          await deleteRequest(`/api/v1/flow/${this.companyId}/links/processStep/${id}`)
+          // this.availableAttachmentTypes = data
+          this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     }
 

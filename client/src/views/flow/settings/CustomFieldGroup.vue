@@ -178,27 +178,30 @@
         </v-data-table>
       </v-container>
     </v-flex>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-layout>
 </template>
 
 <script>
-import { IS_MOBILE } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
-import orderBy from 'lodash.orderby'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
+import Snackbar from '@/components/Snackbar.vue'
+import { getSnackbar } from '@/helpers/helpers'
 import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
 
 export default {
   name: 'CustomFieldGroup',
   mixins: [Vue2Filters.mixin],
   components: {
-    draggable
+    draggable,
+    Snackbar
   },
   data () {
     return {
+      snackbar: {},
       addNew: false,
       selectedIndex: null,
       fieldOrderChanged: false,
@@ -248,73 +251,148 @@ export default {
   methods: {
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
-        params: {
-          objectTypeId: this.$route.params.id
-        }
-      })
-      this.customFieldGroups = cloneDeep(data)
-      this.$store.commit(AppMutations.SET_LOADING, false)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
+          params: {
+            objectTypeId: this.$route.params.id
+          }
+        })
+        this.customFieldGroups = cloneDeep(data)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async fetchAvailableCustomFields (groupId) {
-      const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
-        params: {
-          objectTypeId: this.$route.params.id,
-          groupId
-        }
-      })
-      this.availableCustomFields = data
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
+          params: {
+            objectTypeId: this.$route.params.id,
+            groupId
+          }
+        })
+        this.availableCustomFields = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async addCustomFieldGroup () {
-      this.newGroup.objectTypeId = this.$route.params.id
-      // setting groupOrder to 0, then they can sort later
-      this.newGroup.groupOrder = 0
-      const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroup`, this.newGroup)
-      this.newGroup = {}
-      this.addNew = false
-      // add the new type to the list
-      this.customFieldGroups.push(data)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newGroup.objectTypeId = this.$route.params.id
+        // setting groupOrder to 0, then they can sort later
+        this.newGroup.groupOrder = 0
+        const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroup`, this.newGroup)
+        this.newGroup = {}
+        this.addNew = false
+        // add the new type to the list
+        this.customFieldGroups.push(data)
+        this.snackbar = getSnackbar('SUCCESS', 'Group Added')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Custom Field Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async assignCustomField (item) {
-      this.addField = false
-      this.newField.fieldOrder = 0
-      this.newField.customFieldGroupId = item.id
-      const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, this.newField)
-      console.log('randaLogger d', data)
-      console.log('randaLogger i', item)
-      item.customFields.unshift(data)
-      this.newField = {}
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addField = false
+        this.newField.fieldOrder = 0
+        this.newField.customFieldGroupId = item.id
+        const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, this.newField)
+        item.customFields.unshift(data)
+        this.newField = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async saveGroupChanges (groups) {
-      groups.forEach((g, idx) => {
-        g.groupOrder = idx
-      })
-      await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroups`, groups)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        groups.forEach((g, idx) => {
+          g.groupOrder = idx
+        })
+        await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroups`, groups)
+        this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Group Changes')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async saveGroupName (group) {
-      await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroup`, group)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroup`, group)
+        this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async deleteGroup (groupId) {
-      await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async deleteFieldFromGroup (fieldGroupId) {
-      await deleteRequest(`/api/v1/flow/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await deleteRequest(`/api/v1/flow/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Field Removed From Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Removing Field from Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async saveFieldChanges (fields) {
-      // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
-      // pull those needing to be saved out of list
-      let fieldsToSave = []
-      fields.forEach((f, idx) => {
-        let order = idx + 1
-        if(f.fieldOrder !== order){
-          f.fieldOrder = order
-          fieldsToSave.push(f)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+        // pull those needing to be saved out of list
+        let fieldsToSave = []
+        fields.forEach((f, idx) => {
+          let order = idx + 1
+          if(f.fieldOrder !== order){
+            f.fieldOrder = order
+            fieldsToSave.push(f)
+          }
+        })
+        // save them here
+        console.log('randaLogger', fieldsToSave)
+        if(fieldsToSave.length > 0) {
+          await putRequest(`/api/v1/flow/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
         }
-      })
-      // save them here
-      console.log('randaLogger', fieldsToSave)
-      if(fieldsToSave.length > 0) {
-        await putRequest(`/api/v1/flow/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
 
     },
