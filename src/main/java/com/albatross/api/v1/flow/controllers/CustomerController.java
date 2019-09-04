@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.v1.flow.model.Customer;
+import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.services.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,5 +35,10 @@ public class CustomerController {
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public Customer updateCustomer(@RequestBody Customer customer) {
         return customerService.updateCustomer(customer);
+    }
+
+    @GetMapping(value = "/{customerId}/project", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Project> getCustomerProjects(@PathVariable Long companyId, @PathVariable Long customerId) {
+      return new ResponseEntity<>(new Project(), HttpStatus.OK);
     }
 }
