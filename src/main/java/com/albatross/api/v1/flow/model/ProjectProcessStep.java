@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ProjectProcessStep {
 
-  private Long id, companyProcessId, processStepStatusTypeId;
+  private Long projectProcessStepId, companyProcessId, processStepStatusTypeId;
 
   private String owner, processStepName, processStepStatusType;
 

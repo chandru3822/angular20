@@ -67,7 +67,7 @@
 
   <project.getProcessStepsByProjectId><![CDATA[
     select
-      p.id,
+      pps.id as project_process_step_id,
       ps.process_step_name,
       u.first_name || ' ' || u.last_name as owner,
       coalesce(pps.date_modified, pps.date_created) as last_updated,
