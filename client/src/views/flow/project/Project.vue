@@ -8,21 +8,27 @@
       <v-sheet color="#fff" class="elevation-2 pa-4 br-10">
         <v-row>
 
-          <v-col cols="7" class="text-left">
+          <v-col cols="4" class="text-left">
             <h1>Joe Customer</h1>
             <h3>123 main Street - Denver, CO</h3>
           </v-col>
 
-          <v-col cols="1">
-            Riley Burgess
-          </v-col>
+          <v-col cols="8">
+            <v-row justify="end">
+                <UserCard
+                  name="Riley Burgess"
+                  role="Setter"
+                  location="Colorado"
+                  imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
+                  class="user-card"/>
 
-          <v-col cols="1">
-            Mike Falls
-          </v-col>
-
-          <v-col cols="1">
-            Associated Contact
+                <UserCard
+                  name="Mike Falls"
+                  role="Closer"
+                  location="Colorado"
+                  imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
+                  class="user-card"/>
+            </v-row>
           </v-col>
 
         </v-row>
@@ -42,18 +48,18 @@
         <v-col cols="12">
           <v-card>
 
-            <Spinner 
+            <Spinner
               v-if="isFieldsLoading"
               size="20"
               color="primary"
             />
-            
+
             <v-row
               v-else
-              class="text-left" 
-              style="border-bottom: 1px solid gray;" 
-              no-gutters 
-              v-for="field in fields" 
+              class="text-left"
+              style="border-bottom: 1px solid gray;"
+              no-gutters
+              v-for="field in fields"
               :key="field.customFieldId"
             >
               <v-col cols="4" class="font-weight-bold">{{ field.fieldName }}</v-col>
@@ -77,14 +83,14 @@
         <v-col cols="12">
           <v-card>
 
-            <Spinner 
+            <Spinner
               v-if="isProcessStepsLoading"
               size="20"
               color="primary"
             />
 
             <v-card-text v-else style="padding: 0">
-              <v-row 
+              <v-row
                 class="font-weight-bold"
                 no-gutters
                 style="border-bottom: 1px solid gray;"
@@ -120,11 +126,13 @@
 
 import {getRequest} from '@/helpers/helpers'
 import Spinner from '@/components/Spinner'
+import UserCard from '@/components/UserCard'
 
 export default {
   name: 'Project',
   components: {
-    Spinner
+    Spinner,
+    UserCard
   },
   data () {
     return {
@@ -171,6 +179,11 @@ export default {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+.user-card {
+  margin-left: 10px;
+  margin-right: 10px;
 }
 </style>
 
