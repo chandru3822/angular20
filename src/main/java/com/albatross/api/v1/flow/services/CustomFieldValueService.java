@@ -21,19 +21,13 @@ public class CustomFieldValueService {
   @Autowired
   SecurityService securityService;
 
-  @Autowired
-  NamedParameterJdbcTemplate jdbc;
-
   public String getCustomFieldValuesByPrimaryIdAndType(Long companyId, Long primaryId, Long objectTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("primaryId", primaryId);
     params.put("objectTypeId", objectTypeId);
 
-//    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getCustomFieldValuesByPrimaryIdAndType", params, CustomFieldGroup.class);
     String results = sqlCache.queryForObject("customFieldValues.getCustomFieldValuesByPrimaryIdAndType", params, String.class);
-//    String sql = sqlCache.getByKey("customFieldValues.getCustomFieldValuesByPrimaryIdAndType");
-//    String results = jdbc.queryForObject(sql, params, String.class);
     return results;
   }
 }

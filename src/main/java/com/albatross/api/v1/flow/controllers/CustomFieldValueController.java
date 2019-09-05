@@ -18,8 +18,8 @@ public class CustomFieldValueController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public String getCustomFieldValuesByPrimaryIdAndType(@PathVariable Long companyId,
-                                                                         @RequestParam Long primaryId,
-                                                                         @RequestParam Long objectTypeId) {
+                                                         @RequestParam Long primaryId,
+                                                         @RequestParam Long objectTypeId) {
       // this function name is a special gift for humes
       return customFieldValueService.getCustomFieldValuesByPrimaryIdAndType(companyId, primaryId, objectTypeId);
     }

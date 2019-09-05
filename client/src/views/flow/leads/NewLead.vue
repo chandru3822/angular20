@@ -83,6 +83,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, BASIC_REQUIRED_RULE, EMAIL_RULES, getSnackbar} from '@/helpers/helpers'
+import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
 import {getSources} from '@/services/sourceService'
 
@@ -105,11 +106,8 @@ export default {
     }
   },
   created () {
-    //for now we only support one country, will add endpoint when that changes
-    this.countries = [
-      { id: 1, country: 'United States of America'}
-    ]
     this.getStates()
+    this.getCountries()
     // todo: turn back on when data is available
     // this.getSources()
   },
@@ -128,6 +126,18 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getCountries () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getCountries()
+        this.countries = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

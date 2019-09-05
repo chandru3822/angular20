@@ -57,8 +57,7 @@
         </div>
       </v-col>
       <v-col xs-6 class="text-left">
-        <h3 class="mb-4">Notes & Activity Feed</h3>
-        add this as component so humes can use it too
+        <NotesAndActivity :showNotes="true" :showActivity="false"></NotesAndActivity>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -69,13 +68,15 @@
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
 export default {
   name: 'Lead',
   components: {
     Snackbar,
-    CustomValueInput
+    CustomValueInput,
+    NotesAndActivity
   },
   data () {
     return {
