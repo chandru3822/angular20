@@ -1,0 +1,7 @@
+<sql>
+  <customFieldValues.getCustomFieldValuesByPrimaryIdAndType><![CDATA[
+    select *
+    from flow.get_custom_field_values(:companyId::integer, :primaryId::integer, :objectTypeId::integer);
+  ]]></customFieldValues.getCustomFieldValuesByPrimaryIdAndType>
+
+</sql>

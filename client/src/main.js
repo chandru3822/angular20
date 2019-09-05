@@ -5,6 +5,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from 'axios'
+import VueFlatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 import { UserMutations } from './stores/UserStore'
 import JsonExcel from 'vue-json-excel'
 // import moment from 'moment'
@@ -21,6 +23,7 @@ Vue.config.productionTip = false
 Vue.component('downloadExcel', JsonExcel)
 
 Vue.use(Vue2Filters)
+Vue.use(VueFlatPickr)
 
 Vue.filter('formatDate', function (value, type, timezone, format) {
   /*

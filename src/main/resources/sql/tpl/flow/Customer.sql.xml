@@ -4,7 +4,7 @@
       id,
       first_name,
       last_name,
-      full_name,
+      first_name || ' ' || last_name as full_name,
       email,
       phone,
       company_id
@@ -13,16 +13,19 @@
   ]]></customer.getAllByCompany>
 
   <customer.getById><![CDATA[
-    select
-      id,
-      first_name,
-      last_name,
-      full_name,
-      email,
-      phone,
-      company_id
+    select id,
+           first_name,
+           last_name,
+           first_name || ' ' || last_name as full_name,
+           email,
+           phone,
+           mobile,
+           company_id,
+           street1,
+           city,
+           44 as state_id
     from flow.customer
-    where id = :customerId;
+    where id = :customerId
   ]]></customer.getById>
 
   <customer.updateCustomer><![CDATA[

@@ -82,8 +82,9 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import { getSnackbar } from '@/helpers/helpers'
-import {getRequest, deleteRequest, putRequest, postRequest, BASIC_REQUIRED_RULE, EMAIL_RULES} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, BASIC_REQUIRED_RULE, EMAIL_RULES, getSnackbar} from '@/helpers/helpers'
+import {getStates} from '@/services/stateService'
+import {getSources} from '@/services/sourceService'
 
 export default {
   name: 'Leads',
@@ -121,7 +122,7 @@ export default {
     async getStates () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/state`)
+        const {data} = await getStates()
         this.states = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -133,7 +134,7 @@ export default {
     async getSources () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/source`)
+        const {data} = await getSources()
         this.sources = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

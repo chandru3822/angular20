@@ -3,7 +3,9 @@
     <v-row class="lead-header elevation-1">
       <v-col xs-4 class="text-left">
         <div class="lead-title">{{customer.fullName}}</div>
-        <div class="lead-subtitle">{{customer.street1}}</div>
+        <div class="lead-subtitle">
+          {{customer.street1}} - {{customer.city}}, {{customer.state}}
+        </div>
       </v-col>
       <v-col xs-4 class="lead-status">
         Status: {{customer.status}}
@@ -50,10 +52,7 @@
         <div class="mt-4" v-for="cfg in customFieldGroups">
           <h3 class="mb-4">{{cfg.groupName}}</h3>
           <v-card class="pa-4">
-            <v-text-field v-for="cf in cfg.customFields"
-                text
-                label="Phone"
-                v-model="cf.fieldValue"></v-text-field>
+            <CustomValueInput v-for="cf in cfg.customFieldValues" :readonly="true" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
@@ -67,19 +66,24 @@
 </template>
 
 <script>
+import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
+import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
 export default {
   name: 'Lead',
   components: {
-    Snackbar
+    Snackbar,
+    CustomValueInput
   },
   data () {
     return {
       snackbar: {},
       customer: {},
-      customFieldGroups: []
+      customFieldGroups: [],
+      customerId: this.$route.params.id,
+      companyId: this.$store.state.user.details.companyId
     }
   },
   created () {
@@ -88,48 +92,40 @@ export default {
   },
   methods: {
     async getCustomFieldGroups() {
-      this.customFieldGroups = [
-        {
-          id: 1,
-          groupName: 'Customer Group Here',
-          customFields: [
-            {
-              id: 1,
-              fieldName: 'Application Date',
-              fieldValue: '2018-10-18'
-            }
-          ]
-        },
-        {
-          id: 2,
-          groupName: 'Another Group Here',
-          customFields: [
-            {
-              id: 1,
-              fieldName: 'My field name',
-              fieldValue: 'a value'
-            }
-          ]
-        }
-      ]
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldValues`, { params: {
+          primaryId: this.customerId,
+          //  2 = customer
+          objectTypeId: 2
+        }})
+        this.customFieldGroups = data
+        console.log('randaLogger',this.customFieldGroups)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async getCustomer () {
-      this.customer = {
-        firstName: 'Joe',
-        lastName: 'Customer',
-        fullName: 'Joe Customer',
-        street1: '123 Main Street',
-        city: 'Denver',
-        email: 'joe.customer@gmail.com',
-        source: 'Another Source',
-        leadSourceDetail: 'Setter Gen',
-        mobile: '999-999-9999',
-        phone: '999-999-9999',
-        state: 'Colorado',
-        status: 'Active',
-        owner: 'Riley Burgess',
-        ownerPosition: 'Setter',
-        ownerState: 'Oregon'
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/${this.customerId}`)
+        this.customer = data
+
+        // todo: remove these later
+        this.customer.status = 'Active'
+        this.customer.owner = 'Riley Burgess'
+        this.customer.ownerPosition = 'Setter'
+        this.customer.ownerState = 'Oregon'
+        this.customer.source = 'Another Source'
+        this.customer.leadSourceDetail = 'Setter Gen'
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Customer')
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
   }
