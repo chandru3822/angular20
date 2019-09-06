@@ -8,6 +8,20 @@
     values (:parentId, :createdById, :note)
   ]]></note.insertNote>
 
+  <note.getNote><![CDATA[
+    select n.id,
+           n.note,
+           n.parent_id,
+           n.date_created,
+           n.date_modified,
+           n.created_by_id,
+           creator.first_name || ' ' || creator.last_name as created_by,
+           n.modified_by_id
+    from flow.note n
+    inner join flow.user creator on creator.id = n.created_by_id
+    where n.id = :id
+  ]]></note.getNote>
+
   <note.updateNote><![CDATA[
     update flow.note
         set note = :note,

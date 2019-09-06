@@ -45,9 +45,13 @@ export default {
   methods: {
     async saveNote() {
       try {
-        const {data} = await postRequest(`/api/v1/flow/note/saveCustomerNote`, {primaryId: this.primaryId, note: this.note})
+        const {data} = await postRequest(`/api/v1/flow/note/saveCustomerNote`, {
+          primaryId: this.primaryId,
+          note: this.note
+        })
         // this.notes.unshift(data)
-        props.notes.unshift(data)
+        this.$props.notes.unshift(data)
+        this.note = null
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
       } catch (e) {
         console.error('*** ERROR ***', e)

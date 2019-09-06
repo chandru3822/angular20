@@ -23,7 +23,7 @@ public class CustomFieldValueController {
     return customFieldValueService.getCustomFieldValuesByPrimaryIdAndType(companyId, primaryId, ObjectType.CUSTOMER.id);
   }
 
-  //@humes  
+  //@humes
   @GetMapping(value = "/project", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getProjectCustomFieldValues(@PathVariable Long companyId,
                                             @RequestParam Long primaryId) {

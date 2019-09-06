@@ -37,7 +37,7 @@ public class NoteService {
 
   public Note getNote(Long noteId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("noteId", noteId);
+    params.put("id", noteId);
     Optional<Note> result = sqlCache.get("note.getNote", params, Note.class);
     return result.orElse(null);
   }
@@ -66,7 +66,7 @@ public class NoteService {
     p2.put("primaryId", note.getPrimaryId());
     p2.put("noteId", noteId);
     p2.put("typeId", typeId);
-    sqlCache.updateReturningId("note.insertNoteRelation", p2, "id");
+    sqlCache.query("note.insertNoteRelation", p2, String.class);
 
     return getNote(noteId);
   }
