@@ -66,7 +66,7 @@
       </v-form>
       <v-container class="text-left" v-for="cfg in customFieldGroups">
         <h3>{{cfg.groupName}}</h3>
-        <CustomValueInput v-for="cf in cfg.customFields" :readonly="false" :field="cf"></CustomValueInput>
+        <CustomValueInput v-for="cf in cfg.customFieldValues" :readonly="false" :field="cf"></CustomValueInput>
       </v-container>
     </v-card>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -102,6 +102,8 @@ export default {
     }
   },
   created () {
+    //todo: use only for testing
+    this.setFakeLead()
     this.getStates()
     this.getCountries()
     this.getCustomFieldGroups()
@@ -150,6 +152,7 @@ export default {
     },
     async saveLead () {
       this.$store.commit(AppMutations.SET_LOADING, true)
+      this.lead.customFieldGroups = this.customFieldGroups
       try {
         const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customer`, this.lead)
         this.$router.push({name: 'lead', params: {id: data.id}})
@@ -160,6 +163,20 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    setFakeLead () {
+      this.lead = {
+        firstName: 'Randa',
+        lastName: 'Test',
+        phone: '1111111111',
+        mobile: '1111111111',
+        street1: '1234 Oak St.',
+        city: 'Salt Lake City',
+        stateId: 44,
+        countryId: 1,
+        postalCode: '87654',
+        email: 'randa@randa.com'
+      }
+    }
   }
 
 }

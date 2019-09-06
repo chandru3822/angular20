@@ -47,6 +47,7 @@
                                     ccv.int_value as "intValue",
                                     ccv.int_array_value as "intArrayValue",
                                     cfga.custom_field_group_id as "customFieldGroupId",
+                                    cfga.id as "customFieldGroupAssignmentId",
                                     cfga.custom_field_id as "customFieldId",
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
@@ -88,5 +89,24 @@
     and ot.company_id = :companyId
     order by cfg.group_order
   ]]></customFieldValues.getCustomerFieldValues>
+
+  <customFieldValues.updateCustomerCustomFieldValue><![CDATA[
+    update flow.customer_custom_field_value
+    set date_value = :dateValue,
+        timestamp_value = :timestampValue,
+        boolean_value = :booleanValue,
+        text_value = :textValue,
+        numeric_value = :numericValue,
+        int_value = :intValue,
+        int_array_value = :intArrayValue,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></customFieldValues.updateCustomerCustomFieldValue>
+
+  <customFieldValues.insertCustomerCustomFieldValue><![CDATA[
+    insert into flow.customer_custom_field_value(customer_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
+    values (:customerId, :dateValue, :customFieldGroupAssignmentId, :timestampValue, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
+  ]]></customFieldValues.insertCustomerCustomFieldValue>
 
 </sql>

@@ -8,6 +8,7 @@
         </div>
       </v-col>
       <v-col xs-4 class="lead-owner">
+        <v-btn @click="saveLead">Save</v-btn>
         <div>
           <v-avatar
               :tile="false"
@@ -91,6 +92,19 @@ export default {
     this.getNotes()
   },
   methods: {
+    async saveLead() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.customer.customFieldGroups = this.customFieldGroups
+      try {
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customer`, this.customer)
+        this.$router.push({name: 'lead', params: {id: data.id}})
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Lead')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getCustomFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

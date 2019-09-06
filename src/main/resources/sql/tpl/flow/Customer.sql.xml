@@ -13,28 +13,49 @@
   ]]></customer.getAllByCompany>
 
   <customer.getById><![CDATA[
-    select id,
-           first_name,
-           last_name,
-           date_created,
-           first_name || ' ' || last_name as full_name,
-           email,
-           phone,
-           mobile,
-           company_id,
-           street1,
-           city,
-           44 as state_id
-    from flow.customer
-    where id = :customerId
+    select c.id,
+       c.first_name,
+       c.last_name,
+       c.date_created,
+       c.first_name || ' ' || last_name as full_name,
+       c.email,
+       c.phone,
+       c.mobile,
+       c.customer_type_id,
+       c.company_id,
+       c.street1,
+       c.city,
+       c.state_id,
+       s.state,
+       c.country_id,
+       ct.country
+    from flow.customer c
+        inner join flow.state s on s.id = c.state_id
+        inner join flow.country ct on ct.id = c.country_id
+    where c.id = :customerId
   ]]></customer.getById>
 
   <customer.updateCustomer><![CDATA[
-
+    update flow.customer set
+           customer_type_id = :customerTypeId,
+           first_name = :firstName,
+           last_name = :lastName,
+           street1 = :street1,
+           city = :city,
+           state_id = :stateId,
+           postal_code = :postalCode,
+           country_id = :countryId,
+           phone = :phone,
+           email = :email,
+           mobile = :mobile,
+           modified_by_id = :modifiedById,
+           owner_user_position_id = :ownerUserPositionId,
+           date_modified = now()
+    where id = :id
   ]]></customer.updateCustomer>
 
   <customer.insertCustomer><![CDATA[
     insert into flow.customer(customer_type_id, first_name, last_name, street1, city, state_id, postal_code, country_id, phone, email, mobile, created_by_id, company_id)
-    values (:customerTypeId, :firstName, :lastName, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId)
+    values (:customerTypeId, :firstName, :lastName, :street1, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId)
   ]]></customer.insertCustomer>
 </sql>

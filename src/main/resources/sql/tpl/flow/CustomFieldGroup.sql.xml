@@ -24,10 +24,12 @@
            coalesce((
                         SELECT array_to_json(array_agg(row_to_json(fields)))
                         FROM (
-                                 select cf.id,
+                                 select null as id,
                                         cfga.custom_field_group_id as "customFieldGroupId",
+                                        cfga.id as "customFieldGroupAssignmentId",
                                         cfga.field_order as "fieldOrder",
                                         cf.list_of_value_id as "listOfValueId",
+                                        cf.id as "customFieldId",
                                         cf.field_name as "fieldName",
                                         cf.custom_field_sql_key_id as "customFieldSqlKeyId",
                                         cfsk.sql_key as "customFieldSqlKey",
@@ -58,7 +60,7 @@
                                    and cfot.archived is not true
                                    and cfot.show_on_insert is true
                                  order by cfga.field_order
-                             ) fields), '[]') AS "customFields"
+                             ) fields), '[]') AS "customFieldValues"
     from flow.custom_field_group cfg
              inner join flow.object_type ot on ot.id = cfg.object_type_id
     where cfg.object_type_id = :objectTypeId

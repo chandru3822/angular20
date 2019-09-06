@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +35,9 @@ public class CustomFieldGroupService {
 
   @Autowired
   CustomFieldService customFieldService;
+
+  @Autowired
+  CustomFieldValueService customFieldValueService;
 
   @Autowired
   ObjectMapper om;
@@ -180,25 +182,11 @@ public class CustomFieldGroupService {
 
     List<CustomFieldGroup> results = sqlCache.query("customFieldGroup.getInsertFieldsByType", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
-    results.stream().filter(cfg -> !cfg.getCustomFields().isEmpty()).collect(Collectors.toList());
+    results.stream().filter(cfg -> !cfg.getCustomFieldValues().isEmpty()).collect(Collectors.toList());
 
-    handleCustomListOfValue(results);
+    customFieldValueService.handleCustomListOfValue(results);
 
     return results;
-  }
-
-  public void handleCustomListOfValue (List<CustomFieldGroup> results) {
-    for(CustomFieldGroup cfg : results) {
-      for(CustomField cv : cfg.getCustomFields()){
-        if(null != cv.getCustomFieldSqlKey()) {
-          String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
-          if(null != sql) {
-            List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
-            cv.setListOfValues(listOfValues);
-          }
-        }
-      }
-    }
   }
 
   public void updateFieldShowOnInsert(CustomFieldObjectType objectType) {

@@ -20,7 +20,7 @@ public class CustomFieldValueController {
   private final CustomFieldValueService customFieldValueService;
 
   @GetMapping(value = "/customer", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getTestCustomFieldValues(@PathVariable Long companyId,
+  public List<CustomFieldGroup> getCustomFieldValues(@PathVariable Long companyId,
                                                          @RequestParam Long primaryId) {
     return customFieldValueService.getCustomerCustomValues(companyId, primaryId);
   }

@@ -1,18 +1,18 @@
 package com.albatross.api.v1.flow.enums;
 
-public enum StatusType {
-    ACTIVE(1L),
-    INACTIVE(2L);
+public enum CustomerType {
+    CUSTOMER(1L),
+    LEAD(2L);
 
     public final Long id;
 
-    StatusType(Long id) {
+    CustomerType(Long id) {
         this.id = id;
     }
 
-    public static StatusType get(String name) {
+    public static CustomerType get(String name) {
         name = name.toLowerCase();
-        for (StatusType s : values()) {
+        for (CustomerType s : values()) {
             if (s.toString().equals(name)) {
                 return s;
             }
