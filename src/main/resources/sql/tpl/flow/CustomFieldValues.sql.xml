@@ -1,7 +1,36 @@
 <sql>
   <customFieldValues.getCustomFieldValuesByPrimaryIdAndType><![CDATA[
     select *
-    from flow.get_custom_field_values(:companyId::integer, :primaryId::integer, :objectTypeId::integer);
+    from flow.get_custom_field_values(:companyId::integer, :primaryId::integer, :objectTypeId::integer, :projectId::integer);
   ]]></customFieldValues.getCustomFieldValuesByPrimaryIdAndType>
 
+  <customFieldValues.getProjectFieldValues><![CDATA[
+    select coalesce((
+      select array_to_json(array_agg(row_to_json(fields)))
+        from (
+          select
+            cf.id as custom_field_id,
+            pcfv.id as project_custom_value_id,
+            cf.field_name,
+            cfga.field_order,
+            cdt.company_data_type,
+            pcfv.date_value,
+            pcfv.text_value,
+            pcfv.timestamp_value,
+            pcfv.boolean_value
+          from flow.project p
+          inner join flow.project_custom_field_value pcfv on pcfv.project_id = p.id
+          inner join flow.custom_field_group_assignment cfga on cfga.id = pcfv.custom_field_group_assignment_id
+          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+          inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+          inner join flow.object_type ot on ot.id = cfg.object_type_id
+          inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+          where p.id = :projectId
+            and ot.company_id = :companyId
+            and ot.object_code = 'PROJECT'
+            and cfga.archived is false
+          order by cfga.field_order
+        ) fields), '[]'
+    ) as fieldGroups;
+  ]]></customFieldValues.getProjectFieldValues>
 </sql>

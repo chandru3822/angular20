@@ -25,7 +25,7 @@
                and company_process.process_id = :processId;
     ]]>
   </project.get>
-  
+
   <project.getAllForCustomer>
     <![CDATA[
              select project.id,
@@ -39,31 +39,6 @@
              where project.customer_id = :customerId;
     ]]>
   </project.getAllForCustomer>
-
-  <project.getFieldsByProjectId><![CDATA[
-    select
-      cf.id as custom_field_id,
-      pcv.id as project_custom_value_id,
-      cf.field_name,
-      cfga.field_order,
-      cdt.company_data_type,
-      pcv.date_value,
-      pcv.text_value,
-      pcv.timestamp_value,
-      pcv.boolean_value
-    from flow.project p
-    inner join flow.project_custom_value pcv on pcv.project_id = p.id
-    inner join flow.custom_field_group_assignment cfga on cfga.id = pcv.custom_field_group_assignment_id
-    inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-    inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-    inner join flow.object_type ot on ot.id = cfg.object_type_id
-    inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-    where p.id = :projectId
-      and ot.company_id = :companyId
-      and ot.object_code = 'PROJECT'
-      and cfga.archived is false
-    order by cfga.field_order;
-  ]]></project.getFieldsByProjectId>
 
   <project.getProcessStepsByProjectId><![CDATA[
     select
