@@ -15,8 +15,8 @@ import java.util.List;
 public class CustomField {
 
   private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById,
-      customFieldGroupId, ancillaryCustomFieldGroupAssignmentId, customFieldGroupAssignmentId;
-  private String fieldName, objectType, groupName;
+      customFieldGroupId, ancillaryCustomFieldGroupAssignmentId, customFieldGroupAssignmentId, customFieldSqlKeyId;
+  private String fieldName, objectType, groupName, customFieldSqlKey;
   private Boolean archived;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> dropdownOptions;

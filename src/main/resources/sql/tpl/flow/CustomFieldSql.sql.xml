@@ -1,0 +1,9 @@
+<sql>
+  <customFieldSql.brs.ahjList><![CDATA[
+    select a.id,
+       a.name
+    from brs.ahj a
+    where archived is not true
+    order by a.name;
+  ]]></customFieldSql.brs.ahjList>
+</sql>

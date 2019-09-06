@@ -27,7 +27,7 @@ public class NoteService {
   @Autowired
   SecurityService securityService;
 
-  public List<Note> getByPrimaryAndType(Integer typeId, Long primaryId) {
+  public List<Note> getByPrimaryAndType(Long typeId, Long primaryId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
     params.put("primaryId", primaryId);
@@ -42,7 +42,7 @@ public class NoteService {
     return result.orElse(null);
   }
 
-  public Note saveNote(Integer typeId, Note note) {
+  public Note saveNote(Long typeId, Note note) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);

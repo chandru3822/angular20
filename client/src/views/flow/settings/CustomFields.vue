@@ -51,7 +51,7 @@
                   ></v-text-field>
                   <v-autocomplete
                       v-model="item.companyDataType"
-                      :items="dataTypes"
+                      :items="filterDataTypes(item)"
                       :disabled="!item.custom"
                       :readonly="!item.custom"
                       tabindex=2
@@ -61,6 +61,11 @@
                       autocomplete="new-password"
                       return-object
                   ></v-autocomplete>
+
+                  <v-text-field v-if="$store.getters.hasPermission('SYSTEM_ADMIN') && item.companyDataType && item.companyDataType.customBehavior"
+                                v-model="item.customFieldSqlKey"
+                                label="SQL Key"
+                  ></v-text-field>
 
                   <v-flex class="options-container" fluid
                           v-if="item.companyDataType && item.companyDataType.hasListValues">
@@ -170,6 +175,14 @@
       }
     },
     methods: {
+      filterDataTypes (item) {
+        if(this.$store.getters.hasPermission('SYSTEM_ADMIN')) {
+          return this.dataTypes
+        } else {
+          // filter out the system item if not a system admin
+          return !item.custom ? this.dataTypes : this.dataTypes.filter(dt => {return !dt.customBehavior})
+        }
+      },
       async getCustomFields() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -316,6 +329,7 @@
       }
     },
     async created() {
+      this.$store.getters.hasPermission('SYSTEM_ADMIN')
       await this.getCompanyDataTypes()
       this.getCustomFieldObjectTypes()
       this.getCustomFields()

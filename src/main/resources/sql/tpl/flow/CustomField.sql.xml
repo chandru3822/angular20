@@ -8,6 +8,8 @@
      cf.created_by_id,
      cf.modified_by_id,
      cf.company_data_type_id,
+     cf.custom_field_sql_key_id,
+     cfsk.sql_key as "custom_field_sql_key",
      coalesce((
                   select array_to_json(array_agg(rows))
                   from (
@@ -36,6 +38,7 @@
                              order by lv.display_order
                         ) rows), '[]') AS dropdown_options
     from flow.custom_field cf
+      left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where cf.id = :id
     order by cf.field_name
   ]]></customField.getOne>
@@ -49,6 +52,8 @@
        cf.created_by_id,
        cf.modified_by_id,
        cf.company_data_type_id,
+       cf.custom_field_sql_key_id,
+       cfsk.sql_key as "custom_field_sql_key",
        coalesce((
                   select array_to_json(array_agg(rows))
                   from (
@@ -78,6 +83,7 @@
                                order by lv.display_order
                           ) rows), '[]') AS dropdown_options
     from flow.custom_field cf
+      left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where cf.company_id = :companyId
       and cf.archived is not true
     order by cf.field_name
@@ -107,8 +113,8 @@
   ]]></customField.saveField>
 
   <customField.insertField><![CDATA[
-    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id)
-    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId)
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key_id)
+    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKeyId)
     returning id
   ]]></customField.insertField>
 
@@ -134,6 +140,17 @@
       date_modified = now()
     where id = :id
   ]]></customField.archiveListOfValue>
+
+  <customField.insertSqlKey><![CDATA[
+    insert into flow.custom_field_sql_key(sql_key)
+    values (:customFieldSqlKey)
+  ]]></customField.insertSqlKey>
+
+  <customField.updateSqlKey><![CDATA[
+    update flow.custom_field_sql_key
+      set sql_key = :customFieldSqlKey
+    where id = :customFieldSqlKeyId
+  ]]></customField.updateSqlKey>
 
   <customField.updateCustomFieldObjectType><![CDATA[
     update flow.custom_field_object_type

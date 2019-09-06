@@ -1,6 +1,7 @@
 <template>
   <div>
     <!-- todo: this needs lots of work, just round 1   -->
+    <!-- todo: need to handle modifying and saving field changes   -->
     <div v-if="field.companyDataTypeId === 2">
       <div class="field-label">{{field.fieldName}}</div>
       <flat-pickr
@@ -62,6 +63,15 @@
                   :label="field.fieldName"
                   v-model="field.intArrayValue"
     ></v-text-field>
+
+    <v-select v-if="field.companyDataTypeId === 9"
+              v-model="field.intValue"
+              text
+              :items="field.listOfValues"
+              :label="field.fieldName"
+              item-value="id"
+              item-text="name"
+    ></v-select>
   </div>
 </template>
 

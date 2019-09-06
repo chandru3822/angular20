@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class User {
@@ -12,6 +14,7 @@ public class User {
     private Long id, companyId, parentCompanyId;
     private String email, username, password, firstName, lastName, fullName, userStatusType, timezone, awsBucket;
     private Long userStatusTypeId;
+    private List<UserPermission> permissions;
 
     @JsonIgnore
     public boolean isUnlocked(){

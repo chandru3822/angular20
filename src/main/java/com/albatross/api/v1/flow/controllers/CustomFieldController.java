@@ -40,7 +40,7 @@ public class CustomFieldController {
     return field;
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteField(@PathVariable Long id) {
     customFieldService.deleteField(id);
   }

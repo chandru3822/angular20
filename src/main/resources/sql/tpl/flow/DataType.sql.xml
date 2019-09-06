@@ -6,7 +6,8 @@
        cdt.data_type_id,
        cdt.has_list_values,
        cdt.archived,
-       dt.data_type
+       dt.data_type,
+       dt.custom_behavior
     from flow.company_data_type cdt
            inner join flow.data_type dt on dt.id = cdt.data_type_id
     where cdt.company_id = :companyId

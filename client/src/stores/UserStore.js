@@ -53,12 +53,8 @@ export const UserStore = {
     }
   },
   getters: {
-    hasPermission: state => {
-      // todo fix
-      return true
-      // return state.details && state.details.permissions
-      //   ? !!state.details.permissions.find(p => p.permissionCode === 'HR_ADMIN')
-      //   : false
-    }
+    hasPermission: state => perm => {
+      return !!state.details.permissions.find(p => p.permissionCode === perm)
+    },
   }
 }
