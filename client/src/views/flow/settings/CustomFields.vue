@@ -70,9 +70,9 @@
                   <v-flex class="options-container" fluid
                           v-if="item.companyDataType && item.companyDataType.hasListValues">
                     <span>Selectable Options</span>
-                    <draggable v-model="item.dropdownOptions"
-                               group="dropdownOptions" @start="drag=true" @end="drag=false">
-                      <v-list v-for="(ddo, index2) in filterBy(item.dropdownOptions, false, 'archived')"
+                    <draggable v-model="item.listOfValues"
+                               group="listOfValues" @start="drag=true" @end="drag=false">
+                      <v-list v-for="(ddo, index2) in filterBy(item.listOfValues, false, 'archived')"
                               :class="{'shaded-row': index % 2}"
                               :key="index2">
                         <v-list-item class="grab">
@@ -93,7 +93,7 @@
                       </v-list>
                     </draggable>
                     <v-btn
-                        @click="addOption(item.dropdownOptions)">
+                        @click="addOption(item.listOfValues)">
                       Add Option
                     </v-btn>
                   </v-flex>
@@ -169,7 +169,7 @@
           custom: true,
           createdById: this.$store.state.user.details.id,
           companyId: this.$store.state.user.details.companyId,
-          dropdownOptions: [],
+          listOfValues: [],
           customFieldObjectTypes: []
         }
       }
@@ -271,7 +271,7 @@
           object.id = object.id === -1 ? null : object.id
 
           // set the display order to save to DB
-          object.dropdownOptions.forEach((ddo, idx) => {
+          object.listOfValues.forEach((ddo, idx) => {
             ddo.displayOrder = idx
           })
 
@@ -314,10 +314,10 @@
         // todo: use real form validation?
         let invalidOptions = false
         if (item.companyDataType && item.companyDataType.hasListValues) {
-          if (item.dropdownOptions.length === 0) {
+          if (item.listOfValues.length === 0) {
             invalidOptions = true
           } else {
-            item.dropdownOptions.forEach(ddo => {
+            item.listOfValues.forEach(ddo => {
               if (!ddo.name && !ddo.archived) {
                 invalidOptions = true
               }

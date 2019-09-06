@@ -130,6 +130,10 @@
                       </v-list-item-action>
                       <v-list-item-content>
                         {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
+                        <div class="text-left">
+                          <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
+                          Show On Insert
+                        </div>
                       </v-list-item-content>
                       <v-dialog
                           v-model="cf.deleteConfirm"
@@ -251,7 +255,7 @@ export default {
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
             objectTypeId: this.$route.params.id
           }
@@ -267,7 +271,7 @@ export default {
     async fetchAvailableCustomFields (groupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/customFieldGroup/getAvailableCustomFields`, {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/getAvailableCustomFields`, {
           params: {
             objectTypeId: this.$route.params.id,
             groupId
@@ -287,7 +291,7 @@ export default {
         this.newGroup.objectTypeId = this.$route.params.id
         // setting groupOrder to 0, then they can sort later
         this.newGroup.groupOrder = 0
-        const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addCustomFieldGroup`, this.newGroup)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/addCustomFieldGroup`, this.newGroup)
         this.newGroup = {}
         this.addNew = false
         // add the new type to the list
@@ -306,7 +310,7 @@ export default {
         this.addField = false
         this.newField.fieldOrder = 0
         this.newField.customFieldGroupId = item.id
-        const {data} = await postRequest(`/api/v1/flow/customFieldGroup/addFieldToGroup`, this.newField)
+        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/addFieldToGroup`, this.newField)
         item.customFields.unshift(data)
         this.newField = {}
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
@@ -323,7 +327,7 @@ export default {
         groups.forEach((g, idx) => {
           g.groupOrder = idx
         })
-        await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroups`, groups)
+        await putRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/updateCustomFieldGroups`, groups)
         this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -335,7 +339,7 @@ export default {
     async saveGroupName (group) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/api/v1/flow/customFieldGroup/updateCustomFieldGroup`, group)
+        await putRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/updateCustomFieldGroup`, group)
         this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -347,7 +351,7 @@ export default {
     async deleteGroup (groupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/api/v1/flow/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
+        await deleteRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
         this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -359,7 +363,7 @@ export default {
     async deleteFieldFromGroup (fieldGroupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/api/v1/flow/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
+        await deleteRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
         this.snackbar = getSnackbar('SUCCESS', 'Field Removed From Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -384,7 +388,7 @@ export default {
         // save them here
         console.log('randaLogger', fieldsToSave)
         if(fieldsToSave.length > 0) {
-          await putRequest(`/api/v1/flow/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
+          await putRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
         }
         this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -398,6 +402,21 @@ export default {
     filterCustomFieldGroups () {
       return this.customFieldGroups.filter(cfgt => { return !cfgt.archived})
     },
+    async updateShowOnInsert(cf) {
+      try {
+        const objectType = {
+          id: cf.customFieldObjectTypeId,
+          showOnInsert: cf.showOnInsert
+        }
+        await putRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/updateFieldShowOnInsert`, objectType)
+        this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   }
 }
 </script>

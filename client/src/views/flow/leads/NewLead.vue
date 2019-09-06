@@ -1,7 +1,13 @@
 <template>
   <v-container>
     <v-card class="pa-3">
-      <v-card-title>Add Lead</v-card-title>
+      <v-card-title>
+        Add Lead
+        <v-spacer></v-spacer>
+        <v-btn text class="mr-3" to="/leads">Cancel</v-btn>
+        <v-btn color="primary" dark @click="validate">Save</v-btn>
+      </v-card-title>
+
       <v-form ref="leadForm">
         <v-container>
           <v-row>
@@ -29,13 +35,6 @@
                         item-text="state"
                         item-value="id"
               ></v-select>
-              <v-select v-model="lead.countryId"
-                        :items="countries"
-                        :rules="requiredRules"
-                        label="Country"
-                        item-text="country"
-                        item-value="id"
-              ></v-select>
             </v-col>
             <v-col xs-12 sm-6>
               <v-text-field text
@@ -54,26 +53,21 @@
                             label="Zip Code"
                             :rules="requiredRules"
                             v-model="lead.postalCode"></v-text-field>
-              <v-select v-model="lead.sourceId"
-                        :items="sources"
-                        label="Source"
-                        item-text="source"
+              <v-select v-model="lead.countryId"
+                        :items="countries"
+                        :rules="requiredRules"
+                        label="Country"
+                        item-text="country"
                         item-value="id"
               ></v-select>
-              <v-select v-model="lead.leadSourceDetailId"
-                        :items="leadSourceDetails"
-                        label="Lead Source Detail"
-                        item-text="leadSourceDetail"
-                        item-value="id"
-              ></v-select>
-              <div class="text-right mt-3">
-                <v-btn text class="mr-3" to="/leads">Cancel</v-btn>
-                <v-btn color="primary" dark @click="validate">Save</v-btn>
-              </div>
             </v-col>
           </v-row>
         </v-container>
       </v-form>
+      <v-container class="text-left" v-for="cfg in customFieldGroups">
+        <h3>{{cfg.groupName}}</h3>
+        <CustomValueInput v-for="cf in cfg.customFields" :readonly="false" :field="cf"></CustomValueInput>
+      </v-container>
     </v-card>
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
@@ -85,12 +79,13 @@ import Snackbar from '@/components/Snackbar.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, BASIC_REQUIRED_RULE, EMAIL_RULES, getSnackbar} from '@/helpers/helpers'
 import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
-import {getSources} from '@/services/sourceService'
+import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
 export default {
   name: 'Leads',
   components: {
-    Snackbar
+    Snackbar,
+    CustomValueInput
   },
   data () {
     return {
@@ -100,6 +95,7 @@ export default {
       countries: [],
       sources: [],
       leadSourceDetails: [],
+      customFieldGroups: [],
       requiredRules: BASIC_REQUIRED_RULE,
       emailRules: EMAIL_RULES,
       companyId: this.$store.state.user.details.companyId,
@@ -108,13 +104,24 @@ export default {
   created () {
     this.getStates()
     this.getCountries()
-    // todo: turn back on when data is available
-    // this.getSources()
+    this.getCustomFieldGroups()
   },
   methods: {
     validate () {
       if (this.$refs.leadForm.validate()) {
         this.saveLead()
+      }
+    },
+    async getCustomFieldGroups () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/getCustomerInsertFields`)
+        this.customFieldGroups = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getStates () {
@@ -138,18 +145,6 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getSources () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getSources()
-        this.sources = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Sources')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

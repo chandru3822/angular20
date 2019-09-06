@@ -1,7 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldObjectType;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/customFieldGroup")
+@RequestMapping(value = "/api/v1/flow/{companyId}/customFieldGroup")
 public class CustomFieldGroupController {
 
   @Autowired
@@ -83,5 +85,15 @@ public class CustomFieldGroupController {
   @RequestMapping(value = "/updateCustomFieldGroups", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateCustomFieldGroups(@RequestBody List<CustomFieldGroup> customFieldGroups) {
     customFieldGroupService.updateCustomFieldGroups(customFieldGroups);
+  }
+
+  @RequestMapping(value = "/getCustomerInsertFields", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getCustomerInsertFields (@PathVariable Long companyId) {
+    return customFieldGroupService.getInsertFieldsByType(companyId, ObjectType.CUSTOMER.id);
+  }
+
+  @RequestMapping(value = "/updateFieldShowOnInsert", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateFieldShowOnInsert(@RequestBody CustomFieldObjectType objectType) {
+    customFieldGroupService.updateFieldShowOnInsert(objectType);
   }
 }

@@ -95,7 +95,7 @@ public class CustomFieldService {
     Long parentId = null;
     Long lovCreatedById;
 
-    if(customField.getDropdownOptions() != null && !customField.getDropdownOptions().isEmpty()) {
+    if(customField.getListOfValues() != null && !customField.getListOfValues().isEmpty()) {
       if(insertParentRecordIfNeeded) {
         // use created by unless field already existed then use modified id as the created for the list value row
         lovCreatedById = customField.getCreatedById();
@@ -113,7 +113,7 @@ public class CustomFieldService {
       }
 
       //insert the rest of the list values
-      for(ListOfValue lov : customField.getDropdownOptions()) {
+      for(ListOfValue lov : customField.getListOfValues()) {
         HashMap<String, Object> lovParams = new HashMap<>();
         lovParams.put("name", lov.getName());
         lovParams.put("parentId", parentId);
@@ -227,7 +227,7 @@ public class CustomFieldService {
       bw.registerCustomEditor(List.class, "customFieldObjectTypes",
           new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "dropdownOptions",
+      bw.registerCustomEditor(List.class, "listOfValues",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
     }
   }

@@ -36,7 +36,7 @@
                              where lv.parent_id = cf.list_of_value_id
                              and lv.archived is not true
                              order by lv.display_order
-                        ) rows), '[]') AS dropdown_options
+                        ) rows), '[]') AS list_of_values
     from flow.custom_field cf
       left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where cf.id = :id
@@ -81,7 +81,7 @@
                                where lv.parent_id = cf.list_of_value_id
                                and lv.archived is not true
                                order by lv.display_order
-                          ) rows), '[]') AS dropdown_options
+                          ) rows), '[]') AS list_of_values
     from flow.custom_field cf
       left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where cf.company_id = :companyId

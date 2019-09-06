@@ -38,6 +38,9 @@
             <v-text-field text
                           label="E-Mail"
                           v-model="customer.email"></v-text-field>
+            <v-text-field text
+                          label="Created Date"
+                          v-model="customer.dateCreated"></v-text-field>
           </v-card>
         </div>
         <div class="mt-4" v-for="cfg in customFieldGroups">

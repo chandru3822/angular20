@@ -17,4 +17,59 @@
     where id = :id
   ]]></customFieldGroup.deleteCustomFieldGroup>
 
+  <customFieldGroup.getInsertFieldsByType><![CDATA[
+    select cfg.id,
+           cfg.group_name as "groupName",
+           cfg.group_order as "groupOrder",
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(fields)))
+                        FROM (
+                                 select cf.id,
+                                        cfga.custom_field_group_id as "customFieldGroupId",
+                                        cfga.field_order as "fieldOrder",
+                                        cf.list_of_value_id as "listOfValueId",
+                                        cf.field_name as "fieldName",
+                                        cf.custom_field_sql_key_id as "customFieldSqlKeyId",
+                                        cfsk.sql_key as "customFieldSqlKey",
+                                        cf.company_data_type_id as "companyDataTypeId",
+                                        cdt.data_type_id as "dataTypeId",
+
+                                        coalesce((
+                                                     SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                                     FROM (
+                                                              select lov.id,
+                                                                     lov.name,
+                                                                     lov.code,
+                                                                     lov.parent_id,
+                                                                     lov.display_order
+                                                              from flow.list_of_value lov
+                                                              where lov.parent_id is not null
+                                                                and lov.parent_id = cf.list_of_value_id
+                                                                and lov.archived is not true
+                                                              order by lov.display_order
+                                                          ) listOfValues), '[]') AS "listOfValues"
+                                 from flow.custom_field_group_assignment cfga
+                                          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                          inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
+                                          inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                          left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
+                                 where cfga.custom_field_group_id = cfg.id
+                                   and cfga.archived is not true
+                                   and cfot.archived is not true
+                                   and cfot.show_on_insert is true
+                                 order by cfga.field_order
+                             ) fields), '[]') AS "customFields"
+    from flow.custom_field_group cfg
+             inner join flow.object_type ot on ot.id = cfg.object_type_id
+    where cfg.object_type_id = :objectTypeId
+      and cfg.archived is not true
+      and ot.company_id = :companyId
+    order by cfg.group_order
+  ]]></customFieldGroup.getInsertFieldsByType>
+
+  <customFieldGroup.updateFieldShowOnInsert><![CDATA[
+    update flow.custom_field_object_type
+      set show_on_insert = :showOnInsert
+    where id = :id
+  ]]></customFieldGroup.updateFieldShowOnInsert>
 </sql>

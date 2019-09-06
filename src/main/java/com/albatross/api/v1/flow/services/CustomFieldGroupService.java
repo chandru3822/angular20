@@ -3,9 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldGroup;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 /**
@@ -173,6 +173,42 @@ public class CustomFieldGroupService {
     }
   }
 
+  public List<CustomFieldGroup> getInsertFieldsByType(Long companyId, Long objectTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("objectTypeId", objectTypeId);
+
+    List<CustomFieldGroup> results = sqlCache.query("customFieldGroup.getInsertFieldsByType", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    results.stream().filter(cfg -> !cfg.getCustomFields().isEmpty()).collect(Collectors.toList());
+
+    handleCustomListOfValue(results);
+
+    return results;
+  }
+
+  public void handleCustomListOfValue (List<CustomFieldGroup> results) {
+    for(CustomFieldGroup cfg : results) {
+      for(CustomField cv : cfg.getCustomFields()){
+        if(null != cv.getCustomFieldSqlKey()) {
+          String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
+          if(null != sql) {
+            List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+            cv.setListOfValues(listOfValues);
+          }
+        }
+      }
+    }
+  }
+
+  public void updateFieldShowOnInsert(CustomFieldObjectType objectType) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", objectType.getId());
+    params.put("showOnInsert", objectType.getShowOnInsert());
+
+    sqlCache.update("customFieldGroup.updateFieldShowOnInsert", params);
+  }
+
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -184,9 +220,12 @@ public class CustomFieldGroupService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<CustomField>> customFieldTypeRef = new TypeReference<List<CustomField>>() {};
-
       bw.registerCustomEditor(List.class, "customFields",
           new JsonCollectionDeserializer(customFieldTypeRef, objectMapper));
+
+      TypeReference<List<CustomFieldValue>> customFieldValueRef = new TypeReference<List<CustomFieldValue>>() {};
+      bw.registerCustomEditor(List.class, "customFieldValues",
+          new JsonCollectionDeserializer(customFieldValueRef, objectMapper));
     }
   }
 
