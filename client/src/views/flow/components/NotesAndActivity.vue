@@ -31,7 +31,8 @@ export default {
     showNotes: Boolean,
     showActivity: Boolean,
     primaryId: Number,
-    notes: Array
+    notes: Array,
+    type: String
   },
   components: {
     Snackbar
@@ -45,7 +46,7 @@ export default {
   methods: {
     async saveNote() {
       try {
-        const {data} = await postRequest(`/api/v1/flow/note/saveCustomerNote`, {
+        const {data} = await postRequest(`/api/v1/flow/note/save${this.$props.type}Note`, {
           primaryId: this.primaryId,
           note: this.note
         })

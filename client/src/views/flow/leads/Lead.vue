@@ -48,7 +48,10 @@
         </div>
       </v-col>
       <v-col xs-6 class="text-left">
-        <NotesAndActivity :showNotes="true" :showActivity="false" :notes="notes" :primaryId="parseInt(customerId)"></NotesAndActivity>
+        <NotesAndActivity :showNotes="true" :showActivity="false"
+                          :notes="notes" :primaryId="parseInt(customerId)"
+                          type="Customer"
+        ></NotesAndActivity>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
