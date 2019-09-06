@@ -1,15 +1,13 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.HashMap;
-
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -22,7 +20,7 @@ public class CustomFieldValueService {
   @Autowired
   SecurityService securityService;
 
-  public String getCustomFieldValuesByPrimaryIdAndType(Long companyId, Long primaryId, Long objectTypeId) {
+  public String getCustomFieldValuesByPrimaryIdAndType(Long companyId, Long primaryId, Integer objectTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("primaryId", primaryId);

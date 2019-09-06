@@ -88,7 +88,7 @@ export default {
     async getCustomFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldValues`, { params: {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldValues/customer`, { params: {
           primaryId: this.customerId,
           //  2 = customer
           objectTypeId: 2
