@@ -1,14 +1,11 @@
 <template>
   <v-container>
     <v-row class="lead-header elevation-1">
-      <v-col xs-4 class="text-left">
+      <v-col xs-8 class="text-left">
         <div class="lead-title">{{customer.fullName}}</div>
         <div class="lead-subtitle">
           {{customer.street1}} - {{customer.city}}, {{customer.state}}
         </div>
-      </v-col>
-      <v-col xs-4 class="lead-status">
-        Status: {{customer.status}}
       </v-col>
       <v-col xs-4 class="lead-owner">
         <div>
@@ -41,12 +38,6 @@
             <v-text-field text
                           label="E-Mail"
                           v-model="customer.email"></v-text-field>
-            <v-text-field text
-                          label="Source"
-                          v-model="customer.source"></v-text-field>
-            <v-text-field text
-                          label="Lead Source Detail"
-                          v-model="customer.leadSourceDetail"></v-text-field>
           </v-card>
         </div>
         <div class="mt-4" v-for="cfg in customFieldGroups">
@@ -57,7 +48,7 @@
         </div>
       </v-col>
       <v-col xs-6 class="text-left">
-        <NotesAndActivity :showNotes="true" :showActivity="false"></NotesAndActivity>
+        <NotesAndActivity :showNotes="true" :showActivity="false" :notes="notes" :primaryId="parseInt(customerId)"></NotesAndActivity>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -83,6 +74,7 @@ export default {
       snackbar: {},
       customer: {},
       customFieldGroups: [],
+      notes: [],
       customerId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId
     }
@@ -90,6 +82,7 @@ export default {
   created () {
     this.getCustomer()
     this.getCustomFieldGroups()
+    this.getNotes()
   },
   methods: {
     async getCustomFieldGroups() {
@@ -115,20 +108,28 @@ export default {
         const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/${this.customerId}`)
         this.customer = data
 
-        // todo: remove these later
-        this.customer.status = 'Active'
-        this.customer.owner = 'Riley Burgess'
-        this.customer.ownerPosition = 'Setter'
-        this.customer.ownerState = 'Oregon'
-        this.customer.source = 'Another Source'
-        this.customer.leadSourceDetail = 'Setter Gen'
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Customer')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    }
+    },
+    async getNotes() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/note/getCustomerNotes`, { params: {
+            primaryId: this.customerId
+          }})
+        this.notes = data
+        console.log('randaLogger',this.notes)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>

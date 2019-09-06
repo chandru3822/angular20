@@ -1,0 +1,23 @@
+<sql>
+  <note.getByPrimaryAndType><![CDATA[
+    select * from flow.get_notes(:primaryId::integer, :typeId::integer)
+  ]]></note.getByPrimaryAndType>
+
+  <note.insertNote><![CDATA[
+    insert into flow.note(parent_id, created_by_id, note)
+    values (:parentId, :createdById, :note)
+  ]]></note.insertNote>
+
+  <note.updateNote><![CDATA[
+    update flow.note
+        set note = :note,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></note.updateNote>
+
+  <note.insertNoteRelation><![CDATA[
+    select * from flow.insert_note_relation(:primaryId::integer, :noteId::integer, :typeId::integer)
+  ]]></note.insertNoteRelation>
+
+</sql>

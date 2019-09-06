@@ -1,4 +1,4 @@
--- DROP FUNCTION IF EXISTS blueraven.get_custom_field_values(integer, integer, integer);
+-- DROP FUNCTION IF EXISTS flow.get_custom_field_values(integer, integer, integer);
 
 CREATE OR REPLACE FUNCTION flow.get_custom_field_values(p_company_id INTEGER, p_primary_id INTEGER, p_object_type_id INTEGER)
 
@@ -40,12 +40,25 @@ BEGIN
                                                         cf.list_of_value_id as "listOfValueId",
                                                         cf.field_name as "fieldName",
                                                         cf.company_data_type_id as "companyDataTypeId",
-                                                        dt.id as "dataTypeId"
+                                                        dt.id as "dataTypeId",
+                                                        coalesce((
+                                                                     SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                                                     FROM (
+                                                                            select lov.id,
+                                                                                   lov.name,
+                                                                                   lov.code,
+                                                                                   lov.parent_id,
+                                                                                   lov.display_order
+                                                                            from flow.list_of_value lov
+                                                                            where lov.parent_id is not null
+                                                                                and lov.parent_id = cf.list_of_value_id
+                                                                                and lov.archived is not true
+                                                                            order by lov.display_order
+                                                                          ) listOfValues), '[]') AS "listOfValues"
                                                  from flow.custom_field_group_assignment cfga
                                                           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                                           inner join flow.data_type dt on dt.id = cf.company_data_type_id
                                                           left join flow.customer_custom_field_value ccv on ccv.custom_field_group_assignment_id = cfga.id and ccv.customer_id = p_primary_id
-                                                          left join flow.list_of_value lv on lv.id = cf.list_of_value_id
                                                  where cfga.custom_field_group_id = cfg.id
                                                    and cfga.archived is not true
                                                  order by cfga.field_order

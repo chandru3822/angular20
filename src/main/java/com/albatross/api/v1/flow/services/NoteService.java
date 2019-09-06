@@ -1,0 +1,74 @@
+package com.albatross.api.v1.flow.services;
+
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.Note;
+import com.albatross.api.v1.flow.model.User;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
+
+/**
+ * Created by randanunn on 2019-05-20.
+ * !Describe Purpose!
+ */
+@Slf4j
+@Service
+public class NoteService {
+
+  @Autowired
+  SqlCache sqlCache;
+
+  @Autowired
+  SecurityService securityService;
+
+  public List<Note> getByPrimaryAndType(Integer typeId, Long primaryId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("typeId", typeId);
+    params.put("primaryId", primaryId);
+    List<Note> results = sqlCache.query("note.getByPrimaryAndType", params, Note.class);
+    return results;
+  }
+
+  public Note getNote(Long noteId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("noteId", noteId);
+    Optional<Note> result = sqlCache.get("note.getNote", params, Note.class);
+    return result.orElse(null);
+  }
+
+  public Note saveNote(Integer typeId, Note note) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("typeId", typeId);
+    params.put("note", note.getNote());
+    // parentId is used for a hierarchy of notes - currently we don't use it
+    params.put("parentId", note.getParentId());
+
+    Long noteId;
+    if(null != note.getId()) {
+      noteId = note.getId();
+      params.put("id", noteId);
+      params.put("modifiedById", currentUser.getId());
+      sqlCache.update("note.updateNote", params);
+    } else {
+      params.put("createdById", currentUser.getId());
+      noteId = sqlCache.updateReturningId("note.insertNote", params, "id").longValue();
+    }
+
+    //add to the glue table
+    HashMap<String, Object> p2 = new HashMap<>();
+    p2.put("primaryId", note.getPrimaryId());
+    p2.put("noteId", noteId);
+    p2.put("typeId", typeId);
+    sqlCache.updateReturningId("note.insertNoteRelation", p2, "id");
+
+    return getNote(noteId);
+  }
+
+}

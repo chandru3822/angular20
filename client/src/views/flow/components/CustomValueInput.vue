@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- todo: this needs lots of work, just round 1   -->
-    <div v-if="field.dataTypeId === 1">
+    <div v-if="field.companyDataTypeId === 2">
       <div class="field-label">{{field.fieldName}}</div>
       <flat-pickr
           v-model="field.dateValue"
@@ -11,7 +11,7 @@
       ></flat-pickr>
     </div>
 
-    <div v-if="field.dataTypeId === 2">
+    <div v-if="field.companyDataTypeId === 3">
       <div class="field-label">{{field.fieldName}}</div>
       <flat-pickr
           v-model="field.timestampValue"
@@ -21,33 +21,42 @@
       ></flat-pickr>
     </div>
 
-    <div v-if="field.dataTypeId === 3">
+    <div v-if="field.companyDataTypeId === 4">
       <div class="field-label">{{field.fieldName}}</div>
       <input type="checkbox" v-model="field.booleanValue" :readonly="readonly">
     </div>
 
-    <v-text-field v-if="field.dataTypeId === 4"
-                  text
-                  :readonly="readonly"
-                  :label="field.fieldName"
-                  v-model="field.integerValue"
-    ></v-text-field>
-
-    <v-text-field v-if="field.dataTypeId === 5"
-                  text
-                  :readonly="readonly"
-                  :label="field.fieldName"
-                  v-model="field.textValue"
-    ></v-text-field>
-
-    <v-text-field v-if="field.dataTypeId === 6"
+    <v-text-field v-if="field.companyDataTypeId === 5"
                   text
                   :readonly="readonly"
                   :label="field.fieldName"
                   v-model="field.intValue"
     ></v-text-field>
 
-    <v-text-field v-if="field.dataTypeId === 7"
+    <v-text-field v-if="field.companyDataTypeId === 6"
+                  text
+                  :readonly="readonly"
+                  :label="field.fieldName"
+                  v-model="field.numericValue"
+    ></v-text-field>
+
+    <v-text-field v-if="field.companyDataTypeId === 1"
+                  text
+                  :readonly="readonly"
+                  :label="field.fieldName"
+                  v-model="field.textValue"
+    ></v-text-field>
+
+    <v-select v-if="field.companyDataTypeId === 7"
+                  v-model="field.intValue"
+                  text
+                  :items="field.listOfValues"
+                  :label="field.fieldName"
+                  item-value="id"
+                  item-text="name"
+    ></v-select>
+
+    <v-text-field v-if="field.companyDataTypeId === 8"
                   text
                   :readonly="readonly"
                   :label="field.fieldName"
