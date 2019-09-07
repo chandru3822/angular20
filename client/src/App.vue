@@ -115,6 +115,10 @@ label[for="adminOriginatorSelect"] {
   background-color: var(--v-rowHoverCustom-base) !important;
 }
 
+.square-card{
+  border-radius: 0 !important;
+}
+
 .clickable {
   cursor: pointer
 }

@@ -1,11 +1,16 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Note;
 import com.albatross.api.v1.flow.model.User;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -27,11 +32,14 @@ public class NoteService {
   @Autowired
   SecurityService securityService;
 
+  @Autowired
+  ObjectMapper om;
+
   public List<Note> getByPrimaryAndType(Long typeId, Long primaryId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("typeId", typeId);
     params.put("primaryId", primaryId);
-    List<Note> results = sqlCache.query("note.getByPrimaryAndType", params, Note.class);
+    List<Note> results = sqlCache.query("note.getByPrimaryAndType", params, new NoteMapper<>(Note.class, om));
     return results;
   }
 
@@ -69,6 +77,23 @@ public class NoteService {
     sqlCache.query("note.insertNoteRelation", p2, String.class);
 
     return getNote(noteId);
+  }
+
+  public static class NoteMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public NoteMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Note>> childNoteRef = new TypeReference<List<Note>>() {};
+      bw.registerCustomEditor(List.class, "childNotes",
+          new JsonCollectionDeserializer(childNoteRef, objectMapper));
+
+    }
   }
 
 }
