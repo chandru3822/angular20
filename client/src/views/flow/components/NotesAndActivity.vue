@@ -42,7 +42,8 @@
             <td class="py-2">
               {{item.note}}
               <div class="mt-2 note-created-by">
-                Created by: {{item.createdBy}}
+                Created by: {{item.createdBy}}<br/>
+                Created at: {{item.dateCreated | formatDate('timestamp', $store.state.user.details.timezone)}}
               </div>
             </td>
             <td class="text-right">
