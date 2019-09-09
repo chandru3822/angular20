@@ -58,7 +58,7 @@
 
 
           <v-col v-if="isProcessStepsLoading">
-            <Spinner size="20" color="primary"/>
+            <SpinnerInline size="20" color="primary"/>
           </v-col>
 
           <v-col v-else v-for="step in processSteps" :key="step.projectProcessStepId">
@@ -74,7 +74,7 @@
 <script>
 
 import {getRequest} from '@/helpers/helpers'
-import Spinner from '@/components/Spinner'
+import SpinnerInline from '@/components/SpinnerInline'
 import UserCard from '@/views/flow/components/UserCard'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessStep'
@@ -82,7 +82,7 @@ import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessS
 export default {
   name: 'Project',
   components: {
-    Spinner,
+    SpinnerInline,
     UserCard,
     ProjectFieldGroup,
     ProjectActiveProcessStep
