@@ -9,8 +9,8 @@
         <v-row>
 
           <v-col cols="4" class="text-left">
-            <h1>Joe Customer</h1>
-            <h3>123 main Street - Denver, CO</h3>
+            <h1>{{ customer.fullName}}</h1>
+            <h3>{{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}</h3>
           </v-col>
 
           <v-col cols="8">
@@ -73,7 +73,7 @@
 
 <script>
 
-import {getRequest} from '@/helpers/helpers'
+import {getRequest, VUE_APP_FLOW_API} from '@/helpers/helpers'
 import SpinnerInline from '@/components/SpinnerInline'
 import UserCard from '@/views/flow/components/UserCard'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
@@ -89,8 +89,10 @@ export default {
   },
   data () {
     return {
+      customerId: 9044,
       companyId: this.$store.state.user.details.companyId,
       projectId: 45669,
+      customer: {},
       processSteps: [],
       customFieldGroups: [],
       isProcessStepsLoading: true,
@@ -98,13 +100,22 @@ export default {
     }
   },
   created () {
+    this.getCustomer()
     this.getFieldGroups()
     this.getProcessSteps()
   },
   methods: {
+    getCustomer: async function () {
+      try {
+        const{data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/customer/${this.customerId}`)
+        this.customer = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+      }
+    },
     getProcessSteps: async function () {
       try {
-       const {data} = await getRequest(`/api/v1/flow/${this.companyId}/project/${this.projectId}/processSteps`)
+       const {data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/project/${this.projectId}/processSteps`)
        this.processSteps = data
      } catch (e) {
        console.error('*** ERROR ***', e)
@@ -114,7 +125,7 @@ export default {
     },
     getFieldGroups: async function () {
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldValues/project/${this.projectId}`)
+        const {data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/customFieldValues/project/${this.projectId}`)
         this.customFieldGroups = data
       } catch (e) {
         console.error('*** ERROR ***', e)

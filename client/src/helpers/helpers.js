@@ -2,6 +2,8 @@ import axios from 'axios'
 
 const {VUE_APP_BASE_API} = process.env
 
+export const VUE_APP_FLOW_API = '/api/v1/flow'
+
 // constants
 export const IS_MOBILE = window.innerWidth <= 768
 export const SCREEN_WIDTH = window.innerWidth
