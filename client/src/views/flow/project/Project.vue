@@ -36,31 +36,28 @@
     </v-col>
   </v-row>
 
-  <v-row>
+  <Spinner
+    v-if="isFieldsLoading"
+    size="20"
+    color="primary"
+  />
+
+  <v-row v-for="group in customFieldGroups" :key="group.customFieldId">
     <v-col cols="6">
       <v-row>
         <v-col cols="12">
-          <h3 class="text-left">Summary</h3>
+          <h3 class="text-left">{{ group.groupName }}</h3>
         </v-col>
       </v-row>
 
       <v-row>
         <v-col cols="12">
           <v-card>
-
-            <Spinner
-              v-if="isFieldsLoading"
-              size="20"
-              color="primary"
-            />
-
             <v-row
-              v-else
+              v-for="field in group.customFieldValues" :key="field.id"
               class="text-left"
               style="border-bottom: 1px solid gray;"
               no-gutters
-              v-for="field in fields"
-              :key="field.customFieldId"
             >
               <v-col cols="4" class="font-weight-bold">{{ field.fieldName }}</v-col>
               <v-col cols="8">{{ field.dateValue }}</v-col>
@@ -127,25 +124,27 @@
 import {getRequest} from '@/helpers/helpers'
 import Spinner from '@/components/Spinner'
 import UserCard from '@/components/UserCard'
+import CustomValueInput from '@/views/flow/components/CustomValueInput'
 
 export default {
   name: 'Project',
   components: {
     Spinner,
-    UserCard
+    UserCard,
+    CustomValueInput
   },
   data () {
     return {
       companyId: this.$store.state.user.details.companyId,
-      projectId: 168406,
+      projectId: 45669,
       processSteps: [],
-      fields: [],
+      customFieldGroups: [],
       isProcessStepsLoading: true,
       isFieldsLoading: true
     }
   },
   created () {
-    this.getFields()
+    this.getFieldGroups()
     this.getProcessSteps()
   },
   methods: {
@@ -159,10 +158,10 @@ export default {
        this.isProcessStepsLoading = false
      }
     },
-    getFields: async function () {
+    getFieldGroups: async function () {
       try {
-        const {data: fields} = await getRequest(`/api/v1/flow/${this.companyId}/project/${this.projectId}/fields`)
-        this.fields = fields
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldValues/project/${this.projectId}`)
+        this.customFieldGroups = data
       } catch (e) {
         console.error('*** ERROR ***', e)
       } finally {

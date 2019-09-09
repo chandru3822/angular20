@@ -1,22 +1,27 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CustomField;
+import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldValue;
+import com.albatross.api.v1.flow.model.ListOfValue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -59,13 +64,17 @@ public class CustomFieldValueService {
     }
   }
 
-  public String getProjectCustomValues(Long companyId, Long objectTypeId, Long projectId) {
+  public List<CustomFieldGroup> getProjectCustomValues(Long companyId, Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
-    params.put("objectTypeId", objectTypeId);
+    params.put("objectTypeId", ObjectType.PROJECT.id);
     params.put("projectId", projectId);
 
-    return sqlCache.queryForObject("customFieldValues.getProjectFieldValues", params, String.class);
+    List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    handleCustomListOfValue(fieldGroups);
+
+    return fieldGroups;
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
