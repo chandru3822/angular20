@@ -36,101 +36,38 @@
     </v-col>
   </v-row>
 
-  <v-row>
-    <v-col cols="12" lg="6" xl="6">
+  <router-view></router-view>
 
-      <v-col v-if="isFieldsLoading">
-        <Spinner
-          size="20"
-          color="primary"
-        />
-      </v-col>
-
-      <v-col v-else v-for="group in customFieldGroups" :key="group.customFieldId">
-        <ProjectFieldGroup :group="group"/>
-      </v-col>
-
-      <v-col>
-        <v-row>
-          <v-col cols="12">
-            <h3 class="text-left">Active Process Steps</h3>
-          </v-col>
-
-
-          <v-col v-if="isProcessStepsLoading">
-            <SpinnerInline size="20" color="primary"/>
-          </v-col>
-
-          <v-col v-else v-for="step in processSteps" :key="step.projectProcessStepId">
-            <ProjectActiveProcessStep :step="step"/>
-          </v-col>
-        </v-row>
-      </v-col>
-    </v-col>
-  </v-row>
 </v-container>
 </template>
 
 <script>
 
 import {getRequest, VUE_APP_FLOW_API} from '@/helpers/helpers'
-import SpinnerInline from '@/components/SpinnerInline'
 import UserCard from '@/views/flow/components/UserCard'
-import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
-import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessStep'
 
 export default {
   name: 'Project',
   components: {
-    SpinnerInline,
-    UserCard,
-    ProjectFieldGroup,
-    ProjectActiveProcessStep
+    UserCard
   },
   data () {
     return {
-      customerId: 9044,
       companyId: this.$store.state.user.details.companyId,
-      projectId: 45669,
+      projectId: this.$route.params.projectId,
       customer: {},
-      processSteps: [],
-      customFieldGroups: [],
-      isProcessStepsLoading: true,
-      isFieldsLoading: true
     }
   },
   created () {
     this.getCustomer()
-    this.getFieldGroups()
-    this.getProcessSteps()
   },
   methods: {
     getCustomer: async function () {
       try {
-        const{data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/customer/${this.customerId}`)
+        const{data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/customer/project/${this.projectId}`)
         this.customer = data
       } catch (e) {
         console.error('*** ERROR ***', e)
-      }
-    },
-    getProcessSteps: async function () {
-      try {
-       const {data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/project/${this.projectId}/processSteps`)
-       this.processSteps = data
-     } catch (e) {
-       console.error('*** ERROR ***', e)
-     } finally {
-       this.isProcessStepsLoading = false
-     }
-    },
-    getFieldGroups: async function () {
-      try {
-        const {data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/customFieldValues/project/${this.projectId}`)
-        this.customFieldGroups = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-      } finally {
-        this.isFieldsLoading = false
       }
     }
   }

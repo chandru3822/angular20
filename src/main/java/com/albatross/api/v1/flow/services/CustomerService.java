@@ -1,5 +1,9 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
@@ -7,14 +11,12 @@ import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.Customer;
 import com.albatross.api.v1.flow.model.User;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -39,6 +41,13 @@ public class CustomerService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("customerId", customerId);
     Optional<Customer> result = sqlCache.get("customer.getById", params, Customer.class);
+    return result.orElse(null);
+  }
+
+  public Customer getCustomerByProjectId(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    Optional<Customer> result = sqlCache.get("customer.getByProjectId", params, Customer.class);
     return result.orElse(null);
   }
 
