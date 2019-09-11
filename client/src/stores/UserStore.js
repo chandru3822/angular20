@@ -10,6 +10,7 @@ export const UserMutations = {
   LOGIN_ERROR: 'setLoginError',
   INIT: 'storeInt',
   SET_DETAILS: 'setDetails',
+  SET_USER_IMAGE: 'setUserImage',
 }
 
 export const UserStore = {
@@ -24,6 +25,7 @@ export const UserStore = {
     [UserMutations.AUTH_STATUS]: (state, status) => (state.authorized = status),
     [UserMutations.LOGIN_ERROR]: (state, err) => (state.loginError = err),
     [UserMutations.SET_DETAILS]: (state, details) => (state.details = details),
+    [UserMutations.SET_USER_IMAGE]: (state, image) => (state.userImage = image),
   },
   actions: {
     [UserActions.CHANGE_TIMEZONE]: async ({ commit, getters, state }, timezone) => {

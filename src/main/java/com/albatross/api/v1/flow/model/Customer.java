@@ -11,14 +11,17 @@ import java.util.List;
 @NoArgsConstructor
 public class Customer  {
 
-  private Long id, contactBaseId, companyId, customerTypeId, stateId, countryId, ownerUserPositionId, ownerId;
+  private Long id, contactBaseId, companyId, customerTypeId, stateId, countryId,
+      ownerUserPositionId, ownerId;
   private String firstName, lastName, fullName, email,
       street1, street2, city, state, postalCode, country,
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
-      phone, mobile, customerType, ownerFirstName, ownerLastName;
+      phone, mobile, customerType, ownerFirstName, ownerLastName, ownerPosition;
   private Double latitude, longitude;
   // dates as strings or dates?
   private String dateCreated;
+
+  private User owner;
 
   //so far this is only used for saving
   List<CustomFieldGroup> customFieldGroups;

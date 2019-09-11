@@ -92,8 +92,8 @@
 
   <customFieldValues.updateCustomerCustomFieldValue><![CDATA[
     update flow.customer_custom_field_value
-    set date_value = :dateValue,
-        timestamp_value = :timestampValue,
+    set date_value = :dateValue::date,
+        timestamp_value = :timestampValue::timestamp,
         boolean_value = :booleanValue,
         text_value = :textValue,
         numeric_value = :numericValue,

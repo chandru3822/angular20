@@ -8,27 +8,47 @@
         </div>
       </v-col>
       <v-col xs-4 class="lead-owner">
-        <v-btn @click="saveLead">Save</v-btn>
-        <div>
-          <v-avatar
-              :tile="false"
-              :size="40"
-              color="grey lighten-4"
-              class="account-img mr-2"
+        <div v-if="!changeOwner">
+          <div v-if="customer.ownerId">
+            <v-avatar
+                :tile="false"
+                :size="40"
+                color="grey lighten-4"
+                class="account-img mr-2"
+            >
+              <img name="accountImg" src="../../../assets/user_img_placeholder.png">
+            </v-avatar>
+            {{customer.ownerFirstName}} {{customer.ownerLastName}}<br/>
+            {{customer.ownerPosition}}
+          </div>
+        </div>
+        <div v-if="changeOwner">
+          <v-autocomplete v-model="customer.ownerId"
+                    :items="owners"
+                    label="Select New Owner"
+                    item-text="fullName"
+                    item-value="id"
+                    autocomplete="new-password"
+                    @change="updateOwner"
           >
-            <img name="accountImg" src="../../../assets/user_img_placeholder.png">
-          </v-avatar>
-          {{customer.owner}}
+          </v-autocomplete>
         </div>
-        <div>
-          {{customer.ownerPosition}} | {{customer.ownerState}}
-        </div>
+        <v-btn text small class="change-owner-button" @click="changeOwner = !changeOwner">
+          <span v-if="changeOwner">cancel</span>
+          <span v-else>change</span>
+        </v-btn>
       </v-col>
     </v-row>
     <v-row>
       <v-col xs-6 class="text-left">
         <div>
-          <h3 class="mb-4">Summary</h3>
+          <v-toolbar color="transparent" class="elevation-0">
+            <v-toolbar-title>Summary</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn text @click="saveLead">Save</v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
           <v-card class="pa-4">
             <v-text-field text
                           label="Phone"
@@ -45,7 +65,13 @@
           </v-card>
         </div>
         <div class="mt-4" v-for="cfg in customFieldGroups">
-          <h3 class="mb-4">{{cfg.groupName}}</h3>
+          <v-toolbar color="transparent" class="elevation-0">
+            <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+<!--              <v-btn text @click="saveLead">Save</v-btn>-->
+            </v-toolbar-items>
+          </v-toolbar>
           <v-card class="pa-4">
             <CustomValueInput v-for="cf in cfg.customFieldValues" :readonly="true" :field="cf"></CustomValueInput>
           </v-card>
@@ -82,12 +108,15 @@ export default {
       customer: {},
       customFieldGroups: [],
       notes: [],
+      owners: [],
       customerId: this.$route.params.id,
-      companyId: this.$store.state.user.details.companyId
+      companyId: this.$store.state.user.details.companyId,
+      changeOwner: false
     }
   },
   created () {
     this.getCustomer()
+    this.getOwners()
     this.getCustomFieldGroups()
     this.getNotes()
   },
@@ -114,7 +143,6 @@ export default {
           objectTypeId: 2
         }})
         this.customFieldGroups = data
-        console.log('randaLogger',this.customFieldGroups)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -135,6 +163,19 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async getOwners () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/owners`)
+        this.owners = data
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Owners')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getNotes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -142,7 +183,6 @@ export default {
             primaryId: this.customerId
           }})
         this.notes = data
-        console.log('randaLogger',this.notes)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -150,6 +190,21 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async updateOwner() {
+      console.log('owner changed')
+      this.changeOwner = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/updateOwner`)
+        this.customer.ownerId = data.id
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   }
 }
 </script>
@@ -175,6 +230,10 @@ export default {
     /*display: flex;*/
     /*align-items: flex-end;*/
     text-align: right;
+  }
+  .change-owner-button {
+    text-decoration: underline;
+    text-transform: lowercase;
   }
 </style>
 

@@ -17,7 +17,7 @@
        c.first_name,
        c.last_name,
        c.date_created,
-       c.first_name || ' ' || last_name as full_name,
+       c.first_name || ' ' || c.last_name as full_name,
        c.email,
        c.phone,
        c.mobile,
@@ -28,11 +28,20 @@
        c.state_id,
        s.state,
        c.country_id,
-       ct.country
+       ct.country,
+       c.owner_user_position_id,
+       u.id as owner_id,
+       u.first_name as owner_first_name,
+       u.last_name as owner_last_name,
+       p.position as owner_position
     from flow.customer c
-        inner join flow.state s on s.id = c.state_id
-        inner join flow.country ct on ct.id = c.country_id
+             inner join flow.state s on s.id = c.state_id
+             inner join flow.country ct on ct.id = c.country_id
+             left join flow.user_position up on up.id = c.owner_user_position_id
+             left join flow.user u on u.id = up.user_id
+             left join flow.position p on p.id = up.position_id
     where c.id = :customerId
+
   ]]></customer.getById>
 
   <customer.updateCustomer><![CDATA[
@@ -58,4 +67,30 @@
     insert into flow.customer(customer_type_id, first_name, last_name, street1, city, state_id, postal_code, country_id, phone, email, mobile, created_by_id, company_id)
     values (:customerTypeId, :firstName, :lastName, :street1, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId)
   ]]></customer.insertCustomer>
+
+  <customer.getOwners><![CDATA[
+    select u.id,
+           u.first_name,
+           u.last_name,
+           u.first_name || ' ' || u.last_name as full_name,
+           up.id as position_id,
+           p.position
+    from flow.owner_position_id op
+         inner join flow.user_position up on up.position_id = op.position_id
+         inner join flow."user" u on u.id = up.user_id
+         inner join flow.position p on p.id = up.position_id
+    where op.company_id = :companyId
+      and ARRAY[u.user_status_type_id] <@ ARRAY[ :statusIds ]::integer[]
+      and up.start_date <= now()
+      and (up.end_date is null or up.end_date >= now())
+    order by u.last_name, u.first_name
+  ]]></customer.getOwners>
+
+  <customer.updateOwner><![CDATA[
+    update flow.customer set
+           modified_by_id = :modifiedById,
+           owner_user_position_id = :ownerUserPositionId,
+           date_modified = now()
+    where id = :id
+  ]]></customer.updateOwner>
 </sql>

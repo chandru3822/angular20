@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
+import com.albatross.api.v1.flow.enums.UserStatusType;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.Customer;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -77,6 +79,28 @@ public class CustomerService {
     handleSavingCustomFieldValues(customer.getCustomFieldGroups(), id);
 
     return getCustomer(id);
+  }
+
+  public void updateOwner(User user) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ownerUserPositionId", 7);
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("customer.updateOwner", params);
+  }
+
+  public List<User> getOwners(Long companyId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    List<Long> statusIds = new ArrayList<>();
+    statusIds.add(UserStatusType.ACTIVE.id);
+    statusIds.add(UserStatusType.PENDING_TERMINATION.id);
+
+    params.put("statusIds", statusIds);
+    List<User> results = sqlCache.query("customer.getOwners", params, User.class);
+    return results;
   }
 
   public Boolean fieldHasValue (CustomFieldValue cv) {

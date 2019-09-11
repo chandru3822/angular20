@@ -1,6 +1,11 @@
 <template>
   <div>
-    <h3 class="mb-4">Notes & Activity Feed</h3>
+    <v-toolbar color="transparent" class="elevation-0">
+      <v-toolbar-title>Notes & Activity Feed</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+      </v-toolbar-items>
+    </v-toolbar>
     <v-card class="pa-4">
       <v-toolbar flat color="white" class="elevation-0">
         <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>

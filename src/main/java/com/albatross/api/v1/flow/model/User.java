@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
+import com.albatross.api.v1.flow.enums.UserStatusType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import lombok.Getter;
@@ -12,12 +13,17 @@ import java.util.List;
 public class User {
 
     private Long id, companyId, parentCompanyId;
-    private String email, username, password, firstName, lastName, fullName, userStatusType, timezone, awsBucket;
+    private String email, username, password, firstName, lastName, fullName, userStatusType, timezone, awsBucket, companyName;
     private Long userStatusTypeId;
     private List<UserPermission> permissions;
 
     @JsonIgnore
     public boolean isUnlocked(){
-        return Lists.newArrayList(1L, 7L, 8L).contains(this.getUserStatusTypeId());
+        // BR had INACTIVE as an unlocked type, but that makes no sense to me. maybe we should remove that?
+        return Lists.newArrayList(
+            UserStatusType.ACTIVE.id,
+            UserStatusType.PENDING_TERMINATION.id,
+            UserStatusType.INACTIVE.id).contains(this.getUserStatusTypeId()
+        );
     }
 }

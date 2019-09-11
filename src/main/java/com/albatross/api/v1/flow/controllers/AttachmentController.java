@@ -21,37 +21,34 @@ public class AttachmentController {
   @Autowired
   private AttachmentService attachmentService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET)
+  @GetMapping(value = "")
   public List<Attachment> getAttachments(@RequestParam Long sourceId,
-                                         @RequestParam Long attachmentSourceTypeId, @PathVariable String companyId) {
-    return attachmentService.getAttachmentsBySourceIdAndType(sourceId, attachmentSourceTypeId);
+                                         @RequestParam Long attachmentTypeId) {
+    return attachmentService.getAttachmentsBySourceIdAndType(sourceId, attachmentTypeId);
   }
 
-  @RequestMapping(value = "/{id}/url", method = RequestMethod.GET)
+  @GetMapping(value = "/{id}/url")
   public void getAttachmentUrl(@PathVariable Long id, HttpServletResponse response, @PathVariable String companyId) throws IOException {
     String attachmentUrl = attachmentService.getAttachmentUrl(id);
     response.sendRedirect(attachmentUrl);
   }
 
   @ResponseStatus(HttpStatus.OK)
-  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+  @DeleteMapping(value = "/{id}")
   public void deleteAttachment(@PathVariable Long id) {
     attachmentService.delete(id);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST)
+  @PostMapping(value = "")
   public Attachment uploadAttachment(@RequestParam Long sourceId,
-                                     @RequestParam Long attachmentSourceTypeId,
+                                     @RequestParam Long attachmentTypeId,
                                      @RequestParam("file") MultipartFile file) throws IOException {
-
-    Attachment attachment = attachmentService.create(file, sourceId, attachmentSourceTypeId, true);
-
-    return attachment;
+    return attachmentService.create(file, sourceId, attachmentTypeId, true);
   }
 
-  @RequestMapping(value = "/getSourceAttachments", method = RequestMethod.GET)
-  public List<Attachment> getAttachmentsBySourceIdAndType(@RequestParam Long sourceId,
-                                                          @RequestParam Long attachmentSourceTypeId) {
-    return attachmentService.getAttachmentsBySourceIdAndType(sourceId, attachmentSourceTypeId);
+  @GetMapping(value = "/getOne")
+  public Attachment getOneBySourceIdAndType(@RequestParam Long sourceId,
+                                            @RequestParam Long attachmentTypeId) {
+    return attachmentService.getOneBySourceIdAndType(sourceId, attachmentTypeId);
   }
 }

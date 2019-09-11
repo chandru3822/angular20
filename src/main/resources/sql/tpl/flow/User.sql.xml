@@ -11,16 +11,17 @@
        u.first_name || ' ' || u.last_name as full_name,
        u.user_status_type_id,
        c.aws_bucket,
+       c.company_name,
        coalesce((
             SELECT array_to_json(array_agg(row_to_json(permissions)))
             FROM (
                      select per.id,
                             per.permission_name as "permissionName",
                             per.permission_code as "permissionCode"
-                     from blueraven.permission per
-                        left join blueraven.role_permission rp on per.id = rp.permission_id
-                        left join blueraven.role role on rp.role_id = role.id
-                        left join blueraven.user_role ur on ur.role_id = role.id
+                     from flow.permission per
+                        left join flow.role_permission rp on per.id = rp.permission_id
+                        left join flow.role role on rp.role_id = role.id
+                        left join flow.user_role ur on ur.role_id = role.id
                      where ur.user_id = u.id
                         AND role.archived is not true
                         and per.archived is not true
@@ -28,7 +29,7 @@
                      select per.id,
                             per.permission_name,
                             per.permission_code
-                     from blueraven.permission per
+                     from flow.permission per
                         left join blueraven.user_deny_permission udp on udp.permission_id = per.id
                      where udp.user_id = u.id
                        and per.archived is not true

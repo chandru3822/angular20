@@ -74,7 +74,7 @@ public class AttachmentTypeService {
 
     Long id = sqlCache.updateReturningId("attachmentType.insertProcessStepType",
         ImmutableMap.of("createdById", currentUser.getId(),
-            "attachmentTypeId", attachmentType.getAttachmentTypeId(),
+            "attachmentTypeId", attachmentType.getId(),
             "processStepId", attachmentType.getProcessStepId()), "id").longValue();
 
     return getProcessStepType(id);
@@ -85,11 +85,11 @@ public class AttachmentTypeService {
         ImmutableMap.of("id", typeId));
   }
 
-  public void updateType(AttachmentType attachmentType) {
+  public void updateType(AttachmentType type) {
     sqlCache.update("attachmentType.updateType",
-        ImmutableMap.of("companyId", attachmentType.getCompanyId(),
-            "id", attachmentType.getId(),
-            "attachmentType", attachmentType.getAttachmentType()));
+        ImmutableMap.of("companyId", type.getCompanyId(),
+            "id", type.getId(),
+            "attachmentType", type.getAttachmentType()));
   }
 
   public Optional<AttachmentType> insertType(AttachmentType type) {

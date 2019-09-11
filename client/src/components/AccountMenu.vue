@@ -16,7 +16,7 @@
                   color="grey lighten-4"
                   class="account-img"
         >
-          <v-img name="accountImg" v-if="loadComplete && imageUrl" :src="imageUrl"></v-img>
+          <v-img name="accountImg" v-if="loadComplete && userImage && userImage.url" :src="userImage.url"></v-img>
           <img name="accountImg" v-else src="../assets/user_img_placeholder.png">
         </v-avatar>
       </v-btn>
@@ -52,6 +52,8 @@
 </template>
 
 <script>
+  import { Actions } from '@/store'
+  import { UserMutations } from '@/stores/UserStore'
   import { IS_MOBILE } from '@/helpers/helpers'
   import { UserActions } from '@/stores/UserStore'
   import moment from 'moment-timezone'
@@ -61,12 +63,20 @@
     props: {
       showImage: Boolean
     },
+    watch: {
+      // whenever userImage changes, this function will run
+      '$store.state.user.userImage': function () {
+        // reset the user image in the account menu when a new one is added or one is deleted
+        this.userImage = this.$store.state.user.userImage
+      }
+    },
     data () {
       return {
         IS_MOBILE,
         loadComplete: false,
-        // imageUrl: 'https://i.pinimg.com/236x/55/98/e8/5598e8785b2785de9f602fe095a92d61.jpg',
-        imageUrl: null,
+        userImage: this.$store.state.user.userImage,
+        attachmentTypeId: 9,
+        userId: this.$store.state.user.details.id,
         userFirstName: this.getFirstName(),
         menuOpen: false,
         timezone: null,
@@ -97,7 +107,7 @@
       },
       async changeTimezone (tz) {
         console.log('will change timezone', tz)
-        this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
+        await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
         this.timezone = tz
         //todo: actually save it to the DB
         // i dont think we have to refresh, the filter should do that for us
@@ -105,21 +115,16 @@
       },
       async getUserImage () {
         try {
-          // const { data } = await this.$apollo.query({
-          //   query: PRESIGNED_URL,
-          //   fetchPolicy: 'no-cache',
-          //   variables: {
-          //     presignedUrlInput: {
-          //       sourceId: this.$store.state.user.details.id,
-          //       attachmentSourceTypeId: 9
-          //     }
-          //   },
-          //   debounce: 500
-          // })
-          // const { presignedUrl } = data
-          // this.imageUrl = presignedUrl.assetUrl
-          this.loadComplete = true
-        } catch (e) {
+          await this.$store.dispatch(Actions.FILE_GET_ONE, {
+            attachmentTypeId: this.attachmentTypeId,
+            sourceId: this.userId,
+            callback: async (img) => {
+              this.$store.commit(UserMutations.SET_USER_IMAGE, img)
+              this.loadComplete = true
+            }
+          })
+        } catch(e) {
+          console.error('*** ERROR ***', e)
           this.loadComplete = true
         }
       },

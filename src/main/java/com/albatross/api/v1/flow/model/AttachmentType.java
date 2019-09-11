@@ -1,18 +1,13 @@
 package com.albatross.api.v1.flow.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
+ * Created by Joseph Canto on 2019-08-01.
  */
-@Getter
-@Setter
+
+@Data
 public class AttachmentType {
-
-  private Long id, companyId;
-  private String attachmentType;
-  private Boolean archived;
+    private Long id, keyPatternId, companyId;
+    private String attachmentType, keyPattern;
 }
-

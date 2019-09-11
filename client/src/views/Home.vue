@@ -4,7 +4,7 @@
       <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
       <!--non-mobile header...is this necessary?-->
       <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="53">
-        <v-toolbar-title class="app-title">Blue Raven Solar</v-toolbar-title>
+        <v-toolbar-title class="app-title">{{companyName}}</v-toolbar-title>
         <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
         <v-toolbar-items>
           <AccountMenu :showImage="true"></AccountMenu>
@@ -42,6 +42,7 @@ export default {
       IS_MOBILE,
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
+      companyName: this.$store.state.user.details.companyName,
       model: '',
       tabs: [{
         label: 'Users',

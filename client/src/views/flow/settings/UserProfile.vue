@@ -7,7 +7,7 @@
       <v-container style="background: aliceblue">
         <div class="pt-5">
           Changing the timezone in the account menu should change this value: <br/>
-          (this is section just temporary for testing)
+          (this section is just temporary for testing)
         </div>
         <div class="pt-5 font-weight-bold">
           {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone) }}
@@ -67,11 +67,11 @@
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">Profile Image</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn text v-if="!profileImage.isSaving && !profileImage.assetUrl"  @click="addImage = !addImage">
+          <v-btn text v-if="!savingUserImage && !profileImage.presignedUrl"  @click="addImage = !addImage">
             <v-icon v-if="addImage">remove</v-icon>
             <v-icon v-else>add</v-icon>
           </v-btn>
-          <v-btn v-else text class="mr-2" @click="deleteProfileImage(profileImage)">
+          <v-btn v-else text class="mr-2" @click="deleteAttachment(profileImage.id)">
             <v-icon>delete</v-icon>
           </v-btn>
         </v-toolbar>
@@ -81,13 +81,13 @@
                 type="file"
                 :accept="acceptedFileTypes"
                 class="file-input clickable"
-                :disabled="profileImage.isSaving"
-                @change="uploadFile($event.target.files, profileImage)"
+                :disabled="savingUserImage"
+                @change="uploadFile($event.target.files, attachmentTypeId, userId)"
                 name="avatar"
             >
           </form>
-          <img name="companyLogo" class="company-logo" v-if="loadComplete && profileImage.assetUrl" :src="profileImage.assetUrl">
         </div>
+        <img class="user-profile-image" v-else-if="profileImage.presignedUrl" :src="profileImage.presignedUrl">
         <div class="mt-4" v-else>
           No image uploaded
         </div>
@@ -100,6 +100,7 @@
 
 <script>
 import { Actions } from '@/store'
+import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, EMAIL_RULES, BASIC_REQUIRED_RULE, STANDARD_IMAGES_ONLY} from '@/helpers/helpers'
@@ -122,14 +123,10 @@ export default {
       requiredRules: BASIC_REQUIRED_RULE,
       emailRules: EMAIL_RULES,
       acceptedFileTypes: STANDARD_IMAGES_ONLY,
-      profileImage: {
-        // 9 = USER_IMAGE
-        id: null,
-        isSaving: false,
-        assetUrl: null,
-        attachmentSourceTypeId: 9,
-        sourceId: this.$store.state.user.details.id
-    },
+      savingUserImage: false,
+      attachmentTypeId: 9,
+      userId: this.$store.state.user.details.id,
+      profileImage: {}
     }
   },
   computed: {
@@ -157,19 +154,37 @@ export default {
       this.user.newPassword = null
       this.user.newPasswordConfirm = null
     },
-    deleteProfileImage () {
-      console.log('deleteHere')
+    async deleteAttachment (id) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await this.$store.dispatch(Actions.FILE_DELETE, {
+          id,
+          callback: async (status) => {
+            console.log('attachment deleted', status)
+            this.profileImage = {}
+            this.$store.commit(UserMutations.SET_USER_IMAGE, {})
+            this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        })
+      } catch(e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
-    async uploadFile (files, item) {
+    async uploadFile (files, attachmentTypeId, sourceId) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await this.$store.dispatch(Actions.FILE_UPLOAD, {
           file: files[0],
-          attachmentSourceTypeId: item.attachmentSourceTypeId,
-          sourceId: item.sourceId,
+          attachmentTypeId,
+          sourceId,
           callback: async (img) => {
             console.log('saved image', img)
             this.profileImage = img
+            this.$store.commit(UserMutations.SET_USER_IMAGE, img)
+            this.addImage = false
             this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
@@ -181,15 +196,34 @@ export default {
       }
     },
     async loadProfileImage () {
-      // TODO: need to make a universal endpoint for getting an s3 asset
-      // also, the current save endpoing is specific to documents
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await this.$store.dispatch(Actions.FILE_GET_ONE, {
+          attachmentTypeId: this.attachmentTypeId,
+          sourceId: this.userId,
+          callback: async (img) => {
+            this.profileImage = img
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        })
+      } catch(e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   },
   async created () {
+    this.loadProfileImage()
   }
 }
 </script>
 
 <style scoped lang="scss">
-
+.user-profile-image {
+  margin-top: 15px;
+  max-width: 200px;
+  height: auto;
+  border-radius: 50%;
+}
 </style>
