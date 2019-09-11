@@ -140,10 +140,18 @@ export default new Router({
 
         ]
       }, {
-        path: '/project',
+        path: '/project/:projectId',
         name: 'project',
         component: () => import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue'),
-        children: []
+        children: [
+          {
+            path: '',
+            component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/ProjectOverview.vue')
+          }, {
+            path: 'processStep/:processStepId',
+            component: () => import (/*webpackChunkName: "projectProcessStep" */ './views/flow/project/ProjectProcessStep.vue')
+          }
+        ]
       }, {
         path: '/leads',
         name: 'leads',

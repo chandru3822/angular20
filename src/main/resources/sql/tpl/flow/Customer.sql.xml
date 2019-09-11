@@ -44,6 +44,31 @@
 
   ]]></customer.getById>
 
+  <customer.getByProjectId><![CDATA[
+    select
+      c.id,
+      c.first_name,
+      c.last_name,
+      c.date_created,
+      c.first_name || ' ' || last_name as full_name,
+      c.email,
+      c.phone,
+      c.mobile,
+      c.customer_type_id,
+      c.company_id,
+      c.street1,
+      c.city,
+      c.state_id,
+      s.state,
+      c.country_id,
+      ct.country
+    from flow.customer c
+      inner join flow.project p on p.customer_id = c.id
+      inner join flow.state s on s.id = c.state_id
+      inner join flow.country ct on ct.id = c.country_id
+    where p.id = :projectId
+  ]]></customer.getByProjectId>
+
   <customer.updateCustomer><![CDATA[
     update flow.customer set
            customer_type_id = :customerTypeId,

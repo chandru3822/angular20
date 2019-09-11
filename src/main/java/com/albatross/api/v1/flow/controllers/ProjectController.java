@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.controllers;
 
 import java.util.List;
 
-import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.model.ProjectProcessStep;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
@@ -44,10 +43,5 @@ public class ProjectController {
   @GetMapping(value = "/{projectId}/processSteps", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectProcessStep>> getProjectProcessSteps(@PathVariable Long projectId) {
     return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId), HttpStatus.OK);
-  }
-
-  @GetMapping(value = "/{projectId}/fields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> getFieldsByProjectId(@PathVariable Long companyId, @PathVariable Long projectId) {
-    return new ResponseEntity<>(customFieldValueService.getProjectCustomValues(companyId, ObjectType.PROJECT.id, projectId), HttpStatus.OK);
   }
 }

@@ -1,32 +1,66 @@
 <sql>
   <customFieldValues.getProjectFieldValues><![CDATA[
-    select coalesce((
-      select array_to_json(array_agg(row_to_json(fields)))
-        from (
+    select
+      cfg.id,
+      cfg.group_name as "groupName",
+      cfg.group_order as "groupOrder",
+      coalesce((
+        SELECT array_to_json(array_agg(row_to_json(fields)))
+        FROM (
           select
-            cf.id as custom_field_id,
-            pcfv.id as project_custom_value_id,
-            cf.field_name,
-            cfga.field_order,
-            cdt.company_data_type,
-            pcfv.date_value,
-            pcfv.text_value,
-            pcfv.timestamp_value,
-            pcfv.boolean_value
-          from flow.project p
-          inner join flow.project_custom_field_value pcfv on pcfv.project_id = p.id
-          inner join flow.custom_field_group_assignment cfga on cfga.id = pcfv.custom_field_group_assignment_id
-          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-          inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-          inner join flow.object_type ot on ot.id = cfg.object_type_id
-          inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-          where p.id = :projectId
-            and ot.company_id = :companyId
-            and ot.object_code = 'PROJECT'
-            and cfga.archived is false
-          order by cfga.field_order
-        ) fields), '[]'
-    ) as fieldGroups;
+            pcv.id,
+            p.customer_id as "customerId",
+            pcv.date_value as "dateValue",
+            pcv.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+            pcv.timestamp_value as "timestampValue",
+            pcv.boolean_value as "booleanValue",
+            pcv.text_value as "textValue",
+            pcv.numeric_value as "numericValue",
+            pcv.int_value as "intValue",
+            pcv.int_array_value as "intArrayValue",
+            cfga.custom_field_group_id as "customFieldGroupId",
+            cfga.id as "customFieldGroupAssignmentId",
+            cfga.custom_field_id as "customFieldId",
+            cfga.field_order as "fieldOrder",
+            cf.list_of_value_id as "listOfValueId",
+            cf.field_name as "fieldName",
+            cf.custom_field_sql_key_id as "customFieldSqlKeyId",
+            cfsk.sql_key as "customFieldSqlKey",
+            cf.company_data_type_id as "companyDataTypeId",
+            cdt.data_type_id as "dataTypeId",
+            coalesce((
+            SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+            FROM (
+              select
+                lov.id,
+                lov.name,
+                lov.code,
+                lov.parent_id,
+                lov.display_order
+              from flow.list_of_value lov
+              where lov.parent_id is not null
+                and lov.parent_id = cf.list_of_value_id
+                and lov.archived is not true
+              order by lov.display_order
+            ) listOfValues), '[]') AS "listOfValues"
+        from flow.custom_field_group_assignment cfga
+        inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
+        inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+        left join flow.project_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_id = :projectId
+        left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
+        left join flow.project p on p.id = pcv.project_id
+        where cfga.custom_field_group_id = cfg.id
+          and cfga.archived is not true
+          and cfot.archived is not true
+        order by cfga.field_order
+      ) fields), '[]') AS "customFieldValues"
+    from flow.custom_field_group cfg
+    inner join flow.object_type ot on ot.id = cfg.object_type_id
+    where cfg.object_type_id = :objectTypeId
+      and cfg.archived is not true
+      and ot.company_id = :companyId
+    order by cfg.group_order;
   ]]></customFieldValues.getProjectFieldValues>
 
   <customFieldValues.getCustomerFieldValues><![CDATA[
