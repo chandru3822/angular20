@@ -28,9 +28,10 @@
         <v-data-table
             :headers="headers"
             :items="leads"
-            :items-per-page="-1"
+            :options.sync="options"
             :search="search"
-            hide-default-footer
+            :loading="dataLoading"
+            :server-items-length="totalLeads"
             class="elevation-1 fix-column-width-bug"
         >
           <template #no-data>
@@ -57,6 +58,7 @@
 </template>
 
 <script>
+import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
@@ -69,6 +71,11 @@ export default {
     return {
       snackbar: {},
       leads: [],
+      options: {
+        itemsPerPage: 100
+      },
+      totalLeads: 0,
+      dataLoading: true,
       companyId: this.$store.state.user.details.companyId,
       headers: [
         { text: 'Lead Name', value: 'fullName', show: true },
@@ -80,7 +87,15 @@ export default {
       search: ''
     }
   },
-  created () {
+  watch: {
+    options: {
+      handler () {
+        this.getLeads()
+      },
+      deep: true,
+    },
+  },
+  mounted () {
     this.getLeads()
   },
   methods: {
@@ -91,12 +106,22 @@ export default {
       console.log('EXPORT WAS CLICKED')
     },
     async getLeads () {
-      // const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer`)
-      // this.leads = data
-      //figure out how to load this with the cool tables
-      this.leads = [
-        { id: 111112, fullName: 'One Two', status: 'Active', owner: 'Probincrux', state: 'Colorado', lastActivity: '2018-12-12'}
-      ]
+      const { sortBy, descending, page, itemsPerPage } = this.options
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/search`, { params: {
+            query: '',
+            page: page - 1,
+            size: itemsPerPage,
+        }})
+        this.leads = data.content
+        this.totalLeads = data.totalElements
+        this.dataLoading = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Leads')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   }
 }

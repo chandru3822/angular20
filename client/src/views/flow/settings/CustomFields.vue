@@ -314,7 +314,7 @@
         // todo: use real form validation?
         let invalidOptions = false
         if (item.companyDataType && item.companyDataType.hasListValues) {
-          if (item.listOfValues.length === 0) {
+          if (item.listOfValues && item.listOfValues.length === 0) {
             invalidOptions = true
           } else {
             item.listOfValues.forEach(ddo => {

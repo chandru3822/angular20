@@ -1,9 +1,5 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
@@ -12,14 +8,19 @@ import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.Customer;
 import com.albatross.api.v1.flow.model.User;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -32,12 +33,18 @@ public class CustomerService {
   @Autowired
   SecurityService securityService;
 
-  public List<Customer> getCustomers(Long companyId) {
+  public Page searchCustomers(Long companyId, String query, Pageable pageable) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
+    params.put("query", query);
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
 
-    List<Customer> results = sqlCache.query("customer.getAllByCompany", params, Customer.class);
-    return results;
+    List<Customer> results = sqlCache.query("customer.searchCustomers", params, Customer.class);
+    Integer count = sqlCache.queryForObject("customer.searchCustomerCount", params, Integer.class);
+
+    Page<Customer> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    return page;
   }
 
   public Customer getCustomer(Long customerId) {
@@ -101,7 +108,7 @@ public class CustomerService {
     sqlCache.update("customer.updateOwner", params);
   }
 
-  public List<User> getOwners(Long companyId) {
+  public List<User> getOwnersForCustomer(Long companyId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     List<Long> statusIds = new ArrayList<>();

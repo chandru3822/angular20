@@ -12,6 +12,30 @@
     where company_id = :companyId;
   ]]></customer.getAllByCompany>
 
+  <customer.searchCustomers><![CDATA[
+      select
+        id,
+        first_name,
+        last_name,
+        first_name || ' ' || last_name as full_name,
+        email,
+        phone,
+        company_id
+      from flow.customer
+      where company_id = :companyId
+        and first_name is not null
+      limit :limit
+      offset :offset ;
+  ]]></customer.searchCustomers>
+
+  <customer.searchCustomerCount><![CDATA[
+      select
+        count(*)
+      from flow.customer
+      where company_id = :companyId
+        and first_name is not null
+  ]]></customer.searchCustomerCount>
+
   <customer.getById><![CDATA[
     select c.id,
        c.first_name,
