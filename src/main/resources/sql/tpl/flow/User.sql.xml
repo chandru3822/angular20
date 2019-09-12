@@ -30,8 +30,9 @@
                             per.permission_name,
                             per.permission_code
                      from flow.permission per
-                        left join blueraven.user_deny_permission udp on udp.permission_id = per.id
+                        left join flow.user_permission udp on udp.permission_id = per.id
                      where udp.user_id = u.id
+                       and udp.deny is true
                        and per.archived is not true
                  ) permissions), '[]') as permissions
     from flow.user u

@@ -624,6 +624,7 @@
           if (this.addNewRequirement){
             const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/types`)
             this.availableRequirementTypes = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -641,6 +642,7 @@
             const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function`)
             this.availableFunctions = data
           }
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -653,6 +655,7 @@
           if(!this.parentObjects || this.parentObjects.length === 0){
             const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
             this.parentObjects = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -665,6 +668,7 @@
         try {
           const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${parent.id}`)
           this.customFields = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -676,6 +680,7 @@
         try {
           const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/dynamicParams`)
           this.newRequirement.requirementParamDynamicValues = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -687,6 +692,7 @@
         try {
           const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operator`)
           this.operatorTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -757,6 +763,7 @@
         try {
           const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`)
           this.actions = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -807,6 +814,7 @@
         try {
           const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
           this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -818,6 +826,7 @@
         try {
           const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operation`)
           this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

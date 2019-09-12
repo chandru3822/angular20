@@ -25,7 +25,7 @@
         <div v-if="changeOwner">
           <v-autocomplete v-model="customer.ownerId"
                     :items="owners"
-                    label="Select New Owner"
+                    label="Select Owner"
                     item-text="fullName"
                     item-value="id"
                     autocomplete="new-password"
@@ -35,7 +35,8 @@
         </div>
         <v-btn text small class="change-owner-button" @click="changeOwner = !changeOwner">
           <span v-if="changeOwner">cancel</span>
-          <span v-else>change</span>
+          <span v-else-if="customer.ownerId">change</span>
+          <span v-else>add owner</span>
         </v-btn>
       </v-col>
     </v-row>

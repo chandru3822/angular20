@@ -101,7 +101,7 @@
            up.id as position_id,
            p.position
     from flow.owner_position_id op
-         inner join flow.user_position up on up.position_id = op.position_id
+         inner join flow.user_position up on array[up.position_id] <@ op.position_ids
          inner join flow."user" u on u.id = up.user_id
          inner join flow.position p on p.id = up.position_id
     where op.company_id = :companyId
