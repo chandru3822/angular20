@@ -16,7 +16,7 @@ public class Customer  {
   private String firstName, lastName, fullName, email,
       street1, street2, city, state, postalCode, country,
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
-      phone, mobile, customerType, ownerFirstName, ownerLastName, ownerPosition;
+      phone, mobile, customerType, ownerFirstName, ownerLastName, ownerFullName, ownerPosition;
   private Double latitude, longitude;
   // dates as strings or dates?
   private String dateCreated;

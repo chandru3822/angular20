@@ -12,13 +12,14 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-toolbar color="white" class="elevation-1 mt-4">
+        <v-toolbar color="white" class="elevation-1 mt-3">
           <v-text-field
-              class="mt-4"
+              class="mt-5"
               prepend-inner-icon="search"
               text
               label="Search leads..."
               v-model="search"
+              @input="debounceGetLeads"
           ></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -28,11 +29,13 @@
         <v-data-table
             :headers="headers"
             :items="leads"
+            :fixed-header="true"
             :options.sync="options"
-            :search="search"
+            disable-sort
+            :footer-props="footerProps"
             :loading="dataLoading"
             :server-items-length="totalLeads"
-            class="elevation-1 fix-column-width-bug"
+            class="elevation-1 fix-column-width-bug lead-table"
         >
           <template #no-data>
             No available leads
@@ -41,13 +44,14 @@
           <template #no-results>
             No available leads
           </template>
+
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
               <td class="text-left">{{item.fullName}}</td>
               <td class="text-left">{{item.status}}</td>
-              <td class="text-left">{{item.owner}}</td>
+              <td class="text-left">{{item.ownerFullName}}</td>
               <td class="text-left">{{item.state}}</td>
-              <td class="text-left">{{item.lastActivity | formatDate('date', $store.state.user.details.timezone)}}</td>
+              <td class="text-left">{{item.dateCreated | formatDate('date', $store.state.user.details.timezone)}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -61,6 +65,8 @@
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import debounce from 'lodash.debounce'
+import { saveAs } from 'file-saver'
 
 export default {
   name: 'Leads',
@@ -69,8 +75,13 @@ export default {
   },
   data () {
     return {
+      delay: 500,
       snackbar: {},
       leads: [],
+      descending: true,
+      footerProps: {
+        'items-per-page-options': [25, 50, 100, 1000]
+      },
       options: {
         itemsPerPage: 100
       },
@@ -78,11 +89,11 @@ export default {
       dataLoading: true,
       companyId: this.$store.state.user.details.companyId,
       headers: [
-        { text: 'Lead Name', value: 'fullName', show: true },
+        { text: 'Lead Name', value: 'full_name', show: true },
         { text: 'Status', value: 'status', show: true },
-        { text: 'Owner', value: 'owner', show: true },
+        { text: 'Owner', value: 'owner_full_name', show: true },
         { text: 'State', value: 'state', show: true },
-        { text: 'Last Activity', value: 'lastActivity', show: true },
+        { text: 'Date Created', value: 'date_created', show: true },
       ],
       search: ''
     }
@@ -95,9 +106,6 @@ export default {
       deep: true,
     },
   },
-  mounted () {
-    this.getLeads()
-  },
   methods: {
     clickRow(id){
       this.$router.push({name: 'lead', params: {id}})
@@ -105,13 +113,17 @@ export default {
     exportLeads() {
       console.log('EXPORT WAS CLICKED')
     },
+    debounceGetLeads: debounce( function () {
+      this.dataLoading = true
+      this.getLeads()
+    }, 500),
     async getLeads () {
-      const { sortBy, descending, page, itemsPerPage } = this.options
+      const { sortBy, sortDesc, page, itemsPerPage } = this.options
       try {
         const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/search`, { params: {
-            query: '',
+            query: this.search,
             page: page - 1,
-            size: itemsPerPage,
+            size: itemsPerPage
         }})
         this.leads = data.content
         this.totalLeads = data.totalElements
@@ -122,10 +134,34 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Leads')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async exportLeads () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/exportCustomers`, { params: {
+            query: this.search
+        }})
+        let blob = new Blob([data], {
+          type: 'text/csv;charset=utf-8'
+        });
+        saveAs(blob, "leads.csv");
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Exporting Leads')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   }
 }
 </script>
+
+<style lang="scss">
+  #leads-container .v-data-table__wrapper {
+    height: calc(100vh - 400px);
+    min-height: 300px;
+  }
+</style>
 
 <style lang="scss" scoped>
   #leads-container {
@@ -134,5 +170,9 @@ export default {
     padding-right: 0;
     padding-top: 0;
   }
+  .lead-table {
+    margin-top: 2px;
+  }
+
 </style>
 

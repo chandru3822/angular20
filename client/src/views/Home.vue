@@ -102,6 +102,12 @@ export default {
   }
 }
 
+#header {
+  /* @randa
+  /* todo: look into this, vuetify 2.0.17 had overhanging tabs without this line*!*/
+  height: unset !important;
+}
+
 @media (min-width: 769px) {
   #portal{
     .app-title {

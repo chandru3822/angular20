@@ -26,10 +26,16 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @GetMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<Customer>> searchCustomers(@PathVariable Long companyId,
-                                                          @RequestParam String query,
-                                                          Pageable pageable) {
-      return new ResponseEntity<>(customerService.searchCustomers(companyId, query, pageable), HttpStatus.OK);
+    public Page searchCustomers(@PathVariable Long companyId,
+                                @RequestParam String query,
+                                Pageable pageable) {
+      return customerService.searchCustomers(companyId, query, pageable);
+    }
+
+    @GetMapping(value = "/exportCustomers", produces = "text/csv")
+    public ResponseEntity exportCustomerList(@PathVariable Long companyId,
+                                             @RequestParam String query) {
+        return customerService.exportCustomers(companyId, query);
     }
 
     @GetMapping(value = "/{customerId}", produces = MediaType.APPLICATION_JSON_VALUE)

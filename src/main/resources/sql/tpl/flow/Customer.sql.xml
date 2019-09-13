@@ -14,16 +14,26 @@
 
   <customer.searchCustomers><![CDATA[
       select
-        id,
-        first_name,
-        last_name,
-        first_name || ' ' || last_name as full_name,
-        email,
-        phone,
-        company_id
-      from flow.customer
-      where company_id = :companyId
-        and first_name is not null
+          c.id,
+          c.first_name,
+          c.last_name,
+          c.first_name || ' ' || c.last_name as full_name,
+          c.email,
+          c.phone,
+          c.company_id,
+          c.state_id,
+          s.state,
+          s.abbreviation,
+          c.date_created,
+          u.id as owner_id,
+          u.first_name || ' ' || u.last_name as owner_full_name
+      from flow.customer c
+          left join flow.state s on s.id = c.state_id
+          left join flow.user_position up on up.id = c.owner_user_position_id
+          left join flow.user u on u.id = up.user_id
+      where c.company_id = :companyId
+          and c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+      order by c.date_created desc
       limit :limit
       offset :offset ;
   ]]></customer.searchCustomers>
@@ -31,10 +41,36 @@
   <customer.searchCustomerCount><![CDATA[
       select
         count(*)
-      from flow.customer
-      where company_id = :companyId
-        and first_name is not null
+      from flow.customer c
+      where c.company_id = :companyId
+        and lower(c.first_name || ' ' || c.last_name) ILIKE lower('%' || :query || '%')
   ]]></customer.searchCustomerCount>
+
+  <customer.exportCustomers><![CDATA[
+      select
+          c.first_name,
+          c.last_name,
+          c.first_name || ' ' || c.last_name as full_name,
+          c.street1,
+          c.email,
+          c.phone,
+          c.company_id,
+          c.city,
+          c.postal_code,
+          c.state_id,
+          s.state,
+          s.abbreviation,
+          c.date_created,
+          u.id as owner_id,
+          u.first_name || ' ' || u.last_name as owner_full_name
+      from flow.customer c
+          left join flow.state s on s.id = c.state_id
+          left join flow.user_position up on up.id = c.owner_user_position_id
+          left join flow.user u on u.id = up.user_id
+      where c.company_id = :companyId
+          and c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+      order by c.date_created desc;
+  ]]></customer.exportCustomers>
 
   <customer.getById><![CDATA[
     select c.id,
