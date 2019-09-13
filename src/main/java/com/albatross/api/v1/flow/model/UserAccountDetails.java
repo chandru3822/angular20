@@ -1,20 +1,21 @@
 package com.albatross.api.v1.flow.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import org.springframework.boot.jackson.JsonComponent;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+
+import org.springframework.boot.jackson.JsonComponent;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public class UserAccountDetails implements UserDetails {
 
@@ -26,7 +27,7 @@ public class UserAccountDetails implements UserDetails {
     private String password;
     @JsonIgnore
     private boolean accountNonExpired, accountNonLocked, credentialsNonExpired, enabled;
-    private String firstName, lastName, fullName, awsBucket;
+    private String firstName, lastName, fullName, awsBucket, companyAbbreviation;
     private Long masqueradeId, companyId;
     private Set<GrantedAuthority> authorities;
 
@@ -42,6 +43,7 @@ public class UserAccountDetails implements UserDetails {
         this.fullName = user.getFullName();
         this.awsBucket = user.getAwsBucket();
         this.companyId = user.getCompanyId();
+        this.companyAbbreviation = user.getCompanyAbbreviation();
 
         // TODO: determine expired, lock, enabled, etc.
         this.accountNonExpired = true;

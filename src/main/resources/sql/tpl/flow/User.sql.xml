@@ -12,6 +12,7 @@
        u.user_status_type_id,
        c.aws_bucket,
        c.company_name,
+       c.abbreviation as company_abbreviation,
        coalesce((
             SELECT array_to_json(array_agg(row_to_json(permissions)))
             FROM (
