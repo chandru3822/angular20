@@ -1,17 +1,19 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.StatusType;
 import com.albatross.api.v1.flow.model.User;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -29,9 +31,10 @@ public class ProcessStepStatusService {
   @Autowired
   SecurityService securityService;
 
-  public List<ProcessStepStatusType> getStatusTypesForCompany(Long companyId) {
+  public List<ProcessStepStatusType> getStatusTypesForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
 
     List<ProcessStepStatusType> attachmentTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, ProcessStepStatusType.class);
     return attachmentTypes;

@@ -154,7 +154,7 @@
       async getFunctionDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.functionId}`)
+          const {data} = await getRequest(`/function/${this.functionId}`)
           this.details = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -166,7 +166,7 @@
       async getSystemValues () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/systemValues`)
+          const {data} = await getRequest(`/function/systemValues`)
           this.systemValues = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -178,7 +178,7 @@
       async loadParentObjects () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`)
+          const {data} = await getRequest(`/processStep/getParentObjects`)
           this.parentObjects = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -190,7 +190,7 @@
       async loadFieldsByParent(id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${id}`)
+          const {data} = await getRequest(`/customField/getByParentProcessStep/${id}`)
           this.availableCustomFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -213,7 +213,7 @@
 
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/function/${this.functionId}/param`, item)
+          const {data} = await postRequest(`/function/${this.functionId}/param`, item)
           console.log('randaLoggerData', data)
           if(item.parameterTypeId === 1) {
             item.systemValue = data.systemValue

@@ -1,16 +1,22 @@
 package com.albatross.api.v1.flow.controllers;
 
+import java.util.List;
+
 import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.model.ProcessStepAction;
 import com.albatross.api.v1.flow.model.ProcessStepActionChildProcess;
 import com.albatross.api.v1.flow.model.ProcessStepActionLink;
 import com.albatross.api.v1.flow.services.ProcessStepActionService;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -19,16 +25,15 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/processStep/{stepId}/action")
+@RequestMapping(value = "/api/v1/flow/processStep/{stepId}/action")
 public class ProcessStepActionController {
 
   @Autowired
   private ProcessStepActionService processStepActionService;
 
   @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepAction> getActionsForStep (@PathVariable Long companyId,
-                                                    @PathVariable Long stepId) {
-    return processStepActionService.getActionsForStep(companyId, stepId);
+  public List<ProcessStepAction> getActionsForStep (@PathVariable Long stepId) {
+    return processStepActionService.getActionsForStep(stepId);
   }
 
   @RequestMapping(value = "/{actionId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -49,10 +54,8 @@ public class ProcessStepActionController {
   // child process steps
 
   @RequestMapping(value = "/{actionId}/childProcessSteps", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStep> getChildProcessStepsForAction (@PathVariable Long companyId,
-                                                          @PathVariable Long stepId,
-                                                          @PathVariable Long actionId) {
-    return processStepActionService.getChildProcessStepsForAction(companyId, stepId, actionId);
+  public List<ProcessStep> getChildProcessStepsForAction (@PathVariable Long stepId, @PathVariable Long actionId) {
+    return processStepActionService.getChildProcessStepsForAction(stepId, actionId);
   }
 
   @RequestMapping(value = "/{actionId}/addChildStepToAction", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)

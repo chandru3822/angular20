@@ -105,7 +105,7 @@ export default {
     async getAttachmentTypes () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/attachmentType/types`)
+        const {data} = await getRequest(`/attachmentType/types`)
         this.attachmentTypes = orderBy(data, [a => a.attachmentType.toLowerCase()])
 
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -118,7 +118,7 @@ export default {
     async deleteType (typeId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/attachmentType/type/${typeId}`)
+        await deleteRequest(`/attachmentType/type/${typeId}`)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Action Type')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -131,7 +131,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newType.companyId = this.companyId
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/attachmentType/type`, this.newType)
+        const {data} = await postRequest(`/attachmentType/type`, this.newType)
 
         this.snackbar = getSnackbar('SUCCESS', 'Action Type Added')
 
@@ -155,7 +155,7 @@ export default {
       try {
         this.selectedAttachmentTypeId = null
         a.modifiedById = this.userId
-        await putRequest(`/api/v1/flow/${this.companyId}/attachmentType/type`, a)
+        await putRequest(`/attachmentType/type`, a)
         this.snackbar = getSnackbar('SUCCESS')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

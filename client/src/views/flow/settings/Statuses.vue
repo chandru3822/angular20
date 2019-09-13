@@ -105,7 +105,7 @@
       async getStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
+          const {data} = await getRequest(`/processStep/status`)
           this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -117,7 +117,7 @@
       async deleteType (typeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/status/${typeId}`)
+          await deleteRequest(`/processStep/status/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -130,7 +130,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newType.companyId = this.companyId
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/status`, this.newType)
+          const {data} = await postRequest(`/processStep/status`, this.newType)
 
           // add it to the records already on the screen
           this.statusTypes.push(data)
@@ -151,7 +151,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.selectedStatusTypeId = null
-          await putRequest(`/api/v1/flow/${this.companyId}/processStep/status`, s)
+          await putRequest(`/processStep/status`, s)
           this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

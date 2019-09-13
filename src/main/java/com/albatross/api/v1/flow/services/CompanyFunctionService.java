@@ -1,21 +1,27 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CompanyFunction;
+import com.albatross.api.v1.flow.model.CompanyFunctionParam;
+import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
+import com.albatross.api.v1.flow.model.SystemValue;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -36,9 +42,10 @@ public class CompanyFunctionService {
   @Autowired
   ObjectMapper om;
 
-  public List<CompanyFunction> getCompanyFunctions(Long companyId) {
+  public List<CompanyFunction> getCompanyFunctions() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<CompanyFunction> results = sqlCache.query("companyFunction.getFunctions", params, CompanyFunction.class);
     return results;
   }

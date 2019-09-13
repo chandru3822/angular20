@@ -1,14 +1,20 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.StatusType;
-import com.albatross.api.v1.flow.services.StatusService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Optional;
+
+import com.albatross.api.v1.flow.model.StatusType;
+import com.albatross.api.v1.flow.services.StatusService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -17,15 +23,15 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/status")
+@RequestMapping(value = "/api/v1/flow/status")
 public class StatusController {
 
   @Autowired
   private StatusService statusService;
 
   @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<StatusType> getStatusTypesForCompany (@PathVariable Long companyId) {
-    return statusService.getStatusTypesForCompany(companyId);
+  public List<StatusType> getStatusTypesForCompany () {
+    return statusService.getStatusTypesForCompany();
   }
 
   @RequestMapping(value = "/{typeId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)

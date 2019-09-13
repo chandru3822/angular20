@@ -1,15 +1,18 @@
 package com.albatross.api.v1.flow.services;
 
-import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.StatusType;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.StatusType;
+import com.albatross.api.v1.flow.model.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -27,9 +30,10 @@ public class StatusService {
   @Autowired
   SecurityService securityService;
 
-  public List<StatusType> getStatusTypesForCompany(Long companyId) {
+  public List<StatusType> getStatusTypesForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
 
     List<StatusType> attachmentTypes = sqlCache.query("status.getTypesForCompany", params, StatusType.class);
     return attachmentTypes;

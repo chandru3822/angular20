@@ -1,12 +1,17 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyDataType;
+import com.albatross.api.v1.flow.model.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 
 /**
@@ -15,15 +20,17 @@ import java.util.List;
  */
 
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DataTypeService {
 
-  @Autowired
-  SqlCache sqlCache;
+  private final SqlCache sqlCache;
 
-  public List<CompanyDataType> getCompanyDataTypes(Long companyId) {
+  private final SecurityService securityService;
+
+  public List<CompanyDataType> getCompanyDataTypes() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<CompanyDataType> result = sqlCache.query("dataType.getCompanyDataTypes", params, CompanyDataType.class);
     return result;
   }

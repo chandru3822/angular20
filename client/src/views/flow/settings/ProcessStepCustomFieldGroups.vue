@@ -254,7 +254,7 @@
           this.newGroup.groupOrder = 0
           this.newGroup.processStepId = this.$route.params.id
 
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/addCustomFieldGroup`, this.newGroup)
+          const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
           this.customFieldGroups.push(data)
           this.newGroup = {}
           this.createNew = false
@@ -275,7 +275,7 @@
       async deleteGroupFromStep(groupId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
+          await deleteRequest(`/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Group Deleted From Step')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -287,7 +287,7 @@
       async deleteFieldFromGroup(fieldGroupId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
+          await deleteRequest(`/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Field Deleted From Group')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -300,7 +300,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (this.addField && this.newFieldType === 'native') {
-            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/getAvailableCustomFields`, {
+            const {data} = await getRequest(`/customFieldGroup/getAvailableCustomFields`, {
               params: {
                 objectTypeId,
                 groupId,
@@ -311,7 +311,7 @@
             this.parentObjects = []
             this.ancillaryCustomFields = []
           } else if (this.addField && this.newFieldType === 'ancillary') {
-            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
+            const {data} = await getRequest(`/processStep/getParentObjects`, { params: { id: this.processStepId}})
             this.selectedAncillaryField = {}
             this.parentObjects = data
             this.availableCustomFields = []
@@ -330,7 +330,7 @@
           this.newField.fieldOrder = 0
           this.newField.customFieldGroupId = cfg.id
 
-          await postRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/addFieldToGroup`, this.newField)
+          await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
           cfg.customFields.push(this.newField)
           this.newField = {}
           this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
@@ -344,7 +344,7 @@
       async loadFieldsByParent() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${this.parent.id}`)
+          const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
           this.ancillaryCustomFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -362,7 +362,7 @@
             ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
             fieldOrder: 0
           }
-          await postRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/addFieldToGroup`, params)
+          await postRequest(`/customFieldGroup/addFieldToGroup`, params)
           this.selectedAncillaryField = {}
           this.addField = false
           this.snackbar = getSnackbar('SUCCESS', 'Ancillary Field Assigned')

@@ -605,7 +605,7 @@
       async getRequirements() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`)
+          const {data} = await getRequest(`/processStep/${this.processStepId}/requirement`)
           this.requirements = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -622,7 +622,7 @@
         try {
           this.addNewRequirement = !this.addNewRequirement
           if (this.addNewRequirement){
-            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/types`)
+            const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
             this.availableRequirementTypes = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
@@ -639,7 +639,7 @@
           if(this.newRequirement.processStepRequirementTypeId === 1){
             this.loadParentObjects()
           } else {
-            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function`)
+            const {data} = await getRequest(`/function`)
             this.availableFunctions = data
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -653,7 +653,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if(!this.parentObjects || this.parentObjects.length === 0){
-            const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/getParentObjects`, { params: { id: this.processStepId}})
+            const {data} = await getRequest(`/processStep/getParentObjects`, { params: { id: this.processStepId}})
             this.parentObjects = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
@@ -666,7 +666,7 @@
       async loadFieldsByParent(parent) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getByParentProcessStep/${parent.id}`)
+          const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.id}`)
           this.customFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -678,7 +678,7 @@
       async loadFunctionParams() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function/${this.newRequirement.companyFunctionId}/dynamicParams`)
+          const {data} = await getRequest(`/function/${this.newRequirement.companyFunctionId}/dynamicParams`)
           this.newRequirement.requirementParamDynamicValues = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -690,7 +690,7 @@
       async loadOperatorTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operator`)
+          const {data} = await getRequest(`/operator`)
           this.operatorTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -714,7 +714,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newRequirement.processStepId = this.processStepId
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`, this.newRequirement)
+          const {data} = await postRequest(`/processStep/${this.processStepId}/requirement`, this.newRequirement)
           this.requirements.push(data)
           this.addNewRequirement = false
           this.newRequirement = {
@@ -733,7 +733,7 @@
       async updateRequirement(requirement) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement`, requirement)
+          const {data} = await putRequest(`/processStep/${this.processStepId}/requirement`, requirement)
           this.expanded = []
           // this forces the list to update the operator displayed ... using requirement = data did not work
           requirement.operatorType = data.operatorType
@@ -748,7 +748,7 @@
       async deleteRequirement(id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/requirement/${id}`)
+          await deleteRequest(`/processStep/${this.processStepId}/requirement/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -761,7 +761,7 @@
       async getActions () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`)
+          const {data} = await getRequest(`/processStep/${this.processStepId}/action`)
           this.actions = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -777,7 +777,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newAction.processStepId = this.processStepId
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`, this.newAction)
+          const {data} = await postRequest(`/processStep/${this.processStepId}/action`, this.newAction)
           this.actions.push(data)
           this.addNewAction = false
           this.newAction = {}
@@ -794,7 +794,7 @@
         try {
           action.processStepLogicList = action.processStepLogicList.filter(l => {return !l.archived})
 
-          const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action`, action)
+          const {data} = await putRequest(`/processStep/${this.processStepId}/action`, action)
           // this forces the list to update the values displayed ... using action = data did not work
           action.actionType = data.actionType
           action.processStepStatusType = data.processStepStatusType
@@ -812,7 +812,7 @@
       async getStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/status`)
+          const {data} = await getRequest(`/processStep/status`)
           this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -824,7 +824,7 @@
       async getOperationTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/operation`)
+          const {data} = await getRequest(`/operation`)
           this.operationTypes = orderBy(data, [o => o.operationType.toLowerCase()])
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -836,7 +836,7 @@
       async deleteAction(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${item.id}`)
+          await deleteRequest(`/processStep/${this.processStepId}/action/${item.id}`)
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Action Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -848,13 +848,13 @@
       },
       //child process steps
       async loadChildProcessSteps(actionId) {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/childProcessSteps`)
+        const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/childProcessSteps`)
         this.childProcessSteps = data
       },
       async saveProcessStepToAction (action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
+          const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
             processStepId: this.selectedProcessStep.id,
             displayOrder: 0,
             triggerAutomatically: !!this.selectedProcessStep.triggerAutomatically
@@ -873,7 +873,7 @@
       async deleteChildProcessFromAction (actionId, id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
+          await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Deleted From Action')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -885,7 +885,7 @@
       async updateChildStep (actionId, childStep) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await putRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
+          await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -898,7 +898,7 @@
       async loadLinks(actionId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links/action/${actionId}`)
+          const {data} = await getRequest(`/links/action/${actionId}`)
           this.availableLinks = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -910,7 +910,7 @@
       async saveLinkToAction (action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
+          const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
             linkId: this.selectedLink.id
           })
           action.processStepActionLinks.push(data)
@@ -927,7 +927,7 @@
       async deleteLinkFromAction (actionId, id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
+          await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted From Action')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

@@ -12,6 +12,7 @@ import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,9 +38,10 @@ public class CustomFieldValueService {
   @Autowired
   ObjectMapper om;
 
-  public List<CustomFieldGroup> getCustomerCustomValues(Long companyId, Long primaryId) {
+  public List<CustomFieldGroup> getCustomerCustomValues(Long primaryId) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("primaryId", primaryId);
     params.put("objectTypeId", ObjectType.CUSTOMER.id);
 
@@ -64,9 +66,10 @@ public class CustomFieldValueService {
     }
   }
 
-  public List<CustomFieldGroup> getProjectCustomValues(Long companyId, Long projectId) {
+  public List<CustomFieldGroup> getProjectCustomValues(Long projectId) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("objectTypeId", ObjectType.PROJECT.id);
     params.put("projectId", projectId);
 

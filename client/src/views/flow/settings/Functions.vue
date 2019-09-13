@@ -87,7 +87,7 @@
       async getFunctions () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/function`)
+          const {data} = await getRequest(`/function`)
           this.functions = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -98,7 +98,7 @@
       },
       async deleteFunction (functionId) {
         console.log('will delete here')
-        // await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${processStepId}`)
+        // await deleteRequest(`/processStep/${processStepId}`)
       }
     },
     async created () {

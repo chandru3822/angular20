@@ -71,7 +71,7 @@
       async getProcessStepDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}`)
+          const {data} = await getRequest(`/processStep/${this.processStepId}`)
           this.processStep = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

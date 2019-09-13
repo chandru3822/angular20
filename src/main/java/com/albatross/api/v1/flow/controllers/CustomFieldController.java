@@ -1,14 +1,20 @@
 package com.albatross.api.v1.flow.controllers;
 
+import java.util.List;
+
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.ObjectType;
 import com.albatross.api.v1.flow.services.CustomFieldService;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -17,20 +23,20 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/customField")
+@RequestMapping(value = "/api/v1/flow/customField")
 public class CustomFieldController {
 
   @Autowired
   private CustomFieldService customFieldService;
 
   @RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomField> getAllCustomFields(@PathVariable Long companyId) {
-    return customFieldService.getAllCustomFields(companyId);
+  public List<CustomField> getAllCustomFields() {
+    return customFieldService.getAllCustomFields();
   }
 
   @RequestMapping(value = "/getCustomFieldObjectTypes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectType> getCustomFieldObjectTypes(@PathVariable Long companyId) {
-    return customFieldService.getObjectTypes(companyId);
+  public List<ObjectType> getCustomFieldObjectTypes() {
+    return customFieldService.getObjectTypes();
   }
 
   @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -46,8 +52,7 @@ public class CustomFieldController {
   }
 
   @RequestMapping(value = "/getByParentProcessStep/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomField> getByParentProcessStep(@PathVariable Long companyId,
-                                                  @PathVariable Long id) {
-    return customFieldService.getByParentProcessStep(companyId, id);
+  public List<CustomField> getByParentProcessStep(@PathVariable Long id) {
+    return customFieldService.getByParentProcessStep(id);
   }
 }

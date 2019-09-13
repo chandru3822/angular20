@@ -35,7 +35,7 @@
 
 <script>
 
-import {getRequest, VUE_APP_FLOW_API} from '@/helpers/helpers'
+import {getRequest, logError} from '@/helpers/helpers'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessStep'
 import SpinnerInline from '@/components/SpinnerInline'
@@ -50,7 +50,6 @@ export default {
   data () {
     return {
       projectId: this.$route.params.projectId,
-      companyId: this.$store.state.user.details.companyId,
       processSteps: [],
       customFieldGroups: [],
       isProcessStepsLoading: true,
@@ -64,20 +63,20 @@ export default {
   methods: {
     getProcessSteps: async function () {
       try {
-       const {data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/project/${this.projectId}/processSteps`)
+       const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
        this.processSteps = data
      } catch (e) {
-       console.error('*** ERROR ***', e)
+       logError(e)
      } finally {
        this.isProcessStepsLoading = false
      }
     },
     getFieldGroups: async function () {
       try {
-        const {data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/customFieldValues/project/${this.projectId}`)
+        const {data} = await getRequest(`/customFieldValues/project/${this.projectId}`)
         this.customFieldGroups = data
       } catch (e) {
-        console.error('*** ERROR ***', e)
+        logError(e)
       } finally {
         this.isFieldsLoading = false
       }

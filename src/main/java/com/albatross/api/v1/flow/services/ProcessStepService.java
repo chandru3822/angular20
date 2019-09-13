@@ -1,20 +1,26 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.ProcessStep;
+import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
+import com.albatross.api.v1.flow.model.ProcessStepLink;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -35,9 +41,10 @@ public class ProcessStepService {
   @Autowired
   ObjectMapper om;
 
-  public List<ProcessStep> getProcessStepsForCompany(Long companyId) {
+  public List<ProcessStep> getProcessStepsForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<ProcessStep> results = sqlCache.query("processStep.getAllForCompany", params, ProcessStep.class);
     return results;
   }
@@ -67,11 +74,11 @@ public class ProcessStepService {
     sqlCache.update("processStep.update", params);
   }
 
-  public ProcessStep insertStep(Long companyId, ProcessStep processStep) {
+  public ProcessStep insertStep(ProcessStep processStep) {
     // this is going to have to change when process steps are shared between companies
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", currentUser.getCompanyId());
     params.put("createdById", currentUser.getId());
     params.put("name", processStep.getProcessStepName());
     Long id = sqlCache.updateReturningId("processStep.insert", params, "id").longValue();
@@ -79,9 +86,10 @@ public class ProcessStepService {
     return getProcessStep(id);
   }
 
-  public List<ProcessStep> getParentObjects(Long companyId, Long id) {
+  public List<ProcessStep> getParentObjects(Long id) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
     List<ProcessStep> results = sqlCache.query("processStep.getParentObjects", params, ProcessStep.class);

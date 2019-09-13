@@ -106,7 +106,7 @@ export default {
     async getProcesses () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes`)
+        const {data} = await getRequest(`/processes`)
         this.processes = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -118,7 +118,7 @@ export default {
     async deleteProcess (processId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processes/${processId}`)
+        await deleteRequest(`/processes/${processId}`)
         this.snackbar = getSnackbar('SUCCESS', 'Process Deleted')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -134,7 +134,7 @@ export default {
         this.newProcess.parentCompanyId = this.parentCompanyId ? this.parentCompanyId : this.companyId
         this.newProcess.createdById = this.userId
 
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processes`, this.newProcess)
+        const {data} = await postRequest(`/processes`, this.newProcess)
 
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.$router.push({name: 'process', params: {id: data.id}})
