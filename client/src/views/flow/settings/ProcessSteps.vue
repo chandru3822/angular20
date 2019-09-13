@@ -102,7 +102,7 @@
       async getProcessSteps () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep`)
+          const {data} = await getRequest(`/processStep`)
           this.processSteps = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -114,7 +114,7 @@
       async deleteProcessStep (processStepId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/processStep/${processStepId}`)
+          await deleteRequest(`/processStep/${processStepId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -126,7 +126,7 @@
       async addProcessStep () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processStep`, this.newStep)
+          const {data} = await postRequest(`/processStep`, this.newStep)
           this.$router.push({path: `/settings/processStep/${data.id}/components`})
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Added')
           this.$store.commit(AppMutations.SET_LOADING, false)

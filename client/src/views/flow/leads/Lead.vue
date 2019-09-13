@@ -126,7 +126,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.customer.customFieldGroups = this.customFieldGroups
       try {
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customer`, this.customer)
+        const {data} = await postRequest(`/customer`, this.customer)
         this.$router.push({name: 'lead', params: {id: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -138,7 +138,7 @@ export default {
     async getCustomFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldValues/customer`, { params: {
+        const {data} = await getRequest(`/customFieldValues/customer`, { params: {
           primaryId: this.customerId,
           //  2 = customer
           objectTypeId: 2
@@ -154,7 +154,7 @@ export default {
     async getCustomer () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/${this.customerId}`)
+        const {data} = await getRequest(`/customer/${this.customerId}`)
         this.customer = data
 
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -167,7 +167,7 @@ export default {
     async getOwners () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/owners`)
+        const {data} = await getRequest(`/customer/owners`)
         this.owners = data
 
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -180,7 +180,7 @@ export default {
     async getNotes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/note/getCustomerNotes`, { params: {
+        const {data} = await getRequest(`/note/getCustomerNotes`, { params: {
             primaryId: this.customerId
           }})
         this.notes = data
@@ -196,7 +196,7 @@ export default {
       this.changeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/updateOwner`)
+        const {data} = await getRequest(`/customer/updateOwner`)
         this.customer.ownerId = data.id
 
         this.$store.commit(AppMutations.SET_LOADING, false)

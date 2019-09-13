@@ -1,20 +1,27 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CustomField;
+import com.albatross.api.v1.flow.model.CustomFieldObjectType;
+import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.ObjectType;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -23,17 +30,14 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CustomFieldService {
 
-  @Autowired
-  SqlCache sqlCache;
+  private final SqlCache sqlCache;
 
-  @Autowired
-  SecurityService securityService;
+  private final SecurityService securityService;
 
-  @Autowired
-  ObjectMapper om;
+  private final ObjectMapper om;
 
   public CustomField findCustomFieldById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -43,16 +47,18 @@ public class CustomFieldService {
   }
 
 
-  public List<CustomField> getAllCustomFields(Long companyId) {
+  public List<CustomField> getAllCustomFields() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<CustomField> result = sqlCache.query("customField.getAll", params, new CustomFieldMapper<>(CustomField.class, om));
     return result;
   }
 
-  public List<ObjectType> getObjectTypes(Long companyId) {
+  public List<ObjectType> getObjectTypes() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<ObjectType> result = sqlCache.query("customField.getObjectTypes", params, ObjectType.class);
     return result;
   }
@@ -203,9 +209,10 @@ public class CustomFieldService {
     sqlCache.update("customFieldGroupAssignment.archiveRows", params);
   }
 
-  public List<CustomField> getByParentProcessStep(Long companyId, Long id) {
+  public List<CustomField> getByParentProcessStep(Long id) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("id", id);
     List<CustomField> result = sqlCache.query("customField.getByParentProcessStep", params, new CustomFieldMapper<>(CustomField.class, om));
     return result;

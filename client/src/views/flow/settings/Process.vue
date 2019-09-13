@@ -154,7 +154,7 @@ export default {
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes/${this.processId}`)
+        const {data} = await getRequest(`/processes/${this.processId}`)
         this.process = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -171,7 +171,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNew = false
-        await deleteRequest(`/api/v1/flow/${this.companyId}/processes/processStepProcess/${id}`)
+        await deleteRequest(`/processes/processStepProcess/${id}`)
         this.snackbar = getSnackbar('SUCCESS', 'Step Deleted from Process')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -183,7 +183,7 @@ export default {
     async getOwningOrgs () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/org/owning`)
+        const {data} = await getRequest(`/org/owning`)
         this.owningOrgs = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -199,7 +199,7 @@ export default {
         this.newProcessStep = {}
         this.addNew = !this.addNew
         if(this.addNew) {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processes/availableProcessSteps/${this.processId}`)
+          const {data} = await getRequest(`/processes/availableProcessSteps/${this.processId}`)
           this.availableProcessSteps = data
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -212,7 +212,7 @@ export default {
     async assignProcessStep () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/processes/${this.processId}/processStep`, this.newProcessStep)
+        const {data} = await postRequest(`/processes/${this.processId}/processStep`, this.newProcessStep)
         console.log('randaLogger', data)
         this.process.processStepProcesses.push(data)
         this.process.processStepProcesses = orderBy(this.process.processStepProcesses, p => p.processStepName.toLowerCase())

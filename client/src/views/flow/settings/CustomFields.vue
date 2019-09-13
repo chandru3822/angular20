@@ -186,7 +186,7 @@
       async getCustomFields() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getAll`)
+          const {data} = await getRequest(`/customField/getAll`)
           data.forEach(d => {
             d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
           })
@@ -203,7 +203,7 @@
       async getCustomFieldObjectTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getCustomFieldObjectTypes`)
+          const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
           data.forEach(d => d.archived = true)
           this.customFieldObjectTypes = cloneDeep(data)
           this.objectFilters = data
@@ -219,7 +219,7 @@
       async getCompanyDataTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/dataType/getCompanyDataTypes`)
+          const {data} = await getRequest(`/dataType/getCompanyDataTypes`)
           this.dataTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -286,7 +286,7 @@
             })
           }
 
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customField`, object)
+          const {data} = await postRequest(`/customField`, object)
           data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
 
           // if it was a new field, reset the first index, then push it to both arrays

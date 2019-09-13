@@ -43,7 +43,7 @@
 
 <script>
 
-import {getRequest, VUE_APP_FLOW_API} from '@/helpers/helpers'
+import {getRequest} from '@/helpers/helpers'
 import UserCard from '@/views/flow/components/UserCard'
 
 export default {
@@ -64,7 +64,7 @@ export default {
   methods: {
     getCustomer: async function () {
       try {
-        const{data} = await getRequest(`${VUE_APP_FLOW_API}/${this.companyId}/customer/project/${this.projectId}`)
+        const{data} = await getRequest(`/customer/project/${this.projectId}`)
         this.customer = data
       } catch (e) {
         console.error('*** ERROR ***', e)

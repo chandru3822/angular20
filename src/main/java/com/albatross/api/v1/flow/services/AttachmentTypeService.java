@@ -1,18 +1,20 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -30,17 +32,19 @@ public class AttachmentTypeService {
   @Autowired
   SecurityService securityService;
 
-  public List<AttachmentType> getAttachmentTypesForCompany(Long companyId) {
+  public List<AttachmentType> getAttachmentTypesForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
 
     List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getTypesForCompany", params, AttachmentType.class);
     return attachmentTypes;
   }
 
-  public List<AttachmentType> getAvailableTypesForProcessStep(Long companyId, Long id) {
+  public List<AttachmentType> getAvailableTypesForProcessStep(Long id) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
     List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getAvailableTypesForProcessStep", params, AttachmentType.class);

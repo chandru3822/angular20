@@ -87,7 +87,6 @@ export default {
       },
       totalLeads: 0,
       dataLoading: true,
-      companyId: this.$store.state.user.details.companyId,
       headers: [
         { text: 'Lead Name', value: 'full_name', show: true },
         { text: 'Status', value: 'status', show: true },
@@ -120,7 +119,7 @@ export default {
     async getLeads () {
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/search`, { params: {
+        const {data} = await getRequest(`/customer/search`, { params: {
             query: this.search,
             page: page - 1,
             size: itemsPerPage
@@ -138,7 +137,7 @@ export default {
     async exportLeads () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customer/exportCustomers`, { params: {
+        const {data} = await getRequest(`customer/exportCustomers`, { params: {
             query: this.search
         }})
         let blob = new Blob([data], {

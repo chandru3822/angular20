@@ -22,19 +22,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@RequestMapping(value = "/api/v1/flow/{companyId}/customFieldValues")
+@RequestMapping(value = "/api/v1/flow/customFieldValues")
 public class CustomFieldValueController {
 
   private final CustomFieldValueService customFieldValueService;
 
   @GetMapping(value = "/customer", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getCustomFieldValues(@PathVariable Long companyId,
-                                                         @RequestParam Long primaryId) {
-    return customFieldValueService.getCustomerCustomValues(companyId, primaryId);
+  public List<CustomFieldGroup> getCustomFieldValues(@RequestParam Long primaryId) {
+    return customFieldValueService.getCustomerCustomValues(primaryId);
   }
 
   @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectId(@PathVariable Long companyId, @PathVariable Long projectId) {
-    return new ResponseEntity<>(customFieldValueService.getProjectCustomValues(companyId, projectId), HttpStatus.OK);
+  public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectId(@PathVariable Long projectId) {
+    return new ResponseEntity<>(customFieldValueService.getProjectCustomValues(projectId), HttpStatus.OK);
   }
 }

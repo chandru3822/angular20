@@ -1,13 +1,18 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Org;
-import lombok.extern.slf4j.Slf4j;
+import com.albatross.api.v1.flow.model.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -16,21 +21,24 @@ import java.util.List;
  */
 @Slf4j
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class OrgService {
 
-  @Autowired
-  SqlCache sqlCache;
+  private final SqlCache sqlCache;
 
-  public List<Org> getOrgsForCompany(Long companyId) {
+  private final SecurityService securityService;
+
+  public List<Org> getOrgsForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<Org> results = sqlCache.query("org.getAllForCompany", params, Org.class);
     return results;
   }
-  public List<Org> getOwningOrgsForCompany(Long companyId) {
+  public List<Org> getOwningOrgsForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<Org> results = sqlCache.query("org.getOwningOrgsForCompany", params, Org.class);
     return results;
   }

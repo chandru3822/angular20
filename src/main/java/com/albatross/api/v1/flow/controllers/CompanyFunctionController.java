@@ -1,16 +1,22 @@
 package com.albatross.api.v1.flow.controllers;
 
+import java.util.List;
+
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
 import com.albatross.api.v1.flow.model.SystemValue;
 import com.albatross.api.v1.flow.services.CompanyFunctionService;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -19,15 +25,15 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/function")
+@RequestMapping(value = "/api/v1/flow/function")
 public class CompanyFunctionController {
 
   @Autowired
   private CompanyFunctionService companyFunctionService;
 
   @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyFunction> getCompanyFunctions (@PathVariable Long companyId) {
-    return companyFunctionService.getCompanyFunctions(companyId);
+  public List<CompanyFunction> getCompanyFunctions () {
+    return companyFunctionService.getCompanyFunctions();
   }
 
   @RequestMapping(value = "{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)

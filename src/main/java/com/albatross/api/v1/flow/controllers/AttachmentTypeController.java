@@ -1,15 +1,21 @@
 package com.albatross.api.v1.flow.controllers;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -18,21 +24,20 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/attachmentType")
+@RequestMapping(value = "/api/v1/flow/attachmentType")
 public class AttachmentTypeController {
 
   @Autowired
   private AttachmentTypeService attachmentTypeService;
 
   @RequestMapping(value = "/types", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AttachmentType> getAttachmentTypes (@PathVariable Long companyId) {
-    return attachmentTypeService.getAttachmentTypesForCompany(companyId);
+  public List<AttachmentType> getAttachmentTypes () {
+    return attachmentTypeService.getAttachmentTypesForCompany();
   }
 
   @RequestMapping(value = "/typesForStep/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AttachmentType> getAvailableTypesForStep (@PathVariable Long companyId,
-                                                        @PathVariable Long id) {
-    return attachmentTypeService.getAvailableTypesForProcessStep(companyId, id);
+  public List<AttachmentType> getAvailableTypesForStep (@PathVariable Long id) {
+    return attachmentTypeService.getAvailableTypesForProcessStep(id);
   }
 
   @RequestMapping(value = "/processStepType/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)

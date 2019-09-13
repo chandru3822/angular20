@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@RequestMapping(value = "/api/v1/flow/{companyId}/project")
+@RequestMapping(value = "/api/v1/flow/project")
 public class ProjectController {
 
   private final ProjectService projectService;
@@ -28,8 +28,8 @@ public class ProjectController {
   private final CustomFieldValueService customFieldValueService;
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Project>> getProjectsForProcess(@PathVariable Long companyId, @PathVariable Long processId) {
-    return new ResponseEntity<>(projectService.getProjectsForProcess(companyId, processId), HttpStatus.OK);
+  public ResponseEntity<List<Project>> getProjectsForProcess(@PathVariable Long processId) {
+    return new ResponseEntity<>(projectService.getProjectsForProcess(processId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)

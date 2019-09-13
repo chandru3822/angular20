@@ -193,7 +193,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/processStep/${this.processStepId}`)
+          const {data} = await getRequest(`/processStep/${this.processStepId}`)
           this.processStep = data
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -206,7 +206,7 @@
       async saveProcessStep () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/api/v1/flow/${this.companyId}/processStep`, this.processStep)
+          const {data} = await putRequest(`/processStep`, this.processStep)
           this.changesMade = false
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -221,7 +221,7 @@
         try {
           this.addNewType = !this.addNewType
           if(this.addNewType){
-            const { data } = await getRequest(`/api/v1/flow/${this.companyId}/attachmentType/typesForStep/${this.$route.params.id}`)
+            const { data } = await getRequest(`/attachmentType/typesForStep/${this.$route.params.id}`)
             this.availableAttachmentTypes = data
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -235,7 +235,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
         this.newType.processStepId = this.$route.params.id
-          const { data } = await postRequest(`/api/v1/flow/${this.companyId}/attachmentType/processStepType`, this.newType)
+          const { data } = await postRequest(`/attachmentType/processStepType`, this.newType)
           console.log('randaLogger', data)
           this.processStep.attachmentTypes.push(data)
           // reset fields
@@ -254,7 +254,7 @@
         try {
           this.addNewType = false
           console.log('deleting')
-          await deleteRequest(`/api/v1/flow/${this.companyId}/attachmentType/processStepType/${id}`)
+          await deleteRequest(`/attachmentType/processStepType/${id}`)
           // this.availableAttachmentTypes = data
           this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -269,7 +269,7 @@
         try {
           this.addNewLink = !this.addNewLink
           if(this.addNewLink){
-            const { data } = await getRequest(`/api/v1/flow/${this.companyId}/links/processStep/${this.$route.params.id}`)
+            const { data } = await getRequest(`/links/processStep/${this.$route.params.id}`)
             this.availableLinks = data
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -283,7 +283,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newLink.processStepId = this.$route.params.id
-          const { data } = await postRequest(`/api/v1/flow/${this.companyId}/links/processStep`, this.newLink)
+          const { data } = await postRequest(`/links/processStep`, this.newLink)
           console.log('randaLogger', data)
           this.processStep.links.push(data)
           // reset fields
@@ -302,7 +302,7 @@
         try {
           this.addNewLink = false
           console.log('deleting')
-          await deleteRequest(`/api/v1/flow/${this.companyId}/links/processStep/${id}`)
+          await deleteRequest(`/links/processStep/${id}`)
           // this.availableAttachmentTypes = data
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)

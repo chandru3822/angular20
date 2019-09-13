@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const {VUE_APP_BASE_API} = process.env
 
-export const VUE_APP_FLOW_API = '/api/v1/flow'
+export const VUE_APP_API_PATH = '/api/v1'
 
 // constants
 export const IS_MOBILE = window.innerWidth <= 768
@@ -60,8 +60,9 @@ export function getSnackbar(type, text) {
 }
 
 // functions
-export async function getRequest (path, optionalParams) {
-  const {data, status} = await axios.get(`${VUE_APP_BASE_API}${path}`, optionalParams)
+export async function getRequest (path, optionalParams, companyAbbreviation) {
+  const apiPath = companyAbbreviation ?? 'flow'
+  const {data, status} = await axios.get(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, optionalParams)
   return {data, status}
 }
 
@@ -81,4 +82,6 @@ export async function deleteRequest (path) {
   return {status}
 }
 
-
+export function logError (e) {
+  console.error('*** ERROR ***', e)
+}

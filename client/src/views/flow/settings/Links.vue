@@ -116,7 +116,7 @@
       async getLinks () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links`)
+          const {data} = await getRequest(`/links`)
           this.links = orderBy(data, [a => a.link.toLowerCase()])
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -128,7 +128,7 @@
       async deleteLink (typeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/api/v1/flow/${this.companyId}/links/${typeId}`)
+          await deleteRequest(`/links/${typeId}`)
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -142,7 +142,7 @@
         try {
           this.newLink.companyId = this.companyId
           // this.newProcess.createdById = this.userId
-          const {data} = await postRequest(`/api/v1/flow/${this.companyId}/links`, this.newLink)
+          const {data} = await postRequest(`/links`, this.newLink)
 
           // add it to the records already on the screen
           this.links.push(data)
@@ -164,7 +164,7 @@
         try {
           this.selectedLinkId = null
           a.modifiedById = this.userId
-          await putRequest(`/api/v1/flow/${this.companyId}/links`, a)
+          await putRequest(`/links`, a)
           this.snackbar = getSnackbar('SUCCESS', 'Link Updated')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

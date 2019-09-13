@@ -1,20 +1,27 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.ProcessStep;
+import com.albatross.api.v1.flow.model.ProcessStepAction;
+import com.albatross.api.v1.flow.model.ProcessStepActionChildProcess;
+import com.albatross.api.v1.flow.model.ProcessStepActionLink;
+import com.albatross.api.v1.flow.model.ProcessStepLogic;
+import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -35,9 +42,10 @@ public class ProcessStepActionService {
   @Autowired
   ObjectMapper om;
 
-  public List<ProcessStepAction> getActionsForStep(Long companyId, Long processStepId) {
+  public List<ProcessStepAction> getActionsForStep(Long processStepId) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("processStepId", processStepId);
     params.put("id", null);
     //@randa come back to this. i was annoyed to have to keep 2 queries up-to-date when they were basically doing the same thing. (single select by id, vs list select by process_step_id) but this requires both calls to pass in a null param, not sure i like this
@@ -123,9 +131,10 @@ public class ProcessStepActionService {
   }
 
   // CHILD PROCESSES
-  public List<ProcessStep> getChildProcessStepsForAction(Long companyId, Long stepId, Long actionId) {
+  public List<ProcessStep> getChildProcessStepsForAction(Long stepId, Long actionId) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("stepId", stepId);
     params.put("actionId", actionId);
 

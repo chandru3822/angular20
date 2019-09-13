@@ -1,19 +1,20 @@
 package com.albatross.api.v1.flow.model;
 
+import java.util.List;
+
 import com.albatross.api.v1.flow.enums.UserStatusType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
 public class User {
 
     private Long id, companyId, parentCompanyId;
-    private String email, username, password, firstName, lastName, fullName, userStatusType, timezone, awsBucket, companyName;
+    private String email, username, password, firstName, lastName, fullName, userStatusType, timezone, awsBucket, companyName, companyAbbreviation;
     private Long userStatusTypeId;
     private List<UserPermission> permissions;
 

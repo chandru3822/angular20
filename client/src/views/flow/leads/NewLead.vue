@@ -117,7 +117,7 @@ export default {
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customFieldGroup/getCustomerInsertFields`)
+        const {data} = await getRequest(`/customFieldGroup/getCustomerInsertFields`)
         this.customFieldGroups = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -154,7 +154,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.lead.customFieldGroups = this.customFieldGroups
       try {
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/customer`, this.lead)
+        const {data} = await postRequest(`/customer`, this.lead)
         this.$router.push({name: 'lead', params: {id: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

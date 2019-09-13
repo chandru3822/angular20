@@ -42,7 +42,7 @@ const store = new Vuex.Store({
   actions: {
     [Actions.FILE_DELETE]: async (context, { id, callback }) => {
       //todo: need to handle errors in these functions
-      const {status} = await deleteRequest(`/api/v1/flow/attachment/${id}`)
+      const {status} = await deleteRequest(`/attachment/${id}`)
       callback(status)
     },
     [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, callback }) => {
@@ -57,7 +57,7 @@ const store = new Vuex.Store({
           formData.append('attachmentTypeId', attachmentTypeId)
           formData.append('sourceId', sourceId)
 
-          const resp = await postRequest('/api/v1/flow/attachment', formData)
+          const resp = await postRequest('/attachment', formData)
 
           const {status} = resp
           if (status === 200) {
@@ -68,13 +68,13 @@ const store = new Vuex.Store({
       reader.readAsArrayBuffer(file)
     },
     [Actions.FILE_GET_ONE]: async (context, { sourceId, attachmentTypeId, callback }) => {
-      const {data, status} = await getRequest(`/api/v1/flow/attachment/getOne`, { params: {
+      const {data, status} = await getRequest(`/attachment/getOne`, { params: {
         attachmentTypeId, sourceId
       }})
       callback(data, status)
     },
     [Actions.FILE_GET_LIST]: async (context, { sourceId, attachmentTypeId, callback }) => {
-      const {data, status} = await getRequest(`/api/v1/flow/attachment`, { params: {
+      const {data, status} = await getRequest(`/attachment`, { params: {
           attachmentTypeId, sourceId
         }})
       callback(data, status)

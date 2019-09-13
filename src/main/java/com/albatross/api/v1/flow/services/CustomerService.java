@@ -1,5 +1,10 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
@@ -12,6 +17,11 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Collections2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldValue;
+import com.albatross.api.v1.flow.model.Customer;
+import com.albatross.api.v1.flow.model.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,9 +46,10 @@ public class CustomerService {
   @Autowired
   SecurityService securityService;
 
-  public Page searchCustomers(Long companyId, String query, Pageable pageable) {
+  public Page<Customer> searchCustomers(String query, Pageable pageable) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
@@ -57,9 +68,11 @@ public class CustomerService {
   }
 
 
-  public ResponseEntity exportCustomers(Long companyId, String query) {
+  public ResponseEntity exportCustomers(String query) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("query", query);
 
     List<Customer> results = sqlCache.query("customer.exportCustomers", params, Customer.class);
@@ -151,9 +164,10 @@ public class CustomerService {
     sqlCache.update("customer.updateOwner", params);
   }
 
-  public List<User> getOwnersForCustomer(Long companyId) {
+  public List<User> getOwnersForCustomer() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<Long> statusIds = new ArrayList<>();
     statusIds.add(UserStatusType.ACTIVE.id);
     statusIds.add(UserStatusType.PENDING_TERMINATION.id);
