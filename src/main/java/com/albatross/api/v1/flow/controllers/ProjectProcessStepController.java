@@ -25,5 +25,6 @@ public class ProjectProcessStepController {
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long processStepId) {
 
     return new ResponseEntity<>(projectService.getProjectProcessStep(processStepId), HttpStatus.OK);
+
   }
 }
