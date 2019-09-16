@@ -1,15 +1,20 @@
 package com.albatross.api.v1.flow.model;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import lombok.Data;
 
 @Data
 public class ProjectProcessStep {
 
-  private Long projectProcessStepId, companyProcessId, processStepStatusTypeId;
+  private Long projectProcessStepId, statusId, processStepId;
 
-  private String owner, processStepName, processStepStatusType;
+  private String owner, name, status;
 
-  private LocalDate lastUpdated;
+  private LocalDate dateModified;
+
+  private LocalDate completionDate;
+
+  List<ProcessStepAction> actions;
 }

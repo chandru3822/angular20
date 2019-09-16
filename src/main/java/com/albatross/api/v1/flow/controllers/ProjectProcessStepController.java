@@ -25,6 +25,10 @@ public class ProjectProcessStepController {
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long processStepId) {
 
     return new ResponseEntity<>(projectService.getProjectProcessStep(processStepId), HttpStatus.OK);
+  }
 
+  @GetMapping(value = "/{processStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> getActionResult(@PathVariable Long processStepId, @PathVariable Long actionId) {
+    return new ResponseEntity<>("{\"proceed\":true}", HttpStatus.OK);
   }
 }
