@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,5 +40,11 @@ public class ProjectService {
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {
     return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), ProjectProcessStep.class);
+  }
+
+  public ProjectProcessStep getProjectProcessStep(Long stepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("stepId", stepId);
+    return sqlCache.get("project.getProjectProcessStep", params, ProjectProcessStep.class).orElse(null);
   }
 }

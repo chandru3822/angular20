@@ -1,8 +1,14 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.ProjectProcessStep;
 import com.albatross.api.v1.flow.services.ProjectService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,9 +21,9 @@ public class ProjectProcessStepController {
 
   private final ProjectService projectService;
 
-  // @GetMapping(value = "/{processStepId", produces = MediaType.APPLICATION_JSON_VALUE)
-  // public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long processStepId) {
+  @GetMapping(value = "/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long processStepId) {
 
-  //   return new ResponseEntity<>(projectService.getProjectProcessStep(processStepId), HttpStatus.OK);
-  // }
+    return new ResponseEntity<>(projectService.getProjectProcessStep(processStepId), HttpStatus.OK);
+  }
 }

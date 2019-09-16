@@ -16,6 +16,7 @@ export default {
   data () {
     return {
       projectId: this.$route.params.projectId,
+      stepId: this.$route.params.processStepId,
       processStep: {},
       isProcessStepLoading: true
     }
@@ -26,7 +27,7 @@ export default {
   methods: {
     getProcessStep: async function() {
       try {
-        const {data} = await getRequest(`${VUE_APP_FLOW_API}/projectProcessStep/${this.projectId}`)
+        const {data} = await getRequest(`/projectProcessStep/${this.stepId}`)
         this.processStep = data
       } catch (e) {
         logError(e)

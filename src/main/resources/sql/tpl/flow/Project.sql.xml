@@ -40,6 +40,13 @@
     ]]>
   </project.getAllForCustomer>
 
+  <project.getProjectProcessStep><![CDATA[
+    select
+      pps.*
+    from flow.project_process_step pps
+    where pps.id = :stepId;
+  ]]></project.getProjectProcessStep>
+
   <project.getProcessStepsByProjectId><![CDATA[
     select
       pps.id as project_process_step_id,
