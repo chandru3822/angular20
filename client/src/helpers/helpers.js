@@ -2,6 +2,8 @@ import axios from 'axios'
 
 const {VUE_APP_BASE_API} = process.env
 
+export const VUE_BASE_API = VUE_APP_BASE_API
+
 export const VUE_APP_API_PATH = '/api/v1'
 
 // constants

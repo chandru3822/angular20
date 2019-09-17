@@ -27,7 +27,8 @@
 
 <script>
   import { UserActions, UserMutations } from '@/stores/UserStore'
-  import { postRequest } from '@/helpers/helpers'
+  import { VUE_BASE_API } from '@/helpers/helpers'
+  import axios from 'axios'
 
   export default {
     data () {
@@ -48,7 +49,7 @@
               username: this.form.email,
               password: this.form.password
             }
-            const {data} = await postRequest('/auth/login', params)
+            const {data} = await axios.post(`${VUE_BASE_API}/auth/login`, params)
             console.log('login data', data)
             const {token, details} = data
             if (token) {
