@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="lead-header elevation-1">
       <v-col xs-8 class="text-left">
         <div class="lead-title">{{customer.fullName}}</div>
@@ -105,6 +106,14 @@ export default {
   },
   data () {
     return {
+      breadcrumbs: [
+        {
+          text: 'Back',
+          disabled: false,
+          exact: true,
+          to: `/leads`
+        },
+      ],
       snackbar: {},
       customer: {},
       customFieldGroups: [],

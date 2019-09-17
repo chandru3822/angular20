@@ -23,7 +23,50 @@
           ></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="exportLeads">Export</v-btn>
+            <v-btn text v-if="totalLeads <= 100000" @click="exportLeads">Export</v-btn>
+            <v-dialog
+                v-model="dialog"
+                width="500"
+                v-else
+            >
+              <template v-slot:activator="{ on }">
+                <v-btn text v-on="on">
+                  Export
+                </v-btn>
+              </template>
+
+              <v-card>
+                <v-card-title>
+                  Export
+                </v-card-title>
+
+                <v-card-text>
+                  You are attempting to export {{totalLeads | currency('', 0)}} results.
+                  This can take 1-2 minutes.
+                  We recommend that you cancel and filter the result set before exporting.
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                  <div class="flex-grow-1"></div>
+                  <v-btn
+                      color="grey"
+                      text
+                      @click="dialog = false"
+                  >
+                    Cancel
+                  </v-btn>
+                  <v-btn
+                      color="primary"
+                      text
+                      @click="exportLeads"
+                  >
+                    Continue Anyway
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-toolbar-items>
         </v-toolbar>
         <v-data-table
@@ -76,6 +119,7 @@ export default {
   data () {
     return {
       delay: 500,
+      dialog: false,
       snackbar: {},
       leads: [],
       descending: true,
@@ -109,9 +153,6 @@ export default {
     clickRow(id){
       this.$router.push({name: 'lead', params: {id}})
     },
-    exportLeads() {
-      console.log('EXPORT WAS CLICKED')
-    },
     debounceGetLeads: debounce( function () {
       this.dataLoading = true
       this.getLeads()
@@ -135,9 +176,10 @@ export default {
       }
     },
     async exportLeads () {
+      this.dialog = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`customer/exportCustomers`, { params: {
+        const {data} = await getRequest(`/customer/exportCustomers`, { params: {
             query: this.search
         }})
         let blob = new Blob([data], {

@@ -95,7 +95,7 @@
        u.last_name as owner_last_name,
        p.position as owner_position
     from flow.customer c
-             inner join flow.state s on s.id = c.state_id
+             left join flow.state s on s.id = c.state_id
              inner join flow.country ct on ct.id = c.country_id
              left join flow.user_position up on up.id = c.owner_user_position_id
              left join flow.user u on u.id = up.user_id
@@ -124,7 +124,7 @@
       ct.country
     from flow.customer c
       inner join flow.project p on p.customer_id = c.id
-      inner join flow.state s on s.id = c.state_id
+      left join flow.state s on s.id = c.state_id
       inner join flow.country ct on ct.id = c.country_id
     where p.id = :projectId
   ]]></customer.getByProjectId>
