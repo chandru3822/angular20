@@ -66,19 +66,22 @@ export async function getRequest (path, optionalParams, companyAbbreviation) {
   return {data, status}
 }
 
-export async function postRequest (path, body) {
-  const {data, status} = await axios.post(`${VUE_APP_BASE_API}${path}`, body)
+export async function postRequest (path, body, companyAbbreviation) {
+  const apiPath = companyAbbreviation ?? 'flow'
+  const {data, status} = await axios.post(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, body)
   return {data, status}
 }
 
-export async function putRequest (path, body) {
-  const {data, status} = await axios.put(`${VUE_APP_BASE_API}${path}`, body)
+export async function putRequest (path, body, companyAbbreviation) {
+  const apiPath = companyAbbreviation ?? 'flow'
+  const {data, status} = await axios.put(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, body)
   return {data, status}
 }
 
-export async function deleteRequest (path) {
+export async function deleteRequest (path, companyAbbreviation) {
+  const apiPath = companyAbbreviation ?? 'flow'
   // not returning data as part of a delete
-  const {status} = await axios.delete(`${VUE_APP_BASE_API}${path}`)
+  const {status} = await axios.delete(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`)
   return {status}
 }
 
