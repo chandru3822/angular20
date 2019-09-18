@@ -50,6 +50,8 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
+axios.defaults.withCredentials = true
+
 axios.interceptors.request.use(config => {
   if (store && store.state && store.state.user && config.url.indexOf(VUE_APP_BASE_API) > -1) {
     config.headers['Authorization'] = `Bearer ${store.state.user.jwt}`
