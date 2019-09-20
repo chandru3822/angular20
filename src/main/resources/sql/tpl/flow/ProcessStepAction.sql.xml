@@ -11,9 +11,11 @@
                                     psl.process_step_requirement_id as "processStepRequirementId",
                                     psl.operation_type_id as "operationTypeId",
                                     ot.operation_type as "operationType",
+                                    ot.operation_code as "operationCode",
                                     psl.created_by_id as "createdById",
                                     psl.modified_by_id as "modifiedById",
-                                    psr.requirement_nbr as "requirementNbr"
+                                    psr.requirement_nbr as "requirementNbr",
+                                    psl.sql_order as "sqlOrder"
                              FROM flow.process_step_logic psl
                                       left join flow.operation_type ot on ot.id = psl.operation_type_id
                                       left join flow.process_step_requirement psr on psr.id = psl.process_step_requirement_id

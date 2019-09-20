@@ -29,6 +29,7 @@ public class ProjectProcessStepController {
 
   @GetMapping(value = "/{processStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getActionResult(@PathVariable Long processStepId, @PathVariable Long actionId) {
-    return new ResponseEntity<>("{\"proceed\":true}", HttpStatus.OK);
+    boolean canComplete = projectService.canCompleteAction(actionId, processStepId);
+    return new ResponseEntity<>(String.format("{\"canComplete\": %s}", canComplete), HttpStatus.OK);
   }
 }
