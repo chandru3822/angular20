@@ -25,12 +25,16 @@
           s.state,
           s.abbreviation,
           c.date_created,
-          u.id as owner_id,
-          u.first_name || ' ' || u.last_name as owner_full_name
+          (SELECT row_to_json(o)
+            FROM (SELECT u.id as "userId",
+                     u.first_name as "firstName",
+                     u.last_name as "lastName",
+                     u.first_name || ' ' || u.last_name AS "fullName"
+                  FROM blueraven."user" u
+                    inner join flow.user_position up on up.user_id = u.id
+                  WHERE up.id = c.owner_user_position_id) o) AS owner
       from flow.customer c
           left join flow.state s on s.id = c.state_id
-          left join flow.user_position up on up.id = c.owner_user_position_id
-          left join flow.user u on u.id = up.user_id
       where c.company_id = :companyId
           and c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
       order by c.date_created desc
@@ -61,12 +65,18 @@
           s.state,
           s.abbreviation,
           c.date_created,
-          u.id as owner_id,
-          u.first_name || ' ' || u.last_name as owner_full_name
+          (SELECT row_to_json(o)
+            FROM (SELECT u.id as "userId",
+                     u.first_name as "firstName",
+                     u.last_name as "lastName",
+                     u.first_name || ' ' || u.last_name AS "fullName",
+                     p.position
+                  FROM blueraven."user" u
+                    inner join flow.user_position up on up.user_id = u.id
+                    inner join flow.position p on p.id = up.position_id
+                  WHERE up.id = c.owner_user_position_id) o) AS owner
       from flow.customer c
           left join flow.state s on s.id = c.state_id
-          left join flow.user_position up on up.id = c.owner_user_position_id
-          left join flow.user u on u.id = up.user_id
       where c.company_id = :companyId
           and c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
       order by c.date_created desc;
@@ -90,16 +100,19 @@
        c.country_id,
        ct.country,
        c.owner_user_position_id,
-       u.id as owner_id,
-       u.first_name as owner_first_name,
-       u.last_name as owner_last_name,
-       p.position as owner_position
+       (SELECT row_to_json(o)
+            FROM (SELECT u.id as "userId",
+                     u.first_name as "firstName",
+                     u.last_name as "lastName",
+                     u.first_name || ' ' || u.last_name AS "fullName",
+                     p.position
+                  FROM blueraven."user" u
+                    inner join flow.user_position up on up.user_id = u.id
+                    inner join flow.position p on p.id = up.position_id
+                  WHERE up.id = c.owner_user_position_id) o) AS owner
     from flow.customer c
              left join flow.state s on s.id = c.state_id
              inner join flow.country ct on ct.id = c.country_id
-             left join flow.user_position up on up.id = c.owner_user_position_id
-             left join flow.user u on u.id = up.user_id
-             left join flow.position p on p.id = up.position_id
     where c.id = :customerId
 
   ]]></customer.getById>
@@ -143,7 +156,8 @@
            email = :email,
            mobile = :mobile,
            modified_by_id = :modifiedById,
-           date_modified = now()
+           date_modified = now(),
+           owner_user_position_id = :ownerUserPositionId
     where id = :id
   ]]></customer.updateCustomer>
 
@@ -153,11 +167,11 @@
   ]]></customer.insertCustomer>
 
   <customer.getOwners><![CDATA[
-    select u.id,
+    select u.id as "userId",
            u.first_name,
            u.last_name,
            u.first_name || ' ' || u.last_name as full_name,
-           up.id as position_id,
+           up.id as user_position_id,
            p.position
     from flow.owner_position_id op
          inner join flow.user_position up on array[up.position_id] <@ op.position_ids

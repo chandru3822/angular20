@@ -20,7 +20,7 @@ public class CustomerExportTemplate {
         .city(other.getCity())
         .state(other.getState())
         .postalCode(other.getPostalCode())
-        .ownerFullName(other.getOwnerFullName())
+        .ownerFullName(other.getOwner() != null ? other.getOwner().getFullName() : null)
         .build();
   }
 

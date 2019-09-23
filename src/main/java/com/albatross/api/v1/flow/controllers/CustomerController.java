@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.v1.flow.model.Customer;
+import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.Project;
-import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,9 +45,10 @@ public class CustomerController {
         return customerService.updateCustomer(customer);
     }
 
-    @PostMapping(value = "/updateOwner", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void updateOwner(@RequestBody User user) {
-        customerService.updateOwner(user);
+    @PutMapping(value = "/{customerId}/updateOwner", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void updateOwner(@PathVariable Long customerId,
+                            @RequestBody Owner owner) {
+        customerService.updateOwner(customerId, owner);
     }
 
     @GetMapping(value = "/{customerId}/project", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -61,7 +62,7 @@ public class CustomerController {
     }
 
     @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<User> getOwners() {
+    public List<Owner> getOwners() {
       return customerService.getOwnersForCustomer();
     }
 }

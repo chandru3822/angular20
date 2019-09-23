@@ -1,10 +1,13 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
 import com.albatross.api.v1.flow.enums.UserStatusType;
 import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -12,12 +15,14 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Collections2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -36,6 +41,9 @@ public class CustomerService {
   @Autowired
   SecurityService securityService;
 
+  @Autowired
+  ObjectMapper om;
+
   public Page<Customer> searchCustomers(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -50,7 +58,7 @@ public class CustomerService {
     --     when :orderBy = 'first_name' then nullif(c.first_name) else c.date_created::text end desc nulls last
      */
 
-    List<Customer> results = sqlCache.query("customer.searchCustomers", params, Customer.class);
+    List<Customer> results = sqlCache.query("customer.searchCustomers", params, new CustomerMapper<>(Customer.class, om));
     Integer count = sqlCache.queryForObject("customer.searchCustomerCount", params, Integer.class);
 
     Page<Customer> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
@@ -65,7 +73,7 @@ public class CustomerService {
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
 
-    List<Customer> results = sqlCache.query("customer.exportCustomers", params, Customer.class);
+    List<Customer> results = sqlCache.query("customer.exportCustomers", params, new CustomerMapper<>(Customer.class, om));
 
     // set up CSV writing
     CsvMapper mapper = new CsvMapper();
@@ -96,14 +104,14 @@ public class CustomerService {
   public Customer getCustomer(Long customerId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("customerId", customerId);
-    Optional<Customer> result = sqlCache.get("customer.getById", params, Customer.class);
+    Optional<Customer> result = sqlCache.get("customer.getById", params, new CustomerMapper<>(Customer.class, om));
     return result.orElse(null);
   }
 
   public Customer getCustomerByProjectId(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    Optional<Customer> result = sqlCache.get("customer.getByProjectId", params, Customer.class);
+    Optional<Customer> result = sqlCache.get("customer.getByProjectId", params, new CustomerMapper<>(Customer.class, om));
     return result.orElse(null);
   }
 
@@ -122,7 +130,7 @@ public class CustomerService {
     params.put("email", customer.getEmail());
     params.put("mobile", customer.getMobile());
     params.put("companyId", customer.getCompanyId());
-    params.put("ownerUserPositionId", customer.getOwnerUserPositionId());
+    params.put("ownerUserPositionId", customer.getOwner() != null ? customer.getOwner().getUserPositionId() : null);
 
     Long id;
 
@@ -144,17 +152,18 @@ public class CustomerService {
     return getCustomer(id);
   }
 
-  public void updateOwner(User user) {
+  public void updateOwner(Long id, Owner owner) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("ownerUserPositionId", 7);
+    params.put("ownerUserPositionId", owner != null ? owner.getUserPositionId() : null);
+    params.put("id", id);
     params.put("modifiedById", currentUser.getId());
 
     sqlCache.update("customer.updateOwner", params);
   }
 
-  public List<User> getOwnersForCustomer() {
+  public List<Owner> getOwnersForCustomer() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
@@ -163,7 +172,7 @@ public class CustomerService {
     statusIds.add(UserStatusType.PENDING_TERMINATION.id);
 
     params.put("statusIds", statusIds);
-    List<User> results = sqlCache.query("customer.getOwners", params, User.class);
+    List<Owner> results = sqlCache.query("customer.getOwners", params, Owner.class);
     return results;
   }
 
@@ -176,6 +185,7 @@ public class CustomerService {
     User currentUser = securityService.getCurrentUser();
     for(CustomFieldGroup group : groups) {
       for(CustomFieldValue cfv : group.getCustomFieldValues()){
+        //todo: only save if something changed
         if(fieldHasValue(cfv)) {
           HashMap<String, Object> params = new HashMap<>();
           params.put("dateValue", cfv.getDateValue());
@@ -200,4 +210,23 @@ public class CustomerService {
       }
     }
   }
+
+  public static class CustomerMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public CustomerMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<Owner> ownerRef = new TypeReference<Owner>() {
+      };
+
+      bw.registerCustomEditor(Object.class, "owner",
+          new JsonCollectionDeserializer(ownerRef, objectMapper));
+    }
+  }
+
 }

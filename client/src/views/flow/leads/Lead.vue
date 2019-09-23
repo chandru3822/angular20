@@ -10,7 +10,7 @@
       </v-col>
       <v-col xs-4 class="lead-owner">
         <div v-if="!changeOwner">
-          <div v-if="customer.ownerId">
+          <div v-if="customer.owner">
             <v-avatar
                 :tile="false"
                 :size="40"
@@ -19,16 +19,16 @@
             >
               <img name="accountImg" src="../../../assets/user_img_placeholder.png">
             </v-avatar>
-            {{customer.ownerFirstName}} {{customer.ownerLastName}}<br/>
-            {{customer.ownerPosition}}
+            {{customer.owner.fullName}}<br/>
+            {{customer.owner.position}}
           </div>
         </div>
         <div v-if="changeOwner">
-          <v-autocomplete v-model="customer.ownerId"
+          <v-autocomplete v-model="customer.owner"
                     :items="owners"
                     label="Select Owner"
                     item-text="fullName"
-                    item-value="id"
+                    return-object
                     autocomplete="new-password"
                     @change="updateOwner"
           >
@@ -36,7 +36,7 @@
         </div>
         <v-btn text small class="change-owner-button" @click="changeOwner = !changeOwner">
           <span v-if="changeOwner">cancel</span>
-          <span v-else-if="customer.ownerId">change</span>
+          <span v-else-if="customer.owner && customer.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
       </v-col>
@@ -201,13 +201,10 @@ export default {
       }
     },
     async updateOwner() {
-      console.log('owner changed')
       this.changeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customer/updateOwner`)
-        this.customer.ownerId = data.id
-
+        const {data} = await putRequest(`/customer/${this.customer.id}/updateOwner`, this.customer.owner)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
