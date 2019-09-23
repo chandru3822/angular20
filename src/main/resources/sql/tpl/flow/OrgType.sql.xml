@@ -1,0 +1,40 @@
+<sql>
+  <orgType.getAllForCompany>
+    <![CDATA[
+      select ot.*,
+             parent.org_type as org_parent_type
+      from flow.org_type ot
+          left join flow.org_type parent on parent.id = ot.org_parent_type_id
+      where ot.company_id = :companyId
+      order by level nulls first, org_type
+    ]]>
+  </orgType.getAllForCompany>
+
+  <orgType.getOne>
+    <![CDATA[
+      select ot.*,
+             parent.org_type as org_parent_type
+      from flow.org_type ot
+          left join flow.org_type parent on parent.id = ot.org_parent_type_id
+      where ot.id = :id
+    ]]>
+  </orgType.getOne>
+
+  <orgType.updateOrgType>
+    <![CDATA[
+      update flow.org_type set
+          org_type = :orgType,
+          org_parent_type_id = :orgParentTypeId,
+          level = :level
+      where id = :id
+    ]]>
+  </orgType.updateOrgType>
+
+  <orgType.insertOrgType>
+    <![CDATA[
+      insert into flow.org_type(org_type, org_parent_type_id, level, company_id)
+      values (:orgType, :orgParentTypeId, :level, :companyId)
+    ]]>
+  </orgType.insertOrgType>
+
+</sql>

@@ -37,14 +37,10 @@ export default new Router({
         name: 'user',
         component: () => import (/* webpackChunkName: "user" */ './views/User.vue')
       }, {
-        path: '/orgs',
-        name: 'orgs',
-        component: () => import (/* webpackChunkName: "orgs" */ './views/Orgs.vue'),
-      }, {
         path: '/org/:orgId?',
         name: 'org',
         props: true,
-        component: () => import (/* webpackChunkName: "org" */ './views/Org.vue')
+        component: () => import (/* webpackChunkName: "org" */ './views/flow/settings/orgs/Org.vue')
       }, {
         path: '/ahjTest',
         name: 'ahjTest',
@@ -136,8 +132,20 @@ export default new Router({
           }, {
             path: 'function/:id',
             component: () => import (/* webpackChunkName: "function" */ './views/flow/settings/Function.vue')
+          }, {
+            path: 'orgs',
+            name: 'orgs',
+            component: () => import (/* webpackChunkName: "orgs" */ './views/flow/settings/orgs/Orgs.vue'),
+            children: [
+              {
+                path: 'list',
+                component: () => import (/* webpackChunkName: "orgsList" */ './views/flow/settings/orgs/OrgsList.vue'),
+              }, {
+                path: 'hierarchy',
+                component: () => import (/* webpackChunkName: "hierarchy" */ './views/flow/settings/orgs/Hierarchy.vue'),
+              }
+            ]
           }
-
         ]
       }, {
         path: '/project/:projectId',

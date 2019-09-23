@@ -81,6 +81,8 @@ import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 
+const { VUE_APP_ENV } = process.env
+
 export default {
   name: 'Leads',
   components: {
@@ -103,7 +105,9 @@ export default {
   },
   created () {
     //todo: use only for testing
-    this.setFakeLead()
+    if(VUE_APP_ENV === 'local') {
+      this.setFakeLead()
+    }
     this.getStates()
     this.getCountries()
     this.getCustomFieldGroups()

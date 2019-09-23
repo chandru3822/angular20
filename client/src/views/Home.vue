@@ -49,10 +49,6 @@ export default {
         path: '/users',
         display: true
       }, {
-        label: 'Orgs',
-        path: '/orgs',
-        display: true
-      }, {
         label: 'AHJ Database',
         path: '/ahj',
         display: true
