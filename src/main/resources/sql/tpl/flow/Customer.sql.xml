@@ -143,7 +143,6 @@
            email = :email,
            mobile = :mobile,
            modified_by_id = :modifiedById,
-           owner_user_position_id = :ownerUserPositionId,
            date_modified = now()
     where id = :id
   ]]></customer.updateCustomer>

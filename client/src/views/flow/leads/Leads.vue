@@ -91,7 +91,6 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
               <td class="text-left">{{item.fullName}}</td>
-              <td class="text-left">{{item.status}}</td>
               <td class="text-left">{{item.ownerFullName}}</td>
               <td class="text-left">{{item.state}}</td>
               <td class="text-left">{{item.dateCreated | formatDate('date', $store.state.user.details.timezone)}}</td>
@@ -133,7 +132,6 @@ export default {
       dataLoading: true,
       headers: [
         { text: 'Lead Name', value: 'full_name', show: true },
-        { text: 'Status', value: 'status', show: true },
         { text: 'Owner', value: 'owner_full_name', show: true },
         { text: 'State', value: 'state', show: true },
         { text: 'Date Created', value: 'date_created', show: true },
