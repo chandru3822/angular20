@@ -1,27 +1,21 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldObjectType;
-import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.ObjectType;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -205,8 +199,7 @@ public class CustomFieldService {
     // archive single custom field
     sqlCache.update("customField.deleteField", params);
 
-    // archive all custom_field_group_assignment rows
-    sqlCache.update("customFieldGroupAssignment.archiveRows", params);
+    //todo: is there more that needs to be archived when they delete a custom field?
   }
 
   public List<CustomField> getByParentProcessStep(Long id) {
@@ -215,6 +208,15 @@ public class CustomFieldService {
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
     List<CustomField> result = sqlCache.query("customField.getByParentProcessStep", params, new CustomFieldMapper<>(CustomField.class, om));
+    return result;
+  }
+
+  public List<CustomField> getByParentType(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("id", id);
+    List<CustomField> result = sqlCache.query("customField.getByParentType", params, new CustomFieldMapper<>(CustomField.class, om));
     return result;
   }
 

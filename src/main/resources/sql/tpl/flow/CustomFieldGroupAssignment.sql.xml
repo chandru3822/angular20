@@ -112,14 +112,26 @@
 
   <customFieldGroupAssignment.getCustomField><![CDATA[
     SELECT cfga.id,
-       cfga.custom_field_group_id as "customFieldGroupId",
-       cfga.custom_field_id as "customFieldId",
-       cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-       cfga.field_order as "fieldOrder",
-       cfga.archived,
-       cf.field_name as "fieldName"
+           cfga.custom_field_group_id as "customFieldGroupId",
+           cfga.custom_field_id as "customFieldId",
+           cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+           cfga.field_order as "fieldOrder",
+           cfga.archived,
+           cf.field_name as "fieldName"
     FROM flow.custom_field_group_assignment cfga
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    WHERE cfga.id = :id
+    union all
+    SELECT cfga.id,
+           cfga.custom_field_group_id as "customFieldGroupId",
+           cfga.custom_field_id as "customFieldId",
+           cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+           cfga.field_order as "fieldOrder",
+           cfga.archived,
+           cf.field_name as "fieldName"
+    FROM flow.custom_field_group_assignment cfga
+             inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+             inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
     WHERE cfga.id = :id
   ]]></customFieldGroupAssignment.getCustomField>
 

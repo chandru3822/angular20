@@ -1,8 +1,5 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
@@ -14,14 +11,15 @@ import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -56,11 +54,13 @@ public class ProcessService {
     }
 
     public void updateProcess(Process process) {
+        User currentUser = securityService.getCurrentUser();
+
         sqlCache.update("process.update",
                 ImmutableMap.of("companyId", process.getCompanyId(),
                     "id", process.getId(),
                     "processName", process.getProcessName(),
-                    "modifiedById", process.getModifiedById()));
+                    "modifiedById", currentUser.getId()));
     }
 
     public Optional<Process> insertProcess(Process process) {

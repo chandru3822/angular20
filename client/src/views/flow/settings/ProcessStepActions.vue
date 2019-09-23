@@ -618,18 +618,18 @@
         return this.requirements.filter(r => { return !r.archived})
       },
       async getRequirementTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addNewRequirement = !this.addNewRequirement
-          if (this.addNewRequirement){
-            const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
-            this.availableRequirementTypes = data
+        this.addNewRequirement = !this.addNewRequirement
+        if (this.addNewRequirement){
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+              const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
+              this.availableRequirementTypes = data
+              this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async selectRequirementType() {

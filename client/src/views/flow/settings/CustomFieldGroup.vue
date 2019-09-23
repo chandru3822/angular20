@@ -245,7 +245,7 @@ export default {
     '$route.params.id': function (oldObjectTypeId, newObjectTypeId) {
       // reset the selected group when the object type changes
       this.availableCustomFields = []
-      this.customFieldGroups()
+      this.getCustomFieldGroups()
     }
   },
   created () {

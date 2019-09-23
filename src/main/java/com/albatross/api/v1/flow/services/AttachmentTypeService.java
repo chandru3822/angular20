@@ -1,20 +1,19 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.KeyPattern;
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -85,21 +84,33 @@ public class AttachmentTypeService {
   }
 
   public void deleteType(Long typeId) {
+    User currentUser = securityService.getCurrentUser();
+
     sqlCache.update("attachmentType.deleteType",
-        ImmutableMap.of("id", typeId));
+        ImmutableMap.of("id", typeId,
+                        "modifiedById", currentUser.getId()));
   }
 
   public void updateType(AttachmentType type) {
+    User currentUser = securityService.getCurrentUser();
+
     sqlCache.update("attachmentType.updateType",
         ImmutableMap.of("companyId", type.getCompanyId(),
             "id", type.getId(),
-            "attachmentType", type.getAttachmentType()));
+            "attachmentType", type.getAttachmentType(),
+            "modifiedById", currentUser.getId()));
   }
 
   public Optional<AttachmentType> insertType(AttachmentType type) {
+    User currentUser = securityService.getCurrentUser();
+
+    //all user added attachment types use the uploads key pattern (id = 9)
+
     Long id = sqlCache.updateReturningId("attachmentType.insertType",
         ImmutableMap.of("attachmentType", type.getAttachmentType(),
-            "companyId", type.getCompanyId()),
+            "companyId", type.getCompanyId(),
+            "keyPatternId", KeyPattern.UPLOADS.id,
+            "createdById", currentUser.getId()),
         "id").longValue();
 
     return getType(type.getCompanyId(), id);

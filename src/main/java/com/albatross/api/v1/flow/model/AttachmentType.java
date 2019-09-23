@@ -10,4 +10,5 @@ import lombok.Data;
 public class AttachmentType {
     private Long id, keyPatternId, companyId;
     private String attachmentType, keyPattern;
+    private Boolean archived;
 }

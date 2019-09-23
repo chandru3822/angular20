@@ -1,9 +1,12 @@
 <sql>
   <attachmentType.getTypesForCompany><![CDATA[
-    select *
-    from flow.attachment_type
+    select at.*,
+           kp.key_pattern
+    from flow.attachment_type at
+      inner join flow.key_pattern kp on kp.id = at.key_pattern_id
     where company_id = :companyId
-    and archived is not true
+    and at.archived is not true
+    and at.is_system is not true
   ]]></attachmentType.getTypesForCompany>
 
   <attachmentType.getAvailableTypesForProcessStep><![CDATA[
@@ -11,12 +14,14 @@
       from flow.attachment_type at
     where at.archived is not true
       and at.company_id = :companyId
+      and at.is_system is not true
       and not exists (
         select process_step_id
         from flow.process_step_attachment_type psat
         where psat.attachment_type_id = at.id
           and psat.process_step_id = :id
           and archived is not true
+          and at.is_system is not true
       )
      order by at.attachment_type
 
@@ -42,14 +47,17 @@
 
   <attachmentType.getType>
     <![CDATA[
-      select id,
-             attachment_type,
-             company_id,
-             archived
-      from flow.attachment_type
-      where company_id = :companyId
-        and id = :typeId
-      order by attachment_type.attachment_type;
+      select at.id,
+             at.attachment_type,
+             at.company_id,
+             at.archived,
+             at.key_pattern_id,
+             kp.key_pattern
+      from flow.attachment_type at
+        inner join flow.key_pattern kp on kp.id = at.key_pattern_id
+      where at.company_id = :companyId
+        and at.id = :typeId
+      order by at.attachment_type;
     ]]>
   </attachmentType.getType>
   <attachmentType.deleteProcessStepType>
@@ -64,21 +72,25 @@
   <attachmentType.deleteType>
     <![CDATA[
         update flow.attachment_type
-        set archived = true
+        set archived = true,
+            modified_by_id = :modifiedById,
+            date_modified = now()
         where id = :id
     ]]>
   </attachmentType.deleteType>
   <attachmentType.updateType>
     <![CDATA[
       update flow.attachment_type
-        set attachment_type = :attachmentType
+        set attachment_type = :attachmentType,
+            modified_by_id = :modifiedById,
+            date_modified = now()
       where id = :id
     ]]>
   </attachmentType.updateType>
   <attachmentType.insertType>
     <![CDATA[
-      insert into flow.attachment_type(attachment_type, company_id)
-        values (:attachmentType, :companyId)
+      insert into flow.attachment_type(attachment_type, company_id, created_by_id, key_pattern_id)
+        values (:attachmentType, :companyId, :createdById, :keyPatternId)
       returning id;
     ]]>
   </attachmentType.insertType>

@@ -55,4 +55,9 @@ public class CustomFieldController {
   public List<CustomField> getByParentProcessStep(@PathVariable Long id) {
     return customFieldService.getByParentProcessStep(id);
   }
+
+  @RequestMapping(value = "/getByParentType/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomField> getByParentType(@PathVariable Long id) {
+    return customFieldService.getByParentType(id);
+  }
 }

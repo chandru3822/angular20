@@ -10,9 +10,16 @@
         </div>
       </v-toolbar>
       <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="app-title">
-          {{  processId ? process.processName : 'New Process Step'}}
-        </v-toolbar-title>
+          <v-text-field class="d-inline-block mt-4" v-if="editName" v-model="process.processName"></v-text-field>
+          <span v-else>
+            {{  processId ? process.processName : 'New Process Step'}}
+          </span>
+          <v-btn class="d-inline-block" small text v-if="processId && editName" @click="saveProcess()">
+            <v-icon>save</v-icon>
+          </v-btn>
+          <v-btn class="d-inline-block" small text v-else-if="processId" @click="editName = true">
+            <v-icon>edit</v-icon>
+          </v-btn>
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-btn text @click="getAvailableProcessSteps(); getOwningOrgs()">
@@ -54,10 +61,10 @@
 
         <template #body="{ items }">
           <tr v-for="(item, index) in filterBy(items, false, 'archived')" :key="item.id" v-if="!item.custom" :class="{ 'shaded-row': index % 2 }">
-            <td>{{ item.processStepName }}</td>
-            <td>{{ item.orgName }}</td>
-            <td>{{ item.dateCreated | formatDate('date', $store.state.user.details.timezone) }}</td>
-            <td>{{ item.dateModified | formatDate('date', $store.state.user.details.timezone) }}</td>
+            <td class="text-left">{{ item.processStepName }}</td>
+            <td class="text-left">{{ item.orgName }}</td>
+            <td class="text-left">{{ item.dateCreated | formatDate('date', $store.state.user.details.timezone) }}</td>
+            <td class="text-left">{{ item.dateModified | formatDate('date', $store.state.user.details.timezone) }}</td>
             <td>
               <v-dialog
                   v-model="item.deleteConfirm"
@@ -121,6 +128,7 @@ export default {
     return {
       snackbar: {},
       addNew: false,
+      editName: false,
       newProcessStep: {},
       availableProcessSteps: [],
       owningOrgs: [],
@@ -164,7 +172,17 @@ export default {
       }
     },
     async saveProcess () {
-      console.log('will save process here')
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.editName = false
+        await putRequest(`/processes`, this.process)
+        this.snackbar = getSnackbar('SUCCESS', 'Process Updated')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Process')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async deleteStepFromProcess (id) {
       //reset the addNew field in case they delete one while it is open

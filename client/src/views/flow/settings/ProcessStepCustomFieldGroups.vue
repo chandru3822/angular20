@@ -92,7 +92,7 @@
                     <v-btn
                         color="primary"
                         text
-                        @click="item.archived = true; deleteAction(item)">
+                        @click="item.archived = true; deleteGroupFromStep(item.id)">
                       Yes
                     </v-btn>
                   </v-card-actions>
@@ -125,7 +125,7 @@
                         v-model="parent"
                         :items="parentObjects"
                         label="Parent Object"
-                        item-text="processStepName"
+                        item-text="name"
                         return-object
                         @input="loadFieldsByParent"
               ></v-select>
@@ -135,7 +135,7 @@
                         label="Custom Field"
                         item-text="fieldName"
                         return-object
-                        @input="assignAncillaryCustomField(item.id)"
+                        @input="assignAncillaryCustomField(item)"
               ></v-select>
               <v-btn @click="addField = false">Cancel</v-btn>
             </v-flex>
@@ -311,7 +311,7 @@
             this.parentObjects = []
             this.ancillaryCustomFields = []
           } else if (this.addField && this.newFieldType === 'ancillary') {
-            const {data} = await getRequest(`/processStep/getParentObjects`, { params: { id: this.processStepId}})
+            const {data} = await getRequest(`/processStep/getParentObjectsWithTypes`, { params: { id: this.processStepId}})
             this.selectedAncillaryField = {}
             this.parentObjects = data
             this.availableCustomFields = []
@@ -329,6 +329,8 @@
           this.addField = false
           this.newField.fieldOrder = 0
           this.newField.customFieldGroupId = cfg.id
+          //this line makes pushing it to the list work
+          this.newField.archived = false
 
           await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
           cfg.customFields.push(this.newField)
@@ -344,8 +346,13 @@
       async loadFieldsByParent() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
-          this.ancillaryCustomFields = data
+          if(this.parent.isProcessStep) {
+            const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
+            this.ancillaryCustomFields = data
+          } else {
+            const {data} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
+            this.ancillaryCustomFields = data
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -353,18 +360,20 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async assignAncillaryCustomField(customFieldGroupId) {
+      async assignAncillaryCustomField(cfg) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {
-            customFieldGroupId,
+            customFieldGroupId: cfg.id,
             id: null,
             ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
             fieldOrder: 0
           }
-          await postRequest(`/customFieldGroup/addFieldToGroup`, params)
+          const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
+          cfg.customFields.push(data)
           this.selectedAncillaryField = {}
           this.addField = false
+          this.parent = {}
           this.snackbar = getSnackbar('SUCCESS', 'Ancillary Field Assigned')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

@@ -1,10 +1,5 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
@@ -17,11 +12,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Collections2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.albatross.api.v1.flow.model.CustomFieldGroup;
-import com.albatross.api.v1.flow.model.CustomFieldValue;
-import com.albatross.api.v1.flow.model.Customer;
-import com.albatross.api.v1.flow.model.User;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

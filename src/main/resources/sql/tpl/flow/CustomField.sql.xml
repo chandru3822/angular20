@@ -176,4 +176,16 @@
     order by cf.field_name
   ]]></customField.getByParentProcessStep>
 
+  <customField.getByParentType><![CDATA[
+    select cf.*,
+       cfga.id as custom_field_group_assignment_id
+    from flow.object_type ot
+             inner join flow.custom_field_group cfg on cfg.object_type_id = ot.id
+             inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where ot.id = :id
+      and cfga.ancillary_custom_field_group_assignment_id is null
+    order by cf.field_name
+  ]]></customField.getByParentType>
+
 </sql>

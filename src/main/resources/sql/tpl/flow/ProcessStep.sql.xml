@@ -111,9 +111,26 @@
   <processStep.getParentObjects><![CDATA[
     select *
     from flow.process_step
-    where case when :id::integer is not null then id != :id else 1=1 end
-      and company_id = :companyId
+    where company_id = :companyId
       and archived is not true
     order by process_step_name
   ]]></processStep.getParentObjects>
+
+  <processStep.getParentObjectsIncludingTypes><![CDATA[
+    select ps.id,
+           ps.process_step_name as name,
+           true as is_process_step
+    from flow.process_step ps
+    where ps.company_id = :companyId
+      and ps.archived is not true
+    union all
+    select ot.id,
+           ot.object_type as name,
+           false as is_process_step
+    from flow.object_type ot
+    where company_id = :companyId
+    and flow_type_id = 1
+    and archived is not true
+    order by name
+  ]]></processStep.getParentObjectsIncludingTypes>
 </sql>
