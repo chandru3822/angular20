@@ -71,6 +71,65 @@
       where psr.id = :id
   ]]></processStepRequirement.getRequirement>
 
+  <!-- @Randa, this is the same situation as in getActionById in ProcessStepActionService.java. Do we want to modularize out selection that are used in multiple queries?
+       For instance, do we create a function that just returns the dynamic param values? -->
+  <processStepRequirement.getRequirementsWithValuesByIds><![CDATA[
+    select
+      psr.*,
+      ot.operator_type,
+      psrt.process_step_requirement_type,
+      ps.id as parent_id,
+      ps.process_step_name as parent_name,
+      cf.field_name,
+      cfn.company_function_name,
+      cdt.data_type_id,
+      ppscfv.id as project_custom_field_value_id,
+      ppscfv.project_process_step_id,
+      ppscfv.text_value,
+      ppscfv.date_value,
+      ppscfv.timestamp_value,
+      ppscfv.boolean_value,
+      ppscfv.numeric_value,
+      coalesce((
+        select name from flow.list_of_value where id = ppscfv.int_value
+      ), null) AS int_value,
+      coalesce((
+        select array_to_json(array_agg(row_to_json(params)))
+        from (
+          select name from flow.list_of_value where id = any(ppscfv.int_array_value)
+      ) params), '[]') as int_array_value,
+      coalesce('[]', (
+        select array_to_json(array_agg(row_to_json(params)))
+        from (
+          select
+            rpdv.id,
+            rpdv.archived,
+            dfp.db_function_id as "dbFunctionId",
+            dfp.parameter_name as "parameterName",
+            rpdv.db_function_param_id as "dbFunctionParamId",
+            rpdv.process_step_requirement_id as "processStepRequirementId",
+            rpdv.dynamic_value as "dynamicValue"
+          from flow.db_function_param dfp
+          left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id
+            and rpdv.process_step_requirement_id = psr.id
+          where dfp.db_function_id = cfn.db_function_id
+            and dfp.parameter_type_id = 2
+            and rpdv.archived is not true
+      ) params)) AS "requirementParamDynamicValues"
+    from flow.process_step_requirement psr
+    left join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+    left join flow.custom_field cf on cf.id = cfga.custom_field_id
+    left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+    left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+    left join flow.process_step ps on ps.id = cfg.process_step_id
+    left join flow.company_function cfn on cfn.id = psr.company_function_id
+    inner join flow.operator_type ot on ot.id = psr.operator_type_id
+    inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
+    left join flow.project_process_step_custom_field_value ppscfv on ppscfv.custom_field_group_assignment_id = cfga.id
+    where psr.id in (:ids)
+    order by psr.requirement_nbr;
+  ]]></processStepRequirement.getRequirementsWithValuesByIds>
+
   <processStepRequirement.deleteRequirement><![CDATA[
       update flow.process_step_requirement
         set modified_by_id = :modifiedById,
