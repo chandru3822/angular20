@@ -92,6 +92,11 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getInsertFieldsByType(ObjectType.CUSTOMER.id);
   }
 
+  @RequestMapping(value = "/getUserInsertFields", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getUserInsertFields () {
+    return customFieldGroupService.getInsertFieldsByType(ObjectType.USER.id);
+  }
+
   @RequestMapping(value = "/getOrgInsertFields", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomFieldGroup> getOrgInsertFields () {
     return customFieldGroupService.getInsertFieldsByType(ObjectType.ORGANIZATION.id);

@@ -31,11 +31,18 @@ export default new Router({
       children: [{
         path: 'users',
         name: 'users',
-        component: () => import(/* webpackChunkName: "users" */ './views/Users.vue')
+        component: () => import(/* webpackChunkName: "users" */ './views/flow/users/Users.vue')
       }, {
-        path: 'users/:id',
+        path: '/user/:id',
         name: 'user',
-        component: () => import (/* webpackChunkName: "user" */ './views/User.vue')
+        props: true,
+        component: () => import (/*webpackChunkName: "user" */ './views/flow/users/User.vue'),
+        children: []
+      }, {
+        path: '/newUser',
+        name: 'newUser',
+        component: () => import (/*webpackChunkName: "newUser" */ './views/flow/users/NewUser.vue'),
+        children: []
       }, {
         path: '/ahjTest',
         name: 'ahjTest',

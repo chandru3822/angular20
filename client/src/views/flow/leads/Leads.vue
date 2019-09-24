@@ -131,10 +131,10 @@ export default {
       totalLeads: 0,
       dataLoading: true,
       headers: [
-        { text: 'Lead Name', value: 'full_name', show: true },
-        { text: 'Owner', value: 'owner_full_name', show: true },
+        { text: 'Lead Name', value: 'fullName', show: true },
+        { text: 'Owner', value: 'ownerFullName', show: true },
         { text: 'State', value: 'state', show: true },
-        { text: 'Date Created', value: 'date_created', show: true },
+        { text: 'Date Created', value: 'dateCreated', show: true },
       ],
       search: ''
     }

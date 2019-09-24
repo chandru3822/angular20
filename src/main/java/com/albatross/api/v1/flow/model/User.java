@@ -13,7 +13,7 @@ import java.util.List;
 public class User {
 
     private Long id, companyId, parentCompanyId;
-    private String email, username, password, firstName, lastName, fullName, userStatusType, timezone, awsBucket, companyName, companyAbbreviation;
+    private String email, phoneNumber, username, password, firstName, lastName, fullName, userStatusType, timezone, awsBucket, companyName, companyAbbreviation;
     private Long userStatusTypeId;
     private List<UserPermission> permissions;
 

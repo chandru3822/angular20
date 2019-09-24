@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserPermission;
@@ -8,6 +9,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +28,31 @@ import java.util.UUID;
  */
 
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
 public class UserService {
 
   @Autowired
   SqlCache sqlCache;
 
   @Autowired
+  SecurityService securityService;
+
+  @Autowired
   ObjectMapper om;
+
+  public Page<User> searchUsers(String query, Pageable pageable) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("query", query);
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
+
+    List<User> results = sqlCache.query("user.searchUsers", params, new UserMapper<>(User.class, om));
+    Integer count = sqlCache.queryForObject("user.searchUserCount", params, Integer.class);
+
+    Page<User> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    return page;
+  }
 
   public User findByUsernameIgnoreCase(String username) {
     HashMap<String, Object> params = new HashMap<>();
