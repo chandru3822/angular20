@@ -271,7 +271,7 @@
                     <h3>Add Child Process</h3>
                     <v-select v-model="selectedProcessStep"
                               :items="childProcessSteps"
-                              label="Parent Object"
+                              label="Process Step"
                               item-text="processStepName"
                               return-object
                     ></v-select>
