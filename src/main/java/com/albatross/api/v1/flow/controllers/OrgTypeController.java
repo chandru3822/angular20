@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.OrgLevel;
 import com.albatross.api.v1.flow.model.OrgType;
 import com.albatross.api.v1.flow.services.OrgTypeService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,11 @@ public class OrgTypeController {
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public OrgType saveOrgType(@RequestBody OrgType type) {
     return orgTypeService.saveOrgType(type);
+  }
+
+  @GetMapping(value = "/levels", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<OrgLevel> getOrgLevels() {
+    return orgTypeService.getOrgLevels();
   }
 
 }

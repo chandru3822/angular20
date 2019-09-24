@@ -68,6 +68,10 @@ export default {
         label: 'Leads',
         path: '/leads',
         display: true
+      }, {
+        label: 'Organizations',
+        path: '/orgs',
+        display: true
       }]
     }
   },

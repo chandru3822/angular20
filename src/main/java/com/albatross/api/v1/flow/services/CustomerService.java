@@ -95,9 +95,9 @@ public class CustomerService {
       // finally, write to network because no errors were encountered
       return ResponseEntity.ok(buffer.toString(StandardCharsets.UTF_8));
     } catch (IOException e) {
-      log.error("Encountered error while writing closer incentive export to CSV", e);
+      log.error("Encountered error while writing customer export to CSV", e);
       return ResponseEntity.status(500)
-          .body("Encountered error while writing closer incentive export to CSV");
+          .body("Encountered error while writing customer export to CSV");
     }
   }
 

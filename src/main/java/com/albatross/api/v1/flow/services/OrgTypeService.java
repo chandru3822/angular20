@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.OrgLevel;
 import com.albatross.api.v1.flow.model.OrgType;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,15 @@ public class OrgTypeService {
     return results;
   }
 
+  public List<OrgLevel> getOrgLevels() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<OrgLevel> results = sqlCache.query("orgType.getLevels", params, OrgLevel.class);
+    return results;
+  }
+
   public OrgType getOrgType(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
@@ -50,8 +60,8 @@ public class OrgTypeService {
     params.put("companyId", user.getCompanyId());
     params.put("orgType", orgType.getOrgType());
     params.put("orgParentTypeId", orgType.getOrgParentTypeId());
-    params.put("level", orgType.getLevel());
-    params.put("active", orgType.getActive());
+    params.put("orgLevelId", orgType.getOrgLevelId());
+    params.put("archived", orgType.getArchived());
 
     Long id;
 

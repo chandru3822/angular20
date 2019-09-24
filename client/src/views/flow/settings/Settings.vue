@@ -18,6 +18,9 @@
         <v-subheader :class="{'shaded-row': $route.path === `/settings/links`}">
           <router-link to="/settings/links">Links</router-link>
         </v-subheader>
+        <v-subheader :class="{'shaded-row': $route.path === (`/settings/orgTypes`)}">
+          <router-link to="/settings/orgTypes">Organization Types</router-link>
+        </v-subheader>
         <h2>Processes</h2>
         <v-subheader :class="{'shaded-row': $route.path === `/settings/processes`}">
           <router-link to="/settings/processes">Processes</router-link>
@@ -34,9 +37,6 @@
         <h2>Objects</h2>
         <v-subheader v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :index="o.id" :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
           <router-link :to="{ path: `/settings/customFieldGroup/${o.id}`}">{{o.objectType}}</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path.includes(`/settings/orgs`)}">
-          <router-link to="/settings/orgs/list">Organizations</router-link>
         </v-subheader>
       </v-sheet>
     </v-flex>

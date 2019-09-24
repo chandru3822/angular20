@@ -84,7 +84,7 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 const { VUE_APP_ENV } = process.env
 
 export default {
-  name: 'Leads',
+  name: 'NewLead',
   components: {
     Snackbar,
     CustomValueInput
@@ -95,8 +95,6 @@ export default {
       lead: {},
       states: [],
       countries: [],
-      sources: [],
-      leadSourceDetails: [],
       customFieldGroups: [],
       requiredRules: BASIC_REQUIRED_RULE,
       emailRules: EMAIL_RULES,

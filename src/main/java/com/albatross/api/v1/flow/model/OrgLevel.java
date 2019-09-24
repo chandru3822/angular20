@@ -9,10 +9,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class OrgType {
+public class OrgLevel {
 
-  private Long id, companyId, orgLevelId, orgParentTypeId;
-  private String orgType, orgParentType, level;
-  private Boolean archived;
+  private Long id, level, companyId;
 }
 

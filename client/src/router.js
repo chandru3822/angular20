@@ -37,11 +37,6 @@ export default new Router({
         name: 'user',
         component: () => import (/* webpackChunkName: "user" */ './views/User.vue')
       }, {
-        path: '/org/:orgId?',
-        name: 'org',
-        props: true,
-        component: () => import (/* webpackChunkName: "org" */ './views/flow/settings/orgs/Org.vue')
-      }, {
         path: '/ahjTest',
         name: 'ahjTest',
         component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj_Test.vue')
@@ -85,6 +80,9 @@ export default new Router({
           {
             path: 'userProfile',
             component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
+          }, {
+            path: 'orgTypes',
+            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/OrgTypes.vue'),
           }, {
             path: 'customFields',
             component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue'),
@@ -132,19 +130,6 @@ export default new Router({
           }, {
             path: 'function/:id',
             component: () => import (/* webpackChunkName: "function" */ './views/flow/settings/Function.vue')
-          }, {
-            path: 'orgs',
-            name: 'orgs',
-            component: () => import (/* webpackChunkName: "orgs" */ './views/flow/settings/orgs/Orgs.vue'),
-            children: [
-              {
-                path: 'list',
-                component: () => import (/* webpackChunkName: "orgsList" */ './views/flow/settings/orgs/OrgsList.vue'),
-              }, {
-                path: 'hierarchy',
-                component: () => import (/* webpackChunkName: "hierarchy" */ './views/flow/settings/orgs/Hierarchy.vue'),
-              }
-            ]
           }
         ]
       }, {
@@ -176,7 +161,24 @@ export default new Router({
         name: 'newLead',
         component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/NewLead.vue'),
         children: []
-      }]
+      }, {
+        path: '/orgs',
+        name: 'orgs',
+        component: () => import (/*webpackChunkName: "orgs" */ './views/flow/orgs/Orgs.vue'),
+        children: []
+      }, {
+        path: '/org/:id',
+        name: 'org',
+        props: true,
+        component: () => import (/*webpackChunkName: "org" */ './views/flow/orgs/Org.vue'),
+        children: []
+      }, {
+        path: '/newOrg',
+        name: 'newOrg',
+        component: () => import (/*webpackChunkName: "newOrg" */ './views/flow/orgs/NewOrg.vue'),
+        children: []
+      }
+      ]
     }
   ]
 })

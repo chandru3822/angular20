@@ -1,28 +1,22 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldGroup;
-import com.albatross.api.v1.flow.model.CustomFieldValue;
-import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -46,6 +40,20 @@ public class CustomFieldValueService {
     params.put("objectTypeId", ObjectType.CUSTOMER.id);
 
     List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getCustomerFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    handleCustomListOfValue(results);
+
+    return results;
+  }
+
+  public List<CustomFieldGroup> getOrgCustomValues(Long primaryId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("primaryId", primaryId);
+    params.put("objectTypeId", ObjectType.ORGANIZATION.id);
+
+    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getOrgFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
     handleCustomListOfValue(results);
 

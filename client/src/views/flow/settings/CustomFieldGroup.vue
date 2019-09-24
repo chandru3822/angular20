@@ -409,7 +409,7 @@ export default {
           showOnInsert: cf.showOnInsert
         }
         await putRequest(`/customFieldGroup/updateFieldShowOnInsert`, objectType)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
+        this.snackbar = getSnackbar('SUCCESS', 'Updated Field')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
