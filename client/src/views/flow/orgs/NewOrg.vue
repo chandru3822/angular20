@@ -61,7 +61,7 @@
     data () {
       return {
         snackbar: {},
-        lead: {},
+        org: {},
         orgTypes: [],
         parents: [],
         customFieldGroups: [],
