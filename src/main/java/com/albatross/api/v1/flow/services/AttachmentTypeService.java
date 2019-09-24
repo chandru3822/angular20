@@ -77,7 +77,7 @@ public class AttachmentTypeService {
 
     Long id = sqlCache.updateReturningId("attachmentType.insertProcessStepType",
         ImmutableMap.of("createdById", currentUser.getId(),
-            "attachmentTypeId", attachmentType.getId(),
+            "attachmentTypeId", attachmentType.getAttachmentTypeId(),
             "processStepId", attachmentType.getProcessStepId()), "id").longValue();
 
     return getProcessStepType(id);
