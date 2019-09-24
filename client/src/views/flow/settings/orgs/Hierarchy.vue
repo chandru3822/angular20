@@ -5,10 +5,12 @@
         <h3>Add Org Type</h3>
         <v-text-field text v-model="newOrgType.orgType"
                       label="Org Type Name" />
-        <v-text-field text v-model="newOrgType.level"
-                      label="Level" />
-        <v-select v-model="newOrgType.orgParentTypeId"
-                  :items="orgTypes"
+        <v-select v-model="newOrgType.level"
+                  :items="levels"
+                  label="Level"
+        ></v-select>
+        <v-select v-if="newOrgType.level && newOrgType.level !== 'n/a'" v-model="newOrgType.orgParentTypeId"
+                  :items="filteredOrgTypes(newOrgType.level)"
                   label="Parent"
                   item-text="orgType"
                   item-value="id"
@@ -18,7 +20,11 @@
           <input class="ml-3" type="checkbox" v-model="newOrgType.active">
         </div>
 
-        <v-btn :disabled="!newOrgType.orgType" color="primary" class="white--text mr-2" @click="saveOrgType(newOrgType)">Save</v-btn>
+        <v-btn :disabled="!newOrgType.orgType || !newOrgType.level || (newOrgType.level && newOrgType.level !== 'n/a' && !newOrgType.orgParentTypeId)"
+               color="primary" class="white--text mr-2"
+               @click="saveOrgType(newOrgType, true)">
+          Save
+        </v-btn>
         <v-btn @click="addType = !addType; newOrgType = {}">Cancel</v-btn>
       </v-card>
       <v-data-table
@@ -51,10 +57,13 @@
             <h3>Edit Org Type</h3>
             <v-text-field text v-model="item.orgType"
                           label="Org Type Name" />
-            <v-text-field text v-model="item.level"
-                          label="Level" />
-            <v-select v-model="item.orgParentTypeId"
-                      :items="orgTypes"
+            <v-select v-model="item.level"
+                      :items="levels"
+                      label="Level"
+            ></v-select>
+            <v-select v-if="item.level && item.level !== 'n/a'"
+                      v-model="item.orgParentTypeId"
+                      :items="filteredOrgTypes(item.level)"
                       label="Parent"
                       item-text="orgType"
                       item-value="id"
@@ -63,15 +72,16 @@
               <label>Active:</label>
               <input class="ml-3" type="checkbox" v-model="item.active">
             </div>
-            <v-btn :disabled="!item.orgType" color="primary" class="white--text mr-2" @click="saveOrgType(item)">Save</v-btn>
+            <v-btn :disabled="!item.orgType || !item.level || (item.level && item.level !== 'n/a' && !item.orgParentTypeId)"
+                   color="primary" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
           </td>
         </template>
 
         <template #item="{ item }">
           <tr  class="text-xs-left" :class="{'shaded-row': orgTypes.indexOf(item) % 2}">
             <td class="text-left">{{ item.orgType }}</td>
-            <td class="text-left">{{ item.level }}</td>
-            <td class="text-left">{{ item.orgParentType }}</td>
+            <td class="text-left">{{ item.level || 'n/a' }}</td>
+            <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>
             <td class="text-left">{{ item.active ? 'Yes' : 'No' }}</td>
             <td>
               <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
@@ -105,6 +115,7 @@
         orgTypes: [],
         newOrgType: {},
         addType: false,
+        levels: ['n/a',1,2,3,4,5,6],
         headers: [
           { text: 'Org Type', value: 'orgType', show: true },
           { text: 'Level', value: 'level', show: true },
@@ -129,13 +140,14 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getParentOrgTypes() {
+      async getParentOrgTypes(level) {
         //todo: load available parents so they cant say level 4 but choose a level 8 as the parent,
         //todo: also, should probably make the level field a dropdown
       },
       async saveOrgType(ot, isNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          ot.level = ot.level === 'n/a' ? null : ot.level
           const {data} = await putRequest(`/orgType`, ot)
           if(isNew){
             this.orgTypes.push(data)
@@ -152,7 +164,12 @@
           this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Type' : 'Error Updating Org Type')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      filteredOrgTypes(level) {
+        return this.orgTypes.filter(ot => {
+          return ot.level == null || ot.level < level
+        })
+      },
     },
     async created () {
       this.getOrgTypes()
