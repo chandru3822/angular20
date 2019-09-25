@@ -1,0 +1,26 @@
+<sql>
+  <${LOWER_ITEM}.getAllForCompany>
+    <![CDATA[
+
+    ]]>
+  </${LOWER_ITEM}.getAllForCompany>
+
+  <${LOWER_ITEM}.update${UPPER_ITEM}>
+    <![CDATA[
+
+    ]]>
+  </${LOWER_ITEM}.update${UPPER_ITEM}>
+
+  <${LOWER_ITEM}.insert${UPPER_ITEM}>
+    <![CDATA[
+
+    ]]>
+  </${LOWER_ITEM}.insert${UPPER_ITEM}>
+
+  <${LOWER_ITEM}.getOne>
+    <![CDATA[
+
+    ]]>
+  </${LOWER_ITEM}.getOne>
+
+</sql>
