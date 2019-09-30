@@ -11,10 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -27,5 +24,20 @@ public class UserController {
     @GetMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<User>> searchCustomers(@RequestParam String query, Pageable pageable) {
         return new ResponseEntity<>(userService.searchUsers(query, pageable), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/exportUsers", produces = "text/csv")
+    public ResponseEntity exportUsers(@RequestParam String query) {
+        return userService.exportUsers(query);
+    }
+
+    @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    public User saveOrg(@RequestBody User user) {
+        return userService.saveUser(user);
+    }
+
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public User getUser(@PathVariable Long id) {
+        return userService.getUser(id);
     }
 }

@@ -23,24 +23,34 @@ public class NoteController {
   @Autowired
   private NoteService noteService;
 
-  @RequestMapping(value = "/getCustomerNotes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getCustomerNotes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Note> getCustomerNotes(@RequestParam Long primaryId) {
     return noteService.getByPrimaryAndType(ObjectType.CUSTOMER.id, primaryId);
   }
 
-  @RequestMapping(value = "/getProjectNotes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getUserNotes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Note> getUserNotes(@RequestParam Long primaryId) {
+    return noteService.getByPrimaryAndType(ObjectType.USER.id, primaryId);
+  }
+
+  @GetMapping(value = "/getProjectNotes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Note> getProjectNotes(@RequestParam Long primaryId) {
     return noteService.getByPrimaryAndType(ObjectType.PROJECT.id, primaryId);
   }
 
-  @RequestMapping(value = "/getProjectProcessStepNote", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getProjectProcessStepNote", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Note> getProjectProcessStepNote(@RequestParam Long primaryId) {
     return noteService.getByPrimaryAndType(ObjectType.PROCESS_STEP.id, primaryId);
   }
 
-  @RequestMapping(value = "/saveCustomerNote", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public Note saveNote(@RequestBody Note note) {
+  @PostMapping(value = "/saveCustomerNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Note saveCustomerNote(@RequestBody Note note) {
     return noteService.saveNote(ObjectType.CUSTOMER.id, note);
+  }
+
+  @PostMapping(value = "/saveUserNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Note saveUserNote(@RequestBody Note note) {
+    return noteService.saveNote(ObjectType.USER.id, note);
   }
 
 

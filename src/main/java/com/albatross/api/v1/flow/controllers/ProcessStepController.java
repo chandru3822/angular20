@@ -23,39 +23,39 @@ public class ProcessStepController {
   @Autowired
   private ProcessStepService processStepService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStep> getProcessStepsForCompany() {
     return processStepService.getProcessStepsForCompany();
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStep getProcessStep(@PathVariable Long id) {
     return processStepService.getProcessStep(id);
   }
 
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteStep(@PathVariable Long id) {
     processStepService.deleteStep(id);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateStep(@RequestBody ProcessStep processStep) {
     processStepService.updateStep(processStep);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStep insertStep(@RequestBody ProcessStep processStep) {
     return processStepService.insertStep(processStep);
   }
 
-  @RequestMapping(value = "/getParentObjects", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getParentObjects", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStep> getParentObjects (@RequestParam(required = false) Long id) {
     return processStepService.getParentObjects(id);
   }
 
 
-  @RequestMapping(value = "/getParentObjectsWithTypes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getParentObjectsWithTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CombinedStepAndType> getParentObjectsIncludingTypes (@RequestParam(required = false) Long id) {
     return processStepService.getParentObjectsIncludingTypes(id);
   }

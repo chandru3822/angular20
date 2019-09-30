@@ -18,32 +18,32 @@ public class AhjController {
   @Autowired
   private AhjService ahjService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET)
+  @GetMapping(value = "")
   public List<AhjSummary> getAhjList() {
     return ahjService.getAhjList();
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+  @GetMapping(value = "/{id}")
   public Optional<AhjSummary> getAhjById(@PathVariable Long id) {
     return ahjService.getAhjById(id);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST)
+  @PostMapping(value = "")
   public Optional<AhjSummary> createAhj(@RequestBody AhjSummary ahjSummary) {
     return ahjService.createAhj(ahjSummary);
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+  @PutMapping(value = "/{id}")
   public Optional<AhjSummary> updateAhj(@PathVariable Long id, @RequestBody AhjSummary ahj) {
     return ahjService.saveAhj(id, ahj);
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+  @DeleteMapping(value = "/{id}")
   public void deleteAhj(@PathVariable Long id) {
     ahjService.deleteAhj(id);
   }
 
-  @RequestMapping(value = "/getInspectionTypeFields", method = RequestMethod.GET)
+  @GetMapping(value = "/getInspectionTypeFields")
   public String getInspectionTypeFields() {
     return ahjService.getInspectionTypeFields();
   }

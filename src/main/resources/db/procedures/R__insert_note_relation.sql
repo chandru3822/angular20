@@ -19,10 +19,9 @@ BEGIN
             values (p_primary_id, p_note_id);
             return true;
     when p_object_type_id = 3 then
-          -- we dont have user notes yet
-          select *
-          from flow.user;
-          return true;
+        insert into flow.user_note(user_id, note_id)
+        values (p_primary_id, p_note_id);
+        return true;
     when p_object_type_id = 4 then
         insert into flow.project_process_step_note(project_process_step_id, note_id)
         values (p_primary_id, p_note_id);

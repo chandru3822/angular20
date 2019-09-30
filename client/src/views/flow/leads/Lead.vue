@@ -196,7 +196,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

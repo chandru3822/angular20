@@ -17,18 +17,18 @@ public class AhjDesignController {
     @Autowired
     private AhjDesignService ahjDesignService;
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @GetMapping(value = "")
     public Optional<AhjDesignDetail> getAhjDesignDetail(@PathVariable Long ahjId) {
         return ahjDesignService.getAhjDesignDetailByAhjId(ahjId);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @PostMapping(value = "")
     public Optional<AhjDesign> createAhjDesign(@PathVariable Long ahjId,
                                                @RequestBody AhjDesign design) {
         return ahjDesignService.createAhjDesign(ahjId, design);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Optional<AhjDesign> updateAhjDesign(@PathVariable Long ahjId,
                                                      @PathVariable Long id,
                                                      @RequestBody AhjDesign design) {

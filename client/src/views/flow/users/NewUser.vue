@@ -156,7 +156,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.user.customFieldGroups = this.customFieldGroups
       try {
-        const {data} = await postRequest(`/user`, this.user)
+        const {data} = await putRequest(`/user`, this.user)
         this.$router.push({name: 'user', params: {id: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

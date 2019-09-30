@@ -60,6 +60,20 @@ public class CustomFieldValueService {
     return results;
   }
 
+  public List<CustomFieldGroup> getUserCustomValues(Long primaryId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("primaryId", primaryId);
+    params.put("objectTypeId", ObjectType.USER.id);
+
+    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getUserFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    handleCustomListOfValue(results);
+
+    return results;
+  }
+
   public void handleCustomListOfValue (List<CustomFieldGroup> results) {
     for(CustomFieldGroup cfg : results) {
       for(CustomFieldValue cv : cfg.getCustomFieldValues()){

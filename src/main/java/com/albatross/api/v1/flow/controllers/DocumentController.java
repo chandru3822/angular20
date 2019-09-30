@@ -18,19 +18,19 @@ public class DocumentController {
 //    @Autowired
 //    private AttachmentService attachmentService;
 //
-////    @RequestMapping(value = "/urlPre/{id}", method = RequestMethod.GET)
+////    @GetMapping(value = "/urlPre/{id}")
 ////    public void getAttachmentUrlPre(@PathVariable Long id, HttpServletResponse response) throws IOException {
 ////        String attachmentUrl = attachmentService.getAttachmentPresignedUrlById(bucket, id);
 ////        response.sendRedirect(response.encodeRedirectURL(attachmentUrl));
 ////    }
 //
-//    @RequestMapping(value = "/getSourceAttachments", method = RequestMethod.GET)
+//    @GetMapping(value = "/getSourceAttachments")
 //    public List<Attachment> getAttachmentsBySourceIdAndType(@RequestParam Long sourceId,
 //                                                            @RequestParam Long attachmentSourceTypeId) {
 //        return attachmentService.getAttachmentsBySourceIdAndType(sourceId, attachmentSourceTypeId);
 //    }
 //
-//    @RequestMapping(method = RequestMethod.POST, value = "/upload")
+//    @PostMapping(value = "/upload")
 //    public Attachment uploadDocument(@RequestParam Long sourceId,
 //                                     @RequestParam Long attachmentSourceTypeId,
 //                                     @RequestParam("file") MultipartFile file) throws IOException {
@@ -39,7 +39,7 @@ public class DocumentController {
 //        return attachment;
 //    }
 //
-//    @RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
+//    @DeleteMapping(value = "/{id}")
 //    public void deleteDocument(@PathVariable("id") Long fileId) {
 //        attachmentService.delete(fileId);
 //    }

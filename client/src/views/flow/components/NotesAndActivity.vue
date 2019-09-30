@@ -135,7 +135,7 @@ export default {
   methods: {
     async saveNote(n) {
       try {
-        const {data} = await postRequest(`/api/v1/flow/note/save${this.$props.type}Note`, {
+        const {data} = await postRequest(`/note/save${this.$props.type}Note`, {
           primaryId: this.primaryId,
           note: n.reply ? n.reply : n.note,
           parentId: n.reply ? n.id : null

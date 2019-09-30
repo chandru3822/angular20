@@ -31,6 +31,11 @@ public class CustomFieldValueController {
     return customFieldValueService.getOrgCustomValues(primaryId);
   }
 
+  @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getUserCustomValues(@RequestParam Long primaryId) {
+    return customFieldValueService.getUserCustomValues(primaryId);
+  }
+
   @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectId(@PathVariable Long projectId) {
     return new ResponseEntity<>(customFieldValueService.getProjectCustomValues(projectId), HttpStatus.OK);

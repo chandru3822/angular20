@@ -15,7 +15,7 @@ public class MetroAreaController {
     @Autowired
     private MetroAreaService metroAreaService;
 
-    @RequestMapping(value = "/getActive", method = RequestMethod.GET)
+    @GetMapping(value = "/getActive")
     public List<MetroArea> getAllActiveMetroAreas() {
         return metroAreaService.getAllActiveMetroAreas();
     }

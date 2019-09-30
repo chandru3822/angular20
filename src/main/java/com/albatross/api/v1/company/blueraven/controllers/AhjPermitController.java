@@ -22,18 +22,18 @@ public class AhjPermitController {
     @Autowired
     private AhjService ahjService;
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @GetMapping(value = "")
     public Optional<AhjPermitDetail> getAhjPermitDetail(@PathVariable Long ahjId) {
         return ahjPermitService.getAhjPermitDetailByAhjId(ahjId);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @PostMapping(value = "")
     public Optional<AhjPermitDetail> createAhjPermit(@PathVariable Long ahjId,
                                                      @RequestBody AhjPermit permit) {
         return ahjPermitService.saveAhjPermit(ahjId, null, permit);
     }
 
-    @RequestMapping(value = "/{permitId}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{permitId}")
     public Optional<AhjPermitDetail> updateAhjPermit(@PathVariable Long ahjId,
                                                      @PathVariable Long permitId,
                                                      @RequestBody AhjPermit permit) {
@@ -41,14 +41,14 @@ public class AhjPermitController {
     }
 
     // CHECKLISTS
-    @RequestMapping(value = "/{permitId}/checklist", method = RequestMethod.POST)
+    @PostMapping(value = "/{permitId}/checklist")
     public Optional<AhjChecklistItem> addPermitChecklistItem(@PathVariable Long ahjId,
                                                              @PathVariable Long permitId,
                                                              @RequestBody AhjChecklistItem item) {
         return ahjService.saveChecklistItem(ahjId, permitId, null, item, AhjType.PERMIT);
     }
 
-    @RequestMapping(value = "/{permitId}/checklist/{itemId}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{permitId}/checklist/{itemId}")
     public Optional<AhjChecklistItem> updatePermitChecklistItem(@PathVariable Long ahjId,
                                                                 @PathVariable Long permitId,
                                                                 @PathVariable Long itemId,
@@ -56,7 +56,7 @@ public class AhjPermitController {
         return ahjService.saveChecklistItem(ahjId, permitId, itemId, item, AhjType.PERMIT);
     }
 
-    @RequestMapping(value = "/{permitId}/checklist/{itemId}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{permitId}/checklist/{itemId}")
     public void deletePermitChecklistItem(@PathVariable Long ahjId,
                                           @PathVariable Long permitId,
                                           @PathVariable Long itemId) {
@@ -64,34 +64,34 @@ public class AhjPermitController {
     }
 
     // CONTACTS
-    @RequestMapping(value = "/{permitId}/contacts", method = RequestMethod.POST)
+    @PostMapping(value = "/{permitId}/contacts")
     public Optional<AhjContact> addAhjContact(@PathVariable Long permitId,
                                               @RequestBody AhjContact ahjContact) {
         return ahjService.saveAhjContact(permitId, null, ahjContact, AhjType.PERMIT);
     }
 
-    @RequestMapping(value = "/{permitId}/contacts/{contactId}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{permitId}/contacts/{contactId}")
     public Optional<AhjContact> updateAhjContact(@PathVariable Long permitId,
                                                  @PathVariable Long contactId,
                                                  @RequestBody AhjContact ahjContact) {
         return ahjService.saveAhjContact(permitId, contactId, ahjContact, AhjType.PERMIT);
     }
 
-    @RequestMapping(value = "/{permitId}/contacts/{contactId}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{permitId}/contacts/{contactId}")
     public void removeAhjContact(@PathVariable Long permitId,
                                  @PathVariable Long contactId) {
         ahjService.deleteAhjContact(permitId, contactId);
     }
 
     // LINKS
-    @RequestMapping(value = "/{permitId}/links", method = RequestMethod.POST)
+    @PostMapping(value = "/{permitId}/links")
     public Optional<AhjLink> addPermitLink(@PathVariable Long ahjId,
                                            @PathVariable Long permitId,
                                            @RequestBody AhjLink link) {
         return ahjPermitService.savePermitLink(ahjId, permitId, null, link);
     }
 
-    @RequestMapping(value = "/{permitId}/links/{linkId}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{permitId}/links/{linkId}")
     public Optional<AhjLink> updatePermitLink(@PathVariable Long ahjId,
                                               @PathVariable Long permitId,
                                               @PathVariable Long linkId,
@@ -99,7 +99,7 @@ public class AhjPermitController {
         return ahjPermitService.savePermitLink(ahjId, permitId, linkId, link);
     }
 
-    @RequestMapping(value = "/{permitId}/links/{linkId}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{permitId}/links/{linkId}")
     public void deletePermitLink(@PathVariable Long ahjId,
                                  @PathVariable Long permitId,
                                  @PathVariable Long linkId) {

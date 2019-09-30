@@ -134,11 +134,11 @@ public class OrgService {
     Long id;
     if(null != org.getId()) {
       id = org.getId();
-      params.put("modifiedById", user.getCompanyId());
+      params.put("modifiedById", user.getId());
       params.put("id", id);
       sqlCache.update("org.updateOrg", params);
     } else {
-      params.put("createdById", user.getCompanyId());
+      params.put("createdById", user.getId());
       id = sqlCache.updateReturningId("org.insertOrg", params, "id").longValue();
     }
 

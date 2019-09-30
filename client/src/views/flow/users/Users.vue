@@ -177,7 +177,7 @@
         this.dialog = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/user/exportUSERS`, { params: {
+          const {data} = await getRequest(`/user/exportUsers`, { params: {
               query: this.search
             }})
           let blob = new Blob([data], {

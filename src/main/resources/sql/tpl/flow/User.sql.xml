@@ -24,6 +24,48 @@
         and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
   ]]></user.searchUserCount>
 
+  <user.exportUsers><![CDATA[
+      select
+        u.id,
+        u.first_name,
+        u.last_name,
+        u.first_name || ' ' || u.last_name as full_name,
+        u.email,
+        u.phone_number,
+        u.company_id
+    from flow.user u
+    where u.company_id = :companyId
+      and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+    order by u.last_name, u.first_name, u.start_date desc
+  ]]></user.exportUsers>
+
+  <user.updateUser>
+    <![CDATA[
+      update flow."user"
+      set first_name = :firstName,
+          last_name = :lastName,
+          modified_by = :modifiedById,
+          modified_dt = now(),
+          company_id = :companyId
+      where id = :id
+    ]]>
+  </user.updateUser>
+
+  <user.insertUser>
+    <![CDATA[
+      insert into flow.user(first_name, last_name, created_by, company_id)
+      values(:firstName, :lastName, :createdById, :companyId)
+    ]]>
+  </user.insertUser>
+
+  <user.getOne>
+    <![CDATA[
+      select u.*
+      from flow."user" u
+      where u.id = :id
+    ]]>
+  </user.getOne>
+
   <user.findByUsernameIgnoreCase><![CDATA[
     select u.id,
        u.first_name,
