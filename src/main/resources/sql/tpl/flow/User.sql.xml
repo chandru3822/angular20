@@ -44,8 +44,8 @@
       update flow."user"
       set first_name = :firstName,
           last_name = :lastName,
-          modified_by = :modifiedById,
-          modified_dt = now(),
+          modified_by_id = :modifiedById,
+          date_modified = now(),
           company_id = :companyId
       where id = :id
     ]]>
@@ -53,7 +53,7 @@
 
   <user.insertUser>
     <![CDATA[
-      insert into flow.user(first_name, last_name, created_by, company_id)
+      insert into flow.user(first_name, last_name, created_by_id, company_id)
       values(:firstName, :lastName, :createdById, :companyId)
     ]]>
   </user.insertUser>
