@@ -54,15 +54,19 @@
           <v-card class="pa-4">
             <v-text-field text
                           label="Phone"
+                          placeholder=" "
                           v-model="customer.phone"></v-text-field>
             <v-text-field text
                           label="Mobile"
+                          placeholder=" "
                           v-model="customer.mobile"></v-text-field>
             <v-text-field text
                           label="E-Mail"
+                          placeholder=" "
                           v-model="customer.email"></v-text-field>
             <v-text-field text
                           label="Created Date"
+                          placeholder=" "
                           v-model="customer.dateCreated"></v-text-field>
           </v-card>
         </div>

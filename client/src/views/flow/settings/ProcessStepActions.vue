@@ -210,12 +210,13 @@
         ></v-select>
         <v-select v-model="newAction.processStepStatusTypeId"
                   :items="statusTypes"
+                  :clearable="true"
                   label="Action changes status of parent process step to"
                   item-text="processStepStatusType"
                   item-value="id"
                   @input=""
         ></v-select>
-        <v-btn v-if="newAction.actionName && newAction.processStepStatusTypeId && newAction.actionTypeId"
+        <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                @click="saveNewAction">
           <v-icon>save</v-icon>
           Save
@@ -255,6 +256,7 @@
                 ></v-select>
                 <v-select v-model="item.processStepStatusTypeId"
                           :items="statusTypes"
+                          :clearable="true"
                           label="Action changes status of parent process step to"
                           item-text="processStepStatusType"
                           item-value="id"
@@ -468,7 +470,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.actionName}}</td>
               <td class="text-left">{{item.actionType}}</td>
-              <td class="text-left">{{item.processStepStatusType}}</td>
+              <td class="text-left">{{item.processStepStatusType || 'N/A'}}</td>
               <td>
                 <div style="display: flex; float: right;">
                   <v-btn small text @click="actionExpanded = [item]; selectedActionIndex = index" v-if="!actionExpanded.includes(item)">

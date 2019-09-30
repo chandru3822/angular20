@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row xs-12>
-      <v-toolbar color="white" class="elevation-1">
+      <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
       </v-toolbar>
       <v-container style="background: aliceblue">

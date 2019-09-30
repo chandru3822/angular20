@@ -19,9 +19,11 @@
           <v-card class="pa-4">
             <v-text-field text
                           label="Phone"
+                          placeholder=" "
                           v-model="user.phone"></v-text-field>
             <v-text-field text
                           label="E-Mail"
+                          placeholder=" "
                           v-model="user.email"></v-text-field>
           </v-card>
         </div>

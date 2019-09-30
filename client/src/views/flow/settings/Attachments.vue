@@ -1,7 +1,8 @@
 <template>
-  <v-layout row wrap class="custom-field-group-container">
-    <v-flex xs-12>
-      <v-toolbar color="white" class="elevation-1">
+  <v-container class="custom-field-group-container">
+    <v-row>
+    <v-col xs-12>
+      <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -69,9 +70,10 @@
           </v-list-item>
         </v-list>
       </v-container>
-    </v-flex>
+    </v-col>
+    </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
-  </v-layout>
+  </v-container>
 </template>
 
 

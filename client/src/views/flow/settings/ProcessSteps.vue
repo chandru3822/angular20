@@ -1,7 +1,7 @@
 <template>
   <v-layout row wrap class="custom-field-group-container">
     <v-flex xs-12>
-      <v-toolbar class="testing elevation-1">
+      <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -20,11 +20,11 @@
         <v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')"
                 :key="index">
           <v-list-item :class="{'shaded-row': index % 2}">
-            <v-list-item-content>
+            <v-list-item-content class="text-left clickable" @click="goToProcessStep(ps.id)">
               {{ps.processStepName}}
             </v-list-item-content>
             <v-list-item-action class="clickable">
-              <v-btn :to="{ path: `/settings/processStep/${ps.id}/components`}" text>
+              <v-btn @click="goToProcessStep(ps.id)" text>
                 <v-icon>edit</v-icon>
               </v-btn>
             </v-list-item-action>
@@ -99,6 +99,9 @@
     computed: {
     },
     methods: {
+      goToProcessStep(stepId) {
+        this.$router.push({path: `/settings/processStep/${stepId}/components`})
+      },
       async getProcessSteps () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

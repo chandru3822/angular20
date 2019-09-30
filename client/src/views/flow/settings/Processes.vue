@@ -1,7 +1,7 @@
 <template>
   <v-layout row wrap class="custom-field-group-container">
     <v-flex xs-12>
-      <v-toolbar color="white" class="elevation-1">
+      <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title">Processes</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -20,13 +20,11 @@
         <v-list v-for="(p, index) in filterBy(processes, false, 'archived')"
                 :key="index">
           <v-list-item :class="{'shaded-row': index % 2}">
-            <v-list-item-content class="text-left">
-              <v-text-field class="one-hunned" v-if="selectedProcessId === p.id" v-model="p.processName">
-              </v-text-field>
-              <div v-else>{{p.processName}}</div>
+            <v-list-item-content class="text-left clickable" @click="goToProcess(p.id)">
+              {{p.processName}}
             </v-list-item-content>
             <v-list-item-action class="clickable">
-              <v-btn :to="{ path: `/settings/process/${p.id}`}" text>
+              <v-btn @click="goToProcess(p.id)" text>
                 <v-icon>edit</v-icon>
               </v-btn>
             </v-list-item-action>
@@ -103,6 +101,9 @@ export default {
   computed: {
   },
   methods: {
+    goToProcess(processId) {
+      this.$router.push({path: `/settings/process/${processId}`})
+    },
     async getProcesses () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

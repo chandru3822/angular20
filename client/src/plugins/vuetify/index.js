@@ -17,8 +17,8 @@ export default new Vuetify({
       light: {
         primary: '#1F3C73',
         primaryCustom: '#1F3C73',
-        secondary: '#f2f2f2',
-        secondaryCustom: '#f2f2f2',
+        secondary: '#F6F7F8',
+        secondaryCustom: '#F6F7F8',
         rowShade: '#EAEAF4',
         rowShadeCustom: '#EAEAF4',
         rowHover: '#ADD8E6',

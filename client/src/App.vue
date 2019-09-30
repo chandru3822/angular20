@@ -26,6 +26,13 @@ body {
   background: #f8f8f8;
 }
 
+.app-toolbar {
+  border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
+  //-webkit-box-shadow: 0 6px 6px -6px #000 !important;
+  //-moz-box-shadow: 0 6px 6px -6px #000 !important;
+  //box-shadow: 0 6px 6px -6px #000 !important;
+}
+
 #app {
   font-family: 'Lato', sans-serif;
   letter-spacing: .4px;
@@ -39,6 +46,11 @@ body {
   border-radius: 3px;
   text-transform: capitalize;
   height: 45px !important;
+}
+
+.v-list-item--dense, .v-list--dense .v-list-item {
+  /* vuetify's default code for v-list-dense sets the min-height to 40px, but nothing was setting the height itself so depending on content adding the `dense` flag wasn't doing anything */
+  height: 40px;
 }
 .router-container{
   justify-content: center;

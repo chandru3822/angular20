@@ -1,189 +1,192 @@
 <template>
-  <v-layout row wrap class="custom-field-group-container">
-    <v-flex xs-12>
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn text @click="addNew = !addNew; newGroup = {}">
-            {{addNew ? 'Cancel' : 'Add New'}}
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <v-container>
-        <v-text-field v-if="addNew"
-            v-model="newGroup.groupName"
-            placeholder="Enter new group name"
-            append-outer-icon="save"
-            @click:append-outer="addCustomFieldGroup"
-            label="Custom Field Group">
-        </v-text-field>
+  <v-container row wrap class="custom-field-group-container">
+    <v-row>
+      <v-col xs-12>
+        <v-toolbar flat class="app-toolbar">
+          <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="addNew = !addNew; newGroup = {}">
+              {{addNew ? 'Cancel' : 'Add New'}}
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-container>
+          <v-text-field v-if="addNew"
+              v-model="newGroup.groupName"
+              placeholder="Enter new group name"
+              append-outer-icon="save"
+              @click:append-outer="addCustomFieldGroup"
+              label="Custom Field Group">
+          </v-text-field>
 
-        <v-data-table
-            :headers="headers"
-            :items="filterCustomFieldGroups()"
-            :items-per-page="-1"
-            single-expand
-            :expanded.sync="expanded"
-            hide-default-footer
-            hide-default-header
-            class="elevation-1 fix-column-width-bug"
-        >
-          <template #no-data>
-            No available field groups
-          </template>
+          <v-data-table
+              :headers="headers"
+              :items="filterCustomFieldGroups()"
+              :items-per-page="-1"
+              single-expand
+              :sort-by="['groupOrder']"
+              :sort-desc="[false]"
+              :expanded.sync="expanded"
+              hide-default-footer
+              hide-default-header
+              class="elevation-1 fix-column-width-bug"
+          >
+            <template #no-data>
+              No available field groups
+            </template>
 
-          <template #no-results>
-            No available field groups
-          </template>
+            <template #no-results>
+              No available field groups
+            </template>
 
-          <template #item="{ item, index }">
-            <tr  :class="{'shaded-row': index % 2}">
-              <td style="width: 50px">
-                <v-btn text icon small class="handle">
-                  <v-icon>drag_handle</v-icon>
-                </v-btn>
-              </td>
-              <td class="text-left">
-                <v-text-field text
-                              v-if="item.edit"
-                              v-model="item.groupName">
-                  <template slot="append-outer">
-                    <v-icon @click="saveGroupName(item); item.edit = false">save</v-icon>
-                    <v-icon @click="item.edit = false">clear</v-icon>
-                  </template>
-                </v-text-field>
-                <a style="text-decoration: underline;" v-else @click="item.edit = true">
-                  {{item.groupName}}
-                </a>
-              </td>
-              <td>
-                <div class="item-icons">
-                  <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]; selectedIndex = index">
-                    <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
-                    <v-icon v-else>add</v-icon>
+            <template #item="{ item, index }">
+              <tr  :class="{'shaded-row': index % 2}">
+                <td style="width: 50px">
+                  <v-btn text icon small class="handle">
+                    <v-icon>drag_handle</v-icon>
                   </v-btn>
-                  <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
-                    <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
-                    <v-icon v-else>expand_more</v-icon>
-                  </v-btn>
-                  <v-dialog
-                      v-model="item.deleteConfirm"
-                      width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
+                </td>
+                <td class="text-left">
+                  <v-text-field text
+                                v-if="item.edit"
+                                v-model="item.groupName">
+                    <template slot="append-outer">
+                      <v-icon @click="saveGroupName(item); item.edit = false">save</v-icon>
+                      <v-icon @click="item.edit = false">clear</v-icon>
                     </template>
-                    <v-card>
-                      <v-card-title
-                          class="headline grey lighten-2"
-                          primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            @click="item.deleteConfirm = false">
-                          No
+                  </v-text-field>
+                  <a style="text-decoration: underline;" v-else @click="item.edit = true">
+                    {{item.groupName}}
+                  </a>
+                </td>
+                <td>
+                  <div class="item-icons">
+                    <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]; selectedIndex = index">
+                      <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
+                      <v-icon v-else>add</v-icon>
+                    </v-btn>
+                    <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
+                      <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
+                      <v-icon v-else>expand_more</v-icon>
+                    </v-btn>
+                    <v-dialog
+                        v-model="item.deleteConfirm"
+                        width="500">
+                      <template #activator="{ on }">
+                        <v-btn small text v-on="on">
+                          <v-icon>delete</v-icon>
                         </v-btn>
-                        <v-btn
-                            color="primary"
-                            text
-                            @click="item.archived = true; deleteGroup(item.id)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </div>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                            class="headline grey lighten-2"
+                            primary-title>
+                          Confirm
+                        </v-card-title>
+
+                        <v-card-text>
+                          Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                              @click="item.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                              color="primary"
+                              text
+                              @click="item.archived = true; deleteGroup(item.id)">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </div>
+                </td>
+              </tr>
+            </template>
+            <template #expanded-item="{ headers, item, index }">
+              <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
+                <v-flex xs12 justify-center  class="px-3 py-0" >
+                  <v-select v-if="addField"
+                            v-model="newField"
+                            :items="availableCustomFields"
+                            label="Select Custom Field to Add"
+                            item-text="fieldName"
+                            return-object
+                            @input="assignCustomField(item)"
+                  ></v-select>
+<!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->
+                  <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
+                             group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
+                    <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
+                            :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
+                      <v-list-item class="grab">
+                        <v-list-item-action>
+                          <v-icon>drag_handle</v-icon>
+                        </v-list-item-action>
+                        <v-list-item-content>
+                          {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
+                          <div class="text-left">
+                            <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
+                            Show On Insert
+                          </div>
+                        </v-list-item-content>
+                        <v-dialog
+                            v-model="cf.deleteConfirm"
+                            width="500">
+                          <template #activator="{ on }">
+                            <v-list-item-action class="clickable" v-on="on">
+                              <v-icon>delete</v-icon>
+                            </v-list-item-action>
+                          </template>
+                          <v-card>
+                            <v-card-title
+                                class="headline grey lighten-2"
+                                primary-title
+                            >
+                              Confirm
+                            </v-card-title>
+
+                            <v-card-text>
+                              Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
+                              item.groupName }}</strong>?
+                            </v-card-text>
+
+                            <v-divider></v-divider>
+
+                            <v-card-actions>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                  @click="cf.deleteConfirm = false">
+                                No
+                              </v-btn>
+                              <v-btn
+                                  color="primary"
+                                  text
+                                  @click="cf.archived = true; deleteFieldFromGroup(cf.id)">
+                                Yes
+                              </v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </v-list-item>
+                    </v-list>
+                  </draggable>
+                </v-flex>
               </td>
-            </tr>
-          </template>
-          <template #expanded-item="{ headers, item, index }">
-            <td :colspan="headers.length" class="pb-4"  :class="{'shaded-row': selectedIndex % 2}">
-              <v-flex xs12 justify-center class="pl-3 pr-3" >
-                <v-select v-if="addField"
-                          v-model="newField"
-                          :items="availableCustomFields"
-                          label="Select Custom Field to Add"
-                          item-text="fieldName"
-                          return-object
-                          @input="assignCustomField(item)"
-                ></v-select>
-                <h3 class="text-left">Assigned Custom Fields</h3>
-                <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
-                           group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
-                  <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
-                          :key="index"
-                          :class="{ 'shaded-row': index % 2 }">
-                    <v-list-item class="grab">
-                      <v-list-item-action>
-                        <v-icon>drag_handle</v-icon>
-                      </v-list-item-action>
-                      <v-list-item-content>
-                        {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
-                        <div class="text-left">
-                          <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
-                          Show On Insert
-                        </div>
-                      </v-list-item-content>
-                      <v-dialog
-                          v-model="cf.deleteConfirm"
-                          width="500">
-                        <template #activator="{ on }">
-                          <v-list-item-action class="clickable" v-on="on">
-                            <v-icon>delete</v-icon>
-                          </v-list-item-action>
-                        </template>
-                        <v-card>
-                          <v-card-title
-                              class="headline grey lighten-2"
-                              primary-title
-                          >
-                            Confirm
-                          </v-card-title>
-
-                          <v-card-text>
-                            Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
-                            item.groupName }}</strong>?
-                          </v-card-text>
-
-                          <v-divider></v-divider>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                                @click="cf.deleteConfirm = false">
-                              No
-                            </v-btn>
-                            <v-btn
-                                color="primary"
-                                text
-                                @click="cf.archived = true; deleteFieldFromGroup(cf.id)">
-                              Yes
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-dialog>
-                    </v-list-item>
-                  </v-list>
-                </draggable>
-              </v-flex>
-            </td>
-          </template>
-        </v-data-table>
-      </v-container>
-    </v-flex>
-    <Snackbar :snackbar="snackbar"></Snackbar>
-  </v-layout>
+            </template>
+          </v-data-table>
+        </v-container>
+      </v-col>
+      <Snackbar :snackbar="snackbar"></Snackbar>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -235,8 +238,12 @@ export default {
       onEnd({ newIndex, oldIndex }) {
         const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
         _self.customFieldGroups.splice(newIndex, 0, rowSelected)
-        console.log('sort event happened', _self.customFieldGroups)
-        _self.saveGroupChanges(_self.customFieldGroups)
+        let fieldGroupsClone = cloneDeep(_self.customFieldGroups)
+        fieldGroupsClone.forEach((g, idx) => {
+          g.groupOrder = idx
+        })
+        console.log('sort event happened', fieldGroupsClone)
+        _self.saveGroupChanges(fieldGroupsClone)
       }
     })
   },
@@ -324,9 +331,10 @@ export default {
     async saveGroupChanges (groups) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        groups.forEach((g, idx) => {
-          g.groupOrder = idx
-        })
+        // debugger
+        // groups.forEach((g, idx) => {
+        //   g.groupOrder = idx
+        // })
         await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups)
         this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)

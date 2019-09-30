@@ -3,16 +3,21 @@
     <v-flex xs-12>
       <v-toolbar color="white" flat>
         <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
-        <v-spacer></v-spacer>
-        <div v-if="changesMade">
-          <v-btn class="mr-2" :to="{ path: `/settings/processSteps`}">cancel</v-btn>
-          <v-btn color="primary white--text" @click="saveProcessStep">Save Changes</v-btn>
-        </div>
       </v-toolbar>
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="app-title">
-          {{ processStep.processStepName }}
-        </v-toolbar-title>
+      <v-toolbar flat class="app-toolbar">
+<!--        <v-toolbar-title class="app-title">-->
+<!--          {{ processStep.processStepName }}-->
+<!--        </v-toolbar-title>-->
+        <v-text-field class="d-inline-block mt-4" v-if="editName" v-model="processStep.processStepName"></v-text-field>
+        <span v-else>
+          {{  processStep.processStepName }}
+        </span>
+        <v-btn class="d-inline-block" small text v-if="editName" @click="saveProcessStep()">
+          <v-icon>save</v-icon>
+        </v-btn>
+        <v-btn class="d-inline-block" small text v-else @click="editName = true">
+          <v-icon>edit</v-icon>
+        </v-btn>
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-tabs>
@@ -49,6 +54,7 @@
       return {
         snackbar: {},
         changesMade: false,
+        editName: false,
         processStepId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
         processStep: {},
@@ -77,6 +83,19 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveProcessStep () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.editName = false
+          await putRequest(`/processStep`, this.processStep)
+          this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
