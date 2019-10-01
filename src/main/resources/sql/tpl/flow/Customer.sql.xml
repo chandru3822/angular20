@@ -25,18 +25,21 @@
           s.state,
           s.abbreviation,
           c.date_created,
-          (SELECT row_to_json(o)
-            FROM (SELECT u.id as "userId",
-                     u.first_name as "firstName",
-                     u.last_name as "lastName",
-                     u.first_name || ' ' || u.last_name AS "fullName"
-                  FROM blueraven."user" u
-                    inner join flow.user_position up on up.user_id = u.id
-                  WHERE up.id = c.owner_user_position_id) o) AS owner
+          (select json_build_object(
+           'userId', u.id,
+           'firstName', u.first_name,
+           'lastName', u.last_name,
+           'fullName', u.first_name || ' ' || u.last_name
+          )) as owner
       from flow.customer c
           left join flow.state s on s.id = c.state_id
+          left join flow.user_position up on up.id = c.owner_user_position_id
+          left join flow."user" u on u.id = up.user_id
       where c.company_id = :companyId
-          and c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+          and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+            OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+            OR s.state ILIKE '%' || :query || '%'
+          )
       order by c.date_created desc
       limit :limit
       offset :offset ;
@@ -46,8 +49,14 @@
       select
         count(*)
       from flow.customer c
+         left join flow.state s on s.id = c.state_id
+         left join flow.user_position up on up.id = c.owner_user_position_id
+         left join flow."user" u on u.id = up.user_id
       where c.company_id = :companyId
-        and lower(c.first_name || ' ' || c.last_name) ILIKE lower('%' || :query || '%')
+        and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+        OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+        OR s.state ILIKE '%' || :query || '%'
+      )
   ]]></customer.searchCustomerCount>
 
   <customer.exportCustomers><![CDATA[
@@ -65,20 +74,21 @@
           s.state,
           s.abbreviation,
           c.date_created,
-          (SELECT row_to_json(o)
-            FROM (SELECT u.id as "userId",
-                     u.first_name as "firstName",
-                     u.last_name as "lastName",
-                     u.first_name || ' ' || u.last_name AS "fullName",
-                     p.position
-                  FROM blueraven."user" u
-                    inner join flow.user_position up on up.user_id = u.id
-                    inner join flow.position p on p.id = up.position_id
-                  WHERE up.id = c.owner_user_position_id) o) AS owner
+          (select json_build_object(
+           'userId', u.id,
+           'firstName', u.first_name,
+           'lastName', u.last_name,
+           'fullName', u.first_name || ' ' || u.last_name
+          )) as owner
       from flow.customer c
           left join flow.state s on s.id = c.state_id
+          left join flow.user_position up on up.id = c.owner_user_position_id
+         left join flow."user" u on u.id = up.user_id
       where c.company_id = :companyId
-          and c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+          and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+                OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+                OR s.state ILIKE '%' || :query || '%'
+              )
       order by c.date_created desc;
   ]]></customer.exportCustomers>
 

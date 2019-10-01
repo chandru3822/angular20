@@ -109,7 +109,7 @@
               <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.objectTypeId, item.id)">
                 <v-radio label="Native Field"
                          value="native"></v-radio>
-                <v-radio label="Ancillary Field: viewed only from other process steps or objects"
+                <v-radio label="Reference Field: viewed only from other process steps or objects"
                          value="ancillary"></v-radio>
               </v-radio-group>
               <v-select v-if="newFieldType === 'native'"
@@ -406,11 +406,11 @@
           this.selectedAncillaryField = {}
           this.addField = false
           this.parent = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Ancillary Field Assigned')
+          this.snackbar = getSnackbar('SUCCESS', 'Reference Field Assigned')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Assigning Ancillary Field')
+          this.snackbar = getSnackbar('ERROR', 'Error Assigning Reference Field')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
