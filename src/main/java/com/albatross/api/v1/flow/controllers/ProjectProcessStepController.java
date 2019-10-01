@@ -31,7 +31,7 @@ public class ProjectProcessStepController {
       boolean canComplete = projectService.canCompleteAction(actionId, processStepId);
       return new ResponseEntity<>(String.format("{\"canComplete\": %s}", canComplete), HttpStatus.OK);
     } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
   }
 }
