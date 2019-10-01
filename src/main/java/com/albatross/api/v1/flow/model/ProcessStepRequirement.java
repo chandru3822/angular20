@@ -14,15 +14,13 @@ import java.util.List;
 public class ProcessStepRequirement {
 
   private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupAssignmentId, companyFunctionId,
-      requirementNbr, processStepId, parentId, dataTypeId;
+    requirementNbr, processStepId, parentId, dataTypeId;
 
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, processStepName,
-                  secondaryRequirementValue;
+    secondaryRequirementValue;
 
   private List<RequirementParamDynamicValue> requirementParamDynamicValues;
 
-  private Boolean archived, fulfilled;
-
-  private boolean secondaryRequirement, isDataTypeRequirement;
+  private Boolean archived, fulfilled, isDataTypeRequirement, secondaryRequirement;
 }
 

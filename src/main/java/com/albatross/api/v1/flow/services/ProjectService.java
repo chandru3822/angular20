@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +64,7 @@ public class ProjectService {
     return step;
   }
 
-  public boolean canCompleteAction(Long actionId, Long projectProcessStepId) {
+  public boolean canCompleteAction(Long actionId, Long projectProcessStepId) throws Exception {
     ProcessStepAction action = processStepActionService.getActionById(actionId);
 
     List<Long> requirementIds = action.getProcessStepLogicList().stream().filter(l -> l.getProcessStepRequirementId() != null).map(ProcessStepLogic::getProcessStepRequirementId).collect(Collectors.toList());
@@ -72,7 +72,15 @@ public class ProjectService {
 
 
     // Check to if individual requirements are fulfilled and create a map of true/false with the requirementIds
-    requirements.forEach(r -> r.setFulfilled(this.isRequirementMet(r)));
+    // @TODO: Unable to do this with a lambda like requirements.foreach(r ->... while being able to throw an exception ¯\_(ツ)_/¯
+    for (ProjectProcessStepRequirement r: requirements) {
+      try {
+        r.setFulfilled(this.isRequirementMet(r));
+      } catch (Exception e) {
+        log.error(String.format("Exception while parsing date requirement value for process step requirement ID: %s", r.getId()));
+        throw e;
+      }
+    }
 
     StringBuilder logicString = new StringBuilder();
 
@@ -91,7 +99,7 @@ public class ProjectService {
   }
 
   // It's assumed for date data types that it's always a data_type_requirement and never a literal comparison of values
-  private boolean isRequirementMet(ProjectProcessStepRequirement r) {
+  private boolean isRequirementMet(ProjectProcessStepRequirement r) throws Exception {
 
     boolean requirementMet = false;
 
@@ -105,31 +113,30 @@ public class ProjectService {
   }
 
 
-  private boolean calculateDateRequirement(ProjectProcessStepRequirement r) {
+  private boolean calculateDateRequirement(ProjectProcessStepRequirement r) throws Exception {
 
-    LocalDateTime fieldValue = (r.getDateValue() !=  null) ? r.getDateValue().toLocalDateTime() : null;
-    LocalDateTime now = LocalDateTime.now();
-    String secondaryValue = (r.isSecondaryRequirement()) ? r.getSecondaryRequirementValue() : null;
+    LocalDate fieldValue = (r.getDateValue() !=  null) ? r.getDateValue().toLocalDateTime().toLocalDate() : null;
+    LocalDate now = LocalDate.now();
+    String secondaryValue = (r.getSecondaryRequirement()) ? r.getSecondaryRequirementValue() : null;
 
     boolean passed = false;
 
-    if (!r.isDataTypeRequirement()) {
+    if (!r.getIsDataTypeRequirement()) {
       // do direct literal operator compare
       // try to make a date out of the requirement value
       try {
-        LocalDateTime reqValue = LocalDateTime.parse(r.getRequirementValue());
+        LocalDate reqValue = LocalDate.parse(r.getRequirementValue());
         passed = compareDates(fieldValue, reqValue, r.getOperatorTypeId());
       } catch (DateTimeParseException e) {
-        log.error("Unable to parse requirement value date", e);
+        throw new Exception("Unable to parse requirement value date");
       }
     } else {
-
       // @TODO: Still need to decide how to handle stupid cases like the user inputting the field value is greater than null
       switch (r.getDataTypeRequirementId().intValue()) {
         case 1:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates(fieldValue, now.minusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates(fieldValue, now.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -137,7 +144,7 @@ public class ProjectService {
         case 2:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates(fieldValue, now.plusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates(fieldValue, now.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -167,7 +174,7 @@ public class ProjectService {
     return passed;
   }
 
-  private boolean compareDates(LocalDateTime date, LocalDateTime compareDate, Long operatorTypeId) {
+  private boolean compareDates(LocalDate date, LocalDate compareDate, Long operatorTypeId) {
 
     boolean passed = false;
 
