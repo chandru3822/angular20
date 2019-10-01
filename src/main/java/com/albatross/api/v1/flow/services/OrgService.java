@@ -182,4 +182,22 @@ public class OrgService {
     }
   }
 
+  public List<OrgFilter> getOrgFiltersForCompany() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<OrgFilter> results = sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
+
+    for(OrgFilter f : results){
+      //build the list of options
+      HashMap<String, Object> p2 = new HashMap<>();
+      p2.put("orgLevelId", f.getOrgLevelId());
+      p2.put("companyId", user.getCompanyId());
+      List<Org> orgs = sqlCache.query("org.getOrgsForLevel", p2, Org.class);
+      f.setOrgs(orgs);
+    }
+
+    return results;
+  }
+
 }

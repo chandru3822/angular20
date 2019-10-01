@@ -108,4 +108,28 @@
     ]]>
   </org.getOne>
 
+  <org.getOrgFiltersForCompany>
+    <![CDATA[
+      select of.org_level_id,
+             of.title,
+             of.rank,
+             ol.company_id
+      from flow.org_filter of
+          inner join flow.org_level ol on ol.id = of.org_level_id
+      where ol.company_id = :companyId
+      order by of.rank
+    ]]>
+  </org.getOrgFiltersForCompany>
+
+  <org.getOrgsForLevel>
+    <![CDATA[
+      select *
+      from flow.org o
+          inner join flow.org_type ot on ot.id = o.org_type_id
+      where o.company_id = :companyId
+          and ot.org_level_id = :orgLevelId
+      order by o.org_name
+    ]]>
+  </org.getOrgsForLevel>
+
 </sql>

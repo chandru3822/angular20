@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Builder
-@JsonPropertyOrder({"First Name", "Last Name", "Email", "Phone"})
+@JsonPropertyOrder({"First Name", "Last Name", "Email", "Phone", "Status"})
 public class UserExportTemplate {
   public static UserExportTemplate from(User other) {
     return UserExportTemplate.builder()
@@ -16,6 +16,7 @@ public class UserExportTemplate {
         .lastName(other.getLastName())
         .email(other.getEmail())
         .phone(other.getPhoneNumber())
+        .status(other.getUserStatusType())
         .build();
   }
 
@@ -35,5 +36,6 @@ public class UserExportTemplate {
   @JsonProperty("Phone")
   private String phone;
 
-
+  @JsonProperty("Status")
+  private String status;
 }
