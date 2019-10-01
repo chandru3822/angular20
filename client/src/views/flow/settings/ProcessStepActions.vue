@@ -1,535 +1,558 @@
 <template>
-  <v-layout row wrap>
-    <v-flex xs-12>
-      <v-toolbar flat>
-        <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn @click="getRequirementTypes" text>
-            <v-icon v-if="!addNewRequirement">add</v-icon>
-            {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <v-container v-if="addNewRequirement">
-        <!--  TODO: need to protect against bad data when they go back and change the requirement type but have already selected other values lower in the form      -->
-        <v-select v-model="newRequirement.processStepRequirementTypeId"
-                  :items="availableRequirementTypes"
-                  label="Select Requirement Type"
-                  item-value="id"
-                  item-text="processStepRequirementType"
-                  @input="selectRequirementType"
-        ></v-select>
-        <!-- if it is a custom field -->
-        <v-select v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
-                  v-model="parent"
-                  :items="parentObjects"
-                  label="Parent Object"
-                  item-text="processStepName"
-                  return-object
-                  @input="loadFieldsByParent(parent)"
-        ></v-select>
-        <v-select v-if="parent.id"
-                  v-model="newRequirement.customFieldGroupAssignmentId"
-                  :items="customFields"
-                  label="Custom Field"
-                  item-text="fieldName"
-                  item-value="customFieldGroupAssignmentId"
-        ></v-select>
-        <!-- if it is a function -->
-        <v-select v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
-                  v-model="newRequirement.companyFunctionId"
-                  :items="availableFunctions"
-                  label="Function"
-                  item-text="companyFunctionName"
-                  item-value="id"
-                  @input="loadFunctionParams"
-        ></v-select>
-        <div v-if="newRequirement.companyFunctionId && newRequirement.requirementParamDynamicValues.length > 0">
-          <h5 class="text-left">Dynamic Function Parameters</h5>
-          <v-container>
-            <v-text-field
-                v-for="fp in newRequirement.requirementParamDynamicValues"
-                placeholder="Enter a dynamic value"
-                v-model="fp.dynamicValue"
-                :label="fp.parameterName"></v-text-field>
-          </v-container>
-        </div>
-        <v-select v-if="(newRequirement.processStepRequirementTypeId === 1 && newRequirement.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && newRequirement.companyFunctionId)"
-                  v-model="newRequirement.operatorTypeId"
-                  :items="operatorTypes"
-                  label="Operator"
-                  item-text="operatorType"
-                  item-value="id"
-        ></v-select>
-        <v-text-field v-if="newRequirement.operatorTypeId"
-                      v-model="newRequirement.requirementValue"
-                      placeholder="Enter a value"
-                      label="Value">
-        </v-text-field>
-        <v-btn :disabled="validateRequirementForm()"
-               @click="saveNewRequirement">
-          <v-icon>save</v-icon>
-          Save
-        </v-btn>
-      </v-container>
-      <v-container>
-        <v-data-table
-            :headers="headers"
-            :items="filterRequirements()"
-            :items-per-page="-1"
-            single-expand
-            :expanded.sync="expanded"
-            hide-default-footer
-            class="elevation-1 fix-column-width-bug"
-        >
-          <template #no-data>
-            No requirements for this process step
-          </template>
+  <v-container>
+    <v-row>
+      <v-col cols="12">
+        <v-toolbar flat>
+          <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn @click="getRequirementTypes" text>
+              <v-icon v-if="!addNewRequirement">add</v-icon>
+              {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-row v-if="addNewRequirement">
+          <v-col cols="12">
+            <!--  TODO: need to protect against bad data when they go back and change the requirement type but have already selected other values lower in the form      -->
+            <v-select v-model="newRequirement.processStepRequirementTypeId"
+                      :items="availableRequirementTypes"
+                      label="Select Requirement Type"
+                      item-value="id"
+                      item-text="processStepRequirementType"
+                      @input="selectRequirementType"
+            ></v-select>
+            <!-- if it is a custom field -->
+            <v-select
+                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
+                v-model="parent"
+                :items="parentObjects"
+                label="Parent Object"
+                item-text="processStepName"
+                return-object
+                @input="loadFieldsByParent(parent)"
+            ></v-select>
+            <v-select v-if="parent.id"
+                      v-model="newRequirement.customFieldGroupAssignmentId"
+                      :items="customFields"
+                      label="Custom Field"
+                      item-text="fieldName"
+                      item-value="customFieldGroupAssignmentId"
+            ></v-select>
+            <!-- if it is a function -->
+            <v-select
+                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
+                v-model="newRequirement.companyFunctionId"
+                :items="availableFunctions"
+                label="Function"
+                item-text="companyFunctionName"
+                item-value="id"
+                @input="loadFunctionParams"
+            ></v-select>
+            <div v-if="newRequirement.companyFunctionId && newRequirement.requirementParamDynamicValues.length > 0">
+              <h5 class="text-left">Dynamic Function Parameters</h5>
+              <v-card flat>
+                <v-text-field
+                    v-for="fp in newRequirement.requirementParamDynamicValues"
+                    placeholder="Enter a dynamic value"
+                    v-model="fp.dynamicValue"
+                    :label="fp.parameterName"></v-text-field>
+              </v-card>
+            </div>
+            <v-select
+                v-if="(newRequirement.processStepRequirementTypeId === 1 && newRequirement.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && newRequirement.companyFunctionId)"
+                v-model="newRequirement.operatorTypeId"
+                :items="operatorTypes"
+                label="Operator"
+                item-text="operatorType"
+                item-value="id"
+            ></v-select>
+            <v-text-field v-if="newRequirement.operatorTypeId"
+                          v-model="newRequirement.requirementValue"
+                          placeholder="Enter a value"
+                          label="Value">
+            </v-text-field>
+            <v-btn :disabled="validateRequirementForm()"
+                   @click="saveNewRequirement">
+              <v-icon>save</v-icon>
+              Save
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
+            <v-data-table
+                :headers="headers"
+                :items="filterRequirements()"
+                :items-per-page="-1"
+                single-expand
+                :expanded.sync="expanded"
+                hide-default-footer
+                class="elevation-1 fix-column-width-bug"
+            >
+              <template #no-data>
+                No requirements for this process step
+              </template>
 
-          <template #no-results>
-            No requirements for this process step
-          </template>
+              <template #no-results>
+                No requirements for this process step
+              </template>
 
-          <template #expanded-item="{ headers, item }">
-              <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">
-                <div v-if="item.requirementParamDynamicValues && item.requirementParamDynamicValues.length > 0">
-                  <h5 class="text-left">Dynamic Function Parameters</h5>
-                  <v-container>
-                    <v-text-field
-                        v-for="fp in item.requirementParamDynamicValues"
-                        placeholder="Enter a dynamic value"
-                        v-model="fp.dynamicValue"
-                        :label="fp.parameterName"></v-text-field>
-                  </v-container>
-                </div>
-                <v-select v-model="item.operatorTypeId"
-                          :items="operatorTypes"
-                          class="one-hunned"
-                          label="Operator"
-                          item-text="operatorType"
-                          item-value="id"
-                ></v-select>
-                <v-text-field v-model="item.requirementValue"
-                              placeholder="Enter a value"
-                              label="Value">
-                </v-text-field>
-                <v-btn @click="updateRequirement(item)">
-                  <v-icon>save</v-icon>
-                  Save
-                </v-btn>
-              </td>
-          </template>
-
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left" style="width: 65px">{{item.requirementNbr}}</td>
-              <td class="text-left">{{item.processStepRequirementType}}</td>
-              <td class="text-left">
-                <span v-if="item.processStepRequirementTypeId === 1">
-                  {{ item.parentName }} | {{ item.fieldName }}
-                </span>
-                <span>
-                  {{ item.companyFunctionName }}
-                </span>
-              </td>
-              <td class="text-left">{{item.operatorType}}</td>
-              <td class="text-left">{{item.requirementValue}}</td>
-              <td>
-                <div style="display: flex;">
-                  <v-btn small text @click="expanded = [item]; selectedRequirementIndex = index" v-if="!expanded.includes(item)">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text @click="expanded = []; selectedRequirementIndex = index" v-if="expanded.includes(item)">cancel</v-btn>
-                  <v-dialog
-                      v-model="item.deleteConfirm"
-                      width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                          class="headline grey lighten-2"
-                          primary-title>
-                        Confirm
-                      </v-card-title>
-
-                      <v-card-text>
-                        Are you sure you want to delete this requirement?
-                      </v-card-text>
-
-                      <v-divider></v-divider>
-
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            @click="item.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            text
-                            @click="item.archived = true; deleteRequirement(item.id)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
+              <template #expanded-item="{ headers, item }">
+                <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">
+                  <div v-if="item.requirementParamDynamicValues && item.requirementParamDynamicValues.length > 0">
+                    <h5 class="text-left">Dynamic Function Parameters</h5>
+                    <v-card flat>
+                      <v-text-field
+                          v-for="fp in item.requirementParamDynamicValues"
+                          placeholder="Enter a dynamic value"
+                          v-model="fp.dynamicValue"
+                          :label="fp.parameterName"></v-text-field>
                     </v-card>
-                  </v-dialog>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-container>
-    </v-flex>
-    <v-divider></v-divider>
-    <v-flex xs-12>
-      <v-toolbar flat>
-        <v-toolbar-title class="app-title">Actions</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn @click="addNewAction = !addNewAction" text>
-            <v-icon v-if="!addNewAction">add</v-icon>
-            {{ addNewAction ? 'Cancel' : 'Add Action'}}
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <v-container v-if="addNewAction">
-        <v-text-field v-model="newAction.actionName"
-                      placeholder="Enter a name"
-                      label="Action Name">
-        </v-text-field>
-        <v-select v-model="newAction.actionTypeId"
-                  :items="actionTypes"
-                  label="Action Type"
-                  item-text="actionType"
-                  item-value="id"
-                  @input=""
-        ></v-select>
-        <v-select v-model="newAction.processStepStatusTypeId"
-                  :items="statusTypes"
-                  :clearable="true"
-                  label="Action changes status of parent process step to"
-                  item-text="processStepStatusType"
-                  item-value="id"
-                  @input=""
-        ></v-select>
-        <v-btn v-if="newAction.actionName && newAction.actionTypeId"
-               @click="saveNewAction">
-          <v-icon>save</v-icon>
-          Save
-        </v-btn>
-      </v-container>
-      <v-container>
-        <v-data-table
-            :headers="actionHeaders"
-            :items="filterActions()"
-            :items-per-page="-1"
-            single-expand
-            :expanded.sync="actionExpanded"
-            hide-default-footer
-            class="elevation-1 fix-column-width-bug"
-        >
-          <template #no-data>
-            No actions for this process step
-          </template>
-
-          <template #no-results>
-            No actions for this process step
-          </template>
-
-          <template #expanded-item="{ headers, item }">
-            <td :colspan="actionHeaders.length" class="pb-4" :class="{'shaded-row': selectedActionIndex % 2}">
-              <v-container class="text-left">
-                <v-text-field v-model="item.actionName"
-                              placeholder="Enter a name"
-                              label="Action Name">
-                </v-text-field>
-                <v-select v-model="item.actionTypeId"
-                          :items="actionTypes"
-                          label="Action Type"
-                          item-text="actionType"
-                          item-value="id"
-                          @input=""
-                ></v-select>
-                <v-select v-model="item.processStepStatusTypeId"
-                          :items="statusTypes"
-                          :clearable="true"
-                          label="Action changes status of parent process step to"
-                          item-text="processStepStatusType"
-                          item-value="id"
-                          @input=""
-                ></v-select>
-                <!-- BUTTON -->
-                <div v-if="item.actionTypeId === 2">
-                  <v-btn v-if="!addChildProcess"
-                         @click="addChildProcess = true; loadChildProcessSteps(item.id)">
-                    <v-icon>add</v-icon>
-                    Add Child Process
+                  </div>
+                  <v-select v-model="item.operatorTypeId"
+                            :items="operatorTypes"
+                            class="one-hunned"
+                            label="Operator"
+                            item-text="operatorType"
+                            item-value="id"
+                  ></v-select>
+                  <v-text-field v-model="item.requirementValue"
+                                placeholder="Enter a value"
+                                label="Value">
+                  </v-text-field>
+                  <v-btn @click="updateRequirement(item)">
+                    <v-icon>save</v-icon>
+                    Save
                   </v-btn>
-                  <v-card class="pa-3" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
-                    <h3>Add Child Process</h3>
-                    <v-select v-model="selectedProcessStep"
-                              :items="childProcessSteps"
-                              label="Process Step"
-                              item-text="processStepName"
-                              return-object
+                </td>
+              </template>
+
+              <template #item="{ item, index }">
+                <tr :class="{'shaded-row': index % 2}">
+                  <td class="text-left" style="width: 65px">{{item.requirementNbr}}</td>
+                  <td class="text-left">{{item.processStepRequirementType}}</td>
+                  <td class="text-left">
+                  <span v-if="item.processStepRequirementTypeId === 1">
+                    {{ item.parentName }} | {{ item.fieldName }}
+                  </span>
+                    <span>
+                    {{ item.companyFunctionName }}
+                  </span>
+                  </td>
+                  <td class="text-left">{{item.operatorType}}</td>
+                  <td class="text-left">{{item.requirementValue}}</td>
+                  <td>
+                    <div style="display: flex;">
+                      <v-btn small text @click="expanded = [item]; selectedRequirementIndex = index"
+                             v-if="!expanded.includes(item)">
+                        <v-icon>edit</v-icon>
+                      </v-btn>
+                      <v-btn small text @click="expanded = []; selectedRequirementIndex = index"
+                             v-if="expanded.includes(item)">cancel
+                      </v-btn>
+                      <v-dialog
+                          v-model="item.deleteConfirm"
+                          width="500">
+                        <template #activator="{ on }">
+                          <v-btn small text v-on="on">
+                            <v-icon>delete</v-icon>
+                          </v-btn>
+                        </template>
+                        <v-card>
+                          <v-card-title
+                              class="headline grey lighten-2"
+                              primary-title>
+                            Confirm
+                          </v-card-title>
+
+                          <v-card-text>
+                            Are you sure you want to delete this requirement?
+                          </v-card-text>
+
+                          <v-divider></v-divider>
+
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                @click="item.deleteConfirm = false">
+                              No
+                            </v-btn>
+                            <v-btn
+                                color="primary"
+                                text
+                                @click="item.archived = true; deleteRequirement(item.id)">
+                              Yes
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </v-data-table>
+          </v-col>
+        </v-row>
+      </v-col>
+      <v-divider></v-divider>
+      <v-row>
+        <v-col cols="12">
+          <v-toolbar flat>
+            <v-toolbar-title class="app-title">Actions</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn @click="addNewAction = !addNewAction" text>
+                <v-icon v-if="!addNewAction">add</v-icon>
+                {{ addNewAction ? 'Cancel' : 'Add Action'}}
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-card flat v-if="addNewAction">
+            <v-text-field v-model="newAction.actionName"
+                          placeholder="Enter a name"
+                          label="Action Name">
+            </v-text-field>
+            <v-select v-model="newAction.actionTypeId"
+                      :items="actionTypes"
+                      label="Action Type"
+                      item-text="actionType"
+                      item-value="id"
+                      @input=""
+            ></v-select>
+            <v-select v-model="newAction.processStepStatusTypeId"
+                      :items="statusTypes"
+                      :clearable="true"
+                      label="Action changes status of parent process step to"
+                      item-text="processStepStatusType"
+                      item-value="id"
+                      @input=""
+            ></v-select>
+            <v-btn v-if="newAction.actionName && newAction.actionTypeId"
+                   @click="saveNewAction">
+              <v-icon>save</v-icon>
+              Save
+            </v-btn>
+          </v-card>
+          <v-card flat>
+            <v-data-table
+                :headers="actionHeaders"
+                :items="filterActions()"
+                :items-per-page="-1"
+                single-expand
+                :expanded.sync="actionExpanded"
+                hide-default-footer
+                class="elevation-1 fix-column-width-bug"
+            >
+              <template #no-data>
+                No actions for this process step
+              </template>
+
+              <template #no-results>
+                No actions for this process step
+              </template>
+
+              <template #expanded-item="{ headers, item }">
+                <td :colspan="actionHeaders.length" class="pb-4" :class="{'shaded-row': selectedActionIndex % 2}">
+                  <v-card flat class="text-left">
+                    <v-text-field v-model="item.actionName"
+                                  placeholder="Enter a name"
+                                  label="Action Name">
+                    </v-text-field>
+                    <v-select v-model="item.actionTypeId"
+                              :items="actionTypes"
+                              label="Action Type"
+                              item-text="actionType"
+                              item-value="id"
+                              @input=""
                     ></v-select>
-                    <input type="checkbox" v-model="selectedProcessStep.triggerAutomatically">
-                    Trigger Automatically
-                    <div class="mt-3">
-                      <v-btn :disabled="!selectedProcessStep.id"
-                             @click="saveProcessStepToAction(item)">
-                        <v-icon>save</v-icon>
-                        Save
+                    <v-select v-model="item.processStepStatusTypeId"
+                              :items="statusTypes"
+                              :clearable="true"
+                              label="Action changes status of parent process step to"
+                              item-text="processStepStatusType"
+                              item-value="id"
+                              @input=""
+                    ></v-select>
+                    <!-- BUTTON -->
+                    <div v-if="item.actionTypeId === 2">
+                      <v-btn v-if="!addChildProcess"
+                             @click="addChildProcess = true; loadChildProcessSteps(item.id)">
+                        <v-icon>add</v-icon>
+                        Add Child Process
                       </v-btn>
-                      <v-btn class="ml-3" @click="addChildProcess = false">
-                        <v-icon>remove</v-icon>
-                        Cancel
+                      <v-card class="pa-3" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
+                        <h3>Add Child Process</h3>
+                        <v-select v-model="selectedProcessStep"
+                                  :items="childProcessSteps"
+                                  label="Process Step"
+                                  item-text="processStepName"
+                                  return-object
+                        ></v-select>
+                        <input type="checkbox" v-model="selectedProcessStep.triggerAutomatically">
+                        Trigger Automatically
+                        <div class="mt-3">
+                          <v-btn :disabled="!selectedProcessStep.id"
+                                 @click="saveProcessStepToAction(item)">
+                            <v-icon>save</v-icon>
+                            Save
+                          </v-btn>
+                          <v-btn class="ml-3" @click="addChildProcess = false">
+                            <v-icon>remove</v-icon>
+                            Cancel
+                          </v-btn>
+                        </div>
+                      </v-card>
+                    </div>
+                    <!-- LINK -->
+                    <div v-if="item.actionTypeId === 1">
+                      <v-btn v-if="!addChildLink"
+                             @click="addChildLink = true; loadLinks(item.id)">
+                        <v-icon>add</v-icon>
+                        Add Link
                       </v-btn>
+                      <v-card class="pa-3" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildLink">
+                        <h3>Add Link</h3>
+                        <v-select v-model="selectedLink"
+                                  :items="availableLinks"
+                                  label="Available Links"
+                                  item-text="link"
+                                  return-object
+                                  @input="saveLinkToAction(item)"
+                        ></v-select>
+                        <v-btn @click="addChildLink = false">
+                          <v-icon>remove</v-icon>
+                          Cancel
+                        </v-btn>
+                      </v-card>
                     </div>
                   </v-card>
-                </div>
-                <!-- LINK -->
-                <div v-if="item.actionTypeId === 1">
-                  <v-btn v-if="!addChildLink"
-                         @click="addChildLink = true; loadLinks(item.id)">
-                    <v-icon>add</v-icon>
-                    Add Link
-                  </v-btn>
-                  <v-card class="pa-3" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildLink">
-                    <h3>Add Link</h3>
-                    <v-select v-model="selectedLink"
-                              :items="availableLinks"
-                              label="Available Links"
-                              item-text="link"
-                              return-object
-                              @input="saveLinkToAction(item)"
-                    ></v-select>
-                    <v-btn @click="addChildLink = false">
-                      <v-icon>remove</v-icon>
-                      Cancel
+                  <!-- @randa - move requirements to their own component. it is confusing having them in this file -->
+
+                  <v-row justify-center class="pl-3 pr-3"
+                          v-if="item.actionTypeId === 1 && item.processStepActionLinks && item.processStepActionLinks.length > 0">
+                    <v-col cols="12">
+                      <h3 class="text-left">Child Links</h3>
+                      <v-list v-for="(al, index) in filterBy(item.processStepActionLinks, false, 'archived')"
+                              :key="index"
+                              :class="{ 'shaded-row': index % 2 }">
+                        <v-list-item class="grab">
+                          <v-list-item-content class="text-left">
+                            {{al.link}}
+                          </v-list-item-content>
+                          <v-dialog
+                              v-model="al.deleteConfirm"
+                              width="500">
+                            <template v-slot:activator="{ on }">
+                              <v-list-item-action class="clickable" v-on="on">
+                                <v-icon>delete</v-icon>
+                              </v-list-item-action>
+                            </template>
+                            <v-card>
+                              <v-card-title
+                                  class="headline grey lighten-2"
+                                  primary-title
+                              >
+                                Confirm
+                              </v-card-title>
+
+                              <v-card-text>
+                                Are you sure you want to delete <strong>{{ al.link }}</strong> from <strong>{{
+                                item.actionName }}</strong>?
+                              </v-card-text>
+
+                              <v-divider></v-divider>
+
+                              <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn
+                                    @click="al.deleteConfirm = false">
+                                  No
+                                </v-btn>
+                                <v-btn
+                                    color="primary"
+                                    text
+                                    @click="al.archived = true; deleteLinkFromAction(item.id, al.id)">
+                                  Yes
+                                </v-btn>
+                              </v-card-actions>
+                            </v-card>
+                          </v-dialog>
+                        </v-list-item>
+                      </v-list>
+                    </v-col>
+                  </v-row>
+                  <v-row justify-center class="pl-3 pr-3"
+                          v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
+                    <v-col cols="12">
+                      <h3 class="text-left">Child Process Steps</h3>
+                      <v-list v-for="(cp, index) in filterBy(item.processStepActionChildProcesses, false, 'archived')"
+                              :key="index"
+                              :class="{ 'shaded-row': index % 2 }">
+                        <v-list-item class="grab">
+                          <v-list-item-content class="text-left">
+                            <v-list-item-title>{{cp.processStepName}}</v-list-item-title>
+                            <v-list-item-subtitle>
+                              <input type="checkbox" v-model="cp.triggerAutomatically"
+                                     @change="updateChildStep(item.id, cp)">
+                              Trigger Automatically
+                            </v-list-item-subtitle>
+                          </v-list-item-content>
+                          <v-dialog
+                              v-model="cp.deleteConfirm"
+                              width="500">
+                            <template v-slot:activator="{ on }">
+                              <v-list-item-action class="clickable" v-on="on">
+                                <v-icon>delete</v-icon>
+                              </v-list-item-action>
+                            </template>
+                            <v-card>
+                              <v-card-title
+                                  class="headline grey lighten-2"
+                                  primary-title
+                              >
+                                Confirm
+                              </v-card-title>
+
+                              <v-card-text>
+                                Are you sure you want to delete <strong>{{ cp.processStepName }}</strong> from <strong>{{
+                                item.actionName }}</strong>?
+                              </v-card-text>
+
+                              <v-divider></v-divider>
+
+                              <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn
+                                    @click="cp.deleteConfirm = false">
+                                  No
+                                </v-btn>
+                                <v-btn
+                                    color="primary"
+                                    text
+                                    @click="cp.archived = true; deleteChildProcessFromAction(item.id, cp.id)">
+                                  Yes
+                                </v-btn>
+                              </v-card-actions>
+                            </v-card>
+                          </v-dialog>
+                        </v-list-item>
+                      </v-list>
+                    </v-col>
+                  </v-row>
+                  <v-divider class="mt-2"></v-divider>
+                  <v-toolbar flat dense color="transparent">
+                    <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items v-if="item.processStepLogicList && item.processStepLogicList.length > 0">
+                      <v-btn text @click="item.processStepLogicList = []">
+                        <v-icon>clear</v-icon>
+                        Clear All
+                      </v-btn>
+                    </v-toolbar-items>
+                  </v-toolbar>
+                  <v-card flat class="text-left">
+                    <v-btn small class="ml-1 mr-1 mt-1"
+                           v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
+                           @click="l.archived = true">
+                      {{l.processStepRequirementId ? l.requirementNbr : l.operationType}}
                     </v-btn>
                   </v-card>
-                </div>
-              </v-container>
-              <!-- @randa - move requirements to their own component. it is confusing having them in this file -->
-
-              <v-flex xs12 justify-center class="pl-3 pr-3"
-                      v-if="item.actionTypeId === 1 && item.processStepActionLinks && item.processStepActionLinks.length > 0">
-                <h3 class="text-left">Child Links</h3>
-                <v-list v-for="(al, index) in filterBy(item.processStepActionLinks, false, 'archived')"
-                        :key="index"
-                        :class="{ 'shaded-row': index % 2 }">
-                  <v-list-item class="grab">
-                    <v-list-item-content class="text-left">
-                      {{al.link}}
-                    </v-list-item-content>
-                    <v-dialog
-                        v-model="al.deleteConfirm"
-                        width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-list-item-action class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-list-item-action>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                            class="headline grey lighten-2"
-                            primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete <strong>{{ al.link }}</strong> from <strong>{{
-                          item.actionName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                              @click="al.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                              color="primary"
-                              text
-                              @click="al.archived = true; deleteLinkFromAction(item.id, al.id)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </v-list-item>
-                </v-list>
-              </v-flex>
-              <v-flex xs12 justify-center class="pl-3 pr-3"
-                      v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
-                <h3 class="text-left">Child Process Steps</h3>
-                <v-list v-for="(cp, index) in filterBy(item.processStepActionChildProcesses, false, 'archived')"
-                        :key="index"
-                        :class="{ 'shaded-row': index % 2 }">
-                  <v-list-item class="grab">
-                    <v-list-item-content class="text-left">
-                      <v-list-item-title>{{cp.processStepName}}</v-list-item-title>
-                      <v-list-item-subtitle>
-                        <input type="checkbox" v-model="cp.triggerAutomatically" @change="updateChildStep(item.id, cp)">
-                        Trigger Automatically
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                    <v-dialog
-                        v-model="cp.deleteConfirm"
-                        width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-list-item-action class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-list-item-action>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                            class="headline grey lighten-2"
-                            primary-title
-                        >
-                          Confirm
-                        </v-card-title>
-
-                        <v-card-text>
-                          Are you sure you want to delete <strong>{{ cp.processStepName }}</strong> from <strong>{{
-                          item.actionName }}</strong>?
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                              @click="cp.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                              color="primary"
-                              text
-                              @click="cp.archived = true; deleteChildProcessFromAction(item.id, cp.id)">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </v-list-item>
-                </v-list>
-              </v-flex>
-              <v-divider class="mt-2"></v-divider>
-              <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-toolbar-items v-if="item.processStepLogicList && item.processStepLogicList.length > 0">
-                  <v-btn text @click="item.processStepLogicList = []">
-                    <v-icon>clear</v-icon>
-                    Clear All
+                  <v-toolbar flat dense color="transparent">
+                    <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
+                  </v-toolbar>
+                  <v-card flat class="text-left">
+                    <v-btn small class="ml-1 mr-1 mt-1" v-for="ot in operationTypes"
+                           @click="item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})">
+                      {{ot.operationType}}
+                    </v-btn>
+                  </v-card>
+                  <v-toolbar flat dense color="transparent">
+                    <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
+                  </v-toolbar>
+                  <v-card flat class="text-left mb-4">
+                    <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements"
+                           @click="item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })">
+                      {{r.requirementNbr}}
+                    </v-btn>
+                  </v-card>
+                  <v-divider></v-divider>
+                  <v-btn @click="updateAction(item)" class="mt-4">
+                    <v-icon class="mr-2">save</v-icon>
+                    Save Changes
                   </v-btn>
-                </v-toolbar-items>
-              </v-toolbar>
-              <v-container class="text-left">
-                <v-btn small class="ml-1 mr-1 mt-1" v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
-                       @click="l.archived = true">
-                  {{l.processStepRequirementId ? l.requirementNbr : l.operationType}}
-                </v-btn>
-              </v-container>
-              <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
-              </v-toolbar>
-              <v-container class="text-left">
-                <v-btn small class="ml-1 mr-1 mt-1" v-for="ot in operationTypes"
-                    @click="item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})">
-                  {{ot.operationType}}
-                </v-btn>
-              </v-container>
-              <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
-              </v-toolbar>
-              <v-container class="text-left mb-4">
-                <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements"
-                    @click="item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })">
-                  {{r.requirementNbr}}
-                </v-btn>
-              </v-container>
-              <v-divider></v-divider>
-              <v-btn @click="updateAction(item)" class="mt-4">
-                <v-icon class="mr-2">save</v-icon>
-                Save Changes
-              </v-btn>
-            </td>
-          </template>
+                </td>
+              </template>
 
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.actionName}}</td>
-              <td class="text-left">{{item.actionType}}</td>
-              <td class="text-left">{{item.processStepStatusType || 'N/A'}}</td>
-              <td>
-                <div style="display: flex; float: right;">
-                  <v-btn small text @click="actionExpanded = [item]; selectedActionIndex = index" v-if="!actionExpanded.includes(item)">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text @click="actionExpanded = []; selectedActionIndex = index" v-if="actionExpanded.includes(item)">cancel</v-btn>
-                  <v-dialog
-                      v-model="item.deleteConfirm"
-                      width="500">
-                    <template #activator="{ on }">
-                      <v-btn small text v-on="on">
-                        <v-icon>delete</v-icon>
+              <template #item="{ item, index }">
+                <tr :class="{'shaded-row': index % 2}">
+                  <td class="text-left">{{item.actionName}}</td>
+                  <td class="text-left">{{item.actionType}}</td>
+                  <td class="text-left">{{item.processStepStatusType || 'N/A'}}</td>
+                  <td>
+                    <div style="display: flex; float: right;">
+                      <v-btn small text @click="actionExpanded = [item]; selectedActionIndex = index"
+                             v-if="!actionExpanded.includes(item)">
+                        <v-icon>edit</v-icon>
                       </v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title
-                          class="headline grey lighten-2"
-                          primary-title>
-                        Confirm
-                      </v-card-title>
+                      <v-btn small text @click="actionExpanded = []; selectedActionIndex = index"
+                             v-if="actionExpanded.includes(item)">cancel
+                      </v-btn>
+                      <v-dialog
+                          v-model="item.deleteConfirm"
+                          width="500">
+                        <template #activator="{ on }">
+                          <v-btn small text v-on="on">
+                            <v-icon>delete</v-icon>
+                          </v-btn>
+                        </template>
+                        <v-card>
+                          <v-card-title
+                              class="headline grey lighten-2"
+                              primary-title>
+                            Confirm
+                          </v-card-title>
 
-                      <v-card-text>
-                        Are you sure you want to delete this action?
-                      </v-card-text>
+                          <v-card-text>
+                            Are you sure you want to delete this action?
+                          </v-card-text>
 
-                      <v-divider></v-divider>
+                          <v-divider></v-divider>
 
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                            @click="item.deleteConfirm = false">
-                          No
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            text
-                            @click="item.archived = true; deleteAction(item)">
-                          Yes
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </div>
-              </td>
-            </tr>
-          </template>
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                @click="item.deleteConfirm = false">
+                              No
+                            </v-btn>
+                            <v-btn
+                                color="primary"
+                                text
+                                @click="item.archived = true; deleteAction(item)">
+                              Yes
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+                    </div>
+                  </td>
+                </tr>
+              </template>
 
-        </v-data-table>
-      </v-container>
-    </v-flex>
-    <Snackbar :snackbar="snackbar"></Snackbar>
-  </v-layout>
+            </v-data-table>
+          </v-card>
+        </v-col>
+      </v-row>
+      <Snackbar :snackbar="snackbar"></Snackbar>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
 
   export default {
@@ -538,22 +561,22 @@
     components: {
       Snackbar
     },
-    data () {
+    data() {
       return {
         snackbar: {},
         headers: [
-          { text: 'ID', value: 'requirementNbr', width: '65px', show: true },
-          { text: 'Type', value: 'processStepRequirementType', show: true },
-          { text: 'Details', value: 'custom', show: true},
-          { text: 'Operator', value: 'operatorType', show: true },
-          { text: 'Value', value: 'requirementValue', show: true },
-          { text: null, value: 'icons', show: true }
+          {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
+          {text: 'Type', value: 'processStepRequirementType', show: true},
+          {text: 'Details', value: 'custom', show: true},
+          {text: 'Operator', value: 'operatorType', show: true},
+          {text: 'Value', value: 'requirementValue', show: true},
+          {text: null, value: 'icons', show: true}
         ],
         actionHeaders: [
-          { text: 'Name', value: 'actionName', show: true },
-          { text: 'Type', value: 'actionType', show: true },
-          { text: 'Parent Status Change', value: 'processStepStatusType', show: true },
-          { text: null, value: 'icons', show: true }
+          {text: 'Name', value: 'actionName', show: true},
+          {text: 'Type', value: 'actionType', show: true},
+          {text: 'Parent Status Change', value: 'processStepStatusType', show: true},
+          {text: null, value: 'icons', show: true}
         ],
         addNewRequirement: false,
         newRequirement: {
@@ -595,7 +618,7 @@
       }
     },
     computed: {},
-    async created () {
+    async created() {
       this.getRequirements()
       this.getActions()
       this.getStatusTypes()
@@ -616,17 +639,19 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      filterRequirements () {
-        return this.requirements.filter(r => { return !r.archived})
+      filterRequirements() {
+        return this.requirements.filter(r => {
+          return !r.archived
+        })
       },
-      async getRequirementTypes () {
+      async getRequirementTypes() {
         this.addNewRequirement = !this.addNewRequirement
-        if (this.addNewRequirement){
+        if (this.addNewRequirement) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-              const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
-              this.availableRequirementTypes = data
-              this.$store.commit(AppMutations.SET_LOADING, false)
+            const {data} = await getRequest(`/processStep/${this.processStepId}/requirement/types`)
+            this.availableRequirementTypes = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -638,7 +663,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           //1 == custom field, 2 == function
-          if(this.newRequirement.processStepRequirementTypeId === 1){
+          if (this.newRequirement.processStepRequirementTypeId === 1) {
             this.loadParentObjects()
           } else {
             const {data} = await getRequest(`/function`)
@@ -654,8 +679,8 @@
       async loadParentObjects() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if(!this.parentObjects || this.parentObjects.length === 0){
-            const {data} = await getRequest(`/processStep/getParentObjects`, { params: { id: this.processStepId}})
+          if (!this.parentObjects || this.parentObjects.length === 0) {
+            const {data} = await getRequest(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
             this.parentObjects = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
@@ -703,9 +728,9 @@
       },
       validateRequirementForm() {
         let invalidParams = false
-        if(this.newRequirement.requirementParamDynamicValues.length > 0){
+        if (this.newRequirement.requirementParamDynamicValues.length > 0) {
           this.newRequirement.requirementParamDynamicValues.forEach(fp => {
-            if(!fp.dynamicValue) {
+            if (!fp.dynamicValue) {
               invalidParams = true
             }
           })
@@ -760,7 +785,7 @@
         }
       },
       //ACTIONS
-      async getActions () {
+      async getActions() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/processStep/${this.processStepId}/action`)
@@ -772,8 +797,10 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      filterActions () {
-        return this.actions.filter(a => { return !a.archived})
+      filterActions() {
+        return this.actions.filter(a => {
+          return !a.archived
+        })
       },
       async saveNewAction() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -794,7 +821,9 @@
       async updateAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          action.processStepLogicList = action.processStepLogicList.filter(l => {return !l.archived})
+          action.processStepLogicList = action.processStepLogicList.filter(l => {
+            return !l.archived
+          })
 
           const {data} = await putRequest(`/processStep/${this.processStepId}/action`, action)
           // this forces the list to update the values displayed ... using action = data did not work
@@ -811,7 +840,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getStatusTypes () {
+      async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/processStep/status`)
@@ -823,7 +852,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getOperationTypes () {
+      async getOperationTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/operation`)
@@ -853,7 +882,7 @@
         const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/childProcessSteps`)
         this.childProcessSteps = data
       },
-      async saveProcessStepToAction (action) {
+      async saveProcessStepToAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
@@ -872,7 +901,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteChildProcessFromAction (actionId, id) {
+      async deleteChildProcessFromAction(actionId, id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
@@ -884,7 +913,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async updateChildStep (actionId, childStep) {
+      async updateChildStep(actionId, childStep) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
@@ -909,7 +938,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveLinkToAction (action) {
+      async saveLinkToAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addLinkToAction`, {
@@ -926,7 +955,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteLinkFromAction (actionId, id) {
+      async deleteLinkFromAction(actionId, id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
@@ -944,7 +973,7 @@
 </script>
 
 <style scoped lang="scss">
-.params {
-  width: 100%;
-}
+  .params {
+    width: 100%;
+  }
 </style>

@@ -1,22 +1,23 @@
 <template>
   <v-container>
-    <v-row xs-12>
-      <v-toolbar flat class="app-toolbar">
-        <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
-      </v-toolbar>
-      <v-container style="background: aliceblue">
-        <div class="pt-5">
-          Changing the timezone in the account menu should change this value: <br/>
-          (this section is just temporary for testing)
-        </div>
-        <div class="pt-5 font-weight-bold">
-          {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone) }}
-        </div>
-
-      </v-container>
+    <v-row>
+      <v-col cols="12">
+        <v-toolbar flat class="app-toolbar">
+          <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
+        </v-toolbar>
+        <v-card flat style="background: aliceblue">
+          <div class="pt-5">
+            Changing the timezone in the account menu should change this value: <br/>
+            (this section is just temporary for testing)
+          </div>
+          <div class="pt-5 font-weight-bold">
+            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone) }}
+          </div>
+        </v-card>
+      </v-col>
     </v-row>
     <v-form ref="userForm">
-      <v-row wrap>
+      <v-row>
         <v-col xs-12 md-6>
           <v-text-field v-model="user.firstName"
                         placeholder="Enter a value"

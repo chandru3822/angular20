@@ -1,53 +1,40 @@
 <template>
-<v-container grid-list-xl>
-  <v-layout row wrap>
-    <v-flex xs4 class="text-left">
-      <v-sheet  class="elevation-2 pa-4 br-10 testing">
-        <h2>Preferences</h2>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/userProfile`}">
-          <router-link to="/settings/userProfile">User Profile</router-link>
-        </v-subheader>
-        <v-subheader>Account</v-subheader>
-        <h2>Custom Components</h2>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/customFields`}">
-          <router-link to="/settings/customFields">Custom Fields</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/attachments`}">
-          <router-link to="/settings/attachments">Attachments</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/links`}">
-          <router-link to="/settings/links">Links</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === (`/settings/orgTypes`)}">
-          <router-link to="/settings/orgTypes">Organization Types</router-link>
-        </v-subheader>
-        <h2>Processes</h2>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/processes`}">
-          <router-link to="/settings/processes">Processes</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path.includes('/settings/processStep')}">
-          <router-link to="/settings/processSteps">Process Steps</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/functions`}">
-          <router-link to="/settings/functions">Functions</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/statuses`}">
-          <router-link to="/settings/statuses">Statuses</router-link>
-        </v-subheader>
-        <h2>Objects</h2>
-        <v-subheader v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :index="o.id" :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
-          <router-link :to="{ path: `/settings/customFieldGroup/${o.id}`}">{{o.objectType}}</router-link>
-        </v-subheader>
-      </v-sheet>
-    </v-flex>
-    <v-flex xs8>
-      <v-sheet color="#fff" class="elevation-2 text-xs-left pa-4 br-10">
-        <router-view/>
-      </v-sheet>
-    </v-flex>
-  </v-layout>
-  <Snackbar :snackbar="snackbar"></Snackbar>
-</v-container>
+  <v-container>
+    <v-row>
+      <v-col cols="3" class="text-left">
+        <v-card class="px-5 py-2">
+          <v-list dense>
+            <template v-for="(item, index) in items">
+              <h3 v-if="item.header">{{item.header}}</h3>
+
+              <v-list-item
+                  v-else
+                  :key="item.title"
+                  :to="item.path"
+              >
+                <v-list-item-content>
+                  <v-list-item-title>{{item.title}}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+            <v-list-item dense v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :index="o.id"
+                         :to="{ path: `/settings/customFieldGroup/${o.id}`}"
+                         :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
+              <v-list-item-content>
+                <v-list-item-title>{{o.objectType}}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-col>
+      <v-col cols="9" class="pa-4">
+        <v-sheet color="#fff" class="elevation-2 text-xs-left">
+          <router-view/>
+        </v-sheet>
+      </v-col>
+    </v-row>
+    <Snackbar :snackbar="snackbar"></Snackbar>
+  </v-container>
 </template>
 
 <script>
@@ -66,7 +53,48 @@ export default {
     return {
       snackbar: {},
       objectTypes: [],
-      companyId: this.$store.state.user.details.companyId
+      companyId: this.$store.state.user.details.companyId,
+      items: [
+        {
+          header: 'Preferences'
+        }, {
+          path: '/settings/userProfile',
+          title: 'User Profile',
+        }, {
+          path: '',
+          title: 'Account',
+        }, {
+          header: 'Custom Components'
+        }, {
+          path: '/settings/customFields',
+          title: 'Custom Fields',
+        }, {
+          path: '/settings/attachments',
+          title: 'Attachments',
+        }, {
+          path: '/settings/links',
+          title: 'Links',
+        }, {
+          path: '/settings/orgTypes',
+          title: 'Organization Types',
+        }, {
+          header: 'Processes'
+        }, {
+          path: '/settings/processes',
+          title: 'Processes',
+        }, {
+          path: '/settings/processSteps',
+          title: 'Process Steps',
+        }, {
+          path: '/settings/functions',
+          title: 'Funtions',
+        }, {
+          path: '/settings/statuses',
+          title: 'Statuses',
+        }, {
+          header: 'Objects'
+        },
+      ]
     }
   },
   computed: {

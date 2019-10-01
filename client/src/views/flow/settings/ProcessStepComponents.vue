@@ -1,148 +1,156 @@
 <template>
-  <v-layout row wrap class="custom-field-group-container">
-    <v-flex xs-12>
-      <v-flex class="mb-2">
-        <ProcessStepCustomFieldGroups :customFieldGroups="processStep.customFieldGroups"></ProcessStepCustomFieldGroups>
-      </v-flex>
-      <v-divider></v-divider>
-      <v-flex>
-        <v-toolbar flat>
-          <v-toolbar-title class="app-title">Links</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="getLinksForProcessStep">
-              <v-icon v-if="!addNewLink">add</v-icon>
-              {{ addNewLink ? 'Cancel' : 'Add Link'}}
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-select v-if="addNewLink"
-                  v-model="newLink.linkId"
-                  :items="availableLinks"
-                  label="Select Link"
-                  item-text="link"
-                  item-value="id"
-                  @input="assignNewLink"
-        ></v-select>
-        <v-container v-if="processStep.links && processStep.links.length > 0">
-          <v-list v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
-                  :key="index">
-            <v-list-item :class="{'shaded-row': index % 2}">
-              <v-list-item-content>
-                {{a.link}} | {{ a.url }}
-              </v-list-item-content>
-              <v-dialog
-                  v-model="a.deleteConfirm"
-                  width="500">
-                <template v-slot:activator="{ on }">
-                  <v-list-item-action class="clickable" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-list-item-action>
-                </template>
-                <v-card>
-                  <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title
-                  >
-                    Confirm
-                  </v-card-title>
+  <v-container class="custom-field-group-container py-0">
+    <v-row>
+      <v-col cols="12" class="py-0">
+        <v-row class="mb-2">
+          <v-col cols="12" class="py-0">
+            <ProcessStepCustomFieldGroups :customFieldGroups="processStep.customFieldGroups"></ProcessStepCustomFieldGroups>
+          </v-col>
+        </v-row>
+        <v-divider></v-divider>
+        <v-row>
+          <v-col cols="12"  class="pt-0">
+            <v-toolbar flat>
+              <v-toolbar-title class="app-title">Links</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text @click="getLinksForProcessStep">
+                  <v-icon v-if="!addNewLink">add</v-icon>
+                  {{ addNewLink ? 'Cancel' : 'Add Link'}}
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-select v-if="addNewLink"
+                      v-model="newLink.linkId"
+                      :items="availableLinks"
+                      label="Select Link"
+                      item-text="link"
+                      item-value="id"
+                      @input="assignNewLink"
+            ></v-select>
+            <v-card flat v-if="processStep.links && processStep.links.length > 0">
+              <v-list v-for="(a, index) in filterBy(processStep.links, false, 'archived')"
+                      :key="index">
+                <v-list-item :class="{'shaded-row': index % 2}">
+                  <v-list-item-content>
+                    {{a.link}} | {{ a.url }}
+                  </v-list-item-content>
+                  <v-dialog
+                      v-model="a.deleteConfirm"
+                      width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-action class="clickable" v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-list-item-action>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                      >
+                        Confirm
+                      </v-card-title>
 
-                  <v-card-text>
-                    Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
-                  </v-card-text>
+                      <v-card-text>
+                        Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
+                      </v-card-text>
 
-                  <v-divider></v-divider>
+                      <v-divider></v-divider>
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        @click="a.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                        color="primary"
-                        text
-                        @click="a.archived = true; deleteLinkFromStep(a.id)">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-list-item>
-          </v-list>
-        </v-container>
-      </v-flex>
-      <v-divider></v-divider>
-      <v-flex v-if="processStepId">
-        <v-toolbar flat>
-          <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="getAttachmentTypesForProcessStep">
-              <v-icon v-if="!addNewType">add</v-icon>
-              {{ addNewType ? 'Cancel' : 'Add Type'}}
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-select v-if="addNewType"
-                  v-model="newType.attachmentTypeId"
-                  :items="availableAttachmentTypes"
-                  label="Select Attachment Type"
-                  item-text="attachmentType"
-                  item-value="id"
-                  @input="assignNewType"
-        ></v-select>
-        <v-container v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
-          <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')"
-                  :key="index">
-            <v-list-item :class="{'shaded-row': index % 2}">
-              <v-list-item-content>
-                {{a.attachmentType}}
-              </v-list-item-content>
-              <v-dialog
-                  v-model="a.deleteConfirm"
-                  width="500">
-                <template v-slot:activator="{ on }">
-                  <v-list-item-action class="clickable" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-list-item-action>
-                </template>
-                <v-card>
-                  <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title
-                  >
-                    Confirm
-                  </v-card-title>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="a.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="a.archived = true; deleteLinkFromStep(a.id)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-divider></v-divider>
+        <v-row v-if="processStepId">
+          <v-col cols="12" class="pt-0">
+            <v-toolbar flat>
+              <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text @click="getAttachmentTypesForProcessStep">
+                  <v-icon v-if="!addNewType">add</v-icon>
+                  {{ addNewType ? 'Cancel' : 'Add Type'}}
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-select v-if="addNewType"
+                      v-model="newType.attachmentTypeId"
+                      :items="availableAttachmentTypes"
+                      label="Select Attachment Type"
+                      item-text="attachmentType"
+                      item-value="id"
+                      @input="assignNewType"
+            ></v-select>
+            <v-card flat v-if="processStep.attachmentTypes && processStep.attachmentTypes.length > 0">
+              <v-list v-for="(a, index) in filterBy(processStep.attachmentTypes, false, 'archived')"
+                      :key="index">
+                <v-list-item :class="{'shaded-row': index % 2}">
+                  <v-list-item-content>
+                    {{a.attachmentType}}
+                  </v-list-item-content>
+                  <v-dialog
+                      v-model="a.deleteConfirm"
+                      width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-action class="clickable" v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-list-item-action>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                      >
+                        Confirm
+                      </v-card-title>
 
-                  <v-card-text>
-                    Are you sure you want to delete this attachment type: <strong>{{ a.attachmentType }}</strong>?
-                  </v-card-text>
+                      <v-card-text>
+                        Are you sure you want to delete this attachment type: <strong>{{ a.attachmentType }}</strong>?
+                      </v-card-text>
 
-                  <v-divider></v-divider>
+                      <v-divider></v-divider>
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        @click="a.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                        color="primary"
-                        text
-                        @click="a.archived = true; deleteTypeFromStep(a.id)">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-list-item>
-          </v-list>
-        </v-container>
-      </v-flex>
-    </v-flex>
-    <Snackbar :snackbar="snackbar"></Snackbar>
-  </v-layout>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="a.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="a.archived = true; deleteTypeFromStep(a.id)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-col>
+      <Snackbar :snackbar="snackbar"></Snackbar>
+    </v-row>
+  </v-container>
 </template>
 
 <script>

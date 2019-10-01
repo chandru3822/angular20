@@ -14,7 +14,7 @@ public class User {
 
     private Long id, companyId, parentCompanyId;
     private String email, phoneNumber, username, password, firstName, lastName, fullName,
-        userStatusType, timezone, awsBucket, companyName, companyAbbreviation;
+        userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position;
     private Long userStatusTypeId;
     private List<UserPermission> permissions;
 

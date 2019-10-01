@@ -1,5 +1,5 @@
 <template>
-  <v-container row wrap class="custom-field-group-container">
+  <v-container class="custom-field-group-container">
     <v-row>
       <v-col xs-12>
         <v-toolbar flat class="app-toolbar">

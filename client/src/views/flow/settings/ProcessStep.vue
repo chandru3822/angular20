@@ -1,39 +1,41 @@
 <template>
-  <v-layout row wrap class="custom-field-group-container">
-    <v-flex xs-12>
-      <v-toolbar color="white" flat>
-        <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
-      </v-toolbar>
-      <v-toolbar flat class="app-toolbar">
-<!--        <v-toolbar-title class="app-title">-->
-<!--          {{ processStep.processStepName }}-->
-<!--        </v-toolbar-title>-->
-        <v-text-field class="d-inline-block mt-4" v-if="editName" v-model="processStep.processStepName"></v-text-field>
-        <span v-else>
-          {{  processStep.processStepName }}
-        </span>
-        <v-btn class="d-inline-block" small text v-if="editName" @click="saveProcessStep()">
-          <v-icon>save</v-icon>
-        </v-btn>
-        <v-btn class="d-inline-block" small text v-else @click="editName = true">
-          <v-icon>edit</v-icon>
-        </v-btn>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-tabs>
-            <v-tab :to="`/settings/processStep/${processStepId}/components`">
-              UI Components
-            </v-tab>
-            <v-tab :to="`/settings/processStep/${processStepId}/actions`">
-              Actions
-            </v-tab>
-          </v-tabs>
-        </v-toolbar-items>
-      </v-toolbar>
-      <router-view/>
-    </v-flex>
-    <Snackbar :snackbar="snackbar"></Snackbar>
-  </v-layout>
+  <v-container class="custom-field-group-container">
+    <v-row>
+      <v-col cols="12">
+        <v-toolbar color="white" flat>
+          <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
+        </v-toolbar>
+        <v-toolbar flat class="app-toolbar">
+  <!--        <v-toolbar-title class="app-title">-->
+  <!--          {{ processStep.processStepName }}-->
+  <!--        </v-toolbar-title>-->
+          <v-text-field class="d-inline-block mt-4" v-if="editName" v-model="processStep.processStepName"></v-text-field>
+          <span v-else>
+            {{  processStep.processStepName }}
+          </span>
+          <v-btn class="d-inline-block" small text v-if="editName" @click="saveProcessStep()">
+            <v-icon>save</v-icon>
+          </v-btn>
+          <v-btn class="d-inline-block" small text v-else @click="editName = true">
+            <v-icon>edit</v-icon>
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-tabs>
+              <v-tab :to="`/settings/processStep/${processStepId}/components`">
+                UI Components
+              </v-tab>
+              <v-tab :to="`/settings/processStep/${processStepId}/actions`">
+                Actions
+              </v-tab>
+            </v-tabs>
+          </v-toolbar-items>
+        </v-toolbar>
+        <router-view/>
+      </v-col>
+      <Snackbar :snackbar="snackbar"></Snackbar>
+    </v-row>
+  </v-container>
 </template>
 
 <script>

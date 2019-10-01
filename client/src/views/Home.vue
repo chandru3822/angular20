@@ -44,25 +44,17 @@ export default {
       loadComplete: false,
       companyName: this.$store.state.user.details.companyName,
       model: '',
-      tabs: [{
-        label: 'Users',
-        path: '/users',
+      tabs: [ {
+        label: 'Customers',
+        path: '/leads',
+        display: true
+      }, {
+        label: 'Projects',
+        path: '/project/45669',
         display: true
       }, {
         label: 'AHJ Database',
         path: '/ahj',
-        display: true
-      }, {
-        label: 'Project',
-        path: '/project/45669',
-        display: true
-      }, {
-        label: 'Leads',
-        path: '/leads',
-        display: true
-      }, {
-        label: 'Organizations',
-        path: '/orgs',
         display: true
       }]
     }

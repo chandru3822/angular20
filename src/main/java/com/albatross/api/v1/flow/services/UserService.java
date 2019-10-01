@@ -55,6 +55,7 @@ public class UserService {
     params.put("email", search.getEmail());
     params.put("phone", search.getPhone());
     params.put("statuses", search.getStatuses());
+    params.put("positions", search.getPositions());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
@@ -76,6 +77,7 @@ public class UserService {
     params.put("email", search.getEmail());
     params.put("phone", search.getPhone());
     params.put("statuses", search.getStatuses());
+    params.put("positions", search.getPositions());
 
     List<User> results = sqlCache.query("user.exportUsers", params, User.class);
 
@@ -110,6 +112,8 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("firstName", user.getFirstName());
     params.put("lastName", user.getLastName());
+    params.put("phone", user.getPhoneNumber());
+    params.put("email", user.getEmail());
     params.put("companyId", currentUser.getCompanyId());
 
     Long id;

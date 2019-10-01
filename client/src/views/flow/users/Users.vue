@@ -79,6 +79,7 @@
             :loading="dataLoading"
             :server-items-length="totalUsers"
             hide-default-header
+            :calculate-widths="true"
             class="elevation-1 fix-column-width-bug user-table"
         >
           <template #no-data>
@@ -92,16 +93,35 @@
           <template #header="{ props: { headers } }">
             <thead class="v-data-table-header">
             <tr>
-              <th v-for="header in headers" :key="header.text" class="py-2">
+              <th v-for="header in headers" :key="header.text" class="py-2"
+                  :class="{'filter-header-non-select': !header.orgFilter && !header.statusFilter}"
+                  :style="{width: header.width ? header.width : 'auto',
+                          'padding-bottom': !header.orgFilter && !header.statusFilter ? '13px !important' : ''}">
                 {{ header.text }}
                 <v-select v-model="filters.orgs[header.level]"
                           :items="header.orgs"
                           v-if="header.orgFilter"
                           item-text="orgName"
                           return-object
+                          multiple
+                          placeholder="Select..."
+                          height="35px"
                           outlined
-                          height="25px"
-                ></v-select>
+                          class="user-filter-select"
+                >
+                  <template
+                      slot="selection"
+                      slot-scope="{ item, index }"
+                  >
+                    <v-chip small v-if="index === 0 && filters.orgs[header.level] && filters.orgs[header.level].length < 2">
+                      <span>{{ item.orgName }}</span>
+                    </v-chip>
+                    <span
+                        v-if="index === 1 && filters.orgs[header.level] && filters.orgs[header.level].length >= 2"
+                        class="primary--text caption"
+                    >{{ filters.orgs[header.level].length }} selected</span>
+                  </template>
+                </v-select>
                 <v-select v-model="filters.statuses"
                           :items="statuses"
                           v-else-if="header.statusFilter"
@@ -109,9 +129,63 @@
                           item-text="userStatusType"
                           item-value="id"
                           outlined
-                          height="25px"
-                          @blur="getUsers()"
-                ></v-select>
+                          placeholder="Select..."
+                          height="35px"
+                          class="user-filter-select"
+                          @input="getUsers()"
+                >
+                  <v-list-item
+                      slot="prepend-item"
+                      ripple
+                      @click="toggleSelectAllStatuses()"
+                  >
+                    <v-list-item-action>
+                      <v-icon>{{ icon }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item>
+                  <v-divider
+                      slot="prepend-item"
+                      class="mt-2"
+                  ></v-divider>
+                  <template
+                      slot="selection"
+                      slot-scope="{ item, index }"
+                  >
+                    <v-chip small v-if="index === 0 && filters.statuses.length < 2">
+                      <span>{{ item.userStatusType }}</span>
+                    </v-chip>
+                    <span
+                        v-if="index === 1 && filters.statuses.length >= 2"
+                        class="primary--text caption"
+                    >{{ filters.statuses.length }} selected</span>
+                  </template>
+                </v-select>
+                <v-select v-model="filters.positions"
+                          :items="positions"
+                          v-else-if="header.positionFilter"
+                          item-text="position"
+                          item-value="id"
+                          multiple
+                          placeholder="Select..."
+                          height="35px"
+                          outlined
+                          class="user-filter-select"
+                          @input="getUsers()"
+                >
+                  <template
+                      slot="selection"
+                      slot-scope="{ item, index }"
+                  >
+                    <v-chip small v-if="index === 0 && filters.positions && filters.positions.length < 2">
+                      <span>{{ item.position }}</span>
+                    </v-chip>
+                    <span
+                        v-if="index === 1 && filters.positions && filters.positions.length >= 2"
+                        class="primary--text caption"
+                    >{{ filters.positions.length }} selected</span>
+                  </template>
+                </v-select>
                 <v-text-field outlined
                               v-else
                               hide-details
@@ -124,12 +198,13 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
-              <td class="text-left">{{item.firstName}}</td>
-              <td class="text-left">{{item.lastName}}</td>
-              <td class="text-left">{{item.email}}</td>
-              <td class="text-left">{{item.phoneNumber}}</td>
-              <td class="text-left">{{item.userStatusType}}</td>
-              <td class="text-left" v-for="f in orgFilters">
+              <td class="text-left user-column">{{item.firstName}}</td>
+              <td class="text-left user-column">{{item.lastName}}</td>
+              <td class="text-left user-column">{{item.email}}</td>
+              <td class="text-left user-column">{{item.phoneNumber}}</td>
+              <td class="text-left user-column">{{item.userStatusType}}</td>
+              <td class="text-left user-column">{{item.position}}</td>
+              <td class="text-left user-column" v-for="f in orgFilters">
                 {{f.title}}
               </td>
             </tr>
@@ -148,6 +223,9 @@
   import debounce from 'lodash.debounce'
   import { saveAs } from 'file-saver'
 
+  const {VUE_APP_BASE_API} = process.env
+  import axios from 'axios'
+
   export default {
     name: 'Users',
     components: {
@@ -161,6 +239,7 @@
         users: [],
         orgFilters: [],
         statuses: [],
+        positions: [],
         descending: true,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 1000]
@@ -171,11 +250,12 @@
         totalUsers: 0,
         dataLoading: true,
         headers: [
-          { text: 'First Name', value: 'firstName', show: true },
-          { text: 'Last Name', value: 'lastName', show: true },
-          { text: 'Email', value: 'email', show: true },
-          { text: 'Phone', value: 'phone', show: true },
-          { text: 'Status', value: 'userStatusType', statusFilter: true, show: true },
+          { text: 'First Name', value: 'firstName', show: true, width: '125px' },
+          { text: 'Last Name', value: 'lastName', show: true, width: '125px' },
+          { text: 'Email', value: 'email', show: true, width: '275px' },
+          { text: 'Phone', value: 'phone', show: true, width: '115px' },
+          { text: 'Status', value: 'userStatusType', statusFilter: true, show: true, width: '175px' },
+          { text: 'Position', value: 'position', positionFilter: true, show: true, width: '175px' },
         ],
         // search: '',
         filters: {
@@ -185,8 +265,26 @@
           email: '',
           phone: '',
           orgs: {},
-          statuses: [1]
+          statuses: [1],
+          positions: []
         }
+      }
+    },
+    computed: {
+      selectAll () {
+        return this.filters.statuses.length === this.statuses.length
+      },
+      selectSome () {
+        return this.filters.statuses.length > 0 && !this.selectAll
+      },
+      icon () {
+        if (this.filters.statuses && this.statuses && this.filters.statuses.length === this.statuses.length) {
+          return 'check_box'
+        }
+        if (this.selectSome) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
       }
     },
     watch: {
@@ -199,6 +297,7 @@
     },
     created () {
       this.getStatuses()
+      this.getPositions()
       this.getOrgFilters()
     },
     methods: {
@@ -209,28 +308,32 @@
         this.getUsers()
       }, 500),
       async getUsers () {
-        this.dataLoading = true
-        const { sortBy, sortDesc, page, itemsPerPage } = this.options
-        try {
-          const params = {
-            search: this.filters.search,
-            firstName: this.filters.firstName,
-            lastName: this.filters.lastName,
-            email: this.filters.email,
-            phone: this.filters.phone,
-            statuses: this.filters.statuses,
-            page: page - 1,
-            size: itemsPerPage
+        if(this.filters.statuses && this.filters.statuses.length > 0) {
+          this.dataLoading = true
+          const { sortBy, sortDesc, page, itemsPerPage } = this.options
+          try {
+            const params = {
+              search: this.filters.search,
+              firstName: this.filters.firstName,
+              lastName: this.filters.lastName,
+              email: this.filters.email,
+              phone: this.filters.phone,
+              statuses: this.filters.statuses,
+              positions: this.filters.positions
+            }
+
+            const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
+            this.users = data.content
+            this.totalUsers = data.totalElements
+            this.dataLoading = false
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+            this.$store.commit(AppMutations.SET_LOADING, false)
           }
-          const {data} = await postRequest(`/user/search`, params)
-          this.users = data.content
-          this.totalUsers = data.totalElements
-          this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        } else {
+          this.users = []
         }
       },
       async exportUsers () {
@@ -244,6 +347,7 @@
             email: this.filters.email,
             phone: this.filters.phone,
             statuses: this.filters.statuses,
+            positions: this.filters.positions,
           }
           const {data} = await postRequest(`/user/exportUsers`, params)
           let blob = new Blob([data], {
@@ -270,7 +374,7 @@
               level: f.orgLevelId,
               orgFilter: true,
               orgs: f.orgs,
-              width: '200px'
+              width: '225px'
             })
           })
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -291,6 +395,28 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async getPositions () {
+        try {
+          const {data} = await getRequest(`/position`)
+          this.positions = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      toggleSelectAllStatuses () {
+        this.$nextTick(() => {
+          if (this.selectAll) {
+            this.filters.statuses = []
+            this.getUsers()
+          } else {
+            this.filters.statuses = this.statuses.map(s => s.id)
+            this.getUsers()
+          }
+        })
+      }
     }
   }
 </script>
@@ -301,8 +427,26 @@
     min-height: 300px;
   }
   .filter-input .v-input__slot{
-    height: 25px !important;
-    min-height: 25px !important;
+    height: 35px !important;
+    min-height: 35px !important;
+  }
+  .filter-header-non-select {
+    padding-bottom: 12px !important;
+  }
+
+  .user-filter-select,
+  .user-filter-select .v-input__control,
+  .user-filter-select .v-input__control .v-input__slot,
+  .user-filter-select .v-input__control .v-input__slot fieldset {
+    height: 40px !important;
+    min-height: 40px !important;
+  }
+  .user-filter-select .v-select__selections {
+    padding: 0 0 5px 0 !important;
+    height: 40px !important;
+  }
+  .user-filter-select .v-input__append-inner {
+    margin-top: 5px !important;
   }
 </style>
 
@@ -315,6 +459,9 @@
   }
   .user-table {
     margin-top: 2px;
+  }
+  .user-column {
+    overflow: hidden;
   }
 
 

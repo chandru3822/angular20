@@ -3,12 +3,12 @@
     <v-row>
       <v-col xs-12>
         <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">Leads</v-toolbar-title>
+          <v-toolbar-title class="app-title">Customers</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text to="/newLead" color="primary">
               <v-icon>add</v-icon>
-              Add Lead
+              Add Customer
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -17,7 +17,7 @@
               class="mt-5"
               prepend-inner-icon="search"
               text
-              label="Search leads..."
+              label="Search customers..."
               v-model="search"
               @input="debounceGetLeads"
           ></v-text-field>
@@ -81,11 +81,11 @@
             class="elevation-1 fix-column-width-bug lead-table"
         >
           <template #no-data>
-            No available leads
+            No available customers
           </template>
 
           <template #no-results>
-            No available leads
+            No available customers
           </template>
 
           <template #item="{ item, index }">
@@ -131,7 +131,7 @@ export default {
       totalLeads: 0,
       dataLoading: true,
       headers: [
-        { text: 'Lead Name', value: 'fullName', show: true },
+        { text: 'Customer Name', value: 'fullName', show: true },
         { text: 'Owner', value: 'ownerFullName', show: true },
         { text: 'State', value: 'state', show: true },
         { text: 'Date Created', value: 'dateCreated', show: true },

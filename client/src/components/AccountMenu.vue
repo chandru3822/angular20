@@ -41,10 +41,10 @@
     </v-list>
     <v-divider></v-divider>
     <v-list>
-      <v-list-item :to="'/settings/userProfile'">
-        <v-list-item-title>Settings</v-list-item-title>
+      <v-list-item v-for="item in menuItems" @click="menuOpen = false" :to="item.path">
+        <v-list-item-title>{{item.title}}</v-list-item-title>
         <v-list-item-action class="account-menu-icon">
-          <v-icon>settings</v-icon>
+          <v-icon>{{item.icon}}</v-icon>
         </v-list-item-action>
       </v-list-item>
     </v-list>
@@ -97,6 +97,25 @@
           'US/Hawaii',
           'US/Eastern',
           'US/Mountain'
+        ],
+        menuItems: [
+          // {
+          //   header: 'Custom Components'
+          // },
+          {
+            path: '/settings/userProfile',
+            title: 'Settings',
+            icon: 'settings'
+          }, {
+            path: '/users',
+            title: 'Users',
+            icon: 'people'
+          }, {
+            path: '/orgs',
+            title: 'Organizations',
+            icon: 'list'
+          },
+
         ]
       }
     },
