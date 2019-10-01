@@ -18,7 +18,7 @@
               prepend-inner-icon="search"
               text
               label="Search users..."
-              v-model="search"
+              v-model="filters.search"
               @input="debounceGetUsers"
           ></v-text-field>
           <v-spacer></v-spacer>
@@ -78,6 +78,7 @@
             :footer-props="footerProps"
             :loading="dataLoading"
             :server-items-length="totalUsers"
+            hide-default-header
             class="elevation-1 fix-column-width-bug user-table"
         >
           <template #no-data>
@@ -86,6 +87,20 @@
 
           <template #no-results>
             No available users
+          </template>
+
+          <template #header="{ props: { headers } }">
+            <thead class="v-data-table-header">
+            <tr>
+              <th v-for="header in headers" :key="header.text" class="py-2">
+                {{ header.text }}
+                <v-text-field outlined
+                              hide-details
+                              class="filter-input"
+                    v-model="filters[header.value]" @input="debounceGetUsers"></v-text-field>
+              </th>
+            </tr>
+            </thead>
           </template>
 
           <template #item="{ item, index }">
@@ -136,7 +151,14 @@
           { text: 'Email', value: 'email', show: true },
           { text: 'Phone', value: 'phone', show: true },
         ],
-        search: ''
+        // search: '',
+        filters: {
+          search: '',
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: ''
+        }
       }
     },
     watch: {
@@ -158,11 +180,16 @@
       async getUsers () {
         const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequest(`/user/search`, { params: {
-              query: this.search,
-              page: page - 1,
-              size: itemsPerPage
-            }})
+          const params = {
+            search: this.filters.search,
+            firstName: this.filters.firstName,
+            lastName: this.filters.lastName,
+            email: this.filters.email,
+            phone: this.filters.phone,
+            page: page - 1,
+            size: itemsPerPage
+          }
+          const {data} = await postRequest(`/user/search`, params)
           this.users = data.content
           this.totalUsers = data.totalElements
           this.dataLoading = false
@@ -177,9 +204,14 @@
         this.dialog = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/user/exportUsers`, { params: {
-              query: this.search
-            }})
+          const params = {
+            search: this.filters.search,
+            firstName: this.filters.firstName,
+            lastName: this.filters.lastName,
+            email: this.filters.email,
+            phone: this.filters.phone
+          }
+          const {data} = await postRequest(`/user/exportUsers`, params)
           let blob = new Blob([data], {
             type: 'text/csv;charset=utf-8'
           });
@@ -200,6 +232,10 @@
     height: calc(100vh - 400px);
     min-height: 300px;
   }
+  .filter-input .v-input__slot{
+    height: 25px !important;
+    min-height: 25px !important;
+  }
 </style>
 
 <style lang="scss" scoped>
@@ -212,6 +248,7 @@
   .user-table {
     margin-top: 2px;
   }
+
 
 </style>
 

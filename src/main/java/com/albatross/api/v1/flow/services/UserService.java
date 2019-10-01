@@ -45,11 +45,15 @@ public class UserService {
   @Autowired
   ObjectMapper om;
 
-  public Page<User> searchUsers(String query, Pageable pageable) {
+  public Page<User> searchUsers(UserSearch search, Pageable pageable) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("query", query);
+    params.put("query", search.getSearch());
+    params.put("firstName", search.getFirstName());
+    params.put("lastName", search.getLastName());
+    params.put("email", search.getEmail());
+    params.put("phone", search.getPhone());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
@@ -60,12 +64,16 @@ public class UserService {
     return page;
   }
 
-  public ResponseEntity exportUsers(String query) {
+  public ResponseEntity exportUsers(UserSearch search) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("query", query);
+    params.put("query", search.getSearch());
+    params.put("firstName", search.getFirstName());
+    params.put("lastName", search.getLastName());
+    params.put("email", search.getEmail());
+    params.put("phone", search.getPhone());
 
     List<User> results = sqlCache.query("user.exportUsers", params, User.class);
 

@@ -1,7 +1,7 @@
 <template>
   <v-layout row wrap class="custom-field-group-container">
     <v-flex xs-12>
-      <v-toolbar color="white" class="elevation-1">
+      <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title">Links</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>

@@ -1,7 +1,7 @@
 <template>
   <v-layout row wrap class="custom-field-group-container">
     <v-flex xs-12>
-      <v-toolbar class="testing elevation-1">
+      <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title">Functions</v-toolbar-title>
       </v-toolbar>
       <v-container>

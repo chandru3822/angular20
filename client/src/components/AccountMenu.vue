@@ -41,6 +41,15 @@
     </v-list>
     <v-divider></v-divider>
     <v-list>
+      <v-list-item :to="'/settings/userProfile'">
+        <v-list-item-title>Settings</v-list-item-title>
+        <v-list-item-action class="account-menu-icon">
+          <v-icon>settings</v-icon>
+        </v-list-item-action>
+      </v-list-item>
+    </v-list>
+    <v-divider></v-divider>
+    <v-list>
       <v-list-item @click="logout()">
         <v-list-item-title>Logout</v-list-item-title>
         <v-list-item-action class="account-menu-icon">

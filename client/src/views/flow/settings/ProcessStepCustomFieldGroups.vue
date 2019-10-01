@@ -103,13 +103,13 @@
         </template>
 
         <template #expanded-item="{ headers, item }">
-          <td :colspan="headers.length" class="pb-4"  :class="{'shaded-row': selectedIndex % 2}">
+          <td :colspan="headers.length" class="pb-2 px-0"  :class="{'shaded-row': selectedIndex % 2}">
             <v-flex xs12 justify-center class="pl-3 pr-3" v-if="addField">
               <h3 class="text-left">Add New Field</h3>
               <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.objectTypeId, item.id)">
                 <v-radio label="Native Field"
                          value="native"></v-radio>
-                <v-radio label="Ancillary Field: viewed only from other process steps or objects"
+                <v-radio label="Reference Field: viewed only from other process steps or objects"
                          value="ancillary"></v-radio>
               </v-radio-group>
               <v-select v-if="newFieldType === 'native'"
@@ -139,18 +139,22 @@
               ></v-select>
               <v-btn @click="addField = false">Cancel</v-btn>
             </v-flex>
-            <v-flex xs12 justify-center class="pl-3 pr-3"
+            <v-flex xs12 justify-center class="px-3 py-0"
                     v-if="!addField && (!item.customFields || item.customFields.length === 0)">
               No Custom Fields Added
             </v-flex>
-            <v-flex xs12 justify-center class="pl-3 pr-3"
+            <v-flex xs12 justify-center class="px-3 py-0"
                     v-if="item.customFields && item.customFields.length > 0">
-              <h3 class="text-left">Assigned Custom Fields</h3>
+<!--              <h3 class="text-left">Assigned Custom Fields</h3>-->
+              <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
+                         group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                 <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
-                        :key="index"
-                        :class="{ 'shaded-row': index % 2 }">
+                        :key="index" dense class="pa-0">
                   <v-list-item class="grab">
-                    <v-list-item-content>
+                    <v-list-item-action dense>
+                      <v-icon>drag_handle</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content class="pa-0">
                       {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
                     </v-list-item-content>
                     <v-dialog
@@ -193,6 +197,7 @@
                     </v-dialog>
                   </v-list-item>
                 </v-list>
+              </draggable>
             </v-flex>
           </td>
         </template>
@@ -360,6 +365,33 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async saveFieldChanges (fields) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+          // pull those needing to be saved out of list
+          let fieldsToSave = []
+          fields.forEach((f, idx) => {
+            let order = idx + 1
+            if(f.fieldOrder !== order){
+              f.fieldOrder = order
+              fieldsToSave.push(f)
+            }
+          })
+          // save them here
+          console.log('randaLogger', fieldsToSave)
+          if(fieldsToSave.length > 0) {
+            await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
+          }
+          this.snackbar = getSnackbar('SUCCESS', 'Fields Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Fields')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+
+      },
       async assignAncillaryCustomField(cfg) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -374,11 +406,11 @@
           this.selectedAncillaryField = {}
           this.addField = false
           this.parent = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Ancillary Field Assigned')
+          this.snackbar = getSnackbar('SUCCESS', 'Reference Field Assigned')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Assigning Ancillary Field')
+          this.snackbar = getSnackbar('ERROR', 'Error Assigning Reference Field')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

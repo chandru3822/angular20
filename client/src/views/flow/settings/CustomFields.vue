@@ -2,7 +2,7 @@
   <v-container id="custom-field-container">
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
-        <v-toolbar color="white" class="elevation-1">
+        <v-toolbar flat>
           <v-toolbar-title class="app-title">Custom Fields</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -26,7 +26,7 @@
             :expanded.sync="expanded"
             hide-default-footer
             hide-default-header
-            class="elevation-1"
+            class="elevation-1 mt-1"
         >
           <template #no-data>
             No available fields
@@ -50,6 +50,7 @@
                   </v-btn>
                   <v-dialog
                       v-model="item.deleteConfirm"
+                      v-if="!item.custom"
                       width="500">
                     <template v-slot:activator="{ on }">
                       <v-btn small text class="clickable" v-on="on">

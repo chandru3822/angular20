@@ -9,7 +9,7 @@
           <v-btn color="primary white--text" @click="saveProcess">Save Changes</v-btn>
         </div>
       </v-toolbar>
-      <v-toolbar color="white" class="elevation-1">
+      <v-toolbar flat class="app-toolbar">
           <v-text-field class="d-inline-block mt-4" v-if="editName" v-model="process.processName"></v-text-field>
           <span v-else>
             {{  processId ? process.processName : 'New Process Step'}}
@@ -46,8 +46,10 @@
       </v-container>
       <v-data-table
           :headers="headers"
-          :items="process.processStepProcesses"
+          :items="filterProcesses()"
           :items-per-page="-1"
+          :sort-by="['displayOrder']"
+          :sort-desc="[false]"
           hide-default-footer
           class="elevation-1"
       >
@@ -59,8 +61,13 @@
           NO RESULTS HERE!
         </template>
 
-        <template #body="{ items }">
-          <tr v-for="(item, index) in filterBy(items, false, 'archived')" :key="item.id" v-if="!item.custom" :class="{ 'shaded-row': index % 2 }">
+        <template #item="{ item, index }">
+          <tr :class="{ 'shaded-row': index % 2 }">
+            <td style="width: 50px">
+              <v-btn text icon small class="handle">
+                <v-icon>drag_handle</v-icon>
+              </v-btn>
+            </td>
             <td class="text-left">{{ item.processStepName }}</td>
             <td class="text-left">{{ item.orgName }}</td>
             <td class="text-left">{{ item.dateCreated | formatDate('date', $store.state.user.details.timezone) }}</td>
@@ -115,6 +122,9 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
+import draggable from 'vuedraggable'
+import cloneDeep from 'lodash.clonedeep'
+import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
 import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -122,6 +132,7 @@ export default {
   name: 'Process',
   mixins: [Vue2Filters.mixin],
   components: {
+    draggable,
     Snackbar
   },
   data () {
@@ -135,7 +146,9 @@ export default {
       processId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
       changesMade: false,
-      process: {},
+      process: {
+        processStepProcesses: []
+      },
       breadcrumbs: [
         {
           text: 'Back',
@@ -145,29 +158,62 @@ export default {
         },
       ],
       headers: [
-        { text: 'Name', value: 'processStepName'},
-        { text: 'Owning Org', value: 'orgName'},
-        { text: 'Created', value: 'dateCreated'},
-        { text: 'Last Modified', value: 'dateModified'},
+        { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
+        { text: 'Name', value: 'processStepName', sortable: false},
+        { text: 'Owning Org', value: 'orgName', sortable: false},
+        { text: 'Created', value: 'dateCreated', sortable: false},
+        { text: 'Last Modified', value: 'dateModified', sortable: false},
         { text: null, value: null},
       ]
     }
   },
-  async created () {
+  mounted() {
+    let table = document.querySelector('tbody')
+    const _self = this
+    Sortable.create(table, {
+      handle: '.handle',
+      onEnd({ newIndex, oldIndex }) {
+        const rowSelected = _self.process.processStepProcesses.splice(oldIndex, 1)[0]
+        _self.process.processStepProcesses.splice(newIndex, 0, rowSelected)
+        let rowsClone = cloneDeep(_self.process.processStepProcesses)
+        rowsClone.forEach((r, idx) => {
+          r.displayOrder = idx
+        })
+        console.log('sort event happened', rowsClone)
+        _self.saveRowChanges(rowsClone)
+      }
+    })
+  },
+  created () {
     this.getProcessDetails()
   },
   computed: {
   },
   methods: {
+    filterProcesses () {
+      return this.process.processStepProcesses.filter(psp => { return !psp.archived})
+    },
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/processes/${this.processId}`)
-        this.process = data
+        this.process = cloneDeep(data)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveRowChanges (rows) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/processes/${this.processId}/processStep`, rows)
+        this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -249,5 +295,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
+.handle {
+  cursor: move !important;
+}
 </style>

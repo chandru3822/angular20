@@ -64,11 +64,12 @@ public class ProcessService {
     }
 
     public Optional<Process> insertProcess(Process process) {
+        User user = securityService.getCurrentUser();
         // insert the row into process, this will likely change as we allow processes to be shared between companies
         // parentCompanyId will be used for sharing processes later on
         Long id = sqlCache.updateReturningId("process.insert",
             ImmutableMap.of("processName", process.getProcessName(),
-                "createdById", process.getCreatedById(),
+                "createdById", user.getId(),
                 "parentCompanyId", process.getParentCompanyId()),
             "id").longValue();
 
@@ -133,5 +134,16 @@ public class ProcessService {
                             "processStepId", processStepProcess.getProcessStepId()), "id").longValue();
 
         return getOneProcessStepProcess(id);
+    }
+
+    public void updateProcessStepProcesses(Long processId, List<ProcessStepProcess> processStepProcesses) {
+        User currentUser = securityService.getCurrentUser();
+
+        for(ProcessStepProcess psp : processStepProcesses){
+            sqlCache.update("process.updateProcessStepProcess",
+                ImmutableMap.of("id", psp.getId(),
+                    "modifiedById", currentUser.getId(),
+                    "displayOrder", psp.getDisplayOrder()));
+        }
     }
 }

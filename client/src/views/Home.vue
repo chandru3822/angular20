@@ -9,7 +9,7 @@
         <v-toolbar-items>
           <AccountMenu :showImage="true"></AccountMenu>
         </v-toolbar-items>
-        <v-tabs color="secondaryCustom" background-color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
+        <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
             {{tab.label}}
           </v-tab>
@@ -51,14 +51,6 @@ export default {
       }, {
         label: 'AHJ Database',
         path: '/ahj',
-        display: true
-      }, {
-      //   label: 'AHJ Database TEST',
-      //   path: '/ahjTest',
-      //   display: true
-      // }, {
-        label: 'Settings',
-        path: '/settings',
         display: true
       }, {
         label: 'Project',
