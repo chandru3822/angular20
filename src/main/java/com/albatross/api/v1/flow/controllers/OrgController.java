@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Org;
+import com.albatross.api.v1.flow.model.OrgFilter;
 import com.albatross.api.v1.flow.services.OrgService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,11 @@ public class OrgController {
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Org saveOrg(@RequestBody Org org) {
     return orgService.saveOrg(org);
+  }
+
+  @GetMapping(value = "/filters", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<OrgFilter> getOrgFiltersForCompany() {
+    return orgService.getOrgFiltersForCompany();
   }
 
 }

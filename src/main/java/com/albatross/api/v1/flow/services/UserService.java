@@ -54,6 +54,7 @@ public class UserService {
     params.put("lastName", search.getLastName());
     params.put("email", search.getEmail());
     params.put("phone", search.getPhone());
+    params.put("statuses", search.getStatuses());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
@@ -74,6 +75,7 @@ public class UserService {
     params.put("lastName", search.getLastName());
     params.put("email", search.getEmail());
     params.put("phone", search.getPhone());
+    params.put("statuses", search.getStatuses());
 
     List<User> results = sqlCache.query("user.exportUsers", params, User.class);
 
@@ -188,6 +190,14 @@ public class UserService {
     params.put("id", id);
     Optional<User> user = sqlCache.get("user.findUserById", params, User.class);
     return user.orElse(null);
+  }
+
+  public List<UserStatusType> getUserStatuses() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<UserStatusType> results = sqlCache.query("user.getUserStatuses", params, UserStatusType.class);
+    return results;
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

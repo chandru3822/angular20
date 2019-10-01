@@ -94,7 +94,26 @@
             <tr>
               <th v-for="header in headers" :key="header.text" class="py-2">
                 {{ header.text }}
+                <v-select v-model="filters.orgs[header.level]"
+                          :items="header.orgs"
+                          v-if="header.orgFilter"
+                          item-text="orgName"
+                          return-object
+                          outlined
+                          height="25px"
+                ></v-select>
+                <v-select v-model="filters.statuses"
+                          :items="statuses"
+                          v-else-if="header.statusFilter"
+                          multiple
+                          item-text="userStatusType"
+                          item-value="id"
+                          outlined
+                          height="25px"
+                          @blur="getUsers()"
+                ></v-select>
                 <v-text-field outlined
+                              v-else
                               hide-details
                               class="filter-input"
                     v-model="filters[header.value]" @input="debounceGetUsers"></v-text-field>
@@ -109,6 +128,10 @@
               <td class="text-left">{{item.lastName}}</td>
               <td class="text-left">{{item.email}}</td>
               <td class="text-left">{{item.phoneNumber}}</td>
+              <td class="text-left">{{item.userStatusType}}</td>
+              <td class="text-left" v-for="f in orgFilters">
+                {{f.title}}
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -136,6 +159,8 @@
         dialog: false,
         snackbar: {},
         users: [],
+        orgFilters: [],
+        statuses: [],
         descending: true,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 1000]
@@ -150,6 +175,7 @@
           { text: 'Last Name', value: 'lastName', show: true },
           { text: 'Email', value: 'email', show: true },
           { text: 'Phone', value: 'phone', show: true },
+          { text: 'Status', value: 'userStatusType', statusFilter: true, show: true },
         ],
         // search: '',
         filters: {
@@ -157,7 +183,9 @@
           firstName: '',
           lastName: '',
           email: '',
-          phone: ''
+          phone: '',
+          orgs: {},
+          statuses: [1]
         }
       }
     },
@@ -169,15 +197,19 @@
         deep: true,
       },
     },
+    created () {
+      this.getStatuses()
+      this.getOrgFilters()
+    },
     methods: {
       clickRow(id){
         this.$router.push({name: 'user', params: {id}})
       },
       debounceGetUsers: debounce( function () {
-        this.dataLoading = true
         this.getUsers()
       }, 500),
       async getUsers () {
+        this.dataLoading = true
         const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
           const params = {
@@ -186,6 +218,7 @@
             lastName: this.filters.lastName,
             email: this.filters.email,
             phone: this.filters.phone,
+            statuses: this.filters.statuses,
             page: page - 1,
             size: itemsPerPage
           }
@@ -209,7 +242,8 @@
             firstName: this.filters.firstName,
             lastName: this.filters.lastName,
             email: this.filters.email,
-            phone: this.filters.phone
+            phone: this.filters.phone,
+            statuses: this.filters.statuses,
           }
           const {data} = await postRequest(`/user/exportUsers`, params)
           let blob = new Blob([data], {
@@ -222,7 +256,41 @@
           this.snackbar = getSnackbar('ERROR', 'Error Exporting Users')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async getOrgFilters () {
+        try {
+          const {data} = await getRequest(`/org/filters`)
+          this.orgFilters = data
+          this.orgFilters.forEach(f => {
+            this.headers.push({
+              text: f.title,
+              value: f.title,
+              sortable: false,
+              show: true,
+              level: f.orgLevelId,
+              orgFilter: true,
+              orgs: f.orgs,
+              width: '200px'
+            })
+          })
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getStatuses () {
+        try {
+          const {data} = await getRequest(`/user/statuses`)
+          this.statuses = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
   }
 </script>
