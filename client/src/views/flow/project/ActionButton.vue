@@ -26,7 +26,7 @@ export default {
     getActionResult: async function() {
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStep}/actionResult/${this.actionId}`)
-        this.proceed = data.proceed
+        this.proceed = data.canComplete
       } catch (e) {
         logError(e)
       } finally {
