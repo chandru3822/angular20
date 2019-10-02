@@ -126,8 +126,8 @@ public class ProjectService {
 
   private boolean calculateTimestampRequirement(ProjectProcessStepRequirement r) throws Exception {
 
-    LocalDateTime fieldValue = (r.getTimestampValue() != null) ? r.getTimestampValue().toLocalDateTime().withMinute(0).withNano(0) : null;
-    LocalDateTime now = LocalDateTime.now().withMinute(0).withNano(0);
+    LocalDateTime fieldValue = (r.getTimestampValue() != null) ? r.getTimestampValue().toLocalDateTime().withMinute(0).withSecond(0).withNano(0) : null;
+    LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
     String secondaryValue = (r.getIsDataTypeRequirement() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
 
     boolean passed = false;
@@ -159,6 +159,25 @@ public class ProjectService {
           break;
         case 8:
           passed = compareDates(fieldValue.toLocalDate(), now.toLocalDate(), r.getOperatorTypeId());
+          break;
+        case 9:
+          try {
+            Assert.notNull(secondaryValue, "Unable to determine secondary value");
+            passed = compareDateTimes(fieldValue, now.minusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+          } catch (NumberFormatException e) {
+            //@TODO: something
+          }
+          break;
+        case 10:
+          try {
+            Assert.notNull(secondaryValue, "Unable to determine secondary value");
+            passed = compareDateTimes(fieldValue, now.plusHours(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+          } catch (NumberFormatException e) {
+            //@TODO: something
+          }
+          break;
+        case 11:
+          passed = compareDateTimes(fieldValue, now, r.getOperatorTypeId());
           break;
         case 12:
           try {
@@ -200,7 +219,7 @@ public class ProjectService {
         passed = date.isBefore(compareDate);
         break;
       default:
-        throw new Exception(String.format("Unable to parse data type of Date with operator of ID: %s", operatorTypeId));
+        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
     }
 
     return passed;
