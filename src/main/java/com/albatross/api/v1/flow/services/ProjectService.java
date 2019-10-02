@@ -1,6 +1,5 @@
 package com.albatross.api.v1.flow.services;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -145,7 +144,7 @@ public class ProjectService {
         case 6:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDateTimes(fieldValue, now.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates(fieldValue.toLocalDate(), now.minusDays(Long.parseLong(secondaryValue)).toLocalDate(), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -153,10 +152,13 @@ public class ProjectService {
         case 7:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDateTimes(fieldValue, now.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+            passed = compareDates(fieldValue.toLocalDate(), now.plusDays(Long.parseLong(secondaryValue)).toLocalDate(), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
+          break;
+        case 8:
+          passed = compareDates(fieldValue.toLocalDate(), now.toLocalDate(), r.getOperatorTypeId());
           break;
         case 12:
           try {
