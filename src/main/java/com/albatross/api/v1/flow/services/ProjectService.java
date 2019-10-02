@@ -117,11 +117,36 @@ public class ProjectService {
             break;
           case 2:
             requirementMet = calculateTimestampRequirement(r);
+            break;
+          case 3:
+            requirementMet = calculateBoolean(r);
+            break;
           default:
             //@TODO: blow up with error?
         }
     }
     return requirementMet;
+  }
+
+  private boolean calculateBoolean(ProjectProcessStepRequirement r) throws Exception {
+
+    Boolean fieldValue = r.getBooleanValue();
+    Boolean reqValue = Boolean.parseBoolean(r.getRequirementValue());
+
+    boolean passed = false;
+
+    switch (r.getOperatorTypeId().intValue()) {
+      case 1:
+        passed = fieldValue == reqValue;
+        break;
+      case 2:
+        passed = fieldValue != reqValue;
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+    }
+
+    return passed;
   }
 
   private boolean calculateTimestampRequirement(ProjectProcessStepRequirement r) throws Exception {
