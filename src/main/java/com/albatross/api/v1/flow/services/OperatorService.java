@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -22,8 +22,10 @@ public class OperatorService {
   @Autowired
   SqlCache sqlCache;
 
-  public List<OperatorType> getOperatorTypes() {
-    List<OperatorType> results = sqlCache.query("operator.getTypes", Collections.emptyMap(), OperatorType.class);
+  public List<OperatorType> getOperatorTypes(Long dataTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("dataTypeId", dataTypeId);
+    List<OperatorType> results = sqlCache.query("operator.getTypesByDataType", params, OperatorType.class);
     return results;
   }
 

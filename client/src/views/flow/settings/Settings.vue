@@ -87,7 +87,7 @@ export default {
           title: 'Process Steps',
         }, {
           path: '/settings/functions',
-          title: 'Funtions',
+          title: 'Functions',
         }, {
           path: '/settings/statuses',
           title: 'Statuses',

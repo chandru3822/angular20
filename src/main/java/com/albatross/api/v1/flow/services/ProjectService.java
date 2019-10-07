@@ -1,5 +1,17 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.*;
+import com.google.common.collect.ImmutableMap;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -7,20 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
-import com.google.common.collect.ImmutableMap;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.Assert;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -153,11 +151,11 @@ public class ProjectService {
 
     LocalDateTime fieldValue = (r.getTimestampValue() != null) ? r.getTimestampValue().toLocalDateTime().withMinute(0).withSecond(0).withNano(0) : null;
     LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
-    String secondaryValue = (r.getIsDataTypeRequirement() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+    String secondaryValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
 
     boolean passed = false;
 
-    if (!r.getIsDataTypeRequirement()) {
+    if (null == r.getDataTypeRequirementId()) {
       try {
         LocalDateTime reqValue = LocalDateTime.parse(r.getRequirementValue());
         passed = compareDateTimes(fieldValue, reqValue, r.getOperatorTypeId());
@@ -254,11 +252,11 @@ public class ProjectService {
 
     LocalDate fieldValue = (r.getDateValue() !=  null) ? r.getDateValue().toLocalDateTime().toLocalDate() : null;
     LocalDate now = LocalDate.now();
-    String secondaryValue = (r.getIsDataTypeRequirement() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+    String secondaryValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
 
     boolean passed = false;
 
-    if (!r.getIsDataTypeRequirement()) {
+    if (null == r.getDataTypeRequirementId()) {
       // do direct literal operator compare
       // try to make a date out of the requirement value
       try {

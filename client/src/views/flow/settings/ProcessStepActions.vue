@@ -33,23 +33,24 @@
                 @input="loadFieldsByParent(parent)"
             ></v-select>
             <v-select v-if="parent.id"
-                      v-model="newRequirement.customFieldGroupAssignmentId"
+                      v-model="selectedCustomField"
                       :items="customFields"
                       label="Custom Field"
                       item-text="fieldName"
-                      item-value="customFieldGroupAssignmentId"
+                      return-object
+                      @input="loadOperatorTypes(selectedCustomField.dataTypeId); loadDataTypeRequirements(selectedCustomField.dataTypeId)"
             ></v-select>
             <!-- if it is a function -->
             <v-select
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
-                v-model="newRequirement.companyFunctionId"
+                v-model="selectedFunction"
                 :items="availableFunctions"
                 label="Function"
                 item-text="companyFunctionName"
-                item-value="id"
-                @input="loadFunctionParams"
+                returnObject
+                @input="loadFunctionParams(); loadOperatorTypes(selectedFunction.returnDataTypeId); loadDataTypeRequirements(selectedFunction.returnDataTypeId)"
             ></v-select>
-            <div v-if="newRequirement.companyFunctionId && newRequirement.requirementParamDynamicValues.length > 0">
+            <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
               <v-card flat>
                 <v-text-field
@@ -60,15 +61,29 @@
               </v-card>
             </div>
             <v-select
-                v-if="(newRequirement.processStepRequirementTypeId === 1 && newRequirement.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && newRequirement.companyFunctionId)"
+                v-if="(newRequirement.processStepRequirementTypeId === 1 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
-            <v-text-field v-if="newRequirement.operatorTypeId"
+            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" class="mx-2" label="Custom"></v-switch>
+            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue"
                           v-model="newRequirement.requirementValue"
+                          placeholder="Enter a value"
+                          label="Value">
+            </v-text-field>
+            <v-select
+                v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"
+                v-model="selectedDataTypeRequirement"
+                :items="dataTypeRequirements"
+                label="Available Values"
+                item-text="dataTypeValue"
+                return-object
+            ></v-select>
+            <v-text-field v-if="selectedDataTypeRequirement && selectedDataTypeRequirement.secondaryRequirement"
+                          v-model="newRequirement.secondaryRequirementValue"
                           placeholder="Enter a value"
                           label="Value">
             </v-text-field>
@@ -117,7 +132,22 @@
                             item-text="operatorType"
                             item-value="id"
                   ></v-select>
-                  <v-text-field v-model="item.requirementValue"
+                  <v-switch v-model="item.customValue" v-init="item.customValue = !item.dataTypeRequirementId" class="mx-2" label="Custom"></v-switch>
+                  <v-text-field v-if="item.customValue"
+                                v-model="item.requirementValue"
+                                placeholder="Enter a value"
+                                label="Value">
+                  </v-text-field>
+                  <v-select
+                      v-else-if="!item.customValue"
+                      v-model="item.dataTypeRequirement"
+                      :items="dataTypeRequirements"
+                      label="Available Values"
+                      item-text="dataTypeValue"
+                      return-object
+                  ></v-select>
+                  <v-text-field
+                                v-model="item.secondaryRequirementValue"
                                 placeholder="Enter a value"
                                 label="Value">
                   </v-text-field>
@@ -144,7 +174,7 @@
                   <td class="text-left">{{item.requirementValue}}</td>
                   <td>
                     <div style="display: flex;">
-                      <v-btn small text @click="expanded = [item]; selectedRequirementIndex = index"
+                      <v-btn small text @click="expanded = [item]; loadOperatorTypes(item.dataTypeId); loadDataTypeRequirements(item.dataTypeId); selectedRequirementIndex = index"
                              v-if="!expanded.includes(item)">
                         <v-icon>edit</v-icon>
                       </v-btn>
@@ -580,8 +610,13 @@
         ],
         addNewRequirement: false,
         newRequirement: {
-          requirementParamDynamicValues: []
+          requirementParamDynamicValues: [],
+          customValue: false
         },
+        dataTypeRequirements: [],
+        selectedDataTypeRequirement: {},
+        selectedCustomField: {},
+        selectedFunction: {},
         selectedRequirementIndex: null,
         selectedActionIndex: null,
         availableRequirementTypes: [],
@@ -623,7 +658,6 @@
       this.getActions()
       this.getStatusTypes()
       this.getOperationTypes()
-      this.loadOperatorTypes()
     },
     methods: {
       //requirements
@@ -705,7 +739,7 @@
       async loadFunctionParams() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/function/${this.newRequirement.companyFunctionId}/dynamicParams`)
+          const {data} = await getRequest(`/function/${this.selectedFunction.id}/dynamicParams`)
           this.newRequirement.requirementParamDynamicValues = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -714,11 +748,23 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async loadOperatorTypes() {
+      async loadOperatorTypes(dataTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/operator`)
+          const {data} = await getRequest(`/operator/${dataTypeId}`)
           this.operatorTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async loadDataTypeRequirements(dataTypeId) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/dataType/getDataTypeRequirements/${dataTypeId}`)
+          this.dataTypeRequirements = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -728,6 +774,7 @@
       },
       validateRequirementForm() {
         let invalidParams = false
+        //if there are dynamic params, ensure they are all populated
         if (this.newRequirement.requirementParamDynamicValues.length > 0) {
           this.newRequirement.requirementParamDynamicValues.forEach(fp => {
             if (!fp.dynamicValue) {
@@ -735,12 +782,18 @@
             }
           })
         }
-        return invalidParams || !this.newRequirement.requirementValue
+
+        return invalidParams || (!this.newRequirement.requirementValue && !this.selectedDataTypeRequirement.id)
+          || (this.selectedDataTypeRequirement.secondaryRequirement && !this.newRequirement.secondaryRequirementValue)
       },
       async saveNewRequirement() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newRequirement.processStepId = this.processStepId
+          this.newRequirement.customFieldGroupAssignmentId = this.selectedCustomField.customFieldGroupAssignmentId
+          this.newRequirement.companyFunctionId = this.selectedFunction.id
+          this.newRequirement.dataTypeRequirementId = this.selectedDataTypeRequirement.id
+
           const {data} = await postRequest(`/processStep/${this.processStepId}/requirement`, this.newRequirement)
           this.requirements.push(data)
           this.addNewRequirement = false

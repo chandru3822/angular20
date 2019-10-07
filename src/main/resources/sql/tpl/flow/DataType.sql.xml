@@ -13,4 +13,10 @@
     where cdt.company_id = :companyId
       and cdt.archived is not true
   ]]></dataType.getCompanyDataTypes>
+
+  <dataType.getDataTypeRequirements><![CDATA[
+    select *
+    from flow.data_type_requirement
+    where data_type_id = :dataTypeId
+  ]]></dataType.getDataTypeRequirements>
 </sql>
