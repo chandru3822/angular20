@@ -7,7 +7,7 @@
         </v-toolbar>
         <v-container>
           <v-list v-for="(f, index) in filterBy(functions, false, 'archived')"
-                  :key="index">
+                  :key="index"  class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content>
                 {{f.companyFunctionName}}

@@ -19,7 +19,7 @@
           </v-text-field>
           <v-btn v-if="addNew" :disabled="!newType.statusType" @click="addNewType">Save</v-btn>
           <v-list v-for="(s, index) in filterBy(statusTypes, false, 'archived')"
-                  :key="index">
+                  :key="index"  class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content  class="text--primary text-left">
                 <v-text-field class="one-hunned" v-if="selectedStatusTypeId === s.id" v-model="s.processStepStatusType">

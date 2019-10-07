@@ -18,7 +18,7 @@
               v-model="newStep.processStepName"
           ></v-text-field>
           <v-btn v-if="addNew" :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
-          <v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')"
+          <v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')" class="pa-0"
                   :key="index">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content class="text-left clickable" @click="goToProcessStep(ps.id)">
