@@ -125,7 +125,6 @@
             and dfp.parameter_type_id = 2
             and rpdv.archived is not true
       ) params)) AS "requirementParamDynamicValues",
-    dtr.id as data_type_requirement_id,
     dtr.secondary_requirement
     from flow.process_step_requirement psr
     left join flow.project_process_step_custom_field_value ppscfv on ppscfv.custom_field_group_assignment_id = psr.custom_field_group_assignment_id

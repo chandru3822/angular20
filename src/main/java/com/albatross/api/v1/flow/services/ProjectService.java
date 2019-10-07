@@ -12,11 +12,14 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -117,7 +120,10 @@ public class ProjectService {
             requirementMet = calculateTimestampRequirement(r);
             break;
           case 3:
-            requirementMet = calculateBoolean(r);
+            requirementMet = calculateBooleanRequirement(r);
+            break;
+          case 4:
+            requirementMet = calculateNumericRequirement(r);
             break;
           default:
             //@TODO: blow up with error?
@@ -126,7 +132,76 @@ public class ProjectService {
     return requirementMet;
   }
 
-  private boolean calculateBoolean(ProjectProcessStepRequirement r) throws Exception {
+  private boolean calculateNumericRequirement(ProjectProcessStepRequirement r) throws Exception {
+
+    Double fieldValue = (r.getNumericValue() == null) ? null : r.getNumericValue().setScale(2, RoundingMode.DOWN).doubleValue();
+
+    boolean passed = false;
+
+    if (r.getDataTypeRequirementId() == null) {
+      try {
+        Double reqValue = new BigDecimal(r.getRequirementValue()).setScale(2, RoundingMode.DOWN).doubleValue();
+        passed = compareNumeric(fieldValue, reqValue, r.getOperatorTypeId());
+      } catch(Exception e) {
+        throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+      }
+    } else {
+      switch(r.getDataTypeRequirementId().intValue()) {
+        case 16:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = fieldValue == null;
+                break;
+              case 2:
+                passed = fieldValue != null;
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+            }
+          break;
+        case 17:
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue != null;
+              break;
+            case 2:
+              passed = fieldValue == null;
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+          }
+          break;
+      }
+    }
+
+    return passed;
+  }
+
+  private boolean compareNumeric(Double number, Double compareNumber, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = Objects.equals(number, compareNumber);
+        break;
+      case 2:
+        passed = !Objects.equals(number, compareNumber);
+        break;
+      case 3:
+        passed = (number != null && compareNumber != null) && number > compareNumber;
+        break;
+      case 4:
+//        passed = (number)
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", operatorTypeId));
+    }
+
+    return passed;
+  }
+
+  private boolean calculateBooleanRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Boolean fieldValue = r.getBooleanValue();
     Boolean reqValue = Boolean.parseBoolean(r.getRequirementValue());
