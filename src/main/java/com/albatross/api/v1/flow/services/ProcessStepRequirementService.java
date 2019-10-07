@@ -3,10 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.ProcessStepRequirement;
-import com.albatross.api.v1.flow.model.ProcessStepRequirementType;
-import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -143,10 +140,12 @@ public class ProcessStepRequirementService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<List<RequirementParamDynamicValue>>() {};
-
       bw.registerCustomEditor(List.class, "requirementParamDynamicValues",
           new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 
+      TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<DataTypeRequirement>() {};
+      bw.registerCustomEditor(Object.class, "dataTypeRequirement",
+          new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
     }
   }
 

@@ -8,7 +8,7 @@
        cf.field_name,
        (select json_build_object(
                        'id', dtr.id,
-                       'dataTypeRequirement', dtr.data_type_value,
+                       'dataTypeValue', dtr.data_type_value,
                        'secondaryRequirement', dtr.secondary_requirement
                    ))                                     as data_type_requirement,
        coalesce(cdt.data_type_id, df.return_data_type_id) as data_type_id,

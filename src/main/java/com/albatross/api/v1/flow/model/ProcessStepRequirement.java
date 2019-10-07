@@ -19,6 +19,7 @@ public class ProcessStepRequirement {
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, processStepName,
     secondaryRequirementValue;
 
+  private DataTypeRequirement dataTypeRequirement;
   private List<RequirementParamDynamicValue> requirementParamDynamicValues;
 
   private Boolean archived, fulfilled, secondaryRequirement;

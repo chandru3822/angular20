@@ -132,21 +132,21 @@
                             item-text="operatorType"
                             item-value="id"
                   ></v-select>
-                  <v-switch v-model="item.customValue" v-init="item.customValue = !item.dataTypeRequirementId" class="mx-2" label="Custom"></v-switch>
-                  <v-text-field v-if="item.customValue"
+                  <v-switch :value="item.dataTypeRequirementId === null" class="mx-2" label="Custom"></v-switch>
+                  <v-text-field v-if="item.dataTypeRequirementId === null"
                                 v-model="item.requirementValue"
                                 placeholder="Enter a value"
                                 label="Value">
                   </v-text-field>
                   <v-select
-                      v-else-if="!item.customValue"
+                      v-else
                       v-model="item.dataTypeRequirement"
                       :items="dataTypeRequirements"
                       label="Available Values"
                       item-text="dataTypeValue"
                       return-object
                   ></v-select>
-                  <v-text-field
+                  <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
                                 v-model="item.secondaryRequirementValue"
                                 placeholder="Enter a value"
                                 label="Value">
@@ -174,7 +174,8 @@
                   <td class="text-left">{{item.requirementValue}}</td>
                   <td>
                     <div style="display: flex;">
-                      <v-btn small text @click="expanded = [item]; loadOperatorTypes(item.dataTypeId); loadDataTypeRequirements(item.dataTypeId); selectedRequirementIndex = index"
+                      <v-btn small text @click="expanded = [item];loadOperatorTypes(item.dataTypeId);
+                                    loadDataTypeRequirements(item.dataTypeId); selectedRequirementIndex = index"
                              v-if="!expanded.includes(item)">
                         <v-icon>edit</v-icon>
                       </v-btn>
