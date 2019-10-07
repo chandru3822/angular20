@@ -132,8 +132,9 @@
                             item-text="operatorType"
                             item-value="id"
                   ></v-select>
-                  <v-switch :value="item.dataTypeRequirementId === null" class="mx-2" label="Custom"></v-switch>
-                  <v-text-field v-if="item.dataTypeRequirementId === null"
+                  <v-switch v-model="item.customValue" class="mx-2"
+                            label="Custom"></v-switch>
+                  <v-text-field v-if="item.customValue"
                                 v-model="item.requirementValue"
                                 placeholder="Enter a value"
                                 label="Value">
@@ -814,9 +815,10 @@
       async updateRequirement(requirement) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          requirement.dataTypeRequirementId = requirement.dataTypeRequirement.id
-          requirement.secodnaryRequirementValue = requirement.dataTypeRequirement.secondaryRequirement ? requirement.secodnaryRequirementValue : null
-          requirement.requirementValue = requirement.dataTypeRequirementId ? requirement.requirementValue : null
+          requirement.dataTypeRequirementId = requirement.customValue ? null : requirement.dataTypeRequirement.id
+          requirement.dataTypeRequirement = requirement.customValue ? {} : requirement.dataTypeRequirement
+          requirement.secondaryRequirementValue = !requirement.customValue && requirement.dataTypeRequirement.secondaryRequirement ? requirement.secondaryRequirementValue : null
+          requirement.requirementValue = requirement.customValue ? requirement.requirementValue : null
           const {data} = await putRequest(`/processStep/${this.processStepId}/requirement`, requirement)
           this.expanded = []
           // this forces the list to update the operator displayed ... using requirement = data did not work

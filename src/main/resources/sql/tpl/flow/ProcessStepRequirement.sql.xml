@@ -4,6 +4,7 @@
        ot.operator_type,
        psrt.process_step_requirement_type,
        ps.id as parent_id,
+       case when psr.data_type_requirement_id is null then true else false end as custom_value,
        ps.process_step_name as parent_name,
        cf.field_name,
        (select json_build_object(
