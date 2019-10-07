@@ -814,6 +814,9 @@
       async updateRequirement(requirement) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          requirement.dataTypeRequirementId = requirement.dataTypeRequirement.id
+          requirement.secodnaryRequirementValue = requirement.dataTypeRequirement.secondaryRequirement ? requirement.secodnaryRequirementValue : null
+          requirement.requirementValue = requirement.dataTypeRequirementId ? requirement.requirementValue : null
           const {data} = await putRequest(`/processStep/${this.processStepId}/requirement`, requirement)
           this.expanded = []
           // this forces the list to update the operator displayed ... using requirement = data did not work
