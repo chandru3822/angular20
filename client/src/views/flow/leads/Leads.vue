@@ -197,7 +197,7 @@ export default {
 
 <style lang="scss">
   #leads-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 290px);
     min-height: 300px;
   }
 </style>

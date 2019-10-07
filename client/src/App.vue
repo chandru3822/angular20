@@ -48,6 +48,12 @@ body {
   height: 45px !important;
 }
 
+/* universally change the data-table footer height */
+.v-data-footer {
+  height: 40px;
+  align-content: center;
+}
+
 .v-list-item--dense, .v-list--dense .v-list-item {
   /* vuetify's default code for v-list-dense sets the min-height to 40px, but nothing was setting the height itself so depending on content adding the `dense` flag wasn't doing anything */
   height: 40px;

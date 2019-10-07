@@ -3,7 +3,7 @@
     <v-flex xs12>
       <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
       <!--non-mobile header...is this necessary?-->
-      <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="53">
+      <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="33">
         <v-toolbar-title class="app-title">{{companyName}}</v-toolbar-title>
         <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
         <v-toolbar-items>
@@ -95,11 +95,11 @@ export default {
 @media (min-width: 769px) {
   #portal{
     .app-title {
-      font-size: 40px;
+      font-size: 35px;
     }
   }
   #header {
-    padding: 10px;
+    padding: 0 10px;
   }
 }
 </style>
