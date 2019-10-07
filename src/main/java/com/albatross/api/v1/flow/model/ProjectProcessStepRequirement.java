@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
   private String textValue;
 
-  private Double numericValue;
+  private BigDecimal numericValue;
 
   private Long intValue, dataTypeRequirementId;
 
