@@ -4,11 +4,12 @@ import { UserStore } from '@/stores/UserStore'
 import { AppStore } from '@/stores/AppStore'
 import { MAX_FILE_SIZE } from '@/helpers/helpers'
 import { postRequest, deleteRequest, getRequest } from "./helpers/helpers";
+import {AppMutations} from "./stores/AppStore";
 
 Vue.use(Vuex)
 
 export const Mutations = {
-  INIT: 'storeInt'
+  INIT: 'storeInt',
 }
 
 export const Actions = {

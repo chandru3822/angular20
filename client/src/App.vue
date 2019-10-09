@@ -1,8 +1,34 @@
 <template>
   <v-app id="app">
+    <v-toolbar v-if="$store.state.app.availableUpdate">
+      <v-toolbar-title>A newer version of the app is available.</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-btn text @click="refreshPage">Click here to Refresh</v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+<!--    <v-btn @click="$store.state.app.availableUpdate = true">available update on</v-btn>-->
+<!--    <v-btn @click="$store.state.app.availableUpdate = false">available update off</v-btn>-->
     <router-view/>
   </v-app>
 </template>
+
+<script>
+  import {AppMutations} from '@/stores/AppStore'
+
+  export default {
+    name: 'App',
+    data() {
+      return {}
+    },
+    methods: {
+      async refreshPage() {
+        this.$store.commit(AppMutations.SET_AVAILABLE_UPDATE, false)
+        window.location.reload()
+      },
+    }
+  }
+</script>
 
 <style lang="scss">
 /*
