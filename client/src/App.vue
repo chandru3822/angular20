@@ -1,6 +1,7 @@
 <template>
   <v-app id="app">
-    <v-toolbar v-if="$store.state.app.availableUpdate">
+    <!--  don't show the new version notification on the login screen. it looks weird  -->
+    <v-toolbar v-if="$store.state.app.availableUpdate && $route.name !== 'login'">
       <v-toolbar-title>A newer version of the app is available.</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
