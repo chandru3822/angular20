@@ -17,7 +17,7 @@ register('/service-worker.js', {
     console.log('Content has been cached for offline use.')
   },
   updatefound (registration) {
-    console.log('New content is downloading.')
+    console.log('New content is downloading.', registration)
     //todo: i am not sure why sometimes updatefound is the only function that runs and why other times it is updated()
     document.dispatchEvent(
       new CustomEvent('swUpdated')
