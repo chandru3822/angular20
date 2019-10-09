@@ -14,7 +14,7 @@ import java.util.List;
 public class OrgFilter {
 
   private Long companyId, orgLevelId, rank;
-  private String title;
+  private String levelName;
   private List<Org> orgs;
 }
 

@@ -205,7 +205,7 @@
               <td class="text-left user-column">{{item.userStatusType}}</td>
               <td class="text-left user-column">{{item.position}}</td>
               <td class="text-left user-column" v-for="f in orgFilters">
-                {{f.title}}
+                {{f.levelName}}
               </td>
             </tr>
           </template>
@@ -367,8 +367,8 @@
           this.orgFilters = data
           this.orgFilters.forEach(f => {
             this.headers.push({
-              text: f.title,
-              value: f.title,
+              text: f.levelName,
+              value: f.levelName,
               sortable: false,
               show: true,
               level: f.orgLevelId,

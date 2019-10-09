@@ -111,7 +111,7 @@
   <org.getOrgFiltersForCompany>
     <![CDATA[
       select of.org_level_id,
-             of.title,
+             ol.level_name,
              of.rank,
              ol.company_id
       from flow.org_filter of
