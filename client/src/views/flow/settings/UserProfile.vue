@@ -18,7 +18,7 @@
     </v-row>
     <v-form ref="userForm">
       <v-row>
-        <v-col xs-12 md-6>
+        <v-col xs="12" md="6">
           <v-text-field v-model="user.firstName"
                         placeholder="Enter a value"
                         required
@@ -38,7 +38,7 @@
                         label="E-mail">
           </v-text-field>
         </v-col>
-        <v-col xs-12 md-6>
+        <v-col xs="12" md="6">
           <v-text-field v-model="user.newPassword"
                         placeholder="Enter a new password"
                         required
