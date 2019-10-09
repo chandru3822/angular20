@@ -13,7 +13,7 @@ import JsonExcel from 'vue-json-excel'
 import moment from 'moment-timezone'
 
 // @todo: make PWA awesomeness
-// import './registerServiceWorker'
+import './registerServiceWorker'
 
 const { VUE_APP_BASE_API } = process.env
 const JWT_EXPIRED = 'invalid token'
