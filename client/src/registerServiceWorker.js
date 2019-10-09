@@ -11,7 +11,7 @@ register('/service-worker.js', {
       console.log('RAN UPDATE FOR SW')
       registration.update();
     // }, 1000 * 60 * 60); // e.g. hourly checks
-    }, 1000 * 60); // e.g. 60 second
+    }, 1000 * 60 * 2); // e.g. 2 mins
   },
   cached (registration) {
     console.log('Content has been cached for offline use.')
