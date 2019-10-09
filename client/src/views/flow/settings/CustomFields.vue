@@ -92,8 +92,8 @@
           </template>
           <template #expanded-item="{ headers, item, index }">
             <td :colspan="headers.length" class="pb-4"  :class="{'shaded-row': selectedIndex % 2}">
-              <v-flex justify-center class="flex-display pl-3 pr-3" :class="{'shaded-row': selectedIndex % 2}">
-                <v-card text class="text-xs-center field-card one-hunned" flat
+              <v-col justify="center" class="flex-display pl-3 pr-3" :class="{'shaded-row': selectedIndex % 2}">
+                <v-card text class="text-center field-card one-hunned" flat
                         :color="selectedIndex % 2 ? 'rowShadeCustom' : 'white'">
                   <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
                   <v-text-field
@@ -119,7 +119,7 @@
                                 label="SQL Key"
                   ></v-text-field>
 
-                  <v-flex class="options-container" fluid
+                  <v-col class="options-container"
                           v-if="item.companyDataType && item.companyDataType.hasListValues">
                     <span>Selectable Options</span>
                     <draggable v-model="item.listOfValues"
@@ -148,8 +148,8 @@
                         @click="addOption(item.listOfValues)">
                       Add Option
                     </v-btn>
-                  </v-flex>
-                  <v-flex class="options-container" fluid>
+                  </v-col>
+                  <v-col class="options-container">
                     <div>Included Object Types</div>
                     <v-container v-if="item.custom">
                       <v-checkbox v-for="(ot, index) in customFieldObjectTypes"
@@ -167,14 +167,14 @@
                                   :false-value="true" :true-value="false"
                                   :label="ot.objectType"></v-checkbox>
                     </v-container>
-                  </v-flex>
+                  </v-col>
                   <v-btn
                       :disabled="invalid(item)"
                       @click="saveChanges(item.custom, item); item.expanded = !item.expanded">
                     {{item.custom ? 'Add Field' : 'Save Changes'}}
                   </v-btn>
                 </v-card>
-              </v-flex>
+              </v-col>
             </td>
           </template>
         </v-data-table>

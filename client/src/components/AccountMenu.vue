@@ -41,7 +41,7 @@
     </v-list>
     <v-divider></v-divider>
     <v-list>
-      <v-list-item v-for="item in menuItems" @click="menuOpen = false" :to="item.path">
+      <v-list-item v-for="(item, index) in menuItems" :key="index" @click="menuOpen = false" :to="item.path">
         <v-list-item-title>{{item.title}}</v-list-item-title>
         <v-list-item-action class="account-menu-icon">
           <v-icon>{{item.icon}}</v-icon>

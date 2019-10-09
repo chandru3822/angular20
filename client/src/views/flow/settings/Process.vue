@@ -124,7 +124,6 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
-import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
@@ -134,7 +133,6 @@ export default {
   name: 'Process',
   mixins: [Vue2Filters.mixin],
   components: {
-    draggable,
     Snackbar
   },
   data () {

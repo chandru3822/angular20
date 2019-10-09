@@ -1,7 +1,7 @@
 <template>
   <v-container id="leads-container">
     <v-row>
-      <v-col xs-12>
+      <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">Customers</v-toolbar-title>
           <v-spacer></v-spacer>

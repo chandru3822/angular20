@@ -58,7 +58,7 @@
 
 
           <template #item="{ item }">
-            <tr  class="text-xs-left" :class="{'shaded-row': details.companyFunctionParams.indexOf(item) % 2}">
+            <tr  class="text-left" :class="{'shaded-row': details.companyFunctionParams.indexOf(item) % 2}">
               <td class="text-left">{{ item.parameterName }}</td>
               <!-- customTypeColumn -->
               <td class="text-left" v-if="item.parameterTypeId === 3">

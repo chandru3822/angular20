@@ -12,7 +12,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="createNew" text class="text-xs-center one-hunned pa-3" flat
+        <v-card v-if="createNew" text class="text-center one-hunned pa-3" flat
                 color="rowShadeCustom">
           <v-text-field
               label="Group Name"
@@ -107,7 +107,7 @@
 
               <template #expanded-item="{ headers, item }">
                 <td :colspan="headers.length" class="pb-2 px-0"  :class="{'shaded-row': selectedIndex % 2}">
-                  <v-flex xs12 justify-center class="pl-3 pr-3" v-if="addField">
+                  <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
                     <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.objectTypeId, item.id)">
                       <v-radio label="Native Field"
@@ -141,12 +141,12 @@
                               @input="assignAncillaryCustomField(item)"
                     ></v-select>
                     <v-btn @click="addField = false">Cancel</v-btn>
-                  </v-flex>
-                  <v-flex xs12 justify-center class="px-3 py-0"
+                  </v-col>
+                  <v-col cols="12" justify="center" class="px-3 py-0"
                           v-if="!addField && (!item.customFields || item.customFields.length === 0)">
                     No Custom Fields Added
-                  </v-flex>
-                  <v-flex xs12 justify-center class="px-3 py-0"
+                  </v-col>
+                  <v-col  cols="12" justify="center" class="px-3 py-0"
                           v-if="item.customFields && item.customFields.length > 0">
       <!--              <h3 class="text-left">Assigned Custom Fields</h3>-->
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
@@ -201,7 +201,7 @@
                         </v-list-item>
                       </v-list>
                     </draggable>
-                  </v-flex>
+                  </v-col>
                 </td>
               </template>
             </v-data-table>

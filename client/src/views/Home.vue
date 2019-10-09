@@ -1,27 +1,29 @@
 <template>
-  <v-layout column id="portal" v-if="loadComplete">
-    <v-flex xs12>
-      <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
-      <!--non-mobile header...is this necessary?-->
-      <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="33">
-        <v-toolbar-title class="app-title">{{companyName}}</v-toolbar-title>
-        <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
-        <v-toolbar-items>
-          <AccountMenu :showImage="true"></AccountMenu>
-        </v-toolbar-items>
-        <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
-          <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
-            {{tab.label}}
-          </v-tab>
-        </v-tabs>
-      </v-app-bar>
-      <v-content>
-        <v-container class="router-container">
-          <router-view class="router-view" />
-        </v-container>
-      </v-content>
-    </v-flex>
-  </v-layout>
+  <div id="portal" v-if="loadComplete">
+    <v-row>
+      <v-col cols="12" class="pt-0">
+        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
+        <!--non-mobile header...is this necessary?-->
+        <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="33">
+          <v-toolbar-title class="app-title">{{companyName}}</v-toolbar-title>
+          <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
+          <v-toolbar-items>
+            <AccountMenu :showImage="true"></AccountMenu>
+          </v-toolbar-items>
+          <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
+            <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
+              {{tab.label}}
+            </v-tab>
+          </v-tabs>
+        </v-app-bar>
+        <v-content>
+          <v-container class="router-container">
+            <router-view class="router-view" />
+          </v-container>
+        </v-content>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>

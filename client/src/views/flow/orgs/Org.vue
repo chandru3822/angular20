@@ -2,12 +2,12 @@
   <v-container>
     <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="org-header elevation-1">
-      <v-col xs-12 class="text-left">
+      <v-col cols="12" class="text-left">
         <div class="org-title">Organization</div>
       </v-col>
     </v-row>
     <v-row>
-      <v-col xs-6 class="text-left">
+      <v-col  cols="6" class="text-left">
         <div>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>Summary</v-toolbar-title>
@@ -35,7 +35,7 @@
             ></v-select>
           </v-card>
         </div>
-        <div class="mt-4" v-for="cfg in customFieldGroups">
+        <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -43,7 +43,7 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="cf in cfg.customFieldValues" :readonly="false" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>

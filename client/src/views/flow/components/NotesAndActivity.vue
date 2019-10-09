@@ -43,7 +43,7 @@
         </template>
 
         <template #item="{ item, index }">
-          <tr class="text-xs-left" :class="{'shaded-row': index % 2}">
+          <tr class="text-left" :class="{'shaded-row': index % 2}">
             <td class="py-2">
               {{item.note}}
               <div class="mt-2 note-created-by">

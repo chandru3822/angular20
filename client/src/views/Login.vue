@@ -1,8 +1,8 @@
 <template>
   <v-content>
-    <v-container fluid fill-height>
-      <v-layout align-center justify-center>
-        <v-flex xs12 sm8>
+    <v-container class="fill-height">
+      <v-row align="center" justify="center">
+        <v-col xs12 sm8>
           <v-card color="secondaryMaster" class="elevation-12">
             <v-toolbar dark color="primary">
               <v-toolbar-title>Albatross</v-toolbar-title>
@@ -19,8 +19,8 @@
               </v-form>
             </v-card-text>
           </v-card>
-        </v-flex>
-      </v-layout>
+        </v-col>
+      </v-row>
     </v-container>
   </v-content>
 </template>

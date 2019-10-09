@@ -54,7 +54,8 @@
               <h5 class="text-left">Dynamic Function Parameters</h5>
               <v-card flat>
                 <v-text-field
-                    v-for="fp in newRequirement.requirementParamDynamicValues"
+                    v-for="(fp, index) in newRequirement.requirementParamDynamicValues"
+                    :key="index"
                     placeholder="Enter a dynamic value"
                     v-model="fp.dynamicValue"
                     :label="fp.parameterName"></v-text-field>
@@ -119,7 +120,8 @@
                     <h5 class="text-left">Dynamic Function Parameters</h5>
                     <v-card flat>
                       <v-text-field
-                          v-for="fp in item.requirementParamDynamicValues"
+                          v-for="(fp, index) in item.requirementParamDynamicValues"
+                          :key="index"
                           placeholder="Enter a dynamic value"
                           v-model="fp.dynamicValue"
                           :label="fp.parameterName"></v-text-field>
@@ -250,7 +252,6 @@
                       label="Action Type"
                       item-text="actionType"
                       item-value="id"
-                      @input=""
             ></v-select>
             <v-select v-model="newAction.processStepStatusTypeId"
                       :items="statusTypes"
@@ -258,7 +259,6 @@
                       label="Action changes status of parent process step to"
                       item-text="processStepStatusType"
                       item-value="id"
-                      @input=""
             ></v-select>
             <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                    @click="saveNewAction">
@@ -296,7 +296,6 @@
                               label="Action Type"
                               item-text="actionType"
                               item-value="id"
-                              @input=""
                     ></v-select>
                     <v-select v-model="item.processStepStatusTypeId"
                               :items="statusTypes"
@@ -304,7 +303,6 @@
                               label="Action changes status of parent process step to"
                               item-text="processStepStatusType"
                               item-value="id"
-                              @input=""
                     ></v-select>
                     <!-- BUTTON -->
                     <div v-if="item.actionTypeId === 2">
@@ -361,7 +359,7 @@
                   </v-card>
                   <!-- @randa - move requirements to their own component. it is confusing having them in this file -->
 
-                  <v-row justify-center class="pl-3 pr-3"
+                  <v-row justify="center" class="pl-3 pr-3"
                           v-if="item.actionTypeId === 1 && item.processStepActionLinks && item.processStepActionLinks.length > 0">
                     <v-col cols="12">
                       <h3 class="text-left">Child Links</h3>
@@ -414,7 +412,7 @@
                       </v-list>
                     </v-col>
                   </v-row>
-                  <v-row justify-center class="pl-3 pr-3"
+                  <v-row justify="center" class="pl-3 pr-3"
                           v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
                     <v-col cols="12">
                       <h3 class="text-left">Child Process Steps</h3>
@@ -494,7 +492,7 @@
                     <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
                   </v-toolbar>
                   <v-card flat class="text-left">
-                    <v-btn small class="ml-1 mr-1 mt-1" v-for="ot in operationTypes"
+                    <v-btn small class="ml-1 mr-1 mt-1" v-for="(ot, index) in operationTypes" :key="index"
                            @click="item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})">
                       {{ot.operationType}}
                     </v-btn>
@@ -503,7 +501,7 @@
                     <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
                   </v-toolbar>
                   <v-card flat class="text-left mb-4">
-                    <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements"
+                    <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
                            @click="item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })">
                       {{r.requirementNbr}}
                     </v-btn>

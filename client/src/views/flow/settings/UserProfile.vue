@@ -5,7 +5,7 @@
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
         </v-toolbar>
-        <v-card flat style="background: aliceblue">
+        <v-card flat style="background: aliceblue" class="text-center">
           <div class="pt-5">
             Changing the timezone in the account menu should change this value: <br/>
             (this section is just temporary for testing)
@@ -53,8 +53,8 @@
           </v-text-field>
         </v-col>
       </v-row>
-      <v-row wrap>
-        <v-col xs-12>
+      <v-row>
+        <v-col cols="12">
           <v-btn @click="validate">
             <v-icon>save</v-icon>
             Save Changes
@@ -64,7 +64,7 @@
     </v-form>
     <v-divider class="mt-3 mb-3"></v-divider>
     <v-row>
-      <v-col xs-12>
+      <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">Profile Image</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -76,21 +76,23 @@
             <v-icon>delete</v-icon>
           </v-btn>
         </v-toolbar>
-        <div class="mt-4" v-if="addImage">
-          <form enctype="multipart/form-data" novalidate>
-            <input
-                type="file"
-                :accept="acceptedFileTypes"
-                class="file-input clickable"
-                :disabled="savingUserImage"
-                @change="uploadFile($event.target.files, attachmentTypeId, userId)"
-                name="avatar"
-            >
-          </form>
-        </div>
-        <img class="user-profile-image" v-else-if="profileImage.presignedUrl" :src="profileImage.presignedUrl">
-        <div class="mt-4" v-else>
-          No image uploaded
+        <div class="text-center">
+          <div class="mt-4" v-if="addImage">
+            <form enctype="multipart/form-data" novalidate>
+              <input
+                  type="file"
+                  :accept="acceptedFileTypes"
+                  class="file-input clickable"
+                  :disabled="savingUserImage"
+                  @change="uploadFile($event.target.files, attachmentTypeId, userId)"
+                  name="avatar"
+              >
+            </form>
+          </div>
+          <img class="user-profile-image" v-else-if="profileImage.presignedUrl" :src="profileImage.presignedUrl">
+          <div class="mt-4" v-else>
+            No image uploaded
+          </div>
         </div>
       </v-col>
     </v-row>

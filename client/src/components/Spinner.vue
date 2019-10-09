@@ -1,11 +1,11 @@
 <template>
-  <v-flex xs12 class="spinner-container">
+  <v-col cols="12" class="spinner-container">
     <v-progress-circular
         indeterminate
         :size="size"
         :color="spinnerColor"
     ></v-progress-circular>
-  </v-flex>
+  </v-col>
 </template>
 
 <script>

@@ -78,7 +78,7 @@
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-xs-left" :class="{'shaded-row': orgTypes.indexOf(item) % 2}">
+            <tr  class="text-left" :class="{'shaded-row': orgTypes.indexOf(item) % 2}">
               <td class="text-left">{{ item.orgType }}</td>
               <td class="text-left">{{ item.level || 'n/a' }}</td>
               <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>

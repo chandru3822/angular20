@@ -17,7 +17,7 @@
                 </v-list-item-content>
               </v-list-item>
             </template>
-            <v-list-item dense v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :index="o.id"
+            <v-list-item dense v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :key="o.id"
                          :to="{ path: `/settings/customFieldGroup/${o.id}`}"
                          :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
               <v-list-item-content>
@@ -28,7 +28,7 @@
         </v-card>
       </v-col>
       <v-col cols="9" class="pa-4">
-        <v-sheet color="#fff" class="elevation-2 text-xs-left">
+        <v-sheet color="#fff" class="elevation-2 text-left">
           <router-view/>
         </v-sheet>
       </v-col>

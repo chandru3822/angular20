@@ -2,13 +2,13 @@
   <v-container>
     <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="lead-header elevation-1">
-      <v-col xs-8 class="text-left">
+      <v-col cols="8" class="text-left">
         <div class="lead-title">{{customer.fullName}}</div>
         <div class="lead-subtitle">
           {{customer.street1}} - {{customer.city}}, {{customer.state}}
         </div>
       </v-col>
-      <v-col xs-4 class="lead-owner">
+      <v-col cols="4" class="lead-owner">
         <div v-if="!changeOwner">
           <div v-if="customer.owner">
             <v-avatar
@@ -42,7 +42,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col xs-6 class="text-left">
+      <v-col cols="6" class="text-left">
         <div>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>Summary</v-toolbar-title>
@@ -70,7 +70,7 @@
                           v-model="customer.dateCreated"></v-text-field>
           </v-card>
         </div>
-        <div class="mt-4" v-for="cfg in customFieldGroups">
+        <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -79,11 +79,11 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="cf in cfg.customFieldValues" :readonly="false" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="false" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
-      <v-col xs-6 class="text-left">
+      <v-col cols="6" class="text-left">
         <NotesAndActivity :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(customerId)"
                           type="Customer"

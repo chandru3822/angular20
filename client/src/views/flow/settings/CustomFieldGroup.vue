@@ -1,7 +1,7 @@
 <template>
   <v-container class="custom-field-group-container">
     <v-row>
-      <v-col xs-12>
+      <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -112,7 +112,7 @@
             </template>
             <template #expanded-item="{ headers, item, index }">
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
-                <v-flex xs12 justify-center  class="px-3 py-0" >
+                <v-col  cols="12" justify="center"  class="px-3 py-0" >
                   <v-select v-if="addField"
                             v-model="newField"
                             :items="availableCustomFields"
@@ -178,7 +178,7 @@
                       </v-list-item>
                     </v-list>
                   </draggable>
-                </v-flex>
+                </v-col>
               </td>
             </template>
           </v-data-table>

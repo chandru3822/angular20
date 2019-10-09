@@ -2,12 +2,12 @@
   <v-container>
     <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="user-header elevation-1">
-      <v-col xs-12 class="text-left">
+      <v-col cols="12" class="text-left">
         <div class="user-title">{{user.firstName}} {{user.lastName}}</div>
       </v-col>
     </v-row>
     <v-row>
-      <v-col xs-6 class="text-left">
+      <v-col cols="6" class="text-left">
         <div>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>Summary</v-toolbar-title>
@@ -27,7 +27,7 @@
                           v-model="user.email"></v-text-field>
           </v-card>
         </div>
-        <div class="mt-4" v-for="cfg in customFieldGroups">
+        <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -36,11 +36,11 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="cf in cfg.customFieldValues" :readonly="false" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
-      <v-col xs-6 class="text-left">
+      <v-col cols="6" class="text-left">
         <NotesAndActivity :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(userId)"
                           type="User"
@@ -95,7 +95,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.user.customFieldGroups = this.customFieldGroups
         try {
-          const {data} = await putRequest(`/user`, this.user)
+          await putRequest(`/user`, this.user)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

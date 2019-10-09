@@ -64,9 +64,9 @@
           </v-row>
         </v-container>
       </v-form>
-      <v-container class="text-left" v-for="cfg in customFieldGroups" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+      <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
         <h3>{{cfg.groupName}}</h3>
-        <CustomValueInput v-for="cf in cfg.customFieldValues" :readonly="false" :field="cf"></CustomValueInput>
+        <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="false" :field="cf"></CustomValueInput>
       </v-container>
     </v-card>
     <Snackbar :snackbar="snackbar"></Snackbar>

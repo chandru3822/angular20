@@ -1,7 +1,7 @@
 <template>
   <v-container id="users-container">
     <v-row>
-      <v-col xs-12>
+      <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -204,7 +204,7 @@
               <td class="text-left user-column">{{item.phoneNumber}}</td>
               <td class="text-left user-column">{{item.userStatusType}}</td>
               <td class="text-left user-column">{{item.position}}</td>
-              <td class="text-left user-column" v-for="f in orgFilters">
+              <td class="text-left user-column" v-for="(f, index) in orgFilters" :key="index">
                 {{f.levelName}}
               </td>
             </tr>
@@ -222,9 +222,6 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
   import { saveAs } from 'file-saver'
-
-  const {VUE_APP_BASE_API} = process.env
-  import axios from 'axios'
 
   export default {
     name: 'Users',
