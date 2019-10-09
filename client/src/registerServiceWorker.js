@@ -19,9 +19,12 @@ register('/service-worker.js', {
   updatefound (registration) {
     console.log('New content is downloading.', registration)
     //todo: i am not sure why sometimes updatefound is the only function that runs and why other times it is updated()
-    document.dispatchEvent(
-      new CustomEvent('swUpdated')
-    )
+    //i think this makes it so the new version bar won't show up if there isn't a service worker already loaded, meaning it should be their first page load after a cleared cache so the should already be updated.
+    if(registration && registration.active && registration.state != null){
+      document.dispatchEvent(
+        new CustomEvent('swUpdated')
+      )
+    }
   },
   updated (registration) {
     console.log('New content is available; please refresh.')
