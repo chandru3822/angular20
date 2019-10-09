@@ -3,9 +3,11 @@ module.exports = {
     devtool: 'source-map'
   },
   pwa: {
-    workboxPluginMode: "InjectManifest",
+    workboxPluginMode: 'InjectManifest',
     workboxOptions: {
-      swSrc: "client/src/service-worker.js"
+      swSrc: 'client/src/service-worker.js',
+      swDest: 'service-worker.js',
+
     }
   }
 }

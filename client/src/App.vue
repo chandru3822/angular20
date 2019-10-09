@@ -21,10 +21,38 @@
     data() {
       return {}
     },
+    created () {
+      document.addEventListener(
+        'swUpdated', this.showRefreshUI, { once: true }
+      );
+      // this doesn't seem to do anything either
+      // navigator.serviceWorker.addEventListener(
+      //   'controllerchange', () => {
+      //     console.log('this is happening')
+      //     if (this.refreshing) {
+      //       return
+      //     }
+      //     this.refreshing = true
+      //     window.location.reload()
+      //   }
+      // )
+    },
     methods: {
+      async showRefreshUI() {
+        console.log('also happening')
+        this.$store.commit(AppMutations.SET_AVAILABLE_UPDATE, true)
+      },
       async refreshPage() {
+        console.log('some stuff going on')
         this.$store.commit(AppMutations.SET_AVAILABLE_UPDATE, false)
-        window.location.reload()
+        // true = hard refresh?
+        window.location.reload(true)
+        //not sure if this works
+        // todo: this stuff below doesn't seem to work and if we are reloading the page anyway why do the whole skip waiting thing?
+        // if (!this.registration || !this.registration.waiting) {
+        //   return
+        // }
+        // this.registration.waiting.postMessage('skipWaiting')
       },
     }
   }
