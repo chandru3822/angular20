@@ -192,7 +192,7 @@ public class ProjectService {
         passed = (number != null && compareNumber != null) && number > compareNumber;
         break;
       case 4:
-//        passed = (number)
+        passed = (number != null && compareNumber != null) && number < compareNumber;
         break;
       default:
         throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", operatorTypeId));
