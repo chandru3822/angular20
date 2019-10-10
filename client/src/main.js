@@ -61,13 +61,18 @@ axios.interceptors.response.use((response) => {
   return response
 }, ({ response }) => {
   if (response && response.data) {
+    console.log('randaLogger', response)
     const { message } = response.data
     console.log('*** Request Error ***', response)
-    // if the jwt token expired
-    if (message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1) {
+    // if the jwt token expired, or 401 unauthorized, or 403 Forbidden
+    if ((message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1)
+        || response.status === 401  || response.status === 403) {
+      const msg = response.status === 401  || response.status === 403 ? 'User Unauthorized' : 'Session Expired'
       localStorage.removeItem('store')
-      store.commit(UserMutations.LOGIN_ERROR, 'Session Expired')
+      store.commit(UserMutations.LOGIN_ERROR, msg)
       router.push({ name: 'login' })
+    } else if (response.status >= 500 && response.status <= 599) {
+      router.push({path: `/serverError?code=${response.status}`})
     }
   }
 })

@@ -29,6 +29,10 @@ export default new Router({
         }
       },
       children: [{
+        path: 'serverError',
+        name: 'serverError',
+        component: () => import(/* webpackChunkName: "serverError" */ './views/ServerError.vue')
+      }, {
         path: 'users',
         name: 'users',
         component: () => import(/* webpackChunkName: "users" */ './views/flow/users/Users.vue')
