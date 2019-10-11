@@ -128,11 +128,76 @@ public class ProjectService {
           case 5:
             requirementMet = calculateTextRequirement(r);
             break;
+          case 6:
+            requirementMet = calculateIntRequirement(r);
+          case 7:
+            requirementMet = calculateIntArrayRequirement(r);
           default:
             //@TODO: blow up with error?
         }
     }
     return requirementMet;
+  }
+
+  private boolean calculateIntArrayRequirement(ProjectProcessStepRequirement r) throws Exception {
+
+    List<Long> fieldValue = r.getIntArrayValue();
+
+    boolean passed = false;
+
+    return passed;
+  }
+
+  private boolean calculateIntRequirement(ProjectProcessStepRequirement r) throws Exception {
+
+    Long fieldValue = r.getIntValue();
+    boolean passed = false;
+
+    if (r.getDataTypeRequirementId() == null) {
+      try {
+        Long reqValue = Long.parseLong(r.getRequirementValue());
+        passed = compareInt(fieldValue, reqValue, r.getOperatorTypeId());
+      } catch (Exception e) {
+        throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+      }
+    } else {
+      switch (r.getDataTypeRequirementId().intValue()) {
+        case 20:
+          passed = fieldValue == null;
+          break;
+        case 21:
+          passed = fieldValue != null;
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+      }
+    }
+
+    return passed;
+  }
+
+  private boolean compareInt(Long number, Long compareNumber, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = Objects.equals(number, compareNumber);
+        break;
+      case 2:
+        passed = !Objects.equals(number, compareNumber);
+        break;
+      case 3:
+        passed = (number != null && compareNumber != null) && number > compareNumber;
+        break;
+      case 4:
+        passed = (number != null && compareNumber != null) && number < compareNumber;
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", operatorTypeId));
+    }
+
+    return passed;
   }
 
   private boolean calculateTextRequirement(ProjectProcessStepRequirement r) throws Exception {
