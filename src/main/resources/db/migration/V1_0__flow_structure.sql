@@ -128,7 +128,10 @@ CREATE TABLE if NOT EXISTS flow.attachment_type
     archived boolean not null default false,
     key_pattern_id integer not null,
     is_system boolean not null default false,
-    dd
+    date_created      timestamp without time zone DEFAULT now() not null,
+    date_modified      timestamp without time zone,
+    created_by_id     integer,
+    modified_by_id    integer,
         CONSTRAINT attachment_type_pk PRIMARY KEY (id),
     CONSTRAINT at_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
@@ -136,7 +139,6 @@ CREATE TABLE if NOT EXISTS flow.attachment_type
     CONSTRAINT at_key_pattern_id_fk FOREIGN KEY (key_pattern_id)
         REFERENCES flow.key_pattern (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
-
 );
 
 CREATE TABLE if NOT EXISTS flow.link
@@ -1830,9 +1832,7 @@ CREATE TABLE if not exists flow.process_step_requirement
     CONSTRAINT prps_process_step_id_fk FOREIGN KEY (process_step_id)
         REFERENCES flow.process_step (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT prps_data_type_requirement_id_fk FOREIGN KEY (data_type_requirement)
-        REFERENCES flow.data_type_requirement (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
+
     CONSTRAINT prps_operator_type_id_fk FOREIGN KEY (operator_type_id)
         REFERENCES flow.operator_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -2718,7 +2718,7 @@ CREATE TRIGGER project_process_step_audit_trg
 
 ----???????????????????????????????????????????????????????????????????????????????????????????
 
-insert into flow.company(company_name,aws_bucket)values('Blue Raven Solar','blueraven');
+insert into flow.company(company_name,aws_bucket, abbreviation)values('Blue Raven Solar','blueraven', 'brs');
 
 insert into flow.bucket_type(bucket_type) values
 ('apps'),
@@ -2870,26 +2870,30 @@ values(1,'System',8,false);
 
 
 
-INSERT INTO flow.data_type_requirement(data_type_id, data_type_value, secondary_requirement, created_by_id, date_created)
-VALUES (1, 'current date -', true,2350555,now()),
-       (1, 'current date +', true,2350555,now()),
-       (1, 'current date', false,2350555,now()),
-       (1, 'null', false,2350555,now()),
-       (1, 'not null', false,2350555,now()),
-       (2, 'current date -', true,2350555,now()),
-       (2, 'current date +', true,2350555,now()),
-       (2, 'current date', false,2350555,now()),
-       (2, 'timestamp - interval hours', true,2350555,now()),
-       (2, 'timestamp + interval hours', true,2350555,now()),
-       (2, 'timestamp', false,2350555,now()),
-       (2, 'null', false,2350555,now()),
-       (2, 'not null', false,2350555,now()),
-       (3, 'true', false ,2350555,now()),
-       (3, 'false', false ,2350555,now()),
-       (4, 'null', false ,2350555,now()),
-       (4, 'not null', false ,2350555,now()),
-       (5, 'null', false ,2350555,now()),
-       (5, 'not null', false ,2350555,now()),
-       (6, 'null', false ,2350555,now()),
-       (6, 'not null', false ,2350555,now());
+INSERT INTO flow.data_type_requirement(data_type_id, data_type_value, secondary_requirement, date_created)
+VALUES (1, 'current date -', true,now()),
+       (1, 'current date +', true,now()),
+       (1, 'current date', false,now()),
+       (1, 'null', false,now()),
+       (1, 'not null', false,now()),
+       (2, 'current date -', true,now()),
+       (2, 'current date +', true,now()),
+       (2, 'current date', false,now()),
+       (2, 'timestamp - interval hours', true,now()),
+       (2, 'timestamp + interval hours', true,now()),
+       (2, 'timestamp', false,now()),
+       (2, 'null', false,now()),
+       (2, 'not null', false,now()),
+       (3, 'true', false ,now()),
+       (3, 'false', false ,now()),
+       (4, 'null', false ,now()),
+       (4, 'not null', false ,now()),
+       (5, 'null', false ,now()),
+       (5, 'not null', false ,now()),
+       (6, 'null', false ,now()),
+       (6, 'not null', false ,now());
 
+Alter table flow.process_step_requirement
+ADD CONSTRAINT prps_data_type_requirement_id_fk FOREIGN KEY (data_type_requirement_id)
+        REFERENCES flow.data_type_requirement (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION;
