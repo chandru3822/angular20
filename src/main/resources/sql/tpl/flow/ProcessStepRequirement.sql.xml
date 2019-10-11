@@ -100,9 +100,7 @@
       ppscfv.timestamp_value,
       ppscfv.boolean_value,
       ppscfv.numeric_value,
-      coalesce((
-        select name from flow.list_of_value where id = ppscfv.int_value
-      ), null) AS int_value,
+      ppscfv.int_value,
       coalesce((
         select array_to_json(array_agg(row_to_json(params)))
         from (
