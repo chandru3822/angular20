@@ -125,11 +125,78 @@ public class ProjectService {
           case 4:
             requirementMet = calculateNumericRequirement(r);
             break;
+          case 5:
+            requirementMet = calculateTextRequirement(r);
+            break;
           default:
             //@TODO: blow up with error?
         }
     }
     return requirementMet;
+  }
+
+  private boolean calculateTextRequirement(ProjectProcessStepRequirement r) throws Exception {
+
+    String fieldValue = r.getTextValue();
+
+    boolean passed = false;
+
+    if (r.getDataTypeRequirementId() == null) {
+      try {
+        String reqValue = r.getRequirementValue();
+        passed = compareText(fieldValue, reqValue, r.getOperatorTypeId());
+      } catch (Exception e) {
+        throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+      }
+    } else {
+      switch (r.getDataTypeRequirementId().intValue()) {
+        case 18:
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue == null;
+              break;
+            case 2:
+              passed = fieldValue != null;
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+          }
+          break;
+        case 19:
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue != null;
+              break;
+            case 2:
+              passed = fieldValue == null;
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+          }
+      }
+    }
+    return passed;
+  }
+
+  private boolean compareText(String text, String compareText, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+
+    text = (text != null) ? text.trim().toLowerCase() : "";
+    compareText = (compareText != null) ? compareText.trim().toLowerCase() : "";
+
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = text.equals(compareText);
+        break;
+      case 2:
+        passed = !text.equals(compareText);
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", operatorTypeId));
+    }
+
+    return passed;
   }
 
   private boolean calculateNumericRequirement(ProjectProcessStepRequirement r) throws Exception {
