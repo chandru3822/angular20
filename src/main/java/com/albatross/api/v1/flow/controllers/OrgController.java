@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Org;
 import com.albatross.api.v1.flow.model.OrgFilter;
+import com.albatross.api.v1.flow.model.UserSearch;
 import com.albatross.api.v1.flow.services.OrgService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +66,11 @@ public class OrgController {
   @GetMapping(value = "/filters", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<OrgFilter> getOrgFiltersForCompany() {
     return orgService.getOrgFiltersForCompany();
+  }
+
+  @PostMapping(value = "/orgHierarchyFilter", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<OrgFilter> getHierarchyFilteredOrgsForCompany(@RequestBody UserSearch search) {
+    return orgService.getHierarchyFilteredOrgsForCompany(search.getOrgs());
   }
 
 }

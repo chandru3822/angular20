@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 /**
@@ -195,6 +196,25 @@ public class OrgService {
       p2.put("companyId", user.getCompanyId());
       List<Org> orgs = sqlCache.query("org.getOrgsForLevel", p2, Org.class);
       f.setOrgs(orgs);
+    }
+
+    return results;
+  }
+
+  public List<OrgFilter> getHierarchyFilteredOrgsForCompany(List<Integer> selectedOrgs) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<OrgFilter> results = sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
+
+
+    HashMap<String, Object> p2 = new HashMap<>();
+    p2.put("selectedOrgs", selectedOrgs);
+    List<Org> orgs = sqlCache.query("org.getOrgsByHierarchyFilter", p2, Org.class);
+
+    for(OrgFilter f : results){
+      //build the list of options
+      f.setOrgs(orgs.stream().filter(o -> ( o.getOrgLevelId().equals(f.getOrgLevelId())  )).collect(Collectors.toList()) );
     }
 
     return results;

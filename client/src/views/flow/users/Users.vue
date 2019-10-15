@@ -69,6 +69,8 @@
             </v-dialog>
           </v-toolbar-items>
         </v-toolbar>
+        <v-btn @click="handleOrgFilterChange(true)">Reset Filters</v-btn>
+        {{filters.orgs}}
         <v-data-table
             :headers="headers"
             :items="users"
@@ -109,7 +111,7 @@
                           height="35px"
                           outlined
                           class="user-filter-select"
-                          @change="getUsers()"
+                          @change="handleOrgFilterChange(false, header.level)"
                 >
                   <template
                       slot="selection"
@@ -236,7 +238,7 @@
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
-  import maxBy from 'lodash.maxby'
+  import max from 'lodash.max'
   import { saveAs } from 'file-saver'
 
   export default {
@@ -377,23 +379,48 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getOrgFilters () {
+      async getOrgFilters (selectedLevel) {
+        console.log('randaLogger',selectedLevel)
         try {
-          const {data} = await getRequest(`/org/filters`)
-          this.orgFilters = data
-          this.orgFilters.forEach(f => {
-            this.headers.push({
-              text: f.levelName,
-              value: f.levelName,
-              sortable: false,
-              show: true,
-              level: f.orgLevelId,
-              orgFilter: true,
-              showType: f.showType,
-              orgs: f.orgs,
-              width: '225px'
+          if(this.orgFilters?.length > 0) {
+            console.log('we will load more stuff here')
+            //org filters have already been loaded. load their orgs again and repopulate the org list only
+            const params = {
+              orgs: this.getOrgIds()
+            }
+            const {data} = await postRequest(`/org/orgHierarchyFilter`, params)
+            console.log('NEW RESULTS', data)
+            data.forEach(d => {
+              if(d.orgLevelId !== selectedLevel) {
+                //get index of the right header
+                let index = this.headers.findIndex(h => h.level === d.orgLevelId)
+                this.headers[index].orgs = d.orgs
+              }
             })
-          })
+          } else {
+            //org filters not yet loaded. load them from main list
+            const {data} = await getRequest(`/org/filters`)
+            this.orgFilters = data
+            this.orgFilters.forEach(f => {
+              let index = this.headers.findIndex(h => h.level === f.orgLevelId)
+              console.log('randaLogger', index)
+              if(index > -1) {
+                this.headers[index].orgs = f.orgs
+              } else {
+                this.headers.push({
+                  text: f.levelName,
+                  value: f.levelName,
+                  sortable: false,
+                  show: true,
+                  level: f.orgLevelId,
+                  orgFilter: true,
+                  showType: f.showType,
+                  orgs: f.orgs,
+                  width: '225px'
+                })
+              }
+            })
+          }
           console.log('randaLogger org filters', this.orgFilters)
           console.log('randaLogger headers', this.headers)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -441,9 +468,19 @@
         return result?.orgName ?? 'N/A'
       },
       getOrgIds() {
-        let maxKey = maxBy(Object.keys(this.filters.orgs), o => this.filters.orgs[o])
-        console.log('randaLogger',this.filters.orgs)
+        let maxKey = max(Object.keys(this.filters.orgs))
+        console.log('MAX KEY', maxKey)
         return this.filters.orgs && maxKey ? this.filters.orgs[maxKey].map(o => o.id) : []
+      },
+      handleOrgFilterChange (reset, selectedLevel) {
+        if(reset) {
+          this.filters.orgs = {}
+          this.orgFilters = []
+        }
+        //reload the users
+        this.getUsers()
+        //reload the filters
+        this.getOrgFilters(selectedLevel)
       }
     }
   }

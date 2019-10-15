@@ -122,6 +122,15 @@
     ]]>
   </org.getOrgFiltersForCompany>
 
+  <org.getOrgsByHierarchyFilter>
+    <![CDATA[
+      select * from flow.org_hierarchy_filter_down(ARRAY[ :selectedOrgs ]::integer[])
+      union
+      select * from flow.org_hierarchy_filter_up(ARRAY[ :selectedOrgs ]::integer[])
+      order by org_level_id, org_name;
+    ]]>
+  </org.getOrgsByHierarchyFilter>
+
   <org.getOrgsForLevel>
     <![CDATA[
       select o.id,

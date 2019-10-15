@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class Org {
 
-  private Long id, companyId, parentOrgId, orgTypeId;
+  private Long id, companyId, parentOrgId, orgTypeId, orgLevelId;
   private String orgName, orgType, parentOrgName;
   private Boolean activeFlag, owningOrg;
 
