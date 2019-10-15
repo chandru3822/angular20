@@ -3,7 +3,34 @@
     <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
     <v-row class="lead-header elevation-1">
       <v-col cols="8" class="text-left">
-        <div class="lead-title">{{customer.fullName}}</div>
+        <div class="lead-title">
+          {{customer.fullName}}
+          <v-menu
+              bottom
+              offset-y
+              :close-on-content-click="false"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" dark color="primary" class="white--text"  @click="getAvailableProcesses">
+                Convert {{customer.customerTypeId}}
+              </v-btn>
+            </template>
+            <v-card class="pa-5">
+              Select a process to be used
+              <v-select v-model="selectedProcess"
+                        :items="availableProcesses"
+                        label="Process"
+                        placeholder="Select one..."
+                        item-text="processName"
+                        return-object
+                        class="mt-2"
+              ></v-select>
+              <v-btn text :disabled="!selectedProcess" @click="convertToCustomer">
+                Convert
+              </v-btn>
+            </v-card>
+          </v-menu>
+        </div>
         <div class="lead-subtitle">
           {{customer.street1}} - {{customer.city}}, {{customer.state}}
         </div>
@@ -125,7 +152,9 @@ export default {
       owners: [],
       customerId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
-      changeOwner: false
+      changeOwner: false,
+      selectedProcess: null,
+      availableProcesses: []
     }
   },
   created () {
@@ -213,6 +242,43 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getAvailableProcesses () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/processes`)
+        this.availableProcesses = data
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Available Processes')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async convertToCustomer() {
+      console.log('will convert here', this.customer)
+    /*  conversion steps:
+        done 1) get list of available processes to kick of
+        done 2) choose one (dont let save without this)
+        3) save customer_type_id from 2 to 1 (unless company specific options or whatever)
+        4) create project
+        5) create project_process
+        6) create project_process_step with the initial step
+        7) take them to the project screen?
+
+    * */
+
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/customer/${this.customer.id}/convert`)
+        this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Converting Customer')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProcessStepProcess extends ProcessStep{
-  private Long processStepId, displayOrder;
+  private Long processStepId, displayOrder, initialProcessStepStatusTypeId;
   private boolean initialStep;
 }
 

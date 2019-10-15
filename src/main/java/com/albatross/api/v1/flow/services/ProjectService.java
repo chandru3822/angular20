@@ -45,6 +45,19 @@ public class ProjectService {
     return sqlCache.get("project.get", ImmutableMap.of("projectId", projectId), Project.class);
   }
 
+  public Optional<Project> insertProject(Long customerId, Long processId) {
+    //todo: switching gears to work with keller. will come back to this
+    User user = securityService.getCurrentUser();
+
+    Long id = sqlCache.updateReturningId("project.insert",
+        ImmutableMap.of("customerId", customerId,
+                        "createdById", user.getId(),
+                        "projectName", "Why do we have this?",
+                        "processId", processId), "id").longValue();
+
+    return getProject(id);
+  }
+
   public List<Project> getProjectsForCustomer(Long customerId) {
     User user = securityService.getCurrentUser();
     return sqlCache.query("project.getAllForCustomer", ImmutableMap.of("companyId", user.getCompanyId(), "customerId", customerId), Project.class);
@@ -58,6 +71,23 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("stepId", stepId);
     ProjectProcessStep step = sqlCache.get("project.getProjectProcessStep", params, ProjectProcessStep.class).orElse(null);
+
+    if (step != null) {
+      step.setActions(processStepActionService.getActionsForStep(step.getProcessStepId()));
+    }
+
+    return step;
+  }
+
+  public ProjectProcessStep insertProjectProcessStep(Long projectId, Long processStepId, Long statusTypeId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("processStepId", processStepId);
+    params.put("statusTypeId", statusTypeId);
+    params.put("createdById", user.getId());
+    ProjectProcessStep step = sqlCache.get("project.insertProjectProcessStep", params, ProjectProcessStep.class).orElse(null);
 
     if (step != null) {
       step.setActions(processStepActionService.getActionsForStep(step.getProcessStepId()));

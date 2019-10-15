@@ -201,4 +201,12 @@
            date_modified = now()
     where id = :id
   ]]></customer.updateOwner>
+
+  <customer.convertToCustomer><![CDATA[
+    update flow.customer set
+           modified_by_id = :modifiedById,
+           customer_type_id = :customerTypeId,
+           date_modified = now()
+    where id = :customerId
+  ]]></customer.convertToCustomer>
 </sql>

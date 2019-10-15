@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Customer;
 import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.services.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -64,5 +65,11 @@ public class CustomerController {
     @GetMapping(value = "/owners", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Owner> getOwners() {
       return customerService.getOwnersForCustomer();
+    }
+
+    @PutMapping(value = "/{customerId}/convert", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void convertToCustomer(@PathVariable Long customerId,
+                                  @RequestBody Process process) {
+        customerService.convertToCustomer(customerId, process);
     }
 }

@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
 import com.albatross.api.v1.flow.enums.UserStatusType;
+import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,9 @@ public class CustomerService {
 
   @Autowired
   SecurityService securityService;
+
+  @Autowired
+  ProjectService projectService;
 
   @Autowired
   ObjectMapper om;
@@ -129,7 +133,7 @@ public class CustomerService {
     params.put("phone", customer.getPhone());
     params.put("email", customer.getEmail());
     params.put("mobile", customer.getMobile());
-    params.put("companyId", customer.getCompanyId());
+    params.put("companyId", currentUser.getCompanyId());
     params.put("ownerUserPositionId", customer.getOwner() != null ? customer.getOwner().getUserPositionId() : null);
 
     Long id;
@@ -174,6 +178,34 @@ public class CustomerService {
     params.put("statusIds", statusIds);
     List<Owner> results = sqlCache.query("customer.getOwners", params, Owner.class);
     return results;
+  }
+
+  public Project convertToCustomer(Long customerId, Process process) {
+    User currentUser = securityService.getCurrentUser();
+
+    //save customer_type_id
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("customerId", customerId);
+    params.put("customerTypeId", CustomerType.CUSTOMER.id);
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("customer.convertToCustomer", params);
+
+    //create project (use customer_full_name as project_name)
+    Optional<Project> project = projectService.insertProject(customerId, process.getId());
+
+    //todo: get initial process steps including the initial status
+    List<ProcessStepProcess> initialProcessSteps = new ArrayList<>();
+
+    if(project.isPresent()) {
+      //create all initial project_process_step s
+      for(ProcessStepProcess step : initialProcessSteps) {
+        projectService.insertProjectProcessStep(project.get().getId(), step.getId(), step.getInitialProcessStepStatusTypeId());
+      }
+    }
+
+    //todo: return project data so the frontend can navigate to project/{id}
+    return project.orElse(null);
   }
 
   public Boolean fieldHasValue (CustomFieldValue cv) {
