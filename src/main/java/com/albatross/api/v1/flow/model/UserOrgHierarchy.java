@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class UserOrgHierarchy {
 
-  private Long orgId, orgLevelId;
+  private Long orgId, orgLevelId, positionLevel;
   private String orgName;
 }
 

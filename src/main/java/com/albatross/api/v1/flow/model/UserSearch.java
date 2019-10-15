@@ -11,6 +11,6 @@ public class UserSearch {
 
     //search is the generic search all fields thing
     private String search, firstName, lastName, email, phone;
-    private List<Integer> statuses, positions;
-
+    private List<Integer> statuses, positions, orgs;
+    private Boolean primaryFlag;
 }

@@ -102,12 +102,14 @@
                           :items="header.orgs"
                           v-if="header.orgFilter"
                           item-text="orgName"
+                          item-value="id"
                           return-object
                           multiple
                           placeholder="Select..."
                           height="35px"
                           outlined
                           class="user-filter-select"
+                          @change="getUsers()"
                 >
                   <template
                       slot="selection"
@@ -120,6 +122,10 @@
                         v-if="index === 1 && filters.orgs[header.level] && filters.orgs[header.level].length >= 2"
                         class="primary--text caption"
                     >{{ filters.orgs[header.level].length }} selected</span>
+                  </template>
+                  <template #item="{ item }">
+                    <div v-if="header.showType">{{item.orgName}} ({{item.orgType}})</div>
+                    <div v-else>{{item.orgName}}</div>
                   </template>
                 </v-select>
                 <v-select v-model="filters.statuses"
@@ -221,6 +227,7 @@
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
+  import maxBy from 'lodash.maxby'
   import { saveAs } from 'file-saver'
 
   export default {
@@ -317,6 +324,9 @@
               phone: this.filters.phone,
               statuses: this.filters.statuses,
               positions: this.filters.positions,
+              orgs: this.getOrgIds(),
+              //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
+              primaryFlag: true
             }
 
             const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
@@ -374,6 +384,8 @@
               width: '225px'
             })
           })
+          console.log('randaLogger org filters', this.orgFilters)
+          console.log('randaLogger headers', this.headers)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -415,8 +427,13 @@
         })
       },
       getOrgNameForFilter(hierarchy, filterOrgLevelId) {
-        const result = hierarchy.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
+        const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
         return result?.orgName ?? 'N/A'
+      },
+      getOrgIds() {
+        let maxKey = maxBy(Object.keys(this.filters.orgs), o => this.filters.orgs[o])
+        console.log('randaLogger',this.filters.orgs)
+        return this.filters.orgs && maxKey ? this.filters.orgs[maxKey].map(o => o.id) : []
       }
     }
   }

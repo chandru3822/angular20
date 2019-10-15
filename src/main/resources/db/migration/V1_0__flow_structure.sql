@@ -454,7 +454,8 @@ CREATE TABLE if not exists flow."user"
         REFERENCES flow."user" (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT u_email_fk UNIQUE (email),
-    CONSTRAINT user_personal_email_uk UNIQUE (personal_email)
+    CONSTRAINT user_personal_email_uk UNIQUE (personal_email),
+    CONSTRAINT user_username_uk UNIQUE (username)
 )
     WITH (
         OIDS= FALSE

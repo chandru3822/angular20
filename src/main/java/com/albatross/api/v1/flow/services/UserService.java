@@ -56,6 +56,8 @@ public class UserService {
     params.put("phone", search.getPhone());
     params.put("statuses", search.getStatuses());
     params.put("positions", search.getPositions());
+    params.put("orgs", search.getOrgs());
+    params.put("primaryFlag", search.getPrimaryFlag());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 

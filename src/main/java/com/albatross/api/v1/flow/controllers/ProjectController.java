@@ -35,7 +35,7 @@ public class ProjectController {
       .orElse(ResponseEntity.notFound().build());
   }
 
-  @PostMapping(value = "/customer/{customerId}/process/${processId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/customer/{customerId}/process/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Project> insertProject(@PathVariable Long customerId,
                                                @PathVariable Long processId) {
     return projectService.insertProject(customerId, processId)

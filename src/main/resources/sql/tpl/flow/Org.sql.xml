@@ -123,11 +123,26 @@
 
   <org.getOrgsForLevel>
     <![CDATA[
-      select *
+      select o.id,
+             o.company_id,
+             org_name,
+             parent_org_id,
+             sales_area_id,
+             org_type_id,
+             display_order,
+             active_flag,
+             color,
+             email,
+             calendar_oid,
+             sales_metro_area_id,
+             originator_id,
+             owning_org,
+             ot.org_type,
+             ot.org_level_id
       from flow.org o
-          inner join flow.org_type ot on ot.id = o.org_type_id
+               inner join flow.org_type ot on ot.id = o.org_type_id
       where o.company_id = :companyId
-          and ot.org_level_id = :orgLevelId
+        and ot.org_level_id = :orgLevelId
       order by o.org_name
     ]]>
   </org.getOrgsForLevel>
