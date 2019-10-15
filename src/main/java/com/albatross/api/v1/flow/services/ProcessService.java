@@ -111,8 +111,9 @@ public class ProcessService {
 
     public List<ProcessStep> availableProcessSteps(Long processId) {
       User user = securityService.getCurrentUser();
-        List<ProcessStep> results = sqlCache.query("process.availableProcessSteps",
-            ImmutableMap.of("processId", user.getCompanyId()), ProcessStep.class);
+      List<ProcessStep> results = sqlCache.query("process.availableProcessSteps",
+            ImmutableMap.of("processId", processId,
+                            "companyId", user.getCompanyId()), ProcessStep.class);
 
         return results;
     }
@@ -131,6 +132,7 @@ public class ProcessService {
             ImmutableMap.of("processId", processId,
                             "createdById", currentUser.getId(),
                             "orgId", processStepProcess.getOrgId(),
+                            "initialStep", processStepProcess.isInitialStep(),
                             "processStepId", processStepProcess.getProcessStepId()), "id").longValue();
 
         return getOneProcessStepProcess(id);
@@ -145,5 +147,14 @@ public class ProcessService {
                     "modifiedById", currentUser.getId(),
                     "displayOrder", psp.getDisplayOrder()));
         }
+    }
+
+    public void setInitialProcessStep(Long processId, Long processStepProcessId) {
+        User currentUser = securityService.getCurrentUser();
+
+            sqlCache.update("process.setInitialProcessStep",
+                ImmutableMap.of("processId", processId,
+                    "modifiedById", currentUser.getId(),
+                    "processStepProcessId", processStepProcessId));
     }
 }

@@ -1228,6 +1228,7 @@ CREATE TABLE if not exists flow.process_step_process
     date_modified    timestamp without time zone,
     created_by_id   integer not null,
     modified_by_id  integer,
+    initial_step boolean not null default false,
     archived boolean not null default false,
     CONSTRAINT process_step_process_pk PRIMARY KEY (id),
     CONSTRAINT psp_created_by_id_fk FOREIGN KEY (created_by_id)

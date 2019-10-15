@@ -73,6 +73,12 @@
               <td class="text-left">{{ item.orgName }}</td>
               <td class="text-left">{{ item.dateCreated | formatDate('date', $store.state.user.details.timezone) }}</td>
               <td class="text-left">{{ item.dateModified | formatDate('date', $store.state.user.details.timezone) }}</td>
+              <td class="text-center">
+                <input type="checkbox" v-model="item.initialStep"
+                       :disabled="item.initialStep"
+
+                       @change="updateInitialStep(item)">
+              </td>
               <td>
                 <v-dialog
                     v-model="item.deleteConfirm"
@@ -163,6 +169,7 @@ export default {
         { text: 'Owning Org', value: 'orgName', sortable: false},
         { text: 'Created', value: 'dateCreated', sortable: false},
         { text: 'Last Modified', value: 'dateModified', sortable: false},
+        { text: 'Initial', value: 'initial', sortable: false},
         { text: null, value: null},
       ]
     }
@@ -276,6 +283,7 @@ export default {
     async assignProcessStep () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.newProcessStep.initialStep = this.process.processStepProcesses?.length === 0
         const {data} = await postRequest(`/processes/${this.processId}/processStep`, this.newProcessStep)
         console.log('randaLogger', data)
         this.process.processStepProcesses.push(data)
@@ -287,6 +295,23 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Assigning Process Step')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateInitialStep(item) {
+      console.log('randaLogger', item)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/processes/${this.processId}/processStepProcess/${item.id}`)
+        console.log('randaLogger', data)
+        this.process.processStepProcesses.forEach(psp => { psp.initialStep = false})
+        item.initialStep = true
+        //todo: remove all other initial steps
+        this.snackbar = getSnackbar('SUCCESS', 'Initial Process Step Saved')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Setting Process Step as Initial Step')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }

@@ -79,4 +79,10 @@ public class ProcessController {
                                                                  @RequestBody List<ProcessStepProcess> processStepProcesses) {
         processService.updateProcessStepProcesses(processId, processStepProcesses);
     }
+
+    @PutMapping(value = "/{processId}/processStepProcess/{processStepProcessId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void setInitialProcessStep(@PathVariable Long processId,
+                                      @PathVariable Long processStepProcessId) {
+        processService.setInitialProcessStep(processId, processStepProcessId);
+    }
 }
