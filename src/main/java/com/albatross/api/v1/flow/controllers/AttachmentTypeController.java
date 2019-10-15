@@ -18,44 +18,43 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/attachmentType")
+@RequestMapping(value = "/api/v1/flow/attachmentType")
 public class AttachmentTypeController {
 
   @Autowired
   private AttachmentTypeService attachmentTypeService;
 
-  @RequestMapping(value = "/types", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AttachmentType> getAttachmentTypes (@PathVariable Long companyId) {
-    return attachmentTypeService.getAttachmentTypesForCompany(companyId);
+  @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getAttachmentTypes () {
+    return attachmentTypeService.getAttachmentTypesForCompany();
   }
 
-  @RequestMapping(value = "/typesForStep/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AttachmentType> getAvailableTypesForStep (@PathVariable Long companyId,
-                                                        @PathVariable Long id) {
-    return attachmentTypeService.getAvailableTypesForProcessStep(companyId, id);
+  @GetMapping(value = "/typesForStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getAvailableTypesForStep (@PathVariable Long id) {
+    return attachmentTypeService.getAvailableTypesForProcessStep(id);
   }
 
-  @RequestMapping(value = "/processStepType/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/processStepType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteProcessStepType(@PathVariable Long id) {
     attachmentTypeService.deleteProcessStepType(id);
   }
 
-  @RequestMapping(value = "/processStepType", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/processStepType", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepAttachmentType> insertProcessStepType(@RequestBody ProcessStepAttachmentType attachmentType) {
     return attachmentTypeService.insertProcessStepType(attachmentType);
   }
 
-  @RequestMapping(value = "/type/{typeId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long typeId) {
     attachmentTypeService.deleteType(typeId);
   }
 
-  @RequestMapping(value = "/type", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateType(@RequestBody AttachmentType type) {
     attachmentTypeService.updateType(type);
   }
 
-  @RequestMapping(value = "/type", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<AttachmentType> insertType(@RequestBody AttachmentType type) {
     return attachmentTypeService.insertType(type);
   }

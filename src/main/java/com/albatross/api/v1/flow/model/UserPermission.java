@@ -8,6 +8,7 @@ import lombok.Setter;
 public class UserPermission {
 
     private Long id;
-    private String permissionName;
+    private String permissionName, permissionCode;
+    private Boolean archived;
 
 }

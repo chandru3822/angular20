@@ -18,28 +18,28 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/processStep/status")
+@RequestMapping(value = "/api/v1/flow/processStep/status")
 public class ProcessStepStatusController {
 
   @Autowired
   private ProcessStepStatusService processStepStatusService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepStatusType> getStatusTypesForCompany (@PathVariable Long companyId) {
-    return processStepStatusService.getStatusTypesForCompany(companyId);
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepStatusType> getStatusTypesForCompany () {
+    return processStepStatusService.getStatusTypesForCompany();
   }
 
-  @RequestMapping(value = "/{typeId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long typeId) {
     processStepStatusService.deleteType(typeId);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateProcess(@RequestBody ProcessStepStatusType type) {
     processStepStatusService.updateType(type);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepStatusType> insertProcess(@RequestBody StatusType type) {
     return processStepStatusService.insertType(type);
   }

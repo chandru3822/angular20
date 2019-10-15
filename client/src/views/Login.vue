@@ -1,8 +1,8 @@
 <template>
   <v-content>
-    <v-container fluid fill-height>
-      <v-layout align-center justify-center>
-        <v-flex xs12 sm8>
+    <v-container class="fill-height">
+      <v-row align="center" justify="center">
+        <v-col xs="12" sm="8">
           <v-card color="secondaryMaster" class="elevation-12">
             <v-toolbar dark color="primary">
               <v-toolbar-title>Albatross</v-toolbar-title>
@@ -19,15 +19,16 @@
               </v-form>
             </v-card-text>
           </v-card>
-        </v-flex>
-      </v-layout>
+        </v-col>
+      </v-row>
     </v-container>
   </v-content>
 </template>
 
 <script>
   import { UserActions, UserMutations } from '@/stores/UserStore'
-  import { postRequest } from '@/helpers/helpers'
+  import { VUE_BASE_API } from '@/helpers/helpers'
+  import axios from 'axios'
 
   export default {
     data () {
@@ -48,7 +49,7 @@
               username: this.form.email,
               password: this.form.password
             }
-            const {data} = await postRequest('/auth/login', params)
+            const {data} = await axios.post(`${VUE_BASE_API}/auth/login`, params)
             console.log('login data', data)
             const {token, details} = data
             if (token) {

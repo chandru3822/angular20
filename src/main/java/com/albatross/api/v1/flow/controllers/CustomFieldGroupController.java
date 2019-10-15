@@ -1,7 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldGroupType;
+import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldObjectType;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,64 +25,85 @@ public class CustomFieldGroupController {
   @Autowired
   private CustomFieldGroupService customFieldGroupService;
 
-  @RequestMapping(value = "/addFieldToGroup", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void addFieldToGroup (@RequestBody CustomField customField) {
-    customFieldGroupService.addFieldToGroup(customField);
+  @PostMapping(value = "/addFieldToGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomField addFieldToGroup (@RequestBody CustomField customField) {
+    return customFieldGroupService.addFieldToGroup(customField);
   }
 
-  @RequestMapping(value = "/deleteFieldFromGroup/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/deleteFieldFromGroup/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteFieldInGroup(@PathVariable Long id) {
     customFieldGroupService.deleteFieldFromGroup(id);
   }
 
   // to update just one:
-  @RequestMapping(value = "/updateFieldInGroup", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/updateFieldInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateFieldInGroup(@RequestBody CustomField customField) {
     customFieldGroupService.updateFieldInGroup(customField);
   }
 
   // to update a list of them:
-  @RequestMapping(value = "/updateFieldsInGroup", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/updateFieldsInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateFieldsInGroup(@RequestBody List<CustomField> customFields) {
     customFieldGroupService.updateFieldsInGroup(customFields);
   }
 
-  @RequestMapping(value = "/getCustomFieldGroupsByObjectTypeId", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroupType> getCustomFieldGroupsByObjectTypeId (@RequestParam Long objectTypeId) {
+  @GetMapping(value = "/getCustomFieldGroupsByObjectTypeId", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId (@RequestParam Long objectTypeId) {
     return customFieldGroupService.getCustomFieldGroupsByObjectTypeId(objectTypeId);
   }
 
-  @RequestMapping(value = "/getCustomFieldsInGroup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomField> getCustomFieldsInGroup (@RequestParam Long groupTypeId) {
-    return customFieldGroupService.getCustomFieldsInGroup(groupTypeId);
+  @GetMapping(value = "/getCustomFieldsInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomField> getCustomFieldsInGroup (@RequestParam Long groupId) {
+    return customFieldGroupService.getCustomFieldsInGroup(groupId);
   }
 
-  @RequestMapping(value = "/getAvailableCustomFieldsInGroup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getAvailableCustomFields", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long objectTypeId,
-                                                            @RequestParam Long groupTypeId) {
-    return customFieldGroupService.getAvailableCustomFieldsInGroup(objectTypeId, groupTypeId);
+                                                            @RequestParam Long groupId,
+                                                            @RequestParam(required = false) Long processStepId) {
+    return customFieldGroupService.getAvailableCustomFieldsInGroup(objectTypeId, groupId, processStepId);
   }
 
-  @RequestMapping(value = "/addCustomFieldGroupType", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public CustomFieldGroupType addCustomFieldGroupType(@RequestBody CustomFieldGroupType customFieldGroupType) {
-    return customFieldGroupService.addCustomFieldGroupType(customFieldGroupType);
+  @PostMapping(value = "/addCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomFieldGroup addCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.addCustomFieldGroup(customFieldGroup);
   }
 
 
-  @RequestMapping(value = "/deleteCustomFieldGroupType/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteCustomFieldGroupType(@PathVariable Long id) {
-    customFieldGroupService.deleteCustomFieldGroupType(id);
+  @DeleteMapping(value = "/deleteCustomFieldGroup/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteCustomFieldGroup(@PathVariable Long id) {
+    customFieldGroupService.deleteCustomFieldGroup(id);
   }
 
   // to update just one:
-  @RequestMapping(value = "/updateCustomFieldGroupType", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-  public CustomFieldGroupType updateCustomFieldGroupType(@RequestBody CustomFieldGroupType customFieldGroupType) {
-    return customFieldGroupService.updateCustomFieldGroupType(customFieldGroupType);
+  @PutMapping(value = "/updateCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomFieldGroup updateCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.updateCustomFieldGroup(customFieldGroup);
   }
 
   // to update a list of them:
-  @RequestMapping(value = "/updateCustomFieldGroupTypes", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateCustomFieldGroupTypes(@RequestBody List<CustomFieldGroupType> customFieldGroupTypes) {
-    customFieldGroupService.updateCustomFieldGroupTypes(customFieldGroupTypes);
+  @PutMapping(value = "/updateCustomFieldGroups", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateCustomFieldGroups(@RequestBody List<CustomFieldGroup> customFieldGroups) {
+    customFieldGroupService.updateCustomFieldGroups(customFieldGroups);
+  }
+
+  @GetMapping(value = "/getCustomerInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getCustomerInsertFields () {
+    return customFieldGroupService.getInsertFieldsByType(ObjectType.CUSTOMER.id);
+  }
+
+  @GetMapping(value = "/getUserInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getUserInsertFields () {
+    return customFieldGroupService.getInsertFieldsByType(ObjectType.USER.id);
+  }
+
+  @GetMapping(value = "/getOrgInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getOrgInsertFields () {
+    return customFieldGroupService.getInsertFieldsByType(ObjectType.ORGANIZATION.id);
+  }
+
+  @PutMapping(value = "/updateFieldShowOnInsert", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateFieldShowOnInsert(@RequestBody CustomFieldObjectType objectType) {
+    customFieldGroupService.updateFieldShowOnInsert(objectType);
   }
 }

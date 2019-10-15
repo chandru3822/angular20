@@ -14,7 +14,7 @@ import java.util.Date;
 public class ListOfValue {
 
   private Long id, parentId, createdById, modifiedById, displayOrder;
-  private String name;
+  private String name, code;
   private Boolean archived = false;
   private Date dateCreated, dateModified;
 }

@@ -1,0 +1,11 @@
+<sql>
+  <country.getAll><![CDATA[
+    select c.id,
+           c.country,
+           c.active_flag,
+           c.abbreviation
+    from flow.country c
+    order by c.country
+  ]]></country.getAll>
+
+</sql>

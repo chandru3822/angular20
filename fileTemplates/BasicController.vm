@@ -1,0 +1,39 @@
+package com.albatross.api.v1.flow.controllers;
+
+import com.albatross.api.v1.flow.model.${UPPER_ITEM};
+import com.albatross.api.v1.flow.services.${UPPER_ITEM}Service;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * Created by ${USER} on ${DATE}
+ * !Describe Purpose!
+ */
+
+@Slf4j
+@RestController
+@RequestMapping(value = "/api/v1/flow/${LOWER_ITEM}")
+public class ${UPPER_ITEM}Controller {
+
+  @Autowired
+  private ${UPPER_ITEM}Service ${LOWER_ITEM}Service;
+
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<${UPPER_ITEM}> get${UPPER_ITEM}sForCompany() {
+    return ${LOWER_ITEM}Service.get${UPPER_ITEM}sForCompany();
+  }
+
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ${UPPER_ITEM} get${UPPER_ITEM}(@PathVariable Long id) {
+    return ${LOWER_ITEM}Service.get${UPPER_ITEM}(id);
+  }
+
+}

@@ -18,45 +18,49 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/links")
+@RequestMapping(value = "/api/v1/flow/links")
 public class LinkController {
 
   @Autowired
   private LinkService linkService;
 
   // AttachmentType stuff (move to a different controller?)
-  @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Link> getLinks (@PathVariable Long companyId) {
-    return linkService.getLinksForCompany(companyId);
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Link> getLinks () {
+    return linkService.getLinksForCompany();
   }
 
-  @RequestMapping(value = "/processStep/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Link> getAvailableLinksForStep (@PathVariable Long companyId,
-                                                        @PathVariable Long id) {
-    return linkService.getAvailableLinksForProcessStep(companyId, id);
+  @GetMapping(value = "/processStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Link> getAvailableLinksForStep (@PathVariable Long id) {
+    return linkService.getAvailableLinksForProcessStep(id);
   }
 
-  @RequestMapping(value = "/processStep/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/action/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Link> getAvailableLinksForAction (@PathVariable Long id) {
+    return linkService.getAvailableLinksForAction(id);
+  }
+
+  @DeleteMapping(value = "/processStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteProcessStepLink(@PathVariable Long id) {
     linkService.deleteProcessStepLink(id);
   }
 
-  @RequestMapping(value = "/processStep", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepLink> insertProcessStepLink(@RequestBody ProcessStepLink link) {
     return linkService.insertProcessStepLink(link);
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteLink(@PathVariable Long id) {
     linkService.deleteLink(id);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateLink(@RequestBody Link link) {
     linkService.updateLink(link);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Link> insertLink(@RequestBody Link link) {
     return linkService.insertLink(link);
   }

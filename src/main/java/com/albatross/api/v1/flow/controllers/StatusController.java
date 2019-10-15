@@ -17,28 +17,28 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/status")
+@RequestMapping(value = "/api/v1/flow/status")
 public class StatusController {
 
   @Autowired
   private StatusService statusService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<StatusType> getStatusTypesForCompany (@PathVariable Long companyId) {
-    return statusService.getStatusTypesForCompany(companyId);
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<StatusType> getStatusTypesForCompany () {
+    return statusService.getStatusTypesForCompany();
   }
 
-  @RequestMapping(value = "/{typeId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long typeId) {
     statusService.deleteType(typeId);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateProcess(@RequestBody StatusType type) {
     statusService.updateType(type);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<StatusType> insertProcess(@RequestBody StatusType type) {
     return statusService.insertType(type);
   }

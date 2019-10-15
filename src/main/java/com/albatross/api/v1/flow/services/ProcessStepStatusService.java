@@ -1,18 +1,19 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.StatusType;
 import com.albatross.api.v1.flow.model.User;
-import com.google.common.collect.ImmutableMap;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -30,47 +31,53 @@ public class ProcessStepStatusService {
   @Autowired
   SecurityService securityService;
 
-  public List<ProcessStepStatusType> getStatusTypesForCompany(Long companyId) {
+  public List<ProcessStepStatusType> getStatusTypesForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
 
     List<ProcessStepStatusType> attachmentTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, ProcessStepStatusType.class);
     return attachmentTypes;
   }
 
   public Optional<ProcessStepStatusType> getType(Long companyId, Long typeId) {
-    return sqlCache.get("processStepStatus.getType",
-        ImmutableMap.of("companyId", companyId,
-            "typeId", typeId),
-        ProcessStepStatusType.class);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("typeId", typeId);
+    return sqlCache.get("processStepStatus.getType", params, ProcessStepStatusType.class);
   }
 
   public void deleteType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update("processStepStatus.deleteType",
-        ImmutableMap.of("id", typeId,
-            "modifiedById", currentUser.getId()));
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", typeId);
+    params.put("modifiedById", currentUser.getId());
+    sqlCache.update("processStepStatus.deleteType", params);
   }
 
   public void updateType(ProcessStepStatusType type) {
     User currentUser = securityService.getCurrentUser();
 
-    sqlCache.update("processStepStatus.updateType",
-        ImmutableMap.of("companyId", type.getCompanyId(),
-            "id", type.getId(),
-            "modifiedById", currentUser.getId(),
-            "statusType", type.getProcessStepStatusType()));
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", type.getCompanyId());
+    params.put("id", type.getId());
+    params.put("statusType", type.getProcessStepStatusType());
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("processStepStatus.updateType", params);
   }
 
   public Optional<ProcessStepStatusType> insertType(StatusType type) {
     User currentUser = securityService.getCurrentUser();
 
-    Long id = sqlCache.updateReturningId("processStepStatus.insertType",
-        ImmutableMap.of("statusType", type.getStatusType(),
-            "companyId", type.getCompanyId(),
-            "createdById", currentUser.getId()),
-        "id").longValue();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", type.getCompanyId());
+    params.put("id", type.getId());
+    params.put("statusType", type.getStatusType());
+    params.put("createdById", currentUser.getId());
+
+    Long id = sqlCache.updateReturningId("processStepStatus.insertType", params, "id").longValue();
 
     return getType(type.getCompanyId(), id);
   }

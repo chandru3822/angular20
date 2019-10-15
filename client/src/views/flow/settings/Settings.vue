@@ -1,64 +1,104 @@
 <template>
-<v-container grid-list-xl>
-  <v-layout row wrap>
-    <v-flex xs4 class="text-left">
-      <v-sheet  class="elevation-2 pa-4 br-10 testing">
-        <h2>Preferences</h2>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/userProfile`}">
-          <router-link to="/settings/userProfile">User Profile</router-link>
-        </v-subheader>
-        <v-subheader>Account</v-subheader>
-        <h2>Custom Components</h2>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/customFields`}">
-          <router-link to="/settings/customFields">Custom Fields</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/attachments`}">
-          <router-link to="/settings/attachments">Attachments</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/links`}">
-          <router-link to="/settings/links">Links</router-link>
-        </v-subheader>
-        <h2>Processes</h2>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/processes`}">
-          <router-link to="/settings/processes">Processes</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path.includes('/settings/processStep')}">
-          <router-link to="/settings/processSteps">Process Steps</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/functions`}">
-          <router-link to="/settings/functions">Functions</router-link>
-        </v-subheader>
-        <v-subheader :class="{'shaded-row': $route.path === `/settings/statuses`}">
-          <router-link to="/settings/statuses">Statuses</router-link>
-        </v-subheader>
-        <h2>Objects</h2>
-        <v-subheader v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :index="o.id" :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
-          <router-link :to="{ path: `/settings/customFieldGroup/${o.id}`}">{{o.objectType}}</router-link>
-        </v-subheader>
-      </v-sheet>
-    </v-flex>
-    <v-flex xs8>
-      <v-sheet color="#fff" class="elevation-2 text-xs-left pa-4 br-10">
-        <router-view/>
-      </v-sheet>
-    </v-flex>
-  </v-layout>
-</v-container>
+  <v-container>
+    <v-row>
+      <v-col cols="3" class="text-left">
+        <v-card class="px-5 py-2">
+          <v-list dense>
+            <template v-for="(item, index) in items">
+              <h3 v-if="item.header">{{item.header}}</h3>
+
+              <v-list-item
+                  v-else
+                  :key="item.title"
+                  :to="item.path"
+                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+              >
+                <v-list-item-content>
+                  <v-list-item-title>{{item.title}}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+            <v-list-item dense v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :key="o.id"
+                         :to="{ path: `/settings/customFieldGroup/${o.id}`}"
+                         :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
+              <v-list-item-content>
+                <v-list-item-title>{{o.objectType}}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-col>
+      <v-col cols="9" class="pa-4">
+        <v-sheet color="#fff" class="elevation-2 text-left">
+          <router-view/>
+        </v-sheet>
+      </v-col>
+    </v-row>
+    <Snackbar :snackbar="snackbar"></Snackbar>
+  </v-container>
 </template>
 
 <script>
-import {mapState} from 'vuex'
 import {AppMutations} from '@/stores/AppStore'
+import Snackbar from '@/components/Snackbar.vue'
 import Vue2Filters from 'vue2-filters'
-import { getRequest } from '@/helpers/helpers'
+import { getRequest, getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'Settings',
   mixins: [Vue2Filters.mixin],
+  components: {
+    Snackbar
+  },
   data () {
     return {
+      snackbar: {},
       objectTypes: [],
-      companyId: this.$store.state.user.details.companyId
+      companyId: this.$store.state.user.details.companyId,
+      items: [
+        {
+          header: 'Preferences'
+        }, {
+          path: '/settings/userProfile',
+          title: 'User Profile',
+        }, {
+          path: '',
+          title: 'Account',
+        }, {
+          header: 'Custom Components'
+        }, {
+          path: '/settings/customFields',
+          title: 'Custom Fields',
+        }, {
+          path: '/settings/attachments',
+          title: 'Attachments',
+        }, {
+          path: '/settings/links',
+          title: 'Links',
+        }, {
+          path: '/settings/orgTypes',
+          title: 'Organization Types',
+        }, {
+          header: 'Processes'
+        }, {
+          path: '/settings/processes',
+          pathMatch: '/settings/processes',
+          title: 'Processes',
+        }, {
+          path: '/settings/processSteps',
+          pathMatch: '/settings/processStep',
+          title: 'Process Steps',
+        }, {
+          path: '/settings/functions',
+          pathMatch: '/settings/function',
+          title: 'Functions',
+        }, {
+          path: '/settings/statuses',
+          title: 'Statuses',
+        }, {
+          header: 'Objects'
+        },
+      ]
     }
   },
   computed: {
@@ -66,9 +106,15 @@ export default {
   methods: {
     async getCustomFieldObjectTypes () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      const {data} = await getRequest(`/api/v1/flow/${this.companyId}/customField/getCustomFieldObjectTypes`)
-      this.objectTypes = data
-      this.$store.commit(AppMutations.SET_LOADING, false)
+      try {
+        const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
+        this.objectTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
   },
   created () {

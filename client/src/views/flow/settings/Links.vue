@@ -1,102 +1,109 @@
 <template>
-  <v-layout row wrap class="custom-field-group-container">
-    <v-flex xs-12>
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="app-title">Links</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn text @click="addNew = !addNew; newLink = {}">
-            {{addNew ? 'Cancel' : 'Add New'}}
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <v-container>
-        <v-text-field v-if="addNew"
-                      v-model="newLink.link"
-                      placeholder="Enter a link name"
-                      label="Link">
-        </v-text-field>
-        <v-text-field v-if="addNew"
-                      v-model="newLink.url"
-                      placeholder="Enter a url"
-                      label="Url">
-        </v-text-field>
-        <v-btn v-if="addNew" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
-        <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
-                :key="index">
-          <v-list-item>
-            <v-list-item-content>
-              <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
-                            label="Link"
-                            v-model="a.link">
-              </v-text-field>
-              <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
-                            label="Url"
-                            v-model="a.url">
-              </v-text-field>
-              <div v-else>{{a.link}}</div>
-            </v-list-item-content>
-            <v-list-item-action class="clickable">
-              <v-icon v-if="selectedLinkId === a.id" @click="saveLink(a)">save</v-icon>
-              <v-icon v-else @click="selectedLinkId = a.id">edit</v-icon>
-            </v-list-item-action>
-            <v-dialog
-                v-model="a.deleteConfirm"
-                width="500">
-              <template v-slot:activator="{ on }">
-                <v-list-item-action class="clickable" v-on="on">
-                  <v-icon>delete</v-icon>
-                </v-list-item-action>
-              </template>
-              <v-card>
-                <v-card-title
-                    class="headline grey lighten-2"
-                    primary-title
-                >
-                  Confirm
-                </v-card-title>
+  <v-container class="custom-field-group-container">
+    <v-row>
+      <v-col cols="12">
+        <v-toolbar flat class="app-toolbar">
+          <v-toolbar-title class="app-title">Links</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="addNew = !addNew; newLink = {}">
+              {{addNew ? 'Cancel' : 'Add New'}}
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-container>
+          <v-text-field v-if="addNew"
+                        v-model="newLink.link"
+                        placeholder="Enter a link name"
+                        label="Link">
+          </v-text-field>
+          <v-text-field v-if="addNew"
+                        v-model="newLink.url"
+                        placeholder="Enter a URL"
+                        label="URL">
+          </v-text-field>
+          <v-btn v-if="addNew" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</v-btn>
+          <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
+                  :key="index"  class="pa-0">
+            <v-list-item :class="{'shaded-row': index % 2}">
+              <v-list-item-content class="text-left">
+                <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
+                              label="Link"
+                              v-model="a.link">
+                </v-text-field>
+                <v-text-field class="one-hunned" v-if="selectedLinkId === a.id"
+                              label="URL"
+                              v-model="a.url">
+                </v-text-field>
+                <div v-else>{{a.link}}</div>
+              </v-list-item-content>
+              <v-list-item-action class="clickable">
+                <v-icon v-if="selectedLinkId === a.id" @click="saveLink(a)">save</v-icon>
+                <v-icon v-else @click="selectedLinkId = a.id">edit</v-icon>
+              </v-list-item-action>
+              <v-dialog
+                  v-model="a.deleteConfirm"
+                  width="500">
+                <template v-slot:activator="{ on }">
+                  <v-list-item-action class="clickable" v-on="on">
+                    <v-icon>delete</v-icon>
+                  </v-list-item-action>
+                </template>
+                <v-card>
+                  <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title
+                  >
+                    Confirm
+                  </v-card-title>
 
-                <v-card-text>
-                  Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
-                </v-card-text>
+                  <v-card-text>
+                    Are you sure you want to delete this link: <strong>{{ a.link }}</strong>?
+                  </v-card-text>
 
-                <v-divider></v-divider>
+                  <v-divider></v-divider>
 
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                      @click="a.deleteConfirm = false">
-                    No
-                  </v-btn>
-                  <v-btn
-                      color="primary"
-                      text
-                      @click="a.archived = true; deleteLink(a.id)">
-                    Yes
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </v-list-item>
-        </v-list>
-      </v-container>
-    </v-flex>
-  </v-layout>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        @click="a.deleteConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                        color="primary"
+                        text
+                        @click="a.archived = true; deleteLink(a.id)">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-list-item>
+          </v-list>
+        </v-container>
+      </v-col>
+      <Snackbar :snackbar="snackbar"></Snackbar>
+    </v-row>
+  </v-container>
 </template>
 
 
 <script>
-  import {mapState} from 'vuex'
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
-  import {getRequest, deleteRequest, putRequest, postRequest} from '@/helpers/helpers'
+  import Snackbar from '@/components/Snackbar.vue'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Attachments',
     mixins: [Vue2Filters.mixin],
+    components: {
+      Snackbar
+    },
     data () {
       return {
+        snackbar: {},
         links: [],
         addNew: false,
         newLink: {},
@@ -110,30 +117,63 @@
     methods: {
       async getLinks () {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await getRequest(`/api/v1/flow/${this.companyId}/links`)
-        this.links = orderBy(data, [a => a.link.toLowerCase()])
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        try {
+          const {data} = await getRequest(`/links`)
+          this.links = orderBy(data, [a => a.link.toLowerCase()])
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async deleteLink (typeId) {
-        await deleteRequest(`/api/v1/flow/${this.companyId}/links/${typeId}`)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/links/${typeId}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async addNewLink () {
-        this.newLink.companyId = this.companyId
-        // this.newProcess.createdById = this.userId
-        const {data} = await postRequest(`/api/v1/flow/${this.companyId}/links`, this.newLink)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.newLink.companyId = this.companyId
+          // this.newProcess.createdById = this.userId
+          const {data} = await postRequest(`/links`, this.newLink)
 
-        // add it to the records already on the screen
-        this.links.push(data)
-        this.links = orderBy(this.links, [a => a.link.toLowerCase()])
+          // add it to the records already on the screen
+          this.links.push(data)
+          this.links = orderBy(this.links, [a => a.link.toLowerCase()])
 
-        // reset the new process fields
-        this.addNew = false
-        this.newLink = {}
+          // reset the new process fields
+          this.addNew = false
+          this.newLink = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Link Added')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Link')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async saveLink (a) {
-        this.selectedLinkId = null
-        a.modifiedById = this.userId
-        await putRequest(`/api/v1/flow/${this.companyId}/links`, a)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.selectedLinkId = null
+          a.modifiedById = this.userId
+          await putRequest(`/links`, a)
+          this.snackbar = getSnackbar('SUCCESS', 'Link Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Link')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async created () {

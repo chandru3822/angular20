@@ -27,7 +27,7 @@ public class AuthController {
   @Autowired
   private SecurityService securityService;
 
-  @RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
   public ResponseEntity getJwtToken(@RequestBody Credentials creds) {
     User user = securityService.getUser(creds.getUsername());

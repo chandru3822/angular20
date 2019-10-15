@@ -1,52 +1,54 @@
 <template>
-  <v-layout column fill-height>
-    <v-flex xs12 shrink>
-      <v-data-table
-          :headers="headers"
-          :items="filteredAhjs"
-          :items-per-page="-1"
-          hide-default-footer
-          :sort-by.sync="pagination.sortBy"
-          :sort-desc.sync="pagination.descending"
-          class="elevation-1"
-      >
-        <template #header="{ props: { headers } }">
-          <thead class="v-data-table-header">
-            <tr>
-              <th v-for="header in headers" :key="header.text"
-                    :class="['text-xs-start column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']">
-                <v-icon class="fix-opacity" small v-if="pagination.descending.includes(true) && pagination.sortBy.includes(header.value)">arrow_upward</v-icon>
-                <v-icon class="fix-opacity" small v-if="pagination.descending.includes(false) && pagination.sortBy.includes(header.value)">arrow_downward</v-icon>
-                <!--<v-icon small>arrow_upward</v-icon>-->
+  <v-container class="fill-height">
+    <v-row>
+      <v-col cols="12" class="shrink">
+        <v-data-table
+            :headers="headers"
+            :items="filteredAhjs"
+            :items-per-page="-1"
+            hide-default-footer
+            :sort-by.sync="pagination.sortBy"
+            :sort-desc.sync="pagination.descending"
+            class="elevation-1"
+        >
+          <template #header="{ props: { headers } }">
+            <thead class="v-data-table-header">
+              <tr>
+                <th v-for="header in headers" :key="header.text"
+                      :class="['text-xs-start column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']">
+                  <v-icon class="fix-opacity" small v-if="pagination.descending.includes(true) && pagination.sortBy.includes(header.value)">arrow_upward</v-icon>
+                  <v-icon class="fix-opacity" small v-if="pagination.descending.includes(false) && pagination.sortBy.includes(header.value)">arrow_downward</v-icon>
+                  <!--<v-icon small>arrow_upward</v-icon>-->
 
-                <v-text-field v-if="header.filterType === 'text'" v-model="search"></v-text-field>
-                <v-select v-if="header.filterType === 'select'"
-                          v-model="filters[header.value]"
-                          :items="header.filterValues"
-                          item-text="name"
-                          return-object></v-select>
-                {{header.name}}
-              </th>
+                  <v-text-field v-if="header.filterType === 'text'" v-model="search"></v-text-field>
+                  <v-select v-if="header.filterType === 'select'"
+                            v-model="filters[header.value]"
+                            :items="header.filterValues"
+                            item-text="name"
+                            return-object></v-select>
+                  {{header.name}}
+                </th>
+              </tr>
+            </thead>
+          </template>
+          <template #body="{ items }">
+            <tr v-for="ahj in items" :key="ahj.name" class="text-sm-left">
+              <td v-if="ahj.name">{{ ahj.name }}</td>
+              <td v-if="ahj.metroArea">{{ ahj.metroArea }}</td>
+              <td v-if="ahj.state">{{ ahj.state }}</td>
+              <td>
+                <v-btn text v-if="ahj.id" :to="`ahj/${ahj.id}/permit`" class="mr-3 rmv-underline blue-txt">Permit</v-btn>
+                <v-btn text v-if="ahj.id" :to="`ahj/${ahj.id}/inspection`" class="mr-3 rmv-underline blue-txt">Inspection</v-btn>
+                <v-btn text v-if="ahj.id" :to="`ahj/${ahj.id}/design`" class="mr-3 rmv-underline blue-txt">Design</v-btn>
+                <v-icon small class="mr-3 blue-txt" @click="editAhj(ahj)">edit</v-icon>
+                <v-icon small class="blue-txt" @click="deleteAhj(ahj)">delete</v-icon>
+              </td>
             </tr>
-          </thead>
-        </template>
-        <template #body="{ items }">
-          <tr v-for="ahj in items" :key="ahj.name" class="text-sm-left">
-            <td v-if="ahj.name">{{ ahj.name }}</td>
-            <td v-if="ahj.metroArea">{{ ahj.metroArea }}</td>
-            <td v-if="ahj.state">{{ ahj.state }}</td>
-            <td>
-              <v-btn text v-if="ahj.id" :to="`ahj/${ahj.id}/permit`" class="mr-3 rmv-underline blue-txt">Permit</v-btn>
-              <v-btn text v-if="ahj.id" :to="`ahj/${ahj.id}/inspection`" class="mr-3 rmv-underline blue-txt">Inspection</v-btn>
-              <v-btn text v-if="ahj.id" :to="`ahj/${ahj.id}/design`" class="mr-3 rmv-underline blue-txt">Design</v-btn>
-              <v-icon small class="mr-3 blue-txt" @click="editAhj(ahj)">edit</v-icon>
-              <v-icon small class="blue-txt" @click="deleteAhj(ahj)">delete</v-icon>
-            </td>
-          </tr>
-        </template>
-      </v-data-table>
-    </v-flex>
-  </v-layout>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>

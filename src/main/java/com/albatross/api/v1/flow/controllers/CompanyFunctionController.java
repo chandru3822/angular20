@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
+import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
 import com.albatross.api.v1.flow.model.SystemValue;
 import com.albatross.api.v1.flow.services.CompanyFunctionService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,40 +19,40 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/function")
+@RequestMapping(value = "/api/v1/flow/function")
 public class CompanyFunctionController {
 
   @Autowired
   private CompanyFunctionService companyFunctionService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyFunction> getCompanyFunctions (@PathVariable Long companyId) {
-    return companyFunctionService.getCompanyFunctions(companyId);
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyFunction> getCompanyFunctions () {
+    return companyFunctionService.getCompanyFunctions();
   }
 
-  @RequestMapping(value = "{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteCompanyFunction (@PathVariable Long id) {
     companyFunctionService.deleteCompanyFunction(id);
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public CompanyFunction getFunctionDetails (@PathVariable Long id) {
     return companyFunctionService.getFunctionDetails(id);
   }
 
-  @RequestMapping(value = "/{id}/defaultParams", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyFunctionParam> getFunctionDefaultParams(@PathVariable Long id) {
-    return companyFunctionService.getFunctionDefaultParams(id);
+  @GetMapping(value = "/{id}/dynamicParams", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<RequirementParamDynamicValue> getFunctionDynamicParams(@PathVariable Long id) {
+    return companyFunctionService.getFunctionDynamicParams(id);
   }
 
-  @RequestMapping(value = "/{id}/param", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{id}/param", produces = MediaType.APPLICATION_JSON_VALUE)
   public CompanyFunctionParam saveParams (@PathVariable("id") Long functionId,
                           @RequestBody CompanyFunctionParam param) {
     return companyFunctionService.saveFunctionParams(functionId, param);
   }
 
   // this could be in a system value controller but i dont think it will be needed outside of functions??
-  @RequestMapping(value = "/systemValues", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/systemValues", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<SystemValue> getSystemValues () {
     return companyFunctionService.getSystemValues();
   }

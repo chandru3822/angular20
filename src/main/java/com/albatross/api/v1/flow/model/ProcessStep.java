@@ -20,7 +20,7 @@ public class ProcessStep {
   private Boolean archived;
   private Date dateCreated, dateModified;
 
-  private List<CustomFieldGroupType> customFieldGroupTypes;
+  private List<CustomFieldGroup> customFieldGroups;
   private List<ProcessStepAttachmentType> attachmentTypes;
   private List<ProcessStepLink> links;
 }

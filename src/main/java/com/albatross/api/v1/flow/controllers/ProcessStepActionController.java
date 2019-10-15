@@ -1,6 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.model.ProcessStepAction;
+import com.albatross.api.v1.flow.model.ProcessStepActionChildProcess;
+import com.albatross.api.v1.flow.model.ProcessStepActionLink;
 import com.albatross.api.v1.flow.services.ProcessStepActionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,31 +19,65 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/processStep/{stepId}/action")
+@RequestMapping(value = "/api/v1/flow/processStep/{stepId}/action")
 public class ProcessStepActionController {
 
   @Autowired
   private ProcessStepActionService processStepActionService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepAction> getActionsForStep (@PathVariable Long companyId,
-                                                    @PathVariable Long stepId) {
-    return processStepActionService.getActionsForStep(companyId, stepId);
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepAction> getActionsForStep (@PathVariable Long stepId) {
+    return processStepActionService.getActionsForStep(stepId);
   }
 
-  @RequestMapping(value = "/{actionId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteAction(@PathVariable Long actionId) {
     processStepActionService.deleteAction(actionId);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStepAction updateAction(@RequestBody ProcessStepAction action) {
     return processStepActionService.updateAction(action);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStepAction insertAction(@RequestBody ProcessStepAction action) {
     return processStepActionService.insertAction(action);
   }
 
+  // child process steps
+
+  @GetMapping(value = "/{actionId}/childProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStep> getChildProcessStepsForAction (@PathVariable Long stepId, @PathVariable Long actionId) {
+    return processStepActionService.getChildProcessStepsForAction(stepId, actionId);
+  }
+
+  @PostMapping(value = "/{actionId}/addChildStepToAction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepActionChildProcess addChildStepToAction(@PathVariable Long actionId,
+                                                            @RequestBody ProcessStepActionChildProcess child) {
+    return processStepActionService.addChildStepToAction(actionId, child);
+  }
+
+  @DeleteMapping(value = "/{actionId}/deleteChildStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteChildProcessFromAction(@PathVariable Long id) {
+    processStepActionService.deleteChildProcessFromAction(id);
+  }
+
+  @PutMapping(value = "/{actionId}/updateActionChildStep", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateActionChildStep(@PathVariable Long actionId,
+                                    @RequestBody ProcessStepActionChildProcess child) {
+    processStepActionService.updateActionChildStep(actionId, child);
+  }
+
+  // child links
+  @PostMapping(value = "/{actionId}/addLinkToAction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepActionLink addLinkToAction(@PathVariable Long actionId,
+                                               @RequestBody ProcessStepActionLink link) {
+    return processStepActionService.addLinkToAction(actionId, link);
+  }
+
+  @DeleteMapping(value = "/{actionId}/deleteLinkFromAction/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteLink(@PathVariable Long id) {
+    processStepActionService.deleteLinkFromAction(id);
+  }
 }

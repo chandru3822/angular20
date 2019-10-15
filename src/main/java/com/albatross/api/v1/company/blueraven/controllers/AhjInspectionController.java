@@ -17,18 +17,18 @@ public class AhjInspectionController {
     @Autowired
     private AhjInspectionService ahjInspectionService;
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @GetMapping(value = "")
     public Optional<AhjInspectionDetail> getAhjInspectionDetail(@PathVariable Long ahjId) {
         return ahjInspectionService.getAhjInspectionDetailByAhjId(ahjId);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @PostMapping(value = "")
     public Optional<AhjInspection> createAhjInspection(@PathVariable Long ahjId,
                                                        @RequestBody AhjInspection inspection) {
         return ahjInspectionService.createAhjInspection(ahjId, inspection);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}")
     public Optional<AhjInspection> updateAhjInspection(@PathVariable Long ahjId,
                                                        @PathVariable Long id,
                                                        @RequestBody AhjInspection inspection) {

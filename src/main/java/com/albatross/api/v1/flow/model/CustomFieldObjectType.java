@@ -12,7 +12,7 @@ import lombok.Setter;
 public class CustomFieldObjectType {
 
   private Long id, customFieldId, objectTypeId;
-  private Boolean archived = false;
+  private Boolean archived = false, showOnInsert;
   private String objectType;
 }
 

@@ -4,7 +4,7 @@
       id,
       first_name,
       last_name,
-      full_name,
+      first_name || ' ' || last_name as full_name,
       email,
       phone,
       company_id
@@ -12,16 +12,201 @@
     where company_id = :companyId;
   ]]></customer.getAllByCompany>
 
+  <customer.searchCustomers><![CDATA[
+      select
+          c.id,
+          c.first_name,
+          c.last_name,
+          c.first_name || ' ' || c.last_name as full_name,
+          c.email,
+          c.phone,
+          c.company_id,
+          c.state_id,
+          s.state,
+          s.abbreviation,
+          c.date_created,
+          (select json_build_object(
+           'userId', u.id,
+           'firstName', u.first_name,
+           'lastName', u.last_name,
+           'fullName', u.first_name || ' ' || u.last_name
+          )) as owner
+      from flow.customer c
+          left join flow.state s on s.id = c.state_id
+          left join flow.user_position up on up.id = c.owner_user_position_id
+          left join flow."user" u on u.id = up.user_id
+      where c.company_id = :companyId
+          and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+            OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+            OR s.state ILIKE '%' || :query || '%'
+          )
+      order by c.date_created desc
+      limit :limit
+      offset :offset ;
+  ]]></customer.searchCustomers>
+
+  <customer.searchCustomerCount><![CDATA[
+      select
+        count(*)
+      from flow.customer c
+         left join flow.state s on s.id = c.state_id
+         left join flow.user_position up on up.id = c.owner_user_position_id
+         left join flow."user" u on u.id = up.user_id
+      where c.company_id = :companyId
+        and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+        OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+        OR s.state ILIKE '%' || :query || '%'
+      )
+  ]]></customer.searchCustomerCount>
+
+  <customer.exportCustomers><![CDATA[
+      select
+          c.first_name,
+          c.last_name,
+          c.first_name || ' ' || c.last_name as full_name,
+          c.street1,
+          c.email,
+          c.phone,
+          c.company_id,
+          c.city,
+          c.postal_code,
+          c.state_id,
+          s.state,
+          s.abbreviation,
+          c.date_created,
+          (select json_build_object(
+           'userId', u.id,
+           'firstName', u.first_name,
+           'lastName', u.last_name,
+           'fullName', u.first_name || ' ' || u.last_name
+          )) as owner
+      from flow.customer c
+          left join flow.state s on s.id = c.state_id
+          left join flow.user_position up on up.id = c.owner_user_position_id
+         left join flow."user" u on u.id = up.user_id
+      where c.company_id = :companyId
+          and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
+                OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+                OR s.state ILIKE '%' || :query || '%'
+              )
+      order by c.date_created desc;
+  ]]></customer.exportCustomers>
+
   <customer.getById><![CDATA[
-    select
-      id,
-      first_name,
-      last_name,
-      full_name,
-      email,
-      phone,
-      company_id
-    from flow.customer
-    where id = :customerId;
+    select c.id,
+       c.first_name,
+       c.last_name,
+       c.date_created,
+       c.first_name || ' ' || c.last_name as full_name,
+       c.email,
+       c.phone,
+       c.mobile,
+       c.customer_type_id,
+       c.company_id,
+       c.street1,
+       c.city,
+       c.state_id,
+       s.state,
+       c.country_id,
+       ct.country,
+       c.owner_user_position_id,
+       (SELECT row_to_json(o)
+            FROM (SELECT u.id as "userId",
+                     u.first_name as "firstName",
+                     u.last_name as "lastName",
+                     u.first_name || ' ' || u.last_name AS "fullName",
+                     p.position
+                  FROM blueraven."user" u
+                    inner join flow.user_position up on up.user_id = u.id
+                    inner join flow.position p on p.id = up.position_id
+                  WHERE up.id = c.owner_user_position_id) o) AS owner
+    from flow.customer c
+             left join flow.state s on s.id = c.state_id
+             inner join flow.country ct on ct.id = c.country_id
+    where c.id = :customerId
+
   ]]></customer.getById>
+
+  <customer.getByProjectId><![CDATA[
+    select
+      c.id,
+      c.first_name,
+      c.last_name,
+      c.date_created,
+      c.first_name || ' ' || last_name as full_name,
+      c.email,
+      c.phone,
+      c.mobile,
+      c.customer_type_id,
+      c.company_id,
+      c.street1,
+      c.city,
+      c.state_id,
+      s.state,
+      c.country_id,
+      ct.country
+    from flow.customer c
+      inner join flow.project p on p.customer_id = c.id
+      left join flow.state s on s.id = c.state_id
+      inner join flow.country ct on ct.id = c.country_id
+    where p.id = :projectId
+  ]]></customer.getByProjectId>
+
+  <customer.updateCustomer><![CDATA[
+    update flow.customer set
+           customer_type_id = :customerTypeId,
+           first_name = :firstName,
+           last_name = :lastName,
+           street1 = :street1,
+           city = :city,
+           state_id = :stateId,
+           postal_code = :postalCode,
+           country_id = :countryId,
+           phone = :phone,
+           email = :email,
+           mobile = :mobile,
+           modified_by_id = :modifiedById,
+           date_modified = now(),
+           owner_user_position_id = :ownerUserPositionId
+    where id = :id
+  ]]></customer.updateCustomer>
+
+  <customer.insertCustomer><![CDATA[
+    insert into flow.customer(customer_type_id, first_name, last_name, street1, city, state_id, postal_code, country_id, phone, email, mobile, created_by_id, company_id)
+    values (:customerTypeId, :firstName, :lastName, :street1, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId)
+  ]]></customer.insertCustomer>
+
+  <customer.getOwners><![CDATA[
+    select u.id as "userId",
+           u.first_name,
+           u.last_name,
+           u.first_name || ' ' || u.last_name as full_name,
+           up.id as user_position_id,
+           p.position
+    from flow.owner_position_id op
+         inner join flow.user_position up on array[up.position_id] <@ op.position_ids
+         inner join flow."user" u on u.id = up.user_id
+         inner join flow.position p on p.id = up.position_id
+    where op.company_id = :companyId
+      and ARRAY[u.user_status_type_id] <@ ARRAY[ :statusIds ]::integer[]
+      and up.start_date <= now()
+      and (up.end_date is null or up.end_date >= now())
+    order by u.last_name, u.first_name
+  ]]></customer.getOwners>
+
+  <customer.updateOwner><![CDATA[
+    update flow.customer set
+           modified_by_id = :modifiedById,
+           owner_user_position_id = :ownerUserPositionId,
+           date_modified = now()
+    where id = :id
+  ]]></customer.updateOwner>
+
+  <customer.convertToCustomer><![CDATA[
+    update flow.customer set
+           modified_by_id = :modifiedById,
+           customer_type_id = :customerTypeId,
+           date_modified = now()
+    where id = :customerId
+  ]]></customer.convertToCustomer>
 </sql>

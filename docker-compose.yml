@@ -1,0 +1,14 @@
+version: '3'
+services:
+  db:
+    restart: always
+    image: postgres:11.4-alpine
+    expose:
+      - "5433"
+    ports:
+      - "${PGPORT}:5432"
+
+    environment:
+      POSTGRES_DB: "${PGDATABASE}"
+      POSTGRES_USER: "${PGUSER}"
+      POSTGRES_PASSWORD: "${PGPASSWORD}"

@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.KeyPattern;
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
 import com.albatross.api.v1.flow.model.User;
@@ -30,17 +31,19 @@ public class AttachmentTypeService {
   @Autowired
   SecurityService securityService;
 
-  public List<AttachmentType> getAttachmentTypesForCompany(Long companyId) {
+  public List<AttachmentType> getAttachmentTypesForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
 
     List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getTypesForCompany", params, AttachmentType.class);
     return attachmentTypes;
   }
 
-  public List<AttachmentType> getAvailableTypesForProcessStep(Long companyId, Long id) {
+  public List<AttachmentType> getAvailableTypesForProcessStep(Long id) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
     List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getAvailableTypesForProcessStep", params, AttachmentType.class);
@@ -81,21 +84,33 @@ public class AttachmentTypeService {
   }
 
   public void deleteType(Long typeId) {
+    User currentUser = securityService.getCurrentUser();
+
     sqlCache.update("attachmentType.deleteType",
-        ImmutableMap.of("id", typeId));
+        ImmutableMap.of("id", typeId,
+                        "modifiedById", currentUser.getId()));
   }
 
-  public void updateType(AttachmentType attachmentType) {
+  public void updateType(AttachmentType type) {
+    User currentUser = securityService.getCurrentUser();
+
     sqlCache.update("attachmentType.updateType",
-        ImmutableMap.of("companyId", attachmentType.getCompanyId(),
-            "id", attachmentType.getId(),
-            "attachmentType", attachmentType.getAttachmentType()));
+        ImmutableMap.of("companyId", type.getCompanyId(),
+            "id", type.getId(),
+            "attachmentType", type.getAttachmentType(),
+            "modifiedById", currentUser.getId()));
   }
 
   public Optional<AttachmentType> insertType(AttachmentType type) {
+    User currentUser = securityService.getCurrentUser();
+
+    //all user added attachment types use the uploads key pattern (id = 9)
+
     Long id = sqlCache.updateReturningId("attachmentType.insertType",
         ImmutableMap.of("attachmentType", type.getAttachmentType(),
-            "companyId", type.getCompanyId()),
+            "companyId", type.getCompanyId(),
+            "keyPatternId", KeyPattern.UPLOADS.id,
+            "createdById", currentUser.getId()),
         "id").longValue();
 
     return getType(type.getCompanyId(), id);

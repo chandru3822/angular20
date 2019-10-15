@@ -1,17 +1,150 @@
 <sql>
-  <user.findByEmailIgnoreCase><![CDATA[
-    select id,
-      first_name,
-      last_name,
-      email,
-      password,
-      company_id,
-      null as "timezone",
-      first_name || ' ' || last_name as full_name,
-      user_status_type_id
-    from flow.user
-    where lower(email) = lower(:email)
-  ]]></user.findByEmailIgnoreCase>
+  <user.searchUsers><![CDATA[
+      select distinct upv.user_id as id,
+             upv.first_name,
+             upv.last_name,
+             upv.first_name || ' ' || upv.last_name as full_name,
+             upv.primary_flag,
+             upv.start_date,
+             upv.end_date,
+             upv.position,
+             upv.position_id,
+             upv.user_position_id,
+             upv.company_id,
+             upv.email,
+             upv.phone_number,
+             upv.user_status_type_id,
+             upv.user_status_type,
+             upv.hierarchy
+      from flow.user_positions_vw upv
+      where upv.company_id = :companyId
+        and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
+        and upv.first_name ILIKE '%' || :firstName || '%'
+        and upv.last_name ILIKE '%' || :lastName || '%'
+        and upv.email ILIKE '%' || :email || '%'
+        and upv.phone_number ILIKE '%' || :phone || '%'
+        and upv.user_status_type_id in (:statuses)
+        and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
+        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
+        and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
+      order by upv.last_name, upv.first_name, upv.start_date desc
+      limit :limit
+      offset :offset
+  ]]></user.searchUsers>
+
+  <user.searchUserCount><![CDATA[
+      select count(*)
+      from flow.user_positions_vw upv
+      where upv.company_id = :companyId
+        and upv.position_level = 0
+        and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
+        and upv.first_name ILIKE '%' || :firstName || '%'
+        and upv.last_name ILIKE '%' || :lastName || '%'
+        and upv.email ILIKE '%' || :email || '%'
+        and upv.phone_number ILIKE '%' || :phone || '%'
+        and upv.user_status_type_id in (:statuses)
+        and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
+        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
+        and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
+  ]]></user.searchUserCount>
+
+  <user.exportUsers><![CDATA[
+      select
+        u.id,
+        u.first_name,
+        u.last_name,
+        u.first_name || ' ' || u.last_name as full_name,
+        u.email,
+        u.phone_number,
+        u.company_id,
+        u.user_status_type_id,
+        ust.user_status_type,
+        p.position
+    from flow.user u
+      inner join flow.user_status_type ust on ust.id = u.user_status_type_id
+      left join flow.user_position up on up.user_id = u.id
+      left join flow.position p on p.id = up.position_id
+    where u.company_id = :companyId
+       and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+       and u.first_name ILIKE '%' || :firstName || '%'
+       and u.last_name ILIKE '%' || :lastName || '%'
+       and u.email ILIKE '%' || :email || '%'
+       and u.phone_number ILIKE '%' || :phone || '%'
+       and u.user_status_type_id in (:statuses)
+       and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[p.id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
+    order by u.last_name, u.first_name, u.start_date desc
+  ]]></user.exportUsers>
+
+  <user.updateUser>
+    <![CDATA[
+      update flow."user"
+      set first_name = :firstName,
+          last_name = :lastName,
+          email = :email,
+          phone_number = :phone,
+          modified_by_id = :modifiedById,
+          date_modified = now(),
+          company_id = :companyId
+      where id = :id
+    ]]>
+  </user.updateUser>
+
+  <user.insertUser>
+    <![CDATA[
+      insert into flow.user(first_name, last_name, created_by_id, company_id)
+      values(:firstName, :lastName, :createdById, :companyId)
+    ]]>
+  </user.insertUser>
+
+  <user.getOne>
+    <![CDATA[
+      select u.*
+      from flow."user" u
+      where u.id = :id
+    ]]>
+  </user.getOne>
+
+  <user.findByUsernameIgnoreCase><![CDATA[
+    select u.id,
+       u.first_name,
+       u.last_name,
+       u.email,
+       u.username,
+       u.password,
+       u.company_id,
+       null as "timezone",
+       u.first_name || ' ' || u.last_name as full_name,
+       u.user_status_type_id,
+       c.aws_bucket,
+       c.company_name,
+       c.abbreviation as company_abbreviation,
+       coalesce((
+            SELECT array_to_json(array_agg(row_to_json(permissions)))
+            FROM (
+                     select per.id,
+                            per.permission_name as "permissionName",
+                            per.permission_code as "permissionCode"
+                     from flow.permission per
+                        left join flow.role_permission rp on per.id = rp.permission_id
+                        left join flow.role role on rp.role_id = role.id
+                        left join flow.user_role ur on ur.role_id = role.id
+                     where ur.user_id = u.id
+                        AND role.archived is not true
+                        and per.archived is not true
+                    except
+                     select per.id,
+                            per.permission_name,
+                            per.permission_code
+                     from flow.permission per
+                        left join flow.user_permission udp on udp.permission_id = per.id
+                     where udp.user_id = u.id
+                       and udp.deny is true
+                       and per.archived is not true
+                 ) permissions), '[]') as permissions
+    from flow.user u
+        inner join flow.company c on c.id = u.company_id
+    where lower(username) = lower(:username)
+  ]]></user.findByUsernameIgnoreCase>
 
   <user.findByUserUuid><![CDATA[
         select id,
@@ -25,13 +158,24 @@
 
   <user.findUserById>
     <![CDATA[
-        select id,
-          first_name,
-          last_name,
-          first_name || ' ' || last_name as full_name,
-          user_status_type_id
-        from flow.user
-        where id = :id
+        select u.id,
+          u.first_name,
+          u.last_name,
+          u.company_id,
+          c.aws_bucket,
+          u.first_name || ' ' || u.last_name as full_name,
+          u.user_status_type_id
+        from flow.user u
+         inner join flow.company c on c.id = u.company_id
+        where u.id = :id
       ]]>
   </user.findUserById>
+
+  <user.getUserStatuses>
+    <![CDATA[
+      select id,
+             user_status_type
+      from flow.user_status_type
+    ]]>
+  </user.getUserStatuses>
 </sql>

@@ -1,24 +1,27 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyFunction;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
+import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
 import com.albatross.api.v1.flow.model.SystemValue;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -39,9 +42,10 @@ public class CompanyFunctionService {
   @Autowired
   ObjectMapper om;
 
-  public List<CompanyFunction> getCompanyFunctions(Long companyId) {
+  public List<CompanyFunction> getCompanyFunctions() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<CompanyFunction> results = sqlCache.query("companyFunction.getFunctions", params, CompanyFunction.class);
     return results;
   }
@@ -60,10 +64,12 @@ public class CompanyFunctionService {
     return results.orElse(null);
   }
 
-  public List<CompanyFunctionParam> getFunctionDefaultParams(Long id) {
+  public List<RequirementParamDynamicValue> getFunctionDynamicParams(Long id) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    List<CompanyFunctionParam> results = sqlCache.query("companyFunction.getFunctionDefaultParams", params, CompanyFunctionParam.class);
+    params.put("functionId", id);
+    // 2 = dynamic value params - maybe we pass this in later if needed
+    params.put("parameterTypeId", 2);
+    List<RequirementParamDynamicValue> results = sqlCache.query("companyFunction.getFunctionDynamicParams", params, RequirementParamDynamicValue.class);
     return results;
   }
 
@@ -77,8 +83,8 @@ public class CompanyFunctionService {
 
     queryParams.put("dbFunctionParamId", param.getDbFunctionParamId());
     queryParams.put("companyFunctionId", param.getCompanyFunctionId());
-    queryParams.put("customFieldGroupId", param.getCustomFieldGroupId());
-    queryParams.put("defaultValue", param.getDefaultValue());
+    queryParams.put("customFieldGroupAssignmentId", param.getCustomFieldGroupAssignmentId());
+    queryParams.put("dynamicValue", param.getDynamicValue());
     queryParams.put("systemValueId", param.getSystemValueId());
     queryParams.put("userId", currentUser.getId());
 
@@ -88,7 +94,7 @@ public class CompanyFunctionService {
       queryParams.put("id", param.getId());
 
       sqlCache.update("companyFunction.updateCompanyFunctionParam", queryParams);
-    } else if (null != param.getCustomFieldGroupId() || null != param.getDefaultValue() || null != param.getSystemValueId()){
+    } else if (null != param.getCustomFieldGroupAssignmentId() || null != param.getDynamicValue() || null != param.getSystemValueId()){
       // don't insert a new row if all the possible input values are null
 
       id = sqlCache.updateReturningId("companyFunction.insertCompanyFunctionParam", queryParams, "id").longValue();

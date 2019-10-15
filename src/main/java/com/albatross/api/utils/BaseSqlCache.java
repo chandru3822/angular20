@@ -99,6 +99,14 @@ public class BaseSqlCache {
     return generatedKeyHolder.getKey();
   }
 
+  public <T> T queryForObject(String key, Map<String, Object> params, Class<T> elementType) {
+    MapSqlParameterSource paramSource = scrubParams(params);
+    String sql = getByKey(key);
+
+    //noinspection unchecked
+    return (T) jdbc.queryForObject(sql, paramSource, elementType);
+  }
+
   public void query(String key, Map<String, Object> params, RowCallbackHandler rse) {
     MapSqlParameterSource paramSource = scrubParams(params);
     String sql = getByKey(key);

@@ -1,160 +1,150 @@
 <sql>
-  <attachment.findById>
-    <![CDATA[
-      SELECT *
-      FROM flow.attachment
-      WHERE id = :id
-    ]]>
-  </attachment.findById>
+  <attachment.findById><![CDATA[
+    SELECT *
+    FROM flow.attachment
+    WHERE id = :id
+  ]]></attachment.findById>
 
-  <attachment.getAttachmentById>
-    <![CDATA[
-      SELECT
-        a.id,
-        a.content_type,
-        a.filename,
-        a.s3_key,
-        a.size,
-        a.archived,
-        src.source_id,
-        a.date_created,
-        a.date_modified
-      FROM flow.attachment a
-        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
-      WHERE a.id = :id
-        AND a.deleted IS NOT TRUE
-    ]]>
-  </attachment.getAttachmentById>
+  <attachment.getAttachmentById><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      a.archived,
+      src.source_id,
+      a.date_created,
+      a.date_modified
+    FROM flow.attachment a
+      INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+    WHERE a.id = :id
+      AND a.archived IS NOT TRUE
+  ]]></attachment.getAttachmentById>
 
-  <attachment.getAttachmentsByType>
-    <![CDATA[
-      SELECT
-        a.id,
-        a.content_type,
-        a.filename,
-        a.s3_key,
-        a.size,
-        src.source_id,
-        a.date_created,
-        a.date_modified,
-        a.archived
-      FROM flow.attachment a
-        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
-      WHERE src.attachment_source_type_id = :attachmentSourceTypeId
-        AND a.deleted = FALSE
-    ]]>
-  </attachment.getAttachmentsByType>
+  <attachment.getAttachmentsByType><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      src.source_id,
+      a.date_created,
+      a.date_modified,
+      a.archived
+    FROM flow.attachment a
+      INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+      INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
+    WHERE a.id = :attachmentTypeId
+      AND a.archived IS NOT TRUE
+  ]]></attachment.getAttachmentsByType>
 
-  <attachment.getAttachmentBySourceAndType>
-    <![CDATA[
-      SELECT
-        a.id,
-        a.content_type,
-        a.filename,
-        a.s3_key,
-        a.size,
-        a.archived,
-        src.source_id,
-        a.date_created,
-        a.date_modified
-      FROM flow.attachment a
-        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
+  <attachment.getAttachmentBySourceAndType><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      a.archived,
+      src.source_id,
+      a.date_created,
+      a.date_modified
+    FROM flow.attachment a
+      INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+    WHERE src.source_id = :sourceId
+      AND a.attachment_type_id = :attachmentTypeId
+      AND a.archived IS NOT TRUE
+    LIMIT 1
+  ]]></attachment.getAttachmentBySourceAndType>
+
+  <attachment.getAttachmentsBySourceIdAndType><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      src.source_id,
+      a.archived
+    FROM flow.attachment a
+      INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+      INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
+    WHERE src.source_id = :sourceId
+      AND at.id = :attachmentTypeId
+      AND a.archived IS NOT TRUE
+  ]]></attachment.getAttachmentsBySourceIdAndType>
+
+  <attachment.getAttachmentBySourceAndTypeForUserList><![CDATA[
+    SELECT
+      a.id,
+      a.attachment_type_id,
+      a.content_type,
+      a.filename,
+      a.s3_key,
+      a.size,
+      a.archived,
+      src.source_id,
+      a.date_created,
+      a.date_modified
+    FROM flow.attachment a
+      INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+      INNER JOIN flow.attachment_type at ON at.id = a.attachment_type_id
+    WHERE array[src.source_id] <@ ARRAY[ :sourceIds ]::INTEGER[]
+      AND at.id = :attachmentTypeId
+      AND a.archived is not true
+  ]]></attachment.getAttachmentBySourceAndTypeForUserList>
+
+  <attachment.create><![CDATA[
+    INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, created_by_id, attachment_type_id)
+    VALUES(:filename, :contentType, :key, :size, now(), :createdById, :attachmentTypeId)
+  ]]></attachment.create>
+
+  <attachment.addToJoinTable><![CDATA[
+    INSERT INTO flow.attachment_source(attachment_id, source_id)
+    VALUES (:attachmentId, :sourceId)
+  ]]></attachment.addToJoinTable>
+
+  <attachment.deleteById><![CDATA[
+    UPDATE flow.attachment
+    SET
+      archived = TRUE,
+      date_modified = now(),
+      modified_by_id = :modifiedById
+    WHERE id = :id
+  ]]></attachment.deleteById>
+
+  <attachment.deleteBySourceAndType><![CDATA[
+    UPDATE flow.attachment a
+    SET
+      archived = TRUE,
+      date_modified = now(),
+      modified_by_id = :modifiedById
+    FROM (
+      SELECT src.attachment_id
+      FROM flow.attachment_source src
+        inner join flow.attachment a on a.id = src.attachment_id
       WHERE src.source_id = :sourceId
-        AND src.attachment_source_type_id = :attachmentSourceTypeId
-        AND a.deleted = FALSE
-      LIMIT 1
-    ]]>
-  </attachment.getAttachmentBySourceAndType>
+        AND a.attachment_type_id = :attachmentTypeId
+    ) AS s
+    WHERE a.id = s.attachment_id
+  ]]></attachment.deleteBySourceAndType>
 
-  <attachment.getAttachmentsBySourceIdAndType>
-    <![CDATA[
-      SELECT
-        a.id,
-        a.content_type,
-        a.filename,
-        a.s3_key,
-        a.size,
-        src.source_id,
-        a.archived
-      FROM flow.attachment a
-        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
-      WHERE src.source_id = :sourceId
-        AND src.attachment_source_type_id = :attachmentSourceTypeId
-        AND a.deleted = FALSE
-    ]]>
-  </attachment.getAttachmentsBySourceIdAndType>
+  <attachment.getAttachmentType><![CDATA[
+    select at.id,
+           at.attachment_type,
+           at.is_system,
+           at.key_pattern_id,
+           kp.key_pattern
+    from flow.attachment_type at
+      inner join flow.key_pattern kp on kp.id = at.key_pattern_id
+    where at.id = :id
+  ]]></attachment.getAttachmentType>
 
-  <attachment.getAttachmentBySourceAndTypeForUserList>
-    <![CDATA[
-      SELECT
-        a.id,
-        a.content_type,
-        a.filename,
-        a.s3_key,
-        a.size,
-        a.archived,
-        src.source_id,
-        a.date_created,
-        a.date_modified
-      FROM flow.attachment a
-        INNER JOIN brs.attachment_source src ON src.attachment_id = a.id
-      WHERE array[src.source_id] <@ ARRAY[ :sourceIds ]::INTEGER[]
-        AND src.attachment_source_type_id = :attachmentSourceTypeId
-        AND a.deleted = FALSE
-    ]]>
-  </attachment.getAttachmentBySourceAndTypeForUserList>
 
-  <attachment.create>
-    <![CDATA[
-      INSERT INTO flow.attachment
-        (filename, content_type, s3_key, size, date_created, created_by_id)
-      VALUES
-        (:filename, :contentType, :key, :size, now(), :createdById)
-    ]]>
-  </attachment.create>
-
-  <attachment.addToJoinTable>
-    <![CDATA[
-      INSERT INTO brs.attachment_source
-        (attachment_id, source_id, attachment_source_type_id)
-      VALUES
-        (:attachmentId, :sourceId, :attachmentSourceTypeId)
-    ]]>
-  </attachment.addToJoinTable>
-
-  <attachment.deleteReimbursementBySourceAndType>
-    <![CDATA[
-      DELETE FROM brs.attachment_source
-      WHERE source_id = :sourceId
-        AND attachment_source_type_id = :attachmentSourceTypeId
-    ]]>
-  </attachment.deleteReimbursementBySourceAndType>
-
-  <attachment.deleteById>
-    <![CDATA[
-      UPDATE flow.attachment
-      SET
-        archived = TRUE,
-        date_modified = now(),
-        modified_by_id = :modifiedById
-      WHERE id = :id
-    ]]>
-  </attachment.deleteById>
-
-  <attachment.deleteBySourceAndType>
-    <![CDATA[
-      UPDATE flow.attachment a
-      SET
-        archived = TRUE,
-        date_modified = now(),
-        modified_by_id = :modifiedById
-      FROM (
-        SELECT src.attachment_id
-        FROM brs.attachment_source src
-        WHERE src.source_id = :sourceId
-          AND src.attachment_source_type_id = :attachmentSourceTypeId
-      ) AS s
-      WHERE a.id = s.attachment_id
-    ]]>
-  </attachment.deleteBySourceAndType>
 </sql>

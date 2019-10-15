@@ -1,12 +1,12 @@
 package com.albatross.api.v1.flow.enums;
 
 public enum StatusType {
-    ACTIVE(1),
-    INACTIVE(2);
+    ACTIVE(1L),
+    INACTIVE(2L);
 
-    public final Integer id;
+    public final Long id;
 
-    StatusType(Integer id) {
+    StatusType(Long id) {
         this.id = id;
     }
 

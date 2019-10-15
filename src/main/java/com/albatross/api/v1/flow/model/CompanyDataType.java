@@ -13,6 +13,6 @@ public class CompanyDataType {
 
   private Long id, dataTypeId;
   private String companyDataType, dataType;
-  private Boolean hasListValues;
+  private Boolean hasListValues, customBehavior;
 }
 

@@ -1,18 +1,20 @@
 package com.albatross.api.v1.flow.services;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Link;
 import com.albatross.api.v1.flow.model.ProcessStepLink;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -30,17 +32,19 @@ public class LinkService {
   @Autowired
   SecurityService securityService;
 
-  public List<Link> getLinksForCompany(Long companyId) {
+  public List<Link> getLinksForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
 
     List<Link> links = sqlCache.query("link.getLinksForCompany", params, Link.class);
     return links;
   }
 
-  public List<Link> getAvailableLinksForProcessStep(Long companyId, Long id) {
+  public List<Link> getAvailableLinksForProcessStep(Long id) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
     List<Link> links = sqlCache.query("link.getAvailableLinksForProcessStep", params, Link.class);
@@ -101,6 +105,16 @@ public class LinkService {
         "id").longValue();
 
     return getLink(link.getCompanyId(), id);
+  }
+
+  public List<Link> getAvailableLinksForAction(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("id", id);
+
+    List<Link> links = sqlCache.query("link.getAvailableLinksForAction", params, Link.class);
+    return links;
   }
 
 

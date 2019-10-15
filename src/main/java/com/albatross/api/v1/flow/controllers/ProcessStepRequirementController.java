@@ -17,37 +17,35 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/processStep/{stepId}/requirement")
+@RequestMapping(value = "/api/v1/flow/processStep/{stepId}/requirement")
 public class ProcessStepRequirementController {
 
   @Autowired
   private ProcessStepRequirementService processStepRequirementService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepRequirement> getRequirementsForStep (@PathVariable Long companyId,
-                                                              @PathVariable Long stepId) {
-    return processStepRequirementService.getRequirementsForStep(companyId, stepId);
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepRequirement> getRequirementsForStep (@PathVariable Long stepId) {
+    return processStepRequirementService.getRequirementsForStep(stepId);
   }
 
-  @RequestMapping(value = "/types", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepRequirementType> getRequirementTypes () {
     return processStepRequirementService.getRequirementTypes();
   }
 
-  @RequestMapping(value = "/{requirementId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{requirementId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long requirementId) {
     processStepRequirementService.deleteRequirement(requirementId);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ProcessStepRequirement updateProcess(@RequestBody ProcessStepRequirement requirement) {
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepRequirement updateRequirement(@RequestBody ProcessStepRequirement requirement) {
     return processStepRequirementService.updateRequirement(requirement);
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ProcessStepRequirement insertProcess(@PathVariable Long companyId,
-                                              @RequestBody ProcessStepRequirement requirement) {
-    return processStepRequirementService.insertRequirement(companyId, requirement);
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepRequirement insertRequirement(@RequestBody ProcessStepRequirement requirement) {
+    return processStepRequirementService.insertRequirement(requirement);
   }
 
 }

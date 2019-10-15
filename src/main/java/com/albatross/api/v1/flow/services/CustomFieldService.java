@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +24,14 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CustomFieldService {
 
-  @Autowired
-  SqlCache sqlCache;
+  private final SqlCache sqlCache;
 
-  @Autowired
-  SecurityService securityService;
+  private final SecurityService securityService;
 
-  @Autowired
-  ObjectMapper om;
+  private final ObjectMapper om;
 
   public CustomField findCustomFieldById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -43,16 +41,18 @@ public class CustomFieldService {
   }
 
 
-  public List<CustomField> getAllCustomFields(Long companyId) {
+  public List<CustomField> getAllCustomFields() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<CustomField> result = sqlCache.query("customField.getAll", params, new CustomFieldMapper<>(CustomField.class, om));
     return result;
   }
 
-  public List<ObjectType> getObjectTypes(Long companyId) {
+  public List<ObjectType> getObjectTypes() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     List<ObjectType> result = sqlCache.query("customField.getObjectTypes", params, ObjectType.class);
     return result;
   }
@@ -64,6 +64,8 @@ public class CustomFieldService {
   *        new list of value options
   *        updating existing value options
   *        archiving existing value options
+  *        new sqk key
+  *        updating sql key value
   *   New custom fields
   *     With or without value options (which would always be new/inserts)
    */
@@ -71,8 +73,9 @@ public class CustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
     Long id = null;
-    boolean doInsertAfterListOfValues = false;
+    boolean doInsertAfterHandlingOtherScenarios = false;
     boolean insertParentRecordIfNeeded = false;
+    boolean insertSqlKey = false;
 
     if(null != customField.getId()) {
       // edit existing custom field
@@ -82,15 +85,17 @@ public class CustomFieldService {
       sqlCache.update("customField.saveField", params);
     } else {
       // have to insert the list of values first if needed to get the listOfValueId
-      doInsertAfterListOfValues = true;
+      doInsertAfterHandlingOtherScenarios = true;
       // only insert the parent list value record if this is a new custom field
       insertParentRecordIfNeeded = true;
+      // only insert the sql key record if this is a new custom field
+      insertSqlKey = true;
     }
 
     Long parentId = null;
     Long lovCreatedById;
 
-    if(customField.getDropdownOptions() != null && !customField.getDropdownOptions().isEmpty()) {
+    if(customField.getListOfValues() != null && !customField.getListOfValues().isEmpty()) {
       if(insertParentRecordIfNeeded) {
         // use created by unless field already existed then use modified id as the created for the list value row
         lovCreatedById = customField.getCreatedById();
@@ -108,7 +113,7 @@ public class CustomFieldService {
       }
 
       //insert the rest of the list values
-      for(ListOfValue lov : customField.getDropdownOptions()) {
+      for(ListOfValue lov : customField.getListOfValues()) {
         HashMap<String, Object> lovParams = new HashMap<>();
         lovParams.put("name", lov.getName());
         lovParams.put("parentId", parentId);
@@ -132,8 +137,25 @@ public class CustomFieldService {
 
     }
 
-    if(doInsertAfterListOfValues) {
+    Long customFieldSqlKeyId = null;
+
+    if(null != customField.getCustomFieldSqlKey()) {
+      HashMap<String, Object> sqlParams = new HashMap<>();
+      sqlParams.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+
+      if(insertSqlKey){
+        // insert the sql row if it is for a new field
+        customFieldSqlKeyId = sqlCache.updateReturningId("customField.insertSqlKey", sqlParams, "id").longValue();
+      } else {
+        sqlParams.put("customFieldSqlKeyId", customField.getCustomFieldSqlKeyId());
+        sqlCache.update("customField.updateSqlKey", sqlParams);
+      }
+    }
+
+
+    if(doInsertAfterHandlingOtherScenarios) {
       params.put("listOfValueId", parentId);
+      params.put("customFieldSqlKeyId", customFieldSqlKeyId);
       params.put("companyId", customField.getCompanyId());
       params.put("createdById", customField.getCreatedById());
       params.put("companyDataTypeId", customField.getCompanyDataTypeId());
@@ -177,15 +199,24 @@ public class CustomFieldService {
     // archive single custom field
     sqlCache.update("customField.deleteField", params);
 
-    // archive all custom_field_group rows
-    sqlCache.update("customFieldGroup.archiveRows", params);
+    //todo: is there more that needs to be archived when they delete a custom field?
   }
 
-  public List<CustomField> getByParentProcessStep(Long companyId, Long id) {
+  public List<CustomField> getByParentProcessStep(Long id) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
     params.put("id", id);
     List<CustomField> result = sqlCache.query("customField.getByParentProcessStep", params, new CustomFieldMapper<>(CustomField.class, om));
+    return result;
+  }
+
+  public List<CustomField> getByParentType(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("id", id);
+    List<CustomField> result = sqlCache.query("customField.getByParentType", params, new CustomFieldMapper<>(CustomField.class, om));
     return result;
   }
 
@@ -205,7 +236,7 @@ public class CustomFieldService {
       bw.registerCustomEditor(List.class, "customFieldObjectTypes",
           new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "dropdownOptions",
+      bw.registerCustomEditor(List.class, "listOfValues",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
     }
   }

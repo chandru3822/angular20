@@ -1,14 +1,15 @@
 package com.albatross.api.v1.flow.enums;
 
 public enum ObjectType {
-    PROJECT(1),
-    CUSTOMER(2),
-    USER(3),
-    PROCESS_STEP(4);
+    PROJECT(1L),
+    CUSTOMER(2L),
+    USER(3L),
+    PROCESS_STEP(4L),
+    ORGANIZATION(5L);
 
-    public final Integer id;
+    public final Long id;
 
-    ObjectType(Integer id) {
+    ObjectType(Long id) {
         this.id = id;
     }
 

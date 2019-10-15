@@ -34,11 +34,10 @@
 </template>
 
 <script>
-  import { deleteRequest } from '@/helpers/helpers'
+  import { deleteRequest, getSnackbar } from '@/helpers/helpers'
   import { Actions } from '@/store'
   import { AppMutations } from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import { SNACKBAR_SUCCESS, SNACKBAR_ERROR } from '@/helpers/helpers'
 
   export default {
     name: "AhjDocuments",
@@ -83,16 +82,13 @@
             sourceId: this.sourceId,
             callback: async (document) => {
               this.documentsCopy.push(document)
-              this.snackbar = SNACKBAR_SUCCESS
-              this.snackbar.text = 'Successfully Uploaded Document'
-              this.snackbar.enabled = true
+              this.snackbar = getSnackbar('SUCCESS', 'Successfully Uploaded Document')
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           })
         } catch(e) {
-          this.snackbar = SNACKBAR_ERROR
-          this.snackbar.text = 'Error Uploading Document'
-          this.snackbar.enabled = true
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Uploading Document')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -102,14 +98,11 @@
           await deleteRequest(`/api/v1/flow/document/${documentId}`)
           let deletedDocumentIndex = this.documentsCopy.findIndex(i => i.id === documentId)
           this.documentsCopy.splice([deletedDocumentIndex], 1)
-          this.snackbar = SNACKBAR_SUCCESS
-          this.snackbar.text = 'Successfully Deleted Document'
-          this.snackbar.enabled = true
+          this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Document')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch(e) {
-          this.snackbar = SNACKBAR_ERROR
-          this.snackbar.text = 'Error Deleting Document'
-          this.snackbar.enabled = true
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Document')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

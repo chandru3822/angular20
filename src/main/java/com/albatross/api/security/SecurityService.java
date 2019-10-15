@@ -33,20 +33,20 @@ public class SecurityService implements UserDetailsService {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * Look up a user by email (which is our "username" in this case)
+     * Look up a user by username
      */
     @Override
-    public UserAccountDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = getUser(email);
+    public UserAccountDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = getUser(username);
         if (user == null) {
-            throw new UsernameNotFoundException("Could not find user " + email);
+            throw new UsernameNotFoundException("Could not find user " + username);
         }
         List<UserPermission> permissions = this.getUserPermissions(user.getId());
         return new UserAccountDetails(user, permissions);
     }
 
-    public User getUser(String email) {
-        User user = userService.findByEmailIgnoreCase(email);
+    public User getUser(String username) {
+        User user = userService.findByUsernameIgnoreCase(username);
         return user;
     }
 

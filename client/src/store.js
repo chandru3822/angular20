@@ -3,16 +3,20 @@ import Vuex from 'vuex'
 import { UserStore } from '@/stores/UserStore'
 import { AppStore } from '@/stores/AppStore'
 import { MAX_FILE_SIZE } from '@/helpers/helpers'
-import { postRequest } from "./helpers/helpers";
+import { postRequest, deleteRequest, getRequest } from "./helpers/helpers";
+import {AppMutations} from "./stores/AppStore";
 
 Vue.use(Vuex)
 
 export const Mutations = {
-  INIT: 'storeInt'
+  INIT: 'storeInt',
 }
 
 export const Actions = {
-  FILE_UPLOAD: 'fileUpload'
+  FILE_UPLOAD: 'fileUpload',
+  FILE_DELETE: 'fileDelete',
+  FILE_GET_ONE: 'fileGetOne',
+  FILE_GET_LIST: 'fileGetList',
 }
 
 const store = new Vuex.Store({
@@ -37,7 +41,12 @@ const store = new Vuex.Store({
     }
   },
   actions: {
-    [Actions.FILE_UPLOAD]: (context, { file, attachmentSourceTypeId, sourceId, callback }) => {
+    [Actions.FILE_DELETE]: async (context, { id, callback }) => {
+      //todo: need to handle errors in these functions
+      const {status} = await deleteRequest(`/attachment/${id}`)
+      callback(status)
+    },
+    [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, callback }) => {
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
         if (file.size > MAX_FILE_SIZE) {
@@ -46,10 +55,10 @@ const store = new Vuex.Store({
         } else {
           let formData = new FormData()
           formData.append('file', file)
-          formData.append('attachmentSourceTypeId', attachmentSourceTypeId)
+          formData.append('attachmentTypeId', attachmentTypeId)
           formData.append('sourceId', sourceId)
 
-          const resp = await postRequest('/api/v1/flow/document/upload', formData)
+          const resp = await postRequest('/attachment', formData)
 
           const {status} = resp
           if (status === 200) {
@@ -58,7 +67,19 @@ const store = new Vuex.Store({
         }
       })
       reader.readAsArrayBuffer(file)
-    }
+    },
+    [Actions.FILE_GET_ONE]: async (context, { sourceId, attachmentTypeId, callback }) => {
+      const {data, status} = await getRequest(`/attachment/getOne`, { params: {
+        attachmentTypeId, sourceId
+      }})
+      callback(data, status)
+    },
+    [Actions.FILE_GET_LIST]: async (context, { sourceId, attachmentTypeId, callback }) => {
+      const {data, status} = await getRequest(`/attachment`, { params: {
+          attachmentTypeId, sourceId
+        }})
+      callback(data, status)
+    },
   }
 })
 

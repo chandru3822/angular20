@@ -1,16 +1,18 @@
 package com.albatross.api.v1.flow.services;
 
-import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.StatusType;
-import com.google.common.collect.ImmutableMap;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.StatusType;
+import com.albatross.api.v1.flow.model.User;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -28,42 +30,44 @@ public class StatusService {
   @Autowired
   SecurityService securityService;
 
-  public List<StatusType> getStatusTypesForCompany(Long companyId) {
+  public List<StatusType> getStatusTypesForCompany() {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", companyId);
+    params.put("companyId", user.getCompanyId());
 
     List<StatusType> attachmentTypes = sqlCache.query("status.getTypesForCompany", params, StatusType.class);
     return attachmentTypes;
   }
 
   public Optional<StatusType> getType(Long companyId, Long typeId) {
-    return sqlCache.get("status.getType",
-        ImmutableMap.of("companyId", companyId,
-            "typeId", typeId),
-        StatusType.class);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", companyId);
+    params.put("typeId", typeId);
+    Optional<StatusType> result = sqlCache.get("status.getType", params, StatusType.class);
+    return result;
   }
 
   public void deleteType(Long typeId) {
-    sqlCache.update("status.deleteType",
-        ImmutableMap.of("id", typeId));
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("typeId", typeId);
+
+    sqlCache.update("status.deleteType", params);
   }
 
   public void updateType(StatusType type) {
-    sqlCache.update("status.updateType",
-//        ImmutableMap.of("companyId", type.getCompanyId(),
-//            "id", type.getId(),
-//            "statusType", type.getStatusType()));
-    ImmutableMap.of("id", type.getId(),
-        "statusType", type.getStatusType()));
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", type.getId());
+    params.put("statusType", type.getStatusType());
+
+    sqlCache.update("status.updateType", params);
   }
 
   public Optional<StatusType> insertType(StatusType type) {
-    Long id = sqlCache.updateReturningId("status.insertType",
-//        ImmutableMap.of("statusType", type.getStatusType(),
-//            "companyId", type.getCompanyId()),
-//        "id").longValue();
-    ImmutableMap.of("statusType", type.getStatusType()),
-        "id").longValue();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", type.getId());
+    params.put("statusType", type.getStatusType());
+    Long id = sqlCache.updateReturningId("status.insertType", params, "id").longValue();
+
 
     return getType(type.getCompanyId(), id);
   }

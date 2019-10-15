@@ -17,37 +17,41 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/customField")
+@RequestMapping(value = "/api/v1/flow/customField")
 public class CustomFieldController {
 
   @Autowired
   private CustomFieldService customFieldService;
 
-  @RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomField> getAllCustomFields(@PathVariable Long companyId) {
-    return customFieldService.getAllCustomFields(companyId);
+  @GetMapping(value = "/getAll", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomField> getAllCustomFields() {
+    return customFieldService.getAllCustomFields();
   }
 
-  @RequestMapping(value = "/getCustomFieldObjectTypes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectType> getCustomFieldObjectTypes(@PathVariable Long companyId) {
-    return customFieldService.getObjectTypes(companyId);
+  @GetMapping(value = "/getCustomFieldObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ObjectType> getCustomFieldObjectTypes() {
+    return customFieldService.getObjectTypes();
   }
 
-  @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public CustomField saveField(@RequestBody CustomField customField) {
     // add the field and list of values
     CustomField field = customFieldService.saveField(customField);
     return field;
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteField(@PathVariable Long id) {
     customFieldService.deleteField(id);
   }
 
-  @RequestMapping(value = "/getByParentProcessStep/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomField> getByParentProcessStep(@PathVariable Long companyId,
-                                                  @PathVariable Long id) {
-    return customFieldService.getByParentProcessStep(companyId, id);
+  @GetMapping(value = "/getByParentProcessStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomField> getByParentProcessStep(@PathVariable Long id) {
+    return customFieldService.getByParentProcessStep(id);
+  }
+
+  @GetMapping(value = "/getByParentType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomField> getByParentType(@PathVariable Long id) {
+    return customFieldService.getByParentType(id);
   }
 }

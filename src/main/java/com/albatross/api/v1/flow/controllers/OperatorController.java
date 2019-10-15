@@ -5,8 +5,9 @@ import com.albatross.api.v1.flow.services.OperatorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -18,15 +19,15 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/{companyId}/operator")
+@RequestMapping(value = "/api/v1/flow/operator")
 public class OperatorController {
 
   @Autowired
   private OperatorService operatorService;
 
-  @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<OperatorType> getOperatorTypes () {
-    return operatorService.getOperatorTypes();
+  @GetMapping(value = "/{dataTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<OperatorType> getOperatorTypes (@PathVariable Long dataTypeId) {
+    return operatorService.getOperatorTypes(dataTypeId);
   }
 
 }
