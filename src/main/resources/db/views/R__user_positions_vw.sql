@@ -1,8 +1,12 @@
 DROP MATERIALIZED VIEW if EXISTS flow.user_positions_vw;
 CREATE MATERIALIZED VIEW flow.user_positions_vw AS
-select u.id as user_id,u.first_name,u.last_name,org_hierarchy.org_id,org_hierarchy.org_name,up.primary_flag,up.start_date,up.end_date,
-       p.position,p.id as position_id,u.company_id,org_hierarchy.level
+select u.id as user_id,u.first_name,u.last_name,
+       org_hierarchy.org_id,org_hierarchy.org_name,org_hierarchy.org_level_id,org_hierarchy.position_level,
+       up.primary_flag,up.start_date,up.end_date,
+       p.position,p.id as position_id, up.id as user_position_id,
+       u.company_id, u.email, u.phone_number,u.user_status_type_id, ust.user_status_type
 from flow."user" u
+         inner join flow.user_status_type ust on ust.id = u.user_status_type_id
          inner join flow.user_position up on up.user_id = u.id
          inner join flow.position p on p.id = up.position_id
          inner join  flow.org o on o.id = up.org_id

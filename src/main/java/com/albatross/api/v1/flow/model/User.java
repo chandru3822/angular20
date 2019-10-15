@@ -18,6 +18,8 @@ public class User {
     private Long userStatusTypeId;
     private List<UserPermission> permissions;
 
+    private List<UserOrgHierarchy> hierarchy;
+
     //so far this is only used for saving
     List<CustomFieldGroup> customFieldGroups;
 

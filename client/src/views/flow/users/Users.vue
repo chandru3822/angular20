@@ -205,7 +205,7 @@
               <td class="text-left user-column">{{item.userStatusType}}</td>
               <td class="text-left user-column">{{item.position}}</td>
               <td class="text-left user-column" v-for="(f, index) in orgFilters" :key="index">
-                {{f.levelName}}
+                {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
             </tr>
           </template>
@@ -316,7 +316,7 @@
               email: this.filters.email,
               phone: this.filters.phone,
               statuses: this.filters.statuses,
-              positions: this.filters.positions
+              positions: this.filters.positions,
             }
 
             const {data} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params)
@@ -413,6 +413,10 @@
             this.getUsers()
           }
         })
+      },
+      getOrgNameForFilter(hierarchy, filterOrgLevelId) {
+        const result = hierarchy.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
+        return result?.orgName ?? 'N/A'
       }
     }
   }

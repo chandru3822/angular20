@@ -15,7 +15,7 @@ import moment from 'moment-timezone'
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
 
-const { VUE_APP_BASE_API } = process.env
+const { VUE_APP_BASE_API, VUE_APP_ENV } = process.env
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
@@ -71,7 +71,8 @@ axios.interceptors.response.use((response) => {
       localStorage.removeItem('store')
       store.commit(UserMutations.LOGIN_ERROR, msg)
       router.push({ name: 'login' })
-    } else if (response.status >= 500 && response.status <= 599) {
+    } else if (VUE_APP_ENV !== 'local' && response.status >= 500 && response.status <= 599) {
+      //dont do this reroute on local, it is super annoying
       router.push({path: `/serverError?code=${response.status}`})
     }
   }

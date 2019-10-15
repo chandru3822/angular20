@@ -214,10 +214,13 @@ public class UserService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<UserPermission>> userPermissionRef = new TypeReference<List<UserPermission>>() {};
+      TypeReference<List<UserPermission>> userPermissionRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "permissions",
           new JsonCollectionDeserializer(userPermissionRef, objectMapper));
 
+      TypeReference<List<UserOrgHierarchy>> userOrgHierarchyRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "hierarchy",
+          new JsonCollectionDeserializer(userOrgHierarchyRef, objectMapper));
     }
   }
 }
