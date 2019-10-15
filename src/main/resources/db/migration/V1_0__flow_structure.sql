@@ -2061,6 +2061,7 @@ CREATE TABLE flow.org_filter (
                                  org_level_id INTEGER,
                                  title VARCHAR(64),
                                  rank INTEGER,
+                                 show_type boolean not null default false,
                                  UNIQUE (org_level_id, rank),
                                  CONSTRAINT of_level FOREIGN KEY (org_level_id)
                                      REFERENCES flow.org_level (id)

@@ -104,7 +104,7 @@ export default {
   },
   methods: {
     goToProcess(processId) {
-      this.$router.push({path: `/settings/process/${processId}`})
+      this.$router.push({path: `/settings/processes/${processId}`})
     },
     async getProcesses () {
       this.$store.commit(AppMutations.SET_LOADING, true)

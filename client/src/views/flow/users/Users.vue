@@ -124,6 +124,15 @@
                     >{{ filters.orgs[header.level].length }} selected</span>
                   </template>
                   <template #item="{ item }">
+                    <div class="v-list-item__action">
+                      <div class="v-simple-checkbox">
+                        <div class="v-input--selection-controls__ripple primary--text">
+
+                        </div>
+                        <i v-if="filters.orgs[header.level] && filters.orgs[header.level].includes(item)" aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box</i>
+                        <i v-else aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box_outline_blank</i>
+                      </div>
+                    </div>
                     <div v-if="header.showType">{{item.orgName}} ({{item.orgType}})</div>
                     <div v-else>{{item.orgName}}</div>
                   </template>
@@ -380,6 +389,7 @@
               show: true,
               level: f.orgLevelId,
               orgFilter: true,
+              showType: f.showType,
               orgs: f.orgs,
               width: '225px'
             })

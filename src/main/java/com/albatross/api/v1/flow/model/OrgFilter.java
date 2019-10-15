@@ -16,5 +16,6 @@ public class OrgFilter {
   private Long companyId, orgLevelId, rank;
   private String levelName;
   private List<Org> orgs;
+  private Boolean showType;
 }
 

@@ -18,7 +18,6 @@
              upv.hierarchy
       from flow.user_positions_vw upv
       where upv.company_id = :companyId
-        and upv.position_level = 0
         and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'

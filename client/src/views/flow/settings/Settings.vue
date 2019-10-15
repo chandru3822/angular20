@@ -11,6 +11,7 @@
                   v-else
                   :key="item.title"
                   :to="item.path"
+                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -81,12 +82,15 @@ export default {
           header: 'Processes'
         }, {
           path: '/settings/processes',
+          pathMatch: '/settings/processes',
           title: 'Processes',
         }, {
           path: '/settings/processSteps',
+          pathMatch: '/settings/processStep',
           title: 'Process Steps',
         }, {
           path: '/settings/functions',
+          pathMatch: '/settings/function',
           title: 'Functions',
         }, {
           path: '/settings/statuses',

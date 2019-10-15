@@ -113,7 +113,8 @@
       select of.org_level_id,
              ol.level_name,
              of.rank,
-             ol.company_id
+             ol.company_id,
+             of.show_type
       from flow.org_filter of
           inner join flow.org_level ol on ol.id = of.org_level_id
       where ol.company_id = :companyId
