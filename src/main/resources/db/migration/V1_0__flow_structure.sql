@@ -2897,3 +2897,76 @@ Alter table flow.process_step_requirement
 ADD CONSTRAINT prps_data_type_requirement_id_fk FOREIGN KEY (data_type_requirement_id)
         REFERENCES flow.data_type_requirement (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION;
+insert into flow.compensation_type
+select *
+from blueraven.compensation_type;
+
+SELECT setval('flow.compensation_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.compensation_type), 1), false);
+
+insert into flow.employment_type
+select *
+from blueraven.employment_type;
+
+SELECT setval('flow.employment_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.employment_type), 1), false);
+
+
+insert into flow.user_status_type(id, user_status_type, company_id)
+    (select id,user_status_type,1
+     from blueraven.user_status_type);
+
+SELECT setval('flow.user_status_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.user_status_type), 1), false);
+
+INSERT INTO flow."user" (company_id,
+                         onboarded_by_user_id,
+                         end_date,
+                         employment_type_id,
+                         phone_number,
+                         hire_date,
+                         id,
+                         email,
+                         created_by_id,
+                         compensation_type_id,
+                         image_id,
+                         personal_email,
+                         last_name,
+                         employee_id,
+                         recruited_by,
+                         referred_by_user_id,
+                         first_name,
+                         date_created,
+                         password,
+                         start_date,
+                         date_modified,
+                         notes,
+                         recruited_by_user_id,
+                         modified_by_id,
+                         user_status_type_id,
+                         username)
+    (SELECT 1,
+            onboarded_by_user_id,
+            end_date,
+            employment_type_id,
+            phone_number,
+            hire_date,
+            id,
+            email,
+            created_by,
+            compensation_type_id,
+            image_id,
+            personal_email,
+            last_name,
+            employee_id,
+            recruited_by,
+            referred_by_user_id,
+            first_name,
+            created_dt,
+            password,
+            start_date,
+            modified_dt,
+            notes,
+            recruited_by_user_id,
+            modified_by,
+            user_status_type_id,
+            email
+     FROM blueraven."user"
+        where id = 2350555);
