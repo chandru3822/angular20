@@ -70,7 +70,6 @@
             </v-dialog>
           </v-toolbar-items>
         </v-toolbar>
-        {{filters.orgs}}
         <v-data-table
             :headers="headers"
             :items="users"
