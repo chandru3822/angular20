@@ -23,11 +23,11 @@ VALUES (1, 1,'Parent'),
        (1, 4,'Region'),
        (1, 5,'Office');
 
-INSERT INTO flow.org_filter (org_level_id, rank)
-VALUES (2, 1),
-       (3, 2),
-       (4, 3),
-       (5, 4);
+INSERT INTO flow.org_filter (org_level_id, rank, show_type)
+VALUES (2, 1, false),
+       (3, 2, false),
+       (4, 3, false),
+       (5, 4, true);
 
 
 insert into flow.org_type(org_type, org_parent_type_id, org_level_id, company_id)
@@ -2079,12 +2079,13 @@ set process_step_id = (select id from flow.process_step where process_step_name 
 where group_name =  'Process Step PlaceHolder';
 
 -- associate it with Generic Blueraven Process
-INSERT INTO flow.process_step_process (process_id, process_step_id, org_id, created_by_id, display_order)
+INSERT INTO flow.process_step_process (process_id, process_step_id, org_id, created_by_id, display_order, initial_step)
 VALUES ((select id from flow.process where process_name = 'Generic Blueraven Process'),
         (select id from flow.process_step where process_step_name = 'Complete Final Design'),
         (select id from flow.org where org_name = 'Corporate - Blue Raven Solar'),
         2350555,
-        0);
+        0,
+        true);
 
 -- create and migrate the necessary project custom fields
 INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
@@ -2136,10 +2137,9 @@ INSERT INTO flow.process_step_status_type (process_step_status_type,company_id)
 VALUES ('In Progress',1);  -- TODO make this company-specific, so companies can define their own statuses?
 
 -- create project process step entries
-INSERT INTO flow.project_process_step (project_id, process_step_id, process_created_date, user_position_id, process_step_status_type_id, created_by_id)
+INSERT INTO flow.project_process_step (project_id, process_step_id, user_position_id, process_step_status_type_id, created_by_id)
     (SELECT project.id,
             (SELECT id FROM flow.process_step WHERE process_step_name = 'Complete Final Design') AS process_step_id,
-            now() AS process_created_date,
             7514 AS user_position_id, -- arbitrary user position id; I have no idea what to use here
             -- TODO how will these projects be assigned to individuals? Should this be optional?
             (SELECT id FROM flow.process_step_status_type WHERE process_step_status_type = 'In Progress') AS process_step_status_id,
