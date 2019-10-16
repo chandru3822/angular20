@@ -4,6 +4,7 @@
     from flow.process_step_status_type
     where company_id = :companyId
       and archived is not true
+    order by process_step_status_type
   ]]></processStepStatus.getTypesForCompany>
 
    <processStepStatus.getType>
@@ -13,7 +14,6 @@
              archived
       from flow.process_step_status_type st
       where id = :typeId
-      order by st.process_step_status_type;
     ]]>
   </processStepStatus.getType>
   <processStepStatus.deleteType>

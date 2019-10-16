@@ -244,7 +244,6 @@
         try {
         this.newType.processStepId = this.$route.params.id
           const { data } = await postRequest(`/attachmentType/processStepType`, this.newType)
-          console.log('randaLogger', data)
           this.processStep.attachmentTypes.push(data)
           // reset fields
           this.addNewType = false
@@ -292,7 +291,6 @@
         try {
           this.newLink.processStepId = this.$route.params.id
           const { data } = await postRequest(`/links/processStep`, this.newLink)
-          console.log('randaLogger', data)
           this.processStep.links.push(data)
           // reset fields
           this.addNewLink = false

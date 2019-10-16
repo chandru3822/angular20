@@ -61,7 +61,6 @@ axios.interceptors.response.use((response) => {
   return response
 }, ({ response }) => {
   if (response && response.data) {
-    console.log('randaLogger', response)
     const { message } = response.data
     console.log('*** Request Error ***', response)
     // if the jwt token expired, or 401 unauthorized, or 403 Forbidden

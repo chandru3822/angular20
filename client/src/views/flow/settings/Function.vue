@@ -216,7 +216,6 @@
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {data} = await postRequest(`/function/${this.functionId}/param`, item)
-          console.log('randaLoggerData', data)
           if(item.parameterTypeId === 1) {
             item.systemValue = data.systemValue
           }else if(item.parameterTypeId === 3) {

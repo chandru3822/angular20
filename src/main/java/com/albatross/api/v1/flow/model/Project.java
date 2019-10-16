@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 public class Project {
 
   private Long id, processId, companyId, customerId;
-  private String name;
+  private String projectName;
 }

@@ -35,14 +35,6 @@ public class ProjectController {
       .orElse(ResponseEntity.notFound().build());
   }
 
-  @PostMapping(value = "/customer/{customerId}/process/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Project> insertProject(@PathVariable Long customerId,
-                                               @PathVariable Long processId) {
-    return projectService.insertProject(customerId, processId)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
-  }
-
   @GetMapping(value = "/{projectId}/processSteps", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectProcessStep>> getProjectProcessSteps(@PathVariable Long projectId) {
     return new ResponseEntity<>(projectService.getProcessStepsByProjectId(projectId), HttpStatus.OK);

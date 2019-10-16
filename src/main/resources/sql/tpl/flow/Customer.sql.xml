@@ -21,6 +21,8 @@
           c.email,
           c.phone,
           c.company_id,
+          c.customer_type_id,
+          ct.customer_type,
           c.state_id,
           s.state,
           s.abbreviation,
@@ -32,6 +34,7 @@
            'fullName', u.first_name || ' ' || u.last_name
           )) as owner
       from flow.customer c
+          inner join flow.customer_type ct on ct.id = c.customer_type_id
           left join flow.state s on s.id = c.state_id
           left join flow.user_position up on up.id = c.owner_user_position_id
           left join flow."user" u on u.id = up.user_id
@@ -49,6 +52,7 @@
       select
         count(*)
       from flow.customer c
+         inner join flow.customer_type ct on ct.id = c.customer_type_id
          left join flow.state s on s.id = c.state_id
          left join flow.user_position up on up.id = c.owner_user_position_id
          left join flow."user" u on u.id = up.user_id

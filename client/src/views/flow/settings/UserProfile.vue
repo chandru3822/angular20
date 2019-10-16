@@ -137,7 +137,6 @@ export default {
   methods: {
     validate () {
       if (this.$refs.userForm.validate()) {
-        console.log('randaLogger form is valid')
         this.saveUser()
       }
     },

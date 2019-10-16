@@ -6,13 +6,14 @@
         <div class="lead-title">
           {{customer.fullName}}
           <v-menu
+              v-if="customer.customerTypeId === 2"
               bottom
               offset-y
               :close-on-content-click="false"
           >
             <template v-slot:activator="{ on }">
               <v-btn v-on="on" dark color="primary" class="white--text"  @click="getAvailableProcesses">
-                Convert {{customer.customerTypeId}}
+                Convert
               </v-btn>
             </template>
             <v-card class="pa-5">
@@ -259,22 +260,11 @@ export default {
       }
     },
     async convertToCustomer() {
-      console.log('will convert here', this.customer)
-    /*  conversion steps:
-        done 1) get list of available processes to kick of
-        done 2) choose one (dont let save without this)
-        3) save customer_type_id from 2 to 1 (unless company specific options or whatever)
-        4) create project
-        5) create project_process
-        6) create project_process_step with the initial step
-        7) take them to the project screen?
-
-    * */
-
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/customer/${this.customer.id}/convert`)
+        const {data} = await putRequest(`/customer/${this.customer.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
+        this.$router.push({name: 'project', params: {projectId: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

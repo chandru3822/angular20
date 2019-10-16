@@ -385,7 +385,6 @@
             }
           })
           // save them here
-          console.log('randaLogger', fieldsToSave)
           if(fieldsToSave.length > 0) {
             await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
           }

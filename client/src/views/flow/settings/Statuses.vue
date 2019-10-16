@@ -82,6 +82,7 @@
   import Vue2Filters from 'vue2-filters'
   import Snackbar from '@/components/Snackbar.vue'
   import orderBy from 'lodash.orderby'
+  import {getStatusTypes} from '@/services/processStepStatusTypeService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
@@ -107,8 +108,8 @@
       async getStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/status`)
-          this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+          const {data} = await getStatusTypes()
+          this.statusTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

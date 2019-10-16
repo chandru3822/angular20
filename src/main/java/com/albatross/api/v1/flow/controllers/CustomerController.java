@@ -68,8 +68,9 @@ public class CustomerController {
     }
 
     @PutMapping(value = "/{customerId}/convert", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void convertToCustomer(@PathVariable Long customerId,
+    public Project convertToCustomer(@PathVariable Long customerId,
                                   @RequestBody Process process) {
-        customerService.convertToCustomer(customerId, process);
+        // need to return the project so the frontend can navigate to /project/{id}
+        return customerService.convertToCustomer(customerId, process);
     }
 }
