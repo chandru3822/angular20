@@ -1230,6 +1230,7 @@ CREATE TABLE if not exists flow.process_step_process
     created_by_id   integer not null,
     modified_by_id  integer,
     initial_step boolean not null default false,
+    process_step_status_type_id   integer,
     archived boolean not null default false,
     CONSTRAINT process_step_process_pk PRIMARY KEY (id),
     CONSTRAINT psp_created_by_id_fk FOREIGN KEY (created_by_id)
@@ -1240,6 +1241,9 @@ CREATE TABLE if not exists flow.process_step_process
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT psp_process_id_fk FOREIGN KEY (process_id)
         REFERENCES flow.process (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT psp_status_type_id_fk FOREIGN KEY (process_step_status_type_id)
+        REFERENCES flow.process_step_status_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT psp_process_step_id_fk FOREIGN KEY (process_step_id)
         REFERENCES flow.process_step (id) MATCH SIMPLE
