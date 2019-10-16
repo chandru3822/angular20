@@ -775,7 +775,7 @@ CREATE INDEX if not exists up_secondary_org_id_idx
 
 
 
-CREATE INDEX if not exists up_user_id_idx
+CREATE INDEX if not exists user_position_user_id_idx
     ON flow.user_position
         USING btree
         (user_id);
@@ -988,7 +988,7 @@ CREATE INDEX if not exists up_permission_id_idx
         (permission_id);
 
 
-CREATE INDEX if not exists up_user_id_idx
+CREATE INDEX if not exists user_permission_user_id_idx
     ON flow.user_permission
         USING btree
         (user_id);
