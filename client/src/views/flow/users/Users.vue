@@ -335,7 +335,7 @@
               phone: this.filters.phone,
               statuses: this.filters.statuses,
               positions: this.filters.positions,
-              orgs: this.getOrgIds(),
+              orgs: this.getOrgIdsForMax(),
               //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
               primaryFlag: true
             }
@@ -386,10 +386,9 @@
             console.log('we will load more stuff here')
             //org filters have already been loaded. load their orgs again and repopulate the org list only
             const params = {
-              orgs: this.getOrgIds()
+              orgs: this.getOrgIds(selectedLevel)
             }
             const {data} = await postRequest(`/org/orgHierarchyFilter`, params)
-            console.log('NEW RESULTS', data)
             data.forEach(d => {
               if(d.orgLevelId !== selectedLevel) {
                 //get index of the right header
@@ -467,15 +466,24 @@
         const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
         return result?.orgName ?? 'N/A'
       },
-      getOrgIds() {
+      getOrgIdsForMax() {
         let maxKey = max(Object.keys(this.filters.orgs))
         console.log('MAX KEY', maxKey)
         return this.filters.orgs && maxKey ? this.filters.orgs[maxKey].map(o => o.id) : []
+      },
+      getOrgIds(selectedLevel) {
+        return this.filters.orgs ? this.filters.orgs[selectedLevel].map(o => o.id) : []
       },
       handleOrgFilterChange (reset, selectedLevel) {
         if(reset) {
           this.filters.orgs = {}
           this.orgFilters = []
+        }else {
+          Object.keys(this.filters.orgs).forEach(k => {
+            if(k > selectedLevel) {
+              delete this.filters.orgs[k]
+            }
+          })
         }
         //reload the users
         this.getUsers()
