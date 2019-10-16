@@ -23,6 +23,7 @@
           ></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn text @click="handleOrgFilterChange(true)">Reset Filters</v-btn>
             <v-btn text v-if="totalUsers <= 100000" @click="exportUsers">Export</v-btn>
             <v-dialog
                 v-model="dialog"
@@ -69,7 +70,6 @@
             </v-dialog>
           </v-toolbar-items>
         </v-toolbar>
-        <v-btn @click="handleOrgFilterChange(true)">Reset Filters</v-btn>
         {{filters.orgs}}
         <v-data-table
             :headers="headers"
@@ -131,7 +131,7 @@
                         <div class="v-input--selection-controls__ripple primary--text">
 
                         </div>
-                        <i v-if="filters.orgs[header.level] && filters.orgs[header.level].includes(item)" aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box</i>
+                        <i v-if="itemChecked(header.level, item)" aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box</i>
                         <i v-else aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box_outline_blank</i>
                       </div>
                     </div>
@@ -238,6 +238,7 @@
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
+  import cloneDeep from 'lodash.clonedeep'
   import max from 'lodash.max'
   import { saveAs } from 'file-saver'
 
@@ -252,6 +253,8 @@
         dialog: false,
         snackbar: {},
         users: [],
+        selectedLevel: null,
+        masterOrgFilterList: [],
         orgFilters: [],
         statuses: [],
         positions: [],
@@ -313,7 +316,7 @@
     created () {
       this.getStatuses()
       this.getPositions()
-      this.getOrgFilters()
+      this.getOrgFilters(true)
     },
     methods: {
       clickRow(id){
@@ -379,30 +382,57 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getOrgFilters (selectedLevel) {
-        console.log('randaLogger',selectedLevel)
+      async getOrgFilters (initialLoad) {
+        Object.keys(this.filters.orgs).forEach(key => {
+          if (this.filters.orgs[key] && this.filters.orgs[key].length === 0) {
+            delete this.filters.orgs[key]
+          }
+        })
         try {
-          if(this.orgFilters?.length > 0) {
-            console.log('we will load more stuff here')
+          if(Object.keys(this.filters.orgs).length > 0) {
             //org filters have already been loaded. load their orgs again and repopulate the org list only
             const params = {
-              orgs: this.getOrgIds(selectedLevel)
+              orgs: this.getOrgIds()
             }
             const {data} = await postRequest(`/org/orgHierarchyFilter`, params)
             data.forEach(d => {
-              if(d.orgLevelId !== selectedLevel) {
+              let index = this.headers.findIndex(h => h.level === d.orgLevelId)
+              if(d.orgLevelId === this.selectedLevel) {
+                let masterIndex = this.masterOrgFilterList.findIndex(mf => mf.orgLevelId === d.orgLevelId)
+                this.headers[index].orgs = this.masterOrgFilterList[masterIndex].orgs
+              }else {
                 //get index of the right header
-                let index = this.headers.findIndex(h => h.level === d.orgLevelId)
                 this.headers[index].orgs = d.orgs
               }
             })
-          } else {
+          } else if(initialLoad) {
             //org filters not yet loaded. load them from main list
             const {data} = await getRequest(`/org/filters`)
-            this.orgFilters = data
+            this.masterOrgFilterList = cloneDeep(data)
+            this.orgFilters = cloneDeep(this.masterOrgFilterList)
             this.orgFilters.forEach(f => {
               let index = this.headers.findIndex(h => h.level === f.orgLevelId)
-              console.log('randaLogger', index)
+              if(index > -1) {
+                this.headers[index].orgs = f.orgs
+              } else {
+                this.headers.push({
+                  text: f.levelName,
+                  value: f.levelName,
+                  sortable: false,
+                  show: true,
+                  level: f.orgLevelId,
+                  orgFilter: true,
+                  showType: f.showType,
+                  orgs: f.orgs,
+                  width: '225px'
+                })
+              }
+            })
+          } else {
+            this.filters.orgs = {}
+            this.orgFilters = cloneDeep(this.masterOrgFilterList)
+            this.orgFilters.forEach(f => {
+              let index = this.headers.findIndex(h => h.level === f.orgLevelId)
               if(index > -1) {
                 this.headers[index].orgs = f.orgs
               } else {
@@ -420,8 +450,6 @@
               }
             })
           }
-          console.log('randaLogger org filters', this.orgFilters)
-          console.log('randaLogger headers', this.headers)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -466,29 +494,46 @@
         const result = hierarchy?.find(({orgLevelId}) => orgLevelId === filterOrgLevelId)
         return result?.orgName ?? 'N/A'
       },
-      getOrgIdsForMax() {
+      getOrgIdsForMax(resetSelected) {
         let maxKey = max(Object.keys(this.filters.orgs))
+        if(resetSelected){
+          this.selectedLevel = parseInt(maxKey)
+        }
         console.log('MAX KEY', maxKey)
         return this.filters.orgs && maxKey ? this.filters.orgs[maxKey].map(o => o.id) : []
       },
-      getOrgIds(selectedLevel) {
-        return this.filters.orgs ? this.filters.orgs[selectedLevel].map(o => o.id) : []
+      getOrgIds() {
+        if(this.filters.orgs && this.filters.orgs[this.selectedLevel] && this.filters.orgs[this.selectedLevel].length > 0){
+          return this.filters.orgs ? this.filters.orgs[this.selectedLevel].map(o => o.id) : []
+        } else {
+          return this.getOrgIdsForMax(true)
+        }
       },
       handleOrgFilterChange (reset, selectedLevel) {
+        this.selectedLevel = selectedLevel
         if(reset) {
           this.filters.orgs = {}
-          this.orgFilters = []
+          this.orgFilters = cloneDeep(this.masterOrgFilterList)
         }else {
           Object.keys(this.filters.orgs).forEach(k => {
-            if(k > selectedLevel) {
+            if(k > this.selectedLevel) {
               delete this.filters.orgs[k]
             }
           })
+          //reload the filters
+          this.getOrgFilters()
         }
+
         //reload the users
         this.getUsers()
-        //reload the filters
-        this.getOrgFilters(selectedLevel)
+      },
+      itemChecked(level, item) {
+        if(this.filters.orgs[level] && this.filters.orgs[level].length > 0){
+          let match = this.filters.orgs[level].find(of => of.id === item.id)
+          return match != null
+        }else {
+          return false;
+        }
       }
     }
   }
