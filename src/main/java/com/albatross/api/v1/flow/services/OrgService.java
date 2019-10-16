@@ -207,7 +207,6 @@ public class OrgService {
     params.put("companyId", user.getCompanyId());
     List<OrgFilter> results = sqlCache.query("org.getOrgFiltersForCompany", params, OrgFilter.class);
 
-
     HashMap<String, Object> p2 = new HashMap<>();
     p2.put("selectedOrgs", selectedOrgs);
     List<Org> orgs = sqlCache.query("org.getOrgsByHierarchyFilter", p2, Org.class);
