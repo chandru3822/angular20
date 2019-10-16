@@ -410,45 +410,11 @@
             const {data} = await getRequest(`/org/filters`)
             this.masterOrgFilterList = cloneDeep(data)
             this.orgFilters = cloneDeep(this.masterOrgFilterList)
-            this.orgFilters.forEach(f => {
-              let index = this.headers.findIndex(h => h.level === f.orgLevelId)
-              if(index > -1) {
-                this.headers[index].orgs = f.orgs
-              } else {
-                this.headers.push({
-                  text: f.levelName,
-                  value: f.levelName,
-                  sortable: false,
-                  show: true,
-                  level: f.orgLevelId,
-                  orgFilter: true,
-                  showType: f.showType,
-                  orgs: f.orgs,
-                  width: '225px'
-                })
-              }
-            })
+            this.resetHeaderOrgs()
           } else {
             this.filters.orgs = {}
             this.orgFilters = cloneDeep(this.masterOrgFilterList)
-            this.orgFilters.forEach(f => {
-              let index = this.headers.findIndex(h => h.level === f.orgLevelId)
-              if(index > -1) {
-                this.headers[index].orgs = f.orgs
-              } else {
-                this.headers.push({
-                  text: f.levelName,
-                  value: f.levelName,
-                  sortable: false,
-                  show: true,
-                  level: f.orgLevelId,
-                  orgFilter: true,
-                  showType: f.showType,
-                  orgs: f.orgs,
-                  width: '225px'
-                })
-              }
-            })
+            this.resetHeaderOrgs()
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -456,6 +422,26 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      resetHeaderOrgs(){
+        this.orgFilters.forEach(f => {
+          let index = this.headers.findIndex(h => h.level === f.orgLevelId)
+          if(index > -1) {
+            this.headers[index].orgs = f.orgs
+          } else {
+            this.headers.push({
+              text: f.levelName,
+              value: f.levelName,
+              sortable: false,
+              show: true,
+              level: f.orgLevelId,
+              orgFilter: true,
+              showType: f.showType,
+              orgs: f.orgs,
+              width: '225px'
+            })
+          }
+        })
       },
       async getStatuses () {
         try {
