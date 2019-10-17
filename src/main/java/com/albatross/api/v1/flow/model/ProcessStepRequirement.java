@@ -14,10 +14,19 @@ import java.util.List;
 public class ProcessStepRequirement {
 
   private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupAssignmentId, companyFunctionId,
-    requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId;
+    requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId;
 
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, processStepName,
     secondaryRequirementValue;
+
+  // not sure what type to make this yet
+  private List<Integer> listOfValueIds;
+
+  //this is the selected item from the list if it was a dropdown
+  private ListOfValue listOfValue;
+
+  //this is the selected items from the list if it was a multiselect
+  private List<ListOfValue> listOfValues;
 
   private DataTypeRequirement dataTypeRequirement;
   private List<RequirementParamDynamicValue> requirementParamDynamicValues;

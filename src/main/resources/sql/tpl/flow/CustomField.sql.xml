@@ -167,7 +167,25 @@
   <customField.getByParentProcessStep><![CDATA[
     select cf.*,
        cfga.id as custom_field_group_assignment_id,
-       cdt.data_type_id
+       cdt.data_type_id,
+       cdt.allow_multiple,
+       coalesce((
+                    select array_to_json(array_agg(rows))
+                    from (
+                             select lv.id,
+                                    lv.name,
+                                    lv.parent_id as "parentId",
+                                    lv.date_created as "dateCreated",
+                                    lv.date_modified as "dateModified",
+                                    lv.created_by_id as "createdById",
+                                    lv.modified_by_id as "modifiedById",
+                                    lv.display_order as "displayOrder",
+                                    lv.archived
+                             from flow.list_of_value lv
+                             where lv.parent_id = cf.list_of_value_id
+                               and lv.archived is not true
+                             order by lv.display_order
+                         ) rows), '[]') AS list_of_values
     from flow.process_step ps
              inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
              inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
@@ -176,6 +194,7 @@
     where ps.id = :id
       and cfga.ancillary_custom_field_group_assignment_id is null
     order by cf.field_name
+
   ]]></customField.getByParentProcessStep>
 
   <customField.getByParentType><![CDATA[
@@ -189,5 +208,26 @@
       and cfga.ancillary_custom_field_group_assignment_id is null
     order by cf.field_name
   ]]></customField.getByParentType>
+
+  <customField.getListOfValuesByOptionId><![CDATA[
+    with parent as (
+        select parent_id
+        from flow.list_of_value
+        where id = :id
+    )
+    select lv.id,
+           lv.name,
+           lv.parent_id,
+           lv.date_created,
+           lv.date_modified,
+           lv.created_by_id,
+           lv.modified_by_id,
+           lv.display_order,
+           lv.archived
+    from flow.list_of_value lv
+        inner join parent p on p.parent_id = lv.parent_id
+    where lv.archived is not true
+    order by lv.display_order
+  ]]></customField.getListOfValuesByOptionId>
 
 </sql>

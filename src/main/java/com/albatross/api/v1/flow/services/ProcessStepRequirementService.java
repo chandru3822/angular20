@@ -76,6 +76,8 @@ public class ProcessStepRequirementService {
     params.put("requirementValue", requirement.getRequirementValue());
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
+    params.put("listOfValueId", requirement.getListOfValueId());
+    params.put("listOfValueIds", requirement.getListOfValueIds());
     params.put("modifiedById", currentUser.getId());
     params.put("id", requirement.getId());
 
@@ -94,6 +96,8 @@ public class ProcessStepRequirementService {
     params.put("requirementValue", requirement.getRequirementValue());
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
+    params.put("listOfValueId", requirement.getListOfValueId());
+    params.put("listOfValueIds", requirement.getListOfValueIds());
     params.put("customFieldGroupAssignmentId", requirement.getCustomFieldGroupAssignmentId());
     params.put("companyFunctionId", requirement.getCompanyFunctionId());
     params.put("requirementNbr", requirement.getRequirementNbr());
@@ -139,13 +143,32 @@ public class ProcessStepRequirementService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<List<RequirementParamDynamicValue>>() {};
+      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "requirementParamDynamicValues",
           new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 
-      TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<DataTypeRequirement>() {};
+      TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "dataTypeRequirement",
           new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
+
+      TypeReference<ListOfValue> listOfValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "listOfValue",
+          new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+
+      TypeReference<List<ListOfValue>> listOfValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValues",
+          new JsonCollectionDeserializer(listOfValuesRef, objectMapper));
+
+//      TypeReference<Array> listOfValueIdsRef = new TypeReference<>() {};
+//      bw.registerCustomEditor(Array.class, "listOfValueIds",
+//          new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
+
+      TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValueIds",
+          new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
+
+//      Array closerIds = jdbc.queryForObject(sqlQuery, params, Array.class);
+//      return (Integer[])closerIds.getArray();
     }
   }
 

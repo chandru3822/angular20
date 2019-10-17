@@ -220,6 +220,14 @@ public class CustomFieldService {
     return result;
   }
 
+  public List<ListOfValue> getListOfValuesByOptionId(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    List<ListOfValue> result = sqlCache.query("customField.getListOfValuesByOptionId", params, ListOfValue.class);
+    return result;
+  }
+
   public static class CustomFieldMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
