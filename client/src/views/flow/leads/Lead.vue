@@ -182,9 +182,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/customFieldValues/customer`, { params: {
-          primaryId: this.customerId,
-          //  2 = customer
-          objectTypeId: 2
+          primaryId: this.customerId
         }})
         this.customFieldGroups = data
         this.$store.commit(AppMutations.SET_LOADING, false)

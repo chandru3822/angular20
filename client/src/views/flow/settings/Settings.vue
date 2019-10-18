@@ -18,7 +18,7 @@
                 </v-list-item-content>
               </v-list-item>
             </template>
-            <v-list-item dense v-for="o in filterBy(objectTypes, 1, 'flowTypeId')" :key="o.id"
+            <v-list-item dense v-for="o in filterBy(companyObjectTypes, 1, 'flowTypeId')" :key="o.id"
                          :to="{ path: `/settings/customFieldGroup/${o.id}`}"
                          :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
               <v-list-item-content>
@@ -53,7 +53,7 @@ export default {
   data () {
     return {
       snackbar: {},
-      objectTypes: [],
+      companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
       items: [
         {
@@ -108,7 +108,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
-        this.objectTypes = data
+        this.companyObjectTypes = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

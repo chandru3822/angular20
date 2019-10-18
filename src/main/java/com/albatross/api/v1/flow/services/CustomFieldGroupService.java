@@ -1,27 +1,22 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldGroup;
-import com.albatross.api.v1.flow.model.CustomFieldObjectType;
-import com.albatross.api.v1.flow.model.CustomFieldValue;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 /**
@@ -107,9 +102,9 @@ public class CustomFieldGroupService {
     }
   }
 
-  public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId(Long objectTypeId) {
+  public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId(Long companyObjectTypeId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("objectTypeId", objectTypeId);
+    params.put("companyObjectTypeId", companyObjectTypeId);
 
     List<CustomFieldGroup> results = sqlCache.query("customFieldGroupAssignment.getByObjectTypeId", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
     return results;
@@ -123,9 +118,9 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public List<CustomField> getAvailableCustomFieldsInGroup(Long objectTypeId, Long groupId, Long processStepId) {
+  public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("objectTypeId", objectTypeId);
+    params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupId", groupId);
 
     List<CustomField> results;
@@ -140,10 +135,10 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public CustomFieldGroup addCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+  public CustomFieldGroup addCustomFieldGroup(CustomFieldGroup customFieldGroup, Long companyObjectTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("groupName", customFieldGroup.getGroupName());
-    params.put("objectTypeId", customFieldGroup.getObjectTypeId());
+    params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("processStepId", customFieldGroup.getProcessStepId());
 
@@ -153,6 +148,16 @@ public class CustomFieldGroupService {
     Optional<CustomFieldGroup> group = sqlCache.get("customFieldGroupAssignment.getOne", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
     return group.orElse(null);
+  }
+
+  public CustomFieldGroup addProcessStepCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
+    params.put("companyId", currentUser.getId());
+    Long companyObjectTypeId = sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
+    return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
   }
 
   public void deleteCustomFieldGroup(Long id) {
@@ -196,10 +201,10 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public void updateFieldShowOnInsert(CustomFieldObjectType objectType) {
+  public void updateFieldShowOnInsert(CustomFieldObjectType customFieldObjectType) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", objectType.getId());
-    params.put("showOnInsert", objectType.getShowOnInsert());
+    params.put("id", customFieldObjectType.getId());
+    params.put("showOnInsert", customFieldObjectType.getShowOnInsert());
 
     sqlCache.update("customFieldGroup.updateFieldShowOnInsert", params);
   }

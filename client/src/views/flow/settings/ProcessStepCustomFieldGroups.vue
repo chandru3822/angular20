@@ -260,12 +260,10 @@
       async saveFieldGroup() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          // todo: what is the best way to NOT hardcode this?  processStep objectTypeId = 4
-          this.newGroup.objectTypeId = 4
           this.newGroup.groupOrder = 0
           this.newGroup.processStepId = this.$route.params.id
 
-          const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
+          const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
           this.customFieldGroups.push(data)
           this.newGroup = {}
           this.createNew = false

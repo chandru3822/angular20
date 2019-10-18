@@ -1,8 +1,15 @@
 <sql>
   <customFieldGroup.insertCustomFieldGroup><![CDATA[
-    insert into flow.custom_field_group(group_name, object_type_id, group_order, process_step_id)
-    values (:groupName, :objectTypeId, :groupOrder, :processStepId);
+    insert into flow.custom_field_group(group_name, company_object_type_id, group_order, process_step_id)
+    values (:groupName, :companyObjectTypeId, :groupOrder, :processStepId);
   ]]></customFieldGroup.insertCustomFieldGroup>
+
+  <customFieldGroup.getCompanyObjectTypeId><![CDATA[
+    select id
+    from flow.company_object_type
+    where object_type_id = :objectTypeId
+      and company_id = :companyId
+  ]]></customFieldGroup.getCompanyObjectTypeId>
 
   <customFieldGroup.updateCustomFieldGroup><![CDATA[
     update flow.custom_field_group
@@ -62,8 +69,8 @@
                                  order by cfga.field_order
                              ) fields), '[]') AS "customFieldValues"
     from flow.custom_field_group cfg
-             inner join flow.object_type ot on ot.id = cfg.object_type_id
-    where cfg.object_type_id = :objectTypeId
+      inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    where cot.object_type_id = :objectTypeId
       and cfg.archived is not true
       and ot.company_id = :companyId
     order by cfg.group_order

@@ -803,46 +803,46 @@ INSERT INTO flow.custom_field(
 VALUES ('Cancelled T-Sheets Date',2,now(), 2350555,1);
 
 
-insert into flow.custom_field_object_type(custom_field_id, object_type_id)
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,3
      from flow.custom_field
     );
 
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order, archived)
+    group_name,company_object_type_id, group_order, archived)
 VALUES ('General',3, 6, true);
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order)
+    group_name,company_object_type_id, group_order)
 VALUES ('Personal',3, 1);
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order)
+    group_name,company_object_type_id, group_order)
 VALUES ('Onboarding',3, 2);
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order)
+    group_name,company_object_type_id, group_order)
 VALUES ('HR',3, 3);
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order)
+    group_name,company_object_type_id, group_order)
 VALUES ('Systems',3, 4);
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order)
+    group_name,company_object_type_id, group_order)
 VALUES ('Termination',3, 5);
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order)
+    group_name,company_object_type_id, group_order)
 VALUES ('Project PlaceHolder',1, 1);
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order)
+    group_name,company_object_type_id, group_order)
 VALUES ('Customer PlaceHolder',2, 1);
 
 INSERT INTO flow.custom_field_group(
-    group_name,object_type_id, group_order)
+    group_name,company_object_type_id, group_order)
 VALUES ('Process Step PlaceHolder',4, 1);
 
 
@@ -1912,7 +1912,7 @@ INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, c
 
 
 
-insert into flow.custom_field_object_type(custom_field_id, object_type_id)
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,2
      from flow.custom_field
      where id > 72
@@ -2112,7 +2112,7 @@ INSERT INTO flow.custom_field_group_assignment(
     custom_field_id,field_order,archived,created_by_id)
 VALUES (7,79,2,false, 2350555);
 
-insert into flow.custom_field_object_type(custom_field_id, object_type_id)
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,1
      from flow.custom_field
      where id > 77
@@ -2177,7 +2177,7 @@ INSERT INTO flow.custom_field_group_assignment(
     custom_field_id,field_order,archived,created_by_id)
 VALUES (9,81,2,false, 2350555);
 
-insert into flow.custom_field_object_type(custom_field_id, object_type_id)
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,1
      from flow.custom_field
      where id > 79

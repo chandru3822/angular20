@@ -264,7 +264,7 @@ export default {
       try {
         const {data} = await getRequest(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
-            objectTypeId: this.$route.params.id
+            companyObjectTypeId: this.$route.params.id
           }
         })
         this.customFieldGroups = cloneDeep(data)
@@ -280,7 +280,7 @@ export default {
       try {
         const {data} = await getRequest(`/customFieldGroup/getAvailableCustomFields`, {
           params: {
-            objectTypeId: this.$route.params.id,
+            companyObjectTypeId: this.$route.params.id,
             groupId
           }
         })
@@ -295,7 +295,7 @@ export default {
     async addCustomFieldGroup () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.newGroup.objectTypeId = this.$route.params.id
+        this.newGroup.companyObjectTypeId = this.$route.params.id
         // setting groupOrder to 0, then they can sort later
         this.newGroup.groupOrder = 0
         const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)

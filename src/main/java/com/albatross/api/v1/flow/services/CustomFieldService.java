@@ -49,11 +49,11 @@ public class CustomFieldService {
     return result;
   }
 
-  public List<ObjectType> getObjectTypes() {
+  public List<CompanyObjectType> getCompanyObjectTypes() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<ObjectType> result = sqlCache.query("customField.getObjectTypes", params, ObjectType.class);
+    List<CompanyObjectType> result = sqlCache.query("customField.getCompanyObjectTypes", params, CompanyObjectType.class);
     return result;
   }
 
@@ -178,7 +178,7 @@ public class CustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("archived", cfot.getArchived());
     params.put("customFieldId", customFieldId);
-    params.put("objectTypeId", cfot.getObjectTypeId());
+    params.put("companyObjectTypeId", cfot.getCompanyObjectTypeId());
 
     // if it is a new field the cfot.getId() is actually the objectTypeId so do 2 checks here
     if(null != cfot.getId() && null != cfot.getCustomFieldId()) {

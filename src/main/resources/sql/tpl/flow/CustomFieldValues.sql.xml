@@ -56,8 +56,8 @@
         order by cfga.field_order
       ) fields), '[]') AS "customFieldValues"
     from flow.custom_field_group cfg
-    inner join flow.object_type ot on ot.id = cfg.object_type_id
-    where cfg.object_type_id = :objectTypeId
+      inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    where cot.object_type_id = :objectTypeId
       and cfg.archived is not true
       and ot.company_id = :companyId
     order by cfg.group_order;
@@ -117,8 +117,8 @@
                              order by cfga.field_order
                          ) fields), '[]') AS "customFieldValues"
     from flow.custom_field_group cfg
-         inner join flow.object_type ot on ot.id = cfg.object_type_id
-    where cfg.object_type_id = :objectTypeId
+      inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    where cot.object_type_id = :objectTypeId
     and cfg.archived is not true
     and ot.company_id = :companyId
     order by cfg.group_order
@@ -178,8 +178,8 @@
                              order by cfga.field_order
                          ) fields), '[]') AS "customFieldValues"
         from flow.custom_field_group cfg
-                 inner join flow.object_type ot on ot.id = cfg.object_type_id
-        where cfg.object_type_id = :objectTypeId
+          inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    where cot.object_type_id = :objectTypeId
           and cfg.archived is not true
           and ot.company_id = :companyId
         order by cfg.group_order
@@ -277,8 +277,8 @@
                              order by cfga.field_order
                          ) fields), '[]') AS "customFieldValues"
         from flow.custom_field_group cfg
-                 inner join flow.object_type ot on ot.id = cfg.object_type_id
-        where cfg.object_type_id = :objectTypeId
+          inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    where cot.object_type_id = :objectTypeId
           and cfg.archived is not true
           and ot.company_id = :companyId
         order by cfg.group_order
