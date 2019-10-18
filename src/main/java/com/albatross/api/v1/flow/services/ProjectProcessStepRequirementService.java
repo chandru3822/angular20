@@ -42,9 +42,6 @@ public class ProjectProcessStepRequirementService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "requirementParamDynamicValues", new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
-
-      TypeReference<List<Long>> longRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "intArrayValue", new JsonCollectionDeserializer(longRef, objectMapper));
     }
   }
 }

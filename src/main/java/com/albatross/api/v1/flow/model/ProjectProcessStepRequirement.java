@@ -5,13 +5,12 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
 
 @Getter
 @Setter
 public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
-  private Boolean booleanValue;
+  private Boolean booleanValue, hasListValues;
 
   private Timestamp timestampValue, dateValue;
 
@@ -19,7 +18,5 @@ public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
   private BigDecimal numericValue;
 
-  private Long intValue, dataTypeRequirementId;
-
-  private List<Long> intArrayValue;
+  private Long intValue, dataTypeRequirementId, listOfValueId ;
 }

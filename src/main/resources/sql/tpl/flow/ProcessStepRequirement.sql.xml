@@ -161,6 +161,7 @@
       cf.field_name,
       cfn.company_function_name,
       cdt.data_type_id,
+      cdt.has_list_values,
       ppscfv.id as project_custom_field_value_id,
       ppscfv.project_process_step_id,
       ppscfv.text_value,
@@ -169,11 +170,6 @@
       ppscfv.boolean_value,
       ppscfv.numeric_value,
       ppscfv.int_value,
-      coalesce((
-        select array_to_json(array_agg(row_to_json(params)))
-        from (
-          select name from flow.list_of_value where id = any(ppscfv.int_array_value)
-      ) params), '[]') as int_array_value,
       coalesce('[]', (
         select array_to_json(array_agg(row_to_json(params)))
         from (

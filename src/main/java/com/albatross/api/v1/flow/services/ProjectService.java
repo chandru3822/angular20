@@ -134,9 +134,6 @@ public class ProjectService {
 
     if (r.getProcessStepRequirementTypeId() == 1) {
 //      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
-        if (r.getDataTypeId() == 1) {
-          requirementMet = calculateDateRequirement(r);
-        }
 
         switch (r.getDataTypeId().intValue()) {
           case 1:
@@ -155,9 +152,10 @@ public class ProjectService {
             requirementMet = calculateTextRequirement(r);
             break;
           case 6:
-            requirementMet = calculateIntRequirement(r);
+            requirementMet = (r.getHasListValues()) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
+            break;
           case 7:
-            requirementMet = calculateIntArrayRequirement(r);
+//            requirementMet = calculateIntArrayRequirement(r);
           default:
             //@TODO: blow up with error?
         }
@@ -165,11 +163,49 @@ public class ProjectService {
     return requirementMet;
   }
 
-  private boolean calculateIntArrayRequirement(ProjectProcessStepRequirement r) throws Exception {
+  private boolean caclulateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
 
-    List<Long> fieldValue = r.getIntArrayValue();
+    Long fieldValue = r.getIntValue();
 
     boolean passed = false;
+
+    if (r.getDataTypeRequirementId() == null) {
+      try {
+        Long reqValue = r.getListOfValueId();
+        passed = compareDropdown(fieldValue, reqValue, r.getOperatorTypeId());
+      } catch (Exception e) {
+        throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", r.getOperatorTypeId()));
+      }
+    } else {
+      switch (r.getDataTypeRequirementId().intValue()) {
+        case 20:
+          passed = fieldValue == null;
+          break;
+        case 21:
+          passed = fieldValue != null;
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", r.getOperatorTypeId()));
+      }
+    }
+
+    return passed;
+  }
+
+  private boolean compareDropdown(Long number, Long compareNumber, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = Objects.equals(number, compareNumber);
+        break;
+      case 2:
+        passed = !Objects.equals(number, compareNumber);
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", operatorTypeId));
+    }
 
     return passed;
   }
