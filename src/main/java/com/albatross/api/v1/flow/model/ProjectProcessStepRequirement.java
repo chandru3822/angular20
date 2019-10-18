@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,4 +20,6 @@ public class ProjectProcessStepRequirement extends ProcessStepRequirement {
   private BigDecimal numericValue;
 
   private Long intValue, dataTypeRequirementId, listOfValueId ;
+
+  private List<Integer> intArrayValue;
 }

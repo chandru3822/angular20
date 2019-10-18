@@ -155,12 +155,61 @@ public class ProjectService {
             requirementMet = (r.getHasListValues()) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
             break;
           case 7:
-//            requirementMet = calculateIntArrayRequirement(r);
+            requirementMet = calculateMultiselectRequirement(r);
+            break;
           default:
             //@TODO: blow up with error?
         }
     }
     return requirementMet;
+  }
+
+  private boolean calculateMultiselectRequirement(ProjectProcessStepRequirement r) throws Exception {
+
+    List<Integer> fieldValue = r.getIntArrayValue();
+
+    boolean passed = false;
+
+    if (r.getDataTypeRequirementId() == null) {
+     try {
+       List<Integer> reqValue = r.getListOfValueIds();
+       passed = compareMultiselect(fieldValue, reqValue, r.getOperatorTypeId());
+     } catch (Exception e) {
+       throw new Exception(String.format("Unable to parse data type of Multiselect with operator of ID: %s", r.getOperatorTypeId()));
+     }
+    } else {
+      switch (r.getDataTypeRequirementId().intValue()) {
+        case 22:
+          passed = fieldValue.isEmpty();
+          break;
+        case 23:
+          passed = !fieldValue.isEmpty();
+          break;
+        default:
+          throw new Exception(String.format("Unable to parse data type of Multiselect with operator of ID: %s", r.getOperatorTypeId()));
+      }
+    }
+    return passed;
+  }
+
+  private boolean compareMultiselect(List<Integer> numbers, List<Integer> compareNumbers, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = Objects.equals(numbers, compareNumbers);
+        break;
+      case 2:
+        passed = !Objects.equals(numbers, compareNumbers);
+        break;
+      case 5:
+        List<Integer> intersection = numbers.stream().filter(compareNumbers::contains).collect(Collectors.toList());
+        passed = !intersection.isEmpty();
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Multiselect with operator of ID: %s", operatorTypeId));
+    }
+    return passed;
   }
 
   private boolean caclulateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
