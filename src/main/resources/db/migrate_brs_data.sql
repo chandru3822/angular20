@@ -396,84 +396,11 @@ insert into brs.custom_dropdown_value(id, title, custom_dropdown_field_id, archi
 SELECT setval('brs.custom_dropdown_value_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.custom_dropdown_field), 1),
               false);
 
-insert into brs.ahj_simple_list_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_simple_list_type);
-
-SELECT setval('brs.ahj_simple_list_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_simple_list_type), 1),
-              false);
-
-
-insert into brs.ahj_pto_followup_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_pto_followup_type);
-
-SELECT setval('brs.ahj_pto_followup_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_pto_followup_type), 1),
-              false);
-
-insert into brs.ahj_utility_inspection_submission_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_utility_inspection_submission_type);
-
-SELECT setval('brs.ahj_utility_inspection_submission_type_id_seq',
-              COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_utility_inspection_submission_type), 1), false);
-
-insert into brs.ahj_signature_requested_at_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_signature_requested_at_type);
-
-SELECT setval('brs.ahj_signature_requested_at_type_id_seq',
-              COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_signature_requested_at_type), 1), false);
-
-
-insert into brs.ahj_utility_submission_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_utility_submission_type);
-
-SELECT setval('brs.ahj_utility_submission_type_id_seq',
-              COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_utility_submission_type), 1), false);
-
-
-insert into brs.ahj_utility_method_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_utility_method_type);
-
-SELECT setval('brs.ahj_utility_method_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_utility_method_type), 1),
-              false);
-
-
-insert into brs.ahj_when_to_create_application_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_when_to_create_application_type);
-
-SELECT setval('brs.ahj_when_to_create_application_type_id_seq',
-              COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_when_to_create_application_type), 1), false);
-
-
-insert into brs.ahj_utility(id, name, archived, date_created, date_modified, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, rebate_program_type_id, rebate_program_type_other, signature_required_prior_type_id, signature_required_prior_type_other, signature_requested_at_type_id, signature_requested_at_type_other, customer_signature_resubmission_type_id, customer_signature_resubmission_type_other, when_to_create_application_type_id, when_to_create_application_type_other, submission_method_type_id, submission_method_type_other, interconnection_fee_type_id, interconnection_fee_type_other, utility_method_type_id, utility_method_type_other, inspection_submission_type_id, inspection_submission_type_other, utility_inspection_required_type_id, utility_inspection_required_type_other, followup_method_type_id, followup_method_type_other, metro_area_id, ac_disconnect_required, meter_can_taps_allowed, pv_production_meter_required, pv_ac_swap_locations, utility_warning_labels_override)
-    (select id, name, CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END, date_created, date_updated, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, rebate_program_type_id, rebate_program_type_other, signature_required_prior_type_id, signature_required_prior_type_other, signature_requested_at_type_id, signature_requested_at_type_other, customer_signature_resubmission_type_id, customer_signature_resubmission_type_other, when_to_create_application_type_id, when_to_create_application_type_other, submission_method_type_id, submission_method_type_other, interconnection_fee_type_id, interconnection_fee_type_other, utility_method_type_id, utility_method_type_other, inspection_submission_type_id, inspection_submission_type_other, utility_inspection_required_type_id, utility_inspection_required_type_other, followup_method_type_id, followup_method_type_other, metro_area_id, ac_disconnect_required, meter_can_taps_allowed, pv_production_meter_required, pv_ac_swap_locations, utility_warning_labels_override
+insert into brs.ahj_utility(id, name, archived, date_created, date_modified, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id, ac_disconnect_required)
+    (select id, name, CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END, date_created, date_updated, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id
      from blueraven.ahj_utility);
 
 SELECT setval('brs.ahj_utility_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_utility), 1), false);
-
-
-
-
-
 
 --1 General
 INSERT INTO flow.custom_field(
@@ -2255,134 +2182,9 @@ insert into brs.ahj_link_type(id, name, archived)
 SELECT setval('brs.ahj_link_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_link_type), 1), false);
 
 
-insert into brs.ahj_handy_information_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_handy_information_type);
 
-SELECT setval('brs.ahj_handy_information_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_handy_information_type), 1), false);
-
-
-insert into brs.ahj_inspection_capacity_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_inspection_capacity_type);
-
-SELECT setval('brs.ahj_inspection_capacity_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_inspection_capacity_type), 1), false);
-
-
-insert into brs.ahj_placard_required_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_placard_required_type);
-
-SELECT setval('brs.ahj_placard_required_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_placard_required_type), 1), false);
-
-
-insert into brs.ahj_plans_required_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_plans_required_type);
-
-SELECT setval('brs.ahj_plans_required_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_plans_required_type), 1), false);
-
-
-insert into brs.ahj_reinspection_fee_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_reinspection_fee_type);
-
-SELECT setval('brs.ahj_reinspection_fee_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_reinspection_fee_type), 1), false);
-
-
-insert into brs.ahj_representative_required_onsite_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_representative_required_onsite_type);
-
-SELECT setval('brs.ahj_representative_required_onsite_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_representative_required_onsite_type), 1), false);
-
-
-insert into brs.ahj_results_documentation_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_results_documentation_type);
-
-SELECT setval('brs.ahj_results_documentation_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_results_documentation_type), 1), false);
-
-
-insert into brs.ahj_rough_inspection_required_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_rough_inspection_required_type);
-
-SELECT setval('brs.ahj_rough_inspection_required_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_rough_inspection_required_type), 1), false);
-
-
-insert into brs.ahj_scheduling_lead_time_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_scheduling_lead_time_type);
-
-SELECT setval('brs.ahj_scheduling_lead_time_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_scheduling_lead_time_type), 1), false);
-
-
-insert into brs.ahj_scheduling_method_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_scheduling_method_type);
-
-SELECT setval('brs.ahj_scheduling_method_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_scheduling_method_type), 1), false);
-
-
-insert into brs.ahj_site_access_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_site_access_type);
-
-SELECT setval('brs.ahj_site_access_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_site_access_type), 1), false);
-
-
-insert into brs.ahj_soladeck_access_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_soladeck_access_type);
-
-SELECT setval('brs.ahj_soladeck_access_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_soladeck_access_type), 1), false);
-
-
-insert into brs.ahj_special_documents_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_special_documents_type);
-
-SELECT setval('brs.ahj_special_documents_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_special_documents_type), 1), false);
-
-
-insert into brs.ahj_special_equipment_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_special_equipment_type);
-
-SELECT setval('brs.ahj_special_equipment_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_special_equipment_type), 1), false);
-
-
-insert into brs.ahj_inspection(id, ahj_id, inspection_fee, re_inspection_fee, payment_method, scheduling_method_type_other, inspection_time_window, homeowner_required_on_site, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, date_created, created_by_id, date_modified, modified_by_id, call_for_time_window, ladder_required, time_window, time_window_call_time, time_window_phone, scheduling_note, technician_instruction_note, scheduling_with_customer_note, obtaining_results_note, reinspection_note, documentation_note, scheduling_method_type_id, handy_information_type_id, handy_information_type_other, scheduling_lead_time_type_id, scheduling_lead_time_type_other, inspection_capacity_type_id, inspection_capacity_type_other, site_access_type_id, site_access_type_other, rough_inspection_required_type_id, rough_inspection_required_type_other, soladeck_access_type_id, soladeck_access_type_other, placard_required_type_id, placard_required_type_other, required_inspection_types, representative_required_onsite_type_id, representative_required_onsite_type_other, special_equipment_type_id, special_equipment_type_other, plans_required_type_id, plans_required_type_other, special_documents_type_id, special_documents_type_other, fall_protection_required, results_documentation_type_id, results_documentation_type_other, reinspection_fee_type_id, reinspection_fee_type_other, midpoint_inspection_lead_time_type_id, midpoint_inspection_lead_time_type_other, homeowner_required, brs_tech_required, mpu_inspection_note)
-    (select id, ahj_id, inspection_fee, re_inspection_fee, payment_method, scheduling_method_type_other, inspection_time_window, homeowner_required_on_site, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, created, created_by_id, updated, updated_by_id, call_for_time_window, ladder_required, time_window, time_window_call_time, time_window_phone, scheduling_note, technician_instruction_note, scheduling_with_customer_note, obtaining_results_note, reinspection_note, documentation_note, scheduling_method_type_id, handy_information_type_id, handy_information_type_other, scheduling_lead_time_type_id, scheduling_lead_time_type_other, inspection_capacity_type_id, inspection_capacity_type_other, site_access_type_id, site_access_type_other, rough_inspection_required_type_id, rough_inspection_required_type_other, soladeck_access_type_id, soladeck_access_type_other, placard_required_type_id, placard_required_type_other, required_inspection_types, representative_required_onsite_type_id, representative_required_onsite_type_other, special_equipment_type_id, special_equipment_type_other, plans_required_type_id, plans_required_type_other, special_documents_type_id, special_documents_type_other, fall_protection_required, results_documentation_type_id, results_documentation_type_other, reinspection_fee_type_id, reinspection_fee_type_other, midpoint_inspection_lead_time_type_id, midpoint_inspection_lead_time_type_other, homeowner_required, brs_tech_required, mpu_inspection_note
+insert into brs.ahj_inspection(id, ahj_id, inspection_fee, re_inspection_fee, payment_method, inspection_time_window, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, date_created, created_by_id, date_modified, modified_by_id, call_for_time_window, ladder_required, time_window, time_window_call_time, time_window_phone, scheduling_note, technician_instruction_note, scheduling_with_customer_note, obtaining_results_note, reinspection_note, documentation_note, required_inspection_types, fall_protection_required, mpu_inspection_note)
+    (select id, ahj_id, inspection_fee, re_inspection_fee, payment_method, inspection_time_window, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, created, created_by_id, updated, updated_by_id, call_for_time_window, ladder_required, time_window, time_window_call_time, time_window_phone, scheduling_note, technician_instruction_note, scheduling_with_customer_note, obtaining_results_note, reinspection_note, documentation_note, required_inspection_types, fall_protection_required, mpu_inspection_note
      from blueraven.ahj_inspection);
 
 SELECT setval('brs.ahj_inspection_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_inspection), 1), false);
@@ -2395,17 +2197,8 @@ insert into brs.ahj_inspection_link(id, ahj_inspection_id, name, link, username,
 SELECT setval('brs.ahj_inspection_link_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_inspection_link), 1), false);
 
 
-insert into brs.ahj_submit_type(id, name, archived)
-    (select id,
-            name,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.ahj_submit_type);
-
-SELECT setval('brs.ahj_submit_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_submit_type), 1), false);
-
-
-insert into brs.ahj_permit(id, ahj_id, deposit_amount, average_permit_fee, engineering_letter_required, print_location, stamped_plan, submission_payment_type_other, archived, date_created, created_by_id, date_modified, modified_by_id, submittal_type_other, delivery_pickup_type_other, business_license_expiration_date, contractor_license_expiration_date, business_license, contractor_license, submission_note, revision_note, as_built_note, delivery_note, submittal_type_id, revision_submittal_type_id, revision_submittal_type_other, as_built_submittal_type_id, as_built_submittal_type_other, delivery_pickup_type_id, submission_payment_type_id, revision_payment_type_id, revision_payment_type_other, as_built_payment_type_id, as_built_payment_type_other, follow_up_payment_type_id, follow_up_payment_type_other, delivery_payment_type_id, delivery_payment_type_other, revision_fee_amount, as_built_fee_amount, follow_up_fee_amount, delivery_fee_amount, approval_timeline, documents_available, hoa_approval_required_type_id, hoa_approval_required_type_other, nem_approval_required_type_id, nem_approval_required_type_other, other_license, other_license_expiration_date)
-    (select id, ahj_id, deposit_amount, average_permit_fee, engineering_letter_required, print_location, stamped_plan, submission_payment_type_other, archived, created, created_by_id, updated, updated_by_id, submittal_type_other, delivery_pickup_type_other, business_license_expiration_date, contractor_license_expiration_date, business_license, contractor_license, submission_note, revision_note, as_built_note, delivery_note, submittal_type_id, revision_submittal_type_id, revision_submittal_type_other, as_built_submittal_type_id, as_built_submittal_type_other, delivery_pickup_type_id, submission_payment_type_id, revision_payment_type_id, revision_payment_type_other, as_built_payment_type_id, as_built_payment_type_other, follow_up_payment_type_id, follow_up_payment_type_other, delivery_payment_type_id, delivery_payment_type_other, revision_fee_amount, as_built_fee_amount, follow_up_fee_amount, delivery_fee_amount, approval_timeline, documents_available, hoa_approval_required_type_id, hoa_approval_required_type_other, nem_approval_required_type_id, nem_approval_required_type_other, other_license, other_license_expiration_date
+insert into brs.ahj_permit(id, ahj_id, deposit_amount, average_permit_fee, engineering_letter_required, print_location, stamped_plan, archived, date_created, created_by_id, date_modified, modified_by_id, business_license_expiration_date, contractor_license_expiration_date, business_license, contractor_license, submission_note, revision_note, as_built_note, delivery_note, revision_fee_amount, as_built_fee_amount, follow_up_fee_amount, delivery_fee_amount, approval_timeline, documents_available, other_license, other_license_expiration_date)
+    (select id, ahj_id, deposit_amount, average_permit_fee, engineering_letter_required, print_location, stamped_plan, archived, created, created_by_id, updated, updated_by_id, business_license_expiration_date, contractor_license_expiration_date, business_license, contractor_license, submission_note, revision_note, as_built_note, delivery_note, revision_fee_amount, as_built_fee_amount, follow_up_fee_amount, delivery_fee_amount, approval_timeline, documents_available, other_license, other_license_expiration_date
      from blueraven.ahj_permit);
 
 SELECT setval('brs.ahj_permit_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_permit), 1), false);
@@ -2484,8 +2277,8 @@ insert into brs.ahj_permit_note              SELECT * FROM blueraven.ahj_permit_
 insert into brs.ahj_permit_checklist         SELECT * FROM blueraven.ahj_permit_checklist;
 
 
-insert into brs.ahj_design(id, ahj_id, codes, archived, date_created, created_by_id, date_modified, modified_by_id, utility_id, note, reference_standards, electrical_code_id, building_code_id, electrical_engineer_id, structural_engineer_id, standard_racking_equipment_id, railless_landscape_attachment_spacing_id, fire_setbacks_id, railless_portrait_attachment_spacing_id, standard_conduit_run_id, warning_labels_id, supplemental_ground_rod_required_id, load_standard_id, wood_standard_id, ground_snow_load, wind_speed, ult_id, seismic_design_category_id, roof_snow_load, roof_snow_load_ahj_override_id, snow_load_reduction_allowed_id, wind_exposure_factor_id, wind_exposure_factor_ahj_override_id, risk_category_id, stamp_type_id, structural_post_install_letter_required_id)
-    (select id, ahj_id, codes, archived, created, created_by_id, updated, updated_by_id, utility_id, note, reference_standards, electrical_code_id, building_code_id, electrical_engineer_id, structural_engineer_id, standard_racking_equipment_id, railless_landscape_attachment_spacing_id, fire_setbacks_id, railless_portrait_attachment_spacing_id, standard_conduit_run_id, warning_labels_id, supplemental_ground_rod_required_id, load_standard_id, wood_standard_id, ground_snow_load, wind_speed, ult_id, seismic_design_category_id, roof_snow_load, roof_snow_load_ahj_override_id, snow_load_reduction_allowed_id, wind_exposure_factor_id, wind_exposure_factor_ahj_override_id, risk_category_id, stamp_type_id, structural_post_install_letter_required_id
+insert into brs.ahj_design(id, ahj_id, codes, archived, date_created, created_by_id, date_modified, modified_by_id, utility_id, note, reference_standards, ground_snow_load, wind_speed, roof_snow_load)
+    (select id, ahj_id, codes, archived, created, created_by_id, updated, updated_by_id, utility_id, note, reference_standards, ground_snow_load, wind_speed, roof_snow_load
      from blueraven.ahj_design);
 
 SELECT setval('brs.ahj_design_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_design), 1), false);
