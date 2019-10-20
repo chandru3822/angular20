@@ -732,8 +732,366 @@ VALUES ('Cancelled T-Sheets Date',2,now(), 2350555,1);
 
 insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,3
-     from flow.custom_field
+     from flow.custom_field cf
+     where cf.field_name = 'Phone Directory Date'
     );
+
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Greenlight Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Dividend Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Request Sunops App'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Ignition Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Application Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Dropbox Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Oneroof Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Dividend Spoof'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'i9 Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Confidentiality Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'W4 Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Quickbase Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Dividend Spoof Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Removed From Directory Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled Greenlight Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled Dividend Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Removed Sunops Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Removed Sales Rabbit Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled Ignition Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Reason for Termination'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Termination Notes'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Department'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Crew'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Employee Handbook Signed Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Enter in Timeforce Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Expiry Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Dropbox Cancel Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Timeforce Cancel Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'E-Mail Opt Out Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Request T-Sheets Flag'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Phone Extension'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Drivers License Number'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Humanity Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'IT Onboarding Complete Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'IT Termination Complete Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Exit Interview Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Deactivate Badge Request Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Values Meeting Invite Sent Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cooperate Meeting Invite Sent Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Values Meeting Attended Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'New Hire Orientation Meeting Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Uniform/Badge Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Shirt Size'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Hat'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Accuity Appointment ID'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Namely Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Email Setup Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Request Base Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Base Contact Created Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Mosiac Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Litmos Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'T-Sheets Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Offer Letter Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Contract Request Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Contract Received Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Contract Saved Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Background Check Submitted Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Background Check Received Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Welcome E-Mail Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Photo Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Voided Check Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Re-Hire Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Pending Termination Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Termination Reason'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled Namely Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'E-Mail Removed Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled Base Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Base Contact Deleted Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled Mosiac Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled Litmos Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled T-Sheets Date'
+    );
+
 
 
 INSERT INTO flow.custom_field_group(
@@ -776,304 +1134,374 @@ VALUES ('Process Step PlaceHolder',4, 1);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (2,43,1,false, 2350555);
+ (select (select id from flow.custom_field_group where group_name = 'Personal'),
+  (select id from flow.custom_field where field_name = 'Uniform/Badge Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (2,44,2,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Personal'),
+            (select id from flow.custom_field where field_name = 'Shirt Size'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (2,45,3,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Personal'),
+            (select id from flow.custom_field where field_name = 'Hat'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (2,46,4,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Personal'),
+            (select id from flow.custom_field where field_name = 'Accuity Appointment ID'),1,false, 2350555);
+
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (5,47,1,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Systems'),
+            (select id from flow.custom_field where field_name = 'Namely Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (5,48,2,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Systems'),
+            (select id from flow.custom_field where field_name = 'Email Setup Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (5,49,3,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Systems'),
+            (select id from flow.custom_field where field_name = 'Request Base Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (5,50,4,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Systems'),
+            (select id from flow.custom_field where field_name = 'Base Contact Created Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (5,51,5,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Systems'),
+            (select id from flow.custom_field where field_name = 'Mosiac Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (5,52,6,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Systems'),
+            (select id from flow.custom_field where field_name = 'Litmos Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (5,53,7,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Systems'),
+            (select id from flow.custom_field where field_name = 'T-Sheets Date'),1,false, 2350555);
+
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,54,1,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Offer Letter Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Contract Request Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Contract Received Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Contract Saved Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Background Check Submitted Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Background Check Received Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Welcome E-Mail Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Photo Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Onboarding'),
+            (select id from flow.custom_field where field_name = 'Voided Check Date'),1,false, 2350555);
+
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,55,2,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'HR'),
+            (select id from flow.custom_field where field_name = 'Re-Hire Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR'),
+            (select id from flow.custom_field where field_name = 'Pending Termination Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR'),
+            (select id from flow.custom_field where field_name = 'Termination Reason'),1,false, 2350555);
+
+
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,56,3,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Termination'),
+            (select id from flow.custom_field where field_name = 'Cancelled Namely Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Termination'),
+            (select id from flow.custom_field where field_name = 'E-Mail Removed Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Termination'),
+            (select id from flow.custom_field where field_name = 'Cancelled Base Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Termination'),
+            (select id from flow.custom_field where field_name = 'Base Contact Deleted Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Termination'),
+            (select id from flow.custom_field where field_name = 'Cancelled Mosiac Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Termination'),
+            (select id from flow.custom_field where field_name = 'Cancelled Litmos Date'),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Termination'),
+            (select id from flow.custom_field where field_name = 'Cancelled T-Sheets Date'),1,false, 2350555);
+
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,57,4,false, 2350555);
-
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Phone Directory Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,58,5,false, 2350555);
-
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Greenlight Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,59,6,false, 2350555);
-
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Dividend Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,60,7,false, 2350555);
-
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Request Sunops App'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,61,8,false, 2350555);
-
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Ignition Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (3,62,9,false, 2350555);
-
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Application Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (4,63,1,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Dropbox Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (4,64,2,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Oneroof Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (4,65,3,false, 2350555);
-
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Dividend Spoof'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (6,66,1,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'i9 Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (6,67,2,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Confidentiality Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (6,68,3,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'W4 Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (6,69,4,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Quickbase Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (6,70,5,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Dividend Spoof Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (6,71,6,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Removed From Directory Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (6,72,7,false, 2350555);
-
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Cancelled Greenlight Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,1,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Cancelled Dividend Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,2,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Removed Sunops Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,3,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Removed Sales Rabbit Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,4,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Cancelled Ignition Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,5,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Reason for Termination'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,6,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Termination Notes'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,7,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Department'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,8,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Crew'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,9,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Employee Handbook Signed Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,10,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Enter in Timeforce Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,11,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Expiry Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,12,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Dropbox Cancel Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,13,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Timeforce Cancel Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,14,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'E-Mail Opt Out Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,15,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Request T-Sheets Flag'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,16,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Phone Extension'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,17,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Drivers License Number'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,18,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Humanity Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,19,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'IT Onboarding Complete Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,20,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'IT Termination Complete Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,21,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Exit Interview Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,22,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Deactivate Badge Request Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,23,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Values Meeting Invite Sent Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,24,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Cooperate Meeting Invite Sent Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,25,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'Values Meeting Attended Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (1,26,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,27,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,28,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,29,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,30,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,31,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,32,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,33,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,34,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,35,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,36,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,37,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,38,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,39,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,40,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,41,0,true, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-VALUES (1,42,0,true, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'General'),
+            (select id from flow.custom_field where field_name = 'New Hire Orientation Meeting Date'),1,false, 2350555);
 
 
 
@@ -1628,6 +2056,27 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
             2350555 as created_by_id
      FROM blueraven.user WHERE cancelled_trumpia_date IS NOT NULL);
 
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Confidentiality Date') as custom_field_id,
+            confidentiality_agreement_date,
+            2350555 as created_by_id
+     FROM blueraven.user WHERE confidentiality_agreement_date IS NOT NULL);
+
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Contract Saved Date') as custom_field_id,
+            docusign_saved_date,
+            2350555 as created_by_id
+     FROM blueraven.user WHERE docusign_saved_date IS NOT NULL);
+
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Cancelled T-Sheets Date') as custom_field_id,
+            timesheet_cancel_date,
+            2350555 as created_by_id
+     FROM blueraven.user WHERE timesheet_cancel_date IS NOT NULL);
+
 
 --------------------------------------------------------------------------------
 -- Migrate Customer Data
@@ -1838,33 +2287,61 @@ INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, c
 
 
 
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,2
+     from flow.custom_field cf
+     where cf.field_name = 'Source'
+    );
 
 insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,2
-     from flow.custom_field
-     where id > 72
+     from flow.custom_field cf
+     where cf.field_name = 'Lead Source Detail'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,2
+     from flow.custom_field cf
+     where cf.field_name = 'Hubspot ID'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,2
+     from flow.custom_field cf
+     where cf.field_name = 'Ricochet Lead ID'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,2
+     from flow.custom_field cf
+     where cf.field_name = 'Lead Status'
     );
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (8,73,1,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Customer PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Source'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (8,74,2,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Customer PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Lead Source Detail'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (8,75,3,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Customer PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Hubspot ID'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (8,76,4,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Customer PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Ricochet Lead ID'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (8,77,5,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Customer PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Lead Status'),1,false, 2350555);
+
+
+
 
 -- migrate custom field values
 
@@ -1998,7 +2475,7 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
 -- create Complete Final Design process step
 --------------------------------------------------------------------------------
 -- create the step
-INSERT INTO flow.process_step (process_step_name, company_id, created_by_id)
+/*INSERT INTO flow.process_step (process_step_name, company_id, created_by_id)
 VALUES ('Complete Final Design', 1, 2350555);
 
 update flow.custom_field_group
@@ -2013,7 +2490,7 @@ VALUES ((select id from flow.process where process_name = 'Generic Blueraven Pro
         2350555,
         0,
         true);
-
+*/
 -- create and migrate the necessary project custom fields
 INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
 VALUES ('Cancelled Date',
@@ -2032,17 +2509,24 @@ VALUES ('On Hold',
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (7,78,1,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Cancelled Date'),1,false, 2350555);
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (7,79,2,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'On Hold'),1,false, 2350555);
 
 insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,1
-     from flow.custom_field
-     where id > 77
+     from flow.custom_field cf
+     where cf.field_name = 'Cancelled Date'
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,1
+     from flow.custom_field cf
+     where cf.field_name = 'On Hold'
     );
 
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
@@ -2058,7 +2542,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
             on_hold,
             2350555 as created_by_id
      FROM blueraven.deal WHERE on_hold IS NOT NULL);
-
+/*
 -- create dummy process step status
 INSERT INTO flow.process_step_status_type (process_step_status_type,company_id)
 VALUES ('In Progress',1);  -- TODO make this company-specific, so companies can define their own statuses?
@@ -2142,7 +2626,7 @@ INSERT INTO flow.project_process_step_custom_field_value (project_process_step_i
                              AND dwq.work_queue_deal_ids && '{5}'
      WHERE d.final_design_qa_date IS NOT NULL);
 
-
+*/
 insert into brs.ahj_checklist_type(id, name, archived)
     (select id,
             name,
