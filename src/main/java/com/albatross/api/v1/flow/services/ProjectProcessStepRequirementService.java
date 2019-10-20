@@ -43,8 +43,11 @@ public class ProjectProcessStepRequirementService {
       TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "requirementParamDynamicValues", new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 
-      TypeReference<List<Long>> longRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "intArrayValue", new JsonCollectionDeserializer(longRef, objectMapper));
+      TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValueIds", new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
+
+      TypeReference<List<Integer>> intArrayValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "intArrayValue", new JsonCollectionDeserializer(intArrayValueRef, objectMapper));
     }
   }
 }

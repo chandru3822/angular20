@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
-  private Boolean booleanValue;
+  private Boolean booleanValue, hasListValues;
 
   private Timestamp timestampValue, dateValue;
 
@@ -19,7 +19,7 @@ public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
   private BigDecimal numericValue;
 
-  private Long intValue, dataTypeRequirementId;
+  private Long intValue, dataTypeRequirementId, listOfValueId ;
 
-  private List<Long> intArrayValue;
+  private List<Integer> intArrayValue;
 }
