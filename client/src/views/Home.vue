@@ -58,6 +58,10 @@ export default {
         label: 'AHJ Database',
         path: '/ahj',
         display: true
+      }, {
+        label: 'Schedule',
+        path: '/schedule',
+        display: true
       }]
     }
   },

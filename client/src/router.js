@@ -33,6 +33,10 @@ export default new Router({
         name: 'serverError',
         component: () => import(/* webpackChunkName: "serverError" */ './views/ServerError.vue')
       }, {
+        path: 'schedule',
+        name: 'schedule',
+        component: () => import(/* webpackChunkName: "schedule" */ './views/flow/schedule/Schedule.vue')
+      }, {
         path: 'users',
         name: 'users',
         component: () => import(/* webpackChunkName: "users" */ './views/flow/users/Users.vue')

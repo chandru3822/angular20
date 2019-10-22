@@ -1,0 +1,26 @@
+<sql>
+  <schedule.getAllForCompany>
+    <![CDATA[
+
+    ]]>
+  </schedule.getAllForCompany>
+
+  <schedule.updateSchedule>
+    <![CDATA[
+
+    ]]>
+  </schedule.updateSchedule>
+
+  <schedule.insertSchedule>
+    <![CDATA[
+
+    ]]>
+  </schedule.insertSchedule>
+
+  <schedule.getOne>
+    <![CDATA[
+
+    ]]>
+  </schedule.getOne>
+
+</sql>
