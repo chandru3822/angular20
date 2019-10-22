@@ -374,28 +374,6 @@ insert into brs.ahj(id, name, archived, date_created, created_by_id, date_modifi
 
 SELECT setval('brs.ahj_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj), 1), false);
 
-
-insert into brs.custom_dropdown_screen
-select *
-from blueraven.custom_dropdown_screen;
-
-SELECT setval('brs.custom_dropdown_screen_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.custom_dropdown_screen), 1),
-              false);
-
-insert into brs.custom_dropdown_field(id, field, code, custom_dropdown_screen_id, archived)
-    (select id, field, code, custom_dropdown_screen_id, archived
-     from blueraven.custom_dropdown_field);
-
-SELECT setval('brs.custom_dropdown_field_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.custom_dropdown_field), 1),
-              false);
-
-insert into brs.custom_dropdown_value(id, title, custom_dropdown_field_id, archived, date_created, created_by_id, date_modified, modified_by_id, display_order)
-    (select id, title, custom_dropdown_field_id, archived, created, created_by, updated, updated_by, display_order
-     from blueraven.custom_dropdown_value);
-
-SELECT setval('brs.custom_dropdown_value_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.custom_dropdown_field), 1),
-              false);
-
 insert into brs.ahj_utility(id, name, archived, date_created, date_modified, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id, ac_disconnect_required)
     (select id, name, CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END, date_created, date_updated, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id
      from blueraven.ahj_utility);
