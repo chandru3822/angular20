@@ -630,7 +630,7 @@
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
 
   export default {
@@ -765,7 +765,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (!this.parentObjects || this.parentObjects.length === 0) {
-            const {data} = await getRequest(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
+            const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
             this.parentObjects = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           }

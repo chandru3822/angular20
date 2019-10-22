@@ -196,7 +196,7 @@ import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
-import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'CustomFieldGroup',
@@ -262,7 +262,7 @@ export default {
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
+        const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
             companyObjectTypeId: this.$route.params.id
           }
@@ -278,7 +278,7 @@ export default {
     async fetchAvailableCustomFields (groupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldGroup/getAvailableCustomFields`, {
+        const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
           params: {
             companyObjectTypeId: this.$route.params.id,
             groupId

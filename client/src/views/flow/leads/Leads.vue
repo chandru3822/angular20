@@ -106,7 +106,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import debounce from 'lodash.debounce'
 import { saveAs } from 'file-saver'
 
@@ -158,7 +158,7 @@ export default {
     async getLeads () {
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
       try {
-        const {data} = await getRequest(`/customer/search`, { params: {
+        const {data} = await getRequestWithParams(`/customer/search`, { params: {
             query: this.search,
             page: page - 1,
             size: itemsPerPage
@@ -177,7 +177,7 @@ export default {
       this.dialog = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customer/exportCustomers`, { params: {
+        const {data} = await getRequestWithParams(`/customer/exportCustomers`, { params: {
             query: this.search
         }})
         let blob = new Blob([data], {

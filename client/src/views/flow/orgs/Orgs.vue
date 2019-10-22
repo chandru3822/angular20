@@ -105,7 +105,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar.vue'
   import debounce from 'lodash.debounce'
   import { saveAs } from 'file-saver'
@@ -160,7 +160,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequest(`/org/search`, { params: {
+          const {data} = await getRequestWithParams(`/org/search`, { params: {
               query: this.search,
               page: page - 1,
               size: itemsPerPage
@@ -179,7 +179,7 @@
         this.dialog = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/org/exportOrgs`, { params: {
+          const {data} = await getRequestWithParams(`/org/exportOrgs`, { params: {
               query: this.search
             }})
           let blob = new Blob([data], {

@@ -56,7 +56,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
 
   export default {
@@ -106,7 +106,7 @@
       async getCustomFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldValues/org`, { params: {
+          const {data} = await getRequestWithParams(`/customFieldValues/org`, { params: {
               primaryId: this.orgId
             }})
           this.customFieldGroups = data

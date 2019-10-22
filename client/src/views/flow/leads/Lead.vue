@@ -127,7 +127,7 @@ import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
 export default {
   name: 'Lead',
@@ -181,7 +181,7 @@ export default {
     async getCustomFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldValues/customer`, { params: {
+        const {data} = await getRequestWithParams(`/customFieldValues/customer`, { params: {
           primaryId: this.customerId
         }})
         this.customFieldGroups = data
@@ -221,7 +221,7 @@ export default {
     async getNotes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/note/getCustomerNotes`, { params: {
+        const {data} = await getRequestWithParams(`/note/getCustomerNotes`, { params: {
             primaryId: this.customerId
           }})
         this.notes = data

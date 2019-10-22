@@ -218,7 +218,7 @@
   import draggable from 'vuedraggable'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
@@ -309,7 +309,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (this.addField && this.newFieldType === 'native') {
-            const {data} = await getRequest(`/customFieldGroup/getAvailableCustomFields`, {
+            const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
               params: {
                 objectTypeId,
                 groupId,
@@ -320,7 +320,7 @@
             this.parentObjects = []
             this.ancillaryCustomFields = []
           } else if (this.addField && this.newFieldType === 'ancillary') {
-            const {data} = await getRequest(`/processStep/getParentObjectsWithTypes`, { params: { id: this.processStepId}})
+            const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, { params: { id: this.processStepId}})
             this.selectedAncillaryField = {}
             this.parentObjects = data
             this.availableCustomFields = []

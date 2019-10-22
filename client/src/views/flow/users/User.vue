@@ -56,7 +56,7 @@
   import Snackbar from '@/components/Snackbar.vue'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'User',
@@ -106,7 +106,7 @@
       async getCustomFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldValues/user`, { params: {
+          const {data} = await getRequestWithParams(`/customFieldValues/user`, { params: {
               primaryId: this.userId
             }})
           this.customFieldGroups = data
@@ -133,7 +133,7 @@
       async getNotes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/note/getUserNotes`, { params: {
+          const {data} = await getRequestWithParams(`/note/getUserNotes`, { params: {
               primaryId: this.userId
             }})
           this.notes = data
