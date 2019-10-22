@@ -48,10 +48,6 @@ export default new Router({
         component: () => import (/*webpackChunkName: "newUser" */ './views/flow/users/NewUser.vue'),
         children: []
       }, {
-        path: '/ahjTest',
-        name: 'ahjTest',
-        component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj_Test.vue')
-      }, {
           path: '/ahj',
           name: 'ahj',
           component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')

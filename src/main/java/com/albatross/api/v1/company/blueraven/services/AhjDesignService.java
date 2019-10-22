@@ -32,6 +32,9 @@ public class AhjDesignService {
   @Autowired
   private SecurityService securityService;
 
+  @Autowired
+  private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
+
   public Optional<AhjDesignDetail> getAhjDesignDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
@@ -72,35 +75,14 @@ public class AhjDesignService {
     params.put("windSpeed", design.getWindSpeed());
     params.put("roofSnowLoad", design.getRoofSnowLoad());
 
-    params.put("electricalCodeId", design.getElectricalCodeId());
-    params.put("buildingCodeId", design.getBuildingCodeId());
-    params.put("electricalEngineerId", design.getElectricalEngineerId());
-    params.put("structuralEngineerId", design.getStructuralEngineerId());
-    params.put("stampTypeId", design.getStampTypeId());
-    params.put("standardRackingEquipmentId", design.getStandardRackingEquipmentId());
-    params.put("raillessLandscapeAttachmentSpacingId", design.getRaillessLandscapeAttachmentSpacingId());
-    params.put("fireSetbacksId", design.getFireSetbacksId());
-    params.put("raillessPortraitAttachmentSpacingId", design.getRaillessPortraitAttachmentSpacingId());
-    params.put("standardConduitRunId", design.getStandardConduitRunId());
-    params.put("warningLabelsId", design.getWarningLabelsId());
-    params.put("supplementalGroundRodRequiredId", design.getSupplementalGroundRodRequiredId());
-    params.put("loadStandardId", design.getLoadStandardId());
-    params.put("woodStandardId", design.getWoodStandardId());
-    params.put("ultId", design.getUltId());
-    params.put("seismicDesignCategoryId", design.getSeismicDesignCategoryId());
-    params.put("roofSnowLoadAhjOverrideId", design.getRoofSnowLoadAhjOverrideId());
-    params.put("snowLoadReductionAllowedId", design.getSnowLoadReductionAllowedId());
-    params.put("windExposureFactorId", design.getWindExposureFactorId());
-    params.put("windExposureFactorAhjOverrideId", design.getWindExposureFactorAhjOverrideId());
-    params.put("riskCategoryId", design.getRiskCategoryId());
-    params.put("structuralPostInstallLetterRequiredId", design.getStructuralPostInstallLetterRequiredId());
-
     if (designId == null) {
       designId = sqlCache.updateReturningId("ahj.design.create", params, "id").longValue();
     } else {
       params.put("id", designId);
       sqlCache.update("ahj.design.update", params);
     }
+
+    blueravenCustomFieldGroupService.handleSavingCustomFieldValues(design.getCustomFieldGroups(), designId);
 
     HashMap<String, Object> keyParam = new HashMap<>();
     keyParam.put("id", designId);

@@ -15,7 +15,7 @@
     }),
     async created () {
       this.ahjId = parseInt(this.$route.params.ahjId)
-      const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/design`)
+      const {data} = await getRequest(`/ahj/${this.ahjId}/design`, 'blueraven')
       this.ahjDesign = cloneDeep(data)
       console.log("AHJ Design:", this.ahjDesign)
     }

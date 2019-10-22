@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import { UserStore } from '@/stores/UserStore'
 import { AppStore } from '@/stores/AppStore'
 import { MAX_FILE_SIZE } from '@/helpers/helpers'
-import { postRequest, deleteRequest, getRequest } from "./helpers/helpers";
+import {postRequest, deleteRequest, getRequest, getRequestWithParams} from "./helpers/helpers";
 import {AppMutations} from "./stores/AppStore";
 
 Vue.use(Vuex)
@@ -69,13 +69,13 @@ const store = new Vuex.Store({
       reader.readAsArrayBuffer(file)
     },
     [Actions.FILE_GET_ONE]: async (context, { sourceId, attachmentTypeId, callback }) => {
-      const {data, status} = await getRequest(`/attachment/getOne`, { params: {
+      const {data, status} = await getRequestWithParams(`/attachment/getOne`, { params: {
         attachmentTypeId, sourceId
       }})
       callback(data, status)
     },
     [Actions.FILE_GET_LIST]: async (context, { sourceId, attachmentTypeId, callback }) => {
-      const {data, status} = await getRequest(`/attachment`, { params: {
+      const {data, status} = await getRequestWithParams(`/attachment`, { params: {
           attachmentTypeId, sourceId
         }})
       callback(data, status)

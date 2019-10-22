@@ -33,6 +33,9 @@ public class AhjPermitService {
   @Autowired
   private SecurityService securityService;
 
+  @Autowired
+  private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
+
   public Optional<AhjPermitDetail> getAhjPermitDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
@@ -72,35 +75,6 @@ public class AhjPermitService {
     params.put("currentUser", currentUser.getId());
     params.put("otherLicense", permit.getOtherLicense());
     params.put("otherLicenseExpirationDate", permit.getOtherLicenseExpirationDate());
-
-    // NOTES
-    params.put("submissionNote", permit.getSubmissionNote());
-    params.put("revisionNote", permit.getRevisionNote());
-    params.put("asBuiltNote", permit.getAsBuiltNote());
-    params.put("deliveryNote", permit.getDeliveryNote());
-
-    params.put("submittalTypeId", permit.getSubmittalTypeId());
-    params.put("revisionSubmittalTypeId", permit.getRevisionSubmittalTypeId());
-    params.put("asBuiltSubmittalTypeId", permit.getAsBuiltSubmittalTypeId());
-    params.put("deliveryPickupTypeId", permit.getDeliveryPickupTypeId());
-    params.put("submissionPaymentTypeId", permit.getSubmissionPaymentTypeId());
-    params.put("revisionPaymentTypeId", permit.getRevisionPaymentTypeId());
-    params.put("asBuiltPaymentTypeId", permit.getAsBuiltPaymentTypeId());
-    params.put("followUpPaymentTypeId", permit.getFollowUpPaymentTypeId());
-    params.put("deliveryPaymentTypeId", permit.getDeliveryPaymentTypeId());
-    params.put("hoaApprovalRequiredTypeId", permit.getHoaApprovalRequiredTypeId());
-    params.put("nemApprovalRequiredTypeId", permit.getNemApprovalRequiredTypeId());
-    params.put("submittalTypeOther", permit.getSubmittalTypeOther());
-    params.put("revisionSubmittalTypeOther", permit.getRevisionSubmittalTypeOther());
-    params.put("asBuiltSubmittalTypeOther", permit.getAsBuiltSubmittalTypeOther());
-    params.put("deliveryPickupTypeOther", permit.getDeliveryPickupTypeOther());
-    params.put("submissionPaymentTypeOther", permit.getSubmissionPaymentTypeOther());
-    params.put("revisionPaymentTypeOther", permit.getRevisionPaymentTypeOther());
-    params.put("asBuiltPaymentTypeOther", permit.getAsBuiltPaymentTypeOther());
-    params.put("followUpPaymentTypeOther", permit.getFollowUpPaymentTypeOther());
-    params.put("deliveryPaymentTypeOther", permit.getDeliveryPaymentTypeOther());
-    params.put("hoaApprovalRequiredTypeOther", permit.getHoaApprovalRequiredTypeOther());
-    params.put("nemApprovalRequiredTypeOther", permit.getNemApprovalRequiredTypeOther());
     params.put("revisionFeeAmount", permit.getRevisionFeeAmount());
     params.put("asBuiltFeeAmount", permit.getAsBuiltFeeAmount());
     params.put("followUpFeeAmount", permit.getFollowUpFeeAmount());
@@ -108,12 +82,23 @@ public class AhjPermitService {
     params.put("approvalTimeline", permit.getApprovalTimeline());
     params.put("documentsAvailable", permit.getDocumentsAvailable());
 
+    // NOTES
+    params.put("submissionNote", permit.getSubmissionNote());
+    params.put("revisionNote", permit.getRevisionNote());
+    params.put("asBuiltNote", permit.getAsBuiltNote());
+    params.put("deliveryNote", permit.getDeliveryNote());
+
+    Long pId;
     if (permitId == null) {
-      sqlCache.update("ahj.permit.create", params);
+      pId = permitId;
+      sqlCache.updateReturningId("ahj.permit.create", params, "id");
     } else {
+      pId = permitId;
       params.put("id", permitId);
       sqlCache.update("ahj.permit.update", params);
     }
+
+    blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), pId);
 
     return getAhjPermitDetailByAhjId(ahjId);
   }

@@ -63,7 +63,7 @@
     },
     async created () {
       this.ahjId = parseInt(this.$route.params.ahjId)
-      const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}`)
+      const {data} = await getRequest(`/ahj/${this.ahjId}`, 'blueraven')
       this.ahj = cloneDeep(data)
     }
   }

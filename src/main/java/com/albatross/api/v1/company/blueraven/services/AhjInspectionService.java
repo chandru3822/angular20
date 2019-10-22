@@ -32,6 +32,9 @@ public class AhjInspectionService {
   @Autowired
   private SecurityService securityService;
 
+  @Autowired
+  private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
+
   public Optional<AhjInspectionDetail> getAhjInspectionDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
@@ -95,50 +98,14 @@ public class AhjInspectionService {
     params.put("documentationNote", inspection.getDocumentationNote());
     params.put("mpuInspectionNote", inspection.getMpuInspectionNote());
 
-    //custom fields
-    params.put("homeownerRequired", inspection.getHomeownerRequired());
-    params.put("brsTechRequired", inspection.getBrsTechRequired());
-
-    //all the various type-related fields
-    params.put("schedulingMethodTypeId", inspection.getSchedulingMethodTypeId());
-    params.put("schedulingMethodTypeOther", inspection.getSchedulingMethodTypeOther());
-    params.put("handyInformationTypeId", inspection.getHandyInformationTypeId());
-    params.put("handyInformationTypeOther", inspection.getHandyInformationTypeOther());
-    params.put("schedulingLeadTimeTypeId", inspection.getSchedulingLeadTimeTypeId());
-    params.put("schedulingLeadTimeTypeOther", inspection.getSchedulingLeadTimeTypeOther());
-    params.put("inspectionCapacityTypeId", inspection.getInspectionCapacityTypeId());
-    params.put("inspectionCapacityTypeOther", inspection.getInspectionCapacityTypeOther());
-    params.put("siteAccessTypeId", inspection.getSiteAccessTypeId());
-    params.put("siteAccessTypeOther", inspection.getSiteAccessTypeOther());
-    params.put("roughInspectionRequiredTypeId", inspection.getRoughInspectionRequiredTypeId());
-    params.put("roughInspectionRequiredTypeOther", inspection.getRoughInspectionRequiredTypeOther());
-    params.put("midpointInspectionLeadTimeTypeId", inspection.getMidpointInspectionLeadTimeTypeId());
-    params.put("midpointInspectionLeadTimeTypeOther", inspection.getMidpointInspectionLeadTimeTypeOther());
-    params.put("soladeckAccessTypeId", inspection.getSoladeckAccessTypeId());
-    params.put("soladeckAccessTypeOther", inspection.getSoladeckAccessTypeOther());
-    params.put("placardRequiredTypeId", inspection.getPlacardRequiredTypeId());
-    params.put("placardRequiredTypeOther", inspection.getPlacardRequiredTypeOther());
-    params.put("requiredInspectionTypes", inspection.getRequiredInspectionTypes());
-    params.put("representativeRequiredOnsiteTypeId", inspection.getRepresentativeRequiredOnsiteTypeId());
-    params.put("representativeRequiredOnsiteTypeOther", inspection.getRepresentativeRequiredOnsiteTypeOther());
-    params.put("specialEquipmentTypeId", inspection.getSpecialEquipmentTypeId());
-    params.put("specialEquipmentTypeOther", inspection.getSpecialEquipmentTypeOther());
-    params.put("plansRequiredTypeId", inspection.getPlansRequiredTypeId());
-    params.put("plansRequiredTypeOther", inspection.getPlansRequiredTypeOther());
-    params.put("specialDocumentsTypeId", inspection.getSpecialDocumentsTypeId());
-    params.put("specialDocumentsTypeOther", inspection.getSpecialDocumentsTypeOther());
-    params.put("resultsDocumentationTypeId", inspection.getResultsDocumentationTypeId());
-    params.put("resultsDocumentationTypeOther", inspection.getResultsDocumentationTypeOther());
-    params.put("reinspectionFeeTypeId", inspection.getReinspectionFeeTypeId());
-    params.put("reinspectionFeeTypeOther", inspection.getReinspectionFeeTypeOther());
-
-
     if (inspectionId == null) {
       inspectionId = sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
     } else {
       params.put("id", inspectionId);
       sqlCache.update("ahj.inspection.update", params);
     }
+
+    blueravenCustomFieldGroupService.handleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspectionId);
 
     HashMap<String, Object> keyParam = new HashMap<>();
     keyParam.put("id", inspectionId);

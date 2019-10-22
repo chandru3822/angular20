@@ -88,8 +88,11 @@ insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
 values (9, 'Design Utility Requirements', 2, 4);
 insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
 values (10, 'Submission Details', 2, 5);
+-- this one is out of order because i forgot to add it and didn't want to go back and fix the id's i had already mapped
 insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
-values (11, 'PTO Details', 2,6);
+values (23, 'Approval Details', 2, 6);
+insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
+values (11, 'PTO Details', 2,7);
 -- ahj_design (1)
 insert into brs.custom_field_group(id, group_name, object_type_id, group_order)
 values (12, 'Codes', 1, 1);
@@ -1753,7 +1756,7 @@ with parent as (
      rp_cf as ( insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
          ( select p.id, 'Rebate Program', 7, now(), 99999999, false from parent p) returning id),
      rp_cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
-         (select 1, rp_cf.id, 1, false, now(), 99999999 from rp_cf) returning id),
+         (select 7, rp_cf.id, 1, false, now(), 99999999 from rp_cf) returning id),
      rp_cfv as (insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
          (select util.id,
                  (select id from rp_cfga),
@@ -1767,7 +1770,7 @@ with parent as (
      sr_cf as ( insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
          ( select p.id, 'Signature Req''d Prior to Submission', 7, now(), 99999999, false from parent p) returning id),
      sr_cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
-         (select 1, sr_cf.id, 1, false, now(), 99999999 from sr_cf) returning id),
+         (select 8, sr_cf.id, 1, false, now(), 99999999 from sr_cf) returning id),
      sr_cfv as (insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
          (select util.id,
                  (select id from sr_cfga),
@@ -1781,7 +1784,7 @@ with parent as (
      cs_cf as ( insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
          ( select p.id, 'Customer Signature Required for Resubmission', 7, now(), 99999999, false from parent p) returning id),
      cs_cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
-         (select 1, cs_cf.id, 1, false, now(), 99999999 from cs_cf) returning id),
+         (select 23, cs_cf.id, 1, false, now(), 99999999 from cs_cf) returning id),
      cs_cfv as (insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
          (select util.id,
                  (select id from cs_cfga),
@@ -1795,7 +1798,7 @@ with parent as (
      if_cf as ( insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
          ( select p.id, 'Interconnection Fee', 7, now(), 99999999, false from parent p) returning id),
      if_cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
-        (select 1, if_cf.id, 1, false, now(), 99999999 from if_cf) returning id),
+        (select 10, if_cf.id, 1, false, now(), 99999999 from if_cf) returning id),
      if_cfv as (insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
         (select util.id,
                 (select id from if_cfga),
@@ -1809,7 +1812,7 @@ with parent as (
      ir_cf as ( insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
          ( select p.id, 'Utility Inspection Required', 7, now(), 99999999, false from parent p) returning id),
      ir_cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
-        (select 1, ir_cf.id, 1, false, now(), 99999999 from ir_cf) returning id)
+        (select 11, ir_cf.id, 1, false, now(), 99999999 from ir_cf) returning id)
     -- ir_cfv as (
          insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
         (select util.id,

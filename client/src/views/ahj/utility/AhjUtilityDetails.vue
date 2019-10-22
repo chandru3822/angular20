@@ -42,7 +42,7 @@
     }),
     async created () {
       this.ahjUtilityId = parseInt(this.$route.params.ahjUtilityId)
-      const {data} = await getRequest(`/api/v1/company/blueraven/ahjUtility/${this.ahjUtilityId}`)
+      const {data} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
       this.ahjUtility = cloneDeep(data)
       console.log("AHJ Utility:", this.ahjUtility)
     }

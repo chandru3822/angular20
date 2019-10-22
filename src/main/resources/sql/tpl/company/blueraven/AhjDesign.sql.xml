@@ -177,18 +177,9 @@
     </ahj.design.createBlank>
     <ahj.design.create>
         <![CDATA[
-            INSERT INTO brs.ahj_design (ahj_id, codes, note, reference_standards, electrical_code_id,
-                building_code_id, electrical_engineer_id, structural_engineer_id, stamp_type_id, standard_racking_equipment_id,
-                railless_landscape_attachment_spacing_id, fire_setbacks_id, railless_portrait_attachment_spacing_id,
-                standard_conduit_run_id, warning_labels_id, supplemental_ground_rod_required_id, load_standard_id, wood_standard_id,
-                ground_snow_load, wind_speed, ult_id, seismic_design_category_id, roof_snow_load, roof_snow_load_ahj_override_id,
-                snow_load_reduction_allowed_id, wind_exposure_factor_id, wind_exposure_factor_ahj_override_id, risk_category_id,
+            INSERT INTO brs.ahj_design (ahj_id, codes, note, reference_standards, ground_snow_load, wind_speed, roof_snow_load,
                 archived, date_created, created_by_id)
-            VALUES (:ahjId, :codes, :note, :referenceStandards, :electricalCodeId, :buildingCodeId, :electricalEngineerId,
-                :structuralEngineerId, :stampTypeId, :standardRackingEquipmentId, :raillessLandscapeAttachmentSpacingId, :fireSetbacksId,
-                :raillessPortraitAttachmentSpacingId, :standardConduitRunId, :warningLabelsId, :supplementalGroundRodRequiredId,
-                :loadStandardId, :woodStandardId, :groundSnowLoad, :windSpeed, :ultId, :seismicDesignCategoryId, :roofSnowLoad,
-                :roofSnowLoadAhjOverrideId, :snowLoadReductionAllowedId, :windExposureFactorId, :windExposureFactorAhjOverrideId, :riskCategoryId,
+            VALUES (:ahjId, :codes, :note, :referenceStandards, :groundSnowLoad, :windSpeed, :roofSnowLoad,
                 false, now(), :currentUser)
         ]]>
     </ahj.design.create>
@@ -199,31 +190,9 @@
                 codes = :codes,
                 note = :note,
                 reference_standards = :referenceStandards,
-                electrical_code_id = :electricalCodeId,
-                building_code_id = :buildingCodeId,
-                electrical_engineer_id = :electricalEngineerId,
-                structural_engineer_id = :structuralEngineerId,
-                stamp_type_id = :stampTypeId,
-                standard_racking_equipment_id = :standardRackingEquipmentId,
-                railless_landscape_attachment_spacing_id = :raillessLandscapeAttachmentSpacingId,
-                fire_setbacks_id = :fireSetbacksId,
-                railless_portrait_attachment_spacing_id = :raillessPortraitAttachmentSpacingId,
-                standard_conduit_run_id = :standardConduitRunId,
-                warning_labels_id = :warningLabelsId,
-                supplemental_ground_rod_required_id = :supplementalGroundRodRequiredId,
-                load_standard_id = :loadStandardId,
-                wood_standard_id = :woodStandardId,
                 ground_snow_load = :groundSnowLoad,
                 wind_speed = :windSpeed,
-                ult_id = :ultId,
-                seismic_design_category_id = :seismicDesignCategoryId,
                 roof_snow_load = :roofSnowLoad,
-                roof_snow_load_ahj_override_id = :roofSnowLoadAhjOverrideId,
-                snow_load_reduction_allowed_id = :snowLoadReductionAllowedId,
-                wind_exposure_factor_id = :windExposureFactorId,
-                wind_exposure_factor_ahj_override_id = :windExposureFactorAhjOverrideId,
-                risk_category_id = :riskCategoryId,
-                structural_post_install_letter_required_id = :structuralPostInstallLetterRequiredId,
                 date_modified = now(),
                 modified_by_id = :currentUser
             WHERE id = :id

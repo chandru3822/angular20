@@ -22,39 +22,26 @@
             Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-model="ahjPermit.submittalTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Submittal Method"
-                      filled
-            ></v-select>
-            <v-select v-model="ahjPermit.hoaApprovalRequiredTypeId"
-                      :items="approvalRequiredOptions"
-                      item-text="name"
-                      item-value="id"
-                      label="HOA Approval Required for Submission"
-                      filled
-            ></v-select>
-            <v-select v-model="ahjPermit.nemApprovalRequiredTypeId"
-                      :items="approvalRequiredOptions"
-                      item-text="name"
-                      item-value="id"
-                      label="NEM Approval Required for Submission"
-                      filled
-            ></v-select>
+            <div v-for="item in getCustomFieldsForGroup(1)">
+              <v-select
+                        v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+              ></v-text-field>
+            </div>
             <v-text-field v-model="ahjPermit.depositAmount"
                           label="Deposit Amount"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.submissionPaymentTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Payment Method"
-                      filled
-            ></v-select>
             <v-row>
               <v-col cols="6">
                 <v-text-field v-model="ahjPermit.businessLicense"
@@ -68,7 +55,6 @@
                         :nudge-right="40"
                         transition="scale-transition"
                         offset-y
-                        full-width
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.businessLicenseExpirationDate"
@@ -98,7 +84,6 @@
                         :nudge-right="40"
                         transition="scale-transition"
                         offset-y
-                        full-width
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.contractorLicenseExpirationDate"
@@ -128,7 +113,6 @@
                         :nudge-right="40"
                         transition="scale-transition"
                         offset-y
-                        full-width
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.otherLicenseExpirationDate"
@@ -170,11 +154,12 @@
             Revision Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-model="ahjPermit.revisionSubmittalTypeId"
-                      :items="submittalMethods"
+            <v-select v-for="item in getCustomFieldsForGroup(2)"
+                      v-model="item.intValue"
+                      :items="item.listOfValues"
                       item-text="name"
                       item-value="id"
-                      label="Submittal Method"
+                      :label="item.fieldName"
                       filled
             ></v-select>
             <v-text-field v-model="ahjPermit.revisionFeeAmount"
@@ -182,13 +167,6 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.revisionPaymentTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Payment Method"
-                      filled
-            ></v-select>
             <AhjChecklist v-if="dataReady"
                           title="Revision Submission Checklist"
                           :checklistTypeId="2"
@@ -214,11 +192,12 @@
             As-Built Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-model="ahjPermit.asBuiltSubmittalTypeId"
-                      :items="submittalMethods"
+            <v-select v-for="item in getCustomFieldsForGroup(3)"
+                      v-model="item.intValue"
+                      :items="item.listOfValues"
                       item-text="name"
                       item-value="id"
-                      label="Submittal Method"
+                      :label="item.fieldName"
                       filled
             ></v-select>
             <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
@@ -226,13 +205,6 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.asBuiltPaymentTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Payment Method"
-                      filled
-            ></v-select>
             <AhjChecklist v-if="dataReady"
                           title="As-Built Submission Checklist"
                           :checklistTypeId="3"
@@ -267,11 +239,12 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.followUpPaymentTypeId"
-                      :items="submittalMethods"
+            <v-select v-for="item in getCustomFieldsForGroup(4)"
+                      v-model="item.intValue"
+                      :items="item.listOfValues"
                       item-text="name"
                       item-value="id"
-                      label="Payment Method"
+                      :label="item.fieldName"
                       filled
             ></v-select>
             <v-text-field v-model="ahjPermit.documentsAvailable"
@@ -287,11 +260,12 @@
             Delivery Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-model="ahjPermit.deliveryPickupTypeId"
-                      :items="submittalMethods"
+            <v-select v-for="item in getCustomFieldsForGroup(5)"
+                      v-model="item.intValue"
+                      :items="item.listOfValues"
                       item-text="name"
                       item-value="id"
-                      label="Pickup Method"
+                      :label="item.fieldName"
                       filled
             ></v-select>
             <v-text-field v-model="ahjPermit.deliveryFeeAmount"
@@ -299,13 +273,6 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.deliveryPaymentTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Payment Method"
-                      filled
-            ></v-select>
             <AhjDocument v-if="dataReady"
                          title="Documents Required for Inspection"
                          :documentTypeId="1"
@@ -463,7 +430,7 @@
         ></AhjContact>
       </v-col>
     </v-row>
-
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
 
@@ -474,8 +441,10 @@
   import AhjContact from './components/AhjContacts.vue'
   import AhjDocument from './components/AhjDocuments.vue'
   import AhjPermitLink from './components/AhjPermitLinks.vue'
+  import Snackbar from '@/components/Snackbar.vue'
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequest, putRequest } from '@/helpers/helpers'
+  import { getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
+  import {getRequestWithParams} from "../../helpers/helpers";
 
   export default {
     name: 'ahjPermit',
@@ -483,10 +452,13 @@
       AhjChecklist,
       AhjContact,
       AhjDocument,
-      AhjPermitLink
+      AhjPermitLink,
+      Snackbar
     },
     data: () => ({
+      snackbar: {},
       dataReady: false,
+      customFieldGroupAssignments: [],
       approvalRequiredOptions: [{ id: null, name: '' }],
       submittalMethods: [{ id: null, name: '' }],
       timePeriods: [
@@ -594,17 +566,57 @@
         this.ahjPermit.contractorLicenseExpirationDate = this.ahjPermit.contractorLicenseExpirationDate ? moment(this.ahjPermit.contractorLicenseExpirationDate).format('YYYY-MM-DD') : null
         this.ahjPermit.otherLicenseExpirationDate = this.ahjPermit.otherLicenseExpirationDate ? moment(this.ahjPermit.otherLicenseExpirationDate).format('YYYY-MM-DD') : null
       },
+      async getCustomFieldGroupAssignmentsForScreen() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {
+            sourceId: this.ahjPermit.id,
+            objectTypeId: 4
+          }
+          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          this.customFieldGroupAssignments = cloneDeep(data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getAhjPermit() {
-        const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit`)
-        this.ahjPermit = cloneDeep(data)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/ahj/${this.ahjId}/permit`, 'blueraven')
+          this.ahjPermit = cloneDeep(data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving AHJ')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getCustomFieldsForGroup(groupId) {
+        let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
+        return match ? match.customFieldValues : []
+      },
+      showOtherField(int, list) {
+        let match = list.find(l => l.id === int)
+        return match.showOther
       },
       async getDocuments() {
-        const params = {
-          sourceId: this.ahjPermit.id,
-          attachmentSourceTypeId: 1
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {
+            sourceId: this.ahjPermit.id,
+            attachmentSourceTypeId: 1
+          }
+          const {data} = await getRequestWithParams('/document/getSourceAttachments', {params})
+          this.documents = cloneDeep(data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Documents')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        const {data} = await getRequest('/api/v1/flow/document/getSourceAttachments', {params})
-        this.documents = cloneDeep(data)
       },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -616,29 +628,35 @@
         })
       },
       async saveAhjPermit() {
-        const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit)
-        this.ahjPermit = cloneDeep(data)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.ahjPermit.customFieldGroups = this.customFieldGroupAssignments
+          const {data} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
+          this.ahjPermit = cloneDeep(data)
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ Permit Saved')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Permit')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async created() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.ahjId = parseInt(this.$route.params.ahjId)
 
-      const {data} = await getRequest('/api/v1/company/blueraven/ahj/getInspectionTypeFields')
-      this.types = cloneDeep(data[0])
-      this.types.simple_list.forEach(item => {
-        this.approvalRequiredOptions.push(item)
-      })
-      this.types.submit_types.forEach(item => {
-        this.submittalMethods.push(item)
-      })
 
       this.getAhjPermit().then(() => {
         this.reformatDates()
-        this.getDocuments().then(() => {
-          this.dataReady = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        })
+        this.getCustomFieldGroupAssignmentsForScreen()
+        this.dataReady = true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        // turned off for now.
+        // this.getDocuments().then(() => {
+        //   this.dataReady = true
+        //   this.$store.commit(AppMutations.SET_LOADING, false)
+        // })
       })
     }
   }

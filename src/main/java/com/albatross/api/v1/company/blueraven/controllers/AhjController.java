@@ -43,8 +43,4 @@ public class AhjController {
     ahjService.deleteAhj(id);
   }
 
-  @GetMapping(value = "/getInspectionTypeFields")
-  public String getInspectionTypeFields() {
-    return ahjService.getInspectionTypeFields();
-  }
 }

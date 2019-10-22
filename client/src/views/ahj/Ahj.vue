@@ -164,12 +164,14 @@
         </v-col>
       </v-row>
     </v-col>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import { mapState } from 'vuex'
   import { AppMutations } from '@/stores/AppStore'
 
@@ -186,8 +188,12 @@
 
   export default {
     name: 'ahjs',
+    components: {
+      Snackbar
+    },
     data: () => ({
       FILTER_TYPE,
+      snackbar: {},
       tabs: [
         {
           label: 'AHJ',
@@ -264,18 +270,34 @@
     },
     methods: {
       async fetchAhjs () {
-        const {data} = await getRequest('/api/v1/company/blueraven/ahj')
-        this.ahjs = cloneDeep(data)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest('/ahj', 'blueraven')
+          this.ahjs = cloneDeep(data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getActiveMetroAreas () {
-        const {data} = await getRequest('/api/v1/company/blueraven/metro/getActive')
-        data.forEach(item => {
-          let option = {
-            text: item.metroArea + ' (' + item.area + ')',
-            value: item.id
-          }
-          this.metroAreas.push(option)
-        })
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest('/metro/getActive', 'blueraven')
+          data.forEach(item => {
+            let option = {
+              text: item.metroArea + ' (' + item.area + ')',
+              value: item.id
+            }
+            this.metroAreas.push(option)
+          })
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       initFilters () {
         this.ahjFilters = cloneDeep(FILTER_DEFAULTS)
@@ -303,10 +325,27 @@
         this.ahjDeleteDialog = false
       },
       async saveAhj () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         if (!this.editedItem.id) {
-          await postRequest('/api/v1/company/blueraven/ahj', this.editedItem)
+          try {
+            await postRequest('/ahj', this.editedItem, 'blueraven')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ Created')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Creating AHJ')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         } else {
-          await putRequest(`/api/v1/company/blueraven/ahj/${this.editedItem.id}`, this.editedItem)
+          try {
+            await putRequest(`/ahj/${this.editedItem.id}`, this.editedItem, 'blueraven')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ Saved')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving AHJ')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
 
         this.close()
@@ -316,12 +355,22 @@
         this.editedItem = {}
       },
       async deleteAhj (id) {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${id}`)
-        this.close()
-        this.initFilters()
-        this.fetchAhjs()
-        this.fetchAhjSearchFilters()
-        this.ahjToDelete = {}
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/ahj/${id}`, 'blueraven')
+          this.close()
+          this.initFilters()
+          this.fetchAhjs()
+          this.fetchAhjSearchFilters()
+          this.ahjToDelete = {}
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting AHJ')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+
       },
       fetchAhjSearchFilters () {
         let ahjNames = []

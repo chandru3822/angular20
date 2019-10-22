@@ -235,11 +235,11 @@
     },
     methods: {
       async fetchAhjUtilities () {
-        const {data} = await getRequest('/api/v1/company/blueraven/ahjUtility/list/all')
+        const {data} = await getRequest('/ahjUtility/list/all', 'blueraven')
         this.ahjUtilities = cloneDeep(data)
       },
       async getActiveMetroAreas () {
-        const {data} = await getRequest('/api/v1/company/blueraven/metro/getActive')
+        const {data} = await getRequest('/metro/getActive', 'blueraven')
         data.forEach(item => {
           let option = {
             text: item.metroArea + ' (' + item.area + ')',
@@ -268,9 +268,9 @@
       },
       async saveAhjUtility () {
         if (this.addMode) {
-          await postRequest('/api/v1/company/blueraven/ahjUtility', this.editedItem)
+          await postRequest('/ahjUtility', this.editedItem, 'blueraven')
         } else {
-          await putRequest('/api/v1/company/blueraven/ahjUtility/simpleUpdate', this.editedItem)
+          await putRequest('/ahjUtility/simpleUpdate', this.editedItem, 'blueraven')
         }
 
         this.close()

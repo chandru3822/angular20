@@ -95,11 +95,6 @@ public class AhjService {
     return sqlCache.get("ahj.findById", params, AhjSummary.class);
   }
 
-  public String getInspectionTypeFields() {
-    Optional<String> results = sqlCache.get("ahj.getInspectionTypeFields", Collections.emptyMap(), new SingleColumnRowMapper<>(String.class));
-    return results.orElse("");
-  }
-
   // CHECKLISTS
   private Optional<AhjChecklistItem> getChecklistItemById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
