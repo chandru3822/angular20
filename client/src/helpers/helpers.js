@@ -1,10 +1,12 @@
 import axios from 'axios'
 
-const {VUE_APP_BASE_API} = process.env
+const {VUE_APP_BASE_API, VUE_MAPBOX_ACCESS_TOKEN, VUE_MAPBOX_STYLE} = process.env
 
 export const VUE_BASE_API = VUE_APP_BASE_API
 
 export const VUE_APP_API_PATH = '/api/v1'
+export const MAPBOX_ACCESS_TOKEN = VUE_MAPBOX_ACCESS_TOKEN || '***REMOVED***'
+export const MAPBOX_STYLE = VUE_MAPBOX_STYLE || 'mapbox://styles/mapbox/streets-v10'
 
 // constants
 export const IS_MOBILE = window.innerWidth <= 768

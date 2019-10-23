@@ -173,7 +173,7 @@ CREATE TABLE if not exists brs.list_of_value
     date_modified   timestamp without time zone,
     created_by_id  integer      not null,
     modified_by_id integer,
-    archived       boolean      default false,
+    archived       boolean   not null   default false,
     CONSTRAINT brs_list_of_value_pk PRIMARY KEY (id),
     CONSTRAINT brs_lov_created_by_id_fk FOREIGN KEY (created_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE

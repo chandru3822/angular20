@@ -169,7 +169,9 @@ label[for="adminOriginatorSelect"] {
   font-size: 30px;
   font-weight: 600;
 }
-
+.underline .v-btn__content{
+  text-decoration: underline;
+}
 .fix-opacity {
   opacity: 100 !important;
 }

@@ -15,6 +15,75 @@ from blueraven.state;
 
 SELECT setval('flow.state_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.state), 1), false);
 
+insert into flow.company_state(state_id, company_id, map_latitude, map_longitude, map_zoom, active)
+    (
+        select s.id, 1, s.map_latitude, s.map_longitude, s.map_zoom, s.active_flag
+        from flow.state s
+        where ( active_flag is true OR map_latitude is not null OR map_longitude is not null OR map_zoom is not null)
+    );
+
+alter table flow.state
+    drop column if exists active_flag;
+
+update flow.state as s
+set map_zoom = 8.00000000000,
+    map_latitude = c.lat,
+    map_longitude = c.long
+from (values
+      (1,'Alabama',         32.7794, -86.8287),
+      (2,'Alaska',          64.0685, -152.2782),
+      (3,'Arizona',         34.2744, -111.6602),
+      (4,'Arkansas',        34.8938, -92.4426),
+      (5,'California',      37.1841, -119.4696),
+      (6,'Colorado',        38.9972, -105.5478),
+      (7,'Connecticut',     41.6219, -72.7273),
+      (8,'Delaware',        38.9896, -75.5050),
+      (9,'Florida',         28.6305, -82.4497),
+      (10,'Georgia',        32.6415, -83.4426),
+      (11,'Hawaii',         20.2927, -156.3737),
+      (12,'Idaho',          44.3509, -114.6130),
+      (13,'Illinois',       40.0417, -89.1965),
+      (14,'Indiana',        39.8942, -86.2816),
+      (15,'Iowa',           42.0751, -93.4960),
+      (16,'Kansas',         38.4937, -98.3804),
+      (17,'Kentucky',       37.5347, -85.3021),
+      (18,'Louisiana',      31.0689, -91.9968),
+      (19,'Maine',          45.3695, -69.2428),
+      (20,'Maryland',       39.0550, -76.7909),
+      (21,'Massachusetts',  42.2596, -71.8083),
+      (22,'Michigan',       44.3467, -85.4102),
+      (23,'Minnesota',      46.2807, -94.3053),
+      (24,'Mississippi',    32.7364, -89.6678),
+      (25,'Missouri',       38.3566, -92.4580),
+      (26,'Montana',        47.0527, -109.6333),
+      (27,'Nebraska',       41.5378, -99.7951),
+      (28,'Nevada',         39.3289, -116.6312),
+      (29,'New Hampshire',  43.6805, -71.5811),
+      (30,'New Jersey',     40.1907, -74.6728),
+      (31,'New Mexico',     34.4071, -106.1126),
+      (32,'New York',       42.9538, -75.5268),
+      (33,'North Carolina', 35.5557, -79.3877),
+      (34,'North Dakota',   47.4501, -100.4659),
+      (35,'Ohio',           40.2862, -82.7937),
+      (36,'Oklahoma',       35.5889, -97.4943),
+      (37,'Oregon',         43.9336, -120.5583),
+      (38,'Pennsylvania',   40.8781, -77.7996),
+      (39,'Rhode Island',   41.6762, -71.5562),
+      (40,'South Carolina', 33.9169, -80.8964),
+      (41,'South Dakota',   44.4443, -100.2263),
+      (42,'Tennessee',      35.8580, -86.3505),
+      (43,'Texas',          31.4757, -99.3312),
+      (44,'Utah',           39.3055, -111.6703),
+      (45,'Vermont',        44.0687, -72.6658),
+      (46,'Virginia',       37.5215, -78.8537),
+      (47,'Washington',     47.3826, -120.4472),
+      (48,'West Virginia',  38.6409, -80.6227),
+      (49,'Wisconsin',      44.6243, -89.9941),
+      (50,'Wyoming',        42.9957, -107.5512)
+
+     ) as c(state_id, state_name, lat, long)
+where c.state_id = s.id;
+
 
 INSERT INTO flow.org_level (company_id, level,level_name)
 VALUES (1, 1,'Parent'),
