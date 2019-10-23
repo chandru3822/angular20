@@ -14,7 +14,7 @@ import java.util.List;
 public class Org {
 
   private Long id, companyId, parentOrgId, orgTypeId, orgLevelId;
-  private String orgName, orgType, parentOrgName;
+  private String orgName, orgType, parentOrgName, title; //title used for scheduling tool
   private Boolean activeFlag, owningOrg;
 
   //so far this is only used for saving

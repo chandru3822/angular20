@@ -2,10 +2,10 @@
   <v-container>
     <v-row class="map-row">
       <v-col cols="5">
-        <Map :latitude="state.mapLatitude" :longitude="state.mapLongitude" :zoom="state.mapZoom"></Map>
+        <Map :latitude="state.mapLatitude" :markers="projects" :longitude="state.mapLongitude" :zoom="state.mapZoom"></Map>
       </v-col>
       <v-col cols="7">
-        <Calendar></Calendar>
+        <Calendar :events="projects" :resources="selectedResources"></Calendar>
       </v-col>
     </v-row>
     <v-row class="schedule-row mt-4">
@@ -22,11 +22,57 @@
                       return-object
                       item-text="state"
                       item-value="id"
+                      @input="getSchedulingOrgs"
             ></v-select>
+            <v-select v-model="selectedResources"
+                      :items="resources"
+                      label="Resources"
+                      multiple
+                      return-object
+                      item-text="orgName"
+                      item-value="id"
+                      @input="getEventsForResources"
+            >
+              <template
+                  slot="selection"
+                  slot-scope="{ item, index }"
+              >
+                <div v-if="index === 0 && selectedResources.length < 3" >
+                  <v-chip small v-for="sr in selectedResources">
+                    <span>{{ sr.orgName }}</span>
+                  </v-chip>
+                </div>
+                <span
+                    v-if="index === 1 && selectedResources.length >= 3"
+                    class="primary--text caption"
+                >{{ selectedResources.length }} selected</span>
+              </template>
+            </v-select>
             <v-select
                 label="Event Type"></v-select>
-            <v-select
-                label="Status"></v-select>
+            <v-select v-model="selectedProcessStepStatusTypes"
+                      :items="processStepStatusTypes"
+                      label="Status"
+                      item-text="processStepStatusType"
+                      item-value="id"
+                      return-object
+                      multiple
+            >
+              <template
+                  slot="selection"
+                  slot-scope="{ item, index }"
+              >
+                <div v-if="index === 0 && selectedProcessStepStatusTypes.length < 3" >
+                  <v-chip small v-for="sp in selectedProcessStepStatusTypes">
+                    <span>{{ sp.processStepStatusType }}</span>
+                  </v-chip>
+                </div>
+                <span
+                    v-if="index === 1 && selectedProcessStepStatusTypes.length >= 3"
+                    class="primary--text caption"
+                >{{ selectedProcessStepStatusTypes.length }} selected</span>
+              </template>
+            </v-select>
           </v-card-text>
           <v-card-text v-else>
             Not sure
@@ -66,6 +112,7 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getActiveStates} from '@/services/stateService'
   import Map from './components/Map'
+  import {getStatusTypes} from '@/services/processStepStatusTypeService'
   import cloneDeep from 'lodash.clonedeep'
   import Calendar from './components/Calendar'
 
@@ -91,6 +138,10 @@
         center: null,
         state: {},
         states: [],
+        resources: [],
+        selectedResources: [],
+        processStepStatusTypes: [],
+        selectedProcessStepStatusTypes: [],
         asyncActions: {},
         headers: [
           { text: 'Projects', value: 'projectName', show: true },
@@ -101,22 +152,12 @@
           { text: 'Work Date', value: 'workDate', show: true},
           { text: 'Resource', value: 'Resource', show: true},
         ],
-        projects: [
-          {
-            id: 1,
-            projectName: 'Randa Test',
-            workType: 'Closer Appointment',
-            statusType: 'Un-routed',
-            estimatedTime: '60 minutes',
-            timeWindow: '8:00 AM - 12:00 PM',
-            workDate: null,
-            resource: null
-          }
-        ]
+        projects: []
       }
     },
     created () {
       this.getActiveStates()
+      this.getStatusTypes()
     },
     methods: {
       goToProject(id) {
@@ -133,6 +174,106 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      async getSchedulingOrgs () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/org/getSchedulingOrgsByState/${this.state.id}`)
+          this.resources = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getStatusTypes()
+          this.processStepStatusTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getEventsForResources () {
+        //todo: actually do a get when i know how to do so
+        this.projects = [
+          {
+            id: 1,
+            projectName: 'Randa Test',
+            workType: 'Closer Appointment',
+            statusType: 'Un-routed',
+            estimatedTime: '60 minutes',
+            timeWindow: '8:00 AM - 12:00 PM',
+            workDate: null,
+            //stuff for fullcalendar event
+            resourceId: 219,
+            title: 'Meeting',
+            start: '2019-10-23T10:30:00',
+            end: '2019-10-23T12:30:00',
+            allDay: false,
+            //stuff for map marker
+            color: '#ff0000',
+            coordinates: [ -112.03396600000, 43.49165000000 ]
+          },
+          {
+            id: 2,
+            projectName: 'Humes Test',
+            workType: 'Closer Appointment',
+            statusType: 'Un-routed',
+            estimatedTime: '60 minutes',
+            timeWindow: '8:00 AM - 12:00 PM',
+            workDate: null,
+            //stuff for fullcalendar event
+            resourceId: 248,
+            title: 'Meeting',
+            start: '2019-10-23T08:30:00',
+            end: '2019-10-23T10:30:00',
+            allDay: false,
+            //stuff for map marker
+            color: '#35dffa',
+            coordinates: [ -112.1644, 43.3155 ]
+          },
+          {
+            id: 3,
+            projectName: 'Keller Test',
+            workType: 'Closer Appointment',
+            statusType: 'Un-routed',
+            estimatedTime: '60 minutes',
+            timeWindow: '8:00 AM - 12:00 PM',
+            workDate: null,
+            //stuff for fullcalendar event
+            resourceId: 247,
+            title: 'Meeting',
+            start: '2019-10-23T09:30:00',
+            end: '2019-10-23T10:30:00',
+            allDay: false,
+            //stuff for map marker
+            color: '#68fa30',
+            coordinates: [ -112.3450, 43.1905 ]
+          }, {
+            id: 4,
+            projectName: 'Mandy Test',
+            workType: 'Closer Appointment',
+            statusType: 'Un-routed',
+            estimatedTime: '60 minutes',
+            timeWindow: '8:00 AM - 12:00 PM',
+            workDate: null,
+            //stuff for fullcalendar event
+            resourceId: 229,
+            title: 'Meeting',
+            start: '2019-10-23T06:30:00',
+            end: '2019-10-23T08:30:00',
+            allDay: false,
+            //stuff for map marker
+            color: '#fa27f8',
+            coordinates: [ -111.9150, 43.6724 ]
+          }
+        ]
       },
     }
   }

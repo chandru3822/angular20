@@ -192,8 +192,12 @@ label[for="adminOriginatorSelect"] {
   border-radius: 0 !important;
 }
 
+.hr-non-transparent {
+  border-color: #e0e1e2 !important;
+}
+
 .clickable {
-  cursor: pointer
+  cursor: pointer;
 }
 .no-display {
   display: none !important;

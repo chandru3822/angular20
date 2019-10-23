@@ -39,7 +39,7 @@
         </v-list-item>
       </v-list-group>
     </v-list>
-    <v-divider></v-divider>
+    <v-divider class="hr-non-transparent"></v-divider>
     <v-list>
       <v-list-item v-for="(item, index) in menuItems" :key="index" @click="menuOpen = false" :to="item.path">
         <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -48,7 +48,7 @@
         </v-list-item-action>
       </v-list-item>
     </v-list>
-    <v-divider></v-divider>
+    <v-divider class="hr-non-transparent"></v-divider>
     <v-list>
       <v-list-item @click="logout()">
         <v-list-item-title>Logout</v-list-item-title>

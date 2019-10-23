@@ -1,24 +1,28 @@
 <template>
     <MglMap :accessToken="map.accessToken"
             :mapStyle="map.style"
-            @load="onMapLoad"></MglMap>
+            @load="onMapLoad">
+        <MglMarker v-for="m in markers" v-if="m.coordinates" :coordinates="m.coordinates" :color="m.color" />
+    </MglMap>
 </template>
 
 <script>
   import Mapbox from 'mapbox-gl'
-  import MglMap from 'vue-mapbox'
+  import { MglMap, MglMarker } from 'vue-mapbox'
   import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE } from '@/helpers/helpers'
 
 
   export default {
     name: 'ScheduleMap',
     components: {
-      MglMap
+      MglMap,
+      MglMarker
     },
     props: {
       latitude: {type: Number},
       longitude: {type: Number},
-      zoom: {type: Number}
+      zoom: {type: Number},
+      markers: {type: Array}
     },
     watch: {
       'latitude': function () {

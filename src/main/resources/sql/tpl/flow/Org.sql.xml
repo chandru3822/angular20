@@ -12,6 +12,20 @@
     ]]>
   </org.getAllForCompany>
 
+  <org.getSchedulingOrgs>
+    <![CDATA[
+      select o.*,
+             p.org_name as parentOrgName,
+             o.org_name as title,
+             ot.org_type
+      from flow.org o
+          left join flow.org p on p.id = o.parent_org_id
+          inner join flow.org_type ot on ot.id = o.org_type_id
+      where o.company_id = :companyId
+      order by o.org_name
+    ]]>
+  </org.getSchedulingOrgs>
+
   <org.getOrgsByType>
     <![CDATA[
       select o.*,
