@@ -8,6 +8,7 @@
                 :events="events"
                 :min-time="calendar.options.minTime"
                 :max-time="calendar.options.maxTime"
+                :height="calendar.options.height"
   />
 </template>
 
@@ -34,6 +35,7 @@
           options: {
             minTime: '02:00:00',
             maxTime: '23:00:00',
+            height: 'parent',
             editable: true,
             defaultView: 'resourceTimelineDay',
             //todo: set the timezone using their setting
