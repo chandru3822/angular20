@@ -11,11 +11,17 @@ import { UserMutations } from './stores/UserStore'
 import JsonExcel from 'vue-json-excel'
 // import moment from 'moment'
 import moment from 'moment-timezone'
+import devtools from '@vue/devtools'
 
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
 
-const { VUE_APP_BASE_API, VUE_APP_ENV } = process.env
+const { VUE_APP_BASE_API, VUE_APP_ENV, NODE_ENV } = process.env
+
+if (NODE_ENV === 'development') {
+  devtools.connect('http://localhost', 8098)
+}
+
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
