@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <v-btn text to="/newOrg" color="primary">
               <v-icon>add</v-icon>
-              Add Organization
+              <span v-if="!IS_MOBILE">Add Organization</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -75,6 +75,7 @@
             :fixed-header="true"
             :options.sync="options"
             disable-sort
+            :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
             :server-items-length="totalOrgs"
@@ -105,7 +106,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar.vue'
   import debounce from 'lodash.debounce'
   import { saveAs } from 'file-saver'
@@ -118,6 +119,7 @@
     data () {
       return {
         snackbar: {},
+        IS_MOBILE,
         delay: 500,
         dialog: false,
         orgs: [],
@@ -129,7 +131,8 @@
         ],
         descending: true,
         footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000]
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
         },
         options: {
           itemsPerPage: 100
@@ -200,12 +203,19 @@
 
 <style lang="scss">
   #orgs-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 290px);
     min-height: 300px;
   }
 </style>
 
 <style lang="scss" scoped>
+  #orgs-container {
+    margin-top: -15px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+  }
+
   .org-table {
     margin-top: 2px;
   }

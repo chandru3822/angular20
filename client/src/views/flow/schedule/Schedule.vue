@@ -1,15 +1,15 @@
 <template>
   <v-container>
-    <v-row class="map-row">
-      <v-col cols="5">
+    <v-row :class="{'map-row': !IS_MOBILE}">
+      <v-col cols="12" md="5" :class="{'map-row': IS_MOBILE}">
         <Map :latitude="state.mapLatitude" :markers="projects" :longitude="state.mapLongitude" :zoom="state.mapZoom"></Map>
       </v-col>
-      <v-col cols="7">
+      <v-col cols="12" md="7">
         <Calendar :events="projects" :resources="selectedResources"></Calendar>
       </v-col>
     </v-row>
     <v-row class="schedule-row mt-4">
-      <v-col cols="5">
+      <v-col cols="12" md="5">
         <v-card color="white" class="text-left">
           <v-card-actions>
             <v-btn text @click="showFilters = true" :class="{underline: showFilters}">Filters</v-btn>
@@ -79,11 +79,12 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="7">
+      <v-col cols="12" md="7">
         <v-data-table
             :headers="headers"
             :items="projects"
             :items-per-page="-1"
+            :mobile-breakpoint="0"
             item-key="dbFunctionParamId"
             hide-default-footer
             class="elevation-1"
@@ -109,7 +110,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
   import {getActiveStates} from '@/services/stateService'
   import Map from './components/Map'
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
@@ -126,6 +127,7 @@
     data() {
       return {
         snackbar: {},
+        IS_MOBILE,
         showFilters: true,
         defaultZoom: 2.0,
         map: {

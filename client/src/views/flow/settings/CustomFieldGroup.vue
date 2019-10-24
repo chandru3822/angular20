@@ -3,11 +3,12 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="addNew = !addNew; newGroup = {}">
-              {{addNew ? 'Cancel' : 'Add New'}}
+              <v-icon v-if="IS_MOBILE">add</v-icon>
+              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -196,7 +197,7 @@ import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
-import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
 
 export default {
   name: 'CustomFieldGroup',
@@ -208,6 +209,7 @@ export default {
   data () {
     return {
       snackbar: {},
+      IS_MOBILE,
       addNew: false,
       selectedIndex: null,
       fieldOrderChanged: false,

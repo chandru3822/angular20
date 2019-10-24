@@ -3,8 +3,8 @@
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
         <v-toolbar flat>
-          <v-toolbar-title class="app-title">Custom Fields</v-toolbar-title>
-          <v-spacer></v-spacer>
+          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
+          <v-spacer v-if="!IS_MOBILE"></v-spacer>
           <v-toolbar-items>
             <v-select
                 class="mt-4"
@@ -191,7 +191,7 @@
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
     name: 'CustomFields',
@@ -203,6 +203,7 @@
     data() {
       return {
         snackbar: {},
+        IS_MOBILE,
         selectedFieldId: null,
         // this is used so the expanded row uses the full width...bug in vuetify
         headers: Array(2).fill({}),

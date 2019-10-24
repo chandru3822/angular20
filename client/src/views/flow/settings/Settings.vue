@@ -1,8 +1,53 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="3" class="text-left">
-        <v-card class="px-5 py-2">
+      <v-col cols="12" md="3" class="text-left">
+        <v-menu data-app left
+                v-if="IS_MOBILE"
+                offset-y
+                v-model="menuOpen"
+                max-height="350"
+                class="account-menu"
+                :close-on-content-click="false">
+          <template v-slot:activator="{ on }">
+            <v-toolbar
+                   color="white"
+                   v-on="on"
+            >
+              {{ selectedItem.title ? selectedItem.title : selectedItem.objectType }}
+              <v-spacer></v-spacer>
+              <v-btn text>
+                <v-icon>expand_more</v-icon>
+              </v-btn>
+            </v-toolbar>
+          </template>
+          <v-list dense class="pa-3">
+            <template v-for="(item, index) in items">
+              <h3 v-if="item.header">{{item.header}}</h3>
+
+              <v-list-item
+                  v-else
+                  :key="item.title"
+                  :to="item.path"
+                  :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+                  @click="menuOpen = false; selectedItem = item"
+              >
+                <v-list-item-content>
+                  <v-list-item-title>{{item.title}}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+            <v-list-item dense v-for="o in filterBy(companyObjectTypes, 1, 'flowTypeId')" :key="o.id"
+                         :to="{ path: `/settings/customFieldGroup/${o.id}`}"
+                         @click="menuOpen = false; selectedItem = o"
+                         :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
+              <v-list-item-content>
+                <v-list-item-title>{{o.objectType}}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <v-card class="px-5 py-2" v-else>
           <v-list dense>
             <template v-for="(item, index) in items">
               <h3 v-if="item.header">{{item.header}}</h3>
@@ -28,7 +73,7 @@
           </v-list>
         </v-card>
       </v-col>
-      <v-col cols="9" class="pa-4">
+      <v-col cols="12" md="9" class="pa-4">
         <v-sheet color="#fff" class="elevation-2 text-left">
           <router-view/>
         </v-sheet>
@@ -42,7 +87,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar } from '@/helpers/helpers'
+import { getRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
 
 export default {
   name: 'Settings',
@@ -53,6 +98,11 @@ export default {
   data () {
     return {
       snackbar: {},
+      menuOpen: false,
+      IS_MOBILE,
+      selectedItem: {
+        title: 'User Profile'
+      },
       companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
       items: [

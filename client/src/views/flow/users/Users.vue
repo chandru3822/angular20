@@ -23,7 +23,10 @@
           ></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="handleOrgFilterChange(true)">Reset Filters</v-btn>
+            <v-btn text @click="handleOrgFilterChange(true)">
+              <v-icon v-if="IS_MOBILE">filter_list</v-icon>
+              <span v-else>Reset Filters</span>
+            </v-btn>
             <v-btn text v-if="totalUsers <= 100000" @click="exportUsers">Export</v-btn>
             <v-dialog
                 v-model="dialog"
@@ -76,6 +79,7 @@
             :fixed-header="true"
             :options.sync="options"
             disable-sort
+            :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
             :server-items-length="totalUsers"
@@ -235,7 +239,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   import max from 'lodash.max'
@@ -249,6 +253,7 @@
     data () {
       return {
         delay: 500,
+        IS_MOBILE,
         dialog: false,
         snackbar: {},
         users: [],
@@ -259,7 +264,8 @@
         positions: [],
         descending: true,
         footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000]
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
         },
         options: {
           itemsPerPage: 100
