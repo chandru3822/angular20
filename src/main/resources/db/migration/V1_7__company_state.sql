@@ -16,3 +16,6 @@ CREATE TABLE if not exists flow.company_state
         REFERENCES flow.company (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT
 );
+
+alter table flow.state
+add column if not exists country_id integer references flow.country(id);

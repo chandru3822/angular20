@@ -28,7 +28,8 @@ alter table flow.state
 update flow.state as s
 set map_zoom = 8.00000000000,
     map_latitude = c.lat,
-    map_longitude = c.long
+    map_longitude = c.long,
+    country_id = 1
 from (values
       (1,'Alabama',         32.7794, -86.8287),
       (2,'Alaska',          64.0685, -152.2782),
