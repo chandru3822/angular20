@@ -11,7 +11,7 @@
       <v-form ref="userForm">
         <v-container>
           <v-row>
-            <v-col xs="12" sm="6">
+            <v-col cols="12" sm="6">
               <v-text-field text
                             label="First Name"
                             :rules="requiredRules"
@@ -36,7 +36,7 @@
                         item-value="id"
               ></v-select>
             </v-col>
-            <v-col xs="12" sm="6">
+            <v-col cols="12" sm="6">
               <v-text-field text
                             label="Phone"
                             :rules="requiredRules"

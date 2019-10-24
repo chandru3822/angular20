@@ -43,6 +43,7 @@
             :fixed-header="true"
             :items-per-page="-1"
             single-expand
+            :mobile-breakpoint="0"
             :expanded.sync="expanded"
             hide-default-footer
             class="elevation-1 org-type-table"

@@ -2,7 +2,7 @@
   <v-content>
     <v-container class="fill-height">
       <v-row align="center" justify="center">
-        <v-col xs="12" sm="8">
+        <v-col cols="12" sm="8">
           <v-card color="secondaryMaster" class="elevation-12">
             <v-toolbar dark color="primary">
               <v-toolbar-title>Albatross</v-toolbar-title>
