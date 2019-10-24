@@ -7,7 +7,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="6" class="text-left">
+      <v-col cols="12" md="6" class="text-left">
         <div>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>Summary</v-toolbar-title>
@@ -40,7 +40,7 @@
           </v-card>
         </div>
       </v-col>
-      <v-col cols="6" class="text-left">
+      <v-col cols="12" md="6" class="text-left">
         <NotesAndActivity :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(userId)"
                           type="User"

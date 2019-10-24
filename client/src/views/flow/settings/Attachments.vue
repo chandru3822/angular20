@@ -3,11 +3,12 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
+          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="addNew = !addNew; newType = {}">
-              {{addNew ? 'Cancel' : 'Add New'}}
+              <v-icon v-if="IS_MOBILE">add</v-icon>
+              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -82,7 +83,7 @@
   import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
     name: 'Attachments',
@@ -93,6 +94,7 @@
     data() {
       return {
         snackbar: {},
+        IS_MOBILE,
         attachmentTypes: [],
         addNew: false,
         newType: {},

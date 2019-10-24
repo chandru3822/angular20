@@ -120,7 +120,7 @@
       inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
     where cot.object_type_id = :objectTypeId
     and cfg.archived is not true
-    and ot.company_id = :companyId
+    and cot.company_id = :companyId
     order by cfg.group_order
   ]]></customFieldValues.getCustomerFieldValues>
 
@@ -181,7 +181,7 @@
           inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
     where cot.object_type_id = :objectTypeId
           and cfg.archived is not true
-          and ot.company_id = :companyId
+          and cot.company_id = :companyId
         order by cfg.group_order
   ]]></customFieldValues.getOrgFieldValues>
 
@@ -280,7 +280,7 @@
           inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
     where cot.object_type_id = :objectTypeId
           and cfg.archived is not true
-          and ot.company_id = :companyId
+          and cot.company_id = :companyId
         order by cfg.group_order
   ]]></customFieldValues.getUserFieldValues>
 

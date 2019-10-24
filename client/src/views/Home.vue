@@ -6,7 +6,7 @@
         <!--non-mobile header...is this necessary?-->
         <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="33">
           <v-toolbar-title class="app-title">{{companyName}}</v-toolbar-title>
-          <v-spacer v-if="!IS_MOBILE" class="ml-5"></v-spacer>
+          <v-spacer class="ml-5"></v-spacer>
           <v-toolbar-items>
             <AccountMenu :showImage="true"></AccountMenu>
           </v-toolbar-items>

@@ -234,7 +234,22 @@ label[for="adminOriginatorSelect"] {
   border-radius: 10px;
 }
 
+.app-toolbar{
+  .app-title {
+    font-size: 20px;
+  }
+}
+
+/* this margin makes the pagination footer not fit on one row on mobile.  should work globally */
+.v-application--is-ltr .v-data-footer__pagination {
+  margin: 0 0 0 24px !important;
+}
+
 @media (min-width: 769px) {
+  .v-application--is-ltr .v-data-footer__pagination {
+    margin: 0 32px 0 24px !important;
+  }
+
   .router-container{
     display: flex;
   }
@@ -254,6 +269,11 @@ label[for="adminOriginatorSelect"] {
     border-radius: 3px;
     height: 45px !important;
     margin-right: 10px !important;
+  }
+  .app-toolbar{
+    .app-title {
+      font-size: 35px;
+    }
   }
 }
 </style>
