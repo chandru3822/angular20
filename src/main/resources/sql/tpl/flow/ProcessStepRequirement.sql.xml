@@ -154,6 +154,7 @@
   <processStepRequirement.getRequirementsWithValuesByIds><![CDATA[
     select
       psr.id,
+      pps.project_id,
       psr.process_step_requirement_type_id,
       psr.process_step_id,
       psr.operator_type_id,
@@ -179,25 +180,28 @@
       ppscfv.boolean_value,
       ppscfv.numeric_value,
       ppscfv.int_value,
-      array_to_json(ppscfv.int_array_value) as int_array_value,
-      coalesce('[]', (
-        select array_to_json(array_agg(row_to_json(params)))
-        from (
-          select
-            rpdv.id,
-            rpdv.archived,
-            dfp.db_function_id as "dbFunctionId",
-            dfp.parameter_name as "parameterName",
-            rpdv.db_function_param_id as "dbFunctionParamId",
-            rpdv.process_step_requirement_id as "processStepRequirementId",
-            rpdv.dynamic_value as "dynamicValue"
-          from flow.db_function_param dfp
-          left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id
-            and rpdv.process_step_requirement_id = psr.id
-          where dfp.db_function_id = cfn.db_function_id
-            and dfp.parameter_type_id = 2
-            and rpdv.archived is not true
-      ) params)) AS "requirementParamDynamicValues"
+      coalesce(array_to_json(ppscfv.int_array_value), '[]') as "intArrayValue",
+      coalesce((
+       select array_to_json(array_agg(row_to_json(params)))
+       from (
+        select
+          dfp.id as "dbFunctionParamId",
+          cfp.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+          cfp.system_value_id as "systemValueId",
+          dfp.display_order as "displayOrder",
+          dfp.data_type_id as "dataTypeId",
+          dfp.parameter_type_id as "parameterTypeId",
+          rpdv.dynamic_value as "dynamicValue"
+        from flow.db_function_param dfp
+        left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id
+        left join flow.custom_field_group_assignment cfga on cfga.id = cfp.custom_field_group_assignment_id
+        left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+        left join flow.process_step ps on ps.id = cfg.process_step_id
+        left join flow.custom_field cf2 on cf2.id = cfga.custom_field_id
+        left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id
+          and rpdv.process_step_requirement_id = psr.id
+        where dfp.db_function_id = cfn.db_function_id
+      ) params), '[]') as "companyFunctionParams"
     from flow.process_step_requirement psr
     left join flow.project_process_step_custom_field_value ppscfv on ppscfv.custom_field_group_assignment_id = psr.custom_field_group_assignment_id
     left join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
@@ -208,6 +212,7 @@
     left join flow.company_function cfn on cfn.id = psr.company_function_id
     inner join flow.operator_type ot on ot.id = psr.operator_type_id
     inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
+    inner join flow.project_process_step pps on pps.process_step_id = psr.process_step_id and pps.id = :projectProcessStepId
     where psr.id in (:ids)
     order by psr.requirement_nbr;
   ]]></processStepRequirement.getRequirementsWithValuesByIds>

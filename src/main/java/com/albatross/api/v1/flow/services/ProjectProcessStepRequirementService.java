@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.ProjectProcessStepRequirement;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,9 +24,10 @@ public class ProjectProcessStepRequirementService {
 
   private final ObjectMapper om;
 
-  public List<ProjectProcessStepRequirement> getByIds(List<Long> ids) {
+  public List<ProjectProcessStepRequirement> getByIds(List<Long> ids, Long projectProcessStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ids", ids);
+    params.put("projectProcessStepId", projectProcessStepId);
 
     return sqlCache.query("processStepRequirement.getRequirementsWithValuesByIds", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
   }
@@ -40,14 +42,14 @@ public class ProjectProcessStepRequirementService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "requirementParamDynamicValues", new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
-
       TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValueIds", new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
 
       TypeReference<List<Integer>> intArrayValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "intArrayValue", new JsonCollectionDeserializer(intArrayValueRef, objectMapper));
+
+      TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "companyFunctionParams", new JsonCollectionDeserializer(companyFunctionParamsRef, objectMapper));
     }
   }
 }
