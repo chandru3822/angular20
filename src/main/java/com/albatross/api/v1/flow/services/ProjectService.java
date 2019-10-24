@@ -17,10 +17,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -96,7 +93,7 @@ public class ProjectService {
     ProcessStepAction action = processStepActionService.getActionById(actionId);
 
     List<Long> requirementIds = action.getProcessStepLogicList().stream().filter(l -> l.getProcessStepRequirementId() != null).map(ProcessStepLogic::getProcessStepRequirementId).collect(Collectors.toList());
-    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByIds(requirementIds);
+    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByIds(requirementIds, projectProcessStepId);
 
 
     // Check to if individual requirements are fulfilled and create a map of true/false with the requirementIds
@@ -160,8 +157,42 @@ public class ProjectService {
           default:
             //@TODO: blow up with error?
         }
+    } else if (r.getProcessStepRequirementTypeId() == 2) {
+      Map<String, Object> params = prepareFunctionParams(r);
     }
     return requirementMet;
+  }
+
+  private Map<String, Object> prepareFunctionParams(ProjectProcessStepRequirement r) {
+    Map<String, Object> params = new HashMap<>();
+
+    r.getCompanyFunctionParams().forEach(param -> {
+      switch (param.getParameterTypeId().intValue()) {
+        case 1:
+          Long systemValue = null;
+          switch (param.getSystemValueId().intValue()) {
+            case 1:
+              systemValue = securityService.getCurrentUser().getId();
+              break;
+            case 2:
+              systemValue = r.getProjectId();
+              break;
+            default:
+              //@TODO: die a horrible death
+          }
+          params.put(param.getDisplayOrder().toString(), systemValue);
+          break;
+        case 2:
+          params.put(param.getDisplayOrder().toString(), param.getDynamicValue());
+          break;
+        case 3:
+          break;
+        default:
+          //@TODO: throw exception
+      }
+    });
+
+    return params;
   }
 
   private boolean calculateMultiselectRequirement(ProjectProcessStepRequirement r) throws Exception {

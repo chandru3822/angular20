@@ -19,7 +19,9 @@ public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
   private BigDecimal numericValue;
 
-  private Long intValue, dataTypeRequirementId, listOfValueId ;
+  private Long intValue, dataTypeRequirementId, listOfValueId, projectId;
 
   private List<Integer> intArrayValue;
+
+  private List<CompanyFunctionParam> companyFunctionParams;
 }
