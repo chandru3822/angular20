@@ -14,7 +14,7 @@
                    color="white"
                    v-on="on"
             >
-              {{ selectedItem.title ? selectedItem.title : selectedItem.objectType }}
+              {{ title }}
               <v-spacer></v-spacer>
               <v-btn text>
                 <v-icon>expand_more</v-icon>
@@ -30,7 +30,7 @@
                   :key="item.title"
                   :to="item.path"
                   :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
-                  @click="menuOpen = false; selectedItem = item"
+                  @click="menuOpen = false; setTitle(item.title)"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -39,7 +39,7 @@
             </template>
             <v-list-item dense v-for="o in filterBy(companyObjectTypes, 1, 'flowTypeId')" :key="o.id"
                          :to="{ path: `/settings/customFieldGroup/${o.id}`}"
-                         @click="menuOpen = false; selectedItem = o"
+                         @click="menuOpen = false, setTitle(o.objectType)"
                          :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
               <v-list-item-content>
                 <v-list-item-title>{{o.objectType}}</v-list-item-title>
@@ -55,6 +55,7 @@
               <v-list-item
                   v-else
                   :key="item.title"
+                  @click="setTitle"
                   :to="item.path"
                   :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
               >
@@ -65,6 +66,7 @@
             </template>
             <v-list-item dense v-for="o in filterBy(companyObjectTypes, 1, 'flowTypeId')" :key="o.id"
                          :to="{ path: `/settings/customFieldGroup/${o.id}`}"
+                         @click="setTitle"
                          :class="{'shaded-row': $route.path === `/settings/customFieldGroup/${o.id}`}">
               <v-list-item-content>
                 <v-list-item-title>{{o.objectType}}</v-list-item-title>
@@ -100,9 +102,7 @@ export default {
       snackbar: {},
       menuOpen: false,
       IS_MOBILE,
-      selectedItem: {
-        title: 'User Profile'
-      },
+      title: null,
       companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
       items: [
@@ -159,6 +159,7 @@ export default {
       try {
         const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
         this.companyObjectTypes = data
+        this.setTitle()
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -166,6 +167,21 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    setTitle (title) {
+      //title passed in on item click
+      if(title){
+        this.title = title
+      }
+      // this determines the title if the page is refreshed
+      else if( this.$route.path.includes('/settings/customFieldGroup')) {
+        if(this.companyObjectTypes.length > 0) {
+          const match = this.companyObjectTypes.find(ot => ot.id.toString() === this.$route.params.id)
+          this.title = match.objectType
+        }
+      } else {
+        this.title = this.items.find(i => i.path === this.$route.path).title
+      }
+    }
   },
   created () {
     this.getCustomFieldObjectTypes()
