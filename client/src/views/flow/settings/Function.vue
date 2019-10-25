@@ -12,6 +12,7 @@
             :items="details.companyFunctionParams"
             :items-per-page="-1"
             single-expand
+            :mobile-breakpoint="0"
             item-key="dbFunctionParamId"
             :expanded.sync="expanded"
             hide-default-footer

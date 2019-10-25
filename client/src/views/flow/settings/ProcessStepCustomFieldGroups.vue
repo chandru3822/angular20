@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <v-btn text v-if="!createNew" @click="createNew = !createNew">
               <v-icon>add</v-icon>
-              Create Group
+              <span v-if="!IS_MOBILE">Create Group</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -218,7 +218,7 @@
   import draggable from 'vuedraggable'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
@@ -233,6 +233,7 @@
     data() {
       return {
         snackbar: {},
+        IS_MOBILE,
         newGroup: {},
         newField: {},
         // selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet.

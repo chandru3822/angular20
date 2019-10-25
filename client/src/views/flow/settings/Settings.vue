@@ -179,7 +179,7 @@ export default {
           this.title = match.objectType
         }
       } else {
-        this.title = this.items.find(i => i.path === this.$route.path).title
+        this.title = this.items.find(i => i.pathMatch ?? i.path === this.$route.path).title
       }
     }
   },

@@ -118,6 +118,7 @@
                 :headers="headers"
                 :items="filterRequirements()"
                 :items-per-page="-1"
+                :mobile-breakpoint="0"
                 single-expand
                 :expanded.sync="expanded"
                 hide-default-footer
@@ -320,6 +321,7 @@
                 :items="filterActions()"
                 :items-per-page="-1"
                 single-expand
+                :mobile-breakpoint="0"
                 :expanded.sync="actionExpanded"
                 hide-default-footer
                 class="elevation-1 fix-column-width-bug"
