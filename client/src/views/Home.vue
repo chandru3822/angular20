@@ -77,7 +77,15 @@ export default {
 }
 </script>
 
+<style lang="scss">
+  #portal .v-slide-group__prev {
+    display: none !important;
+  }
+</style>
+
 <style scoped lang="scss">
+
+
 #portal {
   font-family: 'Lato', sans-serif;
   letter-spacing: .4px;
