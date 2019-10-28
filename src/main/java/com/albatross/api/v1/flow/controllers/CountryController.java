@@ -26,7 +26,7 @@ public class CountryController {
 
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Country> getAllCountries() {
-    return countryService.getAllCountries();
+  public List<Country> getAllCountriesForCompany() {
+    return countryService.getAllCountriesForCompany();
   }
 }

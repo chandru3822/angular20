@@ -85,6 +85,15 @@ from (values
      ) as c(state_id, state_name, lat, long)
 where c.state_id = s.id;
 
+insert into flow.company_country(country_id, company_id, archived)
+    (
+        select c.id, 1, false
+        from flow.country c
+    );
+
+alter table flow.country
+    drop column if exists active_flag;
+
 
 INSERT INTO flow.org_level (company_id, level,level_name)
 VALUES (1, 1,'Parent'),

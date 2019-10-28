@@ -215,8 +215,8 @@
             //stuff for fullcalendar event
             resourceId: 219,
             title: 'Meeting',
-            start: '2019-10-23T10:30:00',
-            end: '2019-10-23T12:30:00',
+            start: '2019-10-25T10:30:00',
+            end: '2019-10-25T12:30:00',
             allDay: false,
             //stuff for map marker
             color: '#ff0000',
@@ -233,8 +233,8 @@
             //stuff for fullcalendar event
             resourceId: 248,
             title: 'Meeting',
-            start: '2019-10-23T08:30:00',
-            end: '2019-10-23T10:30:00',
+            start: '2019-10-25T08:30:00',
+            end: '2019-10-25T10:30:00',
             allDay: false,
             //stuff for map marker
             color: '#35dffa',
@@ -251,8 +251,8 @@
             //stuff for fullcalendar event
             resourceId: 247,
             title: 'Meeting',
-            start: '2019-10-23T09:30:00',
-            end: '2019-10-23T10:30:00',
+            start: '2019-10-25T09:30:00',
+            end: '2019-10-25T10:30:00',
             allDay: false,
             //stuff for map marker
             color: '#68fa30',
@@ -268,8 +268,8 @@
             //stuff for fullcalendar event
             resourceId: 229,
             title: 'Meeting',
-            start: '2019-10-23T06:30:00',
-            end: '2019-10-23T08:30:00',
+            start: '2019-10-25T06:30:00',
+            end: '2019-10-25T08:30:00',
             allDay: false,
             //stuff for map marker
             color: '#fa27f8',
