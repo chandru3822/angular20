@@ -15,13 +15,14 @@
   <org.getSchedulingOrgs>
     <![CDATA[
       select o.*,
-             p.org_name as parentOrgName,
-             o.org_name as title,
-             ot.org_type
+       p.org_name as parentOrgName,
+       o.org_name as title,
+       ot.org_type
       from flow.org o
-          left join flow.org p on p.id = o.parent_org_id
-          inner join flow.org_type ot on ot.id = o.org_type_id
+               left join flow.org p on p.id = o.parent_org_id
+               inner join flow.org_type ot on ot.id = o.org_type_id
       where o.company_id = :companyId
+          and case when :stateId::integer is not null then o.state_id = :stateId::integer else o.use_schedule is true end
       order by o.org_name
     ]]>
   </org.getSchedulingOrgs>
@@ -98,6 +99,8 @@
        set org_name = :orgName,
            parent_org_id = :parentOrgId,
            org_type_id = :orgTypeId,
+           use_schedule = :useSchedule,
+           state_id = :stateId,
            active_flag = :active
       where id = :id
     ]]>
@@ -105,8 +108,8 @@
 
   <org.insertOrg>
     <![CDATA[
-      insert into flow.org(company_id, org_name, parent_org_id, org_type_id)
-      values(:companyId, :orgName, :parentOrgId, :orgTypeId)
+      insert into flow.org(company_id, org_name, parent_org_id, org_type_id, use_schedule, state_id)
+      values(:companyId, :orgName, :parentOrgId, :orgTypeId, :useSchedule, :stateId)
     ]]>
   </org.insertOrg>
 

@@ -116,6 +116,7 @@
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
   import cloneDeep from 'lodash.clonedeep'
   import Calendar from './components/Calendar'
+  import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
     name: 'Schedule',
@@ -160,6 +161,7 @@
     created () {
       this.getActiveStates()
       this.getStatusTypes()
+      this.getSchedulingOrgs()
     },
     methods: {
       goToProject(id) {
@@ -180,7 +182,9 @@
       async getSchedulingOrgs () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/org/getSchedulingOrgsByState/${this.state.id}`)
+          const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, { params: {
+              stateId: this.state?.id ?? null
+            }})
           this.resources = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

@@ -13,9 +13,9 @@ import java.util.List;
 @Setter
 public class Org {
 
-  private Long id, companyId, parentOrgId, orgTypeId, orgLevelId;
-  private String orgName, orgType, parentOrgName, title; //title used for scheduling tool
-  private Boolean activeFlag, owningOrg;
+  private Long id, companyId, parentOrgId, orgTypeId, orgLevelId, stateId;
+  private String orgName, orgType, parentOrgName, title; //title used for scheduling tool (@randa why am I using this instead of orgName?)
+  private Boolean activeFlag, owningOrg, useSchedule;
 
   //so far this is only used for saving
   List<CustomFieldGroup> customFieldGroups;

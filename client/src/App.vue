@@ -79,6 +79,11 @@ body {
   background: #f8f8f8;
 }
 
+/* I hate that the main window doesn't use the entire screen.  maybe we will come back and change this later but for now i am just going to set my own margins as needed */
+.container {
+  max-width: unset !important;
+}
+
 .app-toolbar {
   border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
   //-webkit-box-shadow: 0 6px 6px -6px #000 !important;

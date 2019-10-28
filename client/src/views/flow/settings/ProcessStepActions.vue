@@ -217,19 +217,19 @@
                   </td>
                   <td class="text-left">{{item.operatorType}}</td>
                   <td class="text-left">
-                    <div v-if="item.requirementValue">
+                    <span v-if="item.requirementValue">
                       {{item.requirementValue}}
-                    </div>
-                    <div v-else-if="item.dataTypeRequirementId">
+                    </span>
+                    <span v-else-if="item.dataTypeRequirementId">
                       {{item.dataTypeRequirement ? item.dataTypeRequirement.dataTypeValue : 'unknown'}} {{item.secondaryRequirementValue}}
-                    </div>
-                    <div v-else-if="item.listOfValueId">
+                    </span>
+                    <span v-else-if="item.listOfValueId">
                       {{item.listOfValue ? item.listOfValue.name : 'unknown'}}
-                    </div>
-                    <div v-else-if="item.listOfValues">
+                    </span>
+                    <span v-else-if="item.listOfValues">
                       <!-- todo: show the selected values here -->
-                      {{ item.listOfValues.map(v => v.name).toString() }}
-                    </div>
+                      {{ item.listOfValues.map(v => ' ' + v.name).toString() }}
+                    </span>
                   </td>
                   <td>
                     <div style="display: flex;">

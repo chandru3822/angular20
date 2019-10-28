@@ -49,7 +49,7 @@ public class OrgService {
     return results;
   }
 
-  public List<Org> getSchedulingOrgsByState(Long stateId) {
+  public List<Org> getSchedulingOrgs(Long stateId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
@@ -140,6 +140,8 @@ public class OrgService {
     params.put("orgTypeId", org.getOrgTypeId());
     params.put("parentOrgId", org.getParentOrgId());
     params.put("companyId", user.getCompanyId());
+    params.put("useSchedule", org.getUseSchedule());
+    params.put("stateId", org.getStateId());
     params.put("active", org.getActiveFlag());
 
     Long id;
