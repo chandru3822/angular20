@@ -31,6 +31,6 @@ public class ProcessStepRequirement {
   private DataTypeRequirement dataTypeRequirement;
   private List<RequirementParamDynamicValue> requirementParamDynamicValues;
 
-  private Boolean archived, fulfilled, secondaryRequirement, customValue;
+  private Boolean archived, fulfilled, secondaryRequirement, customValue, immutable;
 }
 

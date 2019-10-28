@@ -149,19 +149,23 @@
                             :items="operatorTypes"
                             class="one-hunned"
                             label="Operator"
+                            :disabled="item.immutable"
                             item-text="operatorType"
                             item-value="id"
                   ></v-select>
                   <v-switch v-model="item.customValue" class="mx-2"
+                            :disabled="item.immutable"
                             label="Custom"></v-switch>
                   <v-text-field v-if="item.customValue && !item.listOfValueId && !item.listOfValues"
                                 v-model="item.requirementValue"
+                                :disabled="item.immutable"
                                 placeholder="Enter a value"
                                 label="Value">
                   </v-text-field>
                   <v-select
                       v-else-if="item.customValue && item.listOfValueId"
                       v-model="item.listOfValueId"
+                      :disabled="item.immutable"
                       :items="listOfValues"
                       label="Available Values"
                       item-text="name"
@@ -170,6 +174,7 @@
                   <v-select
                       v-else-if="item.customValue && item.listOfValues"
                       v-model="item.listOfValues"
+                      :disabled="item.immutable"
                       :items="listOfValues"
                       label="Available Values"
                       item-text="name"
@@ -180,6 +185,7 @@
                       v-else
                       v-model="item.dataTypeRequirement"
                       :items="dataTypeRequirements"
+                      :disabled="item.immutable"
                       label="Available Values"
                       item-text="dataTypeValue"
                       return-object
@@ -187,6 +193,7 @@
                   <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
                                 v-model="item.secondaryRequirementValue"
                                 placeholder="Enter a value"
+                                :disabled="item.immutable"
                                 label="Value">
                   </v-text-field>
                   <v-btn @click="updateRequirement(item)">
@@ -229,7 +236,8 @@
                       <v-btn small text @click="expanded = [item];loadOperatorTypes(item.dataTypeId);
                                     loadDataTypeRequirements(item.dataTypeId); loadListOfValues(item.listOfValueId, item.listOfValues); selectedRequirementIndex = index"
                              v-if="!expanded.includes(item)">
-                        <v-icon>edit</v-icon>
+                        <v-icon v-if="item.immutable">expand_more</v-icon>
+                        <v-icon v-else>edit</v-icon>
                       </v-btn>
                       <v-btn small text @click="expanded = []; selectedRequirementIndex = index"
                              v-if="expanded.includes(item)">cancel
@@ -991,13 +999,28 @@
             return !l.archived
           })
 
+          // build the list of psr's that need to be set to immutable  do that if the save is successful
+          const psrListToUpdate = action.processStepLogicList.filter(l => {
+            return l.processStepRequirementId && !l.processStepRequirementImmutable
+          })
+
           const {data} = await putRequest(`/processStep/${this.processStepId}/action`, action)
           // this forces the list to update the values displayed ... using action = data did not work
           action.actionType = data.actionType
           action.processStepStatusType = data.processStepStatusType
           action.processStepActionChildProcesses = data.processStepActionChildProcesses
           action.processStepActionLinks = data.processStepActionLinks
+          action.processStepLogicList = data.processStepLogicList
           this.actionExpanded = []
+
+          //update the necessary psr's to immutable
+          if(psrListToUpdate.length > 0){
+            psrListToUpdate.forEach(psr => {
+              let match = this.requirements.find(r => r.id === psr.processStepRequirementId)
+              match.immutable = true
+            })
+          }
+
           this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -1134,10 +1157,11 @@
         }
       },
       async loadListOfValues(lovId, lovs) {
-        if (!lovId && !lovs){
+        if (!lovId && (!lovs || lovs.length === 0) ){
           return
         }
         try {
+          console.log('randaLogger',lovs)
           let idToUse = lovId ? lovId : lovs[0].id
           const {data} = await getRequest(`/customField/listOfValuesByOption/${idToUse}`)
           this.listOfValues = data

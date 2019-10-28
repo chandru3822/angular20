@@ -15,6 +15,7 @@
                                     psl.created_by_id as "createdById",
                                     psl.modified_by_id as "modifiedById",
                                     psr.requirement_nbr as "requirementNbr",
+                                    psr.immutable as "processStepRequirementImmutable",
                                     psl.sql_order as "sqlOrder"
                              FROM flow.process_step_logic psl
                                       left join flow.operation_type ot on ot.id = psl.operation_type_id
