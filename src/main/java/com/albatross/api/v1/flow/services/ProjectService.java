@@ -14,6 +14,7 @@ import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -159,11 +160,21 @@ public class ProjectService {
         }
     } else if (r.getProcessStepRequirementTypeId() == 2) {
       Map<String, Object> params = prepareFunctionParams(r);
+      String functionSignature = getFunctionSignature(r, params);
+      Object returnValue = sqlCache.queryBySql("select * from " + r.getFunctionName(), params, Object.class);
+      //@TODO: compare returnValue to the requirement value
     }
     return requirementMet;
   }
 
-  private Map<String, Object> prepareFunctionParams(ProjectProcessStepRequirement r) {
+  private String getFunctionSignature(ProjectProcessStepRequirement r, Map<String, Object> params) {
+
+    StringBuilder signature = new StringBuilder();
+
+    return signature.toString();
+  }
+
+  private Map<String, Object> prepareFunctionParams(ProjectProcessStepRequirement r) throws Exception {
     Map<String, Object> params = new HashMap<>();
 
     r.getCompanyFunctionParams().forEach(param -> {
@@ -183,9 +194,14 @@ public class ProjectService {
           params.put(param.getDisplayOrder().toString(), systemValue);
           break;
         case 2:
-          params.put(param.getDisplayOrder().toString(), param.getDynamicValue());
+          params.put(param.getDisplayOrder().toString(), getTypedDynamicValue(param));
           break;
         case 3:
+          try {
+            params.put(param.getDisplayOrder().toString(), getParamValueByDataType(param));
+          } catch (Exception e) {
+            ///@TODO: throw ex
+          }
           break;
         default:
           //@TODO: throw exception
@@ -193,6 +209,72 @@ public class ProjectService {
     });
 
     return params;
+  }
+
+  private Object getTypedDynamicValue(CompanyFunctionParam param) {
+
+    String startingValue = param.getDynamicValue();
+    Object typedValue = null;
+
+    try {
+      switch (param.getDataTypeId().intValue()) {
+        case 1:
+        case 2:
+          typedValue = Timestamp.valueOf(startingValue);
+          break;
+        case 3:
+          typedValue = Boolean.parseBoolean(startingValue);
+          break;
+        case 4:
+          typedValue = Double.parseDouble(startingValue);
+          break;
+        case 5:
+          typedValue = startingValue;
+          break;
+        case 6:
+          typedValue = Long.parseLong(startingValue);
+          break;
+        default:
+
+      }
+    } catch (Exception e) {
+      //@TODO: die here
+    }
+
+    return typedValue;
+  }
+
+  private Object getParamValueByDataType(CompanyFunctionParam param) throws Exception {
+
+    Object paramValue = null;
+
+    switch (param.getDataTypeId().intValue()) {
+      case 1:
+        paramValue = param.getDateValue();
+        break;
+      case 2:
+        paramValue = param.getTimestampValue();
+        break;
+      case 3:
+        paramValue = param.getBooleanValue();
+        break;
+      case 4:
+        paramValue = param.getNumericValue();
+        break;
+      case 5:
+        paramValue = param.getTextValue();
+        break;
+      case 6:
+        paramValue = param.getIntValue();
+        break;
+      case 7:
+        paramValue = param.getIntArrayValue();
+        break;
+      default:
+        //@TODO: throw nasty exception
+    }
+
+    return paramValue;
   }
 
   private boolean calculateMultiselectRequirement(ProjectProcessStepRequirement r) throws Exception {
