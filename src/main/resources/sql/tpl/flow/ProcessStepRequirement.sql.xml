@@ -221,7 +221,8 @@
       ps.id as parent_id,
       ps.process_step_name as parent_name,
       cf.field_name,
-      cfn.company_function_name,
+      df.function_name,
+      df.return_data_type_id,
       cdt.data_type_id,
       cdt.has_list_values,
       ppscfv.id as project_custom_field_value_id,
@@ -243,15 +244,21 @@
           dfp.display_order as "displayOrder",
           dfp.data_type_id as "dataTypeId",
           dfp.parameter_type_id as "parameterTypeId",
-          rpdv.dynamic_value as "dynamicValue"
+          rpdv.dynamic_value as "dynamicValue",
+          ppscfv1.date_value as  "dateValue",
+          ppscfv1.timestamp_value as "timestampValue",
+          ppscfv1.boolean_value as "booleanValue",
+          ppscfv1.numeric_value as "numericValue",
+          ppscfv1.int_value as "intValue",
+          coalesce(array_to_json(ppscfv1.int_array_value), '[]') as "intArrayValue"
         from flow.db_function_param dfp
         left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id
-        left join flow.custom_field_group_assignment cfga on cfga.id = cfp.custom_field_group_assignment_id
-        left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-        left join flow.process_step ps on ps.id = cfg.process_step_id
-        left join flow.custom_field cf2 on cf2.id = cfga.custom_field_id
-        left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id
-          and rpdv.process_step_requirement_id = psr.id
+        left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfp.custom_field_group_assignment_id
+        left join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
+        left join flow.process_step ps1 on ps1.id = cfg.process_step_id
+        left join flow.custom_field cf2 on cf2.id = cfga1.custom_field_id
+        left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
+        left join flow.project_process_step_custom_field_value ppscfv1 on ppscfv1.project_process_step_id = pps.id and ppscfv1.custom_field_group_assignment_id = cfga1.id
         where dfp.db_function_id = cfn.db_function_id
       ) params), '[]') as "companyFunctionParams"
     from flow.process_step_requirement psr
@@ -262,6 +269,7 @@
     left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
     left join flow.process_step ps on ps.id = cfg.process_step_id
     left join flow.company_function cfn on cfn.id = psr.company_function_id
+    left join flow.db_function df on df.id = cfn.db_function_id
     inner join flow.operator_type ot on ot.id = psr.operator_type_id
     inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
     inner join flow.project_process_step pps on pps.process_step_id = psr.process_step_id and pps.id = :projectProcessStepId
