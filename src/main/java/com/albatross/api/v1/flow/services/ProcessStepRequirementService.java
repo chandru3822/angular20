@@ -34,6 +34,9 @@ public class ProcessStepRequirementService {
   SecurityService securityService;
 
   @Autowired
+  SystemListService systemListService;
+
+  @Autowired
   ObjectMapper om;
 
   public List<ProcessStepRequirement> getRequirementsForStep(Long processStepId) {
@@ -42,6 +45,18 @@ public class ProcessStepRequirementService {
     params.put("companyId", user.getCompanyId());
     params.put("processStepId", processStepId);
     List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.getRequirementsForStep", params, new ProcessStepRequirementMapper<>(ProcessStepRequirement.class, om));
+
+    // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
+    for(ProcessStepRequirement psr : results ) {
+      if(null != psr.getCustomFieldSqlKey()) {
+        String sql = sqlCache.getByKey(psr.getCustomFieldSqlKey());
+        if(null != sql) {
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          psr.setAvailableListOfValues(listOfValues);
+        }
+      }
+    }
+
     return results;
   }
 
@@ -77,6 +92,8 @@ public class ProcessStepRequirementService {
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
     params.put("listOfValueId", requirement.getListOfValueId());
+    params.put("systemListOptionId", requirement.getSystemListOptionId());
+    params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
     params.put("listOfValueIds", requirement.getListOfValueIds());
     params.put("modifiedById", currentUser.getId());
     params.put("id", requirement.getId());
@@ -103,6 +120,8 @@ public class ProcessStepRequirementService {
     params.put("requirementNbr", requirement.getRequirementNbr());
     params.put("createdById", currentUser.getId());
     params.put("processStepId", requirement.getProcessStepId());
+    params.put("systemListOptionId", requirement.getSystemListOptionId());
+    params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
 
     Long id = sqlCache.updateReturningId("processStepRequirement.insertRequirement", params, "id").longValue();
 
@@ -159,16 +178,18 @@ public class ProcessStepRequirementService {
       bw.registerCustomEditor(List.class, "listOfValues",
           new JsonCollectionDeserializer(listOfValuesRef, objectMapper));
 
-//      TypeReference<Array> listOfValueIdsRef = new TypeReference<>() {};
-//      bw.registerCustomEditor(Array.class, "listOfValueIds",
-//          new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
+      TypeReference<List<ListOfValue>> availableListOfValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "availableListOfValues",
+          new JsonCollectionDeserializer(availableListOfValuesRef, objectMapper));
 
       TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValueIds",
           new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
 
-//      Array closerIds = jdbc.queryForObject(sqlQuery, params, Array.class);
-//      return (Integer[])closerIds.getArray();
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds",
+          new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+
     }
   }
 

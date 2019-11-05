@@ -13,7 +13,7 @@ public class CustomFieldValue {
 
   private Long id, customerId, customFieldGroupAssignmentId, customFieldGroupId,
       customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId,
-      customFieldSqlKeyId;
+      customFieldSqlKeyId, systemListTypeId;
 
   // not sure on these types
   private String dateValue, timestampValue, fieldName, fieldValue, textValue, customFieldSqlKey;
@@ -23,5 +23,6 @@ public class CustomFieldValue {
   private Boolean booleanValue;
 
   private List<ListOfValue> listOfValues;
+  private List<Long> systemListOptionIds;
 
 }

@@ -48,8 +48,30 @@
                 >{{ selectedResources.length }} selected</span>
               </template>
             </v-select>
-            <v-select
-                label="Event Type"></v-select>
+            <v-select v-model="selectedEventTypes"
+                      :items="eventTypes"
+                      label="Event Type"
+                      item-text="processStepName"
+                      item-value="id"
+                      return-object
+                      multiple
+            >
+              <template
+                  slot="selection"
+                  slot-scope="{ item, index }"
+              >
+                <div v-if="index === 0 && selectedEventTypes.length < 3" >
+                  <v-chip small v-for="sp in selectedEventTypes">
+                    <span>{{ sp.processStepName }}</span>
+                  </v-chip>
+                </div>
+                <span
+                    v-if="index === 1 && selectedEventTypes.length >= 3"
+                    class="primary--text caption"
+                >{{ selectedEventTypes.length }} selected</span>
+              </template>
+            </v-select>
+
             <v-select v-model="selectedProcessStepStatusTypes"
                       :items="processStepStatusTypes"
                       label="Status"
@@ -145,6 +167,8 @@
         selectedResources: [],
         processStepStatusTypes: [],
         selectedProcessStepStatusTypes: [],
+        eventTypes: [],
+        selectedEventTypes: [],
         asyncActions: {},
         headers: [
           { text: 'Projects', value: 'projectName', show: true },
@@ -161,6 +185,7 @@
     created () {
       this.getActiveStates()
       this.getStatusTypes()
+      this.getEventTypes()
       this.getSchedulingOrgs()
     },
     methods: {
@@ -190,6 +215,19 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getEventTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          // 'event types' is just schedulable process steps
+          const {data} = await getRequest(`/processStep/getSchedulableProcessSteps`)
+          this.eventTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

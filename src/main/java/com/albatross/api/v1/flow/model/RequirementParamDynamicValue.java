@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class RequirementParamDynamicValue {
 
-  private Long id, dbFunctionParamId, processStepRequirementId, dbFunctionId;
+  private Long id, dbFunctionParamId, processStepRequirementId, dbFunctionId, dataTypeId;
   private String dynamicValue, parameterName;
   private Boolean archived;
 

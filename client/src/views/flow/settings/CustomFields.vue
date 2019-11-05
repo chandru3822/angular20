@@ -43,7 +43,7 @@
               </td>
               <td class="text-right">
                 <div class="item-icons">
-                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
+                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.systemListTypeId)">
                     <v-icon v-if="expanded.includes(item)">remove</v-icon>
                     <v-icon v-else-if="item.custom">add</v-icon>
                     <v-icon v-else>edit</v-icon>
@@ -119,6 +119,26 @@
                                 label="SQL Key"
                   ></v-text-field>
 
+                  <v-select v-if="item.companyDataType && item.companyDataType.systemList"
+                            v-model="item.systemListTypeId"
+                            :items="systemListTypes"
+                            :disabled="!item.custom"
+                            :readonly="!item.custom"
+                            label="System List Type"
+                            item-text="systemListType"
+                            item-value="id"
+                            @change="getSystemListOptions(item.systemListTypeId)"
+                  ></v-select>
+
+                  <v-select v-if="item.systemListTypeId"
+                            v-model="item.systemListOptionIds"
+                            :items="systemListOptions"
+                            multiple
+                            label="System List Options"
+                            item-text="name"
+                            item-value="id"
+                  ></v-select>
+
                   <v-col class="options-container"
                           v-if="item.companyDataType && item.companyDataType.hasListValues">
                     <span>Selectable Options</span>
@@ -192,6 +212,7 @@
   import draggable from 'vuedraggable'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
     name: 'CustomFields',
@@ -211,6 +232,8 @@
         selectedIndex: null,
         expanded: [],
         customFields: [],
+        systemListTypes: [],
+        systemListOptions: [],
         dataTypes: [],
         companyId: this.$store.state.user.details.companyId,
         selectedObjectType: {id: -1, objectType: 'All'},
@@ -227,6 +250,13 @@
         },
 
       }
+    },
+    async created() {
+      this.$store.getters.hasPermission('SYSTEM_ADMIN')
+      await this.getCompanyDataTypes()
+      this.getCustomFieldObjectTypes()
+      this.getCustomFields()
+      this.getSystemListTypes()
     },
     methods: {
       filterDataTypes (item) {
@@ -252,6 +282,34 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getSystemListTypes() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/systemList`)
+          this.systemListTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getSystemListOptions(typeId) {
+        if(typeId) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequestWithParams(`/systemList/${typeId}/options`, {params: {
+              subOptions: false
+            }})
+            this.systemListOptions = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       async getCustomFieldObjectTypes() {
@@ -388,12 +446,6 @@
       filterCustomFields () {
         return this.customFields.filter(cf => { return !cf.archived})
       },
-    },
-    async created() {
-      this.$store.getters.hasPermission('SYSTEM_ADMIN')
-      await this.getCompanyDataTypes()
-      this.getCustomFieldObjectTypes()
-      this.getCustomFields()
     }
   }
 </script>

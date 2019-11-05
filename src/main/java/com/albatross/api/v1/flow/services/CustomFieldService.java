@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +28,17 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CustomFieldService {
 
-  private final SqlCache sqlCache;
+  @Autowired
+  SqlCache sqlCache;
 
-  private final SecurityService securityService;
+  @Autowired
+  SecurityService securityService;
 
-  private final ObjectMapper om;
+  @Autowired
+  SystemListService systemListService;
+
+  @Autowired
+  ObjectMapper om;
 
   public CustomField findCustomFieldById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -72,6 +79,7 @@ public class CustomFieldService {
   public CustomField saveField(CustomField customField) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
+    params.put("systemListOptionIds", customField.getSystemListOptionIds());
     Long id = null;
     boolean doInsertAfterHandlingOtherScenarios = false;
     boolean insertParentRecordIfNeeded = false;
@@ -157,6 +165,7 @@ public class CustomFieldService {
       params.put("listOfValueId", parentId);
       params.put("customFieldSqlKeyId", customFieldSqlKeyId);
       params.put("companyId", customField.getCompanyId());
+      params.put("systemListTypeId", customField.getSystemListTypeId());
       params.put("createdById", customField.getCreatedById());
       params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
@@ -207,8 +216,23 @@ public class CustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
-    List<CustomField> result = sqlCache.query("customField.getByParentProcessStep", params, new CustomFieldMapper<>(CustomField.class, om));
-    return result;
+    List<CustomField> results = sqlCache.query("customField.getByParentProcessStep", params, new CustomFieldMapper<>(CustomField.class, om));
+
+    // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
+    for(CustomField cf : results ) {
+      if(null != cf.getCustomFieldSqlKey()) {
+        String sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
+        if(null != sql) {
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          cf.setListOfValues(listOfValues);
+        }
+      } else if (null != cf.getSystemListTypeId()) {
+        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cf.getSystemListTypeId(), true, cf.getSystemListOptionIds());
+        cf.setListOfValues(listOfValues);
+      }
+    }
+
+    return results;
   }
 
   public List<CustomField> getByParentType(Long id) {
@@ -216,16 +240,9 @@ public class CustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
-    List<CustomField> result = sqlCache.query("customField.getByParentType", params, new CustomFieldMapper<>(CustomField.class, om));
-    return result;
-  }
+    List<CustomField> results = sqlCache.query("customField.getByParentType", params, new CustomFieldMapper<>(CustomField.class, om));
 
-  public List<ListOfValue> getListOfValuesByOptionId(Long id) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    List<ListOfValue> result = sqlCache.query("customField.getListOfValuesByOptionId", params, ListOfValue.class);
-    return result;
+    return results;
   }
 
   public static class CustomFieldMapper<T> extends BeanPropertyRowMapper<T> {
@@ -238,14 +255,18 @@ public class CustomFieldService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<List<CustomFieldObjectType>>() {};
-      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<List<ListOfValue>>() {};
 
+      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<List<CustomFieldObjectType>>() {};
       bw.registerCustomEditor(List.class, "customFieldObjectTypes",
           new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
+      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<List<ListOfValue>>() {};
       bw.registerCustomEditor(List.class, "listOfValues",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds",
+          new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
     }
   }
 }

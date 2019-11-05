@@ -14,19 +14,25 @@ import java.util.List;
 public class ProcessStepRequirement {
 
   private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupAssignmentId, companyFunctionId,
-    requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId;
+    requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId, customFieldSqlKeyId,
+    systemListTypeId, systemListOptionId, customSqlOptionId;
 
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, processStepName,
-    secondaryRequirementValue;
+    secondaryRequirementValue, customFieldSqlKey;
 
   // not sure what type to make this yet
   private List<Integer> listOfValueIds;
+  private List<Long> systemListOptionIds;
 
+  // todo: this is my hibernate-y disaster. figure this out
   //this is the selected item from the list if it was a dropdown
   private ListOfValue listOfValue;
 
   //this is the selected items from the list if it was a multiselect
   private List<ListOfValue> listOfValues;
+
+  //this is the available items for the list (works for dropdown, multi, system list, and custom sql)
+  private List<ListOfValue> availableListOfValues;
 
   private DataTypeRequirement dataTypeRequirement;
   private List<RequirementParamDynamicValue> requirementParamDynamicValues;

@@ -26,6 +26,8 @@
             cf.field_name as "fieldName",
             cf.custom_field_sql_key_id as "customFieldSqlKeyId",
             cfsk.sql_key as "customFieldSqlKey",
+            cf.system_list_type_id as "systemListTypeId",
+            cf.system_list_option_ids as "systemListOptionIds",
             cf.company_data_type_id as "companyDataTypeId",
             cdt.data_type_id as "dataTypeId",
             coalesce((
@@ -88,6 +90,8 @@
                                     cf.field_name as "fieldName",
                                     cf.custom_field_sql_key_id as "customFieldSqlKeyId",
                                     cfsk.sql_key as "customFieldSqlKey",
+                                    cf.system_list_type_id as "systemListTypeId",
+                                    cf.system_list_option_ids as "systemListOptionIds",
                                     cf.company_data_type_id as "companyDataTypeId",
                                     cdt.data_type_id as "dataTypeId",
 
@@ -149,6 +153,8 @@
                                     cf.field_name as "fieldName",
                                     cf.custom_field_sql_key_id as "customFieldSqlKeyId",
                                     cfsk.sql_key as "customFieldSqlKey",
+                                    cf.system_list_type_id as "systemListTypeId",
+                                    cf.system_list_option_ids as "systemListOptionIds",
                                     cf.company_data_type_id as "companyDataTypeId",
                                     cdt.data_type_id as "dataTypeId",
 
@@ -247,6 +253,8 @@
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
                                     cf.custom_field_sql_key_id as "customFieldSqlKeyId",
+                                    cf.system_list_type_id as "systemListTypeId",
+                                    cf.system_list_option_ids as "systemListOptionIds",
                                     cfsk.sql_key as "customFieldSqlKey",
                                     cf.company_data_type_id as "companyDataTypeId",
                                     cdt.data_type_id as "dataTypeId",
@@ -302,4 +310,7 @@
     insert into flow.user_custom_field_value(user_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
     values (:userId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
   ]]></customFieldValues.insertUserCustomFieldValue>
+
+
+
 </sql>

@@ -70,19 +70,23 @@
                 item-value="id"
             ></v-select>
             <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" class="mx-2" label="Custom"></v-switch>
-            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null"
+            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKeyId === null && selectedCustomField.systemListTypeId === null"
                           v-model="newRequirement.requirementValue"
                           placeholder="Enter a value"
                           label="Value">
             </v-text-field>
             <v-select
-                v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && !selectedCustomField.allowMultiple"
+                v-else-if="newRequirement.operatorTypeId
+                              && newRequirement.customValue
+                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKeyId !== null || selectedCustomField.systemListTypeId !== null)
+                              && !selectedCustomField.allowMultiple"
                 v-model="selectedListValue"
                 :items="selectedCustomField.listOfValues"
                 label="Available Values"
                 item-text="name"
                 return-object
             ></v-select>
+            <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
             <v-select
                 v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"
                 v-model="selectedListOfValues"
@@ -136,13 +140,43 @@
                 <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">
                   <div v-if="item.requirementParamDynamicValues && item.requirementParamDynamicValues.length > 0">
                     <h5 class="text-left">Dynamic Function Parameters</h5>
-                    <v-card flat>
-                      <v-text-field
-                          v-for="(fp, index) in item.requirementParamDynamicValues"
-                          :key="index"
-                          placeholder="Enter a dynamic value"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
+                    <v-card flat color="transparent">
+                      <div v-for="(fp, index) in item.requirementParamDynamicValues" :key="index">
+                        <v-text-field
+                            v-if="fp.dataTypeId === 1"
+                            placeholder="Enter a date"
+                            type="date"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-if="fp.dataTypeId === 2"
+                            placeholder="Enter a timestamp"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-if="fp.dataTypeId === 3"
+                            placeholder="Enter a boolean"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-if="fp.dataTypeId === 4"
+                            placeholder="Enter a number"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-if="fp.dataTypeId === 6"
+                            placeholder="Enter an integer"
+                            type="number"
+                            step="1"
+                            v-mask="intMask"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-else
+                            placeholder="Enter a dynamic value"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                      </div>
                     </v-card>
                   </div>
                   <v-select v-model="item.operatorTypeId"
@@ -156,26 +190,48 @@
                   <v-switch v-model="item.customValue" class="mx-2"
                             :disabled="item.immutable"
                             label="Custom"></v-switch>
-                  <v-text-field v-if="item.customValue && !item.listOfValueId && !item.listOfValues"
+                  <!-- single text field for non list custom values -->
+                  <v-text-field v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKeyId && !item.systemListTypeId "
                                 v-model="item.requirementValue"
                                 :disabled="item.immutable"
                                 placeholder="Enter a value"
                                 label="Value">
                   </v-text-field>
+                  <!-- single select for dropdown, custom sql list, or system list -->
                   <v-select
                       v-else-if="item.customValue && item.listOfValueId"
                       v-model="item.listOfValueId"
                       :disabled="item.immutable"
-                      :items="listOfValues"
+                      :items="item.availableListOfValues"
                       label="Available Values"
                       item-text="name"
                       item-value="id"
                   ></v-select>
                   <v-select
+                      v-else-if="item.customValue && item.systemListTypeId"
+                      v-model="item.systemListOptionId"
+                      :disabled="item.immutable"
+                      :items="item.availableListOfValues"
+                      label="Available Values"
+                      item-text="name"
+                      item-value="id"
+                  ></v-select>
+                  <!-- not sure what to do with this custom sql one yet -->
+                  <v-select
+                      v-else-if="item.customValue && item.customFieldSqlKeyId"
+                      v-model="item.listOfValueId"
+                      :disabled="item.immutable"
+                      :items="item.availableListOfValues"
+                      label="Available Values"
+                      item-text="name"
+                      item-value="id"
+                  ></v-select>
+                  <!-- at this point it should only show for multiselects -->
+                  <v-select
                       v-else-if="item.customValue && item.listOfValues"
                       v-model="item.listOfValues"
                       :disabled="item.immutable"
-                      :items="listOfValues"
+                      :items="item.availableListOfValues"
                       label="Available Values"
                       item-text="name"
                       multiple
@@ -223,8 +279,9 @@
                     <span v-else-if="item.dataTypeRequirementId">
                       {{item.dataTypeRequirement ? item.dataTypeRequirement.dataTypeValue : 'unknown'}} {{item.secondaryRequirementValue}}
                     </span>
-                    <span v-else-if="item.listOfValueId">
-                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}
+                    <span v-else-if="item.listOfValueId || item.customFieldSqlKeyId || item.systemListTypeId">
+<!--                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}-->
+                      {{ getListValueName(item) }}
                     </span>
                     <span v-else-if="item.listOfValues">
                       <!-- todo: show the selected values here -->
@@ -234,7 +291,7 @@
                   <td>
                     <div style="display: flex;">
                       <v-btn small text @click="expanded = [item];loadOperatorTypes(item.dataTypeId);
-                                    loadDataTypeRequirements(item.dataTypeId); loadListOfValues(item.listOfValueId, item.listOfValues); selectedRequirementIndex = index"
+                                    loadDataTypeRequirements(item.dataTypeId); selectedRequirementIndex = index"
                              v-if="!expanded.includes(item)">
                         <v-icon v-if="item.immutable">expand_more</v-icon>
                         <v-icon v-else>edit</v-icon>
@@ -652,6 +709,7 @@
     data() {
       return {
         snackbar: {},
+        intMask: '############',
         headers: [
           {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
           {text: 'Type', value: 'processStepRequirementType', show: true},
@@ -859,12 +917,15 @@
           this.newRequirement.companyFunctionId = this.selectedFunction.id
           this.newRequirement.processStepId = this.processStepId
 
+          //todo: holy crap figure out how to fix the object being sent up so i dont have to do all this validation
           //adjust value of requirementValue as needed:
           if(this.newRequirement.customValue && this.selectedCustomField.listOfValueId && this.selectedCustomField.allowMultiple) {
             // if from list of values and allow multiple build the json array of selected ids
             this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
 
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.customSqlOptionId = null
             this.newRequirement.listOfValueId = null
             this.newRequirement.dataTypeRequirementId = null
             this.newRequirement.requirementValue = null
@@ -873,12 +934,36 @@
             this.newRequirement.listOfValueId = this.selectedListValue.id
 
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.customSqlOptionId = null
+            this.newRequirement.listOfValueIds = null
+            this.newRequirement.dataTypeRequirementId = null
+            this.newRequirement.requirementValue = null
+          } else if (this.newRequirement.customValue && this.selectedCustomField.systemListTypeId && !this.selectedCustomField.allowMultiple) {
+            //  if from a list of values and not allow multiple use the selected value id,
+            this.newRequirement.systemListOptionId = this.selectedListValue.id
+
+            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.listOfValueId = null
+            this.newRequirement.listOfValueIds = null
+            this.newRequirement.customSqlOptionId = null
+            this.newRequirement.dataTypeRequirementId = null
+            this.newRequirement.requirementValue = null
+          } else if (this.newRequirement.customValue && this.selectedCustomField.customFieldSqlKeyId && !this.selectedCustomField.allowMultiple) {
+            //  if from a list of values and not allow multiple use the selected value id,
+            this.newRequirement.customSqlOptionId = this.selectedListValue.id
+
+            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.listOfValueId = null
+            this.newRequirement.systemListOptionId = null
             this.newRequirement.listOfValueIds = null
             this.newRequirement.dataTypeRequirementId = null
             this.newRequirement.requirementValue = null
           } else if (this.newRequirement.customValue) {
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
             this.newRequirement.listOfValueIds = null
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.customSqlOptionId = null
             this.newRequirement.listOfValueId = null
             this.newRequirement.dataTypeRequirementId = null
           } else if (!this.newRequirement.customValue) {
@@ -886,6 +971,8 @@
 
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
             this.newRequirement.listOfValueIds = null
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.customSqlOptionId = null
             this.newRequirement.listOfValueId = null
             this.newRequirement.requirementValue = null
           }
@@ -1156,21 +1243,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async loadListOfValues(lovId, lovs) {
-        if (!lovId && (!lovs || lovs.length === 0) ){
-          return
-        }
-        try {
-          console.log('randaLogger',lovs)
-          let idToUse = lovId ? lovId : lovs[0].id
-          const {data} = await getRequest(`/customField/listOfValuesByOption/${idToUse}`)
-          this.listOfValues = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Available Values')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+      getListValueName(item) {
+        let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
+                      item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
+        let match = item.availableListOfValues.find(i => i.id === idToUse)
+        return match ? match.name : 'unknown'
       }
     }
 

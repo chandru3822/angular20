@@ -30,6 +30,9 @@ public class CustomFieldValueService {
   SecurityService securityService;
 
   @Autowired
+  SystemListService systemListService;
+
+  @Autowired
   ObjectMapper om;
 
   public List<CustomFieldGroup> getCustomerCustomValues(Long primaryId) {
@@ -83,6 +86,9 @@ public class CustomFieldValueService {
             List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
             cv.setListOfValues(listOfValues);
           }
+        } else if (null != cv.getSystemListTypeId()) {
+          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getSystemListTypeId(), true, cv.getSystemListOptionIds());
+          cv.setListOfValues(listOfValues);
         }
       }
     }
@@ -119,6 +125,10 @@ public class CustomFieldValueService {
       TypeReference<List<CustomField>> customFieldRef = new TypeReference<List<CustomField>>() {};
       bw.registerCustomEditor(List.class, "customFields",
           new JsonCollectionDeserializer(customFieldRef, objectMapper));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds",
+          new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
     }
   }
 

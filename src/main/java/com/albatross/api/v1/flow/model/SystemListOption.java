@@ -9,10 +9,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class CompanyObjectType {
+public class SystemListOption {
 
-  private Long id, flowTypeId, companyId, objectTypeId, companyObjectTypeId;
-  private String objectType;
-  private Boolean archived;
+  private Long id;
+  private String name;
 }
 

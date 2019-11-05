@@ -24,9 +24,9 @@ import './registerServiceWorker'
 
 const { VUE_APP_BASE_API, VUE_APP_ENV, NODE_ENV } = process.env
 
-if (NODE_ENV === 'development') {
-  devtools.connect('http://localhost', 8098)
-}
+// if (NODE_ENV === 'development') {
+//   devtools.connect('http://localhost', 8098)
+// }
 
 const JWT_EXPIRED = 'invalid token'
 

@@ -13,6 +13,6 @@ public class DataType {
 
   private Long id;
   private String dataType;
-  private Boolean hasListValues, allowMultiple, archived;
+  private Boolean hasListValues, allowMultiple, archived, systemList;
 }
 

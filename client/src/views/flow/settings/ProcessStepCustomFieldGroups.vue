@@ -312,7 +312,7 @@
           if (this.addField && this.newFieldType === 'native') {
             const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
               params: {
-                objectTypeId,
+                companyObjectTypeId: objectTypeId,
                 groupId,
                 processStepId: this.processStepId
               }

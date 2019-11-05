@@ -9,6 +9,8 @@
      cf.modified_by_id,
      cf.company_data_type_id,
      cf.custom_field_sql_key_id,
+     cf.system_list_type_id,
+     array_to_json(cf.system_list_option_ids) as system_list_option_ids,
      cfsk.sql_key as "custom_field_sql_key",
      coalesce((
                   select array_to_json(array_agg(rows))
@@ -41,6 +43,7 @@
                         ) rows), '[]') AS list_of_values
     from flow.custom_field cf
       left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
+      left join flow.system_list_type slt on slt.id = cf.system_list_type_id
     where cf.id = :id
     order by cf.field_name
   ]]></customField.getOne>
@@ -55,6 +58,8 @@
        cf.modified_by_id,
        cf.company_data_type_id,
        cf.custom_field_sql_key_id,
+       cf.system_list_type_id,
+       array_to_json(cf.system_list_option_ids) as system_list_option_ids,
        cfsk.sql_key as "custom_field_sql_key",
        coalesce((
                   select array_to_json(array_agg(rows))
@@ -88,6 +93,7 @@
                           ) rows), '[]') AS list_of_values
     from flow.custom_field cf
       left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
+      left join flow.system_list_type slt on slt.id = cf.system_list_type_id
     where cf.company_id = :companyId
       and cf.archived is not true
     order by cf.field_name
@@ -95,6 +101,7 @@
 
   <customField.getCompanyObjectTypes><![CDATA[
     select cot.id,
+           cot.id company_object_type_id,
            cot.object_type_id,
            ot.object_type,
            ot.flow_type_id,
@@ -116,14 +123,15 @@
   <customField.saveField><![CDATA[
     update flow.custom_field
       set field_name = :fieldName,
+          system_list_option_ids = array[ :systemListOptionIds ]::integer[],
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
   ]]></customField.saveField>
 
   <customField.insertField><![CDATA[
-    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key_id)
-    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKeyId)
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key_id, system_list_type_id, system_list_option_ids)
+    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKeyId, :systemListTypeId, array[ :systemListOptionIds ]::integer[])
     returning id
   ]]></customField.insertField>
 
@@ -174,7 +182,21 @@
   ]]></customField.insertCustomFieldObjectType>
 
   <customField.getByParentProcessStep><![CDATA[
-    select cf.*,
+    select cf.id,
+       cf.list_of_value_id,
+       cf.custom_field_sql_key_id,
+       cf.company_id,
+       cf.field_name,
+       cf.company_data_type_id,
+       cf.date_created,
+       cf.date_modified,
+       cf.created_by_id,
+       cf.modified_by_id,
+       cf.archived,
+       cf.custom_field_sql_key_id as "customFieldSqlKeyId",
+       cfsk.sql_key as "customFieldSqlKey",
+       cf.system_list_type_id,
+       array_to_json(cf.system_list_option_ids) as system_list_option_ids,
        cfga.id as custom_field_group_assignment_id,
        cdt.data_type_id,
        cdt.allow_multiple,
@@ -200,6 +222,7 @@
              inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
              inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+             left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where ps.id = :id
       and cfga.ancillary_custom_field_group_assignment_id is null
     order by cf.field_name
@@ -217,26 +240,5 @@
       and cfga.ancillary_custom_field_group_assignment_id is null
     order by cf.field_name
   ]]></customField.getByParentType>
-
-  <customField.getListOfValuesByOptionId><![CDATA[
-    with parent as (
-        select parent_id
-        from flow.list_of_value
-        where id = :id
-    )
-    select lv.id,
-           lv.name,
-           lv.parent_id,
-           lv.date_created,
-           lv.date_modified,
-           lv.created_by_id,
-           lv.modified_by_id,
-           lv.display_order,
-           lv.archived
-    from flow.list_of_value lv
-        inner join parent p on p.parent_id = lv.parent_id
-    where lv.archived is not true
-    order by lv.display_order
-  ]]></customField.getListOfValuesByOptionId>
 
 </sql>
