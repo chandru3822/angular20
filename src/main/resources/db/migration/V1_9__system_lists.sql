@@ -45,22 +45,38 @@ alter table flow.process_step_requirement
 
 -- todo: make these work for uat where they already exist
 insert into flow.system_list_type (system_list_type, archived)
-values ('Users by Organization', false), ( 'Users by Position', false), ('Organizations by Type', false), ('User', false);
+select 'Users by Organization', false  where not exists (select id from flow.system_list_type where system_list_type = 'Users by Organization');
+insert into flow.system_list_type (system_list_type, archived)
+select 'Users by Position', false  where not exists (select id from flow.system_list_type where system_list_type = 'Users by Position');
+insert into flow.system_list_type (system_list_type, archived)
+select 'Organizations by Type', false  where not exists (select id from flow.system_list_type where system_list_type = 'Organizations by Type');
 
-insert into flow.company_system_list_type(system_list_type_id, company_id)
- values (1, 1),(2, 1),(3, 1);
+insert into flow.company_system_list_type (system_list_type_id, company_id)
+select 1, 1  where not exists (select id from flow.company_system_list_type where system_list_type_id = 1);
+insert into flow.company_system_list_type (system_list_type_id, company_id)
+select 2, 1  where not exists (select id from flow.company_system_list_type where system_list_type_id = 2);
+insert into flow.company_system_list_type (system_list_type_id, company_id)
+select 3, 1  where not exists (select id from flow.company_system_list_type where system_list_type_id = 3);
 
 -- system data type
-insert into flow.operator_data_type(operator_type_id, data_type_id, archived)
-values (1, 8, false), (2, 8, false);
+insert into flow.operator_data_type (operator_type_id, data_type_id, archived)
+select 1, 8, false  where not exists (select id from flow.operator_data_type where operator_type_id = 1 and data_type_id = 8);
+insert into flow.operator_data_type (operator_type_id, data_type_id, archived)
+select 2, 8, false  where not exists (select id from flow.operator_data_type where operator_type_id = 2 and data_type_id = 8);
 
 insert into flow.data_type_requirement (data_type_id, data_type_value, created_by_id)
-values (8, 'null', 2350555), (8, 'not null', 2350555);
+select 8, 'null', 2350555  where not exists (select id from flow.data_type_requirement where data_type_id = 8 and data_type_value = 'null');
+insert into flow.data_type_requirement (data_type_id, data_type_value, created_by_id)
+select 8, 'not null', 2350555  where not exists (select id from flow.data_type_requirement where data_type_id = 8 and data_type_value = 'not null');
 
 -- system list data type
-insert into flow.operator_data_type(operator_type_id, data_type_id, archived)
-values (1, 9, false), (2, 9, false);
+insert into flow.operator_data_type (operator_type_id, data_type_id, archived)
+select 1, 9, false  where not exists (select id from flow.operator_data_type where operator_type_id = 1 and data_type_id = 9);
+insert into flow.operator_data_type (operator_type_id, data_type_id, archived)
+select 2, 9, false  where not exists (select id from flow.operator_data_type where operator_type_id = 2 and data_type_id = 9);
 
 insert into flow.data_type_requirement (data_type_id, data_type_value, created_by_id)
-values (9, 'null', 2350555), (9, 'not null', 2350555);
+select 9, 'null', 2350555  where not exists (select id from flow.data_type_requirement where data_type_id = 9 and data_type_value = 'null');
+insert into flow.data_type_requirement (data_type_id, data_type_value, created_by_id)
+select 9, 'not null', 2350555  where not exists (select id from flow.data_type_requirement where data_type_id = 9 and data_type_value = 'not null');
 
