@@ -57,7 +57,7 @@
                     {{item.groupName}}
                   </td>
                   <td><div class="item-icons">
-                    <v-btn small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.objectTypeId, item.id)">
+                    <v-btn small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
@@ -109,7 +109,7 @@
                 <td :colspan="headers.length" class="pb-2 px-0"  :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
-                    <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.objectTypeId, item.id)">
+                    <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
                       <v-radio label="Native Field"
                                value="native"></v-radio>
                       <v-radio label="Reference Field: viewed only from other process steps or objects"
@@ -152,7 +152,7 @@
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                                group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                       <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
-                              :key="index" dense class="pa-0">
+                              :key="index" dense class="pa-0"  color="transparent">
                         <v-list-item class="grab">
                           <v-list-item-action dense>
                             <v-icon>drag_handle</v-icon>

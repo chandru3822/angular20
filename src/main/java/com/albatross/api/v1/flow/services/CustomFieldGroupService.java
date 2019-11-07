@@ -155,7 +155,7 @@ public class CustomFieldGroupService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
-    params.put("companyId", currentUser.getId());
+    params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId = sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
     return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
   }
