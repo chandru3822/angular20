@@ -33,15 +33,14 @@
                       item-text="orgName"
                       item-value="id"
             ></v-select>
-            <label>Show in Scheduling Tool:</label>
-            <input type="checkbox" class="ml-2" v-model="org.useSchedule">
-            <v-select v-if="org.useSchedule"
-                      v-model="org.stateId"
+            <v-select v-model="org.stateId"
                       :items="states"
                       label="State"
                       item-text="state"
                       item-value="id"
             ></v-select>
+            <label>Show in Scheduling Tool:</label>
+            <input type="checkbox" class="ml-2" v-model="org.schedulable">
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -52,7 +51,7 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="cf.id" :readonly="false" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>

@@ -16,7 +16,7 @@ public class CustomField {
 
   private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById,
       customFieldGroupId, ancillaryCustomFieldGroupAssignmentId, customFieldGroupAssignmentId, customFieldSqlKeyId,
-      customFieldObjectTypeId, dataTypeId, systemListTypeId;
+      customFieldObjectTypeId, dataTypeId, systemListTypeId, scheduleFieldTypeId;
   private List<Long> systemListOptionIds;
   private String fieldName, objectType, groupName, customFieldSqlKey;
   private Boolean archived, showOnInsert, hasListValues, allowMultiple;

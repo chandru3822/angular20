@@ -52,6 +52,7 @@
                           FROM (
                                    SELECT cfg.id,
                                           cfg.group_name as "groupName",
+                                          cfg.schedulable,
                                           cot.object_type_id as "objectTypeId",
                                           cot.id as "companyObjectTypeId",
                                           cfg.archived,

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -50,6 +51,7 @@ public class CustomFieldGroupService {
     params.put("customFieldGroupId", customField.getCustomFieldGroupId());
     params.put("customFieldId", customField.getId());
     params.put("createdById", currentUser.getId());
+    params.put("scheduleFieldTypeId", customField.getScheduleFieldTypeId());
     params.put("ancillaryCustomFieldGroupAssignmentId", customField.getAncillaryCustomFieldGroupAssignmentId());
     params.put("fieldOrder", customField.getFieldOrder());
 
@@ -118,6 +120,16 @@ public class CustomFieldGroupService {
     return results;
   }
 
+  public List<ScheduleFieldType> getScheduleTypesAndFields() {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", currentUser.getCompanyId());
+
+    List<ScheduleFieldType> results = sqlCache.query("customFieldGroupAssignment.getScheduleTypesAndFields", params, new ScheduleFieldTypeMapper<>(ScheduleFieldType.class, om));
+    return results;
+  }
+
   public List<CustomField> getAvailableCustomFieldsInGroup(Long companyObjectTypeId, Long groupId, Long processStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyObjectTypeId", companyObjectTypeId);
@@ -140,6 +152,7 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupOrder", customFieldGroup.getGroupOrder());
+    params.put("schedulable", customFieldGroup.getSchedulable());
     params.put("processStepId", customFieldGroup.getProcessStepId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();
@@ -157,7 +170,20 @@ public class CustomFieldGroupService {
     params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
     params.put("companyId", currentUser.getCompanyId());
     Long companyObjectTypeId = sqlCache.queryForObject("customFieldGroup.getCompanyObjectTypeId", params, Long.class);
-    return addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+
+    CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
+
+    if(customFieldGroup.getSchedulable() && null != customFieldGroup.getSchedulingFields()) {
+      List<CustomField> newFieldList = new ArrayList<>();
+      for(CustomField cf : customFieldGroup.getSchedulingFields()) {
+        cf.setCustomFieldGroupId(cfg.getId());
+        CustomField newCf = addFieldToGroup(cf);
+        newFieldList.add(newCf);
+      }
+      cfg.setCustomFields(newFieldList);
+    }
+
+    return cfg;
   }
 
   public void deleteCustomFieldGroup(Long id) {
@@ -226,6 +252,23 @@ public class CustomFieldGroupService {
       TypeReference<List<CustomFieldValue>> customFieldValueRef = new TypeReference<List<CustomFieldValue>>() {};
       bw.registerCustomEditor(List.class, "customFieldValues",
           new JsonCollectionDeserializer(customFieldValueRef, objectMapper));
+    }
+  }
+
+  public static class ScheduleFieldTypeMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ScheduleFieldTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<CustomField>> availableCustomFieldTypeRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "availableCustomFields",
+          new JsonCollectionDeserializer(availableCustomFieldTypeRef, objectMapper));
+
     }
   }
 

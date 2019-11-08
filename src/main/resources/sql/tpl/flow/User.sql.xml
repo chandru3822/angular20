@@ -81,6 +81,7 @@
       set first_name = :firstName,
           last_name = :lastName,
           email = :email,
+          schedulable = :schedulable,
           phone_number = :phone,
           modified_by_id = :modifiedById,
           date_modified = now(),
@@ -91,8 +92,8 @@
 
   <user.insertUser>
     <![CDATA[
-      insert into flow.user(first_name, last_name, created_by_id, company_id)
-      values(:firstName, :lastName, :createdById, :companyId)
+      insert into flow.user(first_name, last_name, created_by_id, company_id, schedulable)
+      values(:firstName, :lastName, :createdById, :companyId, :schedulable)
     ]]>
   </user.insertUser>
 
@@ -103,6 +104,20 @@
       where u.id = :id
     ]]>
   </user.getOne>
+
+  <user.getSchedulingUsers>
+    <![CDATA[
+      select u.user_id as id,
+             u.first_name,
+             u.last_name,
+             u.first_name || ' ' || u.last_name as full_name
+      from flow.user_positions_vw u
+      where u.company_id = :companyId
+        and case when :stateId::integer is not null then u.state_id = :stateId::integer else u.user_schedulable is true end
+        and u.user_archived is not true
+      order by full_name
+    ]]>
+  </user.getSchedulingUsers>
 
   <user.findByUsernameIgnoreCase><![CDATA[
     select u.id,

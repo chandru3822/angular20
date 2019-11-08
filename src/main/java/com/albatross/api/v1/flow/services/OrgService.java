@@ -140,7 +140,7 @@ public class OrgService {
     params.put("orgTypeId", org.getOrgTypeId());
     params.put("parentOrgId", org.getParentOrgId());
     params.put("companyId", user.getCompanyId());
-    params.put("useSchedule", org.getUseSchedule());
+    params.put("schedulable", org.getSchedulable());
     params.put("stateId", org.getStateId());
     params.put("active", org.getActiveFlag());
 

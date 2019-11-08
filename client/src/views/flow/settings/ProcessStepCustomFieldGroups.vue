@@ -14,15 +14,31 @@
         </v-toolbar>
         <v-card v-if="createNew" text class="text-center one-hunned pa-3" flat
                 color="rowShadeCustom">
-          <v-text-field
-              label="Group Name"
-              tabindex=1
-              v-model="newGroup.groupName"
-          ></v-text-field>
+          <div>
+            <v-text-field
+                label="Group Name"
+                tabindex=1
+                v-model="newGroup.groupName"
+            ></v-text-field>
+            <label>Schedule Group:</label>
+            <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="getSchedulingFields">
+            <!--  todo: help the ui. just getting it working for now  -->
+            <div v-if="newGroup.schedulable" v-for="(sf, index) in schedulingFields" :key="index">
+              <v-select v-model="newGroup.schedulingFields[index]"
+                        text
+                        :items="sf.availableCustomFields"
+                        :label="`Please select a field to be used as the ${sf.fieldType}`"
+                        placeholder="Select One..."
+                        item-value="id"
+                        item-text="fieldName"
+                        return-object
+              ></v-select>
+            </div>
+          </div>
           <v-btn
               color="primary"
               class="white--text mr-2"
-              :disabled="!newGroup.groupName"
+              :disabled="!newGroup.groupName || (newGroup.schedulable && newGroup.schedulingFields.length !== schedulingFields.length)"
               @click="saveFieldGroup()">
             Save
           </v-btn>
@@ -57,7 +73,7 @@
                     {{item.groupName}}
                   </td>
                   <td><div class="item-icons">
-                    <v-btn small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
+                    <v-btn v-if="!item.schedulable" small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
@@ -161,6 +177,7 @@
                             {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
                           </v-list-item-content>
                           <v-dialog
+                              v-if="!item.schedulable"
                               v-model="cf.deleteConfirm"
                               width="500">
                             <template v-slot:activator="{ on }">
@@ -234,7 +251,10 @@
       return {
         snackbar: {},
         IS_MOBILE,
-        newGroup: {},
+        newGroup: {
+          schedulingFields: [],
+          schedulable: false
+        },
         newField: {},
         // selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet.
         selectedIndex: null,
@@ -254,6 +274,7 @@
           { text: null, value: 'icons', show: true }
         ],
         expanded: [],
+        schedulingFields: []
       }
     },
     computed: {},
@@ -264,9 +285,14 @@
           this.newGroup.groupOrder = 0
           this.newGroup.processStepId = this.$route.params.id
 
+          this.newGroup.schedulingFields = this.newGroup.schedulable ? this.newGroup.schedulingFields : []
+
           const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
           this.customFieldGroups.push(data)
-          this.newGroup = {}
+          this.newGroup = {
+            schedulingFields: [],
+            schedulable: false
+          }
           this.createNew = false
           this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -421,6 +447,20 @@
       filterCustomFieldGroups () {
         return this.customFieldGroups.filter(cfg => { return !cfg.archived})
       },
+      async getSchedulingFields () {
+        if(this.newGroup.schedulable) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/customFieldGroup/getScheduleTypesAndFields`)
+            this.schedulingFields = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      }
     }
 
   }

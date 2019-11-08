@@ -45,6 +45,11 @@ public class UserController {
         return userService.getUser(id);
     }
 
+    @GetMapping(value = "/getSchedulingUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getSchedulingUsers(@RequestParam(required = false) Long stateId) {
+        return userService.getSchedulingUsers(stateId);
+    }
+
     @GetMapping(value = "/statuses", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UserStatusType> getUserStatuses() {
         return userService.getUserStatuses();

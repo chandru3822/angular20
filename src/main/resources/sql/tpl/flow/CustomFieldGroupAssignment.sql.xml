@@ -79,6 +79,35 @@
     order by cfga.field_order
   ]]></customFieldGroupAssignment.getCustomFieldsInGroup>
 
+  <customFieldGroupAssignment.getScheduleTypesAndFields><![CDATA[
+    select sft.id,
+           sft.field_type,
+           sft.required_data_type_id,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(fields)))
+                        FROM (
+                                 select cf.id,
+                                        cf.field_name as "fieldName",
+                                        sft.id as "scheduleFieldTypeId",
+                                        sft.id as "fieldOrder"
+                                 from flow.custom_field cf
+                                    inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
+                                    inner join flow.company_object_type cot on cot.id = cfot.company_object_type_id
+                                    inner join flow.object_type ot on ot.id = cot.object_type_id
+                                    inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                    left join flow.company_system_list_type cslt on cslt.id = cf.system_list_type_id
+                                 where cf.company_id = :companyId
+                                    and ot.flow_type_id = 2
+                                    and cf.archived is not true
+                                    and cdt.data_type_id = sft.required_data_type_id
+                                    and case when cf.system_list_type_id is not null then cslt.schedulable is true else 1=1 end
+                                 order by cf.field_name
+                             ) fields), '[]') as availableCustomFields
+    from flow.schedule_field_type sft
+    where sft.archived is not true
+    order by sft.id
+  ]]></customFieldGroupAssignment.getScheduleTypesAndFields>
+
   <customFieldGroupAssignment.getAvailableCustomFieldsInGroup><![CDATA[
     select cf.id,cf.field_name, cfot.company_object_type_id
     from flow.custom_field_object_type cfot
@@ -142,8 +171,8 @@
   ]]></customFieldGroupAssignment.getCustomField>
 
   <customFieldGroupAssignment.addFieldToGroup><![CDATA[
-    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id)
-    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, :fieldOrder, :createdById)
+    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, schedule_field_type_id)
+    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, :fieldOrder, :createdById, :scheduleFieldTypeId)
   ]]></customFieldGroupAssignment.addFieldToGroup>
 
   <customFieldGroupAssignment.updateFieldInGroup><![CDATA[

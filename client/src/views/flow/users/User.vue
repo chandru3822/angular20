@@ -25,6 +25,8 @@
                           label="E-Mail"
                           placeholder=" "
                           v-model="user.email"></v-text-field>
+            <label>Show in Scheduling Tool:</label>
+            <input type="checkbox" class="ml-2" v-model="user.schedulable">
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">

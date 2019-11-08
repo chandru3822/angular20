@@ -118,7 +118,7 @@ SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
                     display_order, active_flag, color, email, calendar_oid, sales_metro_area_id,
-                    originator_id, use_schedule)
+                    originator_id, schedulable)
     (select 1,
             id,
             org_name,

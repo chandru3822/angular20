@@ -116,6 +116,7 @@ public class UserService {
     params.put("lastName", user.getLastName());
     params.put("phone", user.getPhoneNumber());
     params.put("email", user.getEmail());
+    params.put("schedulable", user.getSchedulable());
     params.put("companyId", currentUser.getCompanyId());
 
     Long id;
@@ -139,6 +140,16 @@ public class UserService {
     params.put("id", id);
     Optional<User> result = sqlCache.get("user.getOne", params, User.class);
     return result.orElse(null);
+  }
+
+  public List<User> getSchedulingUsers(Long stateId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("stateId", stateId);
+    params.put("companyId", currentUser.getCompanyId());
+    List<User> results = sqlCache.query("user.getSchedulingUsers", params, User.class);
+    return results;
   }
 
 

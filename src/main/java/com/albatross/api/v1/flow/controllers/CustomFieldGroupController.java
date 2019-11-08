@@ -4,6 +4,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldObjectType;
+import com.albatross.api.v1.flow.model.ScheduleFieldType;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,11 @@ public class CustomFieldGroupController {
   @GetMapping(value = "/getCustomFieldsInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomField> getCustomFieldsInGroup (@RequestParam Long groupId) {
     return customFieldGroupService.getCustomFieldsInGroup(groupId);
+  }
+
+  @GetMapping(value = "/getScheduleTypesAndFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ScheduleFieldType> getScheduleTypesAndFields () {
+    return customFieldGroupService.getScheduleTypesAndFields();
   }
 
   @GetMapping(value = "/getAvailableCustomFields", produces = MediaType.APPLICATION_JSON_VALUE)

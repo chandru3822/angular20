@@ -16,6 +16,7 @@ public class User {
     private String email, phoneNumber, username, password, firstName, lastName, fullName,
         userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position;
     private Long userStatusTypeId;
+    private Boolean schedulable;
     private List<UserPermission> permissions;
 
     private List<UserOrgHierarchy> hierarchy;

@@ -5,7 +5,7 @@
         <Map :latitude="state.mapLatitude" :markers="projects" :longitude="state.mapLongitude" :zoom="state.mapZoom"></Map>
       </v-col>
       <v-col cols="12" md="7">
-        <Calendar :events="projects" :resources="selectedResources"></Calendar>
+        <Calendar :events="projects" :resources="selectedOrgs"></Calendar>
       </v-col>
     </v-row>
     <v-row class="schedule-row mt-4">
@@ -22,30 +22,54 @@
                       return-object
                       item-text="state"
                       item-value="id"
-                      @input="getSchedulingOrgs"
+                      @input="getSchedulingOrgs(); getSchedulingUsers()"
             ></v-select>
-            <v-select v-model="selectedResources"
-                      :items="resources"
-                      label="Resources"
+            <v-select v-model="selectedOrgs"
+                      :items="orgs"
+                      label="Organizations"
                       multiple
                       return-object
                       item-text="orgName"
                       item-value="id"
-                      @input="getEventsForResources"
+                      @input="getEventsForOrgs"
             >
               <template
                   slot="selection"
                   slot-scope="{ item, index }"
               >
-                <div v-if="index === 0 && selectedResources.length < 3" >
-                  <v-chip small v-for="sr in selectedResources">
+                <div v-if="index === 0 && selectedOrgs.length < 3" >
+                  <v-chip small v-for="sr in selectedOrgs">
                     <span>{{ sr.orgName }}</span>
                   </v-chip>
                 </div>
                 <span
-                    v-if="index === 1 && selectedResources.length >= 3"
+                    v-if="index === 1 && selectedOrgs.length >= 3"
                     class="primary--text caption"
-                >{{ selectedResources.length }} selected</span>
+                >{{ selectedOrgs.length }} selected</span>
+              </template>
+            </v-select>
+            <v-select v-model="selectedUsers"
+                      :items="users"
+                      label="Users"
+                      multiple
+                      return-object
+                      item-text="fullName"
+                      item-value="id"
+                      @input="getEventsForOrgs"
+            >
+              <template
+                  slot="selection"
+                  slot-scope="{ item, index }"
+              >
+                <div v-if="index === 0 && selectedUsers.length < 3" >
+                  <v-chip small v-for="sr in selectedUsers">
+                    <span>{{ sr.fullName }}</span>
+                  </v-chip>
+                </div>
+                <span
+                    v-if="index === 1 && selectedUsers.length >= 3"
+                    class="primary--text caption"
+                >{{ selectedUsers.length }} selected</span>
               </template>
             </v-select>
             <v-select v-model="selectedEventTypes"
@@ -163,8 +187,10 @@
         center: null,
         state: {},
         states: [],
-        resources: [],
-        selectedResources: [],
+        orgs: [],
+        selectedOrgs: [],
+        users: [],
+        selectedUsers: [],
         processStepStatusTypes: [],
         selectedProcessStepStatusTypes: [],
         eventTypes: [],
@@ -187,6 +213,7 @@
       this.getStatusTypes()
       this.getEventTypes()
       this.getSchedulingOrgs()
+      this.getSchedulingUsers()
     },
     methods: {
       goToProject(id) {
@@ -210,11 +237,25 @@
           const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, { params: {
               stateId: this.state?.id ?? null
             }})
-          this.resources = data
+          this.orgs = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getSchedulingUsers () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
+              stateId: this.state?.id ?? null
+            }})
+          this.users = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -243,7 +284,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getEventsForResources () {
+      async getEventsForOrgs () {
         //todo: actually do a get when i know how to do so
         this.projects = [
           {
