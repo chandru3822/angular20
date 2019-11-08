@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public User saveOrg(@RequestBody User user) {
+    public User saveUser(@RequestBody User user) {
         return userService.saveUser(user);
     }
 

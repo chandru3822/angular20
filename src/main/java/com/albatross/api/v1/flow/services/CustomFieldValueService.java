@@ -108,6 +108,22 @@ public class CustomFieldValueService {
     return fieldGroups;
   }
 
+  public List<CustomFieldGroup> getProjectProcessStepCustomValues(Long projectProcessStepId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+
+    // todo @humes - this is right, right? for projectProcessStep the object type is still 4? same as Process Step?
+    params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
+    params.put("projectProcessStepId", projectProcessStepId);
+
+    List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectProcessStepFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    handleCustomListOfValue(fieldGroups);
+
+    return fieldGroups;
+  }
+
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

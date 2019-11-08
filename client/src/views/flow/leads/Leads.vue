@@ -95,7 +95,7 @@
               <td class="text-left">{{item.fullName}}</td>
               <td class="text-left">{{item.owner ? item.owner.fullName : ''}}</td>
               <td class="text-left">{{item.state}}</td>
-              <td class="text-left">{{item.dateCreated | formatDate('date', $store.state.user.details.timezone)}}</td>
+              <td class="text-left">{{item.dateCreated | formatDate('date', $store.state.user.details.timezone.value)}}</td>
             </tr>
           </template>
         </v-data-table>

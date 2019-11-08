@@ -1,9 +1,9 @@
 package com.albatross.api.v1.flow.model;
 
+import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.List;
-
-import lombok.Data;
 
 @Data
 public class ProjectProcessStep {
@@ -17,4 +17,7 @@ public class ProjectProcessStep {
   private LocalDate completionDate;
 
   List<ProcessStepAction> actions;
+
+  //so far this is only used for saving
+  List<CustomFieldGroup> customFieldGroups;
 }

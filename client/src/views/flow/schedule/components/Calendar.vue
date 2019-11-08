@@ -39,7 +39,7 @@
             editable: true,
             defaultView: 'resourceTimelineDay',
             //todo: set the timezone using their setting
-            timezone: moment().tz(this.$store.state.user.details.timezone).format('z'),
+            timezone: moment().tz(this.$store.state.user.details.timezone.value).format('z'),
             header: {
               left: 'prev,next',
               center: 'title',
@@ -50,7 +50,7 @@
       }
     },
     created() {
-      console.log('randaLogger', moment().tz(this.$store.state.user.details.timezone).format('z'))
+      console.log('randaLogger', moment().tz(this.$store.state.user.details.timezone.value).format('z'))
     }
   }
 </script>

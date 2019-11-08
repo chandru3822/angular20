@@ -48,7 +48,7 @@
               {{item.note}}
               <div class="mt-2 note-created-by">
                 Created by: {{item.createdBy}}<br/>
-                Created at: {{item.dateCreated | formatDate('timestamp', $store.state.user.details.timezone)}}
+                Created at: {{item.dateCreated | formatDate('timestamp', $store.state.user.details.timezone.value)}}
               </div>
             </td>
             <td class="text-right">
@@ -87,7 +87,7 @@
                 <v-list-item-content>
                   <v-list-item-title>{{cn.note}}</v-list-item-title>
                   <v-list-item-subtitle>Left by: {{cn.createdBy}}</v-list-item-subtitle>
-                  <v-list-item-subtitle>Left at: {{cn.dateCreated | formatDate('timestamp', $store.state.user.details.timezone)}}</v-list-item-subtitle>
+                  <v-list-item-subtitle>Left at: {{cn.dateCreated | formatDate('timestamp', $store.state.user.details.timezone.value)}}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
             </v-list>

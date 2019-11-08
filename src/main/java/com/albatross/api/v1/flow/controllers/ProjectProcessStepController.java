@@ -34,4 +34,9 @@ public class ProjectProcessStepController {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
   }
+
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProjectProcessStep saveProjectProcessStep(@RequestBody ProjectProcessStep pps) {
+    return projectService.saveProjectProcessStep(pps);
+  }
 }

@@ -11,7 +11,7 @@
             (this section is just temporary for testing)
           </div>
           <div class="pt-5 font-weight-bold">
-            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone) }}
+            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone.value) }}
           </div>
         </v-card>
       </v-col>

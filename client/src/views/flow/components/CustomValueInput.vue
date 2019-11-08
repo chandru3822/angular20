@@ -4,22 +4,45 @@
     <!-- todo: need to handle modifying and saving field changes   -->
     <div v-if="field.dataTypeId === 1" class="mt-1">
       <div class="field-label">{{field.fieldName}}</div>
-      <flat-pickr
+<!--      <flat-pickr-->
+<!--          v-model="field.dateValue"-->
+<!--          :config="config"-->
+<!--          class="field-picker"-->
+<!--          placeholder=" "-->
+<!--      ></flat-pickr>-->
+      <datetime
           v-model="field.dateValue"
-          :config="config"
-          class="field-picker"
-          placeholder=" "
-      ></flat-pickr>
+          input-class="one-hunned"
+          :zone="timezone.value"
+          :format="{ year: 'numeric', month: 'long', day: 'numeric' }"
+          :phrases="{ok: 'Ok', cancel: 'Close'}"
+          auto
+      ></datetime>
     </div>
 
     <div v-if="field.dataTypeId === 2" class="mt-1">
+<!--      <div class="field-label">{{field.fieldName}}</div>-->
+<!--      <flat-pickr-->
+<!--          v-model="field.timestampValue"-->
+<!--          :config="config"-->
+<!--          class="field-picker"-->
+<!--          placeholder=" "-->
+<!--      ></flat-pickr>-->
+<!--      {{ field.timestampValue }}-->
+
       <div class="field-label">{{field.fieldName}}</div>
-      <flat-pickr
+      <datetime
+          type="datetime"
           v-model="field.timestampValue"
-          :config="config"
-          class="field-picker"
-          placeholder=" "
-      ></flat-pickr>
+          input-class="one-hunned"
+          :zone="timezone.value"
+          :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
+          :phrases="{ok: 'Ok', cancel: 'Close'}"
+          :hour-step="1"
+          :minute-step="15"
+          use12-hour
+          auto
+      ></datetime>
     </div>
 
     <div v-if="field.dataTypeId === 3">
@@ -92,16 +115,22 @@
 </template>
 
 <script>
+  import { Datetime } from 'vue-datetime';
+
   export default {
     name: 'CustomValueInput',
     props: {
       readonly: Boolean,
       field: Object
     },
+    components: {
+      Datetime
+    },
     data () {
       return {
         // todo: allow the component to pass in the format
         // todo: allow the component to pass in readonly value to config.clickOpens
+        timezone: this.$store.state.user.details.timezone,
         config: {
           altFormat: 'F j, Y h:i K',
           altInput: true,
@@ -109,9 +138,16 @@
           allowInput: false,
           time_24hr: false,
           enableTime: true,
-          clickOpens: true
+          clickOpens: true,
+          // dateFormat: "Y-m-d H:i K"
+          dateFormat: "Z"
         },
+      //  YYYY-MM-DD HH:MM:SSZ
+        // 2019-11-07 12:00 PM
       }
+    },
+    created () {
+      console.log('randaLogger', this.timezone)
     }
   }
 </script>

@@ -26,7 +26,7 @@
         <template v-slot:activator>
           <v-list-item-content>
             <v-list-item-title>Current Timezone</v-list-item-title>
-            <v-list-item-subtitle>{{timezone}}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{timezone.friendlyValue}}</v-list-item-subtitle>
           </v-list-item-content>
         </template>
 
@@ -34,7 +34,7 @@
                      :key="tz"
                      @click="changeTimezone(tz)">
           <v-list-item-content>
-            <v-list-item-title v-text="tz"></v-list-item-title>
+            <v-list-item-title v-text="tz.friendlyValue"></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list-group>
@@ -90,13 +90,13 @@
         menuOpen: false,
         timezone: null,
         timezones: [
-          'US/Pacific',
-          'US/Alaska',
-          'US/Arizona',
-          'US/Central',
-          'US/Hawaii',
-          'US/Eastern',
-          'US/Mountain'
+          { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
+          { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
+          { friendlyValue: 'US/Arizona', value: 'America/Phoenix'},
+          { friendlyValue: 'US/Central', value: 'America/Chicago'},
+          { friendlyValue: 'US/Hawaii', value: 'Pacific/Honolulu'},
+          { friendlyValue: 'US/Eastern', value: 'America/New_York'},
+          { friendlyValue: 'US/Mountain', value: 'America/Denver'}
         ],
         menuItems: [
           // {
@@ -123,7 +123,10 @@
       this.getUserImage()
       if(this.$store.state.user.details.timezone === null) {
         console.log('ttt', moment.tz.guess())
-        this.timezone = moment.tz.guess()
+        this.timezone = {
+          friendlyValue: moment.tz.guess(),
+          value: moment.tz.guess()
+        }
         this.$store.dispatch(UserActions.CHANGE_TIMEZONE, this.timezone)
       } else {
         this.timezone = this.$store.state.user.details.timezone

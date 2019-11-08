@@ -5,8 +5,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from 'axios'
-import VueFlatPickr from 'vue-flatpickr-component'
-import 'flatpickr/dist/flatpickr.css'
+// import VueFlatPickr from 'vue-flatpickr-component'
+// import 'flatpickr/dist/flatpickr.css'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@fullcalendar/core/main.css'
 import '@fullcalendar/timeline/main.css'
@@ -18,6 +18,11 @@ import moment from 'moment-timezone'
 import devtools from '@vue/devtools'
 import VueMapbox from 'vue-mapbox'
 import Mapbox from 'mapbox-gl'
+import Datetime from 'vue-datetime'
+// You need a specific loader for CSS files
+import 'vue-datetime/dist/vue-datetime.css'
+
+
 
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
@@ -35,7 +40,8 @@ Vue.config.productionTip = false
 Vue.component('downloadExcel', JsonExcel)
 
 Vue.use(Vue2Filters)
-Vue.use(VueFlatPickr)
+// Vue.use(VueFlatPickr)
+Vue.use(Datetime)
 Vue.use(VueMapbox, { mapboxgl: Mapbox });
 
 Vue.filter('formatDate', function (value, type, timezone, format) {
