@@ -26,7 +26,7 @@
        cf.field_name,
        cf.custom_field_sql_key_id,
        cfsk.sql_key as "customFieldSqlKey",
-       cf.system_list_type_id,
+       cf.company_system_list_id,
        psr.system_list_option_id,
        psr.custom_sql_option_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
@@ -75,11 +75,11 @@
                          from flow.list_of_value lv
                          where lv.parent_id = cf.list_of_value_id
                      ) lov), '[]')
-            when cf.system_list_type_id is not null then
+            when cf.company_system_list_id is not null then
                 coalesce((
                     SELECT array_to_json(array_agg(row_to_json(lov)))
                     FROM (
-                             select * from flow.get_system_list_options(cf.company_id, cf.system_list_type_id, true, cf.system_list_option_ids)
+                             select * from flow.get_system_list_options(cf.company_id, cf.company_system_list_id, true, cf.system_list_option_ids)
                          ) lov), '[]')
            else '[]' end AS "availableListOfValues"
       from flow.process_step_requirement psr
@@ -127,7 +127,7 @@
        ps.process_step_name as parent_name,
        cf.custom_field_sql_key_id,
        cfsk.sql_key as "customFieldSqlKey",
-       cf.system_list_type_id,
+       cf.company_system_list_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
        psr.system_list_option_id,
        psr.custom_sql_option_id,
@@ -177,11 +177,11 @@
                          from flow.list_of_value lv
                          where lv.parent_id = cf.list_of_value_id
                      ) lov), '[]')
-            when cf.system_list_type_id is not null then
+            when cf.company_system_list_id is not null then
                 coalesce((
                     SELECT array_to_json(array_agg(row_to_json(lov)))
                     FROM (
-                             select * from flow.get_system_list_options(cf.company_id, cf.system_list_type_id, true, cf.system_list_option_ids)
+                             select * from flow.get_system_list_options(cf.company_id, cf.company_system_list_id, true, cf.system_list_option_ids)
                          ) lov), '[]')
            else '[]' end AS "availableListOfValues"
       from flow.process_step_requirement psr

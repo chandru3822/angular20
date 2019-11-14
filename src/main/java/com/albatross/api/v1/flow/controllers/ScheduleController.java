@@ -1,7 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Schedule;
+import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.services.ScheduleService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -22,14 +23,15 @@ public class ScheduleController {
   @Autowired
   private ScheduleService scheduleService;
 
-  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Schedule> getSchedulesForCompany() {
-    return scheduleService.getSchedulesForCompany();
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(@RequestBody EventSearchParams params) {
+    return scheduleService.getEventsForCompanyByOrgAndUser(params);
   }
 
-  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Schedule getSchedule(@PathVariable Long id) {
-    return scheduleService.getSchedule(id);
+  @Data
+  public static class EventSearchParams {
+    private List<Long> userIds, orgIds;
+    private String startTime, endTime;
   }
 
 }

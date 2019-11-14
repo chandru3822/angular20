@@ -86,8 +86,8 @@ public class CustomFieldValueService {
             List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
             cv.setListOfValues(listOfValues);
           }
-        } else if (null != cv.getSystemListTypeId()) {
-          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getSystemListTypeId(), true, cv.getSystemListOptionIds());
+        } else if (null != cv.getCompanySystemListId()) {
+          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds());
           cv.setListOfValues(listOfValues);
         }
       }

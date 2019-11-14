@@ -152,6 +152,7 @@ export default new Router({
             path: '',
             component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/ProjectOverview.vue')
           }, {
+            name: 'projectProcessStep',
             path: 'processStep/:processStepId',
             component: () => import (/*webpackChunkName: "projectProcessStep" */ './views/flow/project/ProjectProcessStep.vue')
           }

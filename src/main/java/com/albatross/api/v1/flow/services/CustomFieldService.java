@@ -165,7 +165,7 @@ public class CustomFieldService {
       params.put("listOfValueId", parentId);
       params.put("customFieldSqlKeyId", customFieldSqlKeyId);
       params.put("companyId", customField.getCompanyId());
-      params.put("systemListTypeId", customField.getSystemListTypeId());
+      params.put("systemListId", customField.getCompanySystemListId());
       params.put("createdById", customField.getCreatedById());
       params.put("companyDataTypeId", customField.getCompanyDataTypeId());
 
@@ -226,8 +226,8 @@ public class CustomFieldService {
           List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
           cf.setListOfValues(listOfValues);
         }
-      } else if (null != cf.getSystemListTypeId()) {
-        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cf.getSystemListTypeId(), true, cf.getSystemListOptionIds());
+      } else if (null != cf.getCompanySystemListId()) {
+        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cf.getCompanySystemListId(), true, cf.getSystemListOptionIds());
         cf.setListOfValues(listOfValues);
       }
     }

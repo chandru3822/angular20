@@ -4,16 +4,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Created by Randa Nunn on 2019-10-22.
+ * Created by randanunn on 2019-05-20.
  * !Describe Purpose!
  */
 @Getter
 @Setter
-public class Schedule {
+public class SystemList {
 
-  private Long id;
-  private String schedule;
+  private Long id, companyId;
+  private String systemList;
   private Boolean archived;
-
 }
 

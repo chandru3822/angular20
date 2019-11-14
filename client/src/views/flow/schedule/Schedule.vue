@@ -2,10 +2,11 @@
   <v-container>
     <v-row :class="{'map-row': !IS_MOBILE}">
       <v-col cols="12" md="5" :class="{'map-row': IS_MOBILE}">
-        <Map :latitude="state.mapLatitude" :markers="projects" :longitude="state.mapLongitude" :zoom="state.mapZoom"></Map>
+        <Map :latitude="state.mapLatitude" :markers="projects" :longitude="state.mapLongitude"
+             :zoom="state.mapZoom"></Map>
       </v-col>
       <v-col cols="12" md="7">
-        <Calendar :events="projects" :resources="selectedOrgs"></Calendar>
+        <Calendar></Calendar>
       </v-col>
     </v-row>
     <v-row class="schedule-row mt-4">
@@ -22,59 +23,11 @@
                       return-object
                       item-text="state"
                       item-value="id"
-                      @input="getSchedulingOrgs(); getSchedulingUsers()"
             ></v-select>
-            <v-select v-model="selectedOrgs"
-                      :items="orgs"
-                      label="Organizations"
-                      multiple
-                      return-object
-                      item-text="orgName"
-                      item-value="id"
-                      @input="getEventsForOrgs"
-            >
-              <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-              >
-                <div v-if="index === 0 && selectedOrgs.length < 3" >
-                  <v-chip small v-for="sr in selectedOrgs">
-                    <span>{{ sr.orgName }}</span>
-                  </v-chip>
-                </div>
-                <span
-                    v-if="index === 1 && selectedOrgs.length >= 3"
-                    class="primary--text caption"
-                >{{ selectedOrgs.length }} selected</span>
-              </template>
-            </v-select>
-            <v-select v-model="selectedUsers"
-                      :items="users"
-                      label="Users"
-                      multiple
-                      return-object
-                      item-text="fullName"
-                      item-value="id"
-                      @input="getEventsForOrgs"
-            >
-              <template
-                  slot="selection"
-                  slot-scope="{ item, index }"
-              >
-                <div v-if="index === 0 && selectedUsers.length < 3" >
-                  <v-chip small v-for="sr in selectedUsers">
-                    <span>{{ sr.fullName }}</span>
-                  </v-chip>
-                </div>
-                <span
-                    v-if="index === 1 && selectedUsers.length >= 3"
-                    class="primary--text caption"
-                >{{ selectedUsers.length }} selected</span>
-              </template>
-            </v-select>
+
             <v-select v-model="selectedEventTypes"
                       :items="eventTypes"
-                      label="Event Type"
+                      label="Process Step"
                       item-text="processStepName"
                       item-value="id"
                       return-object
@@ -84,7 +37,7 @@
                   slot="selection"
                   slot-scope="{ item, index }"
               >
-                <div v-if="index === 0 && selectedEventTypes.length < 3" >
+                <div v-if="index === 0 && selectedEventTypes.length < 3">
                   <v-chip small v-for="sp in selectedEventTypes">
                     <span>{{ sp.processStepName }}</span>
                   </v-chip>
@@ -108,7 +61,7 @@
                   slot="selection"
                   slot-scope="{ item, index }"
               >
-                <div v-if="index === 0 && selectedProcessStepStatusTypes.length < 3" >
+                <div v-if="index === 0 && selectedProcessStepStatusTypes.length < 3">
                   <v-chip small v-for="sp in selectedProcessStepStatusTypes">
                     <span>{{ sp.processStepStatusType }}</span>
                   </v-chip>
@@ -160,9 +113,8 @@
   import {getActiveStates} from '@/services/stateService'
   import Map from './components/Map'
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
-  import cloneDeep from 'lodash.clonedeep'
+
   import Calendar from './components/Calendar'
-  import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
     name: 'Schedule',
@@ -183,43 +135,40 @@
         },
         // they do these coordinates backwards to comply with geoJSON whatever that is.
         //center of the USA
-        defaultCenter: [ -98.5795, 39.8283 ],
+        defaultCenter: [-98.5795, 39.8283],
         center: null,
         state: {},
         states: [],
-        orgs: [],
-        selectedOrgs: [],
-        users: [],
-        selectedUsers: [],
         processStepStatusTypes: [],
         selectedProcessStepStatusTypes: [],
         eventTypes: [],
         selectedEventTypes: [],
         asyncActions: {},
         headers: [
-          { text: 'Projects', value: 'projectName', show: true },
-          { text: 'Work Type', value: 'workType', show: true },
-          { text: 'Status', value: 'statusType', show: true},
-          { text: 'Estimated Time', value: 'estimatedTime', show: true},
-          { text: 'Time Window', value: 'timeWindow', show: true},
-          { text: 'Work Date', value: 'workDate', show: true},
-          { text: 'Resource', value: 'Resource', show: true},
+          {text: 'Projects', value: 'projectName', show: true},
+          {text: 'Work Type', value: 'workType', show: true},
+          {text: 'Status', value: 'statusType', show: true},
+          {text: 'Estimated Time', value: 'estimatedTime', show: true},
+          {text: 'Time Window', value: 'timeWindow', show: true},
+          {text: 'Work Date', value: 'workDate', show: true},
+          {text: 'Resource', value: 'Resource', show: true},
         ],
         projects: []
       }
     },
-    created () {
+
+    created() {
+      // todo: dont load events on page load.  just trying to get it working for now
+      // this.getProjects()
       this.getActiveStates()
       this.getStatusTypes()
       this.getEventTypes()
-      this.getSchedulingOrgs()
-      this.getSchedulingUsers()
     },
     methods: {
       goToProject(id) {
         this.$router.push({name: 'project', params: {projectId: id}})
       },
-      async getActiveStates () {
+      async getActiveStates() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getActiveStates()
@@ -231,35 +180,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getSchedulingOrgs () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, { params: {
-              stateId: this.state?.id ?? null
-            }})
-          this.orgs = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getSchedulingUsers () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
-              stateId: this.state?.id ?? null
-            }})
-          this.users = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getEventTypes () {
+
+      async getEventTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           // 'event types' is just schedulable process steps
@@ -272,7 +194,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getStatusTypes () {
+      async getStatusTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getStatusTypes()
@@ -284,82 +206,39 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getEventsForOrgs () {
-        //todo: actually do a get when i know how to do so
-        this.projects = [
-          {
-            id: 1,
-            projectName: 'Randa Test',
-            workType: 'Closer Appointment',
-            statusType: 'Un-routed',
-            estimatedTime: '60 minutes',
-            timeWindow: '8:00 AM - 12:00 PM',
-            workDate: null,
-            //stuff for fullcalendar event
-            resourceId: 219,
-            title: 'Meeting',
-            start: '2019-10-25T10:30:00',
-            end: '2019-10-25T12:30:00',
-            allDay: false,
-            //stuff for map marker
-            color: '#ff0000',
-            coordinates: [ -112.03396600000, 43.49165000000 ]
-          },
-          {
-            id: 2,
-            projectName: 'Humes Test',
-            workType: 'Closer Appointment',
-            statusType: 'Un-routed',
-            estimatedTime: '60 minutes',
-            timeWindow: '8:00 AM - 12:00 PM',
-            workDate: null,
-            //stuff for fullcalendar event
-            resourceId: 248,
-            title: 'Meeting',
-            start: '2019-10-25T08:30:00',
-            end: '2019-10-25T10:30:00',
-            allDay: false,
-            //stuff for map marker
-            color: '#35dffa',
-            coordinates: [ -112.1644, 43.3155 ]
-          },
-          {
-            id: 3,
-            projectName: 'Keller Test',
-            workType: 'Closer Appointment',
-            statusType: 'Un-routed',
-            estimatedTime: '60 minutes',
-            timeWindow: '8:00 AM - 12:00 PM',
-            workDate: null,
-            //stuff for fullcalendar event
-            resourceId: 247,
-            title: 'Meeting',
-            start: '2019-10-25T09:30:00',
-            end: '2019-10-25T10:30:00',
-            allDay: false,
-            //stuff for map marker
-            color: '#68fa30',
-            coordinates: [ -112.3450, 43.1905 ]
-          }, {
-            id: 4,
-            projectName: 'Mandy Test',
-            workType: 'Closer Appointment',
-            statusType: 'Un-routed',
-            estimatedTime: '60 minutes',
-            timeWindow: '8:00 AM - 12:00 PM',
-            workDate: null,
-            //stuff for fullcalendar event
-            resourceId: 229,
-            title: 'Meeting',
-            start: '2019-10-25T06:30:00',
-            end: '2019-10-25T08:30:00',
-            allDay: false,
-            //stuff for map marker
-            color: '#fa27f8',
-            coordinates: [ -111.9150, 43.6724 ]
-          }
-        ]
+
+      async getProjects() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/schedule`)
+          data.forEach(d => {
+            d.title = d.resourceName
+            d.id = d.resourceId
+            if (d.schedulingFields?.length > 0) {
+              let startField = d.schedulingFields.find(sf => sf.scheduleFieldTypeId === 1)
+              let endField = d.schedulingFields.find(sf => sf.scheduleFieldTypeId === 2)
+
+              let eventObject = {
+                projectName: d.resourceName,
+                resourceId: d.resourceId,
+                start: startField.timestampValue,
+                end: endField.timestampValue,
+                color: d.scheduleColor ?? '#FFFFFF',
+                title: 'Randa is Testing'
+              }
+              this.projects.push(eventObject)
+            }
+          })
+          // this.selectedOrgs = data
+          console.log('randaLogger DT', this.projects)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
+
     }
   }
 </script>
@@ -368,13 +247,14 @@
 </style>
 
 <style lang="scss" scoped>
-.map-row {
-  height: 50vh;
-  min-height: 300px;
-}
-.schedule-row {
-  height: 40vh;
-  min-height: 300px;
-}
+  .map-row {
+    /*height: 50vh;*/
+    min-height: 500px;
+  }
+
+  .schedule-row {
+    /*height: 40vh;*/
+    min-height: 300px;
+  }
 </style>
 

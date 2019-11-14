@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.SystemListType;
+import com.albatross.api.v1.flow.model.SystemList;
 import com.albatross.api.v1.flow.services.SystemListService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,8 @@ public class SystemListController {
   private SystemListService systemListService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<SystemListType> getSystemListTypesForCompany () {
-    return systemListService.getSystemListTypesForCompany();
+  public List<SystemList> getSystemListsForCompany () {
+    return systemListService.getSystemListsForCompany();
   }
 
   @GetMapping(value = "/{id}/options", produces = MediaType.APPLICATION_JSON_VALUE)

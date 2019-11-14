@@ -23,9 +23,11 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ${UPPER_ITEM}Service {
 
-private final SqlCache sqlCache;
+@Autowired
+SqlCache sqlCache;
 
-private final SecurityService securityService;
+@Autowired
+SecurityService securityService;
 
 public List<${UPPER_ITEM}> get${UPPER_ITEM}sForCompany() {
   User user = securityService.getCurrentUser();

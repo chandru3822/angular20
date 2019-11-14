@@ -14,7 +14,7 @@ public class User {
 
     private Long id, companyId, parentCompanyId;
     private String email, phoneNumber, username, password, firstName, lastName, fullName,
-        userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position;
+        userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position, title; //title used for scheduling tool resource name
     private Long userStatusTypeId;
     private Boolean schedulable;
     private List<UserPermission> permissions;

@@ -95,12 +95,12 @@
                                     inner join flow.company_object_type cot on cot.id = cfot.company_object_type_id
                                     inner join flow.object_type ot on ot.id = cot.object_type_id
                                     inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                    left join flow.company_system_list_type cslt on cslt.id = cf.system_list_type_id
+                                    left join flow.company_system_list csl on csl.id = cf.company_system_list_id
                                  where cf.company_id = :companyId
                                     and ot.flow_type_id = 2
                                     and cf.archived is not true
                                     and cdt.data_type_id = sft.required_data_type_id
-                                    and case when cf.system_list_type_id is not null then cslt.schedulable is true else 1=1 end
+                                    and case when cf.company_system_list_id is not null then csl.schedulable is true else 1=1 end
                                  order by cf.field_name
                              ) fields), '[]') as availableCustomFields
     from flow.schedule_field_type sft

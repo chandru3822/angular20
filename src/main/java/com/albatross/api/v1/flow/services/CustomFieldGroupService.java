@@ -153,6 +153,7 @@ public class CustomFieldGroupService {
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("schedulable", customFieldGroup.getSchedulable());
+    params.put("scheduleColor", customFieldGroup.getScheduleColor());
     params.put("processStepId", customFieldGroup.getProcessStepId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();
@@ -198,6 +199,7 @@ public class CustomFieldGroupService {
     params.put("id", customFieldGroup.getId());
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("groupName", customFieldGroup.getGroupName());
+    params.put("scheduleColor", customFieldGroup.getScheduleColor());
 
     sqlCache.update("customFieldGroup.updateCustomFieldGroup", params);
 

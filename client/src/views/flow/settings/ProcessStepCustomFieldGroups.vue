@@ -12,7 +12,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="createNew" text class="text-center one-hunned pa-3" flat
+        <v-card v-if="createNew" text class="text-left one-hunned pa-3" flat
                 color="rowShadeCustom">
           <div>
             <v-text-field
@@ -23,16 +23,23 @@
             <label>Schedule Group:</label>
             <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="getSchedulingFields">
             <!--  todo: help the ui. just getting it working for now  -->
-            <div v-if="newGroup.schedulable" v-for="(sf, index) in schedulingFields" :key="index">
-              <v-select v-model="newGroup.schedulingFields[index]"
-                        text
-                        :items="sf.availableCustomFields"
-                        :label="`Please select a field to be used as the ${sf.fieldType}`"
-                        placeholder="Select One..."
-                        item-value="id"
-                        item-text="fieldName"
-                        return-object
-              ></v-select>
+            <div v-if="newGroup.schedulable">
+              <div  v-for="(sf, index) in schedulingFields" :key="index">
+                <v-select v-model="newGroup.schedulingFields[index]"
+                          text
+                          :items="sf.availableCustomFields"
+                          :label="`Please select a field to be used as the ${sf.fieldType}`"
+                          placeholder="Select One..."
+                          item-value="id"
+                          item-text="fieldName"
+                          return-object
+                ></v-select>
+              </div>
+              <label>Select a color for Events on the Calendar:</label>
+              <v-color-picker v-model="newGroup.scheduleColor"
+                              class="my-3"
+                              mode="hexa"
+                              :hide-mode-switch="true"/>
             </div>
           </div>
           <v-btn
@@ -43,7 +50,7 @@
             Save
           </v-btn>
           <v-btn
-              @click="newGroup = {}; createNew = false;">
+              @click="newGroup = { schedulingFields: [], schedulable: false }; createNew = false;">
             Cancel
           </v-btn>
         </v-card>
@@ -165,13 +172,24 @@
                   <v-col  cols="12" justify="center" class="px-3 py-0"
                           v-if="item.customFields && item.customFields.length > 0">
       <!--              <h3 class="text-left">Assigned Custom Fields</h3>-->
+                    <div v-if="item.schedulable" class="mt-2">
+                      Selected Event Color: (click to change)
+                      <v-btn fab x-small v-if="!item.showColor" :color="item.scheduleColor" @click="item.showColor = !item.showColor"></v-btn>
+                      <v-btn v-if="item.showColor" fab x-small dark color="primary" @click="updateFieldGroup(item)"><v-icon>save</v-icon></v-btn>
+                      <v-btn v-if="item.showColor" fab x-small class="ml-2" @click="item.showColor = false"><v-icon>clear</v-icon></v-btn>
+                      <v-color-picker v-if="item.showColor"
+                                      v-model="item.scheduleColor"
+                                      class="my-3"
+                                      mode="hexa"
+                                      :hide-mode-switch="true"/>
+                    </div>
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                                group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                       <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                               :key="index" dense class="pa-0"  color="transparent">
-                        <v-list-item class="grab">
+                        <v-list-item :class="{grab: !item.schedulable}">
                           <v-list-item-action dense>
-                            <v-icon>drag_handle</v-icon>
+                            <v-icon v-if="!item.schedulable">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content class="pa-0">
                             {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
@@ -286,12 +304,13 @@
           this.newGroup.processStepId = this.$route.params.id
 
           this.newGroup.schedulingFields = this.newGroup.schedulable ? this.newGroup.schedulingFields : []
+          this.newGroup.scheduleColor = this.newGroup.scheduleColor.hex
 
           const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
           this.customFieldGroups.push(data)
           this.newGroup = {
             schedulingFields: [],
-            schedulable: false
+            schedulable: false,
           }
           this.createNew = false
           this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
@@ -299,6 +318,20 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Group')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async updateFieldGroup(group) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          //for now this is only used to update the schedule color
+          const {data} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+          group.showColor = false
+          this.snackbar = getSnackbar('SUCCESS', 'Color Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Color')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -478,5 +511,11 @@
   .item-icons {
     display: flex;
     float: right;
+  }
+
+  .color-swatch {
+    height: 30px;
+    width: 30px;
+    border-radius: 5px;
   }
 </style>

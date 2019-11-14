@@ -70,7 +70,7 @@
                 item-value="id"
             ></v-select>
             <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" class="mx-2" label="Custom"></v-switch>
-            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKeyId === null && selectedCustomField.systemListTypeId === null"
+            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKeyId === null && selectedCustomField.systemListId === null"
                           v-model="newRequirement.requirementValue"
                           placeholder="Enter a value"
                           label="Value">
@@ -78,7 +78,7 @@
             <v-select
                 v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
-                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKeyId !== null || selectedCustomField.systemListTypeId !== null)
+                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKeyId !== null || selectedCustomField.systemListId !== null)
                               && !selectedCustomField.allowMultiple"
                 v-model="selectedListValue"
                 :items="selectedCustomField.listOfValues"
@@ -191,7 +191,7 @@
                             :disabled="item.immutable"
                             label="Custom"></v-switch>
                   <!-- single text field for non list custom values -->
-                  <v-text-field v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKeyId && !item.systemListTypeId "
+                  <v-text-field v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKeyId && !item.systemListId "
                                 v-model="item.requirementValue"
                                 :disabled="item.immutable"
                                 placeholder="Enter a value"
@@ -208,7 +208,7 @@
                       item-value="id"
                   ></v-select>
                   <v-select
-                      v-else-if="item.customValue && item.systemListTypeId"
+                      v-else-if="item.customValue && item.systemListId"
                       v-model="item.systemListOptionId"
                       :disabled="item.immutable"
                       :items="item.availableListOfValues"
@@ -279,7 +279,7 @@
                     <span v-else-if="item.dataTypeRequirementId">
                       {{item.dataTypeRequirement ? item.dataTypeRequirement.dataTypeValue : 'unknown'}} {{item.secondaryRequirementValue}}
                     </span>
-                    <span v-else-if="item.listOfValueId || item.customFieldSqlKeyId || item.systemListTypeId">
+                    <span v-else-if="item.listOfValueId || item.customFieldSqlKeyId || item.systemListId">
 <!--                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}-->
                       {{ getListValueName(item) }}
                     </span>
@@ -939,7 +939,7 @@
             this.newRequirement.listOfValueIds = null
             this.newRequirement.dataTypeRequirementId = null
             this.newRequirement.requirementValue = null
-          } else if (this.newRequirement.customValue && this.selectedCustomField.systemListTypeId && !this.selectedCustomField.allowMultiple) {
+          } else if (this.newRequirement.customValue && this.selectedCustomField.systemListId && !this.selectedCustomField.allowMultiple) {
             //  if from a list of values and not allow multiple use the selected value id,
             this.newRequirement.systemListOptionId = this.selectedListValue.id
 

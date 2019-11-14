@@ -107,10 +107,11 @@
 
   <user.getSchedulingUsers>
     <![CDATA[
-      select u.user_id as id,
+      select distinct u.user_id as id,
              u.first_name,
              u.last_name,
-             u.first_name || ' ' || u.last_name as full_name
+             u.first_name || ' ' || u.last_name as full_name,
+             u.first_name || ' ' || u.last_name as title
       from flow.user_positions_vw u
       where u.company_id = :companyId
         and case when :stateId::integer is not null then u.state_id = :stateId::integer else u.user_schedulable is true end

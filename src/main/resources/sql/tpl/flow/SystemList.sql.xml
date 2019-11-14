@@ -1,17 +1,17 @@
 <sql>
-  <systemList.getSystemListTypesForCompany><![CDATA[
-      select slt.id,
-             slt.system_list_type,
-             slt.archived,
-             cslt.company_id
-      from flow.company_system_list_type cslt
-      inner join flow.system_list_type slt on slt.id = cslt.system_list_type_id
-      where cslt.company_id = :companyId
-      order by slt.system_list_type
-  ]]></systemList.getSystemListTypesForCompany>
+  <systemList.getSystemListsForCompany><![CDATA[
+      select sl.id,
+             sl.system_list,
+             sl.archived,
+             csl.company_id
+      from flow.company_system_list csl
+      inner join flow.system_list sl on sl.id = csl.system_list_id
+      where csl.company_id = :companyId
+      order by sl.system_list
+  ]]></systemList.getSystemListsForCompany>
 
   <systemList.getSystemListOptionsForCompany><![CDATA[
-      select * from flow.get_system_list_options(:companyId::integer, :systemListTypeId::integer, :subOptions::boolean, array[ :systemListOptionIds ]::integer[]);
+      select * from flow.get_system_list_options(:companyId::integer, :systemListId::integer, :subOptions::boolean, array[ :systemListOptionIds ]::integer[]);
   ]]></systemList.getSystemListOptionsForCompany>
 
 </sql>

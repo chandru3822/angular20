@@ -43,7 +43,7 @@
               </td>
               <td class="text-right">
                 <div class="item-icons">
-                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.systemListTypeId)">
+                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.systemListId)">
                     <v-icon v-if="expanded.includes(item)">remove</v-icon>
                     <v-icon v-else-if="item.custom">add</v-icon>
                     <v-icon v-else>edit</v-icon>
@@ -120,17 +120,17 @@
                   ></v-text-field>
 
                   <v-select v-if="item.companyDataType && item.companyDataType.systemList"
-                            v-model="item.systemListTypeId"
-                            :items="systemListTypes"
+                            v-model="item.systemListId"
+                            :items="systemLists"
                             :disabled="!item.custom"
                             :readonly="!item.custom"
                             label="System List Type"
-                            item-text="systemListType"
+                            item-text="systemList"
                             item-value="id"
-                            @change="getSystemListOptions(item.systemListTypeId)"
+                            @change="getSystemListOptions(item.systemListId)"
                   ></v-select>
 
-                  <v-select v-if="item.systemListTypeId"
+                  <v-select v-if="item.systemListId"
                             v-model="item.systemListOptionIds"
                             :items="systemListOptions"
                             multiple
@@ -232,7 +232,7 @@
         selectedIndex: null,
         expanded: [],
         customFields: [],
-        systemListTypes: [],
+        systemLists: [],
         systemListOptions: [],
         dataTypes: [],
         companyId: this.$store.state.user.details.companyId,
@@ -256,7 +256,7 @@
       await this.getCompanyDataTypes()
       this.getCustomFieldObjectTypes()
       this.getCustomFields()
-      this.getSystemListTypes()
+      this.getSystemLists()
     },
     methods: {
       filterDataTypes (item) {
@@ -284,11 +284,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getSystemListTypes() {
+      async getSystemLists() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/systemList`)
-          this.systemListTypes = data
+          this.systemLists = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

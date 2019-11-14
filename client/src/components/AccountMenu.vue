@@ -30,8 +30,8 @@
           </v-list-item-content>
         </template>
 
-        <v-list-item v-for="tz in timezones"
-                     :key="tz"
+        <v-list-item v-for="(tz, index) in timezones"
+                     :key="index"
                      @click="changeTimezone(tz)">
           <v-list-item-content>
             <v-list-item-title v-text="tz.friendlyValue"></v-list-item-title>

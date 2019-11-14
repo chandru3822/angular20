@@ -147,7 +147,7 @@
       }
     },
     created () {
-      console.log('randaLogger', this.timezone)
+      // console.log('randaLogger', this.timezone)
     }
   }
 </script>
