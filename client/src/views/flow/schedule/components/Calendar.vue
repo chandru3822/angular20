@@ -109,7 +109,6 @@
   import momentPlugin from '@fullcalendar/moment'
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
-  import merge from 'lodash.merge'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
