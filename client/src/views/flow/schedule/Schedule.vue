@@ -13,13 +13,11 @@
     <v-row class="schedule-row mt-4">
       <v-col cols="12" md="5">
         <v-card color="white" class="text-left">
-          <v-card-actions>
+          <v-card-actions v-if="!selectedProject || !selectedProject.projectId">
             <v-btn text @click="showFilters = true" :class="{underline: showFilters}">Filters</v-btn>
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
           </v-card-actions>
-          <v-card-text v-if="showFilters">
-<!--            start: {{startTime}}-->
-<!--            end: {{endTime}}-->
+          <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)">
             <v-select v-model="state"
                       :items="states"
                       label="State"
@@ -95,8 +93,8 @@
               </template>
             </v-select>
           </v-card-text>
-          <v-card-text v-else>
-            <v-autocomplete v-model="project"
+          <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
+            <v-autocomplete v-model="selectedProject"
                             :items="searchProjects"
                             :search-input.sync="search"
                             item-text="projectName"
@@ -118,6 +116,36 @@
                       return-object
             >
             </v-select>
+          </v-card-text>
+          <v-card-text v-else>
+            <v-toolbar color="white" flat>
+              <v-toolbar-title class="app-title">
+                {{selectedProject.customerFirstName}} {{selectedProject.customerLastName}}
+                <div class="toolbar-subtitle">{{selectedProject.processStepName}}</div>
+              </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-tooltip top>
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on" @click="goTo(selectedProject, true, false)"><v-icon>arrow_forward</v-icon></v-btn>
+                  </template>
+                  <span>Go to Project</span>
+                </v-tooltip>
+                <v-tooltip top>
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on" @click="goTo(selectedProject, false, true)"><v-icon>double_arrow</v-icon></v-btn>
+                  </template>
+                  <span>Go to Process Step</span>
+                </v-tooltip>
+                <v-tooltip top>
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on" @click="selectedProject = {}"><v-icon>close</v-icon></v-btn>
+                  </template>
+                  <span>Close</span>
+                </v-tooltip>
+              </v-toolbar-items>
+            </v-toolbar>
+            Hello: {{selectedProject}}
           </v-card-text>
         </v-card>
       </v-col>
@@ -145,6 +173,10 @@
 
           <template #item.start="{ item }">
             {{item.start | formatDate('date', $store.state.user.details.timezone.value)}}
+          </template>
+
+          <template #item.projectName="{ item }">
+            <a @click="selectedProject = item" style="text-decoration: underline">{{item.projectName}}</a>
           </template>
 
         </v-data-table>
@@ -199,9 +231,9 @@
         processSteps: [],
         //used for multi select
         selectedProcessSteps: [],
-        //used for single slect
+        //used for single select
         selectedProcessStep: {},
-        project: {},
+        selectedProject: {},
         searchProjects: [],
         searchProjectsLoading: false,
         search: null,
@@ -254,6 +286,13 @@
       this.getProcessSteps()
     },
     methods: {
+      goTo (ps, isProject, isProcessStep) {
+        if (isProject) {
+          this.$router.push({name: 'project', params: {projectId: ps.projectId}})
+        } else if (isProcessStep) {
+          this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}})
+        }
+      },
       resourceMapCallback (newValue) {
         this.mapResources = newValue
       },

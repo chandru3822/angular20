@@ -245,6 +245,12 @@ label[for="adminOriginatorSelect"] {
   }
 }
 
+/* currently toolbar doesn't support multi line titles */
+.toolbar-subtitle {
+  font-size: 14px;
+  font-weight: normal;
+}
+
 /* this margin makes the pagination footer not fit on one row on mobile.  should work globally */
 .v-application--is-ltr .v-data-footer__pagination {
   margin: 0 0 0 24px !important;
