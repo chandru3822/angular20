@@ -3,10 +3,11 @@
     <v-row :class="{'map-row': !IS_MOBILE}">
       <v-col cols="12" md="5" :class="{'map-row': IS_MOBILE}">
         <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
-             :zoom="state.mapZoom"></Map>
+             :zoom="state.mapZoom" :map-resources="mapResources"></Map>
       </v-col>
       <v-col cols="12" md="7">
-        <Calendar></Calendar>
+        <!-- map-resources allows the calendar to send events back to the map -->
+        <Calendar :map-resources="mapResources" :callback="this.resourceMapCallback" :date-callback="this.dateCallback"></Calendar>
       </v-col>
     </v-row>
     <v-row class="schedule-row mt-4">
@@ -17,6 +18,8 @@
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
           </v-card-actions>
           <v-card-text v-if="showFilters">
+<!--            start: {{startTime}}-->
+<!--            end: {{endTime}}-->
             <v-select v-model="state"
                       :items="states"
                       label="State"
@@ -140,6 +143,10 @@
             No results
           </template>
 
+          <template #item.start="{ item }">
+            {{item.start | formatDate('date', $store.state.user.details.timezone.value)}}
+          </template>
+
         </v-data-table>
       </v-col>
     </v-row>
@@ -169,8 +176,8 @@
       return {
         snackbar: {},
         IS_MOBILE,
-        // showFilters: true,
-        showFilters: false,
+        showFilters: true,
+        // showFilters: false,
         defaultZoom: 2.0,
         map: {
           accessToken: '***REMOVED***',
@@ -180,7 +187,11 @@
         //center of the USA
         defaultCenter: [-98.5795, 39.8283],
         center: null,
+        startTime: null,
+        endTime: null,
+        mapResources: [],
         selectedRows: [],
+        selectedResources: [],
         state: {},
         states: [],
         processStepStatusTypes: [],
@@ -199,8 +210,8 @@
           {text: 'Project', value: 'projectName', show: true},
           {text: 'Process Step', value: 'processStepName', show: true},
           {text: 'Status', value: 'processStepStatusType', show: true},
-          // {text: 'Work Date', value: 'workDate', show: true},
-          // {text: 'Resource', value: 'Resource', show: true},
+          {text: 'Work Date', value: 'start', show: true},
+          {text: 'Resource', value: 'resourceName', show: true},
         ],
         projects: [],
         masterProjects: []
@@ -229,6 +240,12 @@
           console.log('randaLogger', this.project.projectName)
           this.getProjectsSearchedFor(val);
         }
+      },
+      startTime () {
+        this.getProjects()
+      },
+      endTime () {
+        this.getProjects()
       }
     },
     created() {
@@ -237,6 +254,13 @@
       this.getProcessSteps()
     },
     methods: {
+      resourceMapCallback (newValue) {
+        this.mapResources = newValue
+      },
+      dateCallback (startTime, endTime) {
+        this.startTime = startTime
+        this.endTime = endTime
+      },
       async getActiveStates() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -276,30 +300,25 @@
         }
       },
 
-      async getProjects(search) {
-        console.log('randaLogger',search)
-        if(this.selectedProcessSteps?.length > 0 || search != null) {
+      async getProjects() {
+        if(this.selectedProcessSteps?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            let params = {}
-            if(search != null) {
-              params.search = search
-            } else {
-              params.stepIds = this.selectedProcessSteps?.length > 0 ? this.selectedProcessSteps.map(o => o.id) : [],
-              params.stateId = this.state.id
+            let params = {
+              stepIds: this.selectedProcessSteps?.length > 0 ? this.selectedProcessSteps.map(o => o.id) : [],
+              stateId: this.state.id,
+              startTime: this.startTime,
+              endTime: this.endTime
             }
+
             const {data} = await postRequest(`/schedule/projects`, params)
             data.forEach(d => {
               d.coordinates = [ d.longitude, d.latitude ]
             })
-            if(search != null) {
-              this.searchProjects = data
-            } else {
-              this.projects = data
-              this.masterProjects = cloneDeep(data)
-              if(this.selectedProcessStepStatusTypes?.length > 0) {
-                this.filterProjects()
-              }
+            this.projects = data
+            this.masterProjects = cloneDeep(data)
+            if(this.selectedProcessStepStatusTypes?.length > 0) {
+              this.filterProjects()
             }
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -343,8 +362,9 @@
         // delay new call 500ms
         this._timerId = setTimeout(async () => {
           console.log('we will load', this.search)
-          await this.getProjects(search)
-          this.searchProjectsLoading = false
+          //todo:_this
+          // await this.getProjects(search)
+          // this.searchProjectsLoading = false
         }, 500)
       },
       async handleProjectSelect() {

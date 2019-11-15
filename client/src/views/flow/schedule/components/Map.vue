@@ -3,6 +3,7 @@
             :mapStyle="map.style"
             @load="onMapLoad">
         <MglMarker v-for="m in markers" v-if="m.coordinates" :coordinates="m.coordinates" :color="m.color || '#ffffff'"></MglMarker>
+        <MglMarker v-for="m in mapResources" v-if="m.coordinates" :coordinates="m.coordinates" :color="m.color || '#ffffff'"></MglMarker>
         <MglNavigationControl :showCompass="false" position="top-right" />
     </MglMap>
 </template>
@@ -24,7 +25,8 @@
       latitude: {type: Number},
       longitude: {type: Number},
       zoom: {type: Number},
-      markers: {type: Array}
+      markers: {type: Array},
+      mapResources: {type: Array},
     },
     watch: {
       'latitude': function () {
@@ -46,6 +48,7 @@
       }
     },
     created() {
+      console.log('MAP MAP', this.mapResources)
       this.mapbox = Mapbox
     },
     methods: {

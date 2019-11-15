@@ -121,7 +121,9 @@
       Snackbar
     },
     props: {
-
+      mapResources: {type: Array},
+      callback: Function,
+      dateCallback: Function,
     },
     computed: {
       //orgs
@@ -155,17 +157,49 @@
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
-      }
+      },
+    },
+    mounted () {
+      this.calendarApi = this.$refs.eventCalendar.getApi()
+      this.calendarStart = this.calendarApi.getDate()
+      this.setCalendarStartAndEndTimes()
+    },
+    watch: {
+      '$store.state.user.details.timezone.value': function () {
+        this.calendar.options.timezone = this.$store.state.user.details.timezone.value
+
+      },
+      // whenever selectedUsers or selectedOrgs changes, concat them both into resources
+      'selectedUsers': function () {
+        this.resources = this.selectedOrgs.concat(this.selectedUsers)
+        this.handleResourceColors()
+      },
+      'selectedOrgs': function () {
+        this.resources = this.selectedOrgs.concat(this.selectedUsers)
+        this.handleResourceColors()
+      },
+    },
+    created() {
+      // console.log('randaLogger',moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'))
+      this.getSchedulingOrgs()
+      this.getSchedulingUsers()
     },
     data() {
       return {
         snackbar: {},
+        calendarInitialRender: true,
+        calendarApi: null,
+        calendarStart: null,
+        calendarView: null,
+        calendarStartTime: null,
+        calendarEndTime: null,
         events: [],
         orgs: [],
         selectedOrgs: [],
         users: [],
         selectedUsers: [],
         resources: [],
+        mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         calendar: {
@@ -191,6 +225,7 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   console.log('randaLogger MOMENT', moment())
                   calendarApi.gotoDate(new Date)
+                  // this.setCalendarStartAndEndTimes()
                   this.getEvents()
                 }
               },
@@ -200,6 +235,7 @@
                 click: () => {
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.prev()
+                  // this.setCalendarStartAndEndTimes()
                   this.getEvents()
                 }
               },
@@ -209,6 +245,7 @@
                 click: () => {
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.next()
+                  // this.setCalendarStartAndEndTimes()
                   this.getEvents()
                 }
               }
@@ -216,26 +253,6 @@
           }
         }
       }
-    },
-    watch: {
-      '$store.state.user.details.timezone.value': function () {
-        this.calendar.options.timezone = this.$store.state.user.details.timezone.value
-
-      },
-      // whenever selectedUsers or selectedOrgs changes, concat them both into resources
-      'selectedUsers': function () {
-        this.resources = this.selectedOrgs.concat(this.selectedUsers)
-        this.handleResourceColors()
-      },
-      'selectedOrgs': function () {
-        this.resources = this.selectedOrgs.concat(this.selectedUsers)
-        this.handleResourceColors()
-      }
-    },
-    created() {
-      // console.log('randaLogger',moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'))
-      this.getSchedulingOrgs()
-      this.getSchedulingUsers()
     },
     methods: {
       handleResourceColors() {
@@ -319,39 +336,31 @@
         }
       },
       async getEvents() {
+        if(!this.calendarInitialRender) {
+          this.setCalendarStartAndEndTimes()
+        }
+        this.calendarInitialRender = false
         // note: this gets called every render of the calendar which makes clicking the 'day' and 'week' buttons work
         console.log('randaLogger CALLED')
         this.events = []
         if(this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
-          let calendarApi = this.$refs.eventCalendar.getApi()
-          const calendarStart = calendarApi.getDate()
-          let calendarView = calendarApi.view?.type
-          let startTime, endTime
-          if(calendarView === 'resourceTimelineDay') {
-            startTime = moment(calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-            endTime = moment(calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          } else {
-            //moment starts on sunday, add 1 to start
-            startTime = moment(calendarStart).startOf('week').add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-            endTime = moment(calendarStart).endOf('week').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          }
           this.$store.commit(AppMutations.SET_LOADING, true)
 
           try {
             let params = {
               orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
               userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
-              startTime,
-              endTime
+              startTime: this.calendarStartTime,
+              endTime: this.calendarEndTime
             }
             const {data} = await postRequest(`/schedule`, params)
             data.forEach(d => {
               d.resourceId = `${d.systemListTypeId}${d.resourceId}`
               d.title = `<b>${d.customerFirstName} ${d.customerLastName}</b> <br/> ${d.groupName}`
-              // let matchingResource = this.resources.find(r => r.id = d.resourceId)
-              // d.colorForBorder = matchingResource?.color
+              let matchingResource = this.resources.find(r => r.id === d.resourceId)
+              d.colorForBorder = matchingResource?.color
             })
-            this.events = data
+            this.events = cloneDeep(data)
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -360,6 +369,19 @@
           }
         }
 
+      },
+      setCalendarStartAndEndTimes () {
+        this.calendarStart = this.calendarApi.getDate()
+        this.calendarView = this.calendarApi.view?.type
+        if(this.calendarView === 'resourceTimelineDay') {
+          this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+        } else {
+          //moment starts on sunday, add 1 to start
+          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          this.calendarEndTime = moment(this.calendarStart).endOf('week').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+        }
+        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
       handleEventClick (info) {
         let props = info.event.extendedProps
@@ -377,8 +399,29 @@
         checkbox.setAttribute('type', 'checkbox')
         checkbox.setAttribute('class', 'mr-2')
 
-        checkbox.onchange = () => {
-          console.log('clicked it', renderInfo)
+        checkbox.onchange = (event) => {
+          if(event.target.checked) {
+            // debugger
+            let resource = renderInfo.resource
+            let resourceEvents = this.events.filter(e => {
+              return e.resourceId === resource.id
+            })
+            console.log('randaLogger',resourceEvents)
+            resourceEvents.forEach(re => {
+              let eventObj = {
+                id: resource.id,
+                color: resource.extendedProps.color,
+                coordinates: [ re.longitude, re.latitude]
+              }
+              this.mapResourceEvents.push(eventObj)
+            })
+          } else {
+            this.mapResourceEvents = this.mapResourceEvents.filter(r => {
+              return r.id !== renderInfo.resource?.id
+            })
+          }
+          this.callback(this.mapResourceEvents)
+
         }
 
         renderInfo.el.querySelector('.fc-cell-text')

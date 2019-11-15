@@ -13,9 +13,11 @@ import java.sql.Timestamp;
 @Setter
 public class ScheduleEvent {
 
-  private Long resourceId, processStepId, systemListTypeId, projectId, projectProcessStepId;
-  private String resourceName, groupName, customerFirstName, customerLastName;
+  private Long resourceId, processStepId, systemListTypeId, projectId, projectProcessStepId, stateId, processStepStatusTypeId;
+  private String resourceName, groupName, customerFirstName, customerLastName, projectName, processStepName, state, processStepStatusType;
   private Boolean archived;
+
+  private Double latitude, longitude;
 
   private Timestamp start, end;
 }
