@@ -40,7 +40,7 @@ public class ScheduleService {
     List<ScheduleEvent> results = sqlCache.query("schedule.getEvents", params, ScheduleEvent.class);
     return results;
   }
-
+  // todo: @randa schedule.getProjects and schedule.getEvents are the exact same query except for the where clause. can we make it one? _rn
   public List<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
