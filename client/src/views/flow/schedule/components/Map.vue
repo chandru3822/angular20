@@ -2,13 +2,14 @@
     <MglMap :accessToken="map.accessToken"
             :mapStyle="map.style"
             @load="onMapLoad">
-        <MglMarker v-for="m in markers" v-if="m.coordinates" :coordinates="m.coordinates" :color="m.color" />
+        <MglMarker v-for="m in markers" v-if="m.coordinates" :coordinates="m.coordinates" :color="m.color || '#ffffff'"></MglMarker>
+        <MglNavigationControl :showCompass="false" position="top-right" />
     </MglMap>
 </template>
 
 <script>
   import Mapbox from 'mapbox-gl'
-  import { MglMap, MglMarker } from 'vue-mapbox'
+  import { MglMap, MglMarker, MglNavigationControl } from 'vue-mapbox'
   import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE } from '@/helpers/helpers'
 
 
@@ -16,7 +17,8 @@
     name: 'ScheduleMap',
     components: {
       MglMap,
-      MglMarker
+      MglMarker,
+      MglNavigationControl,
     },
     props: {
       latitude: {type: Number},

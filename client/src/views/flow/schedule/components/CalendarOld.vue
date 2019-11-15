@@ -1,5 +1,5 @@
 <template>
-  <div id="calendar-container">
+  <div class="calendar-container">
     <v-select v-model="selectedOrgs"
               :items="orgs"
               label="Organizations"
@@ -90,13 +90,10 @@
                   :scroll-time="calendar.options.scrollTime"
                   :first-day="calendar.options.firstDay"
                   :hidden-days="calendar.options.hiddenDays"
+                  :button-icons="calendar.options.buttonIcons"
                   :custom-buttons="calendar.options.customButtons"
-                  :slot-width="55"
                   :view-skeleton-render="getEvents"
                   @eventClick="(info) => handleEventClick(info)"
-                  @eventRender="(info) => handleEventRender(info)"
-                  @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
-
     />
     <Snackbar :snackbar="snackbar"></Snackbar>
   </div>
@@ -106,14 +103,13 @@
   import FullCalendar from '@fullcalendar/vue'
   import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
   import interaction from '@fullcalendar/interaction'
-  import momentPlugin from '@fullcalendar/moment'
+  import { toMoment } from '@fullcalendar/moment'
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
-  import merge from 'lodash.merge'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar, IS_MOBILE, COLOR_LIST} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
     name: 'ScheduleCalendar',
@@ -167,7 +163,7 @@
         users: [],
         selectedUsers: [],
         resources: [],
-        calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
+        calendarPlugins: [ interaction, resourceTimelinePlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         calendar: {
           options: {
@@ -184,6 +180,12 @@
               left: 'customPrev,customToday,customNext',
               center: 'title',
               right: 'resourceTimelineDay,resourceTimelineWeek'
+            },
+            buttonIcons: {
+              prev: 'left-single-arrow',
+              next: 'right-single-arrow',
+              prevYear: 'left-double-arrow',
+              nextYear: 'right-double-arrow'
             },
             customButtons: {
               customToday: {
@@ -221,16 +223,17 @@
     watch: {
       '$store.state.user.details.timezone.value': function () {
         this.calendar.options.timezone = this.$store.state.user.details.timezone.value
-
+        // let calendarApi = this.$refs.eventCalendar.getApi()
+        // calendarApi.rerenderEvents()
+        // calendarApi.destroy()
+        // calendarApi.render()
       },
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
       'selectedUsers': function () {
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
-        this.handleResourceColors()
       },
       'selectedOrgs': function () {
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
-        this.handleResourceColors()
       }
     },
     created() {
@@ -239,26 +242,6 @@
       this.getSchedulingUsers()
     },
     methods: {
-      handleResourceColors() {
-        this.resources.forEach((r, index) => {
-          r.eventBackgroundColor = '#FFFFFF'
-          r.eventBorderColor = '#919191'
-
-          //the event will come get this later
-          if(index <= 19) {
-            // use one of the first 20 pre-defined colors
-            r.color = COLOR_LIST[index]
-          } else {
-            //generate a random color
-            let hexColorCode = '';
-            while (hexColorCode.length < 6) {
-              hexColorCode += (Math.random()).toString(16).substr(-6).substr(-1)
-            }
-            console.log('randaLogger random color', hexColorCode)
-            r.color = '#'+hexColorCode
-          }
-        })
-      },
       toggleSelectAllOrgs () {
         this.$nextTick(() => {
           if (this.selectAll) {
@@ -328,6 +311,7 @@
           const calendarStart = calendarApi.getDate()
           let calendarView = calendarApi.view?.type
           let startTime, endTime
+          console.log('randaLogger', calendarView)
           if(calendarView === 'resourceTimelineDay') {
             startTime = moment(calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
             endTime = moment(calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
@@ -336,6 +320,8 @@
             startTime = moment(calendarStart).startOf('week').add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
             endTime = moment(calendarStart).endOf('week').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
           }
+          console.log('randaLogger',startTime)
+          console.log('randaLogger',endTime)
           this.$store.commit(AppMutations.SET_LOADING, true)
 
           try {
@@ -348,11 +334,11 @@
             const {data} = await postRequest(`/schedule`, params)
             data.forEach(d => {
               d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-              d.title = `<b>${d.customerFirstName} ${d.customerLastName}</b> <br/> ${d.groupName}`
-              // let matchingResource = this.resources.find(r => r.id = d.resourceId)
-              // d.colorForBorder = matchingResource?.color
+              d.color = d.scheduleColor ?? '#FFFFFF'
+              d.title = d.groupName
+
+              this.events = data
             })
-            this.events = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -363,50 +349,19 @@
 
       },
       handleEventClick (info) {
+        console.log('event clicked yo', info)
         let props = info.event.extendedProps
         this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
-      },
-      handleEventRender (info) {
-        console.log('event rendered yo', info)
-        info.el.querySelector('.fc-title').innerHTML = info.event.title
-        info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px;`
-      },
-      handleResourceRender (renderInfo) {
-        console.log('resource rendered yo', renderInfo)
-
-        let checkbox = document.createElement('INPUT');
-        checkbox.setAttribute('type', 'checkbox')
-        checkbox.setAttribute('class', 'mr-2')
-
-        checkbox.onchange = () => {
-          console.log('clicked it', renderInfo)
-        }
-
-        renderInfo.el.querySelector('.fc-cell-text')
-          .prepend(checkbox)
-
       }
     }
   }
 </script>
 
 <style lang="scss">
-  #calendar-container .fc-timeline-event {
-    /*height: inherit;*/
-    border-radius: 5px;
-    padding-left: 7px;
-  }
-
-  #calendar-container .fc-event:hover {
-    color: inherit !important;
-    -webkit-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-    box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
-  }
 </style>
 
 <style lang="scss" scoped>
-#calendar-container {
+.calendar-container {
   height: 100%;
 }
 </style>

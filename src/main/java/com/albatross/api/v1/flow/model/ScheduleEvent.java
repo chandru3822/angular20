@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 public class ScheduleEvent {
 
   private Long resourceId, processStepId, systemListTypeId, projectId, projectProcessStepId;
-  private String resourceName, scheduleColor, groupName;
+  private String resourceName, groupName, customerFirstName, customerLastName;
   private Boolean archived;
 
   private Timestamp start, end;

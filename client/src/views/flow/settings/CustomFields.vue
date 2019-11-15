@@ -110,7 +110,7 @@
                       label="Data Type"
                       item-text="companyDataType"
                       item-value="id"
-                      autocomplete="new-password"
+                      autocomplete="off"
                       return-object
                   ></v-autocomplete>
 

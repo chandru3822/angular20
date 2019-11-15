@@ -37,6 +37,3 @@ alter table flow.custom_field_group_assignment
 alter table flow.custom_field_group
     add column if not exists schedulable boolean not null default false;
 
-alter table flow.custom_field_group
-    add column if not exists schedule_color varchar(10);
-

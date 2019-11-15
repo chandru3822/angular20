@@ -35,11 +35,6 @@
                           return-object
                 ></v-select>
               </div>
-              <label>Select a color for Events on the Calendar:</label>
-              <v-color-picker v-model="newGroup.scheduleColor"
-                              class="my-3"
-                              mode="hexa"
-                              :hide-mode-switch="true"/>
             </div>
           </div>
           <v-btn
@@ -172,17 +167,6 @@
                   <v-col  cols="12" justify="center" class="px-3 py-0"
                           v-if="item.customFields && item.customFields.length > 0">
       <!--              <h3 class="text-left">Assigned Custom Fields</h3>-->
-                    <div v-if="item.schedulable" class="mt-2">
-                      Selected Event Color: (click to change)
-                      <v-btn fab x-small v-if="!item.showColor" :color="item.scheduleColor" @click="item.showColor = !item.showColor"></v-btn>
-                      <v-btn v-if="item.showColor" fab x-small dark color="primary" @click="updateFieldGroup(item)"><v-icon>save</v-icon></v-btn>
-                      <v-btn v-if="item.showColor" fab x-small class="ml-2" @click="item.showColor = false"><v-icon>clear</v-icon></v-btn>
-                      <v-color-picker v-if="item.showColor"
-                                      v-model="item.scheduleColor"
-                                      class="my-3"
-                                      mode="hexa"
-                                      :hide-mode-switch="true"/>
-                    </div>
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                                group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                       <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
@@ -304,7 +288,6 @@
           this.newGroup.processStepId = this.$route.params.id
 
           this.newGroup.schedulingFields = this.newGroup.schedulable ? this.newGroup.schedulingFields : []
-          this.newGroup.scheduleColor = this.newGroup.scheduleColor.hex
 
           const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
           this.customFieldGroups.push(data)

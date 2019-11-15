@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ScheduleEvent;
+import com.albatross.api.v1.flow.model.ScheduleProject;
 import com.albatross.api.v1.flow.services.ScheduleService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +29,16 @@ public class ScheduleController {
     return scheduleService.getEventsForCompanyByOrgAndUser(params);
   }
 
+  @PostMapping(value = "/projects", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ScheduleProject> getScheduleProjects(@RequestBody EventSearchParams params) {
+    return scheduleService.getScheduleProjects(params);
+  }
+
   @Data
   public static class EventSearchParams {
-    private List<Long> userIds, orgIds;
-    private String startTime, endTime;
+    private List<Long> userIds, orgIds, stepIds;
+    private String startTime, endTime, search;
+    private Long stateId;
   }
 
 }

@@ -1,7 +1,7 @@
 <sql>
   <customFieldGroup.insertCustomFieldGroup><![CDATA[
-    insert into flow.custom_field_group(group_name, company_object_type_id, group_order, process_step_id, schedulable, schedule_color)
-    values (:groupName, :companyObjectTypeId, :groupOrder, :processStepId, :schedulable, :scheduleColor);
+    insert into flow.custom_field_group(group_name, company_object_type_id, group_order, process_step_id, schedulable)
+    values (:groupName, :companyObjectTypeId, :groupOrder, :processStepId, :schedulable);
   ]]></customFieldGroup.insertCustomFieldGroup>
 
   <customFieldGroup.getCompanyObjectTypeId><![CDATA[
@@ -14,8 +14,7 @@
   <customFieldGroup.updateCustomFieldGroup><![CDATA[
     update flow.custom_field_group
       set group_name = :groupName,
-          group_order = :groupOrder,
-          schedule_color = :scheduleColor
+          group_order = :groupOrder
     where id = :id
   ]]></customFieldGroup.updateCustomFieldGroup>
 

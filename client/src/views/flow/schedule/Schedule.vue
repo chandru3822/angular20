@@ -2,7 +2,7 @@
   <v-container>
     <v-row :class="{'map-row': !IS_MOBILE}">
       <v-col cols="12" md="5" :class="{'map-row': IS_MOBILE}">
-        <Map :latitude="state.mapLatitude" :markers="projects" :longitude="state.mapLongitude"
+        <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
              :zoom="state.mapZoom"></Map>
       </v-col>
       <v-col cols="12" md="7">
@@ -23,29 +23,46 @@
                       return-object
                       item-text="state"
                       item-value="id"
+                      @input="getProjects()"
             ></v-select>
 
-            <v-select v-model="selectedEventTypes"
-                      :items="eventTypes"
+            <v-select v-model="selectedProcessSteps"
+                      :items="processSteps"
                       label="Process Step"
                       item-text="processStepName"
                       item-value="id"
                       return-object
+                      :disabled="!state || !state.id"
                       multiple
+                      @input="getProjects()"
             >
+              <v-list-item
+                  slot="prepend-item"
+                  ripple
+                  @click="toggleSelectAllSteps()"
+              >
+                <v-list-item-action>
+                  <v-icon>{{ icon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                  slot="prepend-item"
+                  class="mt-2"
+              ></v-divider>
               <template
                   slot="selection"
                   slot-scope="{ item, index }"
               >
-                <div v-if="index === 0 && selectedEventTypes.length < 3">
-                  <v-chip small v-for="sp in selectedEventTypes">
+                <div v-if="index === 0 && selectedProcessSteps.length < 3">
+                  <v-chip small v-for="sp in selectedProcessSteps">
                     <span>{{ sp.processStepName }}</span>
                   </v-chip>
                 </div>
                 <span
-                    v-if="index === 1 && selectedEventTypes.length >= 3"
+                    v-if="index === 1 && selectedProcessSteps.length >= 3"
                     class="primary--text caption"
-                >{{ selectedEventTypes.length }} selected</span>
+                >{{ selectedProcessSteps.length }} selected</span>
               </template>
             </v-select>
 
@@ -54,8 +71,10 @@
                       label="Status"
                       item-text="processStepStatusType"
                       item-value="id"
+                      :disabled="selectedProcessSteps.length === 0"
                       return-object
                       multiple
+                      @input="filterProjects"
             >
               <template
                   slot="selection"
@@ -74,7 +93,28 @@
             </v-select>
           </v-card-text>
           <v-card-text v-else>
-            Not sure
+            <v-autocomplete v-model="project"
+                            :items="searchProjects"
+                            :search-input.sync="search"
+                            item-text="projectName"
+                            prepend-icon="search"
+                            text
+                            autocomplete="off"
+                            :loading="searchProjectsLoading"
+                            item-value="id"
+                            return-object
+                            @input="handleProjectSelect"
+                            >
+
+            </v-autocomplete>
+            <v-select v-model="selectedProcessStep"
+                      :items="processSteps"
+                      label="Process Step"
+                      item-text="processStepName"
+                      item-value="id"
+                      return-object
+            >
+            </v-select>
           </v-card-text>
         </v-card>
       </v-col>
@@ -84,21 +124,22 @@
             :items="projects"
             :items-per-page="-1"
             :mobile-breakpoint="0"
-            item-key="dbFunctionParamId"
+            v-model="selectedRows"
+            item-key="projectProcessStepId"
             hide-default-footer
+            :show-select="true"
+            :item-selected="(item, value) => addToMap(item, value)"
+            :toggle-select-all="(value) => addToMap(value)"
             class="elevation-1"
         >
           <template #no-data>
-            NO DATA HERE!
+            No Results Found
           </template>
 
           <template #no-results>
-            No parameters exist for this function
+            No results
           </template>
 
-          <template #item.projectName="{ item }">
-            <a @click="goToProject(item.id)">{{item.projectName}}</a>
-          </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -112,6 +153,7 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
   import {getActiveStates} from '@/services/stateService'
   import Map from './components/Map'
+  import cloneDeep from 'lodash.clonedeep'
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
@@ -127,7 +169,8 @@
       return {
         snackbar: {},
         IS_MOBILE,
-        showFilters: true,
+        // showFilters: true,
+        showFilters: false,
         defaultZoom: 2.0,
         map: {
           accessToken: '***REMOVED***',
@@ -137,37 +180,63 @@
         //center of the USA
         defaultCenter: [-98.5795, 39.8283],
         center: null,
+        selectedRows: [],
         state: {},
         states: [],
         processStepStatusTypes: [],
         selectedProcessStepStatusTypes: [],
-        eventTypes: [],
-        selectedEventTypes: [],
+        processSteps: [],
+        //used for multi select
+        selectedProcessSteps: [],
+        //used for single slect
+        selectedProcessStep: {},
+        project: {},
+        searchProjects: [],
+        searchProjectsLoading: false,
+        search: null,
         asyncActions: {},
         headers: [
-          {text: 'Projects', value: 'projectName', show: true},
-          {text: 'Work Type', value: 'workType', show: true},
-          {text: 'Status', value: 'statusType', show: true},
-          {text: 'Estimated Time', value: 'estimatedTime', show: true},
-          {text: 'Time Window', value: 'timeWindow', show: true},
-          {text: 'Work Date', value: 'workDate', show: true},
-          {text: 'Resource', value: 'Resource', show: true},
+          {text: 'Project', value: 'projectName', show: true},
+          {text: 'Process Step', value: 'processStepName', show: true},
+          {text: 'Status', value: 'processStepStatusType', show: true},
+          // {text: 'Work Date', value: 'workDate', show: true},
+          // {text: 'Resource', value: 'Resource', show: true},
         ],
-        projects: []
+        projects: [],
+        masterProjects: []
       }
     },
-
+    computed: {
+      selectAll () {
+        return this.selectedProcessSteps.length === this.processSteps.length
+      },
+      selectSome () {
+        return this.selectedProcessSteps.length > 0 && !this.selectAll
+      },
+      icon () {
+        if (this.selectedProcessSteps && this.processSteps && this.selectedProcessSteps.length === this.processSteps.length) {
+          return 'check_box'
+        }
+        if (this.selectSome) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      }
+    },
+    watch: {
+      search(val) {
+        if(val && (!this.project || this.project.projectName !== val)) {
+          console.log('randaLogger', this.project.projectName)
+          this.getProjectsSearchedFor(val);
+        }
+      }
+    },
     created() {
-      // todo: dont load events on page load.  just trying to get it working for now
-      // this.getProjects()
       this.getActiveStates()
       this.getStatusTypes()
-      this.getEventTypes()
+      this.getProcessSteps()
     },
     methods: {
-      goToProject(id) {
-        this.$router.push({name: 'project', params: {projectId: id}})
-      },
       async getActiveStates() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -181,12 +250,12 @@
         }
       },
 
-      async getEventTypes() {
+      async getProcessSteps() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           // 'event types' is just schedulable process steps
           const {data} = await getRequest(`/processStep/getSchedulableProcessSteps`)
-          this.eventTypes = data
+          this.processSteps = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -207,36 +276,79 @@
         }
       },
 
-      async getProjects() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/schedule`)
-          data.forEach(d => {
-            d.title = d.resourceName
-            d.id = d.resourceId
-            if (d.schedulingFields?.length > 0) {
-              let startField = d.schedulingFields.find(sf => sf.scheduleFieldTypeId === 1)
-              let endField = d.schedulingFields.find(sf => sf.scheduleFieldTypeId === 2)
-
-              let eventObject = {
-                projectName: d.resourceName,
-                resourceId: d.resourceId,
-                start: startField.timestampValue,
-                end: endField.timestampValue,
-                color: d.scheduleColor ?? '#FFFFFF',
-                title: 'Randa is Testing'
-              }
-              this.projects.push(eventObject)
+      async getProjects(search) {
+        console.log('randaLogger',search)
+        if(this.selectedProcessSteps?.length > 0 || search != null) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            let params = {}
+            if(search != null) {
+              params.search = search
+            } else {
+              params.stepIds = this.selectedProcessSteps?.length > 0 ? this.selectedProcessSteps.map(o => o.id) : [],
+              params.stateId = this.state.id
             }
-          })
-          // this.selectedOrgs = data
-          console.log('randaLogger DT', this.projects)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+            const {data} = await postRequest(`/schedule/projects`, params)
+            data.forEach(d => {
+              d.coordinates = [ d.longitude, d.latitude ]
+            })
+            if(search != null) {
+              this.searchProjects = data
+            } else {
+              this.projects = data
+              this.masterProjects = cloneDeep(data)
+              if(this.selectedProcessStepStatusTypes?.length > 0) {
+                this.filterProjects()
+              }
+            }
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Projects')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
+          this.projects = []
+          this.masterProjects = []
         }
+      },
+      filterProjects () {
+        let statusIds = this.selectedProcessStepStatusTypes.map(st => st.id)
+        if(statusIds?.length === 0) {
+          this.projects = cloneDeep(this.masterProjects)
+        } else {
+          this.projects = this.masterProjects.filter(p => {
+            console.log('randaLogger',p.processStepStatusTypeId)
+            return statusIds.includes(p.processStepStatusTypeId)
+          })
+        }
+      },
+      toggleSelectAllSteps () {
+        this.$nextTick(() => {
+          if (this.selectAll) {
+            this.selectedProcessSteps = []
+            this.getProjects()
+          } else {
+            this.selectedProcessSteps = cloneDeep(this.processSteps)
+            this.getProjects()
+          }
+        })
+      },
+      async getProjectsSearchedFor(search) {
+        // cancel pending call
+        clearTimeout(this._timerId);
+
+        this.searchProjectsLoading = true
+
+        // delay new call 500ms
+        this._timerId = setTimeout(async () => {
+          console.log('we will load', this.search)
+          await this.getProjects(search)
+          this.searchProjectsLoading = false
+        }, 500)
+      },
+      async handleProjectSelect() {
+        console.log('here', this.project )
       },
 
     }

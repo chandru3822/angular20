@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.ScheduleController;
 import com.albatross.api.v1.flow.model.ScheduleEvent;
+import com.albatross.api.v1.flow.model.ScheduleProject;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,17 @@ public class ScheduleService {
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     List<ScheduleEvent> results = sqlCache.query("schedule.getEvents", params, ScheduleEvent.class);
+    return results;
+  }
+
+  public List<ScheduleProject> getScheduleProjects(ScheduleController.EventSearchParams esp) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("stateId", esp.getStateId());
+    params.put("stepIds", esp.getStepIds());
+    params.put("search", esp.getSearch());
+    List<ScheduleProject> results = sqlCache.query("schedule.getProjects", params, ScheduleProject.class);
     return results;
   }
 

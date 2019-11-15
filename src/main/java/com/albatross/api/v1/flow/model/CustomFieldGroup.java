@@ -15,7 +15,7 @@ public class CustomFieldGroup {
 
   private Long id, companyObjectTypeId, objectTypeId, groupOrder, processStepId;
   // originalGroupName used for frontend validation (without having to loop to populate it on frontend)
-  private String groupName, objectType, originalGroupName, scheduleColor;
+  private String groupName, objectType, originalGroupName;
   private Boolean archived, schedulable;
 
   // This list is used when looking at custom field ASSIGNMENTS to a group

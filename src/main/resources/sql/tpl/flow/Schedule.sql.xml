@@ -28,7 +28,6 @@
       )
       select
           cfg.group_name,
-          cfg.schedule_color,
           pps.process_step_id,
           pps.project_id,
           pps.id as project_process_step_id,
@@ -36,9 +35,13 @@
           st.timestamp_value as start,
           et.timestamp_value as end,
           r.int_value as resource_id,
+          c.first_name as customer_first_name,
+          c.last_name as customer_last_name,
           case when sl.system_list_type_id = 1 then o.org_name else u.first_name || ' ' || u.last_name end as resource_name
       from flow.custom_field_group cfg
                inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+               inner join flow.project p on p.id = pps.project_id
+               inner join flow.customer c on c.id = p.customer_id
                left join flow.custom_field_group_assignment cfga1 on cfga1.custom_field_group_id = cfg.id and cfga1.schedule_field_type_id = 1
                left join flow.custom_field_group_assignment cfga2 on cfga2.custom_field_group_id = cfg.id and cfga2.schedule_field_type_id = 2
                left join flow.custom_field_group_assignment cfga3 on cfga3.custom_field_group_id = cfg.id and cfga3.schedule_field_type_id = 3
@@ -51,6 +54,7 @@
                left join flow.company_system_list csl on csl.id = cf.company_system_list_id
                left join flow.system_list sl on sl.id = csl.system_list_id
       where cfg.schedulable is true
+          and cf.company_id = :companyId
           and cfg.archived is not true
           and st.timestamp_value is not null
           and et.timestamp_value is not null
@@ -62,5 +66,35 @@
 
     ]]>
   </schedule.getEvents>
+
+  <schedule.getProjects>
+      <![CDATA[
+        select
+            pps.id as project_process_step_id,
+            pps.process_step_id,
+            pps.project_id,
+            p.project_name,
+            ps.process_step_name,
+            c.first_name as customer_first_name,
+            c.last_name as customer_last_name,
+            c.state_id,
+            s.state,
+            pps.process_step_status_type_id,
+            psst.process_step_status_type,
+            c.latitude,
+            c.longitude
+        from flow.project_process_step pps
+            inner join flow.project p on p.id = pps.project_id
+            inner join flow.process_step ps on ps.id = pps.process_step_id
+            inner join flow.customer c on c.id = p.customer_id
+            inner join flow.state s on s.id = c.state_id
+            inner join flow.process_step_status_type psst on psst.id = pps.process_step_status_type_id
+            inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id and cfg.schedulable is true
+        where ps.company_id = :companyId
+            and ps.archived is not true
+            and case when :search::text is not null then c.first_name || ' ' || c.last_name ILIKE '%' || :search::text || '%' else c.state_id = :stateId end
+            and case when array_length(ARRAY[ :stepIds ]::INTEGER[], 1) = 0 OR ARRAY[ :stepIds ]::integer[] is null then 1=1 else ARRAY[pps.process_step_id] <@ ARRAY[ :stepIds ]::INTEGER[] end
+      ]]>
+    </schedule.getProjects>
 
 </sql>

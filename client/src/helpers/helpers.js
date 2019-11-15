@@ -20,9 +20,15 @@ export const EMAIL_RULES = [
   v => !!v || "E-mail is required",
   v => /.+@.+/.test(v) || "E-mail must be valid"
 ]
-
 export const BASIC_REQUIRED_RULE = [
   v => !!v || 'Field is required'
+]
+export const COLOR_LIST = [
+  '#e7211b', '#39b942', '#181e1e', '#eceb50',
+  '#3ca5d6', '#9e4ed6', '#919393', '#e68f35',
+  '#770909', '#1013c1', '#074f0a', '#42063e',
+  '#402e11', '#98ffd5', '#ff7f9e', '#00fffc',
+  '#3f3f3f', '#840046', '#3a0080', '#575f00'
 ]
 
 export const SNACKBARS = {
