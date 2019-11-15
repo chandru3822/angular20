@@ -56,7 +56,7 @@
       <v-row>
         <v-col cols="12" class="text-center">
           <v-btn @click="validate">
-            <v-icon>save</v-icon>
+            <v-icon>mdi-content-save</v-icon>
             Save Changes
           </v-btn>
         </v-col>

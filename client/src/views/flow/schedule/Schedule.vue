@@ -127,19 +127,19 @@
               <v-toolbar-items>
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
-                    <v-btn x-small text v-on="on" @click="goTo(selectedProject, true, false)"><v-icon>arrow_forward</v-icon></v-btn>
+                    <v-btn x-small text v-on="on" @click="goTo(selectedProject, true, false)"><v-icon>mdi-chevron-right</v-icon></v-btn>
                   </template>
                   <span>Go to Project</span>
                 </v-tooltip>
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
-                    <v-btn x-small text v-on="on" @click="goTo(selectedProject, false, true)"><v-icon>double_arrow</v-icon></v-btn>
+                    <v-btn x-small text v-on="on" @click="goTo(selectedProject, false, true)"><v-icon>mdi-chevron-double-right</v-icon></v-btn>
                   </template>
                   <span>Go to Process Step</span>
                 </v-tooltip>
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
-                    <v-btn x-small text v-on="on" @click="selectedProject = {}"><v-icon>close</v-icon></v-btn>
+                    <v-btn x-small text v-on="on" @click="selectedProject = {}"><v-icon>mdi-close</v-icon></v-btn>
                   </template>
                   <span>Close</span>
                 </v-tooltip>
