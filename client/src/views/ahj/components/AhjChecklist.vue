@@ -42,8 +42,7 @@
             <v-icon small class="mr-3" @click="editItem(item)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-text="item.description"
-                               style="font-size: 0.95em !important">
+            <v-list-item-title v-text="item.description">
             </v-list-item-title>
           </v-list-item-content>
           <v-list-item-action>
@@ -167,6 +166,10 @@
   .v-list-item__action {
     margin: 0 !important;
     max-width: 24px;
+  }
+  .v-list-item__title {
+    font-size: 0.95em !important;
+    max-width: 525px;
   }
   .checklist-btns {
     display: flex;
