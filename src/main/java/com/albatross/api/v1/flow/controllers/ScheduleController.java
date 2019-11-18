@@ -36,11 +36,23 @@ public class ScheduleController {
     return scheduleService.getScheduleProjects(params);
   }
 
+  @PostMapping(value = "/getProject", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ScheduleEvent> getProject(@RequestBody EventSearchParams params) {
+    //this returns a list because of how the UI currently works. probably will change this later
+    return scheduleService.getProject(params);
+  }
+
+  @PostMapping(value = "/projects/search", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ScheduleEvent> searchProjectsByName(@RequestBody EventSearchParams params) {
+    return scheduleService.searchProjectsByName(params);
+  }
+
+
   @Data
   public static class EventSearchParams {
     private List<Long> userIds, orgIds, stepIds;
     private String startTime, endTime, search;
-    private Long stateId;
+    private Long stateId, projectId, processStepId;
   }
 
 }

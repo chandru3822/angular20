@@ -15,8 +15,8 @@ import java.util.List;
 public class ScheduleEvent {
 
   private Long resourceId, processStepId, systemListTypeId, projectId, projectProcessStepId, stateId, processStepStatusTypeId;
-  private String resourceName, groupName, customerFirstName, customerLastName, projectName, processStepName, state, processStepStatusType,
-                  startFieldName, endFieldName, resourceFieldName;
+  private String resourceName, groupName, customerFirstName, customerLastName, customerFullName, projectName, processStepName,
+                 state, processStepStatusType, startFieldName, endFieldName, resourceFieldName;
   private Boolean archived;
 
   private Double latitude, longitude;

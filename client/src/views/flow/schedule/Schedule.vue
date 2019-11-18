@@ -94,21 +94,21 @@
             </v-select>
           </v-card-text>
           <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
-            <v-autocomplete v-model="selectedProject"
+            <v-autocomplete v-model="searchProject"
                             :items="searchProjects"
                             :search-input.sync="search"
                             item-text="projectName"
                             prepend-icon="search"
                             text
+                            label="Search for project..."
                             autocomplete="off"
                             :loading="searchProjectsLoading"
                             item-value="id"
                             return-object
-                            @input="handleProjectSelect"
                             >
 
             </v-autocomplete>
-            <v-select v-model="selectedProcessStep"
+            <v-select v-model="searchProcessStep"
                       :items="processSteps"
                       label="Process Step"
                       item-text="processStepName"
@@ -116,6 +116,7 @@
                       return-object
             >
             </v-select>
+            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchProcessStep.id" @click="getSingleProject">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -248,7 +249,7 @@
       return {
         snackbar: {},
         IS_MOBILE,
-        showFilters: true,
+        showFilters: false,
         timezone: this.$store.state.user.details.timezone,
         // showFilters: false,
         defaultZoom: 2.0,
@@ -273,8 +274,10 @@
         //used for multi select
         selectedProcessSteps: [],
         //used for single select
-        selectedProcessStep: {},
         selectedProject: {},
+        //used for search
+        searchProcessStep: {},
+        searchProject: {},
         searchProjects: [],
         searchProjectsLoading: false,
         search: null,
@@ -309,8 +312,8 @@
     },
     watch: {
       search(val) {
-        if(val && (!this.project || this.project.projectName !== val)) {
-          console.log('randaLogger', this.project.projectName)
+        if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
+          console.log('randaLogger', this.searchProject.projectName)
           this.getProjectsSearchedFor(val);
         }
       },
@@ -436,6 +439,18 @@
           }
         })
       },
+      async searchForProjects(search) {
+        try {
+          let params = {
+            search
+          }
+          const {data} = await postRequest(`/schedule/projects/search`, params)
+          this.searchProjects = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Searching Projects')
+        }
+      },
       async getProjectsSearchedFor(search) {
         // cancel pending call
         clearTimeout(this._timerId);
@@ -446,12 +461,35 @@
         this._timerId = setTimeout(async () => {
           console.log('we will load', this.search)
           //todo:_this
-          // await this.getProjects(search)
-          // this.searchProjectsLoading = false
+          await this.searchForProjects(search)
+          this.searchProjectsLoading = false
         }, 500)
       },
-      async handleProjectSelect() {
-        console.log('here', this.project )
+      async getSingleProject() {
+        if(this.searchProject && this.searchProcessStep) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            let params = {
+              projectId: this.searchProject.projectId,
+              processStepId: this.searchProcessStep.id,
+              startTime: this.startTime,
+              endTime: this.endTime
+            }
+
+            const {data} = await postRequest(`/schedule/getProject`, params)
+            data.forEach(d => {
+              d.coordinates = [ d.longitude, d.latitude ]
+            })
+            this.projects = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
+          this.projects = []
+        }
       },
 
     }

@@ -49,7 +49,7 @@ public class ScheduleService {
     List<ScheduleEvent> results = sqlCache.query("schedule.getEvents", params, ScheduleEvent.class);
     return results;
   }
-  // todo: @randa schedule.getProjects and schedule.getEvents are the exact same query except for the where clause. can we make it one? _rn
+  // todo: @randa schedule.getProjects, schedule.getProject and schedule.getEvents are the exact same query except for the where clause. can we make them one? _rn
   public List<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -59,6 +59,28 @@ public class ScheduleService {
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProjects", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
+    return results;
+  }
+
+  public List<ScheduleEvent> getProject(ScheduleController.EventSearchParams esp) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("projectId", esp.getProjectId());
+    params.put("processStepId", esp.getProcessStepId());
+    params.put("startTime", esp.getStartTime());
+    params.put("endTime", esp.getEndTime());
+    List<ScheduleEvent> results = sqlCache.query("schedule.getProject", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
+    return results;
+  }
+
+  public List<ScheduleEvent> searchProjectsByName(ScheduleController.EventSearchParams esp) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("search", esp.getSearch());
+
+    List<ScheduleEvent> results = sqlCache.query("schedule.searchProjectsByName", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
     return results;
   }
 
