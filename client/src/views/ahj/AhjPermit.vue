@@ -22,9 +22,8 @@
             Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <div v-for="item in getCustomFieldsForGroup(1)">
-              <v-select
-                        v-model="item.intValue"
+            <div v-for="item in getCustomFieldsForGroup(1)" :key="item.id">
+              <v-select v-model="item.intValue"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -155,6 +154,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <v-select v-for="item in getCustomFieldsForGroup(2)"
+                      :key="item.id"
                       v-model="item.intValue"
                       :items="item.listOfValues"
                       item-text="name"
@@ -193,6 +193,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <v-select v-for="item in getCustomFieldsForGroup(3)"
+                      :key="item.id"
                       v-model="item.intValue"
                       :items="item.listOfValues"
                       item-text="name"
@@ -240,6 +241,7 @@
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <v-select v-for="item in getCustomFieldsForGroup(4)"
+                      :key="item.id"
                       v-model="item.intValue"
                       :items="item.listOfValues"
                       item-text="name"
@@ -261,6 +263,7 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <v-select v-for="item in getCustomFieldsForGroup(5)"
+                      :key="item.id"
                       v-model="item.intValue"
                       :items="item.listOfValues"
                       item-text="name"
@@ -600,7 +603,7 @@
       },
       showOtherField(int, list) {
         let match = list.find(l => l.id === int)
-        return match.showOther
+        return match ? match.showOther : false
       },
       async getDocuments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
