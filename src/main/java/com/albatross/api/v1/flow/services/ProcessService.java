@@ -128,12 +128,21 @@ public class ProcessService {
 
     public Optional<ProcessStepProcess> insertProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {
         User currentUser = securityService.getCurrentUser();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("processId", processId);
+        params.put("createdById", currentUser.getId());
+        params.put("orgId", processStepProcess.getOrgId());
+        params.put("processStepId", processStepProcess.getProcessStepId());
 
-        Long id = sqlCache.updateReturningId("process.insertProcessStepProcess",
-            ImmutableMap.of("processId", processId,
-                            "createdById", currentUser.getId(),
-                            "orgId", processStepProcess.getOrgId(),
-                            "processStepId", processStepProcess.getProcessStepId()), "id").longValue();
+        // temporarily allowing null
+        Long id = sqlCache.updateReturningId("process.insertProcessStepProcess", params, "id").longValue();
+
+
+//        Long id = sqlCache.updateReturningId("process.insertProcessStepProcess",
+//            ImmutableMap.of("processId", processId,
+//                            "createdById", currentUser.getId(),
+//                            "orgId", processStepProcess.getOrgId(),
+//                            "processStepId", processStepProcess.getProcessStepId()), "id").longValue();
 
         return getOneProcessStepProcess(id);
     }

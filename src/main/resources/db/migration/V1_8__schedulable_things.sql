@@ -37,3 +37,8 @@ alter table flow.custom_field_group_assignment
 alter table flow.custom_field_group
     add column if not exists schedulable boolean not null default false;
 
+-- need to have a way to dynamically determine if the user can login / or if they are active
+alter table flow.user_status_type
+    add column if not exists can_access boolean not null default false;
+
+update flow.user_status_type set can_access = true where id in (1,7);

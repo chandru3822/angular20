@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * Created by Randa Nunn on 2019-10-22.
@@ -14,11 +15,14 @@ import java.sql.Timestamp;
 public class ScheduleEvent {
 
   private Long resourceId, processStepId, systemListTypeId, projectId, projectProcessStepId, stateId, processStepStatusTypeId;
-  private String resourceName, groupName, customerFirstName, customerLastName, projectName, processStepName, state, processStepStatusType;
+  private String resourceName, groupName, customerFirstName, customerLastName, projectName, processStepName, state, processStepStatusType,
+                  startFieldName, endFieldName, resourceFieldName;
   private Boolean archived;
 
   private Double latitude, longitude;
 
   private Timestamp start, end;
+
+  private List<ListOfValue> resources;
 }
 

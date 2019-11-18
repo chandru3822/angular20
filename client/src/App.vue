@@ -112,6 +112,19 @@ body {
   align-content: center;
 }
 
+/* theme the date time picker */
+.theme-datetime .vdatetime-popup__header,
+.theme-datetime .vdatetime-calendar__month__day--selected > span > span,
+.theme-datetime .vdatetime-calendar__month__day--selected:hover > span > span {
+  background: var(--v-primary-base);
+}
+
+.theme-datetime .vdatetime-year-picker__item--selected,
+.theme-datetime .vdatetime-time-picker__item--selected,
+.theme-datetime .vdatetime-popup__actions__button {
+  color: var(--v-primary-base);
+}
+
 .v-list-item--dense, .v-list--dense .v-list-item {
   /* vuetify's default code for v-list-dense sets the min-height to 40px, but nothing was setting the height itself so depending on content adding the `dense` flag wasn't doing anything */
   height: 40px;

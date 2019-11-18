@@ -23,11 +23,13 @@ BEGIN
             order by name;
     when v_system_list_id = 1 and p_sub_options is true then
         RETURN QUERY
-            select upv.user_id::integer as id,
+            select distinct upv.user_id::integer as id,
                    upv.first_name || ' ' || upv.last_name::text as name
             from flow.user_positions_vw upv
+              inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
             where upv.company_id = p_company_id
               and ARRAY[upv.org_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
+              and ust.can_access
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
             order by name;
@@ -41,10 +43,12 @@ BEGIN
             order by name;
     when v_system_list_id = 2 and p_sub_options is true then
         RETURN QUERY
-            select upv.user_id::integer as id,
+            select distinct upv.user_id::integer as id,
                    upv.first_name || ' ' || upv.last_name::text as name
             from flow.user_positions_vw upv
+              inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
             where upv.company_id = p_company_id
+              and ust.can_access
               and ARRAY[upv.position_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))

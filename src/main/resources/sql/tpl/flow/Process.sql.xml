@@ -43,7 +43,7 @@
                               ps.process_step_name as "processStepName"
                        from flow.process_step_process psp
                             inner join flow.process_step ps on ps.id = psp.process_step_id
-                            inner join flow.org o on o.id = psp.org_id
+                            left join flow.org o on o.id = psp.org_id
                             left join flow.process_step_status_type psst on psst.id = psp.process_step_status_type_id
                        where psp.process_id = p.id and psp.archived is not true
                        order by psp.display_order, ps.process_step_name) processSteps), '[]') AS "processStepProcesses"
@@ -151,7 +151,7 @@
              ps.process_step_name as "processStepName"
       from flow.process_step_process psp
                inner join flow.process_step ps on ps.id = psp.process_step_id
-               inner join flow.org o on o.id = psp.org_id
+               left join flow.org o on o.id = psp.org_id
                left join flow.process_step_status_type psst on psst.id = psp.process_step_status_type_id
       where psp.process_id = :processId
         and psp.archived is not true
@@ -189,7 +189,7 @@
        ps.process_step_name as "processStepName"
       from flow.process_step_process psp
              inner join flow.process_step ps on ps.id = psp.process_step_id
-             inner join flow.org o on o.id = psp.org_id
+             left join flow.org o on o.id = psp.org_id
              left join flow.process_step_status_type psst on psst.id = psp.process_step_status_type_id
       where psp.id = :id
     ]]>

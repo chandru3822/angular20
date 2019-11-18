@@ -43,7 +43,9 @@
                     item-text="orgName"
                     item-value="id"
           ></v-select>
-          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>
+<!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
+          <!--  per scott: temporarily removing requirement for orgId        -->
+          <v-btn :disabled="!newProcessStep.processStepId" @click="assignProcessStep">Save</v-btn>
         </v-container>
         <v-data-table
             :headers="headers"

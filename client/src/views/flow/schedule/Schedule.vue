@@ -145,7 +145,47 @@
                 </v-tooltip>
               </v-toolbar-items>
             </v-toolbar>
-            Hello: {{selectedProject}}
+            <div class="pa-3">
+              <div class="map-field-label">{{selectedProject.startFieldName || 'Start Time'}}</div>
+              <datetime
+                  type="datetime"
+                  v-model="selectedProject.start"
+                  class="theme-datetime"
+                  input-class="one-hunned map-field-input"
+                  :zone="timezone.value"
+                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
+                  :phrases="{ok: 'Ok', cancel: 'Close'}"
+                  :hour-step="1"
+                  :minute-step="15"
+                  use12-hour
+                  auto
+              ></datetime>
+              <div class="map-field-label mt-3">{{selectedProject.endFieldName || 'End Time'}}</div>
+              <datetime
+                  type="datetime"
+                  v-model="selectedProject.end"
+                  input-class="one-hunned map-field-input"
+                  class="theme-datetime"
+                  :zone="timezone.value"
+                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
+                  :phrases="{ok: 'Ok', cancel: 'Close'}"
+                  :hour-step="1"
+                  :minute-step="15"
+                  use12-hour
+                  auto
+              ></datetime>
+<!--              <div class="map-field-label mt-3">{{selectedProject.resourceFieldName || 'Resource'}}</div>-->
+              <v-select v-model="selectedProject.resourceId"
+                        :items="selectedProject.resources"
+                        :label="selectedProject.resourceFieldName  || 'Resource'"
+                        placeholder=" "
+                        item-text="name"
+                        item-value="id"
+                        class="mt-3"
+              />
+              <v-btn color="primary" class="white--text" @click="scheduleProject">Save</v-btn>
+<!--              <br/><br/>Hello: {{selectedProject}}-->
+            </div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -172,7 +212,7 @@
           </template>
 
           <template #item.start="{ item }">
-            {{item.start | formatDate('date', $store.state.user.details.timezone.value)}}
+            {{item.start | formatDate('date', timezone.value)}}
           </template>
 
           <template #item.projectName="{ item }">
@@ -209,6 +249,7 @@
         snackbar: {},
         IS_MOBILE,
         showFilters: true,
+        timezone: this.$store.state.user.details.timezone,
         // showFilters: false,
         defaultZoom: 2.0,
         map: {
@@ -286,6 +327,9 @@
       this.getProcessSteps()
     },
     methods: {
+      scheduleProject() {
+        console.log('will save here')
+      },
       goTo (ps, isProject, isProcessStep) {
         if (isProject) {
           this.$router.push({name: 'project', params: {projectId: ps.projectId}})
@@ -415,6 +459,9 @@
 </script>
 
 <style lang="scss">
+  .map-field-input {
+    border-bottom: solid 1px rgba(0, 0, 0, 0.42);
+  }
 </style>
 
 <style lang="scss" scoped>
@@ -426,6 +473,11 @@
   .schedule-row {
     /*height: 40vh;*/
     min-height: 300px;
+  }
+
+  .map-field-label {
+    font-size: 12px;
+    color: var(--v-primary-base);
   }
 </style>
 
