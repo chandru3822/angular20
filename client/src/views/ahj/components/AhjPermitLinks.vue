@@ -36,12 +36,13 @@
         </v-btn>
       </div>
     </v-form>
-    <v-list v-show="links.length > 0" v-for="link in links"
-            :key="link.id" class="px-2">
+    <v-list v-show="links.length > 0" v-for="(link, index) of links"
+            :key="link.id" class="px-2" :style="{'border-radius': index === links.length - 1 ? '5px !important' : '',
+                                                 'border': index === links.length - 1 ? 'none !important' : ''}">
       <v-list-item :title="link.name">
         <v-list-item-content class="flex-row-center">
-          <v-list-item-action>
-            <v-icon small @click="editLink(link)">edit</v-icon>
+          <v-list-item-action @click="editLink(link)">
+            <v-icon small>edit</v-icon>
           </v-list-item-action>
           <v-list-item-title>
             <a :href="link.link" class="list-link">{{ link.name }}</a>
@@ -179,12 +180,22 @@
   .v-input ::v-deep label {
     font-size: 0.95em !important;
   }
+  .v-list {
+    border-bottom: 1px solid var(--v-primary-base) !important;
+    border-radius: 0;
+  }
   .v-list__item__title {
     font-size: 0.8em !important;
   }
   .v-list-item__action {
-    margin: 0 !important;
-    max-width: 24px;
+    margin: 0 10px 0 0 !important;
+    max-width: 30px;
+    height: 30px;
+    border: 1px solid var(--v-primary-base) !important;
+    border-radius: 3px;
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
   }
   .link-btns {
     display: flex;

@@ -407,18 +407,16 @@
                              title="Servicing FOT's"
             >Servicing FOT's</v-toolbar-title>
           </v-toolbar>
-          <v-list v-show="ahjPermit.servicingFots.length > 0"
-                  v-for="fot in ahjPermit.servicingFots"
-                  :key="fot.officeId"
-                  class="px-2">
-            <v-list-item :title="fot.office">
-              <v-list-item-content class="flex-row-center">
-                <v-list-item-title>
-                  <a class="list-link">{{fot.office}}</a>
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
+          <div class="pa-4"
+               v-show="ahjPermit.servicingFots.length > 0">
+            <p v-for="(fot, index) in ahjPermit.servicingFots"
+               :key="index"
+               class="px-2 my-0">
+              <router-link class="list-link"
+                           :to="{ name: 'orgs', params: {orgFilter: fot.hierarchy.orgName} }"
+              >{{ fot.hierarchy.orgName }}</router-link>
+            </p>
+          </div>
           <div class="empty-list"
                v-show="ahjPermit.servicingFots.length < 1"
           >No FOT's found</div>
@@ -444,10 +442,11 @@
   import AhjContact from './components/AhjContacts.vue'
   import AhjDocument from './components/AhjDocuments.vue'
   import AhjPermitLink from './components/AhjPermitLinks.vue'
+  import orderBy from 'lodash.orderby'
   import Snackbar from '@/components/Snackbar.vue'
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, putRequest, getSnackbar } from '@/helpers/helpers'
-  import {getRequestWithParams} from "../../helpers/helpers";
+  import { getRequestWithParams } from "../../helpers/helpers";
 
   export default {
     name: 'ahjPermit',
@@ -589,7 +588,14 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/permit`, 'blueraven')
+          data.servicingFots.forEach(servicingFot => servicingFot.hierarchy = servicingFot.hierarchy[0])
           this.ahjPermit = cloneDeep(data)
+          this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name.toLowerCase())
+          this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name.toLowerCase())
+          this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name.toLowerCase())
+          this.ahjPermit.printLocations = orderBy(this.ahjPermit.printLocations, location => location.name.toLowerCase())
+          this.ahjPermit.servicingFots = orderBy(this.ahjPermit.servicingFots, fot => fot.hierarchy.orgName.toLowerCase())
+          this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -648,7 +654,6 @@
     async created() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.ahjId = parseInt(this.$route.params.ahjId)
-
 
       this.getAhjPermit().then(() => {
         this.reformatDates()
