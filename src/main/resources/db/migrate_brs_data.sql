@@ -2956,3 +2956,8 @@ INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, c
      from parent p
     );
 
+-- had to do this for migration purposes so judson's user could be added and not need a status type
+alter table flow."user"
+ADD CONSTRAINT u_user_status_type_id_fk FOREIGN KEY (user_status_type_id)
+        REFERENCES flow.user_status_type (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT;
