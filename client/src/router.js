@@ -174,7 +174,7 @@ export default new Router({
         component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/NewLead.vue'),
         children: []
       }, {
-        path: '/orgs',
+        path: '/orgs/:orgFilter?',
         name: 'orgs',
         component: () => import (/*webpackChunkName: "orgs" */ './views/flow/orgs/Orgs.vue'),
         children: []

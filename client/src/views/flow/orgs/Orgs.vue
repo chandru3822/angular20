@@ -123,6 +123,7 @@
         delay: 500,
         dialog: false,
         orgs: [],
+        orgFilter: this.$route.params.orgFilter ? this.$route.params.orgFilter : '',
         headers: [
           { text: 'Organization', value: 'orgName', show: true },
           { text: 'Type', value: 'orgType', show: true },
@@ -197,7 +198,11 @@
         }
       }
     },
-    async created () {}
+    async created () {
+      if (this.orgFilter) {
+        this.search = this.orgFilter
+      }
+    }
   }
 </script>
 
