@@ -401,26 +401,9 @@
 
       <!-- THIRD COLUMN -->
       <v-col cols="12" md="4" class="px-1 mb-3">
-        <v-card class="mb-3">
-          <v-toolbar class="primaryCustom">
-            <v-toolbar-title class="white--text font-weight-bold"
-                             title="Servicing FOT's"
-            >Servicing FOT's</v-toolbar-title>
-          </v-toolbar>
-          <div class="pa-4"
-               v-show="ahjPermit.servicingFots.length > 0">
-            <p v-for="(fot, index) in ahjPermit.servicingFots"
-               :key="index"
-               class="px-2 my-0">
-              <router-link class="list-link"
-                           :to="{ name: 'orgs', params: {orgFilter: fot.hierarchy.orgName} }"
-              >{{ fot.hierarchy.orgName }}</router-link>
-            </p>
-          </div>
-          <div class="empty-list"
-               v-show="ahjPermit.servicingFots.length < 1"
-          >No FOT's found</div>
-        </v-card>
+        <AhjServicingFot v-if="dataReady"
+                         :servicingFots="ahjPermit.servicingFots"
+        ></AhjServicingFot>
 
         <AhjContact v-if="dataReady"
                     title="Follow-up and Delivery Contacts"
@@ -442,6 +425,7 @@
   import AhjContact from './components/AhjContacts.vue'
   import AhjDocument from './components/AhjDocuments.vue'
   import AhjPermitLink from './components/AhjPermitLinks.vue'
+  import AhjServicingFot from './components/AhjServicingFots.vue'
   import orderBy from 'lodash.orderby'
   import Snackbar from '@/components/Snackbar.vue'
   import { AppMutations } from '@/stores/AppStore'
@@ -455,6 +439,7 @@
       AhjContact,
       AhjDocument,
       AhjPermitLink,
+      AhjServicingFot,
       Snackbar
     },
     data: () => ({
