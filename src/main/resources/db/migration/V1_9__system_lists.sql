@@ -16,6 +16,7 @@ CREATE TABLE if not exists flow.system_list
     id             serial  NOT NULL,
     system_list  character varying(50) NOT NULL,
     system_list_type_id  integer not null,
+    has_sub_options boolean not null default false,
     archived       boolean not null default false,
     CONSTRAINT flow_system_list_pk PRIMARY KEY (id),
     CONSTRAINT system_list_type_id FOREIGN KEY (system_list_type_id)

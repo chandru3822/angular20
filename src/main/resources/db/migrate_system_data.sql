@@ -6,12 +6,14 @@ select 'orgs', false  where not exists (select id from flow.system_list_type whe
 insert into flow.system_list_type (system_list_type, archived)
 select 'users', false  where not exists (select id from flow.system_list_type where system_list_type = 'users');
 
-insert into flow.system_list (system_list, system_list_type_id, archived)
-select 'Users by Organization', 2, false  where not exists (select id from flow.system_list where system_list = 'Users by Organization');
-insert into flow.system_list (system_list, system_list_type_id, archived)
-select 'Users by Position', 2, false  where not exists (select id from flow.system_list where system_list = 'Users by Position');
-insert into flow.system_list (system_list, system_list_type_id, archived)
-select 'Organizations by Type', 1, false  where not exists (select id from flow.system_list where system_list = 'Organizations by Type');
+insert into flow.system_list (system_list, system_list_type_id, has_sub_options, archived)
+select 'Users by Organization', 2, true, false  where not exists (select id from flow.system_list where system_list = 'Users by Organization');
+insert into flow.system_list (system_list, system_list_type_id, has_sub_options, archived)
+select 'Users by Position', 2, true, false  where not exists (select id from flow.system_list where system_list = 'Users by Position');
+insert into flow.system_list (system_list, system_list_type_id, has_sub_options, archived)
+select 'Organizations by Type', 1, true, false  where not exists (select id from flow.system_list where system_list = 'Organizations by Type');
+insert into flow.system_list (system_list, system_list_type_id, has_sub_options, archived)
+select 'All Active Users', 2, false, false  where not exists (select id from flow.system_list where system_list = 'All Active Users');
 
 insert into flow.company_system_list (system_list_id, company_id, schedulable)
 select 1, 1, true  where not exists (select id from flow.company_system_list where system_list_id = 1);
@@ -19,6 +21,8 @@ insert into flow.company_system_list (system_list_id, company_id, schedulable)
 select 2, 1, true  where not exists (select id from flow.company_system_list where system_list_id = 2);
 insert into flow.company_system_list (system_list_id, company_id, schedulable)
 select 3, 1, true  where not exists (select id from flow.company_system_list where system_list_id = 3);
+insert into flow.company_system_list (system_list_id, company_id, schedulable)
+select 4, 1, true  where not exists (select id from flow.company_system_list where system_list_id = 4);
 
 insert into flow.bucket_type(bucket_type) values
 ('apps'),
