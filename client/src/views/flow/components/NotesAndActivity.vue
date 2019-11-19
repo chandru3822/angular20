@@ -108,7 +108,7 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
 import Snackbar from '@/components/Snackbar.vue'
 
 export default {
-  name: 'CustomValueInput',
+  name: 'NotesAndActivity',
   props: {
     showNotes: Boolean,
     showActivity: Boolean,
