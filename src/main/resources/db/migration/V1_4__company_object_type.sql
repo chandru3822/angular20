@@ -14,24 +14,6 @@ CREATE TABLE if NOT EXISTS flow.company_object_type
 );
 
 
-insert into flow.company_object_type (object_type_id, company_id)
-select 1, 1 where not exists (select id from flow.company_object_type where object_type_id = 1 and company_id = 1 );
-
-insert into flow.company_object_type (object_type_id, company_id)
-select 2, 1 where not exists (select id from flow.company_object_type where object_type_id = 2 and company_id = 1 );
-
-insert into flow.company_object_type (object_type_id, company_id)
-select 3, 1 where not exists (select id from flow.company_object_type where object_type_id = 3 and company_id = 1 );
-
-insert into flow.company_object_type (object_type_id, company_id)
-select 4, 1 where not exists (select id from flow.company_object_type where object_type_id = 4 and company_id = 1 );
-
-insert into flow.company_object_type (object_type_id, company_id)
-select 5, 1 where not exists (select id from flow.company_object_type where object_type_id = 5 and company_id = 1 );
-
--- remove company_id and constraint from object_type
-alter table flow.object_type drop column if exists company_id;
-
 -- change custom_field_group.object_type_id to look at company_object_type_id
 alter table flow.custom_field_group drop constraint if exists cfgt_object_type_id_fk;
 

@@ -89,13 +89,9 @@ CREATE TABLE if NOT EXISTS flow.object_type
     id          serial                NOT NULL,
     object_type character varying(50) NOT NULL,
     object_code character varying(50) NOT NULL,
-    company_id  integer               NOT NULL,
     flow_type_id integer not null,
     archived boolean not null default false,
     CONSTRAINT object_type_pk PRIMARY KEY (id),
-    CONSTRAINT ot_company_id FOREIGN KEY (company_id)
-        REFERENCES flow.company (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT ot_flow_type_id FOREIGN KEY (flow_type_id)
         REFERENCES flow.flow_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -1849,6 +1845,9 @@ CREATE TABLE if not exists flow.process_step_requirement
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT prps_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+     CONSTRAINT prps_data_type_requirement_id_fk FOREIGN KEY (data_type_requirement_id)
+        REFERENCES flow.data_type_requirement (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
@@ -2724,203 +2723,11 @@ CREATE TRIGGER project_process_step_audit_trg
 
 ----???????????????????????????????????????????????????????????????????????????????????????????
 
-insert into flow.company(company_name,aws_bucket, abbreviation)values('Blue Raven Solar','blueraven', 'brs');
-
-insert into flow.bucket_type(bucket_type) values
-('apps'),
-('deal-attachments'),
-('media'),
-('photos'),
-('proptool'),
-('reimbursement'),
-('scheduled-message-attachments'),
-('uploads'),
-('welcome-closer-email');
-
-insert into flow.custom_field_sql_key( sql_key) values ('customFieldSql.brs.ahjList');
-
-insert into flow.owner_type(owner_type) values('CUSTOMER');
-insert into flow.owner_type(owner_type) values('PROJECT');
-
-insert into flow.owner_position_id(company_id,position_ids,owner_type_id)values(1,'{4}',1);
-
-INSERT INTO flow.data_type(
-    data_type)
-VALUES ('date');
-
-INSERT INTO flow.data_type(
-    data_type)
-VALUES ('timestamp');
-
-INSERT INTO flow.data_type(
-    data_type)
-VALUES ('boolean');
-
-INSERT INTO flow.data_type(
-    data_type)
-VALUES ('numeric');
-
-INSERT INTO flow.data_type(
-    data_type)
-VALUES ('text');
-
-INSERT INTO flow.data_type(
-    data_type)
-VALUES ('integer');
-
-INSERT INTO flow.data_type(
-    data_type)
-VALUES ('integer array');
-
-INSERT INTO flow.data_type(
-    data_type,custom_behavior)
-VALUES ('system',true);
-
-insert into flow.operator_type(id, operator_type) values
-(1, 'Equals'),
-(2, 'Not Equal To'),
-(3, 'is Greater Than'),
-(4, 'is Less Than'),
-(5,'In');
-
-insert into flow.action_type(action_type) values ('Link'), ('Button');
-
-insert into flow.country(country,abbreviation) values ('United States', 'USA');
-
-
-insert into flow.operation_type(operation_type, operation_code)
-values
-('(', '('),
-(')', ')'),
-('AND', 'AND'),
-('OR', 'OR'),
-('NOT', '!');
-
-insert into flow.operator_data_type (data_type_id, operator_type_id) values
-( 5, 1 ),
-( 5, 2 ),
-( 1, 1 ),
-( 1, 2 ),
-( 1, 3 ),
-( 1, 4 ),
-( 2, 1 ),
-( 2, 2 ),
-( 2, 3 ),
-( 2, 4 ),
-( 3, 1 ),
-( 3, 2 ),
-( 6, 1 ),
-( 6, 2 ),
-( 6, 3 ),
-( 6, 4 ),
-( 4, 1 ),
-( 4, 2 ),
-( 4, 3 ),
-( 4, 4 ),
-( 7, 1 ),
-( 7, 2 );
-
-insert into flow.parameter_type(parameter_type) values('System');
-insert into flow.parameter_type(parameter_type) values('Dynamic');
-insert into flow.parameter_type(parameter_type) values('Custom Field');
-
-insert into flow.flow_type(flow_type) values ('Object');
-insert into flow.flow_type(flow_type) values ('Process Step');
-
-insert into flow.status_type (id, status_type) values (1, 'Active');
-insert into flow.status_type (id, status_type) values (2, 'Inactive');
 
 
 
-insert into flow.process_step_requirement_type(id, process_step_requirement_type)
-values (1, 'Custom Field'),
-       (2, 'Function');
-
-INSERT INTO flow.object_type(
-    object_type, object_code, company_id,flow_type_id)
-VALUES ('Project','PROJECT', 1,1);
-
-INSERT INTO flow.object_type(
-    object_type, object_code, company_id,flow_type_id)
-VALUES ('Customer','CUSTOMER', 1,1);
-
-INSERT INTO flow.object_type(
-    object_type, object_code, company_id,flow_type_id)
-VALUES ('User','USER', 1,1);
-
-INSERT INTO flow.object_type(
-    object_type, object_code, company_id,flow_type_id)
-VALUES ('Process Step','PROCESS_STEP', 1,2);
-insert into flow.object_type(object_type, object_code, company_id, flow_type_id)
-values ('Organization', 'ORGANIZATION', 1, 1);
 
 
-insert into flow.company_data_type(company_id, company_data_type, data_type_id)
-values(1,'Text',5);
-insert into flow.company_data_type(company_id, company_data_type, data_type_id)
-values(1,'Date',1);
-insert into flow.company_data_type(company_id, company_data_type, data_type_id)
-values(1,'Timestamp',2);
-insert into flow.company_data_type(company_id, company_data_type, data_type_id)
-values(1,'Boolean',3);
-insert into flow.company_data_type(company_id, company_data_type, data_type_id)
-values(1,'Integer',6);
-insert into flow.company_data_type(company_id, company_data_type, data_type_id)
-values(1,'Decimal Number',4);
-insert into flow.company_data_type(company_id, company_data_type, data_type_id,has_list_values)
-values(1,'Dropdown',6,true);
-insert into flow.company_data_type(company_id, company_data_type, data_type_id,has_list_values)
-values(1,'Multi-Select',7,true);
-insert into flow.company_data_type(company_id, company_data_type, data_type_id,has_list_values)
-values(1,'System',8,false);
-
-
-
-INSERT INTO flow.data_type_requirement(data_type_id, data_type_value, secondary_requirement, date_created)
-VALUES (1, 'current date -', true,now()),
-       (1, 'current date +', true,now()),
-       (1, 'current date', false,now()),
-       (1, 'null', false,now()),
-       (1, 'not null', false,now()),
-       (2, 'current date -', true,now()),
-       (2, 'current date +', true,now()),
-       (2, 'current date', false,now()),
-       (2, 'timestamp - interval hours', true,now()),
-       (2, 'timestamp + interval hours', true,now()),
-       (2, 'timestamp', false,now()),
-       (2, 'null', false,now()),
-       (2, 'not null', false,now()),
-       (3, 'true', false ,now()),
-       (3, 'false', false ,now()),
-       (4, 'null', false ,now()),
-       (4, 'not null', false ,now()),
-       (5, 'null', false ,now()),
-       (5, 'not null', false ,now()),
-       (6, 'null', false ,now()),
-       (6, 'not null', false ,now());
-
-Alter table flow.process_step_requirement
-ADD CONSTRAINT prps_data_type_requirement_id_fk FOREIGN KEY (data_type_requirement_id)
-        REFERENCES flow.data_type_requirement (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION;
-insert into flow.compensation_type
-select *
-from blueraven.compensation_type;
-
-SELECT setval('flow.compensation_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.compensation_type), 1), false);
-
-insert into flow.employment_type
-select *
-from blueraven.employment_type;
-
-SELECT setval('flow.employment_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.employment_type), 1), false);
-
-
-insert into flow.user_status_type(id, user_status_type, company_id)
-    (select id,user_status_type,1
-     from blueraven.user_status_type);
-
-SELECT setval('flow.user_status_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.user_status_type), 1), false);
 
 INSERT INTO flow."user" (company_id,
                          onboarded_by_user_id,
