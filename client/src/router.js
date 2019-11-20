@@ -145,11 +145,11 @@ export default new Router({
         ]
       }, {
         path: '/project/:projectId',
-        name: 'project',
         component: () => import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue'),
         children: [
           {
             path: '',
+            name: 'project',
             component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/ProjectOverview.vue')
           }, {
             name: 'projectProcessStep',
