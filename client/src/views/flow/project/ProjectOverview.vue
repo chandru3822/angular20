@@ -3,10 +3,7 @@
   <v-col cols="12" lg="6" xl="6">
 
     <v-col v-if="isFieldsLoading">
-      <Spinner
-        size="20"
-        color="primary"
-      />
+      <SpinnerInline :size="20" color="primary"/>
     </v-col>
 
     <v-col v-else v-for="group in customFieldGroups" :key="group.customFieldId">
@@ -21,7 +18,7 @@
 
 
         <v-col v-if="isProcessStepsLoading">
-          <SpinnerInline size="20" color="primary"/>
+          <SpinnerInline :size="20" color="primary"/>
         </v-col>
 
         <v-col v-else>
@@ -49,7 +46,7 @@ export default {
   },
   data () {
     return {
-      projectId: this.$route.params.projectId,
+      projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
       customFieldGroups: [],
       isProcessStepsLoading: true,
