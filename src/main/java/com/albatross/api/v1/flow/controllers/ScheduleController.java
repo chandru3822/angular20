@@ -47,6 +47,11 @@ public class ScheduleController {
     return scheduleService.searchProjectsByName(params);
   }
 
+  @PostMapping(value = "/saveEvent", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveEvent(@RequestBody ScheduleEvent ev) {
+    scheduleService.saveEvent(ev);
+  }
+
 
   @Data
   public static class EventSearchParams {

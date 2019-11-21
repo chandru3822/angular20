@@ -184,7 +184,10 @@
                         item-value="id"
                         class="mt-3"
               />
-              <v-btn color="primary" class="white--text" @click="scheduleProject">Save</v-btn>
+              <v-btn color="primary"
+                     class="white--text"
+                     :disabled="validateSaveEvent()"
+                     @click="scheduleProject">Save</v-btn>
 <!--              <br/><br/>Hello: {{selectedProject}}-->
             </div>
           </v-card-text>
@@ -249,7 +252,7 @@
       return {
         snackbar: {},
         IS_MOBILE,
-        showFilters: false,
+        showFilters: true,
         timezone: this.$store.state.user.details.timezone,
         // showFilters: false,
         defaultZoom: 2.0,
@@ -330,8 +333,23 @@
       this.getProcessSteps()
     },
     methods: {
-      scheduleProject() {
-        console.log('will save here')
+      validateSaveEvent () {
+        return !this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
+          || !this.selectedProject.resourceId  || (this.selectedProject.start >= this.selectedProject.end)
+      },
+      async scheduleProject() {
+        console.log('will save here', this.selectedProject)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
+          // this.states = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Scheduling Project')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       goTo (ps, isProject, isProcessStep) {
         if (isProject) {

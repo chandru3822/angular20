@@ -84,6 +84,71 @@ public class ScheduleService {
     return results;
   }
 
+  public void saveEvent(ScheduleEvent ev) {
+    // i dont love this but if we try to do it how the other screens do it we would have to restructure all the fields back into individual CustomFieldValue objects and i dont like that option either _rn
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepId", ev.getProjectProcessStepId());
+    params.put("modifiedById", user.getId());
+    params.put("createdById", user.getId());
+
+    //default values so we can call the same query all the other ones do
+    params.put("dateValue", null);
+    params.put("timestampValue", null);
+    params.put("booleanValue", false);
+    params.put("textValue", null);
+    params.put("numericValue", null);
+    params.put("intValue", null);
+    params.put("intArrayValue", null);
+
+    // save the start time
+    if(null != ev.getStart()) {
+      params.put("timestampValue", ev.getStart());
+      params.put("customFieldGroupAssignmentId", ev.getStartCustomFieldGroupAssignmentId());
+      if(null != ev.getStartCustomFieldValueId()) {
+        params.put("id", ev.getStartCustomFieldValueId());
+        sqlCache.update("customFieldValues.updateProjectProcessStepCustomFieldValue", params);
+      } else {
+        sqlCache.update("customFieldValues.insertProjectProcessStepCustomFieldValue", params);
+      }
+    }
+
+    // reset the params - although i dont think this is actually necessary
+    params.remove("customFieldGroupAssignmentId");
+    params.remove("timestampValue");
+    params.remove("id");
+
+    // save the end time
+    if(null != ev.getEnd()) {
+      params.put("timestampValue", ev.getEnd());
+      params.put("customFieldGroupAssignmentId", ev.getEndCustomFieldGroupAssignmentId());
+      if(null != ev.getEndCustomFieldValueId()) {
+        params.put("id", ev.getEndCustomFieldValueId());
+        sqlCache.update("customFieldValues.updateProjectProcessStepCustomFieldValue", params);
+      } else {
+        sqlCache.update("customFieldValues.insertProjectProcessStepCustomFieldValue", params);
+      }
+    }
+
+    // reset the params - although i dont think this is actually necessary
+    params.remove("customFieldGroupAssignmentId");
+    params.replace("timestampValue", null);
+    params.remove("id");
+
+    // save the resourceId
+    if(null != ev.getResourceId()) {
+      params.put("intValue", ev.getResourceId());
+      params.put("customFieldGroupAssignmentId", ev.getResourceCustomFieldValueId());
+      if(null != ev.getResourceCustomFieldValueId()) {
+        params.put("id", ev.getResourceCustomFieldValueId());
+        sqlCache.update("customFieldValues.updateProjectProcessStepCustomFieldValue", params);
+      } else {
+        sqlCache.update("customFieldValues.insertProjectProcessStepCustomFieldValue", params);
+      }
+    }
+
+  }
+
   public static class ScheduleEventMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
