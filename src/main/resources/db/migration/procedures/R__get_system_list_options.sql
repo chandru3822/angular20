@@ -13,6 +13,8 @@ BEGIN
     FROM flow.company_system_list csl
     WHERE csl.id = p_company_system_list_id;
 
+    RAISE NOTICE 'A partition has been created %', v_system_list_id;
+
     -- 1 = users by org
     case when v_system_list_id = 1 and p_sub_options is not true then
         RETURN QUERY
@@ -26,10 +28,9 @@ BEGIN
             select distinct upv.user_id::integer as id,
                    upv.first_name || ' ' || upv.last_name::text as name
             from flow.user_positions_vw upv
-              inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
             where upv.company_id = p_company_id
               and ARRAY[upv.org_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
-              and ust.can_access
+              and upv.user_status_type_id = 1
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
             order by name;
@@ -46,9 +47,8 @@ BEGIN
             select distinct upv.user_id::integer as id,
                    upv.first_name || ' ' || upv.last_name::text as name
             from flow.user_positions_vw upv
-              inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
             where upv.company_id = p_company_id
-              and ust.can_access
+              and upv.user_status_type_id = 1
               and ARRAY[upv.position_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
@@ -69,6 +69,17 @@ BEGIN
              from flow.org o
              where o.company_id = 1
                and ARRAY[o.org_type_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
+             order by name;
+     -- = All users
+     when v_system_list_id = 4 then
+         RETURN QUERY
+             select distinct upv.user_id::integer as id,
+                             upv.first_name || ' ' || upv.last_name::text as name
+             from flow.user_positions_vw upv
+             where upv.company_id = p_company_id
+               and upv.user_status_type_id = 1
+               and (upv.start_date <= now() and
+                    (upv.end_date IS NULL OR upv.end_date > now()))
              order by name;
     end case;
 

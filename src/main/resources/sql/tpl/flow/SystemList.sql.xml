@@ -3,7 +3,8 @@
       select sl.id,
              sl.system_list,
              sl.archived,
-             csl.company_id
+             csl.company_id,
+             sl.has_sub_options
       from flow.company_system_list csl
       inner join flow.system_list sl on sl.id = csl.system_list_id
       where csl.company_id = :companyId

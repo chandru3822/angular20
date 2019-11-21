@@ -130,7 +130,7 @@
                             @change="getSystemListOptions(item.systemListId)"
                   ></v-select>
 
-                  <v-select v-if="item.systemListId"
+                  <v-select v-if="item.systemListId && systemLists.find(sl => sl.id === item.systemListId)  && systemLists.find(sl => sl.id === item.systemListId).hasSubOptions"
                             v-model="item.systemListOptionIds"
                             :items="systemListOptions"
                             multiple
@@ -296,11 +296,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getSystemListOptions(typeId) {
-        if(typeId) {
+      async getSystemListOptions(listId) {
+        let match = this.systemLists.find(sl => sl.id === listId)
+        if(listId && match?.hasSubOptions) {
+
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequestWithParams(`/systemList/${typeId}/options`, {params: {
+            const {data} = await getRequestWithParams(`/systemList/${listId}/options`, {params: {
+                //well i named these poorly...
+                //  if a list itself has sub options it means they can select suboptions
+                // this parameter means whether to get the subOptions or not
               subOptions: false
             }})
             this.systemListOptions = data

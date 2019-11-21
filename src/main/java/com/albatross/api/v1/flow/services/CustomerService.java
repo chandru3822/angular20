@@ -176,7 +176,6 @@ public class CustomerService {
     params.put("companyId", user.getCompanyId());
     List<Long> statusIds = new ArrayList<>();
     statusIds.add(UserStatusType.ACTIVE.id);
-    statusIds.add(UserStatusType.PENDING_TERMINATION.id);
 
     params.put("statusIds", statusIds);
     List<Owner> results = sqlCache.query("customer.getOwners", params, Owner.class);

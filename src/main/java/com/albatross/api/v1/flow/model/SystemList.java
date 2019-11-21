@@ -13,6 +13,6 @@ public class SystemList {
 
   private Long id, companyId;
   private String systemList;
-  private Boolean archived;
+  private Boolean archived, hasSubOptions;
 }
 
