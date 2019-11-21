@@ -53,28 +53,30 @@ public class BlueravenCustomFieldGroupService {
 
   public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long sourceId){
     User currentUser = securityService.getCurrentUser();
-    for(CustomFieldGroup group : groups) {
-      for(CustomFieldValue cfv : group.getCustomFieldValues()){
-        //todo: only save if something changed
-        if(fieldHasValue(cfv)) {
-          HashMap<String, Object> params = new HashMap<>();
-          params.put("dateValue", cfv.getDateValue());
-          params.put("timestampValue", cfv.getTimestampValue());
-          params.put("booleanValue", cfv.getBooleanValue());
-          params.put("textValue", cfv.getTextValue());
-          params.put("numericValue", cfv.getNumericValue());
-          params.put("intValue", cfv.getIntValue());
-          params.put("intArrayValue", cfv.getIntArrayValue());
-          params.put("sourceId", sourceId);
-          params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+    if (groups != null && groups.size() > 0) {
+      for(CustomFieldGroup group : groups) {
+        for(CustomFieldValue cfv : group.getCustomFieldValues()) {
+          //todo: only save if something changed
+          if(fieldHasValue(cfv)) {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("dateValue", cfv.getDateValue());
+            params.put("timestampValue", cfv.getTimestampValue());
+            params.put("booleanValue", cfv.getBooleanValue());
+            params.put("textValue", cfv.getTextValue());
+            params.put("numericValue", cfv.getNumericValue());
+            params.put("intValue", cfv.getIntValue());
+            params.put("intArrayValue", cfv.getIntArrayValue());
+            params.put("sourceId", sourceId);
+            params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
 
-          if(null != cfv.getId()){
-            params.put("id", cfv.getId());
-            params.put("modifiedById", currentUser.getId());
-            sqlCache.update("blueravenCustomFieldGroup.updateCustomFieldValue", params);
-          } else {
-            params.put("createdById", currentUser.getId());
-            sqlCache.update("blueravenCustomFieldGroup.insertCustomFieldValue", params);
+            if(null != cfv.getId()){
+              params.put("id", cfv.getId());
+              params.put("modifiedById", currentUser.getId());
+              sqlCache.update("blueravenCustomFieldGroup.updateCustomFieldValue", params);
+            } else {
+              params.put("createdById", currentUser.getId());
+              sqlCache.update("blueravenCustomFieldGroup.insertCustomFieldValue", params);
+            }
           }
         }
       }

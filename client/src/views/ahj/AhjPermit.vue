@@ -18,8 +18,11 @@
       <v-col cols="12" md="3" class="px-1 mb-3">
         <!-- SUBMISSION DETAILS -->
         <v-card>
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
             Submission Details
+            <router-link :to="'/schedule'" title="Go to Scheduling Tool">
+              <v-icon class="white--text">launch</v-icon>
+            </router-link>
           </v-card-title>
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(1)" :key="item.id">
@@ -658,6 +661,13 @@
 <style scoped lang="scss">
   .padded-sides {
     padding: 0 5px;
+  }
+  .title-with-icon {
+    display: flex;
+    justify-content: space-between;
+    .v-icon {
+      cursor: pointer;
+    }
   }
   .v-card__title,
   .v-toolbar__title {

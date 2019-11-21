@@ -63,7 +63,7 @@ public class AhjService {
     if (id == null) {
       Optional<AhjSummary> ahj = sqlCache.get("ahj.checkForDuplicate", params, AhjSummary.class);
 
-      if (!ahj.isPresent()) {
+      if (ahj.isEmpty()) {
         id = sqlCache.updateReturningId("ahj.create", params, "id").longValue();
 
         // create an empty permit and inspection tied to the ahj - only required for new
