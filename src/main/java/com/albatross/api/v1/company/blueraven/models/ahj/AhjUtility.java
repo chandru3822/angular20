@@ -1,5 +1,6 @@
-package com.albatross.api.v1.company.blueraven.models;
+package com.albatross.api.v1.company.blueraven.models.ahj;
 
+import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import lombok.Data;
 
 import java.util.List;

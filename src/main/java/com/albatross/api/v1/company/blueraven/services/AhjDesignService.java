@@ -1,7 +1,10 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjContact;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesign;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesignDetail;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjRequirement;
 import com.albatross.api.v1.flow.model.User;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;

@@ -2,17 +2,15 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.enums.AhjType;
-import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 
 import com.albatross.api.utils.SqlCache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;

@@ -1,7 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.enums.AhjType;
-import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.company.blueraven.services.AhjPermitService;
 import com.albatross.api.v1.company.blueraven.services.AhjService;
 

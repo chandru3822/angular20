@@ -302,4 +302,127 @@
       WHERE id = :id
     ]]>
   </ahj.permit.link.delete>
+
+  <!-- TODO: come back to this after the migration of custom fields has taken place -->
+  <!-- PERMIT CYCLE TIMES STUFF -->
+  <ahj.permit.cycle-time.permits>
+    <![CDATA[
+      -- returns data as a JSON array of objects with keys
+      -- dealId, customerName, permitIssuer, submitted, approved, cycleTime
+      select array_to_json(array_agg(row_to_json(permits)))
+      from (
+          select *,
+              (case when approved is not null then (approved - submitted)
+                    else ((now() at time zone 'US/Mountain')::date - submitted)
+               end) as "cycleTime",
+              (case when approved is null then 'pending'
+                    else 'approved' end) as status
+          from (
+              select p.id as "dealId",
+                     c.first_name || ' ' || c.last_name as "customerName",
+                     a.name as "permitIssuer",
+                     coalesce(permit_revision_c_submittal_date,
+                              permit_revision_b_submittal_date,
+                              permit_pack_revision_submittal_date,
+                              permit_packet_submitted_date) as submitted,
+                     (case when permit_revision_c_submittal_date    is not null then permit_revision_c_approved_date
+                           when permit_revision_b_submittal_date    is not null then permit_revision_b_approved_date
+                           when permit_pack_revision_submittal_date is not null then permit_pack_revision_approved_date
+                           when permit_packet_submitted_date        is not null then permit_approved_date
+                      end) as approved
+              from flow.project p
+                inner join flow.customer c on c.id = p.customer_id
+                inner join brs.ahj_permit ap on ap.ahj_id = d.ahj_id
+                inner join brs.ahj a on a.id = ap.ahj_id
+              where d.ahj_id = :ahjId
+              order by submitted asc
+          ) s
+          where submitted between :startDate and :endDate
+      ) permits
+      where permits.status = :status
+    ]]>
+  </ahj.permit.cycle-time.permits>
+
+  <ahj.permit.cycle-time.as-builts>
+    <![CDATA[
+      -- returns data as a JSON array of objects with keys
+      -- dealId, customerName, permitIssuer, submitted, approved, cycleTime
+      select array_to_json(array_agg(row_to_json(as_builts)))
+      from (
+          select p.id as "dealId",
+                 c.first_name || ' ' || c.last_name as "customerName",
+                 a.name as "permitIssuer",
+                 asbuilt_permit_pack_submittal_date as submitted,
+                 asbuilt_permit_approved_date as approved,
+                 (case when asbuilt_permit_approved_date is not null then
+                            (asbuilt_permit_approved_date::date - asbuilt_permit_pack_submittal_date::date)
+                       else (now() at time zone 'US/Mountain')::date - asbuilt_permit_pack_submittal_date::date
+                  end) as "cycleTime",
+                 (case when asbuilt_permit_approved_date is null then 'pending'
+                       else 'approved'
+                  end) as status
+          from flow.project p
+            inner join flow.customer c on c.id = p.customer_id
+            inner join brs.ahj_permit ap on ap.ahj_id = d.ahj_id
+            inner join brs.ahj a on a.id = ap.ahj_id
+          where asbuilt_permit_pack_submittal_date between :startDate and :endDate
+            and d.ahj_id = :ahjId
+          order by submitted asc
+      ) as_builts
+      where status = :status
+    ]]>
+  </ahj.permit.cycle-time.as-builts>
+
+  <ahj.permit.cycle-time.summary-stats>
+    <![CDATA[
+      select 'permits'                         as type,
+             status                            as status,
+             round(avg(t.cycle_time), 2)       as avg,
+             cast(median(t.cycle_time) as int) as median,
+             max(t.cycle_time)                 as max,
+             count(t.cycle_time)               as count
+      from (
+          select (case when s.latest_permit_approval_date is not null then 'approved'
+                       else 'pending' end) as status,
+                 (case when s.latest_permit_approval_date is not null then (s.latest_permit_approval_date - s.latest_permit_submit_date)
+                       else ((now() at time zone 'US/Mountain')::date - s.latest_permit_submit_date)
+                  end) as cycle_time
+          from (
+              select coalesce(permit_revision_c_submittal_date,
+                              permit_revision_b_submittal_date,
+                              permit_pack_revision_submittal_date,
+                              permit_packet_submitted_date) as latest_permit_submit_date,
+                     (case when permit_revision_c_submittal_date    is not null then permit_revision_c_approved_date
+                           when permit_revision_b_submittal_date    is not null then permit_revision_b_approved_date
+                           when permit_pack_revision_submittal_date is not null then permit_pack_revision_approved_date
+                           when permit_packet_submitted_date        is not null then permit_approved_date
+                      end) as latest_permit_approval_date
+              from blueraven.deal
+              where ahj_id = :ahjId
+          ) s
+          where latest_permit_submit_date between :startDate and :endDate
+      ) t
+      group by t.status
+
+      union
+
+      select 'as-builts'                       as type,
+             t.status                          as status,
+             round(avg(t.cycle_time), 2)       as avg,
+             cast(median(t.cycle_time) as int) as median,
+             max(t.cycle_time)                 as max,
+             count(t.cycle_time)               as count
+      from (
+          select case when asbuilt_permit_approved_date is not null then 'approved'
+                      else 'pending' end as status,
+                 case when asbuilt_permit_approved_date is not null then
+                           (asbuilt_permit_approved_date::date - asbuilt_permit_pack_submittal_date::date)
+                      else (now() at time zone 'US/Mountain')::date - asbuilt_permit_pack_submittal_date::date end as cycle_time
+          from blueraven.deal
+          where ahj_id = :ahjId
+            and asbuilt_permit_pack_submittal_date between :startDate and :endDate
+      ) t
+      group by t.status
+    ]]>
+  </ahj.permit.cycle-time.summary-stats>
 </sql>

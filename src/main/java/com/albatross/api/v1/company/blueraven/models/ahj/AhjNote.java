@@ -1,9 +1,8 @@
-package com.albatross.api.v1.company.blueraven.models;
+package com.albatross.api.v1.company.blueraven.models.ahj;
 
 import lombok.Data;
 
 import java.util.Date;
-//import org.joda.time.DateTime;
 
 /**
  * Created by Joseph Canto on 2019-07-15.

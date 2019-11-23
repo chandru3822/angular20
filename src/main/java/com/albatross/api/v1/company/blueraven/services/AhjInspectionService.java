@@ -2,7 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 
 import com.albatross.api.utils.SqlCache;

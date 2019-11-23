@@ -1,4 +1,4 @@
-package com.albatross.api.v1.company.blueraven.models;
+package com.albatross.api.v1.company.blueraven.models.ahj;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

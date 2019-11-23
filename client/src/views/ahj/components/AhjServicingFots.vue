@@ -6,11 +6,11 @@
                        title="Servicing FOT's"
       >Servicing FOT's</v-toolbar-title>
     </v-toolbar>
-    <div class="pa-4"
+    <div class="padded-list"
          v-show="servicingFots.length > 0">
       <p v-for="(fot, index) in servicingFots"
          :key="index"
-         class="px-2 my-0">
+         class="my-0">
         <router-link class="list-link"
                      :to="{ name: 'orgs', params: {orgFilter: fot.hierarchy.orgName} }"
         >{{ fot.hierarchy.orgName }}</router-link>
@@ -44,6 +44,9 @@
   }
   .v-toolbar__title {
     font-size: 1em !important;
+  }
+  .padded-list {
+    padding: 18px;
   }
   .empty-list {
     padding: 20px;
