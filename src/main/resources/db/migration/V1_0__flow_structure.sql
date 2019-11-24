@@ -128,7 +128,7 @@ CREATE TABLE if NOT EXISTS flow.attachment_type
     date_modified      timestamp without time zone,
     created_by_id     integer,
     modified_by_id    integer,
-        CONSTRAINT attachment_type_pk PRIMARY KEY (id),
+    CONSTRAINT attachment_type_pk PRIMARY KEY (id),
     CONSTRAINT at_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -342,15 +342,6 @@ CREATE TABLE if not exists flow.org_type
         OIDS= FALSE
     );
 
-CREATE TABLE if not exists flow.compensation_type
-(
-    id                serial                NOT NULL,
-    compensation_type character varying(20) NOT NULL,
-    CONSTRAINT compensation_type_pk PRIMARY KEY (id)
-)
-    WITH (
-        OIDS= FALSE
-    );
 
 
 
@@ -369,17 +360,6 @@ CREATE TABLE if not exists flow.user_status_type
         OIDS= FALSE
     );
 
-
-
-CREATE TABLE if not exists flow.employment_type
-(
-    id              serial                NOT NULL,
-    employment_type character varying(20) NOT NULL,
-    CONSTRAINT employment_type_pk PRIMARY KEY (id)
-)
-    WITH (
-        OIDS= FALSE
-    );
 
 
 CREATE TABLE if NOT EXISTS flow.company_data_type
@@ -431,12 +411,6 @@ CREATE TABLE if not exists flow."user"
 --     CONSTRAINT u_user_status_type_id_fk FOREIGN KEY (user_status_type_id)
 --         REFERENCES flow.user_status_type (id) MATCH SIMPLE
 --         ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT u_employment_type_id_fk FOREIGN KEY (employment_type_id)
-        REFERENCES flow.employment_type (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT u_compensation_type_id_fk FOREIGN KEY (compensation_type_id)
-        REFERENCES flow.compensation_type (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT u_onboarded_by_user_id_fk FOREIGN KEY (onboarded_by_user_id)
         REFERENCES flow."user" (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
@@ -1809,6 +1783,33 @@ CREATE INDEX if not exists cn_customer_id_idx ON flow.customer_note (customer_id
 CREATE INDEX if not exists cn_note_id_idx ON flow.customer_note (note_id);
 
 
+CREATE TABLE if NOT EXISTS flow.data_type_requirement
+(
+    id        serial                NOT NULL,
+    data_type_id integer NOT NULL,
+    data_type_value character varying (75) not null,
+    secondary_requirement boolean not null default false,
+    archived boolean not null default false,
+    created_by_id                         integer,
+    date_created                         timestamp   without time zone DEFAULT now(),
+    modified_by_id                        integer,
+    date_modified                        timestamp      without time zone,
+    CONSTRAINT data_type_requirement_pk PRIMARY KEY (id),
+    CONSTRAINT dtr_process_step_action_id_fk FOREIGN KEY (data_type_id)
+        REFERENCES flow.data_type (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT dtr_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT dtr_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE INDEX if not exists dtr_company_data_type_id ON flow.data_type_requirement (data_type_id);
+create index if not exists dtr_data_type_value_idx on flow.data_type_requirement (data_type_value);
+
+
 CREATE TABLE if not exists flow.process_step_requirement
 (
     id                           serial  not null,
@@ -1846,7 +1847,7 @@ CREATE TABLE if not exists flow.process_step_requirement
     CONSTRAINT prps_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
-     CONSTRAINT prps_data_type_requirement_id_fk FOREIGN KEY (data_type_requirement_id)
+    CONSTRAINT prps_data_type_requirement_id_fk FOREIGN KEY (data_type_requirement_id)
         REFERENCES flow.data_type_requirement (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
@@ -2719,67 +2720,3 @@ CREATE TRIGGER project_process_step_audit_trg
 
 
 
-
-
-----???????????????????????????????????????????????????????????????????????????????????????????
-
-
-
-
-
-
--- this adds judson only
--- INSERT INTO flow."user" (company_id,
---                          onboarded_by_user_id,
---                          end_date,
---                          employment_type_id,
---                          phone_number,
---                          hire_date,
---                          id,
---                          email,
---                          created_by_id,
---                          compensation_type_id,
---                          image_id,
---                          personal_email,
---                          last_name,
---                          employee_id,
---                          recruited_by,
---                          referred_by_user_id,
---                          first_name,
---                          date_created,
---                          password,
---                          start_date,
---                          date_modified,
---                          notes,
---                          recruited_by_user_id,
---                          modified_by_id,
---                          user_status_type_id,
---                          username)
---     (SELECT 1,
---             onboarded_by_user_id,
---             end_date,
---             employment_type_id,
---             phone_number,
---             hire_date,
---             id,
---             email,
---             created_by,
---             compensation_type_id,
---             image_id,
---             personal_email,
---             last_name,
---             employee_id,
---             recruited_by,
---             referred_by_user_id,
---             first_name,
---             created_dt,
---             password,
---             start_date,
---             modified_dt,
---             notes,
---             recruited_by_user_id,
---             modified_by,
---             user_status_type_id,
---             email
---      FROM blueraven."user"
---         where id = 2350555);

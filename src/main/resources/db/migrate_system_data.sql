@@ -1,5 +1,32 @@
 insert into flow.company(company_name,aws_bucket, abbreviation)values('Blue Raven Solar','blueraven', 'brs');
 
+INSERT INTO flow."user" (company_id,
+                         id,
+                         email,
+                         personal_email,
+                         last_name,
+                         first_name,
+                         date_created,
+                         password,
+                         start_date,
+                         date_modified,
+                         user_status_type_id,
+                         username)
+    (SELECT 1,
+            id,
+            email,
+            personal_email,
+            last_name,
+            first_name,
+            created_dt,
+            password,
+            start_date,
+            modified_dt,
+            user_status_type_id,
+            email
+     FROM blueraven."user"
+     where id  in (2350555,99999999));
+
 -- todo: make these work for uat where they already exist
 insert into flow.system_list_type (system_list_type, archived)
 select 'orgs', false  where not exists (select id from flow.system_list_type where system_list_type = 'orgs');
@@ -65,6 +92,13 @@ VALUES ('integer array');
 
 INSERT INTO flow.data_type(data_type,custom_behavior)
 VALUES ('system',true);
+
+insert into flow.data_type(data_type, custom_behavior, system_list)
+select 'System List', false, true where not exists (select id from flow.data_type where data_type = 'System List');
+
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+select 1, 'System List', 9 where not exists (select id from flow.company_data_type where company_data_type = 'System List');
+
 
 insert into flow.schedule_field_type (field_type, required_data_type_id)
 select 'Event Start Time', 2  where not exists (select id from flow.schedule_field_type where field_type = 'start time');
@@ -202,12 +236,6 @@ values(1,'Multi-Select',7,true,true);
 insert into flow.company_data_type(company_id, company_data_type, data_type_id,has_list_values)
 values(1,'System',8,false);
 
-insert into flow.data_type(data_type, custom_behavior, system_list)
-select 'System List', false, true where not exists (select id from flow.data_type where data_type = 'System List');
-
-insert into flow.company_data_type(company_id, company_data_type, data_type_id)
-select 1, 'System List', 9 where not exists (select id from flow.company_data_type where company_data_type = 'System List');
-
 
 INSERT INTO flow.data_type_requirement(data_type_id, data_type_value, secondary_requirement, date_created)
 VALUES (1, 'current date -', true,now()),
@@ -266,3 +294,4 @@ SELECT setval('flow.attachment_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.a
 
 insert into flow.system_value(system_value)values('Current User ID');
 insert into flow.system_value(system_value)values('Current Project ID');
+

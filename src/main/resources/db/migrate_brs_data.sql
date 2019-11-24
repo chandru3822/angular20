@@ -9,6 +9,7 @@
 -- copy over brs data
 --------------------------------------------------------------------------------
 
+
 insert into flow.state
 select *
 from blueraven.state;
@@ -21,6 +22,8 @@ insert into flow.company_state(state_id, company_id, map_latitude, map_longitude
         from flow.state s
         where ( active_flag is true OR map_latitude is not null OR map_longitude is not null OR map_zoom is not null)
     );
+
+SELECT setval('flow.company_state_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.company_state), 1), false);
 
 alter table flow.state
     drop column if exists active_flag;
@@ -116,14 +119,13 @@ from blueraven.org_type);
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 -- custom org field:  sales_area_id,email,sales_metro_area_id
---remove calendar_oid,originator_id
 
 --Migrate only orgs with originator_id = 1
 --Randa thinks she want s to rename active_flag to active
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                    display_order, active_flag, color, email, calendar_oid, sales_metro_area_id,
-                    originator_id, schedulable)
+                    display_order, active_flag, color, email, sales_metro_area_id,
+                     schedulable)
     (select 1,
             id,
             org_name,
@@ -134,9 +136,7 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org
             active_flag,
             color,
             email,
-            calendar_oid,
             sales_metro_area_id,
-            originator_id,
             has_calendar
      from blueraven.org);
 
@@ -165,7 +165,44 @@ SELECT setval('flow.user_status_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM 
 
 --I want employment_type_id,compensation_type_id,personal_email,recruited_by_user_id,referred_by_user_id make custom field
 
---remove image_id,recruited_by,notes
+
+with parent as (
+    insert into flow.list_of_value( name, parent_id, display_order, date_created,
+                                    created_by_id, archived)
+        values('Employment Type',null,1,now(),2350555,false)
+        returning id ),
+     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+                                           created_by_id, archived)
+         (select et.employment_type,(select p.id from parent p),1,now(),2350555,false
+          from blueraven.employment_type et))
+INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+    (select 'Employment Type',
+            7,
+            now(),
+            2350555,
+            1,
+            p.id
+     from parent p
+    );
+
+with parent as (
+    insert into flow.list_of_value( name, parent_id, display_order, date_created,
+                                    created_by_id, archived)
+        values('Compensation Type',null,1,now(),2350555,false)
+        returning id ),
+     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+                                           created_by_id, archived)
+         (select ct.compensation_type,(select p.id from parent p),1,now(),2350555,false
+          from blueraven.compensation_type ct))
+INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+    (select 'Compensation Type',
+            7,
+            now(),
+            2350555,
+            1,
+            p.id
+     from parent p
+    );
 
 --------------------------------------------------------------------------------
 -- import user data from blueraven schema
@@ -173,25 +210,19 @@ SELECT setval('flow.user_status_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM 
 INSERT INTO flow."user" (company_id,
                          onboarded_by_user_id,
                          end_date,
-                         employment_type_id,
                          phone_number,
                          hire_date,
                          id,
                          email,
                          created_by_id,
-                         compensation_type_id,
-                         image_id,
-                         personal_email,
                          last_name,
                          employee_id,
-                         recruited_by,
                          referred_by_user_id,
                          first_name,
                          date_created,
                          password,
                          start_date,
                          date_modified,
-                         notes,
                          recruited_by_user_id,
                          modified_by_id,
                          user_status_type_id,
@@ -199,30 +230,25 @@ INSERT INTO flow."user" (company_id,
     (SELECT 1,
             onboarded_by_user_id,
             end_date,
-            employment_type_id,
             phone_number,
             hire_date,
             id,
             email,
             created_by,
-            compensation_type_id,
-            image_id,
-            personal_email,
             last_name,
             employee_id,
-            recruited_by,
             referred_by_user_id,
             first_name,
             created_dt,
             password,
             start_date,
             modified_dt,
-            notes,
             recruited_by_user_id,
             modified_by,
             user_status_type_id,
             email
-     FROM blueraven."user");
+     FROM blueraven."user"
+        where id not in (2350555,99999999));
 
 
 -- Update the sequence
@@ -331,7 +357,7 @@ from blueraven.user_asset;
 SELECT setval('flow.user_asset_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.user_asset), 1), false);
 
 
-insert into brs.budget_type(id, name, archived, date_created, date_modified)/
+insert into brs.budget_type(id, name, archived, date_created, date_modified)
     (select id,
             name,
             CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END,
@@ -449,7 +475,7 @@ insert into brs.ahj(id, name, archived, date_created, created_by_id, date_modifi
 
 SELECT setval('brs.ahj_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj), 1), false);
 
-insert into brs.ahj_utility(id, name, archived, date_created, date_modified, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id, ac_disconnect_required)
+insert into brs.ahj_utility(id, name, archived, date_created, date_modified, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id)
     (select id, name, CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END, date_created, date_updated, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id
      from blueraven.ahj_utility);
 
@@ -559,7 +585,7 @@ VALUES ('Employee Handbook Signed Date',2,now(), 2350555,1);
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id)
-VALUES ('Enter in Timeforce Date ',2,now(), 2350555,1);
+VALUES ('Enter in Timeforce Date',2,now(), 2350555,1);
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id)
@@ -645,6 +671,11 @@ INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id ,company_id)
 VALUES ('Accuity Appointment ID',5,now(), 2350555,1);
+
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id ,company_id)
+VALUES ('Personal Email',1,now(), 2350555,1);
 
 ---systems group 5
 INSERT INTO flow.custom_field(
@@ -745,6 +776,15 @@ INSERT INTO flow.custom_field(
     created_by_id ,company_id)
 VALUES ('Termination Reason',1,now(), 2350555,1);
 
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id,system_list_option_ids,company_system_list_id)
+VALUES ('Recruited By',5,now(), 2350555,1,'{10}',2);
+
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id,system_list_option_ids,company_system_list_id)
+VALUES ('Referred By',5,now(), 2350555,1,null,4);
 
 --6 termination
 INSERT INTO flow.custom_field(
@@ -1145,7 +1185,35 @@ insert into flow.custom_field_object_type(custom_field_id, company_object_type_i
      where cf.field_name = 'Cancelled T-Sheets Date'
     );
 
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Employment Type'
+    );
 
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Compensation Type'
+    );
+
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Personal Email'
+    );
+
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Referred By'
+    );
+
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,3
+     from flow.custom_field cf
+     where cf.field_name = 'Recruited By'
+    );
 
 INSERT INTO flow.custom_field_group(
     group_name,company_object_type_id, group_order, archived)
@@ -1204,6 +1272,12 @@ INSERT INTO flow.custom_field_group_assignment(
     custom_field_id,field_order,archived,created_by_id)
     (select (select id from flow.custom_field_group where group_name = 'Personal'),
             (select id from flow.custom_field where field_name = 'Accuity Appointment ID'),1,false, 2350555);
+
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Personal'),
+            (select id from flow.custom_field where field_name = 'Personal Email'),1,false, 2350555);
 
 
 INSERT INTO flow.custom_field_group_assignment(
@@ -1294,6 +1368,18 @@ INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
     (select (select id from flow.custom_field_group where group_name = 'HR'),
+            (select id from flow.custom_field where field_name = 'Compensation Type'),1,false, 2350555);
+
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR'),
+            (select id from flow.custom_field where field_name = 'Employment Type'),1,false, 2350555);
+
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR'),
             (select id from flow.custom_field where field_name = 'Re-Hire Date'),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
@@ -1306,7 +1392,17 @@ INSERT INTO flow.custom_field_group_assignment(
     (select (select id from flow.custom_field_group where group_name = 'HR'),
             (select id from flow.custom_field where field_name = 'Termination Reason'),1,false, 2350555);
 
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR'),
+            (select id from flow.custom_field where field_name = 'Referred By'),1,false, 2350555);
 
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR'),
+            (select id from flow.custom_field where field_name = 'Recruited By'),1,false, 2350555);
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
@@ -1556,7 +1652,40 @@ INSERT INTO flow.custom_field_group_assignment(
     (select (select id from flow.custom_field_group where group_name = 'General'),
             (select id from flow.custom_field where field_name = 'New Hire Orientation Meeting Date'),1,false, 2350555);
 
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Referred By') as custom_field_id,
+            referred_by_user_id,
+            2350555 as created_by_id
+     FROM blueraven.user WHERE referred_by_user_id IS NOT NULL);
 
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Recruited By') as custom_field_id,
+            recruited_by_user_id,
+            2350555 as created_by_id
+     FROM blueraven.user WHERE recruited_by_user_id IS NOT NULL);
+
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Compensation Type') as custom_field_id,
+            compensation_type_id,
+            2350555 as created_by_id
+     FROM blueraven.user WHERE compensation_type_id IS NOT NULL);
+
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Employment Type') as custom_field_id,
+            employment_type_id,
+            2350555 as created_by_id
+     FROM blueraven.user WHERE employment_type_id IS NOT NULL);
+
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, text_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Personal Email') as custom_field_id,
+            personal_email,
+            2350555 as created_by_id
+     FROM blueraven.user WHERE personal_email IS NOT NULL);
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT id,
@@ -1752,7 +1881,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
 
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Enter in Timeforce Date ') as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Enter in Timeforce Date') as custom_field_id,
             enter_in_timeforce_date,
             2350555 as created_by_id
      FROM blueraven.user WHERE enter_in_timeforce_date IS NOT NULL);
@@ -2487,7 +2616,7 @@ SELECT setval('flow.project_id_seq',
                         FROM flow.project), 1), false);
 
 -- migrate closer and setter to flow.user_project
-INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created)
+INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created,start_date)
     (SELECT *
      FROM
          (SELECT d.id AS project_id,
@@ -2499,13 +2628,20 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
                     and tsrange(up.start_date, up.end_date) @> d.pre_design_complete_date
                   limit 1) AS user_position_id,
                  2350555 AS created_by_id,
-                 now() AS date_created
+                 now() AS date_created,
+                 (select up.start_date
+                  from blueraven.user_position up
+                  where user_id = d.closer_user_id
+                    and position_id = 1
+                    and up.start_date <= up.end_date
+                    and tsrange(up.start_date, up.end_date) @> d.pre_design_complete_date
+                  limit 1) as start_date
           FROM blueraven.deal d
                    INNER JOIN flow.project p ON p.id = d.id -- TODO remove this when WHERE clause is removed from flow.project migration
           WHERE d.closer_user_id IS NOT NULL) AS foo
      WHERE foo.user_position_id IS NOT NULL);
 
-INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created)
+INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created,start_date)
     (SELECT *
      FROM
          (SELECT d.id AS project_id,
@@ -2517,7 +2653,14 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
                                 greatest(up.start_date, up.end_date)) @> d.pre_design_complete_date
                   limit 1) AS user_position_id,
                  2350555 AS created_by_id,
-                 now() AS date_created
+                 now() AS date_created,
+                 (select up.start_date
+                  from blueraven.user_position up
+                  where user_id = d.setter_user_id
+                    and position_id = 4
+                    and tsrange(least(up.start_date, up.end_date),
+                                greatest(up.start_date, up.end_date)) @> d.pre_design_complete_date
+                  limit 1) AS start_date
           FROM blueraven.deal d
                    INNER JOIN flow.project p
                               ON p.id = d.id -- TODO remove this when WHERE clause is removed from flow.project migration
@@ -2528,7 +2671,7 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
 -- create Complete Final Design process step
 --------------------------------------------------------------------------------
 -- create the step
-/*INSERT INTO flow.process_step (process_step_name, company_id, created_by_id)
+INSERT INTO flow.process_step (process_step_name, company_id, created_by_id)
 VALUES ('Complete Final Design', 1, 2350555);
 
 update flow.custom_field_group
@@ -2543,7 +2686,7 @@ VALUES ((select id from flow.process where process_name = 'Generic Blueraven Pro
         2350555,
         0,
         true);
-*/
+
 -- create and migrate the necessary project custom fields
 INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
 VALUES ('Cancelled Date',
@@ -2595,7 +2738,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
             on_hold,
             2350555 as created_by_id
      FROM blueraven.deal WHERE on_hold IS NOT NULL);
-/*
+
 -- create dummy process step status
 INSERT INTO flow.process_step_status_type (process_step_status_type,company_id)
 VALUES ('In Progress',1);  -- TODO make this company-specific, so companies can define their own statuses?
@@ -2634,18 +2777,26 @@ VALUES ('Final Design QA Date',
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (9,80,1,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Process Step PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Site Survey Verified Date'),1,false, 2350555);
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-VALUES (9,81,2,false, 2350555);
+    (select (select id from flow.custom_field_group where group_name = 'Process Step PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Final Design QA Date'),1,false, 2350555);
 
 insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,1
-     from flow.custom_field
-     where id > 79
+     from flow.custom_field cf
+     where cf.field_name = 'Site Survey Verified Date'
     );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,1
+     from flow.custom_field cf
+     where cf.field_name = 'Final Design QA Date'
+    );
+
 
 INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id, custom_field_group_assignment_id, timestamp_value, created_by_id)
     (SELECT pps.id AS project_process_step_id,
@@ -2679,7 +2830,7 @@ INSERT INTO flow.project_process_step_custom_field_value (project_process_step_i
                              AND dwq.work_queue_deal_ids && '{5}'
      WHERE d.final_design_qa_date IS NOT NULL);
 
-*/
+
 insert into brs.ahj_checklist_type(id, name, archived)
     (select id,
             name,

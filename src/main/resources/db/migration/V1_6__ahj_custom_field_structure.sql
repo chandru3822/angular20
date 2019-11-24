@@ -7,10 +7,7 @@ drop table if exists brs.custom_field;
 drop table if exists brs.list_of_value;
 drop table if exists brs.data_type;
 
--- drop the brs tables that shouldn't be there
-drop table if exists brs.custom_dropdown_value;
-drop table if exists brs.custom_dropdown_field;
-drop table if exists brs.custom_dropdown_screen;
+
 
 -- removed crappy type migrations from migrate_brs_data.sql
 -- drop all of the brs crappy type columns
@@ -126,6 +123,10 @@ alter table brs.ahj_inspection drop column if exists homeowner_required;-- custo
 alter table brs.ahj_inspection drop column if exists homeowner_required_on_site;-- custom_dropdown_value
 alter table brs.ahj_inspection drop column if exists brs_tech_required;-- custom_dropdown_value
 
+-- drop the brs tables that shouldn't be there
+drop table if exists brs.custom_dropdown_value;
+drop table if exists brs.custom_dropdown_field;
+drop table if exists brs.custom_dropdown_screen;
 
 -- drop all of the brs crappy type tables
 drop table if exists brs.ahj_handy_information_type;
