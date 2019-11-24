@@ -96,8 +96,7 @@ VALUES ('system',true);
 insert into flow.data_type(data_type, custom_behavior, system_list)
 select 'System List', false, true where not exists (select id from flow.data_type where data_type = 'System List');
 
-insert into flow.company_data_type(company_id, company_data_type, data_type_id)
-select 1, 'System List', 9 where not exists (select id from flow.company_data_type where company_data_type = 'System List');
+
 
 
 insert into flow.schedule_field_type (field_type, required_data_type_id)
@@ -235,7 +234,8 @@ insert into flow.company_data_type(company_id, company_data_type, data_type_id,h
 values(1,'Multi-Select',7,true,true);
 insert into flow.company_data_type(company_id, company_data_type, data_type_id,has_list_values)
 values(1,'System',8,false);
-
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+select 1, 'System List', 9 where not exists (select id from flow.company_data_type where company_data_type = 'System List');
 
 INSERT INTO flow.data_type_requirement(data_type_id, data_type_value, secondary_requirement, date_created)
 VALUES (1, 'current date -', true,now()),
