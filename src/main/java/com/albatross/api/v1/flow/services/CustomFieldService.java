@@ -79,6 +79,7 @@ public class CustomFieldService {
   public CustomField saveField(CustomField customField) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
+    params.put("systemListId", customField.getCompanySystemListId());
     params.put("systemListOptionIds", customField.getSystemListOptionIds());
     Long id = null;
     boolean doInsertAfterHandlingOtherScenarios = false;

@@ -328,6 +328,8 @@
       }
     },
     created() {
+      this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
+      this.selectedProcessSteps = JSON.parse(localStorage.getItem('scheduleSteps')) || []
       this.getActiveStates()
       this.getStatusTypes()
       this.getProcessSteps()
@@ -405,6 +407,9 @@
       },
 
       async getProjects() {
+        localStorage.setItem('scheduleState', JSON.stringify(this.state))
+        localStorage.setItem('scheduleSteps', JSON.stringify(this.selectedProcessSteps))
+
         if(this.selectedProcessSteps?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {

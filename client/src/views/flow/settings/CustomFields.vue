@@ -43,7 +43,7 @@
               </td>
               <td class="text-right">
                 <div class="item-icons">
-                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.systemListId)">
+                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.companySystemListId)">
                     <v-icon v-if="expanded.includes(item)">remove</v-icon>
                     <v-icon v-else-if="item.custom">add</v-icon>
                     <v-icon v-else>edit</v-icon>
@@ -120,17 +120,17 @@
                   ></v-text-field>
 
                   <v-select v-if="item.companyDataType && item.companyDataType.systemList"
-                            v-model="item.systemListId"
+                            v-model="item.companySystemListId"
                             :items="systemLists"
                             :disabled="!item.custom"
                             :readonly="!item.custom"
                             label="System List Type"
                             item-text="systemList"
                             item-value="id"
-                            @change="getSystemListOptions(item.systemListId)"
+                            @change="getSystemListOptions(item.companySystemListId)"
                   ></v-select>
 
-                  <v-select v-if="item.systemListId && systemLists.find(sl => sl.id === item.systemListId)  && systemLists.find(sl => sl.id === item.systemListId).hasSubOptions"
+                  <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
                             v-model="item.systemListOptionIds"
                             :items="systemListOptions"
                             multiple
@@ -275,6 +275,7 @@
             d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
           })
           this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
+          console.log('randaLogger ACF', this.allCustomFields)
           this.customFields = cloneDeep(this.allCustomFields)
           this.customFields.unshift(cloneDeep(this.blankNewObject))
           this.$store.commit(AppMutations.SET_LOADING, false)

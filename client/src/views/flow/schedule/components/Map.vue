@@ -1,17 +1,19 @@
 <template>
-    <MglMap :accessToken="map.accessToken"
-            :mapStyle="map.style"
-            @load="onMapLoad">
-        <MglMarker v-for="m in markers" v-if="m.coordinates" :coordinates="m.coordinates" :color="m.color || '#ffffff'"></MglMarker>
-        <MglMarker v-for="m in mapResources" v-if="m.coordinates" :coordinates="m.coordinates" :color="m.color || '#ffffff'"></MglMarker>
-        <MglNavigationControl :showCompass="false" position="top-right" />
-    </MglMap>
+  <MglMap :accessToken="map.accessToken"
+          :mapStyle="map.style"
+          @load="onMapLoad">
+    <MglMarker v-for="m in markers" v-if="m.coordinates" :coordinates="m.coordinates"
+               :color="m.color || '#ffffff'"></MglMarker>
+    <MglMarker v-for="m in mapResources" v-if="m.coordinates" :coordinates="m.coordinates"
+               :color="m.color || '#ffffff'"></MglMarker>
+    <MglNavigationControl :showCompass="false" position="top-right"/>
+  </MglMap>
 </template>
 
 <script>
   import Mapbox from 'mapbox-gl'
-  import { MglMap, MglMarker, MglNavigationControl } from 'vue-mapbox'
-  import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE } from '@/helpers/helpers'
+  import {MglMap, MglMarker, MglNavigationControl} from 'vue-mapbox'
+  import {MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE} from '@/helpers/helpers'
 
 
   export default {
@@ -48,29 +50,28 @@
       }
     },
     created() {
-      console.log('MAP MAP', this.mapResources)
       this.mapbox = Mapbox
     },
     methods: {
       async changeMapLocation(event) {
-        // Here we cathing 'load' map event
+        // Here we catching 'load' map event
+          const newParams = await this.asyncActions.flyTo({
+            center: [this.longitude, this.latitude],
+            zoom: this.zoom,
+            speed: 2
+          })
 
-        const newParams = await this.asyncActions.flyTo({
-          center: [this.longitude, this.latitude],
-          zoom: this.zoom,
-          speed: 2
-        })
       },
       async onMapLoad(event) {
         // Here we catching 'load' map event
         this.asyncActions = event.component.actions
-
+        let center = this.latitude && this.longitude ? [this.longitude, this.latitude] : this.defaultCenter
+        let zoom = this.zoom ?? this.defaultZoom
         const newParams = await this.asyncActions.flyTo({
-          center: this.defaultCenter,
-          zoom: this.defaultZoom,
+          center,
+          zoom: zoom,
           speed: 2
         })
-
       },
     }
 

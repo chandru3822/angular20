@@ -138,7 +138,7 @@ public class ScheduleService {
     // save the resourceId
     if(null != ev.getResourceId()) {
       params.put("intValue", ev.getResourceId());
-      params.put("customFieldGroupAssignmentId", ev.getResourceCustomFieldValueId());
+      params.put("customFieldGroupAssignmentId", ev.getResourceCustomFieldGroupAssignmentId());
       if(null != ev.getResourceCustomFieldValueId()) {
         params.put("id", ev.getResourceCustomFieldValueId());
         sqlCache.update("customFieldValues.updateProjectProcessStepCustomFieldValue", params);

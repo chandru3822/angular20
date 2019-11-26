@@ -43,7 +43,6 @@
                         ) rows), '[]') AS list_of_values
     from flow.custom_field cf
       left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
-      left join flow.system_list sl on sl.id = cf.company_system_list_id
     where cf.id = :id
     order by cf.field_name
   ]]></customField.getOne>
@@ -93,7 +92,6 @@
                           ) rows), '[]') AS list_of_values
     from flow.custom_field cf
       left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
-      left join flow.system_list sl on sl.id = cf.company_system_list_id
     where cf.company_id = :companyId
       and cf.archived is not true
     order by cf.field_name
@@ -123,6 +121,7 @@
   <customField.saveField><![CDATA[
     update flow.custom_field
       set field_name = :fieldName,
+          company_system_list_id = :systemListId,
           system_list_option_ids = array[ :systemListOptionIds ]::integer[],
           modified_by_id = :modifiedById,
           date_modified = now()

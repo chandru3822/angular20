@@ -183,6 +183,8 @@
       // console.log('randaLogger',moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'))
       this.getSchedulingOrgs()
       this.getSchedulingUsers()
+      this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
+      this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
     },
     data() {
       return {
@@ -336,6 +338,8 @@
         }
       },
       async getEvents() {
+        localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
+        localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
         if(!this.calendarInitialRender) {
           this.setCalendarStartAndEndTimes()
         }
