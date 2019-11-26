@@ -27,6 +27,20 @@ INSERT INTO flow."user" (company_id,
      FROM blueraven."user"
      where id  in (2350555,99999999));
 
+insert into flow.process_step_status_type(id, process_step_status_type)
+values(1,'ACTIVE');
+insert into flow.process_step_status_type(id, process_step_status_type)
+values(2,'COMPLETE');
+insert into flow.process_step_status_type(id, process_step_status_type)
+values(3,'CANCELLED');
+
+insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)
+values('Active',1,1,false,now(),2350555);
+insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)
+values('Complete',2,1,false,now(),2350555);
+insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)
+values('Cancelled',3,1,false,now(),2350555);
+
 -- todo: make these work for uat where they already exist
 insert into flow.system_list_type (system_list_type, archived)
 select 'orgs', false  where not exists (select id from flow.system_list_type where system_list_type = 'orgs');
@@ -172,6 +186,7 @@ insert into flow.parameter_type(parameter_type) values('Custom Field');
 
 insert into flow.flow_type(flow_type) values ('Object');
 insert into flow.flow_type(flow_type) values ('Process Step');
+insert into flow.flow_type(flow_type) values ('Project');
 
 insert into flow.status_type (id, status_type) values (1, 'Active');
 insert into flow.status_type (id, status_type) values (2, 'Inactive');
@@ -184,7 +199,7 @@ values (1, 'Custom Field'),
 
 INSERT INTO flow.object_type(
     object_type, object_code,flow_type_id)
-VALUES ('Project','PROJECT',1);
+VALUES ('Project','PROJECT',3);
 
 INSERT INTO flow.object_type(
     object_type, object_code,flow_type_id)
