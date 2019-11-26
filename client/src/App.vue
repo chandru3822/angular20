@@ -294,10 +294,6 @@ label[for="adminOriginatorSelect"] {
     height: 45px !important;
     margin-right: 10px !important;
   }
-  .app-toolbar{
-    .app-title {
-      font-size: 35px;
-    }
-  }
+  
 }
 </style>

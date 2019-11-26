@@ -1,7 +1,7 @@
 <template>
   <v-container class="custom-field-group-container">
     <v-row>
-      <v-col cols="12">
+      <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>

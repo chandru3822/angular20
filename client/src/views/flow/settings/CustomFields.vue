@@ -1,7 +1,7 @@
 <template>
   <v-container id="custom-field-container">
-    <v-row class="fill-height" align="center" justify="start">
-      <v-col class="shrink" cols="12">
+    <v-row>
+      <v-col cols="12">
         <v-toolbar flat>
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
           <v-spacer v-if="!IS_MOBILE"></v-spacer>

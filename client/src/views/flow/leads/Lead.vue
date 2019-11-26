@@ -1,7 +1,6 @@
 <template>
   <v-container>
-    <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
-    <v-row class="lead-header elevation-1">
+    <v-row class="lead-header elevation-0">
       <v-col cols="8" class="text-left">
         <div class="lead-title">
           {{customer.fullName}}
@@ -138,14 +137,6 @@ export default {
   },
   data () {
     return {
-      breadcrumbs: [
-        {
-          text: 'Back',
-          disabled: false,
-          exact: true,
-          to: `/leads`
-        },
-      ],
       snackbar: {},
       customer: {},
       customFieldGroups: [],
@@ -276,7 +267,7 @@ export default {
 
 <style lang="scss" scoped>
   .lead-header {
-    background-color: white;
+    border-bottom: solid 1px #EAEAF4
   }
   .lead-title {
     font-size: 30px;
