@@ -152,7 +152,7 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupOrder", customFieldGroup.getGroupOrder());
-    params.put("schedulable", customFieldGroup.getSchedulable());
+    params.put("schedulable", customFieldGroup.getSchedulable() == null ? false : customFieldGroup.getSchedulable());
     params.put("processStepId", customFieldGroup.getProcessStepId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();

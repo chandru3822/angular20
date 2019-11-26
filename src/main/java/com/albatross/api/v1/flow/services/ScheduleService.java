@@ -68,8 +68,8 @@ public class ScheduleService {
     params.put("companyId", user.getCompanyId());
     params.put("projectId", esp.getProjectId());
     params.put("processStepId", esp.getProcessStepId());
-    params.put("startTime", esp.getStartTime());
-    params.put("endTime", esp.getEndTime());
+//    params.put("startTime", esp.getStartTime());
+//    params.put("endTime", esp.getEndTime());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProject", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
     return results;
   }

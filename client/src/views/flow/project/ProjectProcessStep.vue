@@ -25,6 +25,14 @@
 
     <!-- todo: @humes just putting this here so i can test scheduling.  feel free to do what you want with it. i dont even know if this is the right spot -->
     <v-row>
+      <v-col cols="12">
+        <v-btn :to="{name: 'schedule', query: { processStepId: 1, projectId: 171704 } }">
+          Test link to schedule screen
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row>
       <v-btn text @click="randaSaveCustomFields">Save</v-btn>
       <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
         <v-toolbar color="transparent" class="elevation-0">

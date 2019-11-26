@@ -249,9 +249,6 @@
           and ps.archived is not true
           and pps.project_id = :projectId
           and pps.process_step_id = :processStepId
-          and case when st.timestamp_value is not null then st.timestamp_value >= :startTime::date else 1=1 end
-          and case when st.timestamp_value is not null then st.timestamp_value <= :endTime::date else 1=1 end
-
       ]]>
   </schedule.getProject>
 

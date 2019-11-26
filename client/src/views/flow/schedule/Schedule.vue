@@ -92,6 +92,7 @@
                 >{{ selectedProcessStepStatusTypes.length }} selected</span>
               </template>
             </v-select>
+            <v-btn dark color="primary" @click="getProjects(true)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
             <v-autocomplete v-model="searchProject"
@@ -116,7 +117,7 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchProcessStep.id" @click="getSingleProject">Go</v-btn>
+            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchProcessStep.id" @click="getSingleProject(searchProject.projectId, searchProcessStep.id)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -324,18 +325,22 @@
         }
       },
       startTime () {
-        this.getProjects()
+        // this.getProjects()
       },
       endTime () {
-        this.getProjects()
+        // this.getProjects()
       }
     },
     created() {
+      console.log('MEMEMEMEMEMEEM', this.$route.query)
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedProcessSteps = JSON.parse(localStorage.getItem('scheduleSteps')) || []
       this.getActiveStates()
       this.getStatusTypes()
       this.getProcessSteps()
+      if(this.$route.query && this.$route.query.processStepId && this.$route.query.projectId) {
+        this.getSingleProject(parseInt(this.$route.query.projectId), parseInt(this.$route.query.processStepId))
+      }
     },
     methods: {
       validateSaveEvent () {
@@ -409,7 +414,11 @@
         }
       },
 
-      async getProjects() {
+      async getProjects(resetQuery) {
+        if(resetQuery) {
+          // todo: should we remove this.$route.query params if the button is clicked?
+          this.$route.query = {}
+        }
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleSteps', JSON.stringify(this.selectedProcessSteps))
 
@@ -491,30 +500,30 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject() {
-        if(this.searchProject && this.searchProcessStep) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            let params = {
-              projectId: this.searchProject.projectId,
-              processStepId: this.searchProcessStep.id,
-              startTime: this.startTime,
-              endTime: this.endTime
-            }
-
-            const {data} = await postRequest(`/schedule/getProject`, params)
-            data.forEach(d => {
-              d.coordinates = [ d.longitude, d.latitude ]
-            })
-            this.projects = data
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
-            this.$store.commit(AppMutations.SET_LOADING, false)
+      async getSingleProject(projectId, processStepId) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            projectId,
+            processStepId,
+            // i dont think we need this for finding specific projects
+            // startTime: this.startTime,
+            // endTime: this.endTime
           }
-        } else {
-          this.projects = []
+
+          const {data} = await postRequest(`/schedule/getProject`, params)
+          data.forEach(d => {
+            d.coordinates = [ d.longitude, d.latitude ]
+          })
+          this.projects = data
+          if(this.projects.length === 1) {
+            this.selectedProject = this.projects[0]
+          }
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 

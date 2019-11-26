@@ -35,6 +35,7 @@ export default new Router({
       }, {
         path: 'schedule',
         name: 'schedule',
+        props: true,
         component: () => import(/* webpackChunkName: "schedule" */ './views/flow/schedule/Schedule.vue')
       }, {
         path: 'users',
