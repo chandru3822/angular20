@@ -1,103 +1,107 @@
 <template>
   <div id="calendar-container">
-    <v-select v-model="selectedOrgs"
-              :items="orgs"
-              label="Organizations"
-              multiple
-              return-object
-              item-text="orgName"
-              item-value="id"
-              @input="getEvents"
-    >
-      <template
-          slot="selection"
-          slot-scope="{ item, index }"
+    <div>
+      <v-select v-model="selectedOrgs"
+                :items="orgs"
+                label="Organizations"
+                multiple
+                return-object
+                item-text="orgName"
+                item-value="id"
+                @input="getEvents"
       >
-        <div v-if="index === 0 && selectedOrgs.length < 3">
-          <v-chip small v-for="sr in selectedOrgs">
-            <span>{{ sr.orgName }}</span>
-          </v-chip>
-        </div>
-        <span
-            v-if="index === 1 && selectedOrgs.length >= 3"
-            class="primary--text caption"
-        >{{ selectedOrgs.length }} selected</span>
-      </template>
-      <v-list-item
-          slot="prepend-item"
-          ripple
-          @click="toggleSelectAllOrgs()">
-        <v-list-item-action>
-          <v-icon>{{ icon }}</v-icon>
-        </v-list-item-action>
-        <v-list-item-title>Select All</v-list-item-title>
-      </v-list-item>
-      <v-divider
-          slot="prepend-item"
-          class="mt-2"
-      ></v-divider>
-    </v-select>
-    <v-select v-model="selectedUsers"
-              :items="users"
-              label="Users"
-              multiple
-              return-object
-              item-text="fullName"
-              item-value="id"
-              @input="getEvents"
-    >
-      <template
-          slot="selection"
-          slot-scope="{ item, index }"
+        <template
+            slot="selection"
+            slot-scope="{ item, index }"
+        >
+          <div v-if="index === 0 && selectedOrgs.length < 3">
+            <v-chip small v-for="sr in selectedOrgs">
+              <span>{{ sr.orgName }}</span>
+            </v-chip>
+          </div>
+          <span
+              v-if="index === 1 && selectedOrgs.length >= 3"
+              class="primary--text caption"
+          >{{ selectedOrgs.length }} selected</span>
+        </template>
+        <v-list-item
+            slot="prepend-item"
+            ripple
+            @click="toggleSelectAllOrgs()">
+          <v-list-item-action>
+            <v-icon>{{ icon }}</v-icon>
+          </v-list-item-action>
+          <v-list-item-title>Select All</v-list-item-title>
+        </v-list-item>
+        <v-divider
+            slot="prepend-item"
+            class="mt-2"
+        ></v-divider>
+      </v-select>
+      <v-select v-model="selectedUsers"
+                :items="users"
+                label="Users"
+                multiple
+                return-object
+                item-text="fullName"
+                item-value="id"
+                @input="getEvents"
       >
-        <div v-if="index === 0 && selectedUsers.length < 3">
-          <v-chip small v-for="sr in selectedUsers">
-            <span>{{ sr.fullName }}</span>
-          </v-chip>
-        </div>
-        <span
-            v-if="index === 1 && selectedUsers.length >= 3"
-            class="primary--text caption"
-        >{{ selectedUsers.length }} selected</span>
-      </template>
-      <v-list-item
-          slot="prepend-item"
-          ripple
-          @click="toggleSelectAllUsers()">
-        <v-list-item-action>
-          <v-icon>{{ iconUsers }}</v-icon>
-        </v-list-item-action>
-        <v-list-item-title>Select All</v-list-item-title>
-      </v-list-item>
-      <v-divider
-          slot="prepend-item"
-          class="mt-2"
-      ></v-divider>
-    </v-select>
-    <FullCalendar ref="eventCalendar"
-                  :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
-                  :defaultView="calendar.options.defaultView"
-                  :resources="resources"
-                  theme-system="standard"
-                  :time-zone="calendar.options.timezone"
-                  :header="calendar.options.header"
-                  :editable="calendar.options.editable"
-                  :events="events"
-                  :now-indicator="true"
-                  :min-time="calendar.options.minTime"
-                  :max-time="calendar.options.maxTime"
-                  :height="calendar.options.height"
-                  :scroll-time="calendar.options.scrollTime"
-                  :first-day="calendar.options.firstDay"
-                  :hidden-days="calendar.options.hiddenDays"
-                  :custom-buttons="calendar.options.customButtons"
-                  :slot-width="55"
-                  :view-skeleton-render="getEvents"
-                  @eventClick="(info) => handleEventClick(info)"
-                  @eventRender="(info) => handleEventRender(info)"
-                  @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
+        <template
+            slot="selection"
+            slot-scope="{ item, index }"
+        >
+          <div v-if="index === 0 && selectedUsers.length < 3">
+            <v-chip small v-for="sr in selectedUsers">
+              <span>{{ sr.fullName }}</span>
+            </v-chip>
+          </div>
+          <span
+              v-if="index === 1 && selectedUsers.length >= 3"
+              class="primary--text caption"
+          >{{ selectedUsers.length }} selected</span>
+        </template>
+        <v-list-item
+            slot="prepend-item"
+            ripple
+            @click="toggleSelectAllUsers()">
+          <v-list-item-action>
+            <v-icon>{{ iconUsers }}</v-icon>
+          </v-list-item-action>
+          <v-list-item-title>Select All</v-list-item-title>
+        </v-list-item>
+        <v-divider
+            slot="prepend-item"
+            class="mt-2"
+        ></v-divider>
+      </v-select>
+    </div>
+    <div class="calendar-resize-container">
+      <FullCalendar ref="eventCalendar"
+                    :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
+                    :defaultView="calendar.options.defaultView"
+                    :resources="resources"
+                    theme-system="standard"
+                    :time-zone="calendar.options.timezone"
+                    :header="calendar.options.header"
+                    :editable="calendar.options.editable"
+                    :events="events"
+                    :now-indicator="true"
+                    :min-time="calendar.options.minTime"
+                    :max-time="calendar.options.maxTime"
+                    :height="calendar.options.height"
+                    :scroll-time="calendar.options.scrollTime"
+                    :first-day="calendar.options.firstDay"
+                    :hidden-days="calendar.options.hiddenDays"
+                    :custom-buttons="calendar.options.customButtons"
+                    :slot-width="55"
+                    :view-skeleton-render="getEvents"
+                    @eventClick="(info) => handleEventClick(info)"
+                    @eventRender="(info) => handleEventRender(info)"
+                    @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
 
-    />
+      />
+    </div>
     <Snackbar :snackbar="snackbar"></Snackbar>
   </div>
 </template>
@@ -454,6 +458,12 @@
 <style lang="scss" scoped>
 #calendar-container {
   height: 100%;
+  display: flex;
+  flex-flow: column;
+}
+.calendar-resize-container {
+  /* without this when you resize the scree the calendar goes whackadoodle */
+  flex: 1 1 auto;
 }
 </style>
 

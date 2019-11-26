@@ -1,7 +1,7 @@
 <template>
-  <v-container>
-    <v-row :class="{'map-row': !IS_MOBILE}">
-      <v-col cols="12" md="5" :class="{'map-row': IS_MOBILE}">
+  <v-container id="schedule-container">
+    <v-row>
+      <v-col cols="12" md="5" class="map-row">
         <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
              :zoom="state.mapZoom" :map-resources="mapResources"></Map>
       </v-col>
@@ -194,36 +194,39 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="7">
-        <v-data-table
-            :headers="headers"
-            :items="projects"
-            :items-per-page="-1"
-            :mobile-breakpoint="0"
-            v-model="selectedRows"
-            item-key="projectProcessStepId"
-            hide-default-footer
-            :show-select="true"
-            :item-selected="(item, value) => addToMap(item, value)"
-            :toggle-select-all="(value) => addToMap(value)"
-            class="elevation-1"
-        >
-          <template #no-data>
-            No Results Found
-          </template>
+        <div>
+          <v-data-table
+              :headers="headers"
+              :items="projects"
+              :fixed-header="true"
+              :items-per-page="-1"
+              :mobile-breakpoint="0"
+              v-model="selectedRows"
+              item-key="projectProcessStepId"
+              hide-default-footer
+              :show-select="true"
+              :item-selected="(item, value) => addToMap(item, value)"
+              :toggle-select-all="(value) => addToMap(value)"
+              class="elevation-1"
+          >
+            <template #no-data>
+              No Results Found
+            </template>
 
-          <template #no-results>
-            No results
-          </template>
+            <template #no-results>
+              No results
+            </template>
 
-          <template #item.start="{ item }">
-            {{item.start | formatDate('date', timezone.value)}}
-          </template>
+            <template #item.start="{ item }">
+              {{item.start | formatDate('date', timezone.value)}}
+            </template>
 
-          <template #item.projectName="{ item }">
-            <a @click="selectedProject = item" style="text-decoration: underline">{{item.projectName}}</a>
-          </template>
+            <template #item.projectName="{ item }">
+              <a @click="selectedProject = item" style="text-decoration: underline">{{item.projectName}}</a>
+            </template>
 
-        </v-data-table>
+          </v-data-table>
+        </div>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -520,6 +523,11 @@
 </script>
 
 <style lang="scss">
+  #schedule-container .v-data-table__wrapper {
+    height: calc(50vh - 95px);
+    min-height: 200px;
+  }
+
   .map-field-input {
     border-bottom: solid 1px rgba(0, 0, 0, 0.42);
   }
@@ -527,9 +535,10 @@
 
 <style lang="scss" scoped>
   .map-row {
-    /*height: 50vh;*/
-    min-height: 500px;
+    min-height: 300px;
   }
+
+
 
   .schedule-row {
     /*height: 40vh;*/
@@ -539,6 +548,12 @@
   .map-field-label {
     font-size: 12px;
     color: var(--v-primary-base);
+  }
+
+  @media (min-width: 769px) {
+    .map-row {
+      min-height: calc(50vh - 95px);
+    }
   }
 </style>
 

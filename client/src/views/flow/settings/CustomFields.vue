@@ -275,7 +275,6 @@
             d.companyDataType = this.dataTypes.find(dt => dt.id === d.companyDataTypeId)
           })
           this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
-          console.log('randaLogger ACF', this.allCustomFields)
           this.customFields = cloneDeep(this.allCustomFields)
           this.customFields.unshift(cloneDeep(this.blankNewObject))
           this.$store.commit(AppMutations.SET_LOADING, false)
