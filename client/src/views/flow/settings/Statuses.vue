@@ -31,43 +31,43 @@
                 <v-icon v-if="selectedStatusTypeId === s.id" @click="saveType(s)">save</v-icon>
                 <v-icon v-else @click="selectedStatusTypeId = s.id">edit</v-icon>
               </v-list-item-action>
-              <v-dialog
-                  v-model="s.deleteConfirm"
-                  width="500">
-                <template v-slot:activator="{ on }">
-                  <v-list-item-action class="clickable" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-list-item-action>
-                </template>
-                <v-card>
-                  <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title
-                  >
-                    Confirm
-                  </v-card-title>
+<!--              <v-dialog-->
+<!--                  v-model="s.deleteConfirm"-->
+<!--                  width="500">-->
+<!--                <template v-slot:activator="{ on }">-->
+<!--                  <v-list-item-action class="clickable" v-on="on">-->
+<!--                    <v-icon>delete</v-icon>-->
+<!--                  </v-list-item-action>-->
+<!--                </template>-->
+<!--                <v-card>-->
+<!--                  <v-card-title-->
+<!--                      class="headline grey lighten-2"-->
+<!--                      primary-title-->
+<!--                  >-->
+<!--                    Confirm-->
+<!--                  </v-card-title>-->
 
-                  <v-card-text>
-                    Are you sure you want to delete this status type: <strong>{{ s.processStepStatusType }}</strong>?
-                  </v-card-text>
+<!--                  <v-card-text>-->
+<!--                    Are you sure you want to delete this status type: <strong>{{ s.processStepStatusType }}</strong>?-->
+<!--                  </v-card-text>-->
 
-                  <v-divider></v-divider>
+<!--                  <v-divider></v-divider>-->
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        @click="s.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                        color="primary"
-                        text
-                        @click="s.archived = true; deleteType(s.id)">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
+<!--                  <v-card-actions>-->
+<!--                    <v-spacer></v-spacer>-->
+<!--                    <v-btn-->
+<!--                        @click="s.deleteConfirm = false">-->
+<!--                      No-->
+<!--                    </v-btn>-->
+<!--                    <v-btn-->
+<!--                        color="primary"-->
+<!--                        text-->
+<!--                        @click="s.archived = true; deleteType(s.id)">-->
+<!--                      Yes-->
+<!--                    </v-btn>-->
+<!--                  </v-card-actions>-->
+<!--                </v-card>-->
+<!--              </v-dialog>-->
             </v-list-item>
           </v-list>
         </v-container>

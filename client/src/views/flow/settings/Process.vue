@@ -71,7 +71,7 @@
               <v-card flat color="transparent" class="text-left pt-4">
                 <label>Initial Step:</label>
                 <input type="checkbox" class="ml-2" v-model="item.initialStep">
-                <v-select v-model="item.processStepStatusTypeId"
+                <v-select v-model="item.companyProcessStepStatusTypeId"
                           v-if="item.initialStep"
                           :items="processStepStatusTypes"
                           label="Initial Process Step Status Type"
@@ -80,7 +80,7 @@
                           class="mt-4"
                 ></v-select>
                 <div class="mt-3 text-center">
-                  <v-btn :disabled="item.initialStep && !item.processStepStatusTypeId"
+                  <v-btn :disabled="item.initialStep && !item.companyProcessStepStatusTypeId"
                          @click="updateInitialStep(item)">
                     <v-icon>save</v-icon>
                     Save
@@ -340,10 +340,10 @@ export default {
     async updateInitialStep(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        item.processStepStatusTypeId = item.initialStep ? item.processStepStatusTypeId : null
+        item.companyProcessStepStatusTypeId = item.initialStep ? item.companyProcessStepStatusTypeId : null
         const {data} = await putRequest(`/processes/${this.processId}/initialProcessStepProcess`, item)
         item.initialStep = data.initialStep
-        item.processStepStatusTypeId = data.processStepStatusTypeId
+        item.companyProcessStepStatusTypeId = data.companyProcessStepStatusTypeId
         item.processStepStatusType = data.processStepStatusType
         this.expanded = []
         this.snackbar = getSnackbar('SUCCESS', 'Process Step Saved')

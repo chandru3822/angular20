@@ -174,7 +174,7 @@ public class ProcessService {
         params.put("processId", processId);
         params.put("modifiedById", currentUser.getId());
         params.put("initialStep", processStepProcess.isInitialStep());
-        params.put("processStepStatusTypeId", processStepProcess.getProcessStepStatusTypeId());
+        params.put("companyProcessStepStatusTypeId", processStepProcess.getCompanyProcessStepStatusTypeId());
         params.put("processStepProcessId", processStepProcess.getId());
 
         sqlCache.update("process.setInitialProcessStep", params);

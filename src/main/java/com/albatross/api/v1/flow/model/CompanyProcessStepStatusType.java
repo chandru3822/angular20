@@ -9,9 +9,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class ProcessStepStatusType {
+public class CompanyProcessStepStatusType {
 
-  private Long id, companyId;
+  private Long id, companyId, processStepStatusTypeId, createdById, modifiedById;
   private String processStepStatusType;
   private Boolean archived;
 }

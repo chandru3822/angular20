@@ -71,7 +71,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionName", action.getActionName());
     params.put("actionTypeId", action.getActionTypeId());
-    params.put("processStepStatusTypeId", action.getProcessStepStatusTypeId());
+    params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("modifiedById", currentUser.getId());
     params.put("id", action.getId());
 
@@ -127,7 +127,7 @@ public class ProcessStepActionService {
     params.put("actionTypeId", action.getActionTypeId());
     params.put("createdById", currentUser.getId());
     params.put("processStepId", action.getProcessStepId());
-    params.put("processStepStatusTypeId", action.getProcessStepStatusTypeId());
+    params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
 
     Long id = sqlCache.updateReturningId("processStepAction.insertAction", params, "id").longValue();
     return getActionById(id);

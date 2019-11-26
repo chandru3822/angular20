@@ -458,8 +458,8 @@
           this.projects = cloneDeep(this.masterProjects)
         } else {
           this.projects = this.masterProjects.filter(p => {
-            console.log('randaLogger',p.processStepStatusTypeId)
-            return statusIds.includes(p.processStepStatusTypeId)
+            console.log('randaLogger',p.companyProcessStepStatusTypeId)
+            return statusIds.includes(p.companyProcessStepStatusTypeId)
           })
         }
       },

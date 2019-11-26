@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class ProcessStepAction {
 
-  private Long id, processStepId, processStepStatusTypeId, actionTypeId;
+  private Long id, processStepId, companyProcessStepStatusTypeId, actionTypeId;
   private String actionName, actionType, processStepStatusType;
   private List<ProcessStepLogic> processStepLogicList;
   private List<ProcessStepActionChildProcess> processStepActionChildProcesses;

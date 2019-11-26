@@ -367,7 +367,7 @@
                       item-text="actionType"
                       item-value="id"
             ></v-select>
-            <v-select v-model="newAction.processStepStatusTypeId"
+            <v-select v-model="newAction.companyProcessStepStatusTypeId"
                       :items="statusTypes"
                       :clearable="true"
                       label="Action changes status of parent process step to"
@@ -412,7 +412,7 @@
                               item-text="actionType"
                               item-value="id"
                     ></v-select>
-                    <v-select v-model="item.processStepStatusTypeId"
+                    <v-select v-model="item.companyProcessStepStatusTypeId"
                               :items="statusTypes"
                               :clearable="true"
                               label="Action changes status of parent process step to"

@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.ProcessStepStatusType;
+import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.StatusType;
 import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class ProcessStepStatusController {
   private ProcessStepStatusService processStepStatusService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepStatusType> getStatusTypesForCompany () {
+  public List<CompanyProcessStepStatusType> getStatusTypesForCompany () {
     return processStepStatusService.getStatusTypesForCompany();
   }
 
@@ -35,12 +35,12 @@ public class ProcessStepStatusController {
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateProcess(@RequestBody ProcessStepStatusType type) {
+  public void updateProcess(@RequestBody CompanyProcessStepStatusType type) {
     processStepStatusService.updateType(type);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepStatusType> insertProcess(@RequestBody StatusType type) {
+  public Optional<CompanyProcessStepStatusType> insertProcess(@RequestBody StatusType type) {
     return processStepStatusService.insertType(type);
   }
 

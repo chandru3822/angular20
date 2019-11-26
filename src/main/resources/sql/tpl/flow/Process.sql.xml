@@ -31,8 +31,8 @@
                               ps.company_id as "companyId",
                               psp.display_order as "displayOrder",
                               psp.initial_step as "initialStep",
-                              psp.process_step_status_type_id as "processStepStatusTypeId",
-                              psst.process_step_status_type as "processStepStatusType",
+                              psp.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+                              cpsst.process_step_status_type as "processStepStatusType",
                               psp.org_id as "orgId",
                               o.org_name as "orgName",
                               psp.date_created as "dateCreated",
@@ -44,7 +44,7 @@
                        from flow.process_step_process psp
                             inner join flow.process_step ps on ps.id = psp.process_step_id
                             left join flow.org o on o.id = psp.org_id
-                            left join flow.process_step_status_type psst on psst.id = psp.process_step_status_type_id
+                            left join flow.company_process_step_status_type cpsst on cpsst.id = psp.company_process_step_status_type_id
                        where psp.process_id = p.id and psp.archived is not true
                        order by psp.display_order, ps.process_step_name) processSteps), '[]') AS "processStepProcesses"
       from flow.company_process cp
@@ -139,8 +139,8 @@
              ps.company_id as "companyId",
              psp.display_order as "displayOrder",
              psp.initial_step as "initialStep",
-             psp.process_step_status_type_id as "processStepStatusTypeId",
-             psst.process_step_status_type as "processStepStatusType",
+             psp.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+             cpsst.process_step_status_type as "processStepStatusType",
              psp.org_id as "orgId",
              o.org_name as "orgName",
              psp.date_created as "dateCreated",
@@ -152,7 +152,7 @@
       from flow.process_step_process psp
                inner join flow.process_step ps on ps.id = psp.process_step_id
                left join flow.org o on o.id = psp.org_id
-               left join flow.process_step_status_type psst on psst.id = psp.process_step_status_type_id
+               left join flow.company_process_step_status_type cpsst on psst.id = psp.company_process_step_status_type_id
       where psp.process_id = :processId
         and psp.archived is not true
         and psp.initial_step is true
@@ -163,7 +163,7 @@
     <![CDATA[
       update flow.process_step_process
         set initial_step = :initialStep,
-            process_step_status_type_id = :processStepStatusTypeId,
+            company_process_step_status_type_id = :companyProcessStepStatusTypeId,
             modified_by_id = :modifiedById,
             date_modified = now()
       where id = :processStepProcessId;
@@ -183,14 +183,14 @@
        psp.modified_by_id as "modifiedById",
        psp.display_order as "displayOrder",
        psp.initial_step as "initialStep",
-       psp.process_step_status_type_id as "processStepStatusTypeId",
-       psst.process_step_status_type as "processStepStatusType",
+       psp.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
+       cpsst.process_step_status_type as "processStepStatusType",
        psp.archived,
        ps.process_step_name as "processStepName"
       from flow.process_step_process psp
              inner join flow.process_step ps on ps.id = psp.process_step_id
              left join flow.org o on o.id = psp.org_id
-             left join flow.process_step_status_type psst on psst.id = psp.process_step_status_type_id
+             left join flow.company_process_step_status_type cpsst on psst.id = psp.company_process_step_status_type_id
       where psp.id = :id
     ]]>
   </process.getOneProcessStepProcess>
