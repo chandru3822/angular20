@@ -121,6 +121,8 @@ alter table brs.ahj_inspection drop column if exists midpoint_inspection_lead_ti
 alter table brs.ahj_inspection drop column if exists midpoint_inspection_lead_time_type_other;
 alter table brs.ahj_inspection drop column if exists homeowner_required;-- custom_dropdown_value
 alter table brs.ahj_inspection drop column if exists homeowner_required_on_site;-- custom_dropdown_value
+alter table brs.ahj_inspection drop column if exists call_for_time_window;-- custom_dropdown_value
+alter table brs.ahj_inspection drop column if exists fall_protection_required;-- custom_dropdown_value
 alter table brs.ahj_inspection drop column if exists brs_tech_required;-- custom_dropdown_value
 
 -- drop the brs tables that shouldn't be there

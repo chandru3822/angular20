@@ -745,6 +745,78 @@ from (
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.homeowner_required_on_site
      ) as v
 where id = cfv_id;
+-- this one is like the one above it
+with parent as (
+    insert into brs.list_of_value( name, parent_id, display_order, date_created, created_by_id, archived)
+        values('Fall Protection for Inspector Required',null,1,now(),99999999,false)
+        returning id ),
+     lov as ( insert into brs.list_of_value( name, parent_id, show_other, display_order, date_created, created_by_id, archived)
+         values ('Yes', (select p.id from parent p), false,1,now(),2350555, false ),
+                ('No', (select p.id from parent p), false,1,now(),2350555, false ),
+                ('Unknown', (select p.id from parent p), false,1,now(),2350555, false )
+     ),
+     cf as (insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
+         ( select p.id, 'Fall Protection for Inspector Required', 7, now(), 99999999, false from parent p) returning id),
+     cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
+         (select 18, cf.id, 1, false, now(), 99999999 from cf) returning id)
+insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
+    (select insp.id,
+            (select id from cfga),
+            null,
+            null,
+            now(),
+            99999999
+     from blueraven.ahj_inspection insp
+     where insp.fall_protection_required is not null
+    );
+update brs.custom_field_value
+set int_value = v.lov_id
+from (
+         select lov.id as lov_id,
+                cfv.id as cfv_id
+         from brs.custom_field_value cfv
+                  inner join blueraven.ahj_inspection a on a.id = cfv.source_id
+                  inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.fall_protection_required
+     ) as v
+where id = cfv_id;
+-- this one is like the one above it
+with parent as (
+    insert into brs.list_of_value( name, parent_id, display_order, date_created, created_by_id, archived)
+        values('Call For Time Window',null,1,now(),99999999,false)
+        returning id ),
+     lov as ( insert into brs.list_of_value( name, parent_id, show_other, display_order, date_created, created_by_id, archived)
+         values ('Yes', (select p.id from parent p), false,1,now(),2350555, false ),
+                ('No', (select p.id from parent p), false,1,now(),2350555, false ),
+                ('Unknown', (select p.id from parent p), false,1,now(),2350555, false )
+     ),
+     cf as (insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
+         ( select p.id, 'Call For Time Window', 7, now(), 99999999, false from parent p) returning id),
+     cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
+         (select 19, cf.id, 1, false, now(), 99999999 from cf) returning id)
+insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
+    (select insp.id,
+            (select id from cfga),
+            null,
+            null,
+            now(),
+            99999999
+     from blueraven.ahj_inspection insp
+     where insp.call_for_time_window is not null
+    );
+update brs.custom_field_value
+set int_value = v.lov_id
+from (
+         select lov.id as lov_id,
+                cfv.id as cfv_id
+         from brs.custom_field_value cfv
+                  inner join blueraven.ahj_inspection a on a.id = cfv.source_id
+                  inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = a.call_for_time_window
+     ) as v
+where id = cfv_id;
 
 -- TYPE TABLES: create list_of_values and their custom_fields for the type tables (above was for the custom_dropdown_values
 -- todo: update the rest of the queries to match this first one
