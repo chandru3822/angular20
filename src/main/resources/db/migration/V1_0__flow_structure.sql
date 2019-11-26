@@ -2356,9 +2356,6 @@ CREATE TABLE if not exists flow.project_custom_field_value_audit
     date_modified    timestamp without time zone,
     modified_by_id  integer,
     CONSTRAINT project_custom_field_value_audit_pk primary key (id),
-    CONSTRAINT pcfvu_project_custom_field_value_id_fk FOREIGN KEY (project_custom_field_value_id)
-        REFERENCES flow.project_custom_field_value (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT pcfv_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -2431,9 +2428,6 @@ CREATE TABLE if not exists flow.user_custom_field_value_audit
     date_modified    timestamp without time zone,
     modified_by_id  integer,
     CONSTRAINT user_custom_field_value_audit_pk primary key (id),
-    CONSTRAINT ucfva_user_custom_field_value_id_fk FOREIGN KEY (user_custom_field_value_id)
-        REFERENCES flow.user_custom_field_value (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT ucfva_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -2505,9 +2499,6 @@ CREATE TABLE if not exists flow.customer_custom_field_value_audit
     date_modified    timestamp without time zone,
     modified_by_id  integer,
     CONSTRAINT customer_custom_field_value_audit_pk primary key (id),
-    CONSTRAINT ccfva_customer_custom_field_value_id_fk FOREIGN KEY (customer_custom_field_value_id)
-        REFERENCES flow.customer_custom_field_value (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT ccfva_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -2579,9 +2570,6 @@ CREATE TABLE if not exists flow.organization_custom_field_value_audit
     date_modified    timestamp without time zone,
     modified_by_id  integer,
     CONSTRAINT organization_custom_field_value_audit_pk primary key (id),
-    CONSTRAINT ocfva_organization_custom_field_value_id_fk FOREIGN KEY (organization_custom_field_value_id)
-        REFERENCES flow.organization_custom_field_value (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT ocfva_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -2654,9 +2642,6 @@ CREATE TABLE if not exists flow.project_process_step_custom_field_value_audit
     date_modified    timestamp without time zone,
     modified_by_id  integer,
     CONSTRAINT project_process_step_custom_field_value_audit_pk primary key (id),
-    CONSTRAINT ppscfva_project_process_step_custom_field_value_id_fk FOREIGN KEY (project_process_step_custom_field_value_id)
-        REFERENCES flow.project_process_step_custom_field_value (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT ppscfva_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
