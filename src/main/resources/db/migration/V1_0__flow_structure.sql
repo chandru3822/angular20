@@ -539,24 +539,35 @@ CREATE TABLE if NOT EXISTS flow.process_step_status_type
 (
     id                  serial                not null,
     process_step_status_type character varying(50) NOT NULL,
+    archived boolean not null default false,
+    CONSTRAINT process_step_status_type_pk primary key (id)
+);
+
+CREATE TABLE if NOT EXISTS flow.company_process_step_status_type
+(
+    id                  serial                not null,
+    process_step_status_type_id integer not null,
+    process_step_status_type character varying(50) NOT NULL,
     company_id  integer not null,
     archived boolean not null default false,
     date_created         timestamp without time zone DEFAULT now(),
     date_modified         timestamp without time zone,
     created_by_id        integer,
     modified_by_id       integer,
-    CONSTRAINT process_step_status_type_pk primary key (id),
+    CONSTRAINT company_process_step_status_type_pk primary key (id),
     CONSTRAINT psst_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT psst_created_by_id_fk FOREIGN KEY (created_by_id)
+    CONSTRAINT cpsst_process_step_status_type_id_fk FOREIGN KEY (process_step_status_type_id)
+        REFERENCES flow.process_step_status_type (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT cpsst_created_by_id_fk FOREIGN KEY (created_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT psst_modified_by_id_fk FOREIGN KEY (modified_by_id)
+    CONSTRAINT cpsst_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
-
 
 CREATE TABLE if not exists  flow."position"
 (
@@ -1158,7 +1169,7 @@ CREATE TABLE if not exists flow.process_step_action
     process_step_id        integer,
     action_type_id integer not null,
     action_name           varchar(100) not null,
-    process_step_status_type_id integer,
+    company_process_step_status_type_id integer,
     automatic_completion   boolean not null default false,
     date_created           timestamp without time zone DEFAULT now(),
     date_modified           timestamp without time zone,
@@ -1178,8 +1189,8 @@ CREATE TABLE if not exists flow.process_step_action
     CONSTRAINT psa_action_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT psa_process_step_status_type_id_fk FOREIGN KEY (process_step_status_type_id)
-        REFERENCES flow.process_step_status_type (id) MATCH SIMPLE
+    CONSTRAINT psa_process_step_status_type_id_fk FOREIGN KEY (company_process_step_status_type_id)
+        REFERENCES flow.company_process_step_status_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
@@ -1200,7 +1211,7 @@ CREATE TABLE if not exists flow.process_step_process
     created_by_id   integer not null,
     modified_by_id  integer,
     initial_step boolean not null default false,
-    process_step_status_type_id   integer,
+    company_process_step_status_type_id   integer,
     archived boolean not null default false,
     CONSTRAINT process_step_process_pk PRIMARY KEY (id),
     CONSTRAINT psp_created_by_id_fk FOREIGN KEY (created_by_id)
@@ -1212,8 +1223,8 @@ CREATE TABLE if not exists flow.process_step_process
     CONSTRAINT psp_process_id_fk FOREIGN KEY (process_id)
         REFERENCES flow.process (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT psp_status_type_id_fk FOREIGN KEY (process_step_status_type_id)
-        REFERENCES flow.process_step_status_type (id) MATCH SIMPLE
+    CONSTRAINT psp_status_type_id_fk FOREIGN KEY (company_process_step_status_type_id)
+        REFERENCES flow.company_process_step_status_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT psp_process_step_id_fk FOREIGN KEY (process_step_id)
         REFERENCES flow.process_step (id) MATCH SIMPLE
@@ -1367,7 +1378,7 @@ CREATE TABLE if not exists flow.project_process_step
     project_id                 integer not null,
     process_step_id            integer not null,
     user_position_id           integer,
-    process_step_status_type_id     integer not null,
+    company_process_step_status_type_id     integer not null,
     process_step_complete_date date,
     date_created               timestamp without time zone DEFAULT now(),
     date_modified              timestamp without time zone,
@@ -1376,8 +1387,8 @@ CREATE TABLE if not exists flow.project_process_step
     -- CONSTRAINT project_process_step_pk PRIMARY KEY (id),
     CONSTRAINT pps_project_id_fk FOREIGN KEY (project_id)
         REFERENCES flow.project (id),
-    CONSTRAINT pps_process_step_status_type_id_fk FOREIGN KEY (process_step_status_type_id)
-        REFERENCES flow.process_step_status_type (id) MATCH SIMPLE
+    CONSTRAINT pps_process_step_status_type_id_fk FOREIGN KEY (company_process_step_status_type_id)
+        REFERENCES flow.company_process_step_status_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT pps_user_position_id_fk FOREIGN KEY (user_position_id)
         REFERENCES flow.user_position (id) MATCH SIMPLE
@@ -1397,7 +1408,7 @@ CREATE INDEX if not exists pps_project_id_idx ON flow.project_process_step (proj
 
 CREATE INDEX if not exists pps_process_step_id_idx ON flow.project_process_step (process_step_id);
 
-CREATE INDEX if not exists pps_process_step_status_id_idx ON flow.project_process_step (process_step_status_type_id);
+CREATE INDEX if not exists pps_process_step_status_id_idx ON flow.project_process_step (company_process_step_status_type_id);
 
 CREATE TABLE if not exists flow.project_process_step_attachment
 (

@@ -2739,17 +2739,14 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
             2350555 as created_by_id
      FROM blueraven.deal WHERE on_hold IS NOT NULL);
 
--- create dummy process step status
-INSERT INTO flow.process_step_status_type (process_step_status_type,company_id)
-VALUES ('In Progress',1);  -- TODO make this company-specific, so companies can define their own statuses?
 
 -- create project process step entries
-INSERT INTO flow.project_process_step (project_id, process_step_id, user_position_id, process_step_status_type_id, created_by_id)
+INSERT INTO flow.project_process_step (project_id, process_step_id, user_position_id, company_process_step_status_type_id, created_by_id)
     (SELECT project.id,
             (SELECT id FROM flow.process_step WHERE process_step_name = 'Complete Final Design') AS process_step_id,
             7514 AS user_position_id, -- arbitrary user position id; I have no idea what to use here
             -- TODO how will these projects be assigned to individuals? Should this be optional?
-            (SELECT id FROM flow.process_step_status_type WHERE process_step_status_type = 'In Progress') AS process_step_status_id,
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active') AS process_step_status_id,
             2350555 as created_by_id
      FROM flow.project
               INNER JOIN blueraven.deal d
@@ -2871,8 +2868,8 @@ SELECT setval('brs.ahj_link_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.
 
 
 
-insert into brs.ahj_inspection(id, ahj_id, inspection_fee, re_inspection_fee, payment_method, inspection_time_window, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, date_created, created_by_id, date_modified, modified_by_id, ladder_required, time_window, time_window_call_time, time_window_phone, scheduling_note, technician_instruction_note, scheduling_with_customer_note, obtaining_results_note, reinspection_note, documentation_note, required_inspection_types, fall_protection_required, mpu_inspection_note)
-    (select id, ahj_id, inspection_fee, re_inspection_fee, payment_method, inspection_time_window, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, created, created_by_id, updated, updated_by_id, ladder_required, time_window, time_window_call_time, time_window_phone, scheduling_note, technician_instruction_note, scheduling_with_customer_note, obtaining_results_note, reinspection_note, documentation_note, required_inspection_types, fall_protection_required, mpu_inspection_note
+insert into brs.ahj_inspection(id, ahj_id, inspection_fee, re_inspection_fee, payment_method, inspection_time_window, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, date_created, created_by_id, date_modified, modified_by_id, ladder_required, time_window, time_window_call_time, time_window_phone, scheduling_note, technician_instruction_note, scheduling_with_customer_note, obtaining_results_note, reinspection_note, documentation_note, required_inspection_types, mpu_inspection_note)
+    (select id, ahj_id, inspection_fee, re_inspection_fee, payment_method, inspection_time_window, brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password, business_license, contractor_license, archived, created, created_by_id, updated, updated_by_id, ladder_required, time_window, time_window_call_time, time_window_phone, scheduling_note, technician_instruction_note, scheduling_with_customer_note, obtaining_results_note, reinspection_note, documentation_note, required_inspection_types, mpu_inspection_note
      from blueraven.ahj_inspection);
 
 SELECT setval('brs.ahj_inspection_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_inspection), 1), false);
