@@ -4,21 +4,21 @@
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Process Step Status Types</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newType = {}">
-              <v-icon v-if="IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
-          </v-toolbar-items>
+<!--          <v-spacer></v-spacer>-->
+<!--          <v-toolbar-items>-->
+<!--            <v-btn text @click="addNew = !addNew; newType = {}">-->
+<!--              <v-icon v-if="IS_MOBILE">add</v-icon>-->
+<!--              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>-->
+<!--            </v-btn>-->
+<!--          </v-toolbar-items>-->
         </v-toolbar>
         <v-container>
-          <v-text-field v-if="addNew"
-                        v-model="newType.statusType"
-                        placeholder="Enter a type"
-                        label="Status Type">
-          </v-text-field>
-          <v-btn v-if="addNew" :disabled="!newType.statusType" @click="addNewType">Save</v-btn>
+<!--          <v-text-field v-if="addNew"-->
+<!--                        v-model="newType.statusType"-->
+<!--                        placeholder="Enter a type"-->
+<!--                        label="Status Type">-->
+<!--          </v-text-field>-->
+<!--          <v-btn v-if="addNew" :disabled="!newType.statusType" @click="addNewType">Save</v-btn>-->
           <v-list v-for="(s, index) in filterBy(statusTypes, false, 'archived')"
                   :key="index"  class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
