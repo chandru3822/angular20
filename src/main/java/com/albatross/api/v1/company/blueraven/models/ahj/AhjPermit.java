@@ -14,11 +14,10 @@ public class AhjPermit {
     private Long id;
 
     private Double averagePermitFee;
-    private String engineeringLetterRequired,
-            printLocation, stampedPlan,
-            businessLicense, contractorLicense, otherLicense,
-            submissionNote, revisionNote, asBuiltNote, deliveryNote,
-            approvalTimeline, documentsAvailable, depositAmount, asBuiltFeeAmount, followUpFeeAmount, deliveryFeeAmount, revisionFeeAmount;
+    private String engineeringLetterRequired, printLocation, stampedPlan, businessLicense, contractorLicense,
+                   otherLicense, submissionNote, revisionNote, asBuiltNote, deliveryNote, approvalTimeline,
+                   documentsAvailable, depositAmount, asBuiltFeeAmount, followUpFeeAmount, deliveryFeeAmount,
+                   revisionFeeAmount;
     private Date businessLicenseExpirationDate, contractorLicenseExpirationDate, otherLicenseExpirationDate;
 
     //this is only used for saving custom field groups

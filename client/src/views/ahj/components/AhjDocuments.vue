@@ -95,7 +95,7 @@
       async deleteDocument(documentId) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await deleteRequest(`/api/v1/flow/document/${documentId}`)
+          await deleteRequest(`/document/${documentId}`)
           let deletedDocumentIndex = this.documentsCopy.findIndex(i => i.id === documentId)
           this.documentsCopy.splice([deletedDocumentIndex], 1)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Document')

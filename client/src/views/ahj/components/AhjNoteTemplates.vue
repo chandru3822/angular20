@@ -35,16 +35,15 @@
       </div>
     </form>
     <v-card v-show="noteTemplatesCopy.length > 0" class="ma-4"
-            v-for="noteTemplate in noteTemplatesCopy"
+            v-for="(noteTemplate, index) in noteTemplatesCopy"
             :key="noteTemplate.id">
       <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
         {{ noteTemplate.title }}
-        <!-- TODO: Get text copying working -->
-        <v-icon class="white--text" @click="copyText">file_copy</v-icon>
+        <v-icon class="white--text" @click="copyText(index)">file_copy</v-icon>
       </v-card-title>
       <v-card-text class="mt-4 note-text">
         <v-icon small @click="editNoteTemplate(noteTemplate)">edit</v-icon>
-        <span id="textToCopy">{{ noteTemplate.note }}</span>
+        <span>{{ noteTemplate.note }}</span>
       </v-card-text>
     </v-card>
     <div class="empty-list"
@@ -62,8 +61,7 @@
     name: "AhjNoteTemplates",
     props: {
       inspectionId: {
-        type: Number,
-        default: null
+        type: Number
       },
       ahjId: {
         type: Number
@@ -102,11 +100,11 @@
       },
       async saveNoteTemplate() {
         if (this.addMode) {
-          const {data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplate`, this.noteTemplate)
+          const {data} = await postRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates`, this.noteTemplate, 'blueraven')
           this.noteTemplatesCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplate/${this.noteTemplate.id}`, this.noteTemplate)
+          const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates/${this.noteTemplate.id}`, this.noteTemplate, 'blueraven')
           let updatedNoteTemplateIndex = this.noteTemplatesCopy.findIndex(i => i.id === data.id)
           this.noteTemplatesCopy[updatedNoteTemplateIndex].title = data.title
           this.noteTemplatesCopy[updatedNoteTemplateIndex].note = data.note
@@ -114,16 +112,21 @@
         }
       },
       async deleteNoteTemplate() {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplate/${this.noteTemplate.id}`)
+        await deleteRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates/${this.noteTemplate.id}`, 'blueraven')
         let deletedNoteTemplateIndex = this.noteTemplatesCopy.findIndex(i => i.id === this.noteTemplate.id)
         this.noteTemplatesCopy.splice([deletedNoteTemplateIndex], 1)
         this.editMode = false
       },
-      // TODO: Get text copying working
-      copyText() {
-        let input = document.getElementById("textToCopy")
-        input.select()
-        document.execCommand('copy')
+      copyText(index) {
+        let notes = document.getElementsByClassName('note-text')
+        let text = notes[index].lastChild // Grab the node of the element
+        let selection = window.getSelection() // Get the Selection object
+        let range = document.createRange() // Create a new range
+        range.selectNodeContents(text) // Select the content of the node from line 1
+        selection.removeAllRanges() // Delete any old ranges
+        selection.addRange(range) // Add the range to selection
+        document.execCommand('copy') // Execute the command
+        selection.removeAllRanges() // Delete any old ranges
       }
     }
   }
@@ -181,6 +184,9 @@
       &:hover {
         background-color: #ddd;
       }
+    }
+    span {
+      width: 100%;
     }
   }
   .empty-list {

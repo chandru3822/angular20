@@ -25,50 +25,34 @@
             </router-link>
           </v-card-title>
           <v-card-text class="mt-4">
-            <div>
-              <v-select label="Primary Scheduling Method"
+            <div v-for="item in getCustomFieldsForGroup(17)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
                         filled
               ></v-select>
-              <v-text-field v-show="false"
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
                             label="Other Value"
                             filled
               ></v-text-field>
             </div>
-            <v-select label="Information to have Handy"
-                      filled
-            ></v-select>
-            <v-select label="Scheduling Lead Time (Days)"
-                      filled
-            ></v-select>
-            <v-select label="Inspection Capacity per Day"
-                      filled
-            ></v-select>
-            <v-select label="Site Access Required"
-                      filled
-            ></v-select>
-            <v-select label="Mid-Point / Rough Inspection Required"
-                      filled
-            ></v-select>
-            <v-select label="Mid-Point Inspection Scheduling Lead Time (Days)"
-                      filled
-            ></v-select>
-            <v-select label="SolaDeck Access Required"
-                      filled
-            ></v-select>
-            <v-select label="Placard Required"
-                      filled
-            ></v-select>
-            <v-text-field label="Type of Inspections Required"
+            <v-text-field v-model="ahjInspection.requiredInspectionTypes"
+                          label="Type of Inspections Required"
                           filled
             ></v-text-field>
-            <v-textarea label="Scheduling Note"
+            <v-textarea v-model="ahjInspection.schedulingNote"
+                        label="Scheduling Note"
                         filled
                         auto-grow
             ></v-textarea>
             <AhjChecklist v-if="dataReady"
                           title="Checklist"
                           :checklistTypeId="12"
-                          :inspectionId="ahjInspection.id"
+                          :itemId="ahjInspection.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.schedulingWithAhjChecklist"
             ></AhjChecklist>
@@ -84,35 +68,37 @@
             Scheduling with BRS Technician
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Representative Required On-Site"
-                      filled
-            ></v-select>
-            <v-select label="Fall Protection for Inspector Required"
-                      filled
-            ></v-select>
-            <v-select label="Special Equipment Needed"
-                      filled
-            ></v-select>
-            <v-textarea label="Instructions for BRS Technician"
+            <div v-for="item in getCustomFieldsForGroup(18)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+              ></v-text-field>
+            </div>
+            <v-textarea v-model="ahjInspection.technicianInstructionNote"
+                        label="Instructions for BRS Technician"
                         filled
                         auto-grow
             ></v-textarea>
-            <v-select label="Plans Required On-Site"
-                      filled
-            ></v-select>
-            <v-select label="Special Documents Required"
-                      filled
-            ></v-select>
-            <v-textarea label="Documentation Notes"
+            <v-textarea v-model="ahjInspection.documentationNote"
+                        label="Documentation Notes"
                         filled
                         auto-grow
             ></v-textarea>
             <AhjChecklist v-if="dataReady"
                           title="Checklist"
                           :checklistTypeId="13"
-                          :inspectionId="ahjInspection.id"
+                          :itemId="ahjInspection.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
-                          :checklistItems="ahjInspection.schedulingWithBrsTechChecklist"
+                          :checklistItems="ahjInspection.schedulingWithBrsTechnicianChecklist"
             ></AhjChecklist>
           </v-card-text>
         </v-card>
@@ -126,26 +112,33 @@
             Scheduling with Customer
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Homeowner Required to be On-Site"
-                      filled
-            ></v-select>
-            <v-select label="Call For Time Window"
-                      filled
-            ></v-select>
-            <v-text-field label="Time to Call For Window"
+            <div v-for="item in getCustomFieldsForGroup(19)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+            </div>
+            <v-text-field v-model="ahjInspection.timeWindowCallTime"
+                          label="Time to Call For Window"
                           filled
             ></v-text-field>
-            <v-text-field label="Phone # for Time Window"
+            <v-text-field v-model="ahjInspection.timeWindowPhone"
+                          label="Phone # for Time Window"
                           filled
             ></v-text-field>
-            <v-textarea label="Scheduling with Customer Note"
+            <v-textarea v-model="ahjInspection.schedulingWithCustomerNote"
+                        label="Scheduling with Customer Note"
                         filled
                         auto-grow
             ></v-textarea>
             <AhjChecklist v-if="dataReady"
                           title="Scheduling Checklist"
                           :checklistTypeId="9"
-                          :inspectionId="ahjInspection.id"
+                          :itemId="ahjInspection.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.schedulingChecklist"
             ></AhjChecklist>
@@ -158,20 +151,34 @@
             Obtaining Results
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-text-field label="Obtaining Results Method"
+            <v-text-field v-model="ahjInspection.obtainingResultsMethod"
+                          label="Obtaining Results Method"
                           filled
             ></v-text-field>
-            <v-select label="Results Documentation"
-                      filled
-            ></v-select>
-            <v-textarea label="Obtaining Results Notes"
+            <div v-for="item in getCustomFieldsForGroup(20)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+              ></v-text-field>
+            </div>
+            <v-textarea v-model="ahjInspection.obtainingResultsNote"
+                        label="Obtaining Results Notes"
                         filled
                         auto-grow
             ></v-textarea>
             <AhjChecklist v-if="dataReady"
                           title="Obtaining Results Checklist"
                           :checklistTypeId="10"
-                          :inspectionId="ahjInspection.id"
+                          :itemId="ahjInspection.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.obtainingResultsChecklist"
             ></AhjChecklist>
@@ -187,25 +194,39 @@
             Re-inspections
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Re-inspection Fee Required"
-                      filled
-            ></v-select>
-            <v-text-field v-model="ahjInspection.reinspectionFeeAmount"
+            <div v-for="item in getCustomFieldsForGroup(21)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+              ></v-text-field>
+            </div>
+            <v-text-field v-model="ahjInspection.inspectionFee"
                           label="Re-inspection Fee Amount"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-text-field label="Payment Method"
+            <v-text-field v-model="ahjInspection.paymentMethod"
+                          label="Payment Method"
                           filled
             ></v-text-field>
-            <v-textarea label="Re-inspection Notes"
+            <v-textarea v-model="ahjInspection.reinspectionNote"
+                        label="Re-inspection Notes"
                         filled
                         auto-grow
             ></v-textarea>
             <AhjChecklist v-if="dataReady"
                           title="Re-inspections Checklist"
                           :checklistTypeId="11"
-                          :inspectionId="ahjInspection.id"
+                          :itemId="ahjInspection.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.reinspectionsChecklist"
             ></AhjChecklist>
@@ -225,20 +246,25 @@
             In-House MPUs
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select label="Homeowner Required for Inspection"
-                      filled
-            ></v-select>
-            <v-select label="BRS Tech Required for Inspection"
-                      filled
-            ></v-select>
-            <v-textarea label="MPU Inspection Notes"
+            <div v-for="item in getCustomFieldsForGroup(22)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+            </div>
+            <v-textarea v-model="ahjInspection.mpuInspectionNote"
+                        label="MPU Inspection Notes"
                         filled
                         auto-grow
             ></v-textarea>
             <AhjContact v-if="dataReady"
                         title="Utility Service Department Contacts"
                         :contactTypeId="9"
-                        :inspectionId="ahjInspection.id"
+                        :itemId="ahjInspection.id"
+                        :itemType="itemType"
                         :ahjId="ahjId"
                         :contacts="ahjInspection.utilityServiceDeptContacts"
             ></AhjContact>
@@ -246,16 +272,89 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <h1 class="pb-2 mb-4"
+        style="border-bottom: 1px solid #ccc; width: 100%;"
+    >Links and Contacts</h1>
+    <v-row no-gutters>
+      <!-- FIRST ROW -->
+      <v-col cols="12" md="4" class="px-1 mb-3">
+        <AhjLink v-if="dataReady"
+                       title="Scheduling Links"
+                       :linkTypeId="1"
+                       :itemId="ahjInspection.id"
+                       :ahjId="ahjId"
+                       :links="ahjInspection.schedulingLinks"
+        ></AhjLink>
+
+        <AhjLink v-if="dataReady"
+                       title="Links for FOT"
+                       :linkTypeId="2"
+                       :itemId="ahjInspection.id"
+                       :ahjId="ahjId"
+                       :links="ahjInspection.fotLinks"
+        ></AhjLink>
+
+        <AhjLink v-if="dataReady"
+                       title="Results Links"
+                       :linkTypeId="3"
+                       :itemId="ahjInspection.id"
+                       :ahjId="ahjId"
+                       :links="ahjInspection.resultsLinks"
+        ></AhjLink>
+      </v-col>
+
+      <!-- SECOND ROW -->
+      <v-col cols="12" md="4" class="px-1 mb-3">
+        <AhjContact v-if="dataReady"
+                    title="Scheduling Contacts"
+                    :contactTypeId="2"
+                    :itemId="ahjInspection.id"
+                    :itemType="'inspection'"
+                    :ahjId="ahjId"
+                    :contacts="ahjInspection.schedulingContacts"
+        ></AhjContact>
+
+        <AhjContact v-if="dataReady"
+                    title="Inspector Contacts"
+                    :contactTypeId="4"
+                    :itemId="ahjInspection.id"
+                    :itemType="'inspection'"
+                    :ahjId="ahjId"
+                    :contacts="ahjInspection.feeContacts"
+        ></AhjContact>
+
+        <AhjContact v-if="dataReady"
+                    title="Obtaining Results Contacts"
+                    :contactTypeId="3"
+                    :itemId="ahjInspection.id"
+                    :itemType="'inspection'"
+                    :ahjId="ahjId"
+                    :contacts="ahjInspection.obtainingResultsContacts"
+        ></AhjContact>
+
+        <AhjServicingFot v-if="dataReady"
+                         :servicingFots="ahjInspection.servicingFots"
+        ></AhjServicingFot>
+      </v-col>
+
+      <!-- THIRD ROW -->
+      <v-col cols="12" md="4" class="px-1 mb-3">
+      </v-col>
+    </v-row>
+
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import AhjChecklist from './components/AhjChecklist.vue'
-  import AhjContact from './components/AhjContacts.vue'
-  import AhjNoteTemplate from './components/AhjNoteTemplates.vue'
-  import Snackbar from '@/components/Snackbar.vue'
+  import AhjChecklist from './components/AhjChecklist'
+  import AhjContact from './components/AhjContacts'
+  import AhjLink from './components/AhjLinks'
+  import AhjNoteTemplate from './components/AhjNoteTemplates'
+  import AhjServicingFot from './components/AhjServicingFots'
+  import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -264,34 +363,33 @@
     components: {
       AhjChecklist,
       AhjContact,
+      AhjLink,
       AhjNoteTemplate,
+      AhjServicingFot,
       Snackbar
     },
     data: () => ({
       ahjId: null,
+      itemType: 'inspection',
       snackbar: {},
       dataReady: false,
       customFieldGroupAssignments: [],
       ahjInspection: {
         reinspectionFeeAmount: null,
         schedulingWithAhjChecklist: [],
-        schedulingWithBrsTechChecklist: [],
+        schedulingWithBrsTechnicianChecklist: [],
         schedulingChecklist: [],
         obtainingResultsChecklist: [],
         reinspectionsChecklist: [],
-        noteTemplates: [
-          {
-            id: 13,
-            title: 'AHJ INSPECTION MASTER NOTE',
-            note: 'AHJ INSPECTION MASTER NOTE, AURORA, (1 solar PV permit) Homeowner not required as long as all equipment is accessible (see install sheet/install photos). FOT required with ladder tall enough to reach roof, Schedule FOT 2 first. Schedule Electrical Final inspection online far in advance. FOT must bring Post install Engineering Letter, it takes the place of the Framing Final inspection.  - As-built or MPU permit?  - Locked gates or pets?  - Homeowner required this inspection?  - Plans on site?  - Tall ladder needed?  - Correct FOT scheduled? - Documents added to FOT calendar?  - Engineering Letter sent to UPS?  - Scheduled with AHJ?'
-          },
-          {
-            id: 14,
-            title: 'Unhappy CEO',
-            note: 'Scott is sad cuz his favorite restaurant is closed'
-          }
-        ],
-        utilityServiceDeptContacts: []
+        noteTemplates: [],
+        utilityServiceDeptContacts: [],
+        schedulingLinks: [],
+        fotLinks: [],
+        resultsLinks: [],
+        schedulingContacts: [],
+        feeContacts: [],
+        obtainingResultsContacts: [],
+        servicingFots: []
       }
     }),
     methods: {
@@ -300,7 +398,7 @@
         try {
           const params = {
             sourceId: this.ahjInspection.id,
-            objectTypeId: 4
+            objectTypeId: 3
           }
           const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
           this.customFieldGroupAssignments = cloneDeep(data)
@@ -315,9 +413,9 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/inspection`, 'blueraven')
+          data.servicingFots.forEach(servicingFot => servicingFot.hierarchy = servicingFot.hierarchy[0])
           this.ahjInspection = cloneDeep(data)
           this.$store.commit(AppMutations.SET_LOADING, false)
-          console.log("AHJ Inspection:", this.ahjInspection)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving AHJ Inspection')

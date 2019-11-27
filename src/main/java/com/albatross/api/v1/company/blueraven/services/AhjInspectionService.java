@@ -122,6 +122,74 @@ public class AhjInspectionService {
     sqlCache.update("ahj.inspection.contact.create", params);
   }
 
+  // LINKS
+  @SuppressWarnings("DuplicatedCode")
+  public Optional<AhjLink> saveInspectionLink(Long ahjId, Long inspectionId, Long linkId, AhjLink link) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjInspectionId", inspectionId);
+    params.put("name", link.getName());
+    params.put("link", link.getLink());
+    params.put("username", link.getUsername());
+    params.put("password", link.getPassword());
+    params.put("notes", link.getNotes());
+    params.put("currentUser", currentUser.getId());
+    params.put("linkTypeId", link.getLinkTypeId());
+
+    if (linkId == null) {
+      linkId = sqlCache.updateReturningId("ahj.inspection.link.create", params, "id").longValue();
+
+    } else {
+      params.put("id", linkId);
+      sqlCache.update("ahj.inspection.link.update", params);
+    }
+
+    HashMap<String, Object> idParam = new HashMap<>();
+    idParam.put("id", linkId);
+    return sqlCache.get("ahj.inspection.link.findById", idParam, AhjLink.class);
+  }
+
+  public void deleteInspectionLink(Long ahjId, Long inspectionId, Long linkId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", linkId);
+    params.put("currentUser", currentUser.getId());
+
+    sqlCache.update("ahj.inspection.link.delete", params);
+  }
+
+  // NOTE TEMPLATES
+  public Optional<AhjNoteTemplate> saveNoteTemplate(Long ahjId, Long inspectionId, Long noteTemplateId, AhjNoteTemplate noteTemplate) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("inspectionId", inspectionId);
+    params.put("title", noteTemplate.getTitle());
+    params.put("note", noteTemplate.getNote());
+
+    if (noteTemplateId == null) {
+      noteTemplateId = sqlCache.updateReturningId("ahj.inspection.note.template.create", params, "id").longValue();
+
+      params.put("inspectionId", inspectionId);
+      params.put("noteTemplateId", noteTemplateId);
+      sqlCache.update("ahj.inspection.note.template.join", params);
+    } else {
+      params.put("id", noteTemplateId);
+      sqlCache.update("ahj.inspection.note.template.update", params);
+    }
+
+    HashMap<String, Object> idParam = new HashMap<>();
+    idParam.put("id", noteTemplateId);
+    return sqlCache.get("ahj.inspection.note.template.findById", idParam, AhjNoteTemplate.class);
+  }
+
+  public void deleteNoteTemplate(Long ahjId, Long inspectionId, Long noteTemplateId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", noteTemplateId);
+
+    sqlCache.update("ahj.inspection.note.template.delete", params);
+  }
+
   @SuppressWarnings({"WeakerAccess"})
   public static class BaseAhjDetailMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
@@ -143,7 +211,7 @@ public class AhjInspectionService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjBaseNoteTemplate>> baseNoteTemplateTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjNoteTemplate>> noteTemplateTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
       TypeReference<List<User>> userRef = new TypeReference<>() {};
@@ -178,8 +246,8 @@ public class AhjInspectionService {
       bw.registerCustomEditor(List.class, "installationRequirements",
               new JsonCollectionDeserializer(requirementTypeRef, super.objectMapper));
 
-      bw.registerCustomEditor(List.class, "baseNoteTemplates",
-              new JsonCollectionDeserializer(baseNoteTemplateTypeRef, super.objectMapper));
+      bw.registerCustomEditor(List.class, "noteTemplates",
+              new JsonCollectionDeserializer(noteTemplateTypeRef, super.objectMapper));
 
       bw.registerCustomEditor(List.class, "utilityServiceDeptContacts",
               new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));

@@ -75,8 +75,11 @@
       checklistTypeId: {
         type: Number
       },
-      permitId: {
+      itemId: {
         type: Number
+      },
+      itemType: {
+        type: String
       },
       ahjId: {
         type: Number
@@ -126,18 +129,18 @@
 
         if (this.addMode) {
           this.checklistItem.displayOrder = this.checklistItemsCopy.length
-          const {data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist`, this.checklistItem)
+          const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist`, this.checklistItem, 'blueraven')
           this.checklistItemsCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist/${this.checklistItem.id}`, this.checklistItem)
+          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist/${this.checklistItem.id}`, this.checklistItem, 'blueraven')
           let updatedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === data.id)
           this.checklistItemsCopy[updatedItemIndex].description = data.description
           this.editMode = false
         }
       },
       async deleteItem() {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist/${this.checklistItem.id}`)
+        await deleteRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist/${this.checklistItem.id}`, 'blueraven')
         let deletedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === this.checklistItem.id)
         this.checklistItemsCopy.splice([deletedItemIndex], 1)
         this.editMode = false

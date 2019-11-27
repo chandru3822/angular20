@@ -11,7 +11,8 @@
       <p v-for="(fot, index) in servicingFots"
          :key="index"
          class="my-0">
-        <router-link class="list-link"
+        <router-link v-if="fot.hierarchy !== null"
+                     class="list-link"
                      :to="{ name: 'orgs', params: {orgFilter: fot.hierarchy.orgName} }"
         >{{ fot.hierarchy.orgName }}</router-link>
       </p>
@@ -27,8 +28,7 @@
     name: "AhjServicingFot",
     props: {
       servicingFots: {
-        type: Array,
-        default: null
+        type: Array
       }
     }
   }

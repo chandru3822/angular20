@@ -1,6 +1,6 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-contacts">
-  <v-card class="pb-2">
+  <v-card class="pb-2 mb-3">
     <v-toolbar class="primaryCustom mb-2">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
         {{ title }}
@@ -83,24 +83,22 @@
     name: "AhjContact",
     props: {
       title: {
-        type: String,
-        default: null
+        type: String
       },
       contactTypeId: {
-        type: Number,
-        default: null
+        type: Number
       },
-      permitId: {
-        type: Number,
-        default: null
+      itemId: {
+        type: Number
+      },
+      itemType: {
+        type: String
       },
       ahjId: {
-        type: Number,
-        default: null
+        type: Number
       },
       contacts: {
-        type: Array,
-        default: null
+        type: Array
       }
     },
     data () {
@@ -140,11 +138,11 @@
         this.contact.contactTypeId = this.contactTypeId
 
         if (this.addMode) {
-          const {data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts`, this.contact)
+          const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts`, this.contact, 'blueraven')
           this.contactsCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`, this.contact)
+          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
           let updatedContactIndex = this.contactsCopy.findIndex(i => i.id === data.id)
           this.contactsCopy[updatedContactIndex].name = data.name
           this.contactsCopy[updatedContactIndex].title = data.title
@@ -157,7 +155,7 @@
         }
       },
       async deleteContact() {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/contacts/${this.contact.id}`)
+        await deleteRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, 'blueraven')
         let deletedContactIndex = this.contactsCopy.findIndex(i => i.id === this.contact.id)
         this.contactsCopy.splice([deletedContactIndex], 1)
         this.editMode = false
