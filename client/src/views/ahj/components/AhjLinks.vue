@@ -79,7 +79,8 @@
         type: Number
       },
       links: {
-        type: Array
+        type: Array,
+        default: () => []
       }
     },
     data () {

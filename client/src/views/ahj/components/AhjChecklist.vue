@@ -85,14 +85,15 @@
         type: Number
       },
       checklistItems: {
-        type: Array
+        type: Array,
+        default: () => []
       }
     },
     data () {
       return {
         checklistItem: {
           id: null,
-          type: this.type,
+          checklistTypeId: this.checklistTypeId,
           description: null
         },
         addMode: false,

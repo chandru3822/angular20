@@ -80,14 +80,11 @@ public class AhjInspectionService {
     params.put("obtainingResultsPortalPassword", inspection.getObtainingResultsPortalPassword());
     params.put("businessLicense", inspection.getBusinessLicense());
     params.put("contractorLicense", inspection.getContractorLicense());
-    params.put("homeownerRequiredOnSite", inspection.getHomeownerRequiredOnSite());
     params.put("currentUser", currentUser.getId());
-    params.put("callForTimeWindow", inspection.getCallForTimeWindow());
     params.put("ladderRequired", inspection.getLadderRequired());
     params.put("timeWindow", inspection.getTimeWindow());
     params.put("timeWindowCallTime", inspection.getTimeWindowCallTime());
     params.put("timeWindowPhone", inspection.getTimeWindowPhone());
-    params.put("fallProtectionRequired", inspection.getFallProtectionRequired());
 
     //notes
     params.put("schedulingNote", inspection.getSchedulingNote());

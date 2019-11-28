@@ -98,7 +98,8 @@
         type: Number
       },
       contacts: {
-        type: Array
+        type: Array,
+        default: () => []
       }
     },
     data () {

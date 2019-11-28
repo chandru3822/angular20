@@ -67,7 +67,8 @@
         type: Number
       },
       noteTemplates: {
-        type: Array
+        type: Array,
+        default: () => []
       }
     },
     data () {

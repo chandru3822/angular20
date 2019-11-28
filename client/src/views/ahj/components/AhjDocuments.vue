@@ -43,24 +43,20 @@
     name: "AhjDocuments",
     props: {
       title: {
-        type: String,
-        default: null
+        type: String
       },
       documentTypeId: {
-        type: Number,
-        default: null
+        type: Number
       },
       sourceId: {
-        type: Number,
-        default: null
+        type: Number
       },
       ahjId: {
-        type: Number,
-        default: null
+        type: Number
       },
       documents: {
         type: Array,
-        default: null
+        default: () => []
       }
     },
     components: {
@@ -140,6 +136,6 @@
   }
   .empty-list {
     padding: 20px;
-    font-size: 0.85em;
+    font-size: 0.95em;
   }
 </style>

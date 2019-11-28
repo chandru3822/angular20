@@ -1,6 +1,6 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-row dense>
+  <v-row no-gutters>
     <v-col class="text-right" cols="12">
       <a @click="resetForm"
          class="cancel-link"
@@ -13,6 +13,7 @@
       >Save</v-btn>
     </v-col>
 
+    <!-- UPPER SECTION -->
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
       <v-col cols="12" md="3" class="px-1 mb-3">
@@ -245,7 +246,7 @@
           <v-card-title class="primaryCustom white--text font-weight-bold">
             In-House MPUs
           </v-card-title>
-          <v-card-text class="mt-4">
+          <v-card-text class="mt-4 pb-1">
             <div v-for="item in getCustomFieldsForGroup(22)" :key="item.id">
               <v-select v-model="item.intValue"
                         :items="item.listOfValues"
@@ -273,39 +274,44 @@
       </v-col>
     </v-row>
 
-    <h1 class="pb-2 mb-4"
-        style="border-bottom: 1px solid #ccc; width: 100%;"
-    >Links and Contacts</h1>
+    <!-- LOWER SECTION -->
+    <h1 class="pb-2 mb-4 lower-section">Links and Contacts</h1>
+    <!-- FIRST ROW -->
     <v-row no-gutters>
-      <!-- FIRST ROW -->
-      <v-col cols="12" md="4" class="px-1 mb-3">
+      <v-col cols="12" md="4" class="px-1">
         <AhjLink v-if="dataReady"
-                       title="Scheduling Links"
-                       :linkTypeId="1"
-                       :itemId="ahjInspection.id"
-                       :ahjId="ahjId"
-                       :links="ahjInspection.schedulingLinks"
-        ></AhjLink>
-
-        <AhjLink v-if="dataReady"
-                       title="Links for FOT"
-                       :linkTypeId="2"
-                       :itemId="ahjInspection.id"
-                       :ahjId="ahjId"
-                       :links="ahjInspection.fotLinks"
-        ></AhjLink>
-
-        <AhjLink v-if="dataReady"
-                       title="Results Links"
-                       :linkTypeId="3"
-                       :itemId="ahjInspection.id"
-                       :ahjId="ahjId"
-                       :links="ahjInspection.resultsLinks"
+                 title="Scheduling Links"
+                 :linkTypeId="1"
+                 :itemId="ahjInspection.id"
+                 :ahjId="ahjId"
+                 :links="ahjInspection.schedulingLinks"
         ></AhjLink>
       </v-col>
 
-      <!-- SECOND ROW -->
-      <v-col cols="12" md="4" class="px-1 mb-3">
+      <v-col cols="12" md="4" class="px-1">
+        <AhjLink v-if="dataReady"
+                 title="Links for FOT"
+                 :linkTypeId="2"
+                 :itemId="ahjInspection.id"
+                 :ahjId="ahjId"
+                 :links="ahjInspection.fotLinks"
+        ></AhjLink>
+      </v-col>
+
+      <v-col cols="12" md="4" class="px-1">
+        <AhjLink v-if="dataReady"
+                 title="Results Links"
+                 :linkTypeId="3"
+                 :itemId="ahjInspection.id"
+                 :ahjId="ahjId"
+                 :links="ahjInspection.resultsLinks"
+        ></AhjLink>
+      </v-col>
+    </v-row>
+
+    <!-- SECOND ROW -->
+    <v-row no-gutters>
+      <v-col cols="12" md="3" class="px-1">
         <AhjContact v-if="dataReady"
                     title="Scheduling Contacts"
                     :contactTypeId="2"
@@ -314,7 +320,9 @@
                     :ahjId="ahjId"
                     :contacts="ahjInspection.schedulingContacts"
         ></AhjContact>
+      </v-col>
 
+      <v-col cols="12" md="3" class="px-1">
         <AhjContact v-if="dataReady"
                     title="Inspector Contacts"
                     :contactTypeId="4"
@@ -323,7 +331,9 @@
                     :ahjId="ahjId"
                     :contacts="ahjInspection.feeContacts"
         ></AhjContact>
+      </v-col>
 
+      <v-col cols="12" md="3" class="px-1">
         <AhjContact v-if="dataReady"
                     title="Obtaining Results Contacts"
                     :contactTypeId="3"
@@ -332,14 +342,40 @@
                     :ahjId="ahjId"
                     :contacts="ahjInspection.obtainingResultsContacts"
         ></AhjContact>
+      </v-col>
 
+      <v-col cols="12" md="3" class="px-1">
         <AhjServicingFot v-if="dataReady"
                          :servicingFots="ahjInspection.servicingFots"
         ></AhjServicingFot>
       </v-col>
+    </v-row>
 
-      <!-- THIRD ROW -->
-      <v-col cols="12" md="4" class="px-1 mb-3">
+    <!-- THIRD ROW -->
+    <v-row no-gutters class="mb-3">
+      <v-col cols="12" md="12" class="px-1">
+        <AhjChecklist v-if="dataReady" id="lower-checklist"
+                      title="Noteworthy Reasons for Previous Inspection Failures"
+                      :checklistTypeId="8"
+                      :itemId="ahjInspection.id"
+                      :itemType="itemType"
+                      :ahjId="ahjId"
+                      :checklistItems="ahjInspection.failureChecklist"
+        ></AhjChecklist>
+      </v-col>
+    </v-row>
+
+    <!-- FOURTH ROW -->
+    <v-row no-gutters>
+      <v-col cols="12" md="12" class="px-1">
+        <AhjRequirement v-if="dataReady"
+                        title="AHJ Specific Installation Requirements"
+                        :requirementTypeId="5"
+                        :itemId="ahjInspection.id"
+                        :itemType="itemType"
+                        :ahjId="ahjId"
+                        :requirements="ahjInspection.installationRequirements"
+        ></AhjRequirement>
       </v-col>
     </v-row>
 
@@ -353,6 +389,7 @@
   import AhjContact from './components/AhjContacts'
   import AhjLink from './components/AhjLinks'
   import AhjNoteTemplate from './components/AhjNoteTemplates'
+  import AhjRequirement from './components/AhjRequirements'
   import AhjServicingFot from './components/AhjServicingFots'
   import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
@@ -365,6 +402,7 @@
       AhjContact,
       AhjLink,
       AhjNoteTemplate,
+      AhjRequirement,
       AhjServicingFot,
       Snackbar
     },
@@ -389,7 +427,9 @@
         schedulingContacts: [],
         feeContacts: [],
         obtainingResultsContacts: [],
-        servicingFots: []
+        servicingFots: [],
+        failureChecklist: [],
+        installationRequirements: []
       }
     }),
     methods: {
@@ -519,5 +559,16 @@
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
+  }
+  .row {
+    width: 100%;
+  }
+  .lower-section {
+    border-bottom: 1px solid #ccc;
+    width: 100%;
+  }
+  // TODO: Get this working
+  #lower-checklist > div.empty-list {
+    font-size: 0.85em !important;
   }
 </style>

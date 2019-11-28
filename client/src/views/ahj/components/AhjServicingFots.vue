@@ -28,7 +28,8 @@
     name: "AhjServicingFot",
     props: {
       servicingFots: {
-        type: Array
+        type: Array,
+        default: () => []
       }
     }
   }
