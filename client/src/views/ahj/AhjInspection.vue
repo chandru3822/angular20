@@ -1,7 +1,7 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
   <v-row no-gutters>
-    <v-col class="text-right" cols="12">
+    <v-col class="text-right py-1" cols="12">
       <a @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
@@ -16,7 +16,7 @@
     <!-- UPPER SECTION -->
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-col cols="12" md="3" class="px-1 mb-3">
+      <v-col cols="12" md="3" class="pr-1 mb-3">
         <!-- SCHEDULING WITH AHJ -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
@@ -188,7 +188,7 @@
       </v-col>
 
       <!-- FOURTH COLUMN -->
-      <v-col cols="12" md="3" class="px-1 mb-3">
+      <v-col cols="12" md="3" class="pl-1 mb-3">
         <!-- RE-INSPECTIONS -->
         <v-card class="mb-3">
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -264,6 +264,7 @@
             <AhjContact v-if="dataReady"
                         title="Utility Service Department Contacts"
                         :contactTypeId="9"
+                        :isNested="true"
                         :itemId="ahjInspection.id"
                         :itemType="itemType"
                         :ahjId="ahjId"
@@ -283,6 +284,7 @@
                  title="Scheduling Links"
                  :linkTypeId="1"
                  :itemId="ahjInspection.id"
+                 :itemType="itemType"
                  :ahjId="ahjId"
                  :links="ahjInspection.schedulingLinks"
         ></AhjLink>
@@ -293,6 +295,7 @@
                  title="Links for FOT"
                  :linkTypeId="2"
                  :itemId="ahjInspection.id"
+                 :itemType="itemType"
                  :ahjId="ahjId"
                  :links="ahjInspection.fotLinks"
         ></AhjLink>
@@ -303,6 +306,7 @@
                  title="Results Links"
                  :linkTypeId="3"
                  :itemId="ahjInspection.id"
+                 :itemType="itemType"
                  :ahjId="ahjId"
                  :links="ahjInspection.resultsLinks"
         ></AhjLink>
@@ -316,7 +320,7 @@
                     title="Scheduling Contacts"
                     :contactTypeId="2"
                     :itemId="ahjInspection.id"
-                    :itemType="'inspection'"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjInspection.schedulingContacts"
         ></AhjContact>
@@ -327,7 +331,7 @@
                     title="Inspector Contacts"
                     :contactTypeId="4"
                     :itemId="ahjInspection.id"
-                    :itemType="'inspection'"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjInspection.feeContacts"
         ></AhjContact>
@@ -338,7 +342,7 @@
                     title="Obtaining Results Contacts"
                     :contactTypeId="3"
                     :itemId="ahjInspection.id"
-                    :itemType="'inspection'"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjInspection.obtainingResultsContacts"
         ></AhjContact>
@@ -357,6 +361,7 @@
         <AhjChecklist v-if="dataReady" id="lower-checklist"
                       title="Noteworthy Reasons for Previous Inspection Failures"
                       :checklistTypeId="8"
+                      :isNested="false"
                       :itemId="ahjInspection.id"
                       :itemType="itemType"
                       :ahjId="ahjId"
@@ -474,8 +479,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataReady = false
         this.getAhjInspection().then(() => {
-          this.dataReady = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.getCustomFieldGroupAssignmentsForScreen().then(() => {
+            this.dataReady = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          })
         })
       },
       async saveAhjInspection() {
@@ -566,9 +573,5 @@
   .lower-section {
     border-bottom: 1px solid #ccc;
     width: 100%;
-  }
-  // TODO: Get this working
-  #lower-checklist > div.empty-list {
-    font-size: 0.85em !important;
   }
 </style>

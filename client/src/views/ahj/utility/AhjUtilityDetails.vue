@@ -1,4 +1,4 @@
-<template #items="props">
+<template>
   <v-row>
     <v-col cols="12">
       <v-row justify="space-between">

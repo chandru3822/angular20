@@ -46,7 +46,7 @@ public class AhjInspectionService {
       User currentUser = securityService.getCurrentUser();
       params.put("currentUser", currentUser.getId());
 
-      //add a blank inspection and return that
+      // add a blank inspection and return that
       Integer id = sqlCache.get("ahj.inspection.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
       if (id != null) {
         Optional<AhjInspectionDetail> inspection2 = sqlCache.get("ahj.inspection.detailByAhj", params, new AhjInspectionDetailMapper<>(AhjInspectionDetail.class, om));
@@ -86,7 +86,7 @@ public class AhjInspectionService {
     params.put("timeWindowCallTime", inspection.getTimeWindowCallTime());
     params.put("timeWindowPhone", inspection.getTimeWindowPhone());
 
-    //notes
+    // notes
     params.put("schedulingNote", inspection.getSchedulingNote());
     params.put("technicianInstructionNote", inspection.getTechnicianInstructionNote());
     params.put("schedulingWithCustomerNote", inspection.getSchedulingWithCustomerNote());
@@ -108,6 +108,15 @@ public class AhjInspectionService {
     keyParam.put("id", inspectionId);
 
     return sqlCache.get("ahj.inspection.findById", keyParam, AhjInspection.class);
+  }
+
+  // CHECKLISTS
+  public void createInspectionChecklistItem(Long inspectionId, Long itemId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjInspectionId", inspectionId);
+    params.put("ahjChecklistId", itemId);
+
+    sqlCache.update("ahj.inspection.checklist.create", params);
   }
 
   // CONTACTS

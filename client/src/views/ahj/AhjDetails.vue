@@ -1,4 +1,4 @@
-<template #items="props">
+<template>
   <v-row>
     <v-col cols="12">
       <v-row justify="space-between">
@@ -19,7 +19,7 @@
 
           <v-divider></v-divider>
 
-          <v-tabs background-color="rgba(0,0,0,0)">
+          <v-tabs id="fixed-tabs-bar" background-color="rgba(0,0,0,0)">
             <v-tab v-for="(tab, index) in ahjDetailTabs" :key="index" :to="tab.path" class="text-capitalize ma-0">
               {{ tab.label }}
             </v-tab>
@@ -92,6 +92,12 @@
     font-family: 'Roboto Condensed', sans-serif;
     font-size: 20px;
     text-align: right;
+  }
+  // TODO: Figure this out
+  #fixed-tabs-bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
   .v-tab--active {
     color: var(--v-primaryCustom-base) !important;

@@ -42,7 +42,8 @@
             <v-icon small class="mr-3" @click="editItem(item)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-text="item.description">
+            <v-list-item-title v-text="item.description"
+                               :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
             </v-list-item-title>
           </v-list-item-content>
           <v-list-item-action>
@@ -51,8 +52,8 @@
         </v-list-item>
       </v-list>
     </draggable>
-    <div class="empty-list"
-         v-show="checklistItemsCopy.length < 1">
+    <div class="empty-list" v-show="checklistItemsCopy.length < 1"
+         :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       This checklist doesn't have any items
     </div>
   </v-card>
@@ -74,6 +75,10 @@
       },
       checklistTypeId: {
         type: Number
+      },
+      isNested: {
+        type: Boolean,
+        default: true
       },
       itemId: {
         type: Number

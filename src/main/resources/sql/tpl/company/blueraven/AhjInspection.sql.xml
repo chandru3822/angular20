@@ -384,6 +384,65 @@
     ]]>
   </ahj.inspection.update>
 
+  <!-- CHECKLIST STUFF -->
+  <ahj.inspection.checklist.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_inspection_checklist (ahj_inspection_id, ahj_checklist_id)
+      VALUES (:ahjInspectionId, :ahjChecklistId)
+    ]]>
+  </ahj.inspection.checklist.create>
+
+  <!-- CONTACT STUFF -->
+  <ahj.inspection.contact.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_inspection_contact (ahj_inspection_id, ahj_contact_id)
+      VALUES (:ahjInspectionId, :ahjContactId)
+    ]]>
+  </ahj.inspection.contact.create>
+
+  <!-- INSPECTION LINK STUFF -->
+  <ahj.inspection.link.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_inspection_link WHERE id = :id
+    ]]>
+  </ahj.inspection.link.findById>
+
+  <ahj.inspection.link.create>
+    <![CDATA[
+      INSERT INTO brs.ahj_inspection_link
+        (ahj_inspection_id, name, link, username, password, notes, date_created, created_by_id, link_type_id)
+      VALUES
+        (:ahjInspectionId, :name, :link, :username, :password, :notes, now(), :currentUser, :linkTypeId)
+    ]]>
+  </ahj.inspection.link.create>
+
+  <ahj.inspection.link.update>
+    <![CDATA[
+      UPDATE brs.ahj_inspection_link
+      SET
+        ahj_inspection_id = :ahjInspectionId,
+        name = :name,
+        link = :link,
+        username = :username,
+        password = :password,
+        notes = :notes,
+        date_modified = now(),
+        modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.inspection.link.update>
+
+  <ahj.inspection.link.delete>
+    <![CDATA[
+      UPDATE brs.ahj_inspection_link
+      SET
+        archived = TRUE,
+        date_modified = now(),
+        modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.inspection.link.delete>
+
   <!-- NOTE TEMPLATES STUFF -->
   <ahj.inspection.note.template.findById>
     <![CDATA[

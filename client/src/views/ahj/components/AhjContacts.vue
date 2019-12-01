@@ -44,7 +44,8 @@
     </v-form>
     <div v-for="(contact, index) in contacts" :key="contact.id"
          v-show="contacts.length > 0" class="px-3 pt-1 pb-1">
-      <dl class="horizontal-dl">
+      <dl class="horizontal-dl"
+          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
         <dt v-if="contact.name" class="font-weight-bold">Name</dt>
         <dd v-if="contact.name">{{contact.name}}</dd>
         <dt v-if="contact.title" class="font-weight-bold">Title</dt>
@@ -69,7 +70,8 @@
       <v-spacer v-if="index !== contacts.length - 1"
                 class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
     </div>
-    <div class="empty-list" v-show="contacts.length < 1">
+    <div class="empty-list" v-show="contacts.length < 1"
+         :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
     </div>
   </v-card>
@@ -87,6 +89,10 @@
       },
       contactTypeId: {
         type: Number
+      },
+      isNested: {
+        type: Boolean,
+        default: false
       },
       itemId: {
         type: Number
@@ -196,7 +202,6 @@
   }
   .empty-list {
     padding: 20px;
-    font-size: 0.85em;
   }
   /*Definition list styles*/
   .horizontal-dl {
@@ -204,7 +209,6 @@
     flex-flow: row wrap;
     justify-content: space-between;
     width: 100%;
-    font-size: 0.85em;
   }
   .horizontal-dl dt {
     text-align: right;

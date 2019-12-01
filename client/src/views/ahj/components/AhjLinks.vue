@@ -107,7 +107,7 @@
     },
     methods: {
       urlRule(url) {
-        if (url && (!url.includes('http://') && !url.includes('https://'))) {
+        if (url && (!url.includes('http://') && !url.includes('https://')) || (url === 'http://' || url === 'https://')) {
           this.validUrl = false
           return 'Valid URL is required'
         } else {
