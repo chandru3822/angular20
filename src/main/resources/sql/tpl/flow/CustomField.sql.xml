@@ -230,12 +230,12 @@
 
   <customField.getByParentType><![CDATA[
     select cf.*,
-       cfga.id as custom_field_group_assignment_id
+           cfga.id as custom_field_group_assignment_id
     from flow.company_object_type cot
              inner join flow.custom_field_group cfg on cfg.company_object_type_id = cot.id
              inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-    where ot.id = :id
+    where cot.object_type_id = :id
       and cfga.ancillary_custom_field_group_assignment_id is null
     order by cf.field_name
   ]]></customField.getByParentType>
