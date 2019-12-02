@@ -2059,7 +2059,7 @@ CREATE INDEX if not exists ucfv_custom_field_group_assignment_id_idx ON flow.use
 CREATE TABLE IF NOT EXISTS flow.org_level (
                                               id SERIAL not null,
                                               company_id INTEGER,
-                                              level INTEGER UNIQUE,
+                                              level INTEGER,
                                               CONSTRAINT org_level_pk PRIMARY KEY (id),
                                               CONSTRAINT ol_company_id FOREIGN KEY (company_id)
                                                   REFERENCES flow.company (id),

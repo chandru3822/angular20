@@ -1,4 +1,9 @@
 insert into flow.company(company_name,aws_bucket, abbreviation)values('Blue Raven Solar','blueraven', 'brs');
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('B+C Electric','bcelectric', 'bce',1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Eco Lux Solar','ecolux', 'els',1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Salient Solar','salient', 'ss',1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Solenrgi','Solenrgi', 'sol',1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Sun Run','sunrun', 'sunrun',1);
 
 INSERT INTO flow."user" (company_id,
                          id,
