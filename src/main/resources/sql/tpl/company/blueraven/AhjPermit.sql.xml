@@ -246,6 +246,7 @@
     ]]>
   </ahj.permit.update>
 
+  <!-- CHECKLIST STUFF -->
   <ahj.permit.checklist.create>
     <![CDATA[
       INSERT INTO brs.ahj_permit_checklist (ahj_permit_id, ahj_checklist_id)
@@ -253,6 +254,7 @@
     ]]>
   </ahj.permit.checklist.create>
 
+  <!-- CONTACT STUFF -->
   <ahj.permit.contact.create>
     <![CDATA[
       INSERT INTO brs.ahj_permit_contact (ahj_permit_id, ahj_contact_id)
@@ -260,7 +262,7 @@
     ]]>
   </ahj.permit.contact.create>
 
-  <!-- PERMIT LINKS STUFF -->
+  <!-- PERMIT LINK STUFF -->
   <ahj.permit.link.findById>
     <![CDATA[
       SELECT * FROM brs.ahj_permit_link WHERE id = :id
@@ -304,7 +306,7 @@
   </ahj.permit.link.delete>
 
   <!-- TODO: come back to this after the migration of custom fields has taken place -->
-  <!-- PERMIT CYCLE TIMES STUFF -->
+  <!-- PERMIT CYCLE TIME STUFF -->
   <ahj.permit.cycle-time.permits>
     <![CDATA[
       -- returns data as a JSON array of objects with keys

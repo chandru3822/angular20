@@ -14,7 +14,6 @@ public class AhjDesign {
     private String codes, note, referenceStandards, groundSnowLoad, windSpeed, roofSnowLoad;
     private Long utilityId;
 
-
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;
 }

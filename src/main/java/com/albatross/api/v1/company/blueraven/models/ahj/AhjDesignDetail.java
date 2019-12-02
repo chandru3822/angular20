@@ -10,5 +10,6 @@ import java.util.List;
 @Data
 public class AhjDesignDetail extends AhjDesign {
     private List<AhjContact> contacts;
-    private List<AhjRequirement> designRequirements, electricalRequirements, structuralRequirements, utilityRequirements;
+    private List<AhjRequirement> designRequirements, electricalRequirements, structuralRequirements,
+                                 utilityRequirements;
 }

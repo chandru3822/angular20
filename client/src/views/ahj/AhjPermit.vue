@@ -134,7 +134,8 @@
             <AhjChecklist v-if="dataReady"
                           title="Submission Checklist"
                           :checklistTypeId="1"
-                          :permitId="ahjPermit.id"
+                          :itemId="ahjPermit.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjPermit.submissionChecklist"
             ></AhjChecklist>
@@ -173,7 +174,8 @@
             <AhjChecklist v-if="dataReady"
                           title="Revision Submission Checklist"
                           :checklistTypeId="2"
-                          :permitId="ahjPermit.id"
+                          :itemId="ahjPermit.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklist-items="ahjPermit.revisionChecklist"
             ></AhjChecklist>
@@ -212,7 +214,8 @@
             <AhjChecklist v-if="dataReady"
                           title="As-Built Submission Checklist"
                           :checklistTypeId="3"
-                          :permitId="ahjPermit.id"
+                          :itemId="ahjPermit.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklist-items="ahjPermit.asBuiltChecklist"
             ></AhjChecklist>
@@ -367,18 +370,20 @@
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
       <v-col cols="12" md="4" class="px-1 mb-3">
-        <AhjPermitLink v-if="dataReady"
+        <AhjLink v-if="dataReady"
                        title="Submission Links"
                        :linkTypeId="4"
-                       :permitId="ahjPermit.id"
+                       :itemId="ahjPermit.id"
+                       :itemType="itemType"
                        :ahjId="ahjId"
                        :links="ahjPermit.submissionLinks"
-        ></AhjPermitLink>
+        ></AhjLink>
 
         <AhjContact v-if="dataReady"
                     title="Submission Contacts"
                     :contactTypeId="1"
-                    :permitId="ahjPermit.id"
+                    :itemId="ahjPermit.id"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjPermit.submissionContacts"
         ></AhjContact>
@@ -386,18 +391,20 @@
 
       <!-- SECOND COLUMN -->
       <v-col cols="12" md="4" class="px-1 mb-3">
-        <AhjPermitLink v-if="dataReady"
+        <AhjLink v-if="dataReady"
                        title="Follow-up and Delivery Links"
                        :linkTypeId="5"
-                       :permitId="ahjPermit.id"
+                       :itemId="ahjPermit.id"
+                       :itemType="itemType"
                        :ahjId="ahjId"
                        :links="ahjPermit.followUpLinks"
-        ></AhjPermitLink>
+        ></AhjLink>
 
         <AhjContact v-if="dataReady"
                     title="Print Locations"
                     :contactTypeId="7"
-                    :permitId="ahjPermit.id"
+                    :itemId="ahjPermit.id"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjPermit.printLocations"
         ></AhjContact>
@@ -412,7 +419,8 @@
         <AhjContact v-if="dataReady"
                     title="Follow-up and Delivery Contacts"
                     :contactTypeId="6"
-                    :permitId="ahjPermit.id"
+                    :itemId="ahjPermit.id"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjPermit.followUpContacts"
         ></AhjContact>
@@ -425,13 +433,13 @@
 <script>
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
-  import AhjChecklist from './components/AhjChecklist.vue'
-  import AhjContact from './components/AhjContacts.vue'
-  import AhjDocument from './components/AhjDocuments.vue'
-  import AhjPermitLink from './components/AhjPermitLinks.vue'
-  import AhjServicingFot from './components/AhjServicingFots.vue'
+  import AhjChecklist from './components/AhjChecklist'
+  import AhjContact from './components/AhjContacts'
+  import AhjDocument from './components/AhjDocuments'
+  import AhjLink from './components/AhjLinks'
+  import AhjServicingFot from './components/AhjServicingFots'
   import orderBy from 'lodash.orderby'
-  import Snackbar from '@/components/Snackbar.vue'
+  import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
 
@@ -441,12 +449,13 @@
       AhjChecklist,
       AhjContact,
       AhjDocument,
-      AhjPermitLink,
+      AhjLink,
       AhjServicingFot,
       Snackbar
     },
     data: () => ({
       ahjId: null,
+      itemType: 'permit',
       snackbar: {},
       dataReady: false,
       customFieldGroupAssignments: [],

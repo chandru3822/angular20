@@ -176,7 +176,7 @@ public class AhjPermitService {
       TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjNote>> noteTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjBaseNoteTemplate>> baseNoteTemplateTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjNoteTemplate>> baseNoteTemplateTypeRef = new TypeReference<>() {};
       TypeReference<List<User>> userRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementRef = new TypeReference<>() {};
 

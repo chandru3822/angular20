@@ -1,5 +1,5 @@
 <!-- suppress CssInvalidPseudoSelector -->
-<template id="ahj-permit-links">
+<template id="ahj-links">
   <v-card class="mb-3">
     <v-toolbar class="primaryCustom">
       <v-toolbar-title class="white--text font-weight-bold" :title="title">
@@ -61,27 +61,26 @@
   import cloneDeep from 'lodash.clonedeep'
 
   export default {
-    name: "AhjPermitLinks",
+    name: "AhjLinks",
     props: {
       title: {
-        type: String,
-        default: null
+        type: String
       },
       linkTypeId: {
-        type: Number,
-        default: null
+        type: Number
       },
-      permitId: {
-        type: Number,
-        default: null
+      itemId: {
+        type: Number
+      },
+      itemType: {
+        type: String
       },
       ahjId: {
-        type: Number,
-        default: null
+        type: Number
       },
       links: {
         type: Array,
-        default: null
+        default: () => []
       }
     },
     data () {
@@ -108,7 +107,7 @@
     },
     methods: {
       urlRule(url) {
-        if (url && (!url.includes('http://') && !url.includes('https://'))) {
+        if (url && (!url.includes('http://') && !url.includes('https://')) || (url === 'http://' || url === 'https://')) {
           this.validUrl = false
           return 'Valid URL is required'
         } else {
@@ -134,11 +133,11 @@
         this.link.linkTypeId = this.linkTypeId
 
         if (this.addMode) {
-          const {data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links`, this.link)
+          const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
           this.linksCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`, this.link)
+          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
           let updatedLinkIndex = this.linksCopy.findIndex(i => i.id === data.id)
           this.linksCopy[updatedLinkIndex].name = data.name
           this.linksCopy[updatedLinkIndex].link = data.link
@@ -149,7 +148,7 @@
         }
       },
       async deleteLink() {
-        let deletedLinkIndex = await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/links/${this.link.id}`)
+        let deletedLinkIndex = await deleteRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, 'blueraven')
         this.linksCopy.splice([deletedLinkIndex], 1)
         this.editMode = false
       }

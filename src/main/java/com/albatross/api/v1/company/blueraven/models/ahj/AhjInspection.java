@@ -12,14 +12,14 @@ import java.util.List;
 public class AhjInspection {
     private Long id;
     private Double inspectionFee, reInspectionFee;
-    private String paymentMethod, inspectionTimeWindow, brsInspectionRep, homeownerRequiredOnSite, portalUrl, portalUsername,
-        portalPassword, ladderRequired, callForTimeWindow, obtainingResultsMethod, approvalDocumentMethod, obtainingResultsPortalUrl, obtainingResultsPortalUsername,
-        obtainingResultsPortalPassword, businessLicense, contractorLicense, timeWindowCallTime, timeWindow, timeWindowPhone,
-        schedulingNote, technicianInstructionNote, schedulingWithCustomerNote, obtainingResultsNote, reinspectionNote, documentationNote,
-        fallProtectionRequired, mpuInspectionNote;
-
+    private String paymentMethod, inspectionTimeWindow, brsInspectionRep, portalUrl, portalUsername,
+                   portalPassword, ladderRequired, obtainingResultsMethod, approvalDocumentMethod,
+                   obtainingResultsPortalUrl, obtainingResultsPortalUsername, obtainingResultsPortalPassword,
+                   businessLicense, contractorLicense, timeWindowCallTime, timeWindow, timeWindowPhone,
+                   requiredInspectionTypes, schedulingNote, technicianInstructionNote,
+                   schedulingWithCustomerNote, obtainingResultsNote, reinspectionNote, documentationNote,
+                   mpuInspectionNote;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;
-
 }

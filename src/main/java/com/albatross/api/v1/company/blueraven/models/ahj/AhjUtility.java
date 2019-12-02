@@ -11,14 +11,13 @@ import java.util.List;
 @Data
 public class AhjUtility {
     private Long id;
-
     private Long ahjUtilityId, ahjId, stateId, metroAreaId;
     private String name, metroArea, state, timelinesAndStages, regulatedBy, monthlyFacilityCharge,
-        populationOfService, netMeteringRate, rebateRates, utilityRateNotes, customerSignatureInstructions,
-        expectedApprovalTimeline, rejectionInstructions, notes, submissionInstructions, overviewOfSubmissionProcess,
-        timelines, ptoFollowupInstructions, finalCompletionInstructions;
+                   populationOfService, netMeteringRate, rebateRates, utilityRateNotes,
+                   customerSignatureInstructions, expectedApprovalTimeline, rejectionInstructions, notes,
+                   submissionInstructions, overviewOfSubmissionProcess, timelines, ptoFollowupInstructions,
+                   finalCompletionInstructions;
     private Boolean archived;
-
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

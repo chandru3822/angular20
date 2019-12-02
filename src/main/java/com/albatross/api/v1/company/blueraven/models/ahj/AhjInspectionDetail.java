@@ -11,9 +11,11 @@ import java.util.List;
 @Data
 public class AhjInspectionDetail extends AhjInspection {
     private List<AhjLink> schedulingLinks, fotLinks, resultsLinks;
-    private List<AhjChecklistItem> failureChecklist, schedulingChecklist, obtainingResultsChecklist, reinspectionsChecklist, schedulingWithAhjChecklist, schedulingWithBrsTechnicianChecklist;
+    private List<AhjChecklistItem> failureChecklist, schedulingChecklist, obtainingResultsChecklist,
+                                   reinspectionsChecklist, schedulingWithAhjChecklist,
+                                   schedulingWithBrsTechnicianChecklist;
     private List<AhjRequirement> installationRequirements;
-    private List<AhjBaseNoteTemplate> baseNoteTemplates;
+    private List<AhjNoteTemplate> noteTemplates;
     private List<AhjContact> utilityServiceDeptContacts, schedulingContacts, obtainingResultsContacts, feeContacts;
     private List<User> servicingFots;
 }

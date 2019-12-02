@@ -42,7 +42,8 @@
             <v-icon small class="mr-3" @click="editItem(item)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-text="item.description">
+            <v-list-item-title v-text="item.description"
+                               :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
             </v-list-item-title>
           </v-list-item-content>
           <v-list-item-action>
@@ -51,8 +52,8 @@
         </v-list-item>
       </v-list>
     </draggable>
-    <div class="empty-list"
-         v-show="checklistItemsCopy.length < 1">
+    <div class="empty-list" v-show="checklistItemsCopy.length < 1"
+         :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       This checklist doesn't have any items
     </div>
   </v-card>
@@ -75,21 +76,29 @@
       checklistTypeId: {
         type: Number
       },
-      permitId: {
+      isNested: {
+        type: Boolean,
+        default: true
+      },
+      itemId: {
         type: Number
+      },
+      itemType: {
+        type: String
       },
       ahjId: {
         type: Number
       },
       checklistItems: {
-        type: Array
+        type: Array,
+        default: () => []
       }
     },
     data () {
       return {
         checklistItem: {
           id: null,
-          type: this.type,
+          checklistTypeId: this.checklistTypeId,
           description: null
         },
         addMode: false,
@@ -126,18 +135,18 @@
 
         if (this.addMode) {
           this.checklistItem.displayOrder = this.checklistItemsCopy.length
-          const {data} = await postRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist`, this.checklistItem)
+          const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist`, this.checklistItem, 'blueraven')
           this.checklistItemsCopy.push(cloneDeep(data))
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist/${this.checklistItem.id}`, this.checklistItem)
+          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist/${this.checklistItem.id}`, this.checklistItem, 'blueraven')
           let updatedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === data.id)
           this.checklistItemsCopy[updatedItemIndex].description = data.description
           this.editMode = false
         }
       },
       async deleteItem() {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.permitId}/checklist/${this.checklistItem.id}`)
+        await deleteRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist/${this.checklistItem.id}`, 'blueraven')
         let deletedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === this.checklistItem.id)
         this.checklistItemsCopy.splice([deletedItemIndex], 1)
         this.editMode = false

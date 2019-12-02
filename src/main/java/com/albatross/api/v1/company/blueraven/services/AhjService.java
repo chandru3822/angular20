@@ -119,10 +119,10 @@ public class AhjService {
 
       if (AhjType.PERMIT.equals(ahjType)) {
         ahjPermitService.createPermitChecklistItem(ahjItemTypeId, itemId);
-      } else if(AhjType.UTILITY.equals(ahjType)){
+      } else if (AhjType.UTILITY.equals(ahjType)){
 //        ahjUtilityService.createUtilityChecklistItem(ahjItemTypeId, itemId);
       } else {
-//        ahjInspectionService.createInspectionChecklistItem(ahjItemTypeId, itemId);
+        ahjInspectionService.createInspectionChecklistItem(ahjItemTypeId, itemId);
       }
     } else {
       params.put("id", itemId);
@@ -166,13 +166,12 @@ public class AhjService {
     params.put("contactTypeId", contact.getContactTypeId());
 
     if (contactId == null) {
-
       contactId = sqlCache.updateReturningId("ahj.contact.create", params, "id").longValue();
 
       if (AhjType.PERMIT.equals(ahjType)) {
         ahjPermitService.savePermitContact(id, contactId);
       } else if (AhjType.INSPECTION.equals(ahjType)) {
-//        ahjInspectionService.saveInspectionContact(id, contactId);
+        ahjInspectionService.saveInspectionContact(id, contactId);
       } else if (AhjType.DESIGN.equals(ahjType)){
 //        ahjDesignService.saveDesignContact(id, contactId);
       } else {
