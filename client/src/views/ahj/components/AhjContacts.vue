@@ -43,7 +43,7 @@
       </div>
     </v-form>
     <div v-for="(contact, index) in contacts" :key="contact.id"
-         v-show="contacts.length > 0" class="px-3 pt-1 pb-1">
+         v-show="contacts.length > 0" class="px-3 py-1">
       <dl class="horizontal-dl"
           :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
         <dt v-if="contact.name" class="font-weight-bold">Name</dt>
@@ -70,7 +70,7 @@
       <v-spacer v-if="index !== contacts.length - 1"
                 class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
     </div>
-    <div class="empty-list" v-show="contacts.length < 1"
+    <div class="py-3 px-5" v-show="contacts.length < 1"
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
     </div>
@@ -199,9 +199,6 @@
     button {
       margin: 0 0 0 7px;
     }
-  }
-  .empty-list {
-    padding: 20px;
   }
   /*Definition list styles*/
   .horizontal-dl {

@@ -376,7 +376,6 @@
         <AhjRequirement v-if="dataReady"
                         title="AHJ Specific Installation Requirements"
                         :requirementTypeId="5"
-                        :itemId="ahjInspection.id"
                         :itemType="itemType"
                         :ahjId="ahjId"
                         :requirements="ahjInspection.installationRequirements"
@@ -389,6 +388,7 @@
 </template>
 
 <script>
+  import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
   import AhjChecklist from './components/AhjChecklist'
   import AhjContact from './components/AhjContacts'
@@ -459,6 +459,15 @@
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/inspection`, 'blueraven')
           data.servicingFots.forEach(servicingFot => servicingFot.hierarchy = servicingFot.hierarchy[0])
+          data.installationRequirements.forEach(requirement => {
+            if (requirement.dateCreated && requirement.createdBy) {
+              requirement.formattedDateCreated = moment(requirement.dateCreated).format('MM/DD/YY h:mm A')
+            }
+
+            if (requirement.dateModified && requirement.modifiedBy) {
+              requirement.formattedDateModified = moment(requirement.dateModified).format('MM/DD/YY h:mm A')
+            }
+          })
           this.ahjInspection = cloneDeep(data)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

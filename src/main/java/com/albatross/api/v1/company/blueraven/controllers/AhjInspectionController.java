@@ -105,26 +105,26 @@ public class AhjInspectionController {
       ahjInspectionService.deleteInspectionLink(ahjId, inspectionId, linkId);
     }
 
-  // NOTE TEMPLATES
-  @RequestMapping(value = "/{inspectionId}/noteTemplates", method = RequestMethod.POST)
-  public Optional<AhjNoteTemplate> addNoteTemplate(@PathVariable Long ahjId,
-                                                   @PathVariable Long inspectionId,
-                                                   @RequestBody AhjNoteTemplate noteTemplate) {
-    return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, null, noteTemplate);
-  }
+    // NOTE TEMPLATES
+    @RequestMapping(value = "/{inspectionId}/noteTemplates", method = RequestMethod.POST)
+    public Optional<AhjNoteTemplate> addNoteTemplate(@PathVariable Long ahjId,
+                                                     @PathVariable Long inspectionId,
+                                                     @RequestBody AhjNoteTemplate noteTemplate) {
+      return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, null, noteTemplate);
+    }
 
-  @RequestMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}", method = RequestMethod.PUT)
-  public Optional<AhjNoteTemplate> updateNoteTemplate(@PathVariable Long ahjId,
-                                                      @PathVariable Long inspectionId,
-                                                      @PathVariable Long noteTemplateId,
-                                                      @RequestBody AhjNoteTemplate noteTemplate) {
-    return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, noteTemplateId, noteTemplate);
-  }
+    @RequestMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}", method = RequestMethod.PUT)
+    public Optional<AhjNoteTemplate> updateNoteTemplate(@PathVariable Long ahjId,
+                                                        @PathVariable Long inspectionId,
+                                                        @PathVariable Long noteTemplateId,
+                                                        @RequestBody AhjNoteTemplate noteTemplate) {
+      return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, noteTemplateId, noteTemplate);
+    }
 
-  @RequestMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}", method = RequestMethod.DELETE)
-  public void deleteNoteTemplate(@PathVariable Long ahjId,
-                                 @PathVariable Long inspectionId,
-                                 @PathVariable Long noteTemplateId) {
-    ahjInspectionService.deleteNoteTemplate(ahjId, inspectionId, noteTemplateId);
-  }
+    @RequestMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}", method = RequestMethod.DELETE)
+    public void deleteNoteTemplate(@PathVariable Long ahjId,
+                                   @PathVariable Long inspectionId,
+                                   @PathVariable Long noteTemplateId) {
+      ahjInspectionService.deleteNoteTemplate(ahjId, inspectionId, noteTemplateId);
+    }
 }
