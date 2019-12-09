@@ -7,8 +7,10 @@ import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.User;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,18 +24,19 @@ import java.util.*;
  * Created by Joseph Canto on 2019-08-01.
  */
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
 public class AttachmentService {
     private String s3Url = "https://%s.s3.amazonaws.com/%s";
 
-    @Autowired
-    private AmazonS3 s3;
+    private final AmazonS3 s3;
 
-    @Autowired
-    private SqlCache sqlCache;
+    private final SqlCache sqlCache;
 
-    @Autowired
-    private SecurityService securityService;
+    private final SecurityService securityService;
+
+    @Value("${aws.storageBucket}")
+    private String storageBucket;
 
     /**
      * Set the URL to find an Attachment in a custom S3 bucket.
@@ -97,8 +100,6 @@ public class AttachmentService {
      * @return
      */
     public Attachment getOneBySourceIdAndType(Long sourceId, Long attachmentTypeId) {
-        User currentUser = securityService.getCurrentUser();
-
         HashMap<String, Object> params = new HashMap<>();
         params.put("sourceId", sourceId);
         params.put("attachmentTypeId", attachmentTypeId);
@@ -107,8 +108,8 @@ public class AttachmentService {
 
         if(result.isPresent()){
             Attachment attachment = result.get();
-            setAttachmentUrl(currentUser.getAwsBucket(), attachment);
-            setAttachmentPresignedUrl(currentUser.getAwsBucket(), attachment);
+            setAttachmentUrl(storageBucket, attachment);
+            setAttachmentPresignedUrl(storageBucket, attachment);
 
             return attachment;
         } else {
@@ -304,14 +305,14 @@ public class AttachmentService {
 
         //get keyPattern from attachmentType
         AttachmentType attachmentType = getAttachmentType(attachmentTypeId);
-        String key = String.format(attachmentType.getKeyPattern(), UUID.randomUUID());
+        String key = String.format( currentUser.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
         metadata.setContentType(file.getContentType());
         metadata.setCacheControl("public, max-age=31536000");
 
-        PutObjectRequest objectRequest = new PutObjectRequest(currentUser.getAwsBucket(), key, new ByteArrayInputStream(file.getBytes()), metadata);
+        PutObjectRequest objectRequest = new PutObjectRequest(storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
         PutObjectResult result = s3.putObject(objectRequest
                 .withCannedAcl(CannedAccessControlList.PublicRead));
@@ -331,7 +332,7 @@ public class AttachmentService {
         //add to join
         addToJoinTable(attachmentId, sourceId, attachmentTypeId, deleteFirst);
 
-        return findById(currentUser.getAwsBucket(), attachmentId);
+        return findById(storageBucket, attachmentId);
     }
 
     public void addToJoinTable(Long attachmentId, Long sourceId, Long attachmentTypeId, boolean deleteFirst) {

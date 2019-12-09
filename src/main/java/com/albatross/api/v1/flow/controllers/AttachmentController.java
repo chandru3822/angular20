@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.services.AttachmentService;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,11 +25,11 @@ import org.springframework.web.multipart.MultipartFile;
  * Created by Joseph Canto on 2019-08-01.
  */
 @RestController
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RequestMapping(value = "/api/v1/flow/attachment")
 public class AttachmentController {
 
-  @Autowired
-  private AttachmentService attachmentService;
+  private final AttachmentService attachmentService;
 
   @GetMapping(value = "")
   public List<Attachment> getAttachments(@RequestParam Long sourceId,

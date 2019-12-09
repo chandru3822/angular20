@@ -74,7 +74,7 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
             file: this.$refs.fileInput.files[0],
-            attachmentSourceTypeId: this.documentTypeId,
+            attachmentTypeId: this.documentTypeId,
             sourceId: this.sourceId,
             callback: async (document) => {
               this.documentsCopy.push(document)
