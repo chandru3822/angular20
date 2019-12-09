@@ -183,6 +183,7 @@ export default {
           file: files[0],
           attachmentTypeId,
           sourceId,
+          deleteFirst: true,
           callback: async (img) => {
             console.log('saved image', img)
             this.profileImage = img

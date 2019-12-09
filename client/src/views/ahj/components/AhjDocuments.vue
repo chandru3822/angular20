@@ -76,6 +76,7 @@
             file: this.$refs.fileInput.files[0],
             attachmentTypeId: this.documentTypeId,
             sourceId: this.sourceId,
+            deleteFirst: false,
             callback: async (document) => {
               this.documentsCopy.push(document)
               this.snackbar = getSnackbar('SUCCESS', 'Successfully Uploaded Document')

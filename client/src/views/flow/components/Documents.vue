@@ -28,6 +28,7 @@ export default {
           file,
           attachmentTypeId: ATTACHMENT_TYPES.PROJECT,
           sourceId: this.projectId,
+          deleteFirst: false,
           callback: async (doc) => {
             console.log('saved doc', doc)
             this.$store.commit(AppMutations.SET_LOADING, false)
