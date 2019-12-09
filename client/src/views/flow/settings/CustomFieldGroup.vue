@@ -113,8 +113,15 @@
             </template>
             <template #expanded-item="{ headers, item, index }">
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
-                <v-col  cols="12" justify="center"  class="px-3 py-0" >
-                  <v-select v-if="addField"
+                <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
+                  <h3 class="text-left">Add New Field</h3>
+                  <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
+                    <v-radio label="Project Custom Field"
+                             value="native"></v-radio>
+                    <v-radio label="Reference Field: from Process Step"
+                             value="ancillary"></v-radio>
+                  </v-radio-group>
+                  <v-select v-if="newFieldType === 'native'"
                             v-model="newField"
                             :items="availableCustomFields"
                             label="Select Custom Field to Add"
@@ -122,6 +129,24 @@
                             return-object
                             @input="assignCustomField(item)"
                   ></v-select>
+                  <v-select v-if="newFieldType === 'ancillary'"
+                            v-model="parent"
+                            :items="parentObjects"
+                            label="Process Step"
+                            item-text="processStepName"
+                            return-object
+                            @input="loadFieldsByParent"
+                  ></v-select>
+                  <v-select v-if="newFieldType === 'ancillary'"
+                            v-model="selectedAncillaryField"
+                            :items="ancillaryCustomFields"
+                            label="Custom Field"
+                            item-text="fieldName"
+                            return-object
+                            @input="assignAncillaryCustomField(item)"
+                  ></v-select>
+                </v-col>
+                <v-col  cols="12" justify="center"  class="px-3 py-0" >
 <!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->
                   <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
@@ -133,7 +158,7 @@
                         </v-list-item-action>
                         <v-list-item-content>
                           {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
-                          <div class="text-left">
+                          <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
                             <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
                             Show On Insert
                           </div>
@@ -211,6 +236,7 @@ export default {
       snackbar: {},
       IS_MOBILE,
       addNew: false,
+      newFieldType: 'native',
       selectedIndex: null,
       fieldOrderChanged: false,
       groupOrderChanged: false,
@@ -230,6 +256,10 @@ export default {
         { text: null, value: 'icons', show: true }
       ],
       expanded: [],
+      parent: {},
+      parentObjects: [],
+      selectedAncillaryField: {},
+      ancillaryCustomFields: [],
     }
   },
   mounted() {
@@ -280,13 +310,20 @@ export default {
     async fetchAvailableCustomFields (groupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
-          params: {
-            companyObjectTypeId: this.$route.params.id,
-            groupId
-          }
-        })
-        this.availableCustomFields = data
+        if(this.addField && this.newFieldType === 'native') {
+          const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
+            params: {
+              companyObjectTypeId: this.$route.params.id,
+              groupId
+            }
+          })
+          this.availableCustomFields = data
+        } else if (this.addField && this.newFieldType === 'ancillary') {
+          const {data} = await getRequest(`/processStep/getParentObjects`)
+          this.selectedAncillaryField = {}
+          this.parentObjects = data
+          this.availableCustomFields = []
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -320,6 +357,27 @@ export default {
         this.newField.fieldOrder = 0
         this.newField.customFieldGroupId = item.id
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
+        item.customFields.unshift(data)
+        this.newField = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignAncillaryCustomField (item) {
+      console.log('will ancillary', item)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const params = {
+          customFieldGroupId: item.id,
+          id: null,
+          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
+          fieldOrder: 0
+        }
+        const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
         item.customFields.unshift(data)
         this.newField = {}
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
@@ -425,7 +483,19 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    }
+    },
+    async loadFieldsByParent() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
+        this.ancillaryCustomFields = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>

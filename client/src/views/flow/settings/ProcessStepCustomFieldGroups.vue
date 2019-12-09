@@ -375,26 +375,6 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async assignCustomField(cfg) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addField = false
-          this.newField.fieldOrder = 0
-          this.newField.customFieldGroupId = cfg.id
-          //this line makes pushing it to the list work
-          this.newField.archived = false
-
-          await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
-          cfg.customFields.push(this.newField)
-          this.newField = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Assigning Custom Field')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       async loadFieldsByParent() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -437,6 +417,26 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
+      },
+      async assignCustomField(cfg) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addField = false
+          this.newField.fieldOrder = 0
+          this.newField.customFieldGroupId = cfg.id
+          //this line makes pushing it to the list work
+          this.newField.archived = false
+
+          await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
+          cfg.customFields.push(this.newField)
+          this.newField = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Assigning Custom Field')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async assignAncillaryCustomField(cfg) {
         this.$store.commit(AppMutations.SET_LOADING, true)
