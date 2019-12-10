@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
+import com.albatross.api.v1.flow.model.ProjectAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,11 @@ public class AttachmentTypeController {
     return attachmentTypeService.getAvailableTypesForProcessStep(id);
   }
 
+  @GetMapping(value = "/typesForProjects", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getAttachmentTypesForProject () {
+    return attachmentTypeService.getAttachmentTypesForProject();
+  }
+
   @DeleteMapping(value = "/processStepType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteProcessStepType(@PathVariable Long id) {
     attachmentTypeService.deleteProcessStepType(id);
@@ -42,6 +48,21 @@ public class AttachmentTypeController {
   @PostMapping(value = "/processStepType", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepAttachmentType> insertProcessStepType(@RequestBody ProcessStepAttachmentType attachmentType) {
     return attachmentTypeService.insertProcessStepType(attachmentType);
+  }
+
+  @DeleteMapping(value = "/projectType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteProjectType(@PathVariable Long id) {
+    attachmentTypeService.deleteProjectType(id);
+  }
+
+  @PostMapping(value = "/projectType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProjectAttachmentType> insertProjectType(@RequestBody ProjectAttachmentType attachmentType) {
+    return attachmentTypeService.insertProjectType(attachmentType);
+  }
+
+  @GetMapping(value = "/projectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProjectAttachmentType> getProjectTypes() {
+    return attachmentTypeService.getProjectTypes();
   }
 
   @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)

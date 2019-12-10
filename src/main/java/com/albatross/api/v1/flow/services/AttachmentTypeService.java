@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.KeyPattern;
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
+import com.albatross.api.v1.flow.model.ProjectAttachmentType;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,15 @@ public class AttachmentTypeService {
     return attachmentTypes;
   }
 
+  public List<AttachmentType> getAttachmentTypesForProject() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+
+    List<AttachmentType> attachmentTypes = sqlCache.query("attachmentType.getAttachmentTypesForProject", params, AttachmentType.class);
+    return attachmentTypes;
+  }
+
   public Optional<AttachmentType> getType(Long companyId, Long typeId) {
     return sqlCache.get("attachmentType.getType",
         ImmutableMap.of("companyId", companyId,
@@ -81,6 +91,40 @@ public class AttachmentTypeService {
             "processStepId", attachmentType.getProcessStepId()), "id").longValue();
 
     return getProcessStepType(id);
+  }
+
+  public void deleteProjectType(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    sqlCache.update("attachmentType.deleteProjectType",
+        ImmutableMap.of("id", id,
+            "modifiedById", currentUser.getId()));
+  }
+
+  public Optional<ProjectAttachmentType> getProjectType(Long id) {
+    Optional<ProjectAttachmentType> result = sqlCache.get("attachmentType.getProjectType",
+        ImmutableMap.of("id", id), ProjectAttachmentType.class);
+
+    return result;
+  }
+
+  public List<ProjectAttachmentType> getProjectTypes() {
+    User currentUser = securityService.getCurrentUser();
+    List<ProjectAttachmentType> result = sqlCache.query("attachmentType.getProjectTypes",
+        ImmutableMap.of("companyId", currentUser.getCompanyId()), ProjectAttachmentType.class);
+
+    return result;
+  }
+
+  public Optional<ProjectAttachmentType> insertProjectType(ProjectAttachmentType attachmentType) {
+    User currentUser = securityService.getCurrentUser();
+
+    Long id = sqlCache.updateReturningId("attachmentType.insertProjectType",
+        ImmutableMap.of("createdById", currentUser.getId(),
+            "attachmentTypeId", attachmentType.getAttachmentTypeId(),
+            "companyId", currentUser.getCompanyId()), "id").longValue();
+
+    return getProjectType(id);
   }
 
   public void deleteType(Long typeId) {
