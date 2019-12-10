@@ -26,6 +26,12 @@
         </v-col>
       </v-row>
     </v-col>
+
+    <v-col>
+      <v-row>
+        <Documents :projectId="projectId"/>
+      </v-row>
+    </v-col>
   </v-col>
 </v-row>
 </template>
@@ -36,13 +42,15 @@ import {getRequest, logError} from '@/helpers/helpers'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessStep'
 import SpinnerInline from '@/components/SpinnerInline'
+import Documents from '@/views/flow/components/Documents'
 
 export default {
   name: 'ProjectOverview',
   components: {
     SpinnerInline,
     ProjectFieldGroup,
-    ProjectActiveProcessStep
+    ProjectActiveProcessStep,
+    Documents
   },
   data () {
     return {
