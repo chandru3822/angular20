@@ -52,7 +52,7 @@ public class AttachmentController {
   @PostMapping(value = "")
   public Attachment uploadAttachment(@RequestParam Long sourceId,
                                      @RequestParam Long attachmentTypeId,
-                                     @RequestParam Boolean deleteFirst,
+                                     @RequestParam(required = false, defaultValue = "true") Boolean deleteFirst,
                                      @RequestParam("file") MultipartFile file) throws IOException {
     return attachmentService.create(file, sourceId, attachmentTypeId, deleteFirst);
   }

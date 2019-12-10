@@ -46,7 +46,7 @@ const store = new Vuex.Store({
       const {status} = await deleteRequest(`/attachment/${id}`)
       callback(status)
     },
-    [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, deleteFirst, callback }) => {
+    [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, deleteFirst = true, callback }) => {
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
         if (file.size > MAX_FILE_SIZE) {
