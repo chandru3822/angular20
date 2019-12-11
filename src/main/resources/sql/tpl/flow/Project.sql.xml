@@ -82,4 +82,24 @@
     inner join flow.user u on u.id = up.user_id
     where p.id = :projectId;
   ]]></project.getProcessStepsByProjectId>
+
+  <project.getAttachments><![CDATA[
+    select
+      a.id,
+      a.size,
+      a.date_created,
+      a.date_modified,
+      a.filename,
+      a.attachment_type_id,
+      a.content_type,
+      a.s3_key
+    from flow.project_attachment pa
+           inner join flow.attachment a on a.id = pa.attachment_id
+    where pa.project_id = :projectId;
+  ]]></project.getAttachments>
+
+  <project.addAttachment><![CDATA[
+    insert into flow.project_attachment(attachment_id, project_id, created_by_id)
+    values (:attachmentId, :projectId, :createdById)
+  ]]></project.addAttachment>
 </sql>

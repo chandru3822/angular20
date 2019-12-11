@@ -61,10 +61,6 @@ export const SNACKBARS = {
   }
 }
 
-export const ATTACHMENT_TYPES = {
-  PROJECT: 33
-}
-
 export function getSnackbar(type, text) {
   //if you need a custom snackbar build it in your component
   let snackbar = SNACKBARS[type]

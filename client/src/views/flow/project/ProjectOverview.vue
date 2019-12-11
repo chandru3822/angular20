@@ -29,7 +29,7 @@
 
     <v-col>
       <v-row>
-        <Documents :projectId="projectId"/>
+        <Attachments :projectId="projectId"/>
       </v-row>
     </v-col>
   </v-col>
@@ -42,7 +42,7 @@ import {getRequest, logError} from '@/helpers/helpers'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessStep'
 import SpinnerInline from '@/components/SpinnerInline'
-import Documents from '@/views/flow/components/Documents'
+import Attachments from '@/views/flow/components/Attachments'
 
 export default {
   name: 'ProjectOverview',
@@ -50,7 +50,7 @@ export default {
     SpinnerInline,
     ProjectFieldGroup,
     ProjectActiveProcessStep,
-    Documents
+    Attachments
   },
   data () {
     return {
