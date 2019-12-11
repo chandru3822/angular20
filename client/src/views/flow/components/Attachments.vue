@@ -1,5 +1,10 @@
 <template>
 <v-col>
+  <v-row>
+    <v-col class="text-left">
+      <h3>Documents</h3>
+    </v-col>
+  </v-row>
   <v-row v-if="displayType === null">
     <v-col v-for="type in attachmentTypes" class="d-flex justify-space-around">
       <v-text-field :label="type.attachmentType + '(' +attachments.filter(a => a.attachmentTypeId === type.attachmentTypeId).length + ')'" @click="drillDown(type)"/>

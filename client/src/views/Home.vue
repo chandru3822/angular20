@@ -52,7 +52,7 @@ export default {
         display: true
       }, {
         label: 'Projects',
-        path: '/project/45669',
+        path: '/project/192015',
         display: true
       }, {
         label: 'AHJ Database',
