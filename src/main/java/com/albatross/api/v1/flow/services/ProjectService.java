@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 @Service
 public class ProjectService {
 
+  // @TODO: Needs to be cleaned up. A lot of this should go into a ProjectProcessStepService file
+
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
@@ -153,6 +155,12 @@ public class ProjectService {
     handleSavingCustomFieldValues(pps.getCustomFieldGroups(), pps.getProjectProcessStepId());
 
     return getProjectProcessStep(pps.getProjectProcessStepId());
+  }
+
+  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepId", projectProcessStepId);
+    return sqlCache.query("project.getProjectProcessStepAttachments", params, Attachment.class);
   }
 
   public Boolean fieldHasValue (CustomFieldValue cv) {

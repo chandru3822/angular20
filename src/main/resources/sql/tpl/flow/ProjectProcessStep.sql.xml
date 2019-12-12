@@ -1,0 +1,6 @@
+<sql>
+  <projectProcessStep.addAttachment><![CDATA[
+    insert into flow.project_process_step_attachment(attachment_id, project_process_step_id, created_by_id)
+    values (:attachmentId, :projectProcessStepId, :createdById)
+  ]]></projectProcessStep.addAttachment>
+</sql>

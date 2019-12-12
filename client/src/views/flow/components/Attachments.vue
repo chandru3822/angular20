@@ -7,7 +7,7 @@
   </v-row>
   <v-row v-if="displayType === null">
     <v-col v-for="type in attachmentTypes" class="d-flex justify-space-around">
-      <v-text-field :label="type.attachmentType + '(' +attachments.filter(a => a.attachmentTypeId === type.attachmentTypeId).length + ')'" @click="drillDown(type)"/>
+      <v-text-field :label="type.attachmentType + '(' + getTypeCount(type.attachmentTypeId) + ')'" @click="drillDown(type)"/>
     </v-col>
   </v-row>
   <v-row v-else>
@@ -50,13 +50,26 @@ export default {
     return {
       attachmentTypes: [],
       attachments: [],
-      displayType: null
+      displayType: null,
+      typePath: null,
+      attachmentPath: null
     }
   },
   props: {
     projectId: Number,
+    processStepId: Number,
+    projectProcessStepId: Number
   },
   created () {
+
+    if (this.projectId) {
+      this.typePath = '/projectTypes'
+      this.attachmentPath = `/project/${this.projectId}/attachments`
+    } else if (this.projectProcessStepId) {
+      this.typePath = `/processStepTypes/${this.processStepId}`
+      this.attachmentPath = `/projectProcessStep/${this.projectProcessStepId}/attachments`
+    }
+
     this.fetchAttachmentTypes()
     this.fetchAttachments()
   },
@@ -71,23 +84,32 @@ export default {
   },
   methods: {
     fetchAttachmentTypes: async function () {
-      const {data} = await getRequest(`/attachmentType/projectTypes`)
+      const {data} = await getRequest(`/attachmentType${this.typePath}`)
       this.attachmentTypes = data
     },
     fetchAttachments: async function () {
-      const {data} = await getRequest(`/project/${this.projectId}/attachments`)
+      const {data} = await getRequest(this.attachmentPath)
       this.attachments = data
     },
     drillDown: function(type) {
      this.displayType = type
     },
+    getTypeCount: function(typeId) {
+      try {
+        return this.attachments.filter(a => a.attachmentTypeId === typeId).length
+      } catch {
+        return 0
+      }
+    },
     uploadDocument: async function (file) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await this.$store.dispatch(Actions.PROJECT_FILE_UPLOAD, {
+        // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+        await this.$store.dispatch((this.projectId) ? Actions.PROJECT_FILE_UPLOAD : Actions.PROJECT_PROCESS_STEP_FILE_UPLOAD, {
           file,
           attachmentTypeId: this.displayType.attachmentTypeId,
           projectId: this.projectId,
+          projectProcessStepId: this.projectProcessStepId,
           callback: async (newAttachment) => {
             this.$store.commit(AppMutations.SET_LOADING, false)
             this.attachments = [...this.attachments, newAttachment]

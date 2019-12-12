@@ -17,7 +17,7 @@
         <ActionButton
           v-if="action.actionTypeId === 2"
           :actionId="action.id"
-          :projectProcessStep="stepId"
+          :projectProcessStep="projectProcessStepId"
           :label="action.actionName"
         />
       </v-col>
@@ -48,6 +48,11 @@
       </div>
     </v-row>
   </v-col>
+
+  <v-col>
+    <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
+  </v-col>
+
   <Snackbar :snackbar="snackbar"></Snackbar>
 </v-row>
 </template>
@@ -59,19 +64,22 @@ import ActionButton from './ActionButton'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
+import Attachments from '@/views/flow/components/Attachments'
 
 export default {
   name: 'ProjectProcessStep',
   components: {
     ActionButton,
     Snackbar,
-    CustomValueInput
+    CustomValueInput,
+    Attachments
   },
   data () {
     return {
       snackbar: {},
       projectId: this.$route.params.projectId,
-      stepId: this.$route.params.processStepId,
+      projectProcessStepId: this.$route.params.processStepId,
+      processStepId: this.$route.query.processStepId,
       processStep: {},
       customFieldGroups: [],
       isProcessStepLoading: true
@@ -84,7 +92,7 @@ export default {
   methods: {
     getProcessStep: async function() {
       try {
-        const {data} = await getRequest(`/projectProcessStep/${this.stepId}`)
+        const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
         this.processStep = data
       } catch (e) {
         logError(e)
@@ -97,7 +105,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep`, { params: {
-            projectProcessStepId: this.stepId
+            projectProcessStepId: this.projectProcessStepId
           }})
         this.customFieldGroups = data
         this.$store.commit(AppMutations.SET_LOADING, false)

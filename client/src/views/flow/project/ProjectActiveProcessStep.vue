@@ -1,6 +1,6 @@
 <template>
 <v-row>
-  <v-col>
+  <v-col cols="12">
     <v-card>
       <v-card-text style="padding: 0">
         <v-row
@@ -17,7 +17,7 @@
 
         <v-row no-gutters v-for="step in steps" :key="step.projectProcessStepId">
           <v-col cols="1" >
-            <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}`">{{ step.projectProcessStepId }}</router-link>
+            <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}?processStepId=${step.processStepId}`">{{ step.projectProcessStepId }}</router-link>
           </v-col>
           <v-col cols="3">{{ step.processStepName }}</v-col>
           <v-col cols="3">{{ step.owner }}</v-col>

@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.ProjectProcessStep;
+import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -18,6 +24,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class ProjectProcessStepController {
 
   private final ProjectService projectService;
+
+  private final ProjectProcessStepService projectProcessStepService;
 
   @GetMapping(value = "/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long processStepId) {
@@ -38,5 +46,17 @@ public class ProjectProcessStepController {
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ProjectProcessStep saveProjectProcessStep(@RequestBody ProjectProcessStep pps) {
     return projectService.saveProjectProcessStep(pps);
+  }
+
+  @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Attachment>> getProjectProcessStepAttachments(@PathVariable Long projectProcessStepId) {
+    return new ResponseEntity<>(projectService.getProjectProcessStepAttachments(projectProcessStepId), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{projectProcessStepId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Attachment> uploadProjectProcessStepAttachment(@PathVariable Long projectProcessStepId,
+                                                                       @RequestParam Long attachmentTypeId,
+                                                                       @RequestParam("file")MultipartFile file) throws IOException {
+    return new ResponseEntity<>(projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId), HttpStatus.OK);
   }
 }
