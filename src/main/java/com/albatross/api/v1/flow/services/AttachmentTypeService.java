@@ -82,6 +82,12 @@ public class AttachmentTypeService {
     return result;
   }
 
+  public List<ProcessStepAttachmentType> getProcessStepTypes(Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+    return sqlCache.query("attachmentType.getProcessStepTypes", params, ProcessStepAttachmentType.class);
+  }
+
   public Optional<ProcessStepAttachmentType> insertProcessStepType(ProcessStepAttachmentType attachmentType) {
     User currentUser = securityService.getCurrentUser();
 

@@ -6,7 +6,9 @@ import com.albatross.api.v1.flow.model.ProjectAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,6 +45,11 @@ public class AttachmentTypeController {
   @DeleteMapping(value = "/processStepType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteProcessStepType(@PathVariable Long id) {
     attachmentTypeService.deleteProcessStepType(id);
+  }
+
+  @GetMapping(value = "/processStepTypes/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypes(@PathVariable Long processStepId) {
+    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypes(processStepId), HttpStatus.OK);
   }
 
   @PostMapping(value = "/processStepType", produces = MediaType.APPLICATION_JSON_VALUE)

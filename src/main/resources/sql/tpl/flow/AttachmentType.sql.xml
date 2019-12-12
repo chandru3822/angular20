@@ -154,4 +154,21 @@
         where id = :id
     ]]>
   </attachmentType.deleteProjectType>
+
+  <attachmentType.getProcessStepTypes><![CDATA[
+    select psat.id,
+       at.attachment_type,
+       psat.attachment_type_id,
+       psat.process_step_id,
+       psat.date_created,
+       psat.date_modified,
+       psat.created_by_id,
+       psat.modified_by_id,
+       psat.archived
+    from flow.process_step_attachment_type psat
+    inner join flow.attachment_type at on at.id = psat.attachment_type_id
+    where
+      psat.process_step_id = :processStepId and
+      psat.archived is not true
+  ]]></attachmentType.getProcessStepTypes>
 </sql>
