@@ -5,35 +5,51 @@
       <h3>Documents</h3>
     </v-col>
   </v-row>
-  <v-row v-if="displayType === null">
-    <v-col v-for="type in attachmentTypes" class="d-flex justify-space-around">
-      <v-text-field :label="type.attachmentType + '(' + getTypeCount(type.attachmentTypeId) + ')'" @click="drillDown(type)"/>
+  <v-sheet color="#fff" class="elevation-2">
+    <v-col cols="12">
+      <v-row v-if="displayType === null" class="d-flex justify-start">
+        <v-col
+          cols="2"
+          class="type text-center"
+          @click="drillDown(type)"
+          v-for="type in attachmentTypes"
+        >
+          <v-icon x-large color="yellow accent-4">folder</v-icon>
+          <div>{{ type.attachmentType }}</div>
+          <div>{{`(${getTypeCount(type.attachmentTypeId)})`}}</div>
+        </v-col>
+      </v-row>
+      <v-row v-else>
+        <v-col cols="6" class="text-left">
+          <v-btn @click="displayType = null">Back</v-btn>
+        </v-col>
+        <v-col cols="6">
+            <v-file-input
+              dense
+              outlined
+              label="Upload project document"
+              @change="uploadDocument"
+            />
+        </v-col>
+        <v-row class="d-flex flex-wrap justify-start">
+          <v-col
+            cols="2"
+            class="type d-flex flex-wrap justify-center"
+            v-for="a in drillDownAttachments"
+          >
+            <v-btn
+              width="100%"
+              icon
+              text
+              :href="a.presignedUrl" class="type">
+              <v-icon x-large color="grey">insert_drive_file</v-icon>
+            </v-btn>
+            <a :href="a.presignedUrl" class="type link text-center">{{ a.filename }}</a>
+          </v-col>
+        </v-row>
+      </v-row>
     </v-col>
-  </v-row>
-  <v-row v-else>
-    <v-col>
-     <v-row>
-       <v-col class="d-flex justify-start">
-         <v-btn @click="displayType = null">Back</v-btn>
-       </v-col>
-     </v-row>
-     <v-row>
-       <v-col cols="12">
-         <v-file-input
-           label="Upload project document"
-           @change="uploadDocument"
-         />
-       </v-col>
-       <v-col cols="12">
-         <v-row>
-           <v-col v-for="a in drillDownAttachments" class="d-flex justify-space-around">
-             <v-btn :href="a.presignedUrl">{{ a.filename }}</v-btn>
-           </v-col>
-         </v-row>
-       </v-col>
-     </v-row>
-    </v-col>
-  </v-row>
+  </v-sheet>
 </v-col>
 </template>
 
@@ -126,5 +142,14 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
+  .v-btn:before {
+    display: none;
+  }
+  .type {
+    font-size: 12px;
+  }
+  .link {
+    color: inherit;
+    text-decoration: none;
+  }
 </style>

@@ -9,7 +9,7 @@
     <h1>{{ processStep.name }}</h1>
   </v-col>
 
-  <v-col cols="12" lg="6" xl="6" class="text-left">
+  <v-col cols="12" lg="6" class="text-left">
     <h3>Actions</h3>
 
     <v-row>
@@ -47,10 +47,10 @@
         </v-card>
       </div>
     </v-row>
-  </v-col>
 
-  <v-col>
-    <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
+    <v-row>
+      <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
+    </v-row>
   </v-col>
 
   <Snackbar :snackbar="snackbar"></Snackbar>

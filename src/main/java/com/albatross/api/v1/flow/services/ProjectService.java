@@ -160,7 +160,8 @@ public class ProjectService {
   public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
-    return sqlCache.query("project.getProjectProcessStepAttachments", params, Attachment.class);
+    List<Attachment> attachments = sqlCache.query("project.getProjectProcessStepAttachments", params, Attachment.class);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket);
   }
 
   public Boolean fieldHasValue (CustomFieldValue cv) {
