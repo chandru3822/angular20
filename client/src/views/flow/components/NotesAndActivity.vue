@@ -135,6 +135,7 @@ export default {
   methods: {
     async saveNote(n) {
       try {
+        // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         const {data} = await postRequest(`/note/save${this.$props.type}Note`, {
           primaryId: this.primaryId,
           note: n.reply ? n.reply : n.note,

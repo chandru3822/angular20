@@ -5,9 +5,12 @@ import com.albatross.api.v1.flow.model.Note;
 import com.albatross.api.v1.flow.services.NoteService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.attribute.standard.Media;
 import java.util.List;
 
 /**
@@ -38,7 +41,7 @@ public class NoteController {
     return noteService.getByPrimaryAndType(ObjectType.PROJECT.id, primaryId);
   }
 
-  @GetMapping(value = "/getProjectProcessStepNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/getProjectProcessStepNotes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Note> getProjectProcessStepNote(@RequestParam Long primaryId) {
     return noteService.getByPrimaryAndType(ObjectType.PROCESS_STEP.id, primaryId);
   }
@@ -53,5 +56,13 @@ public class NoteController {
     return noteService.saveNote(ObjectType.USER.id, note);
   }
 
+  @PostMapping(value = "/saveProjectNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Note> saveProjectNote(@RequestBody Note note) {
+    return new ResponseEntity<>(noteService.saveNote(ObjectType.PROJECT.id, note), HttpStatus.OK);
+  }
 
+  @PostMapping(value = "/saveProjectProcessStepNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Note> saveProjectProcessStepNote(@RequestBody Note note) {
+    return new ResponseEntity<>(noteService.saveNote(ObjectType.PROCESS_STEP.id, note), HttpStatus.OK);
+  }
 }

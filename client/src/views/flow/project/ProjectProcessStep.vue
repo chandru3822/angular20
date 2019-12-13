@@ -53,6 +53,16 @@
     </v-row>
   </v-col>
 
+  <v-col cols="12" lg="6" class="text-left">
+    <NotesAndActivity
+      :showNotes="true"
+      :showActivity="false"
+      :notes="notes"
+      :primaryId="parseInt(projectProcessStepId)"
+      type="ProjectProcessStep"
+    />
+  </v-col>
+
   <Snackbar :snackbar="snackbar"></Snackbar>
 </v-row>
 </template>
@@ -65,6 +75,7 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
+import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 
 export default {
   name: 'ProjectProcessStep',
@@ -72,7 +83,8 @@ export default {
     ActionButton,
     Snackbar,
     CustomValueInput,
-    Attachments
+    Attachments,
+    NotesAndActivity
   },
   data () {
     return {
@@ -82,12 +94,14 @@ export default {
       processStepId: this.$route.query.processStepId,
       processStep: {},
       customFieldGroups: [],
-      isProcessStepLoading: true
+      isProcessStepLoading: true,
+      notes: []
     }
   },
   created () {
     this.getProcessStep()
     this.getCustomFieldGroups()
+    this.getNotes()
   },
   methods: {
     getProcessStep: async function() {
@@ -113,6 +127,19 @@ export default {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getNotes() {
+      try {
+        const {data} = await getRequestWithParams(`/note/getProjectProcessStepNotes`, {
+          params: {
+            primaryId: this.projectProcessStepId
+          }
+        })
+        this.notes = data
+      } catch {
+        console.log('suck')
+
       }
     },
     async randaSaveCustomFields() {

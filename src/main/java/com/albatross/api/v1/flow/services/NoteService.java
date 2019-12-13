@@ -58,6 +58,7 @@ public class NoteService {
     // parentId is used for a hierarchy of notes - currently we don't use it
     params.put("parentId", note.getParentId());
 
+    // @randa: Would an upsert be better here?
     Long noteId;
     if(null != note.getId()) {
       noteId = note.getId();
@@ -89,7 +90,7 @@ public class NoteService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Note>> childNoteRef = new TypeReference<List<Note>>() {};
+      TypeReference<List<Note>> childNoteRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "childNotes",
           new JsonCollectionDeserializer(childNoteRef, objectMapper));
 
