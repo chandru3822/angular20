@@ -6,7 +6,7 @@
   </v-col>
 
   <v-col cols="12" class="text-left">
-    <h1>{{ processStep.name }}</h1>
+    <h2>{{ processStep.name }}</h2>
   </v-col>
 
   <v-col cols="12" lg="6" class="text-left">

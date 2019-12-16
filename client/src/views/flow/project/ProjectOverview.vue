@@ -1,6 +1,6 @@
 <template>
 <v-row>
-  <v-col cols="12" lg="6" xl="6">
+  <v-col cols="12" lg="6">
 
     <v-col v-if="isFieldsLoading">
       <SpinnerInline :size="20" color="primary"/>
@@ -33,16 +33,27 @@
       </v-row>
     </v-col>
   </v-col>
+
+  <v-col cols="12" lg="6" class="text-left">
+    <NotesAndActivity
+      :showNotes="true"
+      :showActivity="false"
+      :notes="notes"
+      :primaryId="parseInt(projectId)"
+      type="Project"
+    />
+  </v-col>
 </v-row>
 </template>
 
 <script>
 
-import {getRequest, logError} from '@/helpers/helpers'
+import {getRequest, logError, getRequestWithParams} from '@/helpers/helpers'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessStep'
 import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
+import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 
 export default {
   name: 'ProjectOverview',
@@ -50,7 +61,8 @@ export default {
     SpinnerInline,
     ProjectFieldGroup,
     ProjectActiveProcessStep,
-    Attachments
+    Attachments,
+    NotesAndActivity
   },
   data () {
     return {
@@ -58,12 +70,14 @@ export default {
       processSteps: [],
       customFieldGroups: [],
       isProcessStepsLoading: true,
-      isFieldsLoading: true
+      isFieldsLoading: true,
+      notes: []
     }
   },
   created () {
     this.getFieldGroups()
     this.getProcessSteps()
+    this.getNotes()
   },
   methods: {
     getProcessSteps: async function () {
@@ -84,6 +98,18 @@ export default {
         logError(e)
       } finally {
         this.isFieldsLoading = false
+      }
+    },
+    getNotes: async function () {
+      try {
+        const {data} = await getRequestWithParams(`/note/getProjectNotes`, {
+          params: {
+            primaryId: this.projectId
+          }
+        })
+        this.notes = data
+      } catch {
+        console.log('done gone boom')
       }
     }
   }
