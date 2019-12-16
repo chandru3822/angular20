@@ -35,6 +35,19 @@
   </v-col>
 
   <v-col cols="12" lg="6" class="text-left">
+
+<!--    @TODO: humes, this progress image is temp until we figure out what goes here-->
+    <br />
+    <h3>Progress</h3>
+    <br />
+
+    <v-sheet color="#fff" class="elevation-2">
+      <v-img
+        :src="require(`../../../assets/temp_project_diagram.png`)"
+
+      />
+    </v-sheet>
+
     <NotesAndActivity
       :showNotes="true"
       :showActivity="false"
