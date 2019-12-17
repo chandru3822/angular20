@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar color="transparent" class="elevation-0">
-      <v-toolbar-title>Notes & Activity Feed</v-toolbar-title>
+      <h3>Notes & Activity Feed</h3>
       <v-spacer></v-spacer>
       <v-toolbar-items>
       </v-toolbar-items>

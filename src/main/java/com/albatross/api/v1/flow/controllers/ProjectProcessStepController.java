@@ -27,16 +27,16 @@ public class ProjectProcessStepController {
 
   private final ProjectProcessStepService projectProcessStepService;
 
-  @GetMapping(value = "/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long processStepId) {
+  @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
 
-    return new ResponseEntity<>(projectService.getProjectProcessStep(processStepId), HttpStatus.OK);
+    return new ResponseEntity<>(projectService.getProjectProcessStep(projectProcessStepId), HttpStatus.OK);
   }
 
-  @GetMapping(value = "/{processStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> getActionResult(@PathVariable Long processStepId, @PathVariable Long actionId) {
+  @GetMapping(value = "/{projectProcessStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> getActionResult(@PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
-      boolean canComplete = projectService.canCompleteAction(actionId, processStepId);
+      boolean canComplete = projectService.canCompleteAction(actionId, projectProcessStepId);
       return new ResponseEntity<>(String.format("{\"canComplete\": %s}", canComplete), HttpStatus.OK);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);

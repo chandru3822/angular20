@@ -2,14 +2,22 @@
 <v-row>
   <v-col class="text-left">
     <router-link :to="`/project/${projectId}`">Back</router-link>
-    <h3></h3>
   </v-col>
 
   <v-col cols="12" class="text-left">
-    <h2>{{ processStep.name }}</h2>
+    <h3>{{ processStep.name }}</h3>
   </v-col>
 
+
   <v-col cols="12" lg="6" class="text-left">
+
+    <v-row v-for="(group, index) in customFieldGroups" :key="index">
+<!--  @TODO: @randa, this is the reactjs way to do this. Does vue have a better way? -->
+      <v-col>
+        <ProcessStepFieldGroup :group="group" :onSaveHandler="randaSaveCustomFields"/>
+      </v-col>
+    </v-row>
+
     <h3>Actions</h3>
 
     <v-row>
@@ -24,29 +32,17 @@
     </v-row>
 
     <!-- todo: @humes just putting this here so i can test scheduling.  feel free to do what you want with it. i dont even know if this is the right spot -->
-    <v-row>
-      <v-col cols="12">
-        <v-btn :to="{name: 'schedule', query: { processStepId: 1, projectId: 171704 } }">
-          Test link to schedule screen
-        </v-btn>
-      </v-col>
-    </v-row>
+    <!-- @TODO: @randa, Uncommenting for now until I can add it in programatically. How do we not hardcode the processStepid and projectId vals? (they harcoded for testing?)   -->
+<!--    <v-row>-->
+<!--      <v-col cols="12">-->
 
-    <v-row>
-      <v-btn text @click="randaSaveCustomFields">Save</v-btn>
-      <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
-        <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <!--              <v-btn text @click="saveUser">Save</v-btn>-->
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-card class="pa-4">
-          <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
-        </v-card>
-      </div>
-    </v-row>
+<!--        <h3>Links</h3>-->
+
+<!--        <v-btn :to="{name: 'schedule', query: { processStepId: 1, projectId: 171704 } }">-->
+<!--          Test link to schedule screen-->
+<!--        </v-btn>-->
+<!--      </v-col>-->
+<!--    </v-row>-->
 
     <v-row>
       <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
@@ -76,6 +72,7 @@ import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
+import ProcessStepFieldGroup from "./ProcessStepFieldGroup";
 
 export default {
   name: 'ProjectProcessStep',
@@ -84,7 +81,8 @@ export default {
     Snackbar,
     CustomValueInput,
     Attachments,
-    NotesAndActivity
+    NotesAndActivity,
+    ProcessStepFieldGroup
   },
   data () {
     return {
