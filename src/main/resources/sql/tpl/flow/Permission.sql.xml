@@ -17,7 +17,8 @@
     <![CDATA[
       select p.id,
              p.permission_name,
-             p.archived
+             p.archived,
+             p.permission_code
       from flow.permission p
       where p.company_id = :companyId
         and p.archived is not true
@@ -29,9 +30,26 @@
     <![CDATA[
         select p.id,
              p.permission_name,
-             p.archived
+             p.archived,
+             p.permission_code
         from flow.permission p
         where p.id = :id
       ]]>
   </permission.getOne>
+
+  <permission.updatePermission>
+    <![CDATA[
+      update flow.permission
+          set permission_name = :permissionName,
+              permission_code = :permissionCode
+      where id = :id
+    ]]>
+  </permission.updatePermission>
+
+  <permission.insertPermission>
+    <![CDATA[
+      insert into flow.permission (company_id, permission_name, permission_code)
+      values (:companyId, :permissionName, :permissionCode)
+    ]]>
+  </permission.insertPermission>
 </sql>

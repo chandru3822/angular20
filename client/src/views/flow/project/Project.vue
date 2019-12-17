@@ -5,16 +5,18 @@
 <v-container id="project-container">
   <v-row>
     <v-col cols="12">
-      <v-sheet color="#fff" class="elevation-2 pa-4 br-10">
-        <v-row>
-
-          <v-col cols="4" class="text-left">
-            <h1>{{ customer.fullName}}</h1>
-            <h3>{{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}</h3>
+        <v-row class="project-header">
+          <v-col cols="4" class="text-left pl-5">
+            <div class="project-title">
+              {{ customer.fullName}}
+            </div>
+            <div class="project-subtitle">
+              {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
+            </div>
           </v-col>
 
-          <v-col cols="8">
-            <v-row justify="end">
+          <v-col cols="8" class="pb-0">
+            <v-row justify="end" class="pb-0">
                 <UserCard
                   name="Riley Burgess"
                   role="Setter"
@@ -32,7 +34,6 @@
           </v-col>
 
         </v-row>
-      </v-sheet>
     </v-col>
   </v-row>
 
@@ -80,6 +81,16 @@ export default {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+.project-header {
+  border-bottom: solid 1px #EAEAF4
+}
+.project-title {
+  font-size: 20px;
+}
+.project-subtitle {
+  font-size: 15px;
 }
 
 .user-card {
