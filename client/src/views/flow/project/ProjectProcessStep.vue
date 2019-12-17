@@ -2,14 +2,20 @@
 <v-row>
   <v-col class="text-left">
     <router-link :to="`/project/${projectId}`">Back</router-link>
-    <h3></h3>
   </v-col>
 
   <v-col cols="12" class="text-left">
-    <h2>{{ processStep.name }}</h2>
+    <h3>{{ processStep.name }}</h3>
   </v-col>
 
+
   <v-col cols="12" lg="6" class="text-left">
+
+    <v-row v-for="(group, index) in customFieldGroups" :key="index">
+<!--  @TODO: @randa, this is the reactjs way to do this. Does vue have a better way? -->
+      <ProcessStepFieldGroup :group="group" :onSaveHandler="randaSaveCustomFields"/>
+    </v-row>
+
     <h3>Actions</h3>
 
     <v-row>
@@ -76,6 +82,7 @@ import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
+import ProcessStepFieldGroup from "./ProcessStepFieldGroup";
 
 export default {
   name: 'ProjectProcessStep',
@@ -84,7 +91,8 @@ export default {
     Snackbar,
     CustomValueInput,
     Attachments,
-    NotesAndActivity
+    NotesAndActivity,
+    ProcessStepFieldGroup
   },
   data () {
     return {

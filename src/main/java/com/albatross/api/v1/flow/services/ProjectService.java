@@ -273,6 +273,7 @@ public class ProjectService {
             requirementMet = calculateTextRequirement(r);
             break;
           case 6:
+//          case 9:
             requirementMet = (r.getHasListValues()) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
             break;
           case 7:
@@ -757,17 +758,9 @@ public class ProjectService {
           passed = compareDateTimes(fieldValue, now, r.getOperatorTypeId());
           break;
         case 12:
-          try {
-            Assert.isNull(fieldValue, "null check failed");
-            passed = true;
-          } catch (IllegalArgumentException e) {
-            //@TODO: something?
-          }
-          break;
         case 13:
           try {
-            Assert.notNull(fieldValue, "not-null check failed");
-            passed = true;
+            passed = compareDateTimes(fieldValue, null, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
@@ -784,10 +777,10 @@ public class ProjectService {
 
     switch (operatorTypeId.intValue()) {
       case 1:
-        passed = date.isEqual(compareDate);
+        passed = (compareDate == null) ? date == null : date.isEqual(compareDate);
         break;
       case 2:
-        passed = !date.isEqual(compareDate);
+        passed = (compareDate == null) ? date != null : !date.isEqual(compareDate);
         break;
       case 3:
         passed = date.isAfter(compareDate);
@@ -843,8 +836,7 @@ public class ProjectService {
           break;
         case 4:
           try {
-            Assert.isNull(fieldValue, "null check failed");
-            passed = true;
+            passed = compareDates(fieldValue, null, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
@@ -869,10 +861,10 @@ public class ProjectService {
 
     switch (operatorTypeId.intValue()) {
       case 1:
-        passed = date.isEqual(compareDate);
+        passed = (compareDate == null) ? date == null : date.isEqual(compareDate);
         break;
       case 2:
-        passed = !date.isEqual(compareDate);
+        passed = (compareDate == null) ? date != null : !date.isEqual(compareDate);
         break;
       case 3:
         passed = date.isAfter(compareDate);

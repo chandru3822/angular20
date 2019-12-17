@@ -5,24 +5,13 @@
       <h3>{{ group.groupName }}</h3>
     </v-col>
     <v-col class="d-flex justify-end">
-      <v-btn
-        @click="isEditMode = !isEditMode"
-      >{{ isEditMode ? 'Cancel' : 'Edit'}}</v-btn>
+      <v-btn @click="isEditMode = !isEditMode">{{ isEditMode ? 'Cancel' : 'Edit'}}</v-btn>
+      <v-btn v-if="isEditMode" @click="save">Save</v-btn>
     </v-col>
   </v-row>
   <v-row>
-    <v-col>
-      <v-card>
-        <v-row>
-          <template v-for="(field, index) in group.customFieldValues">
-            <v-col cols="6" md="3">{{ field.fieldName}}</v-col>
-            <v-col cols="6" md="3">
-              <CustomValueInput v-if="isEditMode" :field="field" :readonly="false"/>
-              <template v-else>{{ getDisplayValue(field) }}</template>
-            </v-col>
-          </template>
-        </v-row>
-      </v-card>
+    <v-col cols="12" lg="6" v-for="(field, index) in group.customFieldValues" :key="index">
+      <CustomValueInput :field="field" :readonly="!isEditMode"/>
     </v-col>
   </v-row>
 </v-container>
@@ -30,13 +19,14 @@
 
 <script>
 
-import CustomValueInput from "@/views/flow/components/CustomValueInput";
+import CustomValueInput from '@/views/flow/components/CustomValueInput'
 
 export default {
   name: "ProcessStepFieldGroup",
   components: {CustomValueInput},
   props: {
-    group: Object
+    group: Object,
+    onSaveHandler: Function
   },
   data () {
     return {
@@ -44,37 +34,9 @@ export default {
     }
   },
   methods: {
-    getDisplayValue: function (field) {
-
-      let displayValue = null
-
-      switch (field.dataTypeId) {
-        case 1:
-          displayValue = field.dateValue
-          break
-        case 2:
-          displayValue = field.timestampValue
-          break
-        case 3:
-          displayValue = field.booleanValue
-          break
-        case 4:
-          displayValue = field.numericValue
-          break
-        case 5:
-          displayValue = field.textValue
-          break
-        case 6:
-          displayValue = field.intValue
-          break;
-        case 7:
-          displayValue = field.intArrayValue
-          break;
-        default:
-          displayValue = 'N/A'
-      }
-
-      return displayValue
+    save: function () {
+      this.isEditMode = !this.isEditMode
+      this.onSaveHandler()
     }
   }
 }
