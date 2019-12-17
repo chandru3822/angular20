@@ -1,5 +1,5 @@
 <template>
-<v-container id="container">
+<v-container>
   <v-row class="align-center">
     <v-col>
       <h3>{{ group.groupName }}</h3>
@@ -9,7 +9,7 @@
       <v-btn v-if="isEditMode" @click="save">Save</v-btn>
     </v-col>
   </v-row>
-  <v-row>
+  <v-row class="valueContainer elevation-2">
     <v-col cols="12" lg="6" v-for="(field, index) in group.customFieldValues" :key="index">
       <CustomValueInput :field="field" :readonly="!isEditMode"/>
     </v-col>
@@ -43,7 +43,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-#container {
-
+.valueContainer {
+  background-color: #fff;
 }
 </style>

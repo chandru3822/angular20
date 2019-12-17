@@ -13,7 +13,9 @@
 
     <v-row v-for="(group, index) in customFieldGroups" :key="index">
 <!--  @TODO: @randa, this is the reactjs way to do this. Does vue have a better way? -->
-      <ProcessStepFieldGroup :group="group" :onSaveHandler="randaSaveCustomFields"/>
+      <v-col>
+        <ProcessStepFieldGroup :group="group" :onSaveHandler="randaSaveCustomFields"/>
+      </v-col>
     </v-row>
 
     <h3>Actions</h3>
@@ -30,29 +32,17 @@
     </v-row>
 
     <!-- todo: @humes just putting this here so i can test scheduling.  feel free to do what you want with it. i dont even know if this is the right spot -->
-    <v-row>
-      <v-col cols="12">
-        <v-btn :to="{name: 'schedule', query: { processStepId: 1, projectId: 171704 } }">
-          Test link to schedule screen
-        </v-btn>
-      </v-col>
-    </v-row>
+    <!-- @TODO: @randa, Uncommenting for now until I can add it in programatically. How do we not hardcode the processStepid and projectId vals? (they harcoded for testing?)   -->
+<!--    <v-row>-->
+<!--      <v-col cols="12">-->
 
-    <v-row>
-      <v-btn text @click="randaSaveCustomFields">Save</v-btn>
-      <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
-        <v-toolbar color="transparent" class="elevation-0">
-          <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <!--              <v-btn text @click="saveUser">Save</v-btn>-->
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-card class="pa-4">
-          <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
-        </v-card>
-      </div>
-    </v-row>
+<!--        <h3>Links</h3>-->
+
+<!--        <v-btn :to="{name: 'schedule', query: { processStepId: 1, projectId: 171704 } }">-->
+<!--          Test link to schedule screen-->
+<!--        </v-btn>-->
+<!--      </v-col>-->
+<!--    </v-row>-->
 
     <v-row>
       <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
