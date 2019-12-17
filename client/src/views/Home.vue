@@ -4,17 +4,31 @@
       <v-col cols="12" class="pt-0">
         <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
         <!--non-mobile header...is this necessary?-->
-        <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="33">
-          <v-toolbar-title class="app-title">{{companyName}}</v-toolbar-title>
-          <v-spacer class="ml-5"></v-spacer>
-          <v-toolbar-items>
-            <AccountMenu :showImage="true"></AccountMenu>
-          </v-toolbar-items>
-          <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">
+<!--        <v-app-bar dense id="header" color="primaryCustom" tabs dark extension-height="33">-->
+<!--          <v-toolbar-title class="app-title">{{companyName}}</v-toolbar-title>-->
+<!--          <v-spacer class="ml-5"></v-spacer>-->
+<!--          <v-toolbar-items>-->
+<!--            <AccountMenu :showImage="true"></AccountMenu>-->
+<!--          </v-toolbar-items>-->
+<!--          <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" slot="extension" dark slider-color="secondaryCustom">-->
+<!--            <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">-->
+<!--              {{tab.label}}-->
+<!--            </v-tab>-->
+<!--          </v-tabs>-->
+<!--        </v-app-bar>-->
+        <v-app-bar dense id="header" color="primaryCustom" tabs dark>
+          <v-btn icon>
+            <img class="header-logo" src="../assets/bird.png">
+          </v-btn>
+          <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" dark slider-color="secondaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
             </v-tab>
           </v-tabs>
+          <v-spacer class="ml-5"></v-spacer>
+          <v-toolbar-items>
+            <AccountMenu :showImage="true"></AccountMenu>
+          </v-toolbar-items>
         </v-app-bar>
         <v-content>
           <v-container class="router-container">
@@ -104,6 +118,11 @@ export default {
   /* @randa
   /* todo: look into this, vuetify 2.0.17 had overhanging tabs without this line*!*/
   height: unset !important;
+}
+
+.header-logo {
+  max-height: 50px;
+  max-width: 50px;
 }
 
 @media (min-width: 769px) {

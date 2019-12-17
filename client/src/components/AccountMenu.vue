@@ -12,7 +12,7 @@
       >
         <span v-if="!IS_MOBILE">{{userFirstName}} Account</span>
         <v-avatar :tile="false"
-                  :size="40"
+                  :size="35"
                   color="grey lighten-4"
                   class="account-img"
         >
