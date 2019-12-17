@@ -91,10 +91,20 @@
                           label="E-Mail"
                           placeholder=" "
                           v-model="customer.email"></v-text-field>
-            <v-text-field text
-                          label="Created Date"
-                          placeholder=" "
-                          v-model="customer.dateCreated"></v-text-field>
+            <div class="field-label">Created Date</div>
+            <datetime
+                type="datetime"
+                v-model="customer.dateCreated"
+                input-class="one-hunned"
+                :zone="timezone.value"
+                :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
+                :phrases="{ok: 'Ok', cancel: 'Close'}"
+                :hour-step="1"
+                :minute-step="15"
+                use12-hour
+                disabled
+                auto
+            ></datetime>
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -127,13 +137,15 @@ import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import { Datetime } from 'vue-datetime'
 
 export default {
   name: 'Lead',
   components: {
     Snackbar,
     CustomValueInput,
-    NotesAndActivity
+    NotesAndActivity,
+    Datetime
   },
   data () {
     return {
@@ -144,6 +156,7 @@ export default {
       owners: [],
       customerId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
+      timezone: this.$store.state.user.details.timezone,
       changeOwner: false,
       selectedProcess: null,
       availableProcesses: []

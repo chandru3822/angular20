@@ -46,6 +46,7 @@ public class NoteService {
   public Note getNote(Long noteId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", noteId);
+    //currently won't return child notes. this is only called when saving a new note so it doesn't matter, but would matter later on
     Optional<Note> result = sqlCache.get("note.getNote", params, Note.class);
     return result.orElse(null);
   }
