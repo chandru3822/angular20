@@ -115,7 +115,7 @@
 </template>
 
 <script>
-  import { Datetime } from 'vue-datetime';
+  import { Datetime } from 'vue-datetime'
 
   export default {
     name: 'CustomValueInput',

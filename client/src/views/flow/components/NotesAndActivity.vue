@@ -48,7 +48,6 @@
               {{item.note}}
               <div class="mt-2 note-created-by">
                 Created by: {{item.createdBy}}<br/>
-                {{$store.state.user.details.timezone.value}}
                 Created at: {{item.dateCreated | formatDate('timestamp', $store.state.user.details.timezone.value)}}
               </div>
             </td>
@@ -146,9 +145,9 @@ export default {
         if(n.reply) {
           n.reply = null
           n.showReply = false
-          n.childNotes.push(data)
+          n.childNotes == null ? n.childNotes = [data] : n.childNotes.push(data)
         } else {
-          this.$props.notes.push(data)
+          this.$props.notes.unshift(data)
           this.note = {}
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
