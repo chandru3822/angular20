@@ -91,10 +91,6 @@
                           label="E-Mail"
                           placeholder=" "
                           v-model="customer.email"></v-text-field>
-            <v-text-field text
-                          label="Created Date"
-                          placeholder=" "
-                          v-model="customer.dateCreated"></v-text-field>
             <div class="field-label">Created Date</div>
             <datetime
                 type="datetime"
