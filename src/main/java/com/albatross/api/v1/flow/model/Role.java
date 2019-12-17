@@ -4,15 +4,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Created by randanunn on 10/1/19.
+ * Created by randanunn on 12/17/19.
  * !Describe Purpose!
  */
 @Getter
 @Setter
-public class Position {
+public class Role {
 
-  private Long id, orgTypeId;
-  private String position, orgType;
+  private Long id;
+  private String roleName;
   private Boolean archived;
 
 }

@@ -114,7 +114,20 @@ export default {
         }, {
           path: '',
           title: 'Account',
-        }, {
+        }
+        // , {
+        //   header: 'User Management'
+        // }, {
+        //   path: '/settings/permissions',
+        //   title: 'Permissions',
+        // }, {
+        //   path: '/settings/positions',
+        //   title: 'Positions',
+        // }, {
+        //   path: '/settings/roles',
+        //   title: 'Roles',
+        // }
+        , {
           header: 'Custom Components'
         }, {
           path: '/settings/customFields',
@@ -147,7 +160,7 @@ export default {
           title: 'Statuses',
         }, {
           header: 'Objects'
-        },
+        }
       ]
     }
   },

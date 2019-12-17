@@ -12,4 +12,26 @@
           group by p.permission_name
       ]]>
   </permission.getUserPermissions>
+
+  <permission.getAllForCompany>
+    <![CDATA[
+      select p.id,
+             p.permission_name,
+             p.archived
+      from flow.permission p
+      where p.company_id = :companyId
+        and p.archived is not true
+      order by p.permission_name
+    ]]>
+  </permission.getAllForCompany>
+
+  <permission.getOne>
+    <![CDATA[
+        select p.id,
+             p.permission_name,
+             p.archived
+        from flow.permission p
+        where p.id = :id
+      ]]>
+  </permission.getOne>
 </sql>

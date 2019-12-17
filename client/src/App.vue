@@ -98,6 +98,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--v-secondary-base);
   min-height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 .app-button{
   padding: 0 5px;
@@ -133,6 +135,7 @@ body {
   justify-content: center;
   max-width: 100vw;
   overflow: auto;
+  max-height: calc(100vh - 48px);
 }
 label[for="adminOriginatorSelect"] {
   color: var(--v-secondary-base) !important;
@@ -294,6 +297,6 @@ label[for="adminOriginatorSelect"] {
     height: 45px !important;
     margin-right: 10px !important;
   }
-  
+
 }
 </style>

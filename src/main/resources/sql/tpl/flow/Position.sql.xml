@@ -2,7 +2,9 @@
   <position.getAllForCompany>
     <![CDATA[
       select p.id,
-             p.position
+             p.position,
+             p.org_type_id,
+             ot.org_type
       from blueraven.position p
           inner join flow.org_type ot on ot.id = p.org_type_id
       where ot.company_id = :companyId

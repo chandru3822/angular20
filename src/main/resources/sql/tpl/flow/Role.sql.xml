@@ -1,0 +1,36 @@
+<sql>
+  <role.getAllForCompany>
+    <![CDATA[
+      select r.id,
+             r.role_name,
+             r.archived
+      from flow.role r
+      where r.archived is not true
+      and r.company_id = :companyId
+      order by r.role_name
+    ]]>
+  </role.getAllForCompany>
+
+  <role.updateRole>
+    <![CDATA[
+
+    ]]>
+  </role.updateRole>
+
+  <role.insertRole>
+    <![CDATA[
+
+    ]]>
+  </role.insertRole>
+
+  <role.getOne>
+    <![CDATA[
+      select r.id,
+             r.role_name,
+             r.archived
+      from flow.role r
+      where r.id = :id
+    ]]>
+  </role.getOne>
+
+</sql>
