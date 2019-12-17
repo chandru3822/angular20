@@ -1520,12 +1520,12 @@ VALUES ('Termination Reason',1,now(), 2350555,1);
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id,system_list_option_ids,company_system_list_id)
-VALUES ('Recruited By',5,now(), 2350555,1,'{10}',2);
+VALUES ('Recruited By',7,now(), 2350555,1,'{10}',2);
 
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id,system_list_option_ids,company_system_list_id)
-VALUES ('Referred By',5,now(), 2350555,1,null,4);
+VALUES ('Referred By',7,now(), 2350555,1,null,4);
 
 --6 termination
 INSERT INTO flow.custom_field(

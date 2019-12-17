@@ -45,7 +45,7 @@ BEGIN
             where n.archived is not true
               and n.parent_id is null
               and pn.project_id = p_primary_id
-            order by n.date_created;
+            order by n.date_created desc;
     when p_object_type_id = 2 then
         RETURN QUERY
             select n.id,
@@ -83,7 +83,7 @@ BEGIN
             where n.archived is not true
               and n.parent_id is null
               and cn.customer_id = p_primary_id
-            order by n.date_created;
+            order by n.date_created desc;
     when p_object_type_id = 3 then
         RETURN QUERY
             select n.id,
@@ -121,7 +121,7 @@ BEGIN
             where n.archived is not true
               and n.parent_id is null
               and un.user_id = p_primary_id
-            order by n.date_created;
+            order by n.date_created desc;
     when p_object_type_id = 4 then
         RETURN QUERY
           select n.id,
@@ -159,7 +159,7 @@ BEGIN
           where n.archived is not true
             and n.parent_id is null
             and pn.project_process_step_id = p_primary_id
-          order by n.date_created;
+          order by n.date_created desc;
       end case;
 
 END;

@@ -30,6 +30,7 @@
             cf.system_list_option_ids as "systemListOptionIds",
             cf.company_data_type_id as "companyDataTypeId",
             cdt.data_type_id as "dataTypeId",
+            cdt.has_list_values as "hasListValues",
             coalesce((
             SELECT array_to_json(array_agg(row_to_json(listOfValues)))
             FROM (
@@ -94,7 +95,7 @@
                                     cf.system_list_option_ids as "systemListOptionIds",
                                     cf.company_data_type_id as "companyDataTypeId",
                                     cdt.data_type_id as "dataTypeId",
-
+                                    cdt.has_list_values as "hasListValues",
                                     coalesce((
                                                  SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                                                  FROM (
@@ -157,7 +158,7 @@
                                     cf.system_list_option_ids as "systemListOptionIds",
                                     cf.company_data_type_id as "companyDataTypeId",
                                     cdt.data_type_id as "dataTypeId",
-
+                                    cdt.has_list_values as "hasListValues",
                                     coalesce((
                                                  SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                                                  FROM (
@@ -222,6 +223,7 @@
                                   cf.system_list_option_ids as "systemListOptionIds",
                                   cf.company_data_type_id as "companyDataTypeId",
                                   cdt.data_type_id as "dataTypeId",
+                                  cdt.has_list_values as "hasListValues",
                                   coalesce((
                                                SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                                                FROM (
@@ -326,7 +328,7 @@
                                     cfsk.sql_key as "customFieldSqlKey",
                                     cf.company_data_type_id as "companyDataTypeId",
                                     cdt.data_type_id as "dataTypeId",
-
+                                    cdt.has_list_values as "hasListValues",
                                     coalesce((
                                                  SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                                                  FROM (

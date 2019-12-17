@@ -279,7 +279,7 @@
                     <span v-else-if="item.dataTypeRequirementId">
                       {{item.dataTypeRequirement ? item.dataTypeRequirement.dataTypeValue : 'unknown'}} {{item.secondaryRequirementValue}}
                     </span>
-                    <span v-else-if="item.listOfValueId || item.customFieldSqlKeyId || item.systemListId">
+                    <span v-else-if="item.listOfValueId || item.customFieldSqlKeyId || item.companySystemListId">
 <!--                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}-->
                       {{ getListValueName(item) }}
                     </span>
@@ -939,8 +939,9 @@
             this.newRequirement.listOfValueIds = null
             this.newRequirement.dataTypeRequirementId = null
             this.newRequirement.requirementValue = null
-          } else if (this.newRequirement.customValue && this.selectedCustomField.systemListId && !this.selectedCustomField.allowMultiple) {
-            //  if from a list of values and not allow multiple use the selected value id,
+          } else if (this.newRequirement.customValue && this.selectedCustomField.companySystemListId && !this.selectedCustomField.allowMultiple) {
+            //  if from a system list and not allow multiple use the selected value id,
+            console.log('here here here', this.selectedListValue)
             this.newRequirement.systemListOptionId = this.selectedListValue.id
 
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
@@ -1246,6 +1247,7 @@
       getListValueName(item) {
         let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
                       item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
+        debugger
         let match = item.availableListOfValues.find(i => i.id === idToUse)
         return match ? match.name : 'unknown'
       }

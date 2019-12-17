@@ -15,7 +15,7 @@ public class ProcessStepRequirement {
 
   private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupAssignmentId, companyFunctionId,
     requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId, returnDataTypeId,
-    customFieldSqlKeyId, systemListId, systemListOptionId, customSqlOptionId;
+    customFieldSqlKeyId, companySystemListId, systemListOptionId, customSqlOptionId;
 
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, functionName, processStepName,
     secondaryRequirementValue, customFieldSqlKey;

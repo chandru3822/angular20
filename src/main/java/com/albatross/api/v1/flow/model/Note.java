@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,8 +20,7 @@ public class Note {
 
   private Long primaryId;
 
-  //dates as strings or dates???
-  private String dateCreated;
+  private Date dateCreated;
 
   private List<Note> childNotes;
 

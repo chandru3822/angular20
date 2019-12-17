@@ -48,6 +48,7 @@
               {{item.note}}
               <div class="mt-2 note-created-by">
                 Created by: {{item.createdBy}}<br/>
+                {{$store.state.user.details.timezone.value}}
                 Created at: {{item.dateCreated | formatDate('timestamp', $store.state.user.details.timezone.value)}}
               </div>
             </td>
@@ -83,7 +84,7 @@
             </div>
             <h4>Replies:</h4>
             <v-list>
-              <v-list-item v-for="(cn, index) in item.childNotes" :key="index" dense>
+              <v-list-item v-for="(cn, index) in item.childNotes" :key="index" dense class="mb-4">
                 <v-list-item-content>
                   <v-list-item-title>{{cn.note}}</v-list-item-title>
                   <v-list-item-subtitle>Left by: {{cn.createdBy}}</v-list-item-subtitle>
