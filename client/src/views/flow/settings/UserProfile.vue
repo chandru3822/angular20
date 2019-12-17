@@ -5,15 +5,15 @@
         <v-toolbar flat class="app-toolbar" v-if="!IS_MOBILE">
           <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
         </v-toolbar>
-        <v-card flat style="background: aliceblue" class="text-center">
-          <div class="pt-5">
-            Changing the timezone in the account menu should change this value: <br/>
-            (this section is just temporary for testing)
-          </div>
-          <div class="pt-5 font-weight-bold">
-            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone.value) }}
-          </div>
-        </v-card>
+<!--        <v-card flat style="background: aliceblue" class="text-center">-->
+<!--          <div class="pt-5">-->
+<!--            Changing the timezone in the account menu should change this value: <br/>-->
+<!--            (this section is just temporary for testing)-->
+<!--          </div>-->
+<!--          <div class="pt-5 font-weight-bold">-->
+<!--            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone.value) }}-->
+<!--          </div>-->
+<!--        </v-card>-->
       </v-col>
     </v-row>
     <v-form ref="userForm">
