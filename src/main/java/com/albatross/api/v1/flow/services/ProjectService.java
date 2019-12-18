@@ -273,7 +273,7 @@ public class ProjectService {
             requirementMet = calculateTextRequirement(r);
             break;
           case 6:
-//          case 9:
+          case 9:
             requirementMet = (r.getHasListValues()) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
             break;
           case 7:
@@ -464,11 +464,11 @@ public class ProjectService {
       }
     } else {
       switch (r.getDataTypeRequirementId().intValue()) {
+        case 12:
+        case 13:
         case 20:
-          passed = fieldValue == null;
-          break;
         case 21:
-          passed = fieldValue != null;
+          passed = compareDropdown(fieldValue, null, r.getOperatorTypeId());
           break;
         default:
           throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", r.getOperatorTypeId()));

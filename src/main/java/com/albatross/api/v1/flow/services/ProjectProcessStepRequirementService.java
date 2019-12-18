@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
+import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.ProjectProcessStepRequirement;
 import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,7 +31,20 @@ public class ProjectProcessStepRequirementService {
     params.put("ids", ids);
     params.put("projectProcessStepId", projectProcessStepId);
 
-    return sqlCache.query("processStepRequirement.getRequirementsWithValuesByIds", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
+    List<ProjectProcessStepRequirement> requirements = sqlCache.query("processStepRequirement.getRequirementsWithValuesByIds", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
+
+    // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
+    for (ProjectProcessStepRequirement req : requirements) {
+      if(null != req.getCustomFieldSqlKey()) {
+        String sql = sqlCache.getByKey(req.getCustomFieldSqlKey());
+        if(null != sql) {
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          req.setAvailableListOfValues(listOfValues);
+        }
+      }
+    }
+
+    return requirements;
   }
 
   public static class ProjectProcessStepRequirementMapper<T> extends BeanPropertyRowMapper<T> {
@@ -50,6 +65,12 @@ public class ProjectProcessStepRequirementService {
 
       TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "companyFunctionParams", new JsonCollectionDeserializer(companyFunctionParamsRef, objectMapper));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+
+      TypeReference<List<ListOfValue>> availableListOfValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "availableListOfValues", new JsonCollectionDeserializer(availableListOfValuesRef, objectMapper));
     }
   }
 }
