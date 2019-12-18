@@ -6,12 +6,26 @@
           <v-toolbar-title class="app-title">Permissions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newPermissions" color="primary">
+            <v-btn text color="primary" v-if="$store.getters.hasPermission('SYSTEM_ADMIN')" @click="addPermission = !addPermission">
               <v-icon>add</v-icon>
               Add Permission
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <v-card class="mt-2 pa-4"flat v-if="addPermission">
+          Add Permission
+          <v-text-field text
+                        label="Name"
+                        placeholder=" "
+                        v-model="newPermission.permissionName"></v-text-field>
+          <v-text-field text
+                        label="Code"
+                        placeholder=" "
+                        v-model="newPermission.permissionCode"></v-text-field>
+          <v-btn color="primary" class="white--text mr-3" @click="savePermission(newPermission)"
+                 :disabled="!newPermission.permissionName || !newPermission.permissionCode">Save</v-btn>
+          <v-btn @click="newPermission = {}; addPermission = !addPermission">Cancel</v-btn>
+        </v-card>
         <v-data-table
             :headers="headers"
             :items="permissions"
@@ -31,8 +45,9 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.permissionName}}</td>
+              <td class="text-left" v-if="$store.getters.hasPermission('SYSTEM_ADMIN')">{{item.permissionCode}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -46,7 +61,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import debounce from 'lodash.debounce'
+  import orderBy from 'lodash.orderby'
   import {saveAs} from 'file-saver'
 
   export default {
@@ -59,6 +74,8 @@
         delay: 500,
         dialog: false,
         snackbar: {},
+        addPermission: false,
+        newPermission: {},
         permissions: [],
         descending: true,
         dataLoading: true,
@@ -69,11 +86,11 @@
     },
     created () {
       this.getPermissions()
+      if(this.$store.getters.hasPermission('SYSTEM_ADMIN')) {
+        this.headers.push({ text: 'Permission Code', value: 'permissionCode'})
+      }
     },
     methods: {
-      clickRow(id) {
-        this.$router.push({name: 'permissions', params: {id: id}})
-      },
       async getPermissions() {
         try {
           const {data} = await getRequest(`/permission`)
@@ -83,6 +100,22 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Permissions')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async savePermission (p) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/permission`, p)
+          this.addPermission = false
+          this.newPermission = {}
+          this.permissions.push(data)
+          this.permissions = orderBy(this.permissions, [a => a.permissionName.toLowerCase()])
+          this.snackbar = getSnackbar('SUCCESS', 'Permission Saved')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Permission')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

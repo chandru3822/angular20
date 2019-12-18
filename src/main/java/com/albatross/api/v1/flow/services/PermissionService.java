@@ -35,6 +35,22 @@ public class PermissionService {
     return results;
   }
 
+  public Permission savePermission(Permission p) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("permissionName", p.getPermissionName());
+    params.put("permissionCode", p.getPermissionCode());
+    Long id;
+    if(null != p.getId()) {
+      id = p.getId();
+      params.put("id", p.getId());
+      sqlCache.update("permission.updatePermission", params);
+    } else {
+      params.put("companyId", user.getCompanyId());
+      id = sqlCache.updateReturningId("permission.insertPermission", params, "id").longValue();
+    }
+    return getPermission(id);
+  }
 
   public Permission getPermission(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -42,25 +58,5 @@ public class PermissionService {
     Optional<Permission> result = sqlCache.get("permission.getOne", params, Permission.class);
     return result.orElse(null);
   }
-
-  public Permission savePermission(Permission permission) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("aField", permission.getId());
-
-    Long id;
-    if (null != permission.getId()) {
-      id = permission.getId();
-      params.put("modifiedById", user.getCompanyId());
-      params.put("id", id);
-      sqlCache.update("permission.updatePermission", params);
-    } else {
-      params.put("createdById", user.getCompanyId());
-      id = sqlCache.updateReturningId("permission.insertPermission", params, "id").longValue();
-    }
-
-    return getPermission(id);
-  }
-
 
 }

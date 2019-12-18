@@ -1,7 +1,7 @@
 <template>
-  <v-container>
+  <v-container class="pt-0">
     <v-row class="lead-header elevation-0">
-      <v-col cols="8" class="text-left">
+      <v-col cols="8" class="text-left pb-2">
         <div class="lead-title">
           {{customer.fullName}}
           <v-menu
@@ -35,12 +35,12 @@
           {{customer.street1}} - {{customer.city}}, {{customer.state}}
         </div>
       </v-col>
-      <v-col cols="4" class="lead-owner">
+      <v-col cols="4" class="lead-owner pb-2">
         <div v-if="!changeOwner">
           <div v-if="customer.owner">
             <v-avatar
                 :tile="false"
-                :size="40"
+                :size="25"
                 color="grey lighten-4"
                 class="account-img mr-2"
             >
@@ -61,7 +61,7 @@
           >
           </v-autocomplete>
         </div>
-        <v-btn text small class="change-owner-button" @click="changeOwner = !changeOwner">
+        <v-btn text x-small class="change-owner-button" @click="changeOwner = !changeOwner">
           <span v-if="changeOwner">cancel</span>
           <span v-else-if="customer.owner && customer.owner.userId">change</span>
           <span v-else>add owner</span>
@@ -283,19 +283,19 @@ export default {
     border-bottom: solid 1px #EAEAF4
   }
   .lead-title {
-    font-size: 30px;
+    font-size: 20px;
   }
   .lead-subtitle {
-    font-size: 20px;
+    font-size: 15px;
   }
   .lead-status {
-    font-size: 20px;
+    font-size: 15px;
     display: flex;
     align-items: flex-end;
     text-align: left;
   }
   .lead-owner {
-    font-size: 18px;
+    font-size: 15px;
     /*display: flex;*/
     /*align-items: flex-end;*/
     text-align: right;
