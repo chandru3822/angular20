@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.AttachmentType;
+import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.User;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -79,5 +80,16 @@ public class ProjectProcessStepService {
     sqlCache.update("projectProcessStep.addAttachment", params);
 
     return attachmentService.findById(storageBucket, attachmentId);
+  }
+
+  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepId", projectProcessStepId);
+    params.put("processStepStatusTypeId", processStepStatusTypeId);
+    params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
+    params.put("userId", user.getId());
+
+    sqlCache.update("projectProcessStep.setStatus", params);
   }
 }

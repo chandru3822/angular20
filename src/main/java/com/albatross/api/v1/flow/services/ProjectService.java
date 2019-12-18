@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,6 +47,10 @@ public class ProjectService {
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
   private final AttachmentService attachmentService;
+
+  private final ProjectProcessStepService projectProcessStepService;
+
+  private final ProcessStepStatusService processStepStatusService;
 
   private String s3Url = "https://%s.s3.amazonaws.com/%s";
 
@@ -213,7 +218,37 @@ public class ProjectService {
     return getProjectProcessStep(id);
   }
 
-  public boolean canCompleteAction(Long actionId, Long projectProcessStepId) throws Exception {
+  @Transactional
+  public void performAction(Long actionId, Long projectProcessStepId) {
+    /*
+      **High level psuedo logic:**
+
+        * transaction all queries so current state is kept on any errors
+        * Performance will be key here as it will be hit a lot and business logic will grow
+
+        * gather required data
+        * set the parent step to the specified status
+        * set them to the active status
+        * recursively check if child processes have children and auto-triggered until all auto-triggered child process steps have been created with active statuses
+     */
+
+    List<CompanyProcessStepStatusType> companyStatusTypes = processStepStatusService.getStatusTypesForCompany();
+    Optional<CompanyProcessStepStatusType> activeStatusType = companyStatusTypes.stream().filter(type -> type.getProcessStepStatusTypeId() == 2).findFirst();
+    final Long activeStatusTypeId = activeStatusType.map(CompanyProcessStepStatusType::getProcessStepStatusTypeId).orElse(null);
+
+    ProjectProcessStep projectProcessStep = this.getProjectProcessStep(projectProcessStepId);
+    ProcessStepAction action = processStepActionService.getActionById(actionId);
+    projectProcessStepService.setStatus(projectProcessStepId, action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
+
+    List<ProjectProcessStep> newSteps = new ArrayList<>();
+    action.getProcessStepActionChildProcesses().forEach(childStep -> {
+      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, projectProcessStep.getUserPositionId()));
+    });
+
+    //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
+  }
+
+  public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
     ProcessStepAction action = processStepActionService.getActionById(actionId);
 
     List<Long> requirementIds = action.getProcessStepLogicList().stream().filter(l -> l.getProcessStepRequirementId() != null).map(ProcessStepLogic::getProcessStepRequirementId).collect(Collectors.toList());

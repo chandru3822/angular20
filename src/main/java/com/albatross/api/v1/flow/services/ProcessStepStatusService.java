@@ -34,8 +34,8 @@ public class ProcessStepStatusService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    List<CompanyProcessStepStatusType> attachmentTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, CompanyProcessStepStatusType.class);
-    return attachmentTypes;
+    List<CompanyProcessStepStatusType> companyProcessStepStatusTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, CompanyProcessStepStatusType.class);
+    return companyProcessStepStatusTypes;
   }
 
   public Optional<CompanyProcessStepStatusType> getType(Long companyId, Long typeId) {

@@ -1,6 +1,8 @@
 <sql>
   <processStepAction.getActionsForStep><![CDATA[
     select psa.*,
+       cpsst.id as company_process_step_status_type_id,
+       cpsst.process_step_status_type_id,
        cpsst.process_step_status_type,
        at.action_type,
        coalesce((

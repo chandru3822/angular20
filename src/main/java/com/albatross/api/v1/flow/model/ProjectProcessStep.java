@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class ProjectProcessStep {
 
-  private Long projectProcessStepId, companyStatusId, statusId, processStepId;
+  private Long projectProcessStepId, companyStatusId, statusId, processStepId, userPositionId, projectId;
 
   private String owner, name, status;
 
