@@ -221,7 +221,6 @@
       ps.id as parent_id,
       ps.process_step_name as parent_name,
       cf.field_name,
-      cf.list_of_value_id,
       cf.custom_field_sql_key_id,
       cf.company_id,
       cf.company_system_list_id,

@@ -248,10 +248,25 @@ public class ProjectService {
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
   }
 
+  // @TODO: @humes kill after demo on 2019-12-20
+  public void resetDemo() {
+    sqlCache.updateBySql("delete from flow.project_process_step where project_id = 192015 and id != 1\n", Collections.emptyMap());
+    sqlCache.updateBySql("update flow.project_process_step set company_process_step_status_type_id = 1, process_step_complete_date = null, date_modified = null, modified_by_id = null where id = 1", Collections.emptyMap());
+    sqlCache.updateBySql("update flow.project_process_step_custom_field_value set timestamp_value = null where id = 6", Collections.emptyMap());
+    sqlCache.updateBySql("update flow.project_process_step_custom_field_value set timestamp_value = null where id = 7", Collections.emptyMap());
+    sqlCache.updateBySql("update flow.project_process_step_custom_field_value set int_value = null where id = 8", Collections.emptyMap());
+  }
+
   public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
     ProcessStepAction action = processStepActionService.getActionById(actionId);
 
     List<Long> requirementIds = action.getProcessStepLogicList().stream().filter(l -> l.getProcessStepRequirementId() != null).map(ProcessStepLogic::getProcessStepRequirementId).collect(Collectors.toList());
+
+    // If there are not any requirements with logic attached to the action, then it can be completed
+    if (requirementIds.isEmpty()) {
+      return true;
+    }
+
     List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByIds(requirementIds, projectProcessStepId);
 
 
