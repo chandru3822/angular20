@@ -36,8 +36,22 @@ public class ProjectProcessStepController {
   @GetMapping(value = "/{projectProcessStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> getActionResult(@PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
-      boolean canComplete = projectService.canCompleteAction(actionId, projectProcessStepId);
-      return new ResponseEntity<>(String.format("{\"canComplete\": %s}", canComplete), HttpStatus.OK);
+      boolean canPerform = projectService.canPerformAction(actionId, projectProcessStepId);
+      return new ResponseEntity<>(String.format("{\"canPerform\": %s}", canPerform), HttpStatus.OK);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
+    }
+  }
+  @PostMapping(value = "/{projectProcessStepId}/action/{actionId}")
+  public ResponseEntity<Void> performAction(@PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
+    try {
+      boolean canPerform = projectService.canPerformAction(actionId, projectProcessStepId);
+      if (!canPerform) {
+        //@TODO: Better error here
+        throw new RuntimeException("Can't do it");
+      }
+      projectService.performAction(actionId, projectProcessStepId);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }

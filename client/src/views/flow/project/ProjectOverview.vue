@@ -36,6 +36,11 @@
 
   <v-col cols="12" lg="6" class="text-left">
 
+<!--    @TODO: @humes delete after 2019-12-20 demo -->
+    <v-col cols="12" class="text-right">
+      <v-btn color="error" dark @click="resetDemo">Reset Demo</v-btn>
+    </v-col>
+
     <NotesAndActivity
       :showNotes="true"
       :showActivity="false"
@@ -44,17 +49,20 @@
       type="Project"
     />
   </v-col>
+
+  <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
 
 <script>
 
-import {getRequest, logError, getRequestWithParams} from '@/helpers/helpers'
+import {getRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessStep'
 import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
+import Snackbar from '@/components/Snackbar.vue'
 
 export default {
   name: 'ProjectOverview',
@@ -63,7 +71,8 @@ export default {
     ProjectFieldGroup,
     ProjectActiveProcessStep,
     Attachments,
-    NotesAndActivity
+    NotesAndActivity,
+    Snackbar
   },
   data () {
     return {
@@ -72,7 +81,8 @@ export default {
       customFieldGroups: [],
       isProcessStepsLoading: true,
       isFieldsLoading: true,
-      notes: []
+      notes: [],
+      snackbar: {}
     }
   },
   created () {
@@ -111,6 +121,15 @@ export default {
         this.notes = data
       } catch {
         console.log('done gone boom')
+      }
+    },
+    resetDemo: async function () {
+      // @TODO: @humes kill after demo on 2019-12-20
+      const {status} = await getRequest(`/project/resetDemo`)
+      if (status === 204) {
+        this.snackbar = getSnackbar('SUCCESS', 'Successfully Reset Demo')
+      } else {
+        this.snackbar = getSnackbar('ERROR', 'Error Resetting Demo')
       }
     }
   }

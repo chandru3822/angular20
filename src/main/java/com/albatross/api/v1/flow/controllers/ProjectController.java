@@ -3,7 +3,6 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.model.ProjectProcessStep;
-import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,6 @@ import java.util.List;
 public class ProjectController {
 
   private final ProjectService projectService;
-
-  private final CustomFieldValueService customFieldValueService;
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Project>> getProjectsForProcess(@PathVariable Long processId) {
@@ -53,5 +50,12 @@ public class ProjectController {
                                                    @RequestParam Long attachmentTypeId,
                                                    @RequestParam("file") MultipartFile file) throws IOException {
     return new ResponseEntity<>(projectService.addAttachment(file, projectId, attachmentTypeId), HttpStatus.OK);
+  }
+
+  // @TODO: @humes kill after demo on 2019-12-20
+  @GetMapping(value = "/resetDemo")
+  public ResponseEntity<Void> resetDemo() {
+    projectService.resetDemo();
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }

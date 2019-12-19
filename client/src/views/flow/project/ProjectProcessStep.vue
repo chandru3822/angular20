@@ -25,8 +25,10 @@
         <ActionButton
           v-if="action.actionTypeId === 2"
           :actionId="action.id"
-          :projectProcessStep="projectProcessStepId"
+          :projectProcessStepId="projectProcessStepId"
           :label="action.actionName"
+          :handleOnComplete="handleActionCompleted"
+          :handleOnCompleteError="handleOnCompleteError"
         />
       </v-col>
     </v-row>
@@ -67,7 +69,6 @@
 
 import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest} from '@/helpers/helpers'
 import ActionButton from './ActionButton'
-import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
@@ -79,7 +80,6 @@ export default {
   components: {
     ActionButton,
     Snackbar,
-    CustomValueInput,
     Attachments,
     NotesAndActivity,
     ProcessStepFieldGroup
@@ -152,6 +152,17 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    handleActionCompleted () {
+      this.$router.push({
+        name: 'project',
+        params: {
+          projectId: this.projectId
+        }
+      })
+    },
+    handleOnCompleteError () {
+      console.log('don blewed up!!!!')
+    }
   }
 }
 </script>

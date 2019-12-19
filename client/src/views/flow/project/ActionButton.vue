@@ -2,19 +2,22 @@
 <v-btn
   :disabled="!proceed"
   :loading="isResultLoading"
+  @click="completeAction"
 >{{ label }}</v-btn>
 </template>
 
 <script>
 
-import {getRequest, logError} from '@/helpers/helpers'
+import {getRequest, logError, postRequest} from '@/helpers/helpers'
 
 export default {
   name: 'ActionButton',
   props: {
     actionId: Number,
-    projectProcessStep: Number,
-    label: String
+    projectProcessStepId: Number,
+    label: String,
+    handleOnComplete: Function,
+    handleOnCompleteError: Function
   },
   data () {
     return {
@@ -25,12 +28,24 @@ export default {
   methods: {
     getActionResult: async function() {
       try {
-        const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStep}/actionResult/${this.actionId}`)
-        this.proceed = data.canComplete
+        const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/actionResult/${this.actionId}`)
+        this.proceed = data.canPerform
       } catch (e) {
         logError(e)
       } finally {
         this.isResultLoading = false
+      }
+    },
+    completeAction: async function () {
+      try {
+        const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/action/${this.actionId}`, {})
+        if (status === 204) {
+          this.handleOnComplete()
+        } else {
+          this.handleOnCompleteError()
+        }
+      } catch (e) {
+        this.handleOnCompleteError()
       }
     }
   },

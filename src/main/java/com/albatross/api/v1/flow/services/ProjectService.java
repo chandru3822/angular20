@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,6 +47,10 @@ public class ProjectService {
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
   private final AttachmentService attachmentService;
+
+  private final ProjectProcessStepService projectProcessStepService;
+
+  private final ProcessStepStatusService processStepStatusService;
 
   private String s3Url = "https://%s.s3.amazonaws.com/%s";
 
@@ -213,12 +218,54 @@ public class ProjectService {
     return getProjectProcessStep(id);
   }
 
-  public boolean canCompleteAction(Long actionId, Long projectProcessStepId) throws Exception {
+  @Transactional
+  public void performAction(Long actionId, Long projectProcessStepId) {
+    /*
+      **High level psuedo logic:**
+
+        * transaction all queries so current state is kept on any errors
+        * Performance will be key here as it will be hit a lot and business logic will grow
+
+        * gather required data
+        * set the parent step to the specified status
+        * set them to the active status
+        * recursively check if child processes have children and auto-triggered until all auto-triggered child process steps have been created with active statuses
+     */
+
+    List<CompanyProcessStepStatusType> companyStatusTypes = processStepStatusService.getStatusTypesForCompany();
+    Optional<CompanyProcessStepStatusType> activeStatusType = companyStatusTypes.stream().filter(type -> type.getProcessStepStatusTypeId() == 2).findFirst();
+    final Long activeStatusTypeId = activeStatusType.map(CompanyProcessStepStatusType::getProcessStepStatusTypeId).orElse(null);
+
+    ProjectProcessStep projectProcessStep = this.getProjectProcessStep(projectProcessStepId);
     ProcessStepAction action = processStepActionService.getActionById(actionId);
+    projectProcessStepService.setStatus(projectProcessStepId, action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
 
-    List<Long> requirementIds = action.getProcessStepLogicList().stream().filter(l -> l.getProcessStepRequirementId() != null).map(ProcessStepLogic::getProcessStepRequirementId).collect(Collectors.toList());
-    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByIds(requirementIds, projectProcessStepId);
+    List<ProjectProcessStep> newSteps = new ArrayList<>();
+    action.getProcessStepActionChildProcesses().forEach(childStep -> {
+      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, projectProcessStep.getUserPositionId()));
+    });
 
+    //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
+  }
+
+  // @TODO: @humes kill after demo on 2019-12-20
+  public void resetDemo() {
+    sqlCache.updateBySql("delete from flow.project_process_step where project_id = 192015 and id != 1\n", Collections.emptyMap());
+    sqlCache.updateBySql("update flow.project_process_step set company_process_step_status_type_id = 1, process_step_complete_date = null, date_modified = null, modified_by_id = null where id = 1", Collections.emptyMap());
+    sqlCache.updateBySql("update flow.project_process_step_custom_field_value set timestamp_value = null where id = 6", Collections.emptyMap());
+    sqlCache.updateBySql("update flow.project_process_step_custom_field_value set timestamp_value = null where id = 7", Collections.emptyMap());
+    sqlCache.updateBySql("update flow.project_process_step_custom_field_value set int_value = null where id = 8", Collections.emptyMap());
+  }
+
+  public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
+
+    ProcessStepAction action = processStepActionService.getActionById(actionId);
+    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(projectProcessStepId);
+
+    // If there are not any requirements, then it can be completed
+    if (requirements.isEmpty()) {
+      return true;
+    }
 
     // Check to if individual requirements are fulfilled and create a map of true/false with the requirementIds
     // @TODO: Unable to do this with a lambda like requirements.foreach(r ->... while being able to throw an exception ¯\_(ツ)_/¯
@@ -245,7 +292,11 @@ public class ProjectService {
     }
 
     ExpressionParser parser = new SpelExpressionParser();
-    return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
+    if (logicString.length() > 0) {
+      return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
+    } else {
+      return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
+    }
   }
 
   // It's assumed for date data types that it's always a data_type_requirement and never a literal comparison of values
@@ -273,7 +324,7 @@ public class ProjectService {
             requirementMet = calculateTextRequirement(r);
             break;
           case 6:
-//          case 9:
+          case 9:
             requirementMet = (r.getHasListValues()) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
             break;
           case 7:
@@ -464,11 +515,11 @@ public class ProjectService {
       }
     } else {
       switch (r.getDataTypeRequirementId().intValue()) {
+        case 12:
+        case 13:
         case 20:
-          passed = fieldValue == null;
-          break;
         case 21:
-          passed = fieldValue != null;
+          passed = compareDropdown(fieldValue, null, r.getOperatorTypeId());
           break;
         default:
           throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", r.getOperatorTypeId()));
