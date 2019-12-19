@@ -8,7 +8,7 @@
         <v-row class="project-header">
           <v-col cols="4" class="text-left pl-5">
             <div class="project-title">
-              {{ customer.fullName}}
+              <router-link :to="`/lead/${customer.id}`">{{ customer.fullName}}</router-link>
             </div>
             <div class="project-subtitle">
               {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}

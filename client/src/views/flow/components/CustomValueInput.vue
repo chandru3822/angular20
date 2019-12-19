@@ -5,7 +5,7 @@
   <v-col class="d-flex justify-end">
     <template v-if="field.dataTypeId === 1">
 
-      <span v-if="readonly">{{formattedDateTime}}</span>
+      <span v-if="readonly">{{ field.dateValue | formatDate('date', $store.state.user.details.timezone.value) }}</span>
 
       <datetime
         v-else
@@ -19,9 +19,10 @@
       />
     </template>
 
+
     <template v-if="field.dataTypeId === 2">
 
-      <span v-if="readonly">{{formattedDateTime}}</span>
+      <span v-if="readonly">{{field.timestampValue | formatDate('timestamp', $store.state.user.details.timezone.value)}}</span>
 
       <datetime
         v-else
@@ -152,10 +153,10 @@ export default {
     }
   },
   computed: {
-    formattedDateTime: function () {
-      const dateTime = this.field.dateValue || this.field.timestampValue
-      return moment(dateTime).tz(this.timezone).format('MMMM D, YYYY, H:mm A')
-    }
+    // formattedDateTime: function () {
+    //   const dateTime = this.field.dateValue || this.field.timestampValue
+    //   return moment(dateTime).tz(this.timezone).format('MMMM D, YYYY, H:mm A')
+    // }
   }
 }
 </script>

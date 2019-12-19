@@ -204,7 +204,7 @@ public class CustomerService {
     if(project.isPresent()) {
       //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectService.insertProjectProcessStep(project.get().getId(), step.getId(), step.getProcessStepStatusTypeId(), null);
+        projectService.insertProjectProcessStep(project.get().getId(), step.getId(), step.getCompanyProcessStepStatusTypeId(), null);
       }
     }
 
@@ -257,11 +257,14 @@ public class CustomerService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<Owner> ownerRef = new TypeReference<Owner>() {
-      };
+      TypeReference<Owner> ownerRef = new TypeReference<Owner>() {};
 
       bw.registerCustomEditor(Object.class, "owner",
           new JsonCollectionDeserializer(ownerRef, objectMapper));
+
+      TypeReference<List<Project>> projectsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "projects",
+          new JsonCollectionDeserializer(projectsRef, objectMapper));
     }
   }
 

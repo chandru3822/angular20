@@ -20,7 +20,9 @@
             <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}?processStepId=${step.processStepId}`">{{ step.projectProcessStepId }}</router-link>
           </v-col>
           <v-col cols="3">{{ step.processStepName }}</v-col>
-          <v-col cols="3">{{ step.owner }}</v-col>
+<!--          <v-col cols="3">{{ step.owner }}</v-col>-->
+<!--         todo: @humes judson didn't want to see "Cameron Carlson" assigned to all the active process steps. so i hid this line ^^ -->
+          <v-col cols="3"></v-col>
           <v-col cols="3">{{ step.lastUpdated }}</v-col>
           <v-col cols="2">{{ step.processStepStatusType }}</v-col>
         </v-row>

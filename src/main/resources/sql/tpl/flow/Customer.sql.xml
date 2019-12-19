@@ -114,6 +114,15 @@
        c.country_id,
        ct.country,
        c.owner_user_position_id,
+       coalesce((
+            SELECT array_to_json(array_agg(row_to_json(projects)))
+            FROM (
+                     select
+                         p.id,
+                         p.project_name as "projectName"
+                     from flow.project p
+                     where p.customer_id = c.id
+                 ) projects), '[]') AS "projects",
        (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
                      u.first_name as "firstName",

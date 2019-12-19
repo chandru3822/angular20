@@ -22,6 +22,8 @@ public class Customer  {
 
   private Owner owner;
 
+  private List<Project> projects;
+
   //so far this is only used for saving
   List<CustomFieldGroup> customFieldGroups;
 }

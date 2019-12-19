@@ -1,7 +1,7 @@
 <template>
   <v-container class="pt-0">
     <v-row class="lead-header elevation-0">
-      <v-col cols="8" class="text-left pb-2">
+      <v-col cols="6" class="text-left pb-2">
         <div class="lead-title">
           {{customer.fullName}}
           <v-menu
@@ -66,6 +66,10 @@
           <span v-else-if="customer.owner && customer.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
+      </v-col>
+      <v-col cols="2" class="lead-owner pb-2">
+        Associated Projects<br/>
+        <router-link v-for="p in customer.projects" :key="p.id" :to="`/project/${p.id}`">{{p.projectName}}</router-link>
       </v-col>
     </v-row>
     <v-row>

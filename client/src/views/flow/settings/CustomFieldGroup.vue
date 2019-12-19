@@ -115,13 +115,13 @@
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
                 <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
-                  <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
+                  <v-radio-group v-if="$route.params.id === '1'" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
                     <v-radio label="Project Custom Field"
                              value="native"></v-radio>
                     <v-radio label="Reference Field: from Process Step"
                              value="ancillary"></v-radio>
                   </v-radio-group>
-                  <v-select v-if="newFieldType === 'native'"
+                  <v-select v-if="newFieldType === 'native' || $route.params.id !== '1'"
                             v-model="newField"
                             :items="availableCustomFields"
                             label="Select Custom Field to Add"
@@ -129,7 +129,7 @@
                             return-object
                             @input="assignCustomField(item)"
                   ></v-select>
-                  <v-select v-if="newFieldType === 'ancillary'"
+                  <v-select v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
                             v-model="parent"
                             :items="parentObjects"
                             label="Process Step"
@@ -137,7 +137,7 @@
                             return-object
                             @input="loadFieldsByParent"
                   ></v-select>
-                  <v-select v-if="newFieldType === 'ancillary'"
+                  <v-select v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
                             v-model="selectedAncillaryField"
                             :items="ancillaryCustomFields"
                             label="Custom Field"
