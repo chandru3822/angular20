@@ -264,6 +264,7 @@ public class ProjectService {
 
     // If there are not any requirements with logic attached to the action, then it can be completed
     if (requirementIds.isEmpty()) {
+      //@TODO: @humes, there's a bug here when it incorrectly return true if there are requirements but no logic steps. Look at the 'Complete Proposal' process step
       return true;
     }
 
