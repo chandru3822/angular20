@@ -2,10 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CompanyFunctionParam;
-import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.ProjectProcessStepRequirement;
-import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +23,11 @@ public class ProjectProcessStepRequirementService {
 
   private final ObjectMapper om;
 
-  public List<ProjectProcessStepRequirement> getByIds(List<Long> ids, Long projectProcessStepId) {
+  public List<ProjectProcessStepRequirement> getByProjectProcessStepId(Long projectProcessStepId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("ids", ids);
     params.put("projectProcessStepId", projectProcessStepId);
 
-    List<ProjectProcessStepRequirement> requirements = sqlCache.query("processStepRequirement.getRequirementsWithValuesByIds", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
+    List<ProjectProcessStepRequirement> requirements = sqlCache.query("processStepRequirement.getRequirementsWithValuesByProjectProcessStepId", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
 
     // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
     for (ProjectProcessStepRequirement req : requirements) {
@@ -57,6 +53,19 @@ public class ProjectProcessStepRequirementService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
+
+      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "requirementParamDynamicValues", new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
+
+      TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "dataTypeRequirement", new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
+
+      TypeReference<ListOfValue> listOfValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "listOfValue", new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+
+      TypeReference<List<ListOfValue>> listOfValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValues", new JsonCollectionDeserializer(listOfValuesRef, objectMapper));
+
       TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValueIds", new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
 

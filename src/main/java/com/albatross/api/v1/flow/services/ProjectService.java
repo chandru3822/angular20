@@ -258,18 +258,14 @@ public class ProjectService {
   }
 
   public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
+
     ProcessStepAction action = processStepActionService.getActionById(actionId);
+    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(projectProcessStepId);
 
-    List<Long> requirementIds = action.getProcessStepLogicList().stream().filter(l -> l.getProcessStepRequirementId() != null).map(ProcessStepLogic::getProcessStepRequirementId).collect(Collectors.toList());
-
-    // If there are not any requirements with logic attached to the action, then it can be completed
-    if (requirementIds.isEmpty()) {
-      //@TODO: @humes, there's a bug here when it incorrectly return true if there are requirements but no logic steps. Look at the 'Complete Proposal' process step
+    // If there are not any requirements, then it can be completed
+    if (requirements.isEmpty()) {
       return true;
     }
-
-    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByIds(requirementIds, projectProcessStepId);
-
 
     // Check to if individual requirements are fulfilled and create a map of true/false with the requirementIds
     // @TODO: Unable to do this with a lambda like requirements.foreach(r ->... while being able to throw an exception ¯\_(ツ)_/¯
@@ -296,7 +292,11 @@ public class ProjectService {
     }
 
     ExpressionParser parser = new SpelExpressionParser();
-    return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
+    if (logicString.length() > 0) {
+      return parser.parseExpression(logicString.toString()).getValue(Boolean.class);
+    } else {
+      return requirements.stream().allMatch(ProcessStepRequirement::getFulfilled);
+    }
   }
 
   // It's assumed for date data types that it's always a data_type_requirement and never a literal comparison of values
