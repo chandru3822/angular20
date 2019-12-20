@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="getRequirementTypes" text>
+            <v-btn @click="getRequirementTypes(); selectedDataTypeRequirement = {}" text>
               <v-icon v-if="!addNewRequirement">add</v-icon>
               {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}
             </v-btn>
@@ -20,7 +20,7 @@
                       label="Select Requirement Type"
                       item-value="id"
                       item-text="processStepRequirementType"
-                      @input="selectRequirementType"
+                      @input="selectRequirementType(); selectedDataTypeRequirement = {}"
             ></v-select>
             <!-- if it is a custom field -->
             <v-select
@@ -30,7 +30,7 @@
                 label="Parent Object"
                 item-text="processStepName"
                 return-object
-                @input="loadFieldsByParent(parent)"
+                @input="loadFieldsByParent(parent); selectedDataTypeRequirement = {}"
             ></v-select>
             <v-select v-if="parent.id"
                       v-model="selectedCustomField"
@@ -38,7 +38,7 @@
                       label="Custom Field"
                       item-text="fieldName"
                       return-object
-                      @input="loadOperatorTypes(selectedCustomField.dataTypeId); loadDataTypeRequirements(selectedCustomField.dataTypeId)"
+                      @input="loadOperatorTypes(selectedCustomField.dataTypeId); loadDataTypeRequirements(selectedCustomField.dataTypeId); selectedDataTypeRequirement = {}"
             ></v-select>
             <!-- if it is a function -->
             <v-select
@@ -66,6 +66,7 @@
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
+                @change="selectedDataTypeRequirement = {}"
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
@@ -987,6 +988,7 @@
           this.newRequirement = {
             requirementParamDynamicValues: []
           }
+          this.selectedDataTypeRequirement = {}
           this.parent = {}
           this.availableFunctions = []
           this.snackbar = getSnackbar('SUCCESS', 'Requirement Added')
