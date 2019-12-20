@@ -204,7 +204,7 @@ public class CustomerService {
     if(project.isPresent()) {
       //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectService.insertProjectProcessStep(project.get().getId(), step.getId(), step.getCompanyProcessStepStatusTypeId(), null);
+        projectService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), null);
       }
     }
 

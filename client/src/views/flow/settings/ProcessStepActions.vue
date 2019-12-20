@@ -1247,7 +1247,6 @@
       getListValueName(item) {
         let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
                       item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
-        debugger
         let match = item.availableListOfValues.find(i => i.id === idToUse)
         return match ? match.name : 'unknown'
       }
