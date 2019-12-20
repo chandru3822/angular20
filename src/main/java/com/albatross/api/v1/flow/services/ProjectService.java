@@ -238,7 +238,9 @@ public class ProjectService {
 
     ProjectProcessStep projectProcessStep = this.getProjectProcessStep(projectProcessStepId);
     ProcessStepAction action = processStepActionService.getActionById(actionId);
-    projectProcessStepService.setStatus(projectProcessStepId, action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
+    if (action.getCompanyProcessStepStatusTypeId() != null) {
+      projectProcessStepService.setStatus(projectProcessStepId, action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
+    }
 
     List<ProjectProcessStep> newSteps = new ArrayList<>();
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
@@ -519,6 +521,8 @@ public class ProjectService {
         case 13:
         case 20:
         case 21:
+        case 26:
+        case 27:
           passed = compareDropdown(fieldValue, null, r.getOperatorTypeId());
           break;
         default:
