@@ -21,8 +21,8 @@
         and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'
-        and upv.email ILIKE '%' || :email || '%'
-        and upv.phone_number ILIKE '%' || :phone || '%'
+        and coalesce(upv.email) ILIKE '%' || :email || '%'
+        and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
         and upv.user_status_type_id in (:statuses)
         and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
@@ -40,8 +40,8 @@
         and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'
-        and upv.email ILIKE '%' || :email || '%'
-        and upv.phone_number ILIKE '%' || :phone || '%'
+        and coalesce(upv.email) ILIKE '%' || :email || '%'
+        and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
         and upv.user_status_type_id in (:statuses)
         and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end

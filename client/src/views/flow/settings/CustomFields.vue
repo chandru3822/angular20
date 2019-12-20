@@ -140,7 +140,7 @@
                   ></v-select>
 
                   <v-col class="options-container"
-                          v-if="item.companyDataType && item.companyDataType.hasListValues">
+                          v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
                     <span>Selectable Options</span>
                     <draggable v-model="item.listOfValues"
                                group="listOfValues" @start="drag=true" @end="drag=false">
@@ -434,7 +434,7 @@
       invalid(item) {
         // todo: use real form validation?
         let invalidOptions = false
-        if (item.companyDataType && item.companyDataType.hasListValues) {
+        if (item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList) {
           if (item.listOfValues && item.listOfValues.length === 0) {
             invalidOptions = true
           } else {
