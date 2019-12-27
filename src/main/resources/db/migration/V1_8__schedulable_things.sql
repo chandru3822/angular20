@@ -27,8 +27,7 @@ CREATE TABLE if not exists flow.schedule_field_type
 alter table flow.custom_field_group_assignment
     add column if not exists schedule_field_type_id integer references flow.schedule_field_type(id);
 
-alter table flow.custom_field_group
-    add column if not exists schedulable boolean not null default false;
+
 
 
 

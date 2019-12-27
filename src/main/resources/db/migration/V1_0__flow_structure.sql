@@ -69,6 +69,43 @@ CREATE TABLE if not exists flow.company
     WITH (
         OIDS= FALSE
     );
+
+CREATE INDEX if not exists company_parent_company_id_idx ON flow.company (parent_company_id);
+
+CREATE TABLE if not exists flow.schedule_type
+(
+    id              serial                NOT NULL,
+    company_id      integer,
+    schedule_type character varying(30),
+    archived boolean default false,
+    CONSTRAINT schedule_type_pk PRIMARY KEY (id),
+    CONSTRAINT st_company_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+    WITH (
+        OIDS= FALSE
+    );
+
+CREATE INDEX if not exists st_company_id_idx ON flow.schedule_type (company_id);
+
+CREATE TABLE if not exists flow.work_type
+(
+    id              serial                NOT NULL,
+    company_id      integer,
+    work_type character varying(30),
+    archived boolean default false,
+    CONSTRAINT work_type_pk PRIMARY KEY (id),
+    CONSTRAINT wt_company_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+    WITH (
+        OIDS= FALSE
+    );
+
+CREATE INDEX if not exists wt_company_id_idx ON flow.work_type (company_id);
+
 CREATE TABLE if NOT EXISTS flow.flow_type
 (
     id          serial                NOT NULL,
@@ -97,6 +134,7 @@ CREATE TABLE if NOT EXISTS flow.object_type
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists ot_flow_type_id_idx ON flow.object_type (flow_type_id);
 
 --active inactive
 CREATE TABLE if NOT EXISTS flow.status_type
@@ -122,7 +160,7 @@ CREATE TABLE if NOT EXISTS flow.attachment_type
     attachment_code character VARYING(100),
     company_id integer not null,
     archived boolean not null default false,
-    key_pattern_id integer not null,
+    key_pattern_id integer,
     is_system boolean not null default false,
     date_created      timestamp without time zone DEFAULT now() not null,
     date_modified      timestamp without time zone,
@@ -136,6 +174,10 @@ CREATE TABLE if NOT EXISTS flow.attachment_type
         REFERENCES flow.key_pattern (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists at_company_id__idx ON flow.attachment_type (company_id);
+CREATE INDEX if not exists at_key_pattern_id_idx ON flow.attachment_type (key_pattern_id);
+
 
 CREATE TABLE if NOT EXISTS flow.link
 (
@@ -154,6 +196,7 @@ CREATE TABLE if NOT EXISTS flow.link
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists link_company_id__idx ON flow.link (company_id);
 
 CREATE TABLE if not exists  flow.attachment
 (
@@ -177,6 +220,8 @@ CREATE TABLE if not exists  flow.attachment
         OIDS= FALSE
     );
 
+CREATE INDEX if not exists a_attachment_type_id_idx ON flow.attachment (attachment_type_id);
+
 
 CREATE TABLE if not exists  flow.attachment_source
 (
@@ -191,6 +236,8 @@ CREATE TABLE if not exists  flow.attachment_source
     WITH (
         OIDS= FALSE
     );
+
+CREATE INDEX if not exists as_attachment_id_idx ON flow.attachment_source (attachment_id);
 
 --lead or contact
 CREATE TABLE if NOT EXISTS flow.customer_type
@@ -220,6 +267,8 @@ CREATE TABLE if NOT EXISTS flow.db_function
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists df_return_data_type_id_idx ON flow.db_function (return_data_type_id);
+
 CREATE TABLE if NOT EXISTS flow.db_function_param
 (
     id          serial                NOT NULL,
@@ -241,6 +290,10 @@ CREATE TABLE if NOT EXISTS flow.db_function_param
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists dfp_db_function_id_idx ON flow.db_function_param (db_function_id);
+CREATE INDEX if not exists dfp_data_type_id_idx ON flow.db_function_param (data_type_id);
+CREATE INDEX if not exists dfp_parameter_type_id_idx ON flow.db_function_param (parameter_type_id);
+
 CREATE TABLE if NOT EXISTS flow.company_function
 (
     id          serial                NOT NULL,
@@ -257,6 +310,8 @@ CREATE TABLE if NOT EXISTS flow.company_function
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists cf_db_function_id_idx ON flow.company_function (db_function_id);
+CREATE INDEX if not exists cf_company_id_id_idx ON flow.company_function (company_id);
 
 CREATE TABLE if NOT EXISTS flow.operation_type
 (
@@ -290,6 +345,9 @@ CREATE TABLE if NOT EXISTS flow.operator_data_type
         REFERENCES flow.data_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists odt_operator_type_id_id_idx ON flow.operator_data_type (operator_type_id);
+CREATE INDEX if not exists odt_data_type_id_id_idx ON flow.operator_data_type (data_type_id);
 
 --function or custom field
 CREATE TABLE if NOT EXISTS flow.process_step_requirement_type
@@ -342,7 +400,8 @@ CREATE TABLE if not exists flow.org_type
         OIDS= FALSE
     );
 
-
+CREATE INDEX if not exists ot_org_parent_type_id_idx ON flow.org_type (org_parent_type_id);
+CREATE INDEX if not exists ot_company_id_idx ON flow.org_type (company_id);
 
 
 CREATE TABLE if not exists flow.user_status_type
@@ -359,7 +418,7 @@ CREATE TABLE if not exists flow.user_status_type
     WITH (
         OIDS= FALSE
     );
-
+CREATE INDEX if not exists ust_company_id_idx ON flow.user_status_type (company_id);
 
 
 CREATE TABLE if NOT EXISTS flow.company_data_type
@@ -379,10 +438,12 @@ CREATE TABLE if NOT EXISTS flow.company_data_type
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists cdt_company_id_idx ON flow.company_data_type (company_id);
+CREATE INDEX if not exists cdt_data_type_id_idx ON flow.company_data_type (data_type_id);
+
 CREATE TABLE if not exists flow."user"
 (
     id                                 bigserial NOT NULL,
-    company_id                         integer   not null,
     first_name                         character varying(50),
     last_name                          character varying(50),
     email                              character varying(255),
@@ -416,9 +477,6 @@ CREATE TABLE if not exists flow."user"
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT u_recruited_by_user_id_fk FOREIGN KEY (recruited_by_user_id)
         REFERENCES flow."user" (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT u_company_id_fk FOREIGN KEY (company_id)
-        REFERENCES flow.company (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT u_referred_by_user_id_fk FOREIGN KEY (referred_by_user_id)
         REFERENCES flow."user" (id) MATCH SIMPLE
@@ -483,10 +541,6 @@ CREATE INDEX if not exists u_user_status_type_id_idx
         USING btree
         (user_status_type_id);
 
-CREATE INDEX if not exists u_company_id_idx
-    ON flow."user"
-        USING btree
-        (company_id);
 
 CREATE INDEX if not exists u_employment_type_id_idx
     ON flow."user"
@@ -533,6 +587,27 @@ CREATE INDEX if not exists u_last_name_idx
 alter table flow."user"
     add column if not exists archived boolean default false;
 
+CREATE TABLE if not exists flow.user_company
+(
+    id              serial                NOT NULL,
+    company_id      integer,
+    user_id integer,
+    archived boolean default false,
+    is_default boolean default false,
+    CONSTRAINT user_company_pk PRIMARY KEY (id),
+    CONSTRAINT uc_company_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT uc_user_id_id_fk FOREIGN KEY (user_id)
+        REFERENCES flow."user" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+    WITH (
+        OIDS= FALSE
+    );
+
+CREATE INDEX if not exists uc_company_id_idx ON flow.user_company (company_id);
+CREATE INDEX if not exists uc_user_id_idx ON flow.user_company (user_id);
 
 --active failed cancelled
 CREATE TABLE if NOT EXISTS flow.process_step_status_type
@@ -568,6 +643,11 @@ CREATE TABLE if NOT EXISTS flow.company_process_step_status_type
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists cpst_process_step_status_type_id_idx ON flow.company_process_step_status_type (process_step_status_type_id);
+CREATE INDEX if not exists cpst_company_id_idx ON flow.company_process_step_status_type (company_id);
+
+
 
 CREATE TABLE if not exists  flow."position"
 (
@@ -621,6 +701,8 @@ CREATE INDEX p_secondary_org_type_id_idx
     ON flow."position"
         USING btree
         (secondary_org_type_id);
+
+
 
 CREATE TABLE if NOT EXISTS flow.owner_type
 (
@@ -786,7 +868,7 @@ CREATE TABLE if NOT EXISTS flow.process
     WITH (
         OIDS= FALSE
     );
-
+CREATE INDEX if not exists process_parent_company_id_idx ON flow.process (parent_company_id);
 
 
 CREATE TABLE if not exists flow.company_process
@@ -811,6 +893,7 @@ CREATE TABLE if not exists flow.company_process
 CREATE INDEX if not exists cp_company_id_idx ON flow.company_process (company_id);
 
 CREATE INDEX if not exists cp_process_id_idx ON flow.company_process (process_id);
+CREATE INDEX if not exists cp_status_type_id_idx ON flow.company_process (status_type_id);
 
 
 CREATE TABLE if not EXISTS flow.customer
@@ -873,6 +956,10 @@ CREATE TABLE if not EXISTS flow.customer
 );
 
 CREATE INDEX if not exists c_customer_type_id_idx ON flow.customer (customer_type_id);
+CREATE INDEX if not exists c_owner_user_position_id_idx ON flow.customer (owner_user_position_id);
+CREATE INDEX if not exists c_company_id_idx ON flow.customer (company_id);
+CREATE INDEX if not exists c_country_id_idx ON flow.customer (country_id);
+CREATE INDEX if not exists c_state_id_idx ON flow.customer (state_id);
 
 alter table flow.org
     alter column company_id set not null;
@@ -885,32 +972,71 @@ alter table flow.position
 CREATE TABLE if not exists flow.permission
 (
     id              serial                NOT NULL,
-    company_id      integer,
-    permission_name character varying(250),
+    permission_name character varying(250) not null,
     permission_code character varying(50) NOT NULL,
     archived        boolean DEFAULT false,
-    CONSTRAINT permission_pk PRIMARY KEY (id),
+    is_system boolean not null default false,
+    CONSTRAINT permission_pk PRIMARY KEY (id)
+)
+    WITH (
+        OIDS= FALSE
+    );
+
+CREATE TABLE if not exists flow.company_permission
+(
+    id              serial                NOT NULL,
+    permission_name character varying(250) not null,
+    company_id integer not null,
+    permission_id integer not null,
+    archived        boolean DEFAULT false,
+    CONSTRAINT company_permission_pk PRIMARY KEY (id),
     CONSTRAINT p_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT p_permission_id_fk FOREIGN KEY (permission_id)
+        REFERENCES flow.permission (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 )
     WITH (
         OIDS= FALSE
     );
 
-
+CREATE INDEX if not exists cp1_company_id_idx ON flow.company_permission (company_id);
+CREATE INDEX if not exists cp1_permission_id_idx ON flow.company_permission (permission_id);
 
 CREATE TABLE if not exists flow.role
 (
     id         serial NOT NULL,
     company_id integer,
     role_name  character varying(20),
-    archived   boolean DEFAULT false,
+    archived   boolean  not null DEFAULT false,
+    is_system boolean not null default false,
     CONSTRAINT role_pk PRIMARY KEY (id)
 )
     WITH (
         OIDS= FALSE
     );
+
+CREATE TABLE if not exists flow.position_role
+(
+    id            serial  NOT NULL,
+    role_id       integer NOT NULL,
+    position_id integer NOT NULL,
+    archived          boolean default false,
+    CONSTRAINT position_role_pk PRIMARY KEY (id),
+    CONSTRAINT pr_permission_id_fk FOREIGN KEY (role_id)
+        REFERENCES flow.role (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT pr_position_id_fk FOREIGN KEY (position_id)
+        REFERENCES flow.position (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+    WITH (
+        OIDS= FALSE
+    );
+
+CREATE INDEX if not exists pr_role_id_idx ON flow.position_role (role_id);
+CREATE INDEX if not exists pr_position_id_idx ON flow.position_role (position_id);
 
 
 
@@ -918,10 +1044,10 @@ CREATE TABLE if not exists flow.role_permission
 (
     id            serial  NOT NULL,
     role_id       integer NOT NULL,
-    permission_id integer NOT NULL,
+    company_permission_id integer NOT NULL,
     CONSTRAINT role_permission_pk PRIMARY KEY (id),
-    CONSTRAINT rp_permission_id_fk FOREIGN KEY (permission_id)
-        REFERENCES flow.permission (id) MATCH SIMPLE
+    CONSTRAINT rp_permission_id_fk FOREIGN KEY (company_permission_id)
+        REFERENCES flow.company_permission (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT rp_role_id_fk FOREIGN KEY (role_id)
         REFERENCES flow.role (id) MATCH SIMPLE
@@ -932,11 +1058,10 @@ CREATE TABLE if not exists flow.role_permission
     );
 
 
-
 CREATE INDEX if not exists rp_permission_id_idx
     ON flow.role_permission
         USING btree
-        (permission_id);
+        (company_permission_id);
 
 CREATE INDEX if not exists rp_role_id_idx
     ON flow.role_permission
@@ -948,11 +1073,11 @@ CREATE TABLE if not exists flow.user_permission
 (
     id            serial  NOT NULL,
     user_id       integer NOT NULL,
-    permission_id integer NOT NULL,
+    company_permission_id integer NOT NULL,
     deny          boolean default false,
     CONSTRAINT user_permission_pk PRIMARY KEY (id),
-    CONSTRAINT up_permission_id_fk FOREIGN KEY (permission_id)
-        REFERENCES flow.permission (id) MATCH SIMPLE
+    CONSTRAINT up_permission_id_fk FOREIGN KEY (company_permission_id)
+        REFERENCES flow.company_permission (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT up_user_id_fk FOREIGN KEY (user_id)
         REFERENCES flow."user" (id) MATCH SIMPLE
@@ -963,10 +1088,12 @@ CREATE TABLE if not exists flow.user_permission
     );
 
 
+
+
 CREATE INDEX if not exists up_permission_id_idx
     ON flow.user_permission
         USING btree
-        (permission_id);
+        (company_permission_id);
 
 
 CREATE INDEX if not exists user_permission_user_id_idx
@@ -1004,9 +1131,6 @@ CREATE INDEX if not exists ur_role_id_idx
         USING btree
         (role_id);
 
-
-alter table flow.permission
-    alter column company_id set not null;
 
 
 alter table flow.role
@@ -1046,6 +1170,10 @@ CREATE TABLE if not exists  flow.asset
     WITH (
         OIDS= FALSE
     );
+
+
+CREATE INDEX if not exists asset_company_id_idx ON flow.asset (company_id);
+
 
 
 
@@ -1138,6 +1266,8 @@ CREATE TABLE  if not exists flow.associated_org
         OIDS= FALSE
     );
 
+CREATE INDEX if not exists ao_associated_org_type_id_idx ON flow.associated_org (associated_org_type_id);
+CREATE INDEX if not exists ao_org_id_idx ON flow.associated_org (org_id);
 
 CREATE TABLE if not exists flow.process_step
 (
@@ -1149,6 +1279,7 @@ CREATE TABLE if not exists flow.process_step
     created_by_id  integer                not null,
     modified_by_id integer,
     archived boolean not null default false,
+    work_type_id integer,
     CONSTRAINT process_step_pk PRIMARY KEY (id),
     CONSTRAINT process_step_parent_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
@@ -1158,9 +1289,14 @@ CREATE TABLE if not exists flow.process_step
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT process_step_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT process_step_work_type_id_fk FOREIGN KEY (work_type_id)
+        REFERENCES flow.work_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists ps_company_id_idx ON flow.process_step (company_id);
+CREATE INDEX if not exists ps_work_type_id_idx ON flow.process_step (work_type_id);
 
 
 CREATE TABLE if not exists flow.process_step_action
@@ -1197,6 +1333,8 @@ CREATE TABLE if not exists flow.process_step_action
 CREATE INDEX if not exists psa_process_step_id_idx ON flow.process_step_action (process_step_id);
 
 CREATE INDEX if not exists psa_process_action_type_id_idx ON flow.process_step_action (action_type_id);
+CREATE INDEX if not exists psa_company_process_step_status_type_id_idx ON flow.process_step_action (company_process_step_status_type_id);
+
 
 
 CREATE TABLE if not exists flow.process_step_process
@@ -1234,6 +1372,12 @@ CREATE TABLE if not exists flow.process_step_process
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE INDEX if not exists psp_process_id_idx ON flow.process_step_process (process_id);
+CREATE INDEX if not exists psp_company_process_step_status_type_id_idx ON flow.process_step_process (company_process_step_status_type_id);
+CREATE INDEX if not exists psp_process_step_id_idx ON flow.process_step_process (process_step_id);
+CREATE INDEX if not exists psp_org_id_idx ON flow.process_step_process (org_id);
+
+
 --name of field sections for field names grouped
 CREATE TABLE if NOT EXISTS flow.custom_field_group
 (
@@ -1243,14 +1387,22 @@ CREATE TABLE if NOT EXISTS flow.custom_field_group
     group_order integer,
     archived boolean not null default false,
     process_step_id integer,
+    schedule_type_id integer,
     CONSTRAINT custom_field_group_pk PRIMARY KEY (id),
     CONSTRAINT cfgt_object_type_id_fk FOREIGN KEY (object_type_id)
         REFERENCES flow.object_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT cfgt_process_step_id_fk FOREIGN KEY (process_step_id)
         REFERENCES flow.process_step (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT cfgt_schedule_type_id_fk FOREIGN KEY (schedule_type_id)
+        REFERENCES flow.schedule_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists cfgt_object_type_id_idx ON flow.custom_field_group (object_type_id);
+CREATE INDEX if not exists cfgt_process_step_id_idx ON flow.custom_field_group (process_step_id);
+CREATE INDEX if not exists cfgt_schedule_type_id_idx ON flow.custom_field_group (schedule_type_id);
 
 COMMENT ON TABLE flow.custom_field_group IS
     'Stores metadata for groups of custom fields. May retrieve custom fields
@@ -1280,6 +1432,9 @@ CREATE TABLE if not exists flow.object_attachment_type
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists oat_attachment_type_id_idx ON flow.object_attachment_type (attachment_type_id);
+CREATE INDEX if not exists oat_object_type_id_idx ON flow.object_attachment_type (object_type_id);
 
 CREATE TABLE if not exists flow.process_step_attachment_type
 (
@@ -1370,7 +1525,34 @@ CREATE INDEX if not exists p_company_id1_idx ON flow.project (company_process_id
 
 CREATE INDEX if not exists p_customer_id_idx ON flow.project (customer_id);
 
+CREATE TABLE if not exists flow.project_attachment_type
+(
+    id              serial  NOT NULL,
+    attachment_type_id   integer NOT NULL,
+    company_id integer NOT NULL,
+    date_created    timestamp without time zone DEFAULT now(),
+    date_modified    timestamp without time zone,
+    created_by_id   integer not null,
+    modified_by_id  integer,
+    archived boolean not null default false,
+    CONSTRAINT project_attachment_type_pk PRIMARY KEY (id),
+    CONSTRAINT pat_attachment_id_fk FOREIGN KEY (attachment_type_id)
+        REFERENCES flow.attachment_type (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT pat_process_step_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT pat_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT pat_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
 
+CREATE INDEX if not exists pat_attachment_id_idx ON flow.project_attachment_type (attachment_type_id);
+
+CREATE INDEX if not exists pat_company_id_idx ON flow.project_attachment_type (company_id);
 
 CREATE TABLE if not exists flow.project_process_step
 (
@@ -1409,6 +1591,8 @@ CREATE INDEX if not exists pps_project_id_idx ON flow.project_process_step (proj
 CREATE INDEX if not exists pps_process_step_id_idx ON flow.project_process_step (process_step_id);
 
 CREATE INDEX if not exists pps_process_step_status_id_idx ON flow.project_process_step (company_process_step_status_type_id);
+
+CREATE INDEX if not exists pps_user_position_id_idx ON flow.project_process_step (user_position_id);
 
 CREATE TABLE if not exists flow.project_process_step_attachment
 (
@@ -1623,6 +1807,10 @@ CREATE INDEX if not exists cf_list_of_value_id_idx ON flow.custom_field (list_of
 
 CREATE INDEX if not exists cf_data_type_id_idx ON flow.custom_field (company_data_type_id);
 
+CREATE INDEX if not exists cf_company_id_idx ON flow.custom_field (company_id);
+
+CREATE INDEX if not exists cf_custom_field_sql_key_id_idx ON flow.custom_field (custom_field_sql_key_id);
+
 CREATE TABLE if NOT EXISTS flow.custom_field_object_type
 (
     id  serial  NOT NULL,
@@ -1637,6 +1825,8 @@ CREATE TABLE if NOT EXISTS flow.custom_field_object_type
         REFERENCES flow.custom_field (id)
 );
 
+CREATE INDEX if not exists cfot_object_type_id_idx ON flow.custom_field_object_type (object_type_id);
+CREATE INDEX if not exists cfot_custom_field_id_idx ON flow.custom_field_object_type (custom_field_id);
 
 --group custom fields together
 CREATE TABLE if NOT EXISTS flow.custom_field_group_assignment
@@ -1722,6 +1912,11 @@ CREATE TABLE if NOT EXISTS flow.company_function_param
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists cfp_company_function_id_idx ON flow.company_function_param (company_function_id);
+CREATE INDEX if not exists cfp_custom_field_group_assignment_id_idx ON flow.company_function_param (custom_field_group_assignment_id);
+CREATE INDEX if not exists cfp_system_value_id_idx ON flow.company_function_param (system_value_id);
+CREATE INDEX if not exists cfp_db_function_param_id_idx ON flow.company_function_param (db_function_param_id);
 
 CREATE TABLE if not exists flow.customer_custom_field_value
 (
@@ -1865,10 +2060,13 @@ CREATE TABLE if not exists flow.process_step_requirement
 
 CREATE INDEX if not exists prps_process_requirement_type_id_idx ON flow.process_step_requirement (process_step_requirement_type_id);
 
+CREATE INDEX if not exists prps_process_step_id_idx ON flow.process_step_requirement (process_step_id);
+
 CREATE INDEX if not exists prps_operator_type_id_idx ON flow.process_step_requirement (operator_type_id);
 
 CREATE INDEX if not exists prps_custom_field_group_assignment_id_idx ON flow.process_step_requirement (custom_field_group_assignment_id);
 
+CREATE INDEX if not exists prps_data_type_requirement_id_idx ON flow.process_step_requirement (data_type_requirement_id);
 
 CREATE TABLE if not exists flow.process_step_logic
 (
@@ -2066,10 +2264,13 @@ CREATE TABLE IF NOT EXISTS flow.org_level (
                                               UNIQUE (company_id, level)
 );
 
+CREATE INDEX if not exists ol_company_id_idx ON flow.org_level (company_id);
+
 ALTER TABLE flow.org_type
     ADD CONSTRAINT ot_org_level FOREIGN KEY (org_level_id)
         REFERENCES flow.org_level (id);
 
+CREATE INDEX if not exists ot_org_level_id_idx ON flow.org_type (org_level_id);
 
 CREATE TABLE flow.org_filter (
                                  id serial not null,
@@ -2081,6 +2282,8 @@ CREATE TABLE flow.org_filter (
                                  CONSTRAINT of_level FOREIGN KEY (org_level_id)
                                      REFERENCES flow.org_level (id)
 );
+
+CREATE INDEX if not exists of_org_level_id_idx ON flow.org_filter (org_level_id);
 
 CREATE OR REPLACE FUNCTION flow.project_process_step_insert_function()
     RETURNS TRIGGER AS $$
@@ -2135,7 +2338,8 @@ CREATE TABLE if NOT EXISTS flow.requirement_param_dynamic_value
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-
+CREATE INDEX if not exists rpdv_db_function_param_id_idx ON flow.requirement_param_dynamic_value (db_function_param_id);
+CREATE INDEX if not exists rpdv_process_step_requirement_id_idx ON flow.requirement_param_dynamic_value (process_step_requirement_id);
 
 CREATE TABLE if NOT EXISTS flow.process_step_action_link
 (
@@ -2161,6 +2365,11 @@ CREATE TABLE if NOT EXISTS flow.process_step_action_link
         REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+
+CREATE INDEX if not exists psal_process_step_action_id_idx ON flow.process_step_action_link (process_step_action_id);
+
+CREATE INDEX if not exists psal_link_id_idx ON flow.process_step_action_link (link_id);
+
 
 /*
 CREATE TABLE if not exists flow.custom_field_report
