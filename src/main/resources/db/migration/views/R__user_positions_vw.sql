@@ -4,8 +4,7 @@ select u.id as user_id,u.first_name,u.last_name,
        org_hierarchy.org_id,org_hierarchy.org_name,org_hierarchy.org_level_id,org_hierarchy.position_level,
        up.primary_flag,up.start_date,up.end_date,
        o.state_id, u.archived as user_archived, u.schedulable as user_schedulable, p.position,p.id as position_id, up.id as user_position_id,
-       (select uc.company_id from flow.user_company uc where uc.user_id = u.id limit 1)--TODO This needs to be fixed
-       , u.email, u.phone_number,u.user_status_type_id, ust.user_status_type,
+       p.company_id, u.email, u.phone_number,u.user_status_type_id, ust.user_status_type,
        (select json_agg( json_build_object(
                'orgId', h.org_id,
                'orgName', h.org_name,

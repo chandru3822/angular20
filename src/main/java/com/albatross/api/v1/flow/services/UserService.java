@@ -234,6 +234,10 @@ public class UserService {
       TypeReference<List<UserOrgHierarchy>> userOrgHierarchyRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "hierarchy",
           new JsonCollectionDeserializer(userOrgHierarchyRef, objectMapper));
+
+      TypeReference<List<Company>> companiesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "companies",
+          new JsonCollectionDeserializer(companiesRef, objectMapper));
     }
   }
 }

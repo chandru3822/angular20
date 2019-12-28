@@ -39,7 +39,6 @@ public class PermissionService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("permissionName", p.getPermissionName());
-    params.put("permissionCode", p.getPermissionCode());
     Long id;
     if(null != p.getId()) {
       id = p.getId();

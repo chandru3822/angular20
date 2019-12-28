@@ -41,7 +41,7 @@ public class SecurityService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("Could not find user " + username);
         }
-        List<UserPermission> permissions = this.getUserPermissions(user.getId());
+        List<UserPermission> permissions = this.getUserPermissions(user.getId(), user.getCompanyId());
         return new UserAccountDetails(user, permissions);
     }
 
@@ -55,7 +55,7 @@ public class SecurityService implements UserDetailsService {
         if (!user.isPresent()) {
             return Optional.empty();
         }
-        List<UserPermission> permissions = getUserPermissions(user.get().getId());
+        List<UserPermission> permissions = getUserPermissions(user.get().getId(), user.get().getCompanyId());
         return Optional.of(new UserAccountDetails(user.get(), permissions));
     }
 
@@ -183,9 +183,10 @@ public class SecurityService implements UserDetailsService {
     }
 
     @SuppressWarnings("unchecked")
-    public List<UserPermission> getUserPermissions(Long userId) {
+    public List<UserPermission> getUserPermissions(Long userId, Long companyId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("userId", userId);
+        params.put("companyId", companyId);
         List<UserPermission> userPermissions = sqlCache.query("permission.getUserPermissions", params, UserPermission.class);
         return userPermissions;
     }
