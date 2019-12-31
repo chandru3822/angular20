@@ -188,9 +188,11 @@ public class UserService {
     }
   }
 
-  public User findByUsernameIgnoreCase(String username) {
+  public User findByUsernameIgnoreCase(String username, Long userId) {
+    // i updated this to find by username or by userId so that we can call the same function on login AND on change context
     HashMap<String, Object> params = new HashMap<>();
     params.put("username", username);
+    params.put("userId", userId);
     Optional<User> user = sqlCache.get("user.findByUsernameIgnoreCase", params, new UserMapper<>(User.class, om));
     return user.orElse(null);
   }
@@ -215,6 +217,33 @@ public class UserService {
     params.put("companyId", user.getCompanyId());
     List<UserStatusType> results = sqlCache.query("user.getUserStatuses", params, UserStatusType.class);
     return results;
+  }
+
+  public ResponseEntity changeContext(Long companyId) {
+    User user = securityService.getCurrentUser();
+    Boolean match = false;
+    // get list of companies the user has access to
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    List<Company> companies = sqlCache.query("user.getCompaniesForUser", params, Company.class);
+
+    // verify they have access to the company id that was sent in
+    for(Company c : companies) {
+      if(c.getId().equals(companyId)) {
+        match = true;
+        break;
+      }
+    }
+
+    // if valid, update the default for the user and return full user details including permissions
+    if(match) {
+      params.put("companyId", companyId);
+      sqlCache.update("user.updateDefault", params);
+
+      return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
+    } else {
+      return ResponseEntity.badRequest().body("Invalid Company For User");
+    }
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

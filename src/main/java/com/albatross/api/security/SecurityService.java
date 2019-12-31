@@ -46,7 +46,7 @@ public class SecurityService implements UserDetailsService {
     }
 
     public User getUser(String username) {
-        User user = userService.findByUsernameIgnoreCase(username);
+        User user = userService.findByUsernameIgnoreCase(username, null);
         return user;
     }
 

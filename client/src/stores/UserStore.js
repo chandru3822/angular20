@@ -1,5 +1,8 @@
+import {getRequest} from "@/helpers/helpers";
+
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
+  CHANGE_CONTEXT: 'changeContext',
   LOGOUT: 'logout',
   CHANGE_TIMEZONE: 'changeTimezone'
 }
@@ -50,6 +53,17 @@ export const UserStore = {
       //     'You do not have permission to access this app.'
       //   )
       // }
+    },
+    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters }, companyId) => {
+
+      //change context
+      const {data} = await getRequest(`/user/changeContext/${companyId}`)
+
+      //update vuex store - user details
+      commit(UserMutations.SET_DETAILS, data)
+
+      //refresh entire app
+      window.location.reload()
     },
     [UserActions.LOGOUT]: () => {
       localStorage.removeItem('store')

@@ -17,9 +17,26 @@
 <!--          </v-tabs>-->
 <!--        </v-app-bar>-->
         <v-app-bar dense id="header" color="primaryCustom" tabs dark>
-          <v-btn icon>
-            <img class="header-logo" src="../assets/bird.png">
-          </v-btn>
+          <v-menu data-app left
+                  offset-y
+                  v-model="menuOpen"
+                  class="account-menu"
+                  :close-on-content-click="false">
+            <template v-slot:activator="{ on }">
+              <v-btn icon v-on="on">
+                <img class="header-logo" src="../assets/bird.png">
+              </v-btn>
+            </template>
+            <v-list v-if="$store.state.user.details.companies && $store.state.user.details.companies.length > 0">
+              <v-list-item v-for="(item, index) in $store.state.user.details.companies" :key="index"
+                           @click="menuOpen = false; changeContext(item.id)">
+                <v-list-item-title>{{item.companyName}}</v-list-item-title>
+                <v-list-item-action class="account-menu-icon">
+                  <v-icon>{{item.icon}}</v-icon>
+                </v-list-item-action>
+              </v-list-item>
+            </v-list>
+          </v-menu>
           <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" dark slider-color="secondaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
@@ -41,6 +58,8 @@
 </template>
 
 <script>
+import {AppMutations} from '@/stores/AppStore'
+import { UserActions } from '@/stores/UserStore'
 import { IS_MOBILE } from '@/helpers/helpers'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
@@ -59,6 +78,7 @@ export default {
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
       companyName: this.$store.state.user.details.companyName,
+      menuOpen: false,
       model: '',
       tabs: [ {
         label: 'Customers',
@@ -87,7 +107,12 @@ export default {
       return this.tabs.filter(tab => tab.display)
     }
   },
-  methods: {}
+  methods: {
+    async changeContext (companyId) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      await this.$store.dispatch(UserActions.CHANGE_CONTEXT, companyId)
+    }
+  }
 }
 </script>
 

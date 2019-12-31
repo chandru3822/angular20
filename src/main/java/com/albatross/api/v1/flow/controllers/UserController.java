@@ -54,4 +54,9 @@ public class UserController {
     public List<UserStatusType> getUserStatuses() {
         return userService.getUserStatuses();
     }
+
+    @GetMapping(value = "/changeContext/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity changeContext(@PathVariable Long id) {
+        return userService.changeContext(id);
+    }
 }
