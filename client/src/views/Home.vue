@@ -27,8 +27,9 @@
                 <img class="header-logo" src="../assets/bird.png">
               </v-btn>
             </template>
-            <v-list v-if="$store.state.user.details.companies && $store.state.user.details.companies.length > 0">
+            <v-list v-if="$store.state.user.details.companies && $store.state.user.details.companies.length > 1">
               <v-list-item v-for="(item, index) in $store.state.user.details.companies" :key="index"
+                           :class="item.id === $store.state.user.details.companyId ? 'v-list-item--active' : ''"
                            @click="menuOpen = false; changeContext(item.id)">
                 <v-list-item-title>{{item.companyName}}</v-list-item-title>
                 <v-list-item-action class="account-menu-icon">
