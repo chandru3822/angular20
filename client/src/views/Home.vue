@@ -23,18 +23,16 @@
                   class="account-menu"
                   :close-on-content-click="false">
             <template v-slot:activator="{ on }">
-              <v-btn icon v-on="on">
-                <img class="header-logo" src="../assets/bird.png">
+              <v-btn icon v-on="on" :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
+                <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
+                <v-icon v-else>mdi-office-building</v-icon>
               </v-btn>
             </template>
-            <v-list v-if="$store.state.user.details.companies && $store.state.user.details.companies.length > 1">
-              <v-list-item v-for="(item, index) in $store.state.user.details.companies" :key="index"
+            <v-list v-if="companies.length > 1">
+              <v-list-item v-for="(item, index) in companies" :key="index"
                            :class="item.id === $store.state.user.details.companyId ? 'v-list-item--active' : ''"
                            @click="menuOpen = false; changeContext(item.id)">
                 <v-list-item-title>{{item.companyName}}</v-list-item-title>
-                <v-list-item-action class="account-menu-icon">
-                  <v-icon>{{item.icon}}</v-icon>
-                </v-list-item-action>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -55,31 +53,37 @@
         </v-content>
       </v-col>
     </v-row>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </div>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import { UserActions } from '@/stores/UserStore'
-import { IS_MOBILE } from '@/helpers/helpers'
+import { IS_MOBILE, getRequest, getSnackbar } from '@/helpers/helpers'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
+import Snackbar from '@/components/Snackbar.vue'
 
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
 
 export default {
   name: 'home',
   components: {
+    Snackbar,
     Spinner,
     AccountMenu
   },
   data () {
     return {
       IS_MOBILE,
+      snackbar: {},
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
       companyName: this.$store.state.user.details.companyName,
+      selectedCompany: {},
       menuOpen: false,
+      companies: [],
       model: '',
       tabs: [ {
         label: 'Customers',
@@ -102,6 +106,7 @@ export default {
   },
   created () {
 		this.loadComplete = true
+    this.getCompanies()
 	},
   computed: {
     displayedTabs () {
@@ -111,8 +116,32 @@ export default {
   methods: {
     async changeContext (companyId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      await this.$store.dispatch(UserActions.CHANGE_CONTEXT, companyId)
-    }
+      const params = {
+        companyId,
+        isAdmin: this.$store.getters.hasPermission('SYSTEM_ADMIN')
+      }
+      await this.$store.dispatch(UserActions.CHANGE_CONTEXT, params )
+    },
+    async getCompanies () {
+      // get the companies that a user has access to
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let url
+        if(this.$store.getters.hasPermission('SYSTEM_ADMIN')) {
+          url = `/companies`
+        } else {
+          url = `/companies/assignedToUser`
+        }
+        const {data} = await getRequest(url)
+        this.companies = data
+        this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user.details.companyId)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>
@@ -147,8 +176,8 @@ export default {
 }
 
 .header-logo {
-  max-height: 50px;
-  max-width: 50px;
+  max-height: 45px;
+  max-width: 45px;
 }
 
 @media (min-width: 769px) {

@@ -91,16 +91,44 @@
 
   <user.insertUser>
     <![CDATA[
-      insert into flow.user(first_name, last_name, created_by_id, schedulable)
-      values(:firstName, :lastName, :createdById, :schedulable)
+      insert into flow.user(first_name, last_name, created_by_id, schedulable, phone_number, email)
+      values(:firstName, :lastName, :createdById, :schedulable, :phone, :email);
     ]]>
   </user.insertUser>
 
   <user.getOne>
     <![CDATA[
-      select u.*
+      select u.id,
+             u.phone_number,
+             u.email,
+             u.schedulable,
+             u.created_by_id,
+             u.first_name,
+             u.last_name,
+             u.first_name || ' ' || u.last_name as full_name,
+             case when u.default_company_id is not null then u.default_company_id else uc.company_id end as company_id,
+             u.modified_by_id,
+             u.date_modified,
+             u.default_company_id,
+             coalesce((
+              SELECT array_to_json(array_agg(row_to_json(companies)))
+              FROM (
+                       select c.id,
+                              c.company_name as "companyName",
+                              c.parent_company_id as "parentCompanyId",
+                              c.aws_bucket as "awsBucket",
+                              c.abbreviation
+                       from flow.user_company uc
+                                inner join flow.company c on c.id = uc.company_id
+                       where uc.user_id = u.id
+                         and uc.archived is not true
+                       order by c.company_name
+                   ) companies), '[]') as companies
       from flow."user" u
+        inner join flow.user_company uc on uc.user_id = u.id
       where u.id = :id
+        and uc.archived is not true
+        and uc.is_default is true
     ]]>
   </user.getOne>
 
@@ -126,24 +154,10 @@
            u.email,
            u.username,
            u.password,
-           uc.company_id,
+           case when u.default_company_id is not null then u.default_company_id else uc.company_id end as company_id,
            null as "timezone",
            u.first_name || ' ' || u.last_name as full_name,
            u.user_status_type_id,
-           coalesce((
-                        SELECT array_to_json(array_agg(row_to_json(companies)))
-                        FROM (
-                                 select c.id,
-                                        c.company_name as "companyName",
-                                        c.parent_company_id as "parentCompanyId",
-                                        c.aws_bucket as "awsBucket",
-                                        c.abbreviation
-                                 from flow.user_company uc
-                                          inner join flow.company c on c.id = uc.company_id
-                                 where uc.user_id = u.id
-                                  and uc.archived is not true
-                                 order by c.company_name
-                             ) companies), '[]') as companies,
            coalesce((
                         SELECT array_to_json(array_agg(row_to_json(permissions)))
                         FROM (
@@ -166,6 +180,7 @@
                                           left join flow.company_permission cp on cp.permission_id = per.id
                                           left join flow.user_permission udp on udp.company_permission_id = cp.id
                                  where udp.user_id = u.id
+                                   and cp.company_id = uc.id
                                    and udp.deny is true
                                    and per.archived is not true
                              ) permissions), '[]') as permissions
@@ -193,9 +208,11 @@
                u.last_name,
                u.first_name || ' ' || u.last_name as full_name,
                u.user_status_type_id,
-               uc.company_id
+               case when u.default_company_id is not null then u.default_company_id else uc.company_id end as company_id,
+               c.aws_bucket
         from flow.user u
           inner join flow.user_company uc on uc.user_id = u.id
+          inner join flow.company c on c.id = uc.company_id
         where u.id = :id
           and uc.is_default is true
       ]]>
@@ -221,12 +238,18 @@
     ]]>
   </user.updateDefault>
 
-  <user.getCompaniesForUser>
+  <user.updateAdminDefault>
     <![CDATA[
-      select company_id as id
-      from flow.user_company
-      where archived is not true
-      and user_id = :userId
+      update flow.user
+       set default_company_id = :companyId
+       where id = :userId
     ]]>
-  </user.getCompaniesForUser>
+  </user.updateAdminDefault>
+
+  <user.insertUserCompany>
+    <![CDATA[
+      insert into flow.user_company(company_id, user_id, is_default)
+      values (:companyId, :id, :isDefault)
+    ]]>
+  </user.insertUserCompany>
 </sql>

@@ -1,4 +1,4 @@
-import {getRequest} from "@/helpers/helpers";
+import {postRequest} from "@/helpers/helpers";
 
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
@@ -54,10 +54,17 @@ export const UserStore = {
       //   )
       // }
     },
-    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters }, companyId) => {
+    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters }, params) => {
 
       //change context
-      const {data} = await getRequest(`/user/changeContext/${companyId}`)
+      let url
+      if(params.isAdmin) {
+        url = `/user/changeContextAdmin/${params.companyId}`
+      } else {
+        url = `/user/changeContext/${params.companyId}`
+      }
+
+      const {data} = await postRequest(url)
 
       //update vuex store - user details
       commit(UserMutations.SET_DETAILS, data)

@@ -109,14 +109,14 @@ public class UserService {
     }
   }
 
-  public User saveUser(User user) {
+  public ResponseEntity saveUser(User user) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("firstName", user.getFirstName());
     params.put("lastName", user.getLastName());
     params.put("phone", user.getPhoneNumber());
     params.put("email", user.getEmail());
-    params.put("schedulable", user.getSchedulable());
+    params.put("schedulable", user.getSchedulable() != null ? user.getSchedulable() : false);
     params.put("companyId", currentUser.getCompanyId());
 
     Long id;
@@ -128,6 +128,10 @@ public class UserService {
     } else {
       params.put("createdById", currentUser.getId());
       id = sqlCache.updateReturningId("user.insertUser", params, "id").longValue();
+      //insert a row into user_company
+      params.put("id", id);
+      params.put("isDefault", true);
+      sqlCache.update("user.insertUserCompany", params);
     }
 
     handleSavingCustomFieldValues(user.getCustomFieldGroups(), id);
@@ -135,11 +139,18 @@ public class UserService {
     return getUser(id);
   }
 
-  public User getUser(Long id) {
+  public ResponseEntity getUser(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<User> result = sqlCache.get("user.getOne", params, User.class);
-    return result.orElse(null);
+    Optional<User> result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
+
+    User currentUser = securityService.getCurrentUser();
+
+    if(result.isPresent() && !currentUser.getCompanyId().equals(result.get().getCompanyId())) {
+      return ResponseEntity.badRequest().body("Cannot Access User");
+    } else {
+      return ResponseEntity.ok(result);
+    }
   }
 
   public List<User> getSchedulingUsers(Long stateId) {
@@ -219,13 +230,25 @@ public class UserService {
     return results;
   }
 
+  public ResponseEntity changeContextAdmin(Long companyId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("companyId", companyId);
+
+    sqlCache.update("user.updateAdminDefault", params);
+
+    return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
+  }
+
   public ResponseEntity changeContext(Long companyId) {
     User user = securityService.getCurrentUser();
     Boolean match = false;
     // get list of companies the user has access to
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.getId());
-    List<Company> companies = sqlCache.query("user.getCompaniesForUser", params, Company.class);
+    List<Company> companies = sqlCache.query("company.getForUser", params, Company.class);
 
     // verify they have access to the company id that was sent in
     for(Company c : companies) {

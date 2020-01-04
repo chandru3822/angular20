@@ -93,6 +93,9 @@ export default new Router({
             path: 'userProfile',
             component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
           }, {
+            path: 'company',
+            component: () => import (/* webpackChunkName: "company" */ './views/flow/settings/Company.vue'),
+          }, {
             path: 'orgTypes',
             component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/OrgTypes.vue'),
           }, {

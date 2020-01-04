@@ -1135,6 +1135,10 @@ INSERT INTO flow.company_permission(permission_name,company_id, permission_id, a
     (select  p.permission_name,(select id from flow.company where company_name = 'Blue Raven Solar'),p.id ,false
      from flow.permission p);
 
+-- @keller - this one permission needs to be assigned to the Albatross company, i think this works
+UPDATE flow.company_permission set company_id = (select id from flow.company where company_name = 'Albatross')
+where permission_name = 'System Admin';
+
 INSERT INTO flow.role(id, company_id, role_name, archived,is_system)
     (select id, (select id from flow.company where company_name = 'Blue Raven Solar'), role_name, archived,false
      from blueraven.role);

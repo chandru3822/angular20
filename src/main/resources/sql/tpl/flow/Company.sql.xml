@@ -1,0 +1,53 @@
+<sql>
+  <company.getAll>
+    <![CDATA[
+      select id,
+        company_name
+      from flow.company
+      order by parent_company_id nulls first, company_name;
+    ]]>
+  </company.getAll>
+
+  <company.getById>
+    <![CDATA[
+      select id,
+        company_name
+      from flow.company
+      where id = :id;
+    ]]>
+  </company.getById>
+
+  <company.getCompaniesAssignedToUser>
+    <![CDATA[
+      select c.id,
+         c.company_name
+      from flow.company c
+         inner join flow.user_company uc on uc.company_id = c.id
+      where uc.user_id = :userId
+          and uc.archived is not true
+    ]]>
+  </company.getCompaniesAssignedToUser>
+
+  <company.getCompaniesAvailableForUser>
+    <![CDATA[
+      select c.id,
+         c.company_name
+      from flow.company c
+         inner join flow.user_company uc on uc.company_id = c.id
+      where uc.user_id = :userId
+          and uc.archived is not true;
+    ]]>
+  </company.getCompaniesAvailableForUser>
+
+  <company.updateCompany>
+    <![CDATA[
+      update flow.company
+        set company_name = :companyName,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+      where id = :id
+    ]]>
+  </company.updateCompany>
+
+
+</sql>

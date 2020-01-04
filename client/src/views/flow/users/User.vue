@@ -1,54 +1,74 @@
 <template>
   <v-container>
     <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
-    <v-row class="user-header elevation-1">
-      <v-col cols="12" class="text-left">
-        <div class="user-title">{{user.firstName}} {{user.lastName}}</div>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12" md="6" class="text-left">
-        <div>
-          <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>Summary</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <v-btn text @click="saveUser">Save</v-btn>
-            </v-toolbar-items>
-          </v-toolbar>
-          <v-card class="pa-4">
-            <v-text-field text
-                          label="Phone"
-                          placeholder=" "
-                          v-model="user.phone"></v-text-field>
-            <v-text-field text
-                          label="E-Mail"
-                          placeholder=" "
-                          v-model="user.email"></v-text-field>
-            <label>Show in Scheduling Tool:</label>
-            <input type="checkbox" class="ml-2" v-model="user.schedulable">
-          </v-card>
-        </div>
-        <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
-          <v-toolbar color="transparent" class="elevation-0">
-            <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <!--              <v-btn text @click="saveUser">Save</v-btn>-->
-            </v-toolbar-items>
-          </v-toolbar>
-          <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
-          </v-card>
-        </div>
-      </v-col>
-      <v-col cols="12" md="6" class="text-left">
-        <NotesAndActivity :showNotes="true" :showActivity="false"
-                          :notes="notes" :primaryId="parseInt(userId)"
-                          type="User"
-        ></NotesAndActivity>
-      </v-col>
-    </v-row>
+    <div v-if="user.id">
+      <v-row class="user-header elevation-1">
+        <v-col cols="12" class="text-left">
+          <div class="user-title">{{user.firstName}} {{user.lastName}}</div>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12" md="6" class="text-left">
+          <div>
+            <v-toolbar color="transparent" class="elevation-0">
+              <v-toolbar-title>Summary</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text @click="saveUser">Save</v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card class="pa-4">
+              <v-text-field text
+                            label="Phone"
+                            placeholder=" "
+                            v-model="user.phone"></v-text-field>
+              <v-text-field text
+                            label="E-Mail"
+                            placeholder=" "
+                            v-model="user.email"></v-text-field>
+              <label>Show in Scheduling Tool:</label>
+              <input type="checkbox" class="ml-2" v-model="user.schedulable">
+
+  <!--            <div class="mt-2" v-if="companies.length > 1">-->
+              <div class="mt-2">
+                <div v-if="this.$store.getters.hasPermission('SYSTEM_ADMIN')">
+                  <v-select
+                      v-model="user.companies"
+                      :items="companies"
+                      label="Company Access"
+                      multiple
+                      item-text="companyName"
+                      return-object
+                  ></v-select>
+                </div>
+                <div v-else>
+                  <label>Company Access:</label>
+                  <div class="ml-4"  v-for="uc in user.companies">{{uc.companyName}}</div>
+                </div>
+              </div>
+            </v-card>
+          </div>
+          <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
+            <v-toolbar color="transparent" class="elevation-0">
+              <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <!--              <v-btn text @click="saveUser">Save</v-btn>-->
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-card class="pa-4">
+              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
+            </v-card>
+          </div>
+        </v-col>
+        <v-col cols="12" md="6" class="text-left">
+          <NotesAndActivity :showNotes="true" :showActivity="false"
+                            :notes="notes" :primaryId="parseInt(userId)"
+                            type="User"
+          ></NotesAndActivity>
+        </v-col>
+      </v-row>
+    </div>
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
@@ -78,6 +98,7 @@
           },
         ],
         snackbar: {},
+        companies: [],
         user: {},
         customFieldGroups: [],
         notes: [],
@@ -89,6 +110,7 @@
     },
     created () {
       this.getUser()
+      this.getCompanies()
       this.getCustomFieldGroups()
       this.getNotes()
     },
@@ -129,6 +151,21 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCompanies () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequestWithParams(`/companies/availableForUser`, { params: {
+              userId: this.userId
+            }})
+          this.companies = data
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Companies')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

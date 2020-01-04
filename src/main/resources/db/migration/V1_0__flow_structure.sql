@@ -467,6 +467,7 @@ CREATE TABLE if not exists flow."user"
     onboarded_by_user_id               integer,
     hire_date                          date,
     image_id                           bigint,
+    default_company_id                 integer references flow.company(id),
     username                           character varying(255),
     CONSTRAINT user_pk PRIMARY KEY (id),
 --     CONSTRAINT u_user_status_type_id_fk FOREIGN KEY (user_status_type_id)
@@ -480,6 +481,9 @@ CREATE TABLE if not exists flow."user"
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT u_referred_by_user_id_fk FOREIGN KEY (referred_by_user_id)
         REFERENCES flow."user" (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT u_default_company_id_fk FOREIGN KEY (default_company_id)
+        REFERENCES flow."company" (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT u_email_fk UNIQUE (email),
     CONSTRAINT user_personal_email_uk UNIQUE (personal_email),

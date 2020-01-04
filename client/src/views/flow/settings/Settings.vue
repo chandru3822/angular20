@@ -112,8 +112,8 @@ export default {
           path: '/settings/userProfile',
           title: 'User Profile',
         }, {
-          path: '',
-          title: 'Account',
+          path: '/settings/company',
+          title: 'Company',
         }
         // , {
         //   header: 'User Management'

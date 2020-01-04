@@ -36,12 +36,12 @@ public class UserController {
     }
 
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public User saveUser(@RequestBody User user) {
+    public ResponseEntity saveUser(@RequestBody User user) {
         return userService.saveUser(user);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public User getUser(@PathVariable Long id) {
+    public ResponseEntity getUser(@PathVariable Long id) {
         return userService.getUser(id);
     }
 
@@ -55,7 +55,12 @@ public class UserController {
         return userService.getUserStatuses();
     }
 
-    @GetMapping(value = "/changeContext/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/changeContextAdmin/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity changeContextAdmin(@PathVariable Long id) {
+        return userService.changeContextAdmin(id);
+    }
+
+    @PostMapping(value = "/changeContext/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity changeContext(@PathVariable Long id) {
         return userService.changeContext(id);
     }
