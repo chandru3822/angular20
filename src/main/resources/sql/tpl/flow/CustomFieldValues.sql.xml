@@ -213,6 +213,7 @@
                                   pcv.int_array_value as "intArrayValue",
                                   cfga.custom_field_group_id as "customFieldGroupId",
                                   cfga.id as "customFieldGroupAssignmentId",
+                                  cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                   cfga.custom_field_id as "customFieldId",
                                   cfga.field_order as "fieldOrder",
                                   cf.list_of_value_id as "listOfValueId",
@@ -240,7 +241,8 @@
                                                         order by lov.display_order
                                                     ) listOfValues), '[]') AS "listOfValues"
                               from flow.custom_field_group_assignment cfga
-                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                       left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
+                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
                                        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                        inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                        left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :projectProcessStepId

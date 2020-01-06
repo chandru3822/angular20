@@ -51,11 +51,4 @@ public class ProjectController {
                                                    @RequestParam("file") MultipartFile file) throws IOException {
     return new ResponseEntity<>(projectService.addAttachment(file, projectId, attachmentTypeId), HttpStatus.OK);
   }
-
-  // @TODO: @humes kill after demo on 2019-12-20
-  @GetMapping(value = "/resetDemo")
-  public ResponseEntity<Void> resetDemo() {
-    projectService.resetDemo();
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-  }
 }
