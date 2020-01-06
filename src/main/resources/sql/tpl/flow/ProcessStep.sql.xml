@@ -53,7 +53,8 @@
                           FROM (
                                    SELECT cfg.id,
                                           cfg.group_name as "groupName",
-                                          cfg.schedulable,
+                                          -- @randa, make sure this change is legit
+                                          (case when cfg.schedule_type_id is null then false else true end) as "schedulable",
                                           cot.object_type_id as "objectTypeId",
                                           cot.id as "companyObjectTypeId",
                                           cfg.archived,
