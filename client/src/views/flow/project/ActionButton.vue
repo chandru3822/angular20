@@ -21,13 +21,14 @@ export default {
   },
   data () {
     return {
-      isResultLoading: true,
+      isResultLoading: false,
       proceed: false
     }
   },
   methods: {
     getActionResult: async function() {
       try {
+        this.isResultLoading = true
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/actionResult/${this.actionId}`)
         this.proceed = data.canPerform
       } catch (e) {
@@ -51,6 +52,9 @@ export default {
   },
   created () {
     this.getActionResult()
+  },
+  mounted () {
+    this.$root.$on('projectProcessStep:checkAction', this.getActionResult)
   }
 }
 </script>

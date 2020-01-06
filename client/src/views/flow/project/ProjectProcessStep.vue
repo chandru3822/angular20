@@ -146,6 +146,7 @@ export default {
       try {
         await putRequest(`/projectProcessStep`, this.processStep)
         this.$store.commit(AppMutations.SET_LOADING, false)
+        this.$root.$emit('projectProcessStep:checkAction')
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
