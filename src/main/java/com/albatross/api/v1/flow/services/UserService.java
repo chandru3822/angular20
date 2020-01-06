@@ -248,7 +248,7 @@ public class UserService {
     // get list of companies the user has access to
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.getId());
-    List<Company> companies = sqlCache.query("company.getForUser", params, Company.class);
+    List<Company> companies = sqlCache.query("company.getCompaniesAvailableForUser", params, Company.class);
 
     // verify they have access to the company id that was sent in
     for(Company c : companies) {
