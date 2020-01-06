@@ -804,14 +804,55 @@ public class ProjectService {
           passed = compareDateTimes(fieldValue, now, r.getOperatorTypeId());
           break;
         case 12:
-        case 13:
           try {
-            passed = compareDateTimes(fieldValue, null, r.getOperatorTypeId());
+            passed = compareNullDateTime(fieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
           break;
+        case 13:
+          try {
+            passed = compareNonNullDateTime(fieldValue, r.getOperatorTypeId());
+          } catch (IllegalArgumentException e) {
+            //@TODO: something?
+          }
       }
+    }
+
+    return passed;
+  }
+
+  private boolean compareNullDateTime(LocalDateTime date, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = date == null;
+        break;
+      case 2:
+        passed = date != null;
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
+    }
+
+    return passed;
+  }
+
+  private boolean compareNonNullDateTime(LocalDateTime date, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = date != null;
+        break;
+      case 2:
+        passed = date == null;
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
     }
 
     return passed;
@@ -882,20 +923,55 @@ public class ProjectService {
           break;
         case 4:
           try {
-            passed = compareDates(fieldValue, null, r.getOperatorTypeId());
+            passed = compareNullDate(fieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
           break;
         case 5:
           try {
-            Assert.notNull(fieldValue, "not-null check failed");
-            passed = true;
+            passed = compareNonNullDate(fieldValue, r.getOperatorTypeId());
           } catch (IllegalArgumentException e) {
             //@TODO: something?
           }
           break;
       }
+    }
+
+    return passed;
+  }
+
+  private boolean compareNonNullDate(LocalDate date, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = date != null;
+        break;
+      case 2:
+        passed = date == null;
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
+    }
+
+    return passed;
+  }
+
+  private boolean compareNullDate(LocalDate date, Long operatorTypeId) throws Exception {
+
+    boolean passed = false;
+
+    switch (operatorTypeId.intValue()) {
+      case 1:
+        passed = date == null;
+        break;
+      case 2:
+        passed = date != null;
+        break;
+      default:
+        throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
     }
 
     return passed;
