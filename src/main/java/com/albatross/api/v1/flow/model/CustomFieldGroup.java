@@ -22,6 +22,7 @@ public class CustomFieldGroup {
   private List<CustomField> customFields;
 
   // This list is used when looking at custom field VALUES in a group
+  //@TODO: @randa, maybe CustomFieldValue should inherit from CustomField to keep it more DRY?
   private List<CustomFieldValue> customFieldValues;
 
   // This list is used when saving a new group as a schedulable group, which by default will have a specified set of fields

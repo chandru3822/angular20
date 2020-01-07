@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 public class ProcessStep {
 
-  private Long id, processId, companyId, orgId, createdById, modifiedById;
+  private Long id, processId, companyId, orgId, createdById, modifiedById, workTypeId;
   // originalProcessStepName used for frontend validation (without having to loop to populate it on frontend)
   private String orgName, processStepName, originalProcessStepName;
   private Boolean archived;
