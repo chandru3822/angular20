@@ -341,15 +341,15 @@ insert into flow.key_pattern
     (select * from blueraven.key_pattern);
 
 
-insert into flow.attachment_type(id, attachment_type,attachment_code,company_id,key_pattern_id,is_system)
-    (select id, type,type,(select id from flow.company where company_name = 'Blue Raven Solar'),key_pattern_id,true
+insert into flow.attachment_type(id, attachment_type,attachment_code,key_pattern_id,is_system)
+    (select id, type,type,key_pattern_id,true
      from blueraven.attachment_source_type);
 
 SELECT setval('flow.attachment_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.attachment_type), 1), false);
 
 
-INSERT INTO flow.attachment(id, filename, content_type, s3_key, size, archived, date_created, date_modified,attachment_type_id)
-    (select a.id, filename, content_type, s3_key, size, deleted, created, updated,as1.attachment_source_type_id
+INSERT INTO flow.attachment(id, filename, content_type, s3_key, size, archived, date_created, date_modified,attachment_type_id, company_id)
+    (select a.id, filename, content_type, s3_key, size, deleted, created, updated,as1.attachment_source_type_id, (select id from flow.company where company_name = 'Blue Raven Solar')
      from blueraven.attachment a
               inner join blueraven.attachment_source as1 on as1.attachment_id = a.id);
 

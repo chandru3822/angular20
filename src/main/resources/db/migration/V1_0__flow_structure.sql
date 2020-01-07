@@ -472,7 +472,7 @@ CREATE TABLE if not exists flow."user"
     hire_date                          date,
     image_id                           bigint,
     default_company_id                 integer references flow.company(id),
-    username                           character varying(255),
+    username                           character varying(255) not null,
     CONSTRAINT user_pk PRIMARY KEY (id),
 --     CONSTRAINT u_user_status_type_id_fk FOREIGN KEY (user_status_type_id)
 --         REFERENCES flow.user_status_type (id) MATCH SIMPLE
