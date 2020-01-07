@@ -11,7 +11,8 @@
   <company.getById>
     <![CDATA[
       select id,
-        company_name
+        company_name,
+        default_password
       from flow.company
       where id = :id;
     ]]>
@@ -43,6 +44,7 @@
     <![CDATA[
       update flow.company
         set company_name = :companyName,
+            default_password = :defaultPassword,
             modified_by_id = :modifiedById,
             date_modified = now()
       where id = :id

@@ -138,6 +138,7 @@ public class UserService {
       sqlCache.update("user.updateUser", params);
     } else {
       params.put("createdById", currentUser.getId());
+      //for now we are inserting new users with the same email and username. maybe we will change that later and let them enter it here
       id = sqlCache.updateReturningId("user.insertUser", params, "id").longValue();
       //insert a row into user_company
       params.put("id", id);
