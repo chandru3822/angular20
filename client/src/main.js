@@ -80,24 +80,26 @@ axios.interceptors.response.use((response) => {
   return response
 }, ({ response }) => {
   if (response && response.data) {
-    const { message } = response.data
+    const { message, status } = response.data
     console.log('*** Request Error ***', response)
     // if the jwt token expired, or 401 unauthorized, or 403 Forbidden
     if ((message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1)
-        || response.status === 401  || response.status === 403) {
+        || status === 401  || status === 403) {
       const msg = response.status === 401  || response.status === 403 ? 'User Unauthorized' : 'Session Expired'
       localStorage.removeItem('store')
       store.commit(UserMutations.LOGIN_ERROR, msg)
       router.push({ name: 'login' })
-    } else if (VUE_APP_ENV !== 'local' && response.status >= 500 && response.status <= 599) {
+    } else if (VUE_APP_ENV !== 'local' && status >= 500 && status <= 599) {
       //remove the loading spinner that was likely turned on before this error happened
       store.commit(UserMutations.SET_LOADING, false)
       //dont do this reroute on local, it is super annoying
       router.push({path: `/serverError?code=${response.status}`})
+    } else if (![200, 201, 204].includes(status)) {
+      //dont take this out, it makes axios await errors work correctly
+      throw response
     }
   }
 })
-
 
 Vue.use(Vuetify)
 

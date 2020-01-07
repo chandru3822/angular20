@@ -252,4 +252,14 @@
       values (:companyId, :id, :isDefault)
     ]]>
   </user.insertUserCompany>
+
+  <user.checkEmailExists>
+    <![CDATA[
+      select id,
+         email
+      from flow."user"
+      where email ILIKE :email
+      and case when :userId::int is not null then :userId::int != id else 1=1 end
+    ]]>
+  </user.checkEmailExists>
 </sql>

@@ -161,7 +161,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding User')
+        let errorMsg = 'Error Adding User'
+        if(e?.data?.message?.includes('Email already exists')) {
+          errorMsg += ': Email Already in Use'
+        }
+        this.snackbar = getSnackbar('ERROR', errorMsg)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

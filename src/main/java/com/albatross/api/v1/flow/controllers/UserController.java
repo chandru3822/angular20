@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.exceptions.EmailInUseException;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserSearch;
 import com.albatross.api.v1.flow.model.UserStatusType;
@@ -36,7 +37,11 @@ public class UserController {
     }
 
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity saveUser(@RequestBody User user) {
+    public ResponseEntity saveUser(@RequestBody User user) throws EmailInUseException {
+        if (userService.emailExists(user.getEmail(), user.getId())) {
+            throw new EmailInUseException(user.getEmail(), "Email");
+        }
+
         return userService.saveUser(user);
     }
 

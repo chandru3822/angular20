@@ -109,6 +109,16 @@ public class UserService {
     }
   }
 
+  public boolean emailExists(String email, Long userId) {
+    //using ILIKE to prevent duplicates with different casing
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("email", email);
+    params.put("userId", userId);
+
+    List<User> results = sqlCache.query("user.checkEmailExists", params, User.class);
+    return null != results && !results.isEmpty();
+  }
+
   public ResponseEntity saveUser(User user) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -120,6 +130,7 @@ public class UserService {
     params.put("companyId", currentUser.getCompanyId());
 
     Long id;
+
     if(null != user.getId()) {
       id = user.getId();
       params.put("modifiedById", currentUser.getId());
@@ -248,7 +259,7 @@ public class UserService {
     // get list of companies the user has access to
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.getId());
-    List<Company> companies = sqlCache.query("company.getCompaniesAvailableForUser", params, Company.class);
+    List<Company> companies = sqlCache.query("company.getCompaniesAssignedToUser", params, Company.class);
 
     // verify they have access to the company id that was sent in
     for(Company c : companies) {

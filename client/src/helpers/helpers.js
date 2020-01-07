@@ -72,33 +72,53 @@ export function getSnackbar(type, text) {
 // functions
 export async function getRequest (path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  const {data, status} = await axios.get(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`)
-  return {data, status}
+  try {
+    const {data, status} = await axios.get(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
 }
 
 export async function getRequestWithParams (path, params, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  const {data, status} = await axios.get(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, params)
-  return {data, status}
+  try {
+    const {data, status} = await axios.get(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, params)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
 }
 
 export async function postRequest (path, body, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  const {data, status} = await axios.post(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, body)
-  return {data, status}
+  try {
+    const {data, status} = await axios.post(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, body)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
 }
 
 export async function putRequest (path, body, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
-  const {data, status} = await axios.put(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, body)
-  return {data, status}
+  try {
+    const {data, status} = await axios.put(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`, body)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
 }
 
 export async function deleteRequest (path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   // not returning data as part of a delete
-  const {status} = await axios.delete(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`)
-  return {status}
+  try {
+    const {status} = await axios.delete(`${VUE_APP_BASE_API}${VUE_APP_API_PATH}/${apiPath}${path}`)
+    return {status}
+  } catch (e) {
+    throw e
+  }
 }
 
 export function logError (e) {
