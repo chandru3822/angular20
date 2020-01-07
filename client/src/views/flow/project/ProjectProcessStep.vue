@@ -114,7 +114,7 @@ export default {
     },
     async getCustomFieldGroups() {
       // @humes - maybe you have this data on the process step. i didnt even look
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      // this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep`, { params: {
             projectProcessStepId: this.projectProcessStepId
