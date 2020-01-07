@@ -16,14 +16,33 @@
           <h3 class="text-left">Active Process Steps</h3>
         </v-col>
 
-
-        <v-col v-if="isProcessStepsLoading">
+        <v-col cols="12" v-if="isProcessStepsLoading">
           <SpinnerInline :size="20" color="primary"/>
         </v-col>
 
-        <v-col v-else>
-          <ProjectActiveProcessStep :steps="processSteps" :projectId="projectId"/>
+        <v-col cols="12" v-else>
+          <ActiveProjectProcessStepSnippet :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)" :projectId="projectId"/>
         </v-col>
+      </v-row>
+    </v-col>
+
+    <v-col>
+      <v-row>
+        <v-col cols="12">
+          <h3 class="text-left">All Process Steps</h3>
+        </v-col>
+
+        <v-col cols="12" v-if="isProcessStepsLoading">
+          <SpinnerInline :size="20" color="primary"/>
+        </v-col>
+
+        <v-col cols="12" v-else>
+          <template v-for="workType in processStepsByWorkType">
+            <h4 class="text-left">{{workType.workType}}</h4>
+            <ProjectProcessStepSnippet :steps="workType.processSteps" :projectId="projectId"/>
+          </template>
+        </v-col>
+
       </v-row>
     </v-col>
 
@@ -53,7 +72,8 @@
 
 import {getRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
-import ProjectActiveProcessStep from '@/views/flow/project/ProjectActiveProcessStep'
+import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
+import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
@@ -64,7 +84,8 @@ export default {
   components: {
     SpinnerInline,
     ProjectFieldGroup,
-    ProjectActiveProcessStep,
+    ActiveProjectProcessStepSnippet,
+    ProjectProcessStepSnippet,
     Attachments,
     NotesAndActivity,
     Snackbar
@@ -84,6 +105,18 @@ export default {
     this.getFieldGroups()
     this.getProcessSteps()
     this.getNotes()
+  },
+  computed: {
+    processStepsByWorkType () {
+      const workTypes = [...new Set(this.processSteps.map(step => step.workType))]
+
+      return workTypes.map(workType => {
+        return {
+          workType,
+          processSteps: this.processSteps.filter(step => step.workType === workType)
+        }
+      })
+    }
   },
   methods: {
     getProcessSteps: async function () {

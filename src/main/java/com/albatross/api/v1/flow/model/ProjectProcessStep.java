@@ -8,17 +8,13 @@ import java.util.List;
 @Data
 public class ProjectProcessStep {
 
-  //@TODO: This repeats a lot of the stuff the ProcessStep model does and should probably inherit from it (aka line 16)
+  //@TODO: This repeats a lot of the stuff the ProcessStep model does and should probably inherit from it
 
-  private Long projectProcessStepId, companyStatusId, statusId, processStepId, userPositionId, projectId, workTypeId;
+  private Long projectProcessStepId, processStepId, userPositionId, projectId, workTypeId, processStepStatusTypeId;
 
-  private String owner, name, status;
-  // @humes, didn't want to break anything else you had so i put these 2 here to show some data on the screen
-  private String processStepStatusType, processStepName;
+  private String owner, workType, processStepName, processStepStatusType;
 
-  private LocalDate dateModified, lastUpdated;
-
-  private LocalDate completionDate;
+  private LocalDate lastUpdated, processStepCompleteDate;
 
   List<ProcessStepAction> actions;
 
