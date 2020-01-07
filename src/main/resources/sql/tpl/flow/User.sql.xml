@@ -91,8 +91,8 @@
 
   <user.insertUser>
     <![CDATA[
-      insert into flow.user(first_name, last_name, created_by_id, schedulable, phone_number, email)
-      values(:firstName, :lastName, :createdById, :schedulable, :phone, :email);
+      insert into flow.user(first_name, last_name, created_by_id, schedulable, phone_number, email, username)
+      values(:firstName, :lastName, :createdById, :schedulable, :phone, :email, :email);
     ]]>
   </user.insertUser>
 

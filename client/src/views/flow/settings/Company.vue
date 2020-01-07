@@ -24,11 +24,16 @@
                         required
                         label="Company Name">
           </v-text-field>
+          <v-text-field v-model="company.defaultPassword"
+                        placeholder="Enter a value"
+                        required
+                        label="Default Password">
+          </v-text-field>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12" class="text-center">
-          <v-btn :disabled="!company.companyName" @click="saveCompany">
+          <v-btn :disabled="!company.companyName || !company.defaultPassword" @click="saveCompany">
             <v-icon>mdi-content-save</v-icon>
             Save Changes
           </v-btn>

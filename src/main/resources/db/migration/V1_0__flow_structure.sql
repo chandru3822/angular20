@@ -158,7 +158,7 @@ CREATE TABLE if NOT EXISTS flow.attachment_type
     id              serial                NOT NULL,
     attachment_type character VARYING(100) not null,
     attachment_code character VARYING(100),
-    company_id integer not null,
+    company_id integer,
     archived boolean not null default false,
     key_pattern_id integer,
     is_system boolean not null default false,
@@ -202,6 +202,7 @@ CREATE TABLE if not exists  flow.attachment
 (
     id                 serial  not null,
     attachment_type_id integer,
+    company_id         integer not null,
     filename           character varying(100),
     content_type       character varying(100),
     s3_key             character varying(100),
@@ -214,6 +215,9 @@ CREATE TABLE if not exists  flow.attachment
     CONSTRAINT attachment_pk PRIMARY KEY (id),
     CONSTRAINT a_attachment_id_fk FOREIGN KEY (attachment_type_id)
         REFERENCES flow.attachment_type (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT a_company_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 )
     WITH (

@@ -33,8 +33,8 @@ INSERT INTO flow."user" (
      FROM blueraven."user"
      where id  in (2350555));
 
-insert into flow.user_company(company_id,user_id)
-    (select (select id from flow.company where company_name = 'Blue Raven Solar'),2350555);
+insert into flow.user_company(company_id,user_id,is_default)
+    (select (select id from flow.company where company_name = 'Blue Raven Solar'),2350555,true);
 insert into flow.user_company(company_id,user_id)
     (select (select id from flow.company where company_name = 'B+C Electric'),2350555);
 insert into flow.user_company(company_id,user_id)
@@ -72,6 +72,8 @@ INSERT INTO flow."user" (
             email
      FROM blueraven."user"
      where id  in (99999999));
+
+insert into flow.user_company(company_id, user_id) values(1,99999999);
 
 insert into flow.process_step_status_type(id, process_step_status_type)
 values(1,'ACTIVE');

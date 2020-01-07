@@ -270,8 +270,8 @@ INSERT INTO flow."user" (
 
 
 
-insert into flow.user_company(company_id,user_id)
-(select (select id from flow.company where company_name = 'Blue Raven Solar'),id
+insert into flow.user_company(company_id,user_id,is_default)
+(select (select id from flow.company where company_name = 'Blue Raven Solar'),id,true
  FROM blueraven."user"
  where id not in (2350555,99999999)
    and id not in ( select distinct u.id
@@ -409,8 +409,8 @@ INSERT INTO flow."user" (
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (575,574)));
 
-insert into flow.user_company(company_id,user_id)
-    (select (select id from flow.company where company_name = 'B+C Electric'),id
+insert into flow.user_company(company_id,user_id,is_default)
+    (select (select id from flow.company where company_name = 'B+C Electric'),id,true
      FROM blueraven."user"
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
@@ -565,8 +565,8 @@ INSERT INTO flow."user" (
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (684,683)));
 
-insert into flow.user_company(company_id,user_id)
-    (select (select id from flow.company where company_name = 'Eco Lux Solar'),id
+insert into flow.user_company(company_id,user_id,is_default)
+    (select (select id from flow.company where company_name = 'Eco Lux Solar'),id,true
      FROM blueraven."user"
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
@@ -720,8 +720,8 @@ INSERT INTO flow."user" (
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (572,573)));
 
-insert into flow.user_company(company_id,user_id)
-    (select (select id from flow.company where company_name = 'Salient Solar'),id
+insert into flow.user_company(company_id,user_id,is_default)
+    (select (select id from flow.company where company_name = 'Salient Solar'),id,true
      FROM blueraven."user"
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
@@ -874,8 +874,8 @@ INSERT INTO flow."user" (
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (569,571,570)));
 
-insert into flow.user_company(company_id,user_id)
-    (select (select id from flow.company where company_name = 'Solenrgi'),id
+insert into flow.user_company(company_id,user_id,is_default)
+    (select (select id from flow.company where company_name = 'Solenrgi'),id,true
      FROM blueraven."user"
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
@@ -1030,8 +1030,8 @@ INSERT INTO flow."user" (
                             inner join blueraven.org o on o.id = up.org_id
                        and o.org_type_id in (15,16) and o.id in (620,619)));
 
-insert into flow.user_company(company_id,user_id)
-    (select (select id from flow.company where company_name = 'Sun Run'),id
+insert into flow.user_company(company_id,user_id,is_default)
+    (select (select id from flow.company where company_name = 'Sun Run'),id,true
      FROM blueraven."user"
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
