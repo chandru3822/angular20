@@ -15,5 +15,7 @@ public class Position {
   private String position, orgType;
   private Boolean archived;
 
+  private Boolean edit = false;
+
 }
 
