@@ -114,20 +114,18 @@ export default {
         }, {
           path: '/settings/company',
           title: 'Company',
-        }
-        // , {
-        //   header: 'User Management'
-        // }, {
-        //   path: '/settings/permissions',
-        //   title: 'Permissions',
-        // }, {
-        //   path: '/settings/positions',
-        //   title: 'Positions',
-        // }, {
-        //   path: '/settings/roles',
-        //   title: 'Roles',
-        // }
-        , {
+        }, {
+          header: 'User Management'
+        }, {
+          path: '/settings/permissions',
+          title: 'Permissions',
+        }, {
+          path: '/settings/positions',
+          title: 'Positions',
+        }, {
+          path: '/settings/roles',
+          title: 'Roles',
+        }, {
           header: 'Custom Components'
         }, {
           path: '/settings/customFields',

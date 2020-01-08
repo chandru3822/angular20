@@ -1,15 +1,45 @@
 <sql>
-  <position.getAllForCompany>
-    <![CDATA[
-      select p.id,
-             p.position,
-             p.org_type_id,
-             ot.org_type
-      from blueraven.position p
-          inner join flow.org_type ot on ot.id = p.org_type_id
-      where ot.company_id = :companyId
-      order by p.position
-    ]]>
-  </position.getAllForCompany>
+  <position.getAllForCompany><![CDATA[
+    select p.id,
+           p.position,
+           p.org_type_id,
+           ot.org_type
+    from flow.position p
+        inner join flow.org_type ot on ot.id = p.org_type_id
+    where ot.company_id = :companyId
+    order by p.position
+  ]]></position.getAllForCompany>
+
+  <position.getOne><![CDATA[
+    select p.id,
+           p.position,
+           p.org_type_id,
+           ot.org_type
+    from flow.position p
+        inner join flow.org_type ot on ot.id = p.org_type_id
+    where p.id = :id
+  ]]></position.getOne>
+
+  <position.insert><![CDATA[
+    insert into flow.position(company_id, position, org_type_id, created_by_id)
+    values (:companyId, :position, :orgTypeId, :createdById )
+  ]]></position.insert>
+
+  <position.update><![CDATA[
+    update flow.position
+        set position = :position,
+            org_type_id = :orgTypeId,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></position.update>
+
+  <position.delete><![CDATA[
+    update flow.position
+        set archived = true,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></position.delete>
 
 </sql>

@@ -6,10 +6,11 @@
           <v-toolbar-title class="app-title">Permissions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="$store.getters.hasPermission('SYSTEM_ADMIN')" @click="addPermission = !addPermission">
-              <v-icon>add</v-icon>
-              Add Permission
-            </v-btn>
+<!--  todo: this code doesn't work because of company_permissions required to know the permission_id to add a new one            -->
+<!--            <v-btn text color="primary" v-if="$store.getters.hasPermission('SYSTEM_ADMIN')" @click="addPermission = !addPermission">-->
+<!--              <v-icon>add</v-icon>-->
+<!--              Add Permission-->
+<!--            </v-btn>-->
           </v-toolbar-items>
         </v-toolbar>
         <v-card class="mt-2 pa-4"flat v-if="addPermission">

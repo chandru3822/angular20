@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -32,6 +33,42 @@ public class PositionService {
     params.put("companyId", user.getCompanyId());
     List<Position> results = sqlCache.query("position.getAllForCompany", params, Position.class);
     return results;
+  }
+
+  public Position getPosition(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<Position> result = sqlCache.get("position.getOne", params, Position.class);
+    return result.orElse(null);
+  }
+
+  public Position savePosition(Position p) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("orgTypeId", p.getOrgTypeId());
+    params.put("position", p.getPosition());
+    Long id;
+    if(null != p.getId()) {
+      id = p.getId();
+      params.put("id", id);
+      params.put("modifiedById", user.getId());
+      sqlCache.update("position.update", params);
+    } else {
+      params.put("createdById", user.getId());
+      id = sqlCache.updateReturningId("position.insert", params, "id").longValue();
+    }
+    return getPosition(id);
+  }
+
+  public void deletePosition(Long id) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", user.getId());
+    sqlCache.update("position.delete", params);
   }
 
 
