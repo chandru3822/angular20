@@ -93,11 +93,11 @@
     font-size: 20px;
     text-align: right;
   }
-  // TODO: Figure this out
   #fixed-tabs-bar {
     position: sticky;
-    top: 0;
+    top: -12px;
     z-index: 2;
+    background-color: var(--v-secondary-base) !important;
   }
   .v-tab--active {
     color: var(--v-primaryCustom-base) !important;

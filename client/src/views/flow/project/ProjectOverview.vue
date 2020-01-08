@@ -26,25 +26,53 @@
       </v-row>
     </v-col>
 
-    <v-col>
-      <v-row>
-        <v-col cols="12">
-          <h3 class="text-left">All Process Steps</h3>
-        </v-col>
+    <v-fade-transition>
+      <v-col
+        v-show="!isProcessStepsExpanded"
+        cols="12"
+        class="text-right pt-0"
+      >
+        <span @click="isProcessStepsExpanded = true" class="clickable">
+          Expand All Process Steps <v-icon>mdi-menu-down</v-icon>
+        </span>
+      </v-col>
+    </v-fade-transition>
 
-        <v-col cols="12" v-if="isProcessStepsLoading">
-          <SpinnerInline :size="20" color="primary"/>
-        </v-col>
+    <v-expand-transition>
+      <v-col v-show="isProcessStepsExpanded">
+        <v-row>
+          <v-col cols="12">
+            <v-row class="justify-space-around align-center">
+              <v-col class="text-left pb-0">
+                <h3>All Process Steps</h3>
+              </v-col>
+              <v-col class="text-right pb-0">
+              <span @click="isProcessStepsExpanded = false" class="clickable">
+                Collapse All Process Steps <v-icon>mdi-menu-down</v-icon>
+              </span>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12" class="pt-0">
+                <v-divider/>
+              </v-col>
+            </v-row>
+          </v-col>
 
-        <v-col cols="12" v-else>
-          <template v-for="workType in processStepsByWorkType">
-            <h4 class="text-left">{{workType.workType}}</h4>
-            <ProjectProcessStepSnippet :steps="workType.processSteps" :projectId="projectId"/>
-          </template>
-        </v-col>
+          <v-col cols="12" v-if="isProcessStepsLoading">
+            <SpinnerInline :size="20" color="primary"/>
+          </v-col>
 
-      </v-row>
-    </v-col>
+          <v-col cols="12" v-else>
+            <template v-for="workType in processStepsByWorkType">
+              <h4 class="text-left work-type-header">{{workType.workType}}</h4>
+              <ProjectProcessStepSnippet :steps="workType.processSteps" :projectId="projectId"/>
+            </template>
+          </v-col>
+
+        </v-row>
+      </v-col>
+    </v-expand-transition>
 
     <v-col>
       <v-row>
@@ -98,7 +126,8 @@ export default {
       isProcessStepsLoading: true,
       isFieldsLoading: true,
       notes: [],
-      snackbar: {}
+      snackbar: {},
+      isProcessStepsExpanded: false
     }
   },
   created () {
@@ -156,5 +185,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.clickable {
+  cursor: pointer;
+}
 
+.work-type-header {
+  &:not(:first-child) {
+    padding-top: 48px;
+  }
+}
 </style>

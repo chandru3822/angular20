@@ -1,5 +1,5 @@
 <template>
-<v-col>
+<v-col v-if="attachmentTypes.length > 0">
   <v-row>
     <v-col class="text-left">
       <h3>Documents</h3>
