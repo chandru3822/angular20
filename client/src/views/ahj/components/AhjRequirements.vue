@@ -70,6 +70,7 @@
 <script>
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
+  import orderBy from 'lodash.orderby'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
@@ -110,7 +111,7 @@
         addMode: false,
         editMode: false,
         snackbar: {},
-        requirementsCopy: this.requirements
+        requirementsCopy: orderBy(this.requirements, requirement => requirement.position)
       }
     },
     methods: {
@@ -169,6 +170,7 @@
           this.requirementsCopy[updatedRequirementIndex].description = data.description
           this.editMode = false
         }
+        this.requirementsCopy = orderBy(this.requirementsCopy, requirement => requirement.position)
       },
       async archiveRequirement(requirementId) {
         await putRequest(`/ahj/${this.itemType}/requirement/${requirementId}/archive`, null, 'blueraven')
