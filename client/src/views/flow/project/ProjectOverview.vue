@@ -65,7 +65,7 @@
 
           <v-col cols="12" v-else>
             <template v-for="workType in processStepsByWorkType">
-              <h4 class="text-left">{{workType.workType}}</h4>
+              <h4 class="text-left work-type-header">{{workType.workType}}</h4>
               <ProjectProcessStepSnippet :steps="workType.processSteps" :projectId="projectId"/>
             </template>
           </v-col>
@@ -187,5 +187,11 @@ export default {
 <style lang="scss" scoped>
 .clickable {
   cursor: pointer;
+}
+
+.work-type-header {
+  &:not(:first-child) {
+    padding-top: 48px;
+  }
 }
 </style>
