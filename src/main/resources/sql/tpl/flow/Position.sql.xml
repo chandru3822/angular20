@@ -3,7 +3,8 @@
     select p.id,
            p.position,
            p.org_type_id,
-           ot.org_type
+           ot.org_type,
+           p.archived
     from flow.position p
         inner join flow.org_type ot on ot.id = p.org_type_id
     where ot.company_id = :companyId
@@ -14,7 +15,8 @@
     select p.id,
            p.position,
            p.org_type_id,
-           ot.org_type
+           ot.org_type,
+           p.archived
     from flow.position p
         inner join flow.org_type ot on ot.id = p.org_type_id
     where p.id = :id

@@ -36,7 +36,7 @@
         <v-divider v-if="addNew"></v-divider>
         <v-data-table
             :headers="headers"
-            :items="positions"
+            :items="filterPositions()"
             :fixed-header="true"
             disable-sort
             :items-per-page="-1"
@@ -88,10 +88,43 @@
                          @click="item.edit = true">
                     <v-icon>mdi-pencil</v-icon>
                   </v-btn>
-                  <v-btn x-small fab text class="d-inline-block"
-                         @click="deletePosition(item)">
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
+                  <v-dialog
+                      v-model="item.deleteConfirm"
+                      width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-btn x-small fab text class="d-inline-block"  v-on="on">
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                      >
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Are you sure you want to delete this position: <strong>{{ item.position }}</strong>?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="item.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="deletePosition(item)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </div>
               </td>
             </tr>
@@ -144,7 +177,7 @@
       async getPositions() {
         try {
           const {data} = await getRequest(`/position`)
-          this.positions = orderBy(data, [p => p.position.toLowerCase()])
+          this.positions = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -199,6 +232,9 @@
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      filterPositions () {
+        return orderBy(this.positions.filter(p => { return !p.archived}), [p => p.position.toLowerCase()])
       },
     }
   }

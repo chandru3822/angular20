@@ -665,6 +665,7 @@ CREATE TABLE if not exists  flow."position"
     org_type_id           integer,
     secondary_org_type_id integer,
     active                boolean DEFAULT true,
+    archived              boolean not null DEFAULT false,
     date_created         timestamp without time zone DEFAULT now(),
     date_modified         timestamp without time zone,
     created_by_id        integer,
