@@ -64,9 +64,9 @@
           </v-col>
 
           <v-col cols="12" v-else>
-            <template v-for="workType in processStepsByWorkType">
-              <h4 class="text-left work-type-header">{{workType.workType}}</h4>
-              <ProjectProcessStepSnippet :steps="workType.processSteps" :projectId="projectId"/>
+            <template v-for="step in processStepsByName">
+              <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
+              <ProjectProcessStepSnippet :steps="step.processSteps" :projectId="projectId"/>
             </template>
           </v-col>
 
@@ -136,13 +136,13 @@ export default {
     this.getNotes()
   },
   computed: {
-    processStepsByWorkType () {
-      const workTypes = [...new Set(this.processSteps.map(step => step.workType))]
+    processStepsByName () {
+      const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 
-      return workTypes.map(workType => {
+      return names.map(processStepName => {
         return {
-          workType,
-          processSteps: this.processSteps.filter(step => step.workType === workType)
+          processStepName,
+          processSteps: this.processSteps.filter(step => step.processStepName === processStepName)
         }
       })
     }
