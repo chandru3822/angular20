@@ -6,6 +6,8 @@ import com.albatross.api.v1.flow.model.ProjectProcessStep;
 import com.albatross.api.v1.flow.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +29,13 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.getProjectsForProcess(processId), HttpStatus.OK);
   }
 
+  @GetMapping(value= "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Page<Project>> searchProjects(@RequestParam String query, Pageable pageable) {
+    return new ResponseEntity<>(projectService.searchProjects(query, pageable), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Project> getProject(@PathVariable Long projectId) {
-    // @TODO: wtf do we need a processId here?
     return projectService.getProject(projectId)
       .map(ResponseEntity::ok)
       .orElse(ResponseEntity.notFound().build());

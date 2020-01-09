@@ -13,6 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Service;
@@ -62,6 +66,18 @@ public class ProjectService {
   public List<Project> getProjectsForProcess(Long processId) {
     User user = securityService.getCurrentUser();
     return sqlCache.query("project.getAllForCompanyProcess", ImmutableMap.of("companyId", user.getCompanyId() , "processId", processId), Project.class);
+  }
+
+  public Page<Project> searchProjects(String query, Pageable pageable) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("query", query);
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
+    List<Project> projects = sqlCache.query("project.search", params, Project.class);
+    Integer total = sqlCache.queryForObject("project.searchCount", params, Integer.class);
+    return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
   public Optional<Project> getProject(Long projectId) {
