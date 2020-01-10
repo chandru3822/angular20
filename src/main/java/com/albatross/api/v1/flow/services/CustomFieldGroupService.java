@@ -152,8 +152,7 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupOrder", customFieldGroup.getGroupOrder());
-    // @TODO: Removing schedulable from the query since that functionality needs to be updated
-//    params.put("schedulable", customFieldGroup.getSchedulable() == null ? false : customFieldGroup.getSchedulable());
+    params.put("scheduleTypeId", customFieldGroup.getScheduleTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();
@@ -174,7 +173,7 @@ public class CustomFieldGroupService {
 
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
 
-    if(customFieldGroup.getSchedulable() && null != customFieldGroup.getSchedulingFields()) {
+    if(null != customFieldGroup.getScheduleTypeId() && null != customFieldGroup.getSchedulingFields()) {
       List<CustomField> newFieldList = new ArrayList<>();
       for(CustomField cf : customFieldGroup.getSchedulingFields()) {
         cf.setCustomFieldGroupId(cfg.getId());

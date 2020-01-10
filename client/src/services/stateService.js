@@ -1,10 +1,8 @@
-import axios from 'axios'
-
-const {VUE_APP_BASE_API} = process.env
+import {getRequest} from '@/helpers/helpers'
 
 export async function getStates() {
   try {
-    const {data, status} = await axios.get(`${VUE_APP_BASE_API}/api/v1/flow/state`)
+    const {data, status} = await getRequest(`/state`)
     return {data, status}
   } catch (e) {
     throw e
@@ -13,7 +11,7 @@ export async function getStates() {
 
 export async function getActiveStates() {
   try {
-    const {data, status} = await axios.get(`${VUE_APP_BASE_API}/api/v1/flow/state/active`)
+    const {data, status} = await getRequest(`/state/active`)
     return {data, status}
   } catch (e) {
     throw e

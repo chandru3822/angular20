@@ -1,10 +1,8 @@
-import axios from 'axios'
-
-const {VUE_APP_BASE_API} = process.env
+import {getRequest} from '@/helpers/helpers'
 
 export async function getStatusTypes() {
   try {
-    const {data, status} = await axios.get(`${VUE_APP_BASE_API}/api/v1/flow/processStep/status`)
+    const {data, status} = await getRequest(`/processStep/status`)
     return {data, status}
   } catch (e) {
     throw e

@@ -13,10 +13,10 @@ import java.util.List;
 @Setter
 public class CustomFieldGroup {
 
-  private Long id, companyObjectTypeId, objectTypeId, groupOrder, processStepId;
+  private Long id, companyObjectTypeId, objectTypeId, groupOrder, processStepId, scheduleTypeId;
   // originalGroupName used for frontend validation (without having to loop to populate it on frontend)
-  private String groupName, objectType, originalGroupName;
-  private Boolean archived, schedulable;
+  private String groupName, objectType, originalGroupName, scheduleType;
+  private Boolean archived;
 
   // This list is used when looking at custom field ASSIGNMENTS to a group
   private List<CustomField> customFields;

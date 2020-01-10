@@ -1,0 +1,31 @@
+<sql>
+  <workType.getTypesForCompany><![CDATA[
+    select id, company_id, work_type, archived
+    from flow.work_type
+    where company_id = :companyId
+      and archived is not true
+  ]]></workType.getTypesForCompany>
+
+  <workType.getType><![CDATA[
+    select id, company_id, work_type, archived
+    from flow.work_type
+    where id = :id
+  ]]></workType.getType>
+
+  <workType.deleteType><![CDATA[
+    update flow.work_type
+    set archived = true
+    where id = :id
+  ]]></workType.deleteType>
+
+  <workType.updateType><![CDATA[
+    update flow.work_type
+    set work_type = :workType
+    where id = :id
+  ]]></workType.updateType>
+
+  <workType.insertType><![CDATA[
+    insert into flow.work_type(company_id, work_type)
+    values (:companyId, :workType)
+  ]]></workType.insertType>
+</sql>
