@@ -3,7 +3,7 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Work Types</v-toolbar-title>
+          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Work Queue Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="addNew = !addNew; newType = {}">

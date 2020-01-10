@@ -20,9 +20,10 @@
                 tabindex=1
                 v-model="newGroup.groupName"
             ></v-text-field>
-            <label>Schedule Group:</label>
-            <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="getSchedulingFields(); getScheduleTypes()">
-            <!--  todo: help the ui. just getting it working for now  -->
+            <div v-if="showScheduleGroupCheckbox()">
+              <label>Schedule Group:</label>
+              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="getSchedulingFields(); getScheduleTypes()">
+            </div>
             <div v-if="newGroup.schedulable">
               <v-select
                   v-model="newGroup.scheduleTypeId"
@@ -501,6 +502,11 @@
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
+      },
+      showScheduleGroupCheckbox () {
+        let tempGroups = this.customFieldGroups.filter(cfg => !cfg.archived)
+        return tempGroups?.length === 0 ||
+          tempGroups.find(cfg => cfg.scheduleTypeId) === undefined
       }
     }
 
