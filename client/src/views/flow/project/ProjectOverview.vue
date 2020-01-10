@@ -1,5 +1,39 @@
 <template>
-<v-row>
+<v-row id="project-container">
+  <v-row>
+    <v-col cols="12">
+      <v-row class="project-header">
+        <v-col cols="4" class="text-left pl-5">
+          <div class="project-title">
+            <router-link :to="`/lead/${customer.id}`">{{ customer.fullName}}</router-link>
+          </div>
+          <div class="project-subtitle">
+            {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
+          </div>
+        </v-col>
+
+        <v-col cols="8" class="pb-0">
+          <v-row justify="end" class="pb-0">
+            <UserCard
+              name="Riley Burgess"
+              role="Setter"
+              location="Colorado"
+              imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
+              class="user-card"/>
+
+            <UserCard
+              name="Mike Falls"
+              role="Closer"
+              location="Colorado"
+              imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
+              class="user-card"/>
+          </v-row>
+        </v-col>
+
+      </v-row>
+    </v-col>
+  </v-row>
+
   <v-col cols="12" lg="6">
 
     <v-col v-if="isFieldsLoading">
@@ -64,9 +98,9 @@
           </v-col>
 
           <v-col cols="12" v-else>
-            <template v-for="workType in processStepsByWorkType">
-              <h4 class="text-left work-type-header">{{workType.workType}}</h4>
-              <ProjectProcessStepSnippet :steps="workType.processSteps" :projectId="projectId"/>
+            <template v-for="step in processStepsByName">
+              <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
+              <ProjectProcessStepSnippet :steps="step.processSteps" :projectId="projectId"/>
             </template>
           </v-col>
 
@@ -106,6 +140,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import Snackbar from '@/components/Snackbar.vue'
+import UserCard from '@/views/flow/components/UserCard'
 
 export default {
   name: 'ProjectOverview',
@@ -116,7 +151,8 @@ export default {
     ProjectProcessStepSnippet,
     Attachments,
     NotesAndActivity,
-    Snackbar
+    Snackbar,
+    UserCard
   },
   data () {
     return {
@@ -127,22 +163,25 @@ export default {
       isFieldsLoading: true,
       notes: [],
       snackbar: {},
-      isProcessStepsExpanded: false
+      isProcessStepsExpanded: false,
+      companyId: this.$store.state.user.details.companyId,
+      customer: {}
     }
   },
   created () {
     this.getFieldGroups()
     this.getProcessSteps()
     this.getNotes()
+    this.getCustomer()
   },
   computed: {
-    processStepsByWorkType () {
-      const workTypes = [...new Set(this.processSteps.map(step => step.workType))]
+    processStepsByName () {
+      const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 
-      return workTypes.map(workType => {
+      return names.map(processStepName => {
         return {
-          workType,
-          processSteps: this.processSteps.filter(step => step.workType === workType)
+          processStepName,
+          processSteps: this.processSteps.filter(step => step.processStepName === processStepName)
         }
       })
     }
@@ -179,14 +218,40 @@ export default {
       } catch {
         console.log('done gone boom')
       }
+    },
+    getCustomer: async function () {
+      try {
+        const{data} = await getRequest(`/customer/project/${this.projectId}`)
+        this.customer = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.clickable {
-  cursor: pointer;
+#project-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+
+.project-header {
+  border-bottom: solid 1px #EAEAF4
+}
+.project-title {
+  font-size: 20px;
+}
+.project-subtitle {
+  font-size: 15px;
+}
+
+.user-card {
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .work-type-header {

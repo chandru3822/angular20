@@ -26,7 +26,7 @@
       <div class="requirement-btns">
         <a @click="hideCtrls"
            class="cancel-link">Cancel</a>
-        <v-btn @click="saveRequirement(null)" color="primaryButton" class="white--text py-1 px-2"
+        <v-btn @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
                :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
           {{ addMode ? 'Add' : 'Update' }}
         </v-btn>
@@ -36,7 +36,7 @@
             :key="requirement.id">
       <v-list-item v-show="requirementsCopy.length > 0">
         <v-list-item-action :title="requirement.complete ? 'Mark requirement as incomplete' : 'Mark requirement as complete'"
-                            @click="saveRequirement(requirement)">
+                            @click="saveRequirement(requirement, true)">
           <v-checkbox v-model="requirement.complete"></v-checkbox>
         </v-list-item-action>
         <v-list-item-content class="ml-3">
@@ -70,6 +70,7 @@
 <script>
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
+  import orderBy from 'lodash.orderby'
   import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
@@ -110,7 +111,7 @@
         addMode: false,
         editMode: false,
         snackbar: {},
-        requirementsCopy: this.requirements
+        requirementsCopy: orderBy(this.requirements, requirement => requirement.position)
       }
     },
     methods: {
@@ -129,7 +130,7 @@
         this.editMode = true
         this.requirement = Object.assign({}, requirement)
       },
-      async saveRequirement(requirement) {
+      async saveRequirement(requirement, checkboxWasClicked) {
         if (!requirement) {
           this.requirement.requirementTypeId = this.requirementTypeId
           this.requirement.archived = this.requirement.archived ? this.requirement.archived : false
@@ -140,7 +141,7 @@
         }
 
         // runs when user clicks a checkbox next to a requirement
-        if (!this.addMode && !this.editMode) {
+        if (checkboxWasClicked) {
           this.requirement.complete = this.requirement.complete ? this.requirement.complete : false
 
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -169,6 +170,7 @@
           this.requirementsCopy[updatedRequirementIndex].description = data.description
           this.editMode = false
         }
+        this.requirementsCopy = orderBy(this.requirementsCopy, requirement => requirement.position)
       },
       async archiveRequirement(requirementId) {
         await putRequest(`/ahj/${this.itemType}/requirement/${requirementId}/archive`, null, 'blueraven')

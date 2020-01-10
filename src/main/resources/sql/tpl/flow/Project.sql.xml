@@ -11,6 +11,32 @@
       and cp.process_id = :processId;
   ]]></project.getAllForCompanyProcess>
 
+  <project.search><![CDATA[
+    select
+      p.id,
+      p.project_name,
+      p.customer_id
+    from flow.project p
+    inner join flow.company_process cp on cp.id = p.company_process_id
+    inner join flow.customer c on c.id = p.customer_id
+    where
+      cp.company_id = :companyId and
+      p.project_name ilike '%' || :query || '%'
+    order by p.date_created desc
+    limit :limit
+    offset :offset
+  ]]></project.search>
+
+  <project.searchCount><![CDATA[
+    select count(*)
+    from flow.project p
+    inner join flow.company_process cp on cp.id = p.company_process_id
+    inner join flow.customer c on c.id = p.customer_id
+    where
+      cp.company_id = :companyId and
+      p.project_name ilike '%' || :query || '%'
+  ]]></project.searchCount>
+
   <project.get>
     <![CDATA[
       select p.id,
