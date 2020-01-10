@@ -219,7 +219,7 @@
             </template>
 
             <template #item.start="{ item }">
-              {{item.start | formatDate('date', timezone.value)}}
+              {{item.start | formatDate('date')}}
             </template>
 
             <template #item.projectName="{ item }">

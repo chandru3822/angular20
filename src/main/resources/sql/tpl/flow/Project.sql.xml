@@ -15,10 +15,15 @@
     select
       p.id,
       p.project_name,
-      p.customer_id
+      p.customer_id,
+      p.date_created,
+      cp.status_type_id,
+      st.status_type,
+      pr.process_name
     from flow.project p
     inner join flow.company_process cp on cp.id = p.company_process_id
-    inner join flow.customer c on c.id = p.customer_id
+    inner join flow.process pr on pr.id = cp.process_id
+    inner join flow.status_type st on st.id = cp.status_type_id
     where
       cp.company_id = :companyId and
       p.project_name ilike '%' || :query || '%'

@@ -103,7 +103,7 @@
               </td>
               <td class="text-left">{{ item.processStepName }}</td>
               <td class="text-left">{{ item.orgName }}</td>
-              <td class="text-left">{{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date', $store.state.user.details.timezone.value) }}</td>
+              <td class="text-left">{{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date') }}</td>
               <td class="text-center">
                 <input type="checkbox" v-model="item.initialStep"
                        disabled readonly>
