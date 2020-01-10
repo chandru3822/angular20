@@ -358,3 +358,8 @@ SELECT setval('flow.attachment_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.a
 insert into flow.system_value(system_value)values('Current User ID');
 insert into flow.system_value(system_value)values('Current Project ID');
 
+INSERT INTO flow.attachment_type (id, attachment_type, attachment_code, company_id, archived, key_pattern_id, is_system)
+VALUES
+(33, 'PROJECT_DOCUMENT', 'PROJECT_DOCUMENT', 1, false, 1, true),
+(34, 'PROCESS_STEP_DOCUMENT', 'PROCESS_STEP_DOCUMENT', 1, false, 1, true)
+ON CONFLICT DO NOTHING;

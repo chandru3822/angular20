@@ -1,1 +1,0 @@
-DELETE FROM brs.list_of_value WHERE id = 160 AND name = 'false';

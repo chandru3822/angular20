@@ -4205,3 +4205,6 @@ alter table flow."user"
 ADD CONSTRAINT u_user_status_type_id_fk FOREIGN KEY (user_status_type_id)
         REFERENCES flow.user_status_type (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+DELETE FROM brs.list_of_value WHERE id = 160 AND name = 'false';
+DELETE FROM brs.list_of_value WHERE parent_id = 4;
