@@ -2,9 +2,11 @@
 <v-container id="projects-container">
   <v-row>
     <v-col cols="12">
-
       <v-toolbar class="white elevation-1 mt-3">
-        <v-row class="align-center">
+        <v-row class="justify-space-between align-center">
+          <v-col class="text-left" cols="12" lg="6">
+            <v-toolbar-title>Projects</v-toolbar-title>
+          </v-col>
           <v-col cols="12" lg="6">
             <v-text-field
               class="mt-5"
@@ -15,9 +17,6 @@
               @input="searchProjects"
             />
           </v-col>
-
-<!--          @TODO: @humes, remove this once the screen is done -->
-          <v-col cols="12" lg="6" style="color: red;"><h2>Still a WIP...</h2></v-col>
         </v-row>
       </v-toolbar>
 
@@ -47,6 +46,9 @@
           <tr class="clickable" @click="$router.push({name: 'projectOverview', params: {projectId: project.id}})">
             <td class="text-left">{{project.id}}</td>
             <td class="text-left">{{project.projectName}}</td>
+            <td class="text-left">{{project.processName}}</td>
+            <td class="text-left">{{project.statusType}}</td>
+            <td class="text-left">{{project.dateCreated | formatDate('date')}}</td>
           </tr>
         </template>
       </v-data-table>
@@ -69,7 +71,10 @@ export default {
       },
       headers: [
         {text: 'ID', value: 'id', show: true},
-        {text: 'Name', value: 'projectName', show: true}
+        {text: 'Name', value: 'projectName', show: true},
+        {text: 'Process', value: 'processName', show: true},
+        {text: 'Status', value: 'statusType', show: true},
+        {text: 'Date Created', value: 'dateCreated', show: true}
       ],
       footerProps: {
         'items-per-page-options': [25, 50, 100],
