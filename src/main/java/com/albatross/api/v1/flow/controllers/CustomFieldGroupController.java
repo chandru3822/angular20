@@ -58,9 +58,9 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getCustomFieldsInGroup(groupId);
   }
 
-  @GetMapping(value = "/getScheduleTypesAndFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ScheduleFieldType> getScheduleTypesAndFields () {
-    return customFieldGroupService.getScheduleTypesAndFields();
+  @GetMapping(value = "/getEventTypesAndFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ScheduleFieldType> getEventTypesAndFields () {
+    return customFieldGroupService.getEventTypesAndFields();
   }
 
   @GetMapping(value = "/getAvailableCustomFields", produces = MediaType.APPLICATION_JSON_VALUE)

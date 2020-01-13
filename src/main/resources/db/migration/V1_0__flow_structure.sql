@@ -72,13 +72,13 @@ CREATE TABLE if not exists flow.company
 
 CREATE INDEX if not exists company_parent_company_id_idx ON flow.company (parent_company_id);
 
-CREATE TABLE if not exists flow.schedule_type
+CREATE TABLE if not exists flow.event_type
 (
     id              serial                NOT NULL,
     company_id      integer,
-    schedule_type character varying(30),
+    event_type character varying(30),
     archived boolean default false,
-    CONSTRAINT schedule_type_pk PRIMARY KEY (id),
+    CONSTRAINT event_type_pk PRIMARY KEY (id),
     CONSTRAINT st_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -87,15 +87,15 @@ CREATE TABLE if not exists flow.schedule_type
         OIDS= FALSE
     );
 
-CREATE INDEX if not exists st_company_id_idx ON flow.schedule_type (company_id);
+CREATE INDEX if not exists st_company_id_idx ON flow.event_type (company_id);
 
-CREATE TABLE if not exists flow.work_type
+CREATE TABLE if not exists flow.work_queue_type
 (
     id              serial                NOT NULL,
     company_id      integer,
-    work_type character varying(30),
+    work_queue_type character varying(30),
     archived boolean default false,
-    CONSTRAINT work_type_pk PRIMARY KEY (id),
+    CONSTRAINT work_queue_type_pk PRIMARY KEY (id),
     CONSTRAINT wt_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -104,7 +104,7 @@ CREATE TABLE if not exists flow.work_type
         OIDS= FALSE
     );
 
-CREATE INDEX if not exists wt_company_id_idx ON flow.work_type (company_id);
+CREATE INDEX if not exists wqt_company_id_idx ON flow.work_queue_type (company_id);
 
 CREATE TABLE if NOT EXISTS flow.flow_type
 (
@@ -1288,7 +1288,6 @@ CREATE TABLE if not exists flow.process_step
     created_by_id  integer                not null,
     modified_by_id integer,
     archived boolean not null default false,
-    work_type_id integer,
     CONSTRAINT process_step_pk PRIMARY KEY (id),
     CONSTRAINT process_step_parent_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
@@ -1298,14 +1297,10 @@ CREATE TABLE if not exists flow.process_step
         ON UPDATE NO ACTION ON DELETE NO ACTION,
     CONSTRAINT process_step_modified_by_id_fk FOREIGN KEY (modified_by_id)
         REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT process_step_work_type_id_fk FOREIGN KEY (work_type_id)
-        REFERENCES flow.work_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
 CREATE INDEX if not exists ps_company_id_idx ON flow.process_step (company_id);
-CREATE INDEX if not exists ps_work_type_id_idx ON flow.process_step (work_type_id);
 
 
 CREATE TABLE if not exists flow.process_step_action
@@ -1396,7 +1391,7 @@ CREATE TABLE if NOT EXISTS flow.custom_field_group
     group_order integer,
     archived boolean not null default false,
     process_step_id integer,
-    schedule_type_id integer,
+    event_type_id integer,
     CONSTRAINT custom_field_group_pk PRIMARY KEY (id),
     CONSTRAINT cfgt_object_type_id_fk FOREIGN KEY (object_type_id)
         REFERENCES flow.object_type (id) MATCH SIMPLE
@@ -1404,14 +1399,14 @@ CREATE TABLE if NOT EXISTS flow.custom_field_group
     CONSTRAINT cfgt_process_step_id_fk FOREIGN KEY (process_step_id)
         REFERENCES flow.process_step (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT cfgt_schedule_type_id_fk FOREIGN KEY (schedule_type_id)
-        REFERENCES flow.schedule_type (id) MATCH SIMPLE
+    CONSTRAINT cfgt_event_type_id_fk FOREIGN KEY (event_type_id)
+        REFERENCES flow.event_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
 CREATE INDEX if not exists cfgt_object_type_id_idx ON flow.custom_field_group (object_type_id);
 CREATE INDEX if not exists cfgt_process_step_id_idx ON flow.custom_field_group (process_step_id);
-CREATE INDEX if not exists cfgt_schedule_type_id_idx ON flow.custom_field_group (schedule_type_id);
+CREATE INDEX if not exists cfgt_event_type_id_idx ON flow.custom_field_group (event_type_id);
 
 COMMENT ON TABLE flow.custom_field_group IS
     'Stores metadata for groups of custom fields. May retrieve custom fields

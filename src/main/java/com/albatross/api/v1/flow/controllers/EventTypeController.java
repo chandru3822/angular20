@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.WorkType;
-import com.albatross.api.v1.flow.services.WorkTypeService;
+import com.albatross.api.v1.flow.model.EventType;
+import com.albatross.api.v1.flow.services.EventTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,30 +17,30 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/workType")
-public class WorkTypeController {
+@RequestMapping(value = "/api/v1/flow/eventType")
+public class EventTypeController {
 
   @Autowired
-  private WorkTypeService workTypeService;
+  private EventTypeService eventTypeService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkType> getWorkTypes () {
-    return workTypeService.getWorkTypes();
+  public List<EventType> getEventTypes () {
+    return eventTypeService.getEventTypes();
   }
 
   @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long typeId) {
-    workTypeService.deleteType(typeId);
+    eventTypeService.deleteType(typeId);
   }
 
   @PutMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateType(@RequestBody WorkType type) {
-    workTypeService.updateType(type);
+  public void updateType(@RequestBody EventType type) {
+    eventTypeService.updateType(type);
   }
 
   @PostMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<WorkType> insertType(@RequestBody WorkType type) {
-    return workTypeService.insertType(type);
+  public Optional<EventType> insertType(@RequestBody EventType type) {
+    return eventTypeService.insertType(type);
   }
 
 }

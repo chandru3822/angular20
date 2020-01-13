@@ -140,10 +140,10 @@ export default {
           path: '/settings/orgTypes',
           title: 'Organization Types',
         }, {
-          path: '/settings/scheduleTypes',
+          path: '/settings/eventTypes',
           title: 'Scheduling Tool Event Types',
         }, {
-          path: '/settings/workTypes',
+          path: '/settings/workQueueTypes',
           title: 'Work Queue Types',
         }, {
           header: 'Processes'

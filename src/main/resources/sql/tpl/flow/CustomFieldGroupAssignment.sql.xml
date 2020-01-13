@@ -8,7 +8,7 @@
   <customFieldGroupAssignment.getOne><![CDATA[
     select cfg.*,
        ot.object_type,
-       st.schedule_type,
+       et.event_type,
        coalesce((
                     SELECT array_to_json(array_agg(row_to_json(customFields)))
                     FROM (
@@ -28,7 +28,7 @@
     from flow.custom_field_group cfg
              inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
              inner join flow.object_type ot on ot.id = cot.object_type_id
-             left join flow.schedule_type st on st.id = cfg.schedule_type_id
+             left join flow.event_type et on et.id = cfg.event_type_id
     where cfg.id = :id
   ]]></customFieldGroupAssignment.getOne>
 
@@ -96,7 +96,7 @@
     order by cfga.field_order
   ]]></customFieldGroupAssignment.getCustomFieldsInGroup>
 
-  <customFieldGroupAssignment.getScheduleTypesAndFields><![CDATA[
+  <customFieldGroupAssignment.getEventTypesAndFields><![CDATA[
     select sft.id,
            sft.field_type,
            sft.required_data_type_id,
@@ -123,7 +123,7 @@
     from flow.schedule_field_type sft
     where sft.archived is not true
     order by sft.id
-  ]]></customFieldGroupAssignment.getScheduleTypesAndFields>
+  ]]></customFieldGroupAssignment.getEventTypesAndFields>
 
   <customFieldGroupAssignment.getAvailableCustomFieldsInGroup><![CDATA[
     select cf.id,cf.field_name, cfot.company_object_type_id

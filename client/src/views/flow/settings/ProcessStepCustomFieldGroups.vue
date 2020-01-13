@@ -22,15 +22,15 @@
             ></v-text-field>
             <div v-if="showScheduleGroupCheckbox()">
               <label>Schedule Group:</label>
-              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="getSchedulingFields(); getScheduleTypes()">
+              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="getSchedulingFields(); getEventTypes()">
             </div>
             <div v-if="newGroup.schedulable">
               <v-select
-                  v-model="newGroup.scheduleTypeId"
-                  :items="scheduleTypes"
+                  v-model="newGroup.eventTypeId"
+                  :items="eventTypes"
                   label="Scheduling Tool Event Type"
                   placeholder="Select One..."
-                  item-text="scheduleType"
+                  item-text="eventType"
                   item-value="id"
               ></v-select>
               <div  v-for="(sf, index) in schedulingFields" :key="index">
@@ -49,7 +49,7 @@
           <v-btn
               color="primary"
               class="white--text mr-2"
-              :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.scheduleTypeId)))"
+              :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.eventTypeId)))"
               @click="saveFieldGroup()">
             Save
           </v-btn>
@@ -84,7 +84,7 @@
                     {{item.groupName}}
                   </td>
                   <td><div class="item-icons">
-                    <v-btn v-if="!item.scheduleTypeId" small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
+                    <v-btn v-if="!item.eventTypeId" small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
@@ -175,20 +175,20 @@
                   </v-col>
                   <v-col  cols="12" justify="center" class="px-3 py-0"
                           v-if="item.customFields && item.customFields.length > 0">
-                    <div v-if="item.scheduleTypeId">Scheduling Tool Event Type: {{item.scheduleType}}</div>
+                    <div v-if="item.eventTypeId">Scheduling Tool Event Type: {{item.eventType}}</div>
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                                group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                       <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                               :key="index" dense class="pa-0"  color="transparent">
-                        <v-list-item :class="{grab: !item.scheduleTypeId}">
+                        <v-list-item :class="{grab: !item.eventTypeId}">
                           <v-list-item-action dense>
-                            <v-icon v-if="!item.scheduleTypeId">drag_handle</v-icon>
+                            <v-icon v-if="!item.eventTypeId">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content class="pa-0">
                             {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
                           </v-list-item-content>
                           <v-dialog
-                              v-if="!item.scheduleTypeId"
+                              v-if="!item.eventTypeId"
                               v-model="cf.deleteConfirm"
                               width="500">
                             <template v-slot:activator="{ on }">
@@ -246,7 +246,7 @@
   import draggable from 'vuedraggable'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getScheduleTypes} from '@/services/scheduleService'
+  import {getEventTypes} from '@/services/scheduleService'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
@@ -287,7 +287,7 @@
         ],
         expanded: [],
         schedulingFields: [],
-        scheduleTypes: []
+        eventTypes: []
       }
     },
     computed: {},
@@ -299,7 +299,7 @@
           this.newGroup.processStepId = this.$route.params.id
 
           this.newGroup.schedulingFields = this.newGroup.schedulable ? this.newGroup.schedulingFields : []
-          this.newGroup.scheduleTypeId = this.newGroup.schedulable ? this.newGroup.scheduleTypeId : null
+          this.newGroup.eventTypeId = this.newGroup.schedulable ? this.newGroup.eventTypeId : null
 
           const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
           this.customFieldGroups.push(data)
@@ -479,7 +479,7 @@
         if(this.newGroup.schedulable) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getRequest(`/customFieldGroup/getScheduleTypesAndFields`)
+            const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields`)
             this.schedulingFields = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -489,12 +489,12 @@
           }
         }
       },
-      async getScheduleTypes () {
+      async getEventTypes () {
         if(this.newGroup.schedulable) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            const {data} = await getScheduleTypes()
-            this.scheduleTypes = data
+            const {data} = await getEventTypes()
+            this.eventTypes = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -506,7 +506,7 @@
       showScheduleGroupCheckbox () {
         let tempGroups = this.customFieldGroups.filter(cfg => !cfg.archived)
         return tempGroups?.length === 0 ||
-          tempGroups.find(cfg => cfg.scheduleTypeId) === undefined
+          tempGroups.find(cfg => cfg.eventTypeId) === undefined
       }
     }
 

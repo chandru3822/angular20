@@ -1,31 +1,31 @@
 <sql>
-  <workType.getTypesForCompany><![CDATA[
-    select id, company_id, work_type, archived
-    from flow.work_type
+  <workQueueType.getTypesForCompany><![CDATA[
+    select id, company_id, work_queue_type, archived
+    from flow.work_queue_type
     where company_id = :companyId
       and archived is not true
-  ]]></workType.getTypesForCompany>
+  ]]></workQueueType.getTypesForCompany>
 
-  <workType.getType><![CDATA[
-    select id, company_id, work_type, archived
-    from flow.work_type
+  <workQueueType.getType><![CDATA[
+    select id, company_id, work_queue_type, archived
+    from flow.work_queue_type
     where id = :id
-  ]]></workType.getType>
+  ]]></workQueueType.getType>
 
-  <workType.deleteType><![CDATA[
-    update flow.work_type
+  <workQueueType.deleteType><![CDATA[
+    update flow.work_queue_type
     set archived = true
     where id = :id
-  ]]></workType.deleteType>
+  ]]></workQueueType.deleteType>
 
-  <workType.updateType><![CDATA[
-    update flow.work_type
-    set work_type = :workType
+  <workQueueType.updateType><![CDATA[
+    update flow.work_queue_type
+    set work_queue_type = :workQueueType
     where id = :id
-  ]]></workType.updateType>
+  ]]></workQueueType.updateType>
 
-  <workType.insertType><![CDATA[
-    insert into flow.work_type(company_id, work_type)
-    values (:companyId, :workType)
-  ]]></workType.insertType>
+  <workQueueType.insertType><![CDATA[
+    insert into flow.work_queue_type(company_id, work_queue_type)
+    values (:companyId, :workQueueType)
+  ]]></workQueueType.insertType>
 </sql>

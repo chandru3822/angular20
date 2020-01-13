@@ -99,11 +99,11 @@ export default new Router({
             path: 'orgTypes',
             component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/OrgTypes.vue'),
           }, {
-            path: 'scheduleTypes',
-            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/ScheduleTypes.vue'),
+            path: 'eventTypes',
+            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/EventTypes.vue'),
           }, {
-            path: 'workTypes',
-            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/WorkTypes.vue'),
+            path: 'workQueueTypes',
+            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/WorkQueueTypes.vue'),
           }, {
             path: 'customFields',
             component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue'),

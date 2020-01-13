@@ -3,7 +3,7 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Work Queue Types</v-toolbar-title>
+          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Scheduling Tool Event Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="addNew = !addNew; newType = {}">
@@ -14,25 +14,25 @@
         </v-toolbar>
         <v-container>
           <v-text-field v-if="addNew"
-                        v-model="newType.workType"
+                        v-model="newType.eventType"
                         placeholder="Enter a type"
-                        label="Work Type">
+                        label="Event Type">
           </v-text-field>
-          <v-btn v-if="addNew" :disabled="!newType.workType" @click="addNewType">Save</v-btn>
-          <v-list v-for="(wt, index) in filterBy(workTypes, false, 'archived')"
+          <v-btn v-if="addNew" :disabled="!newType.eventType" @click="addNewType">Save</v-btn>
+          <v-list v-for="(st, index) in filterBy(eventTypes, false, 'archived')"
                   :key="index" class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content class="text-left">
-                <v-text-field class="one-hunned" v-if="selectedWorkTypeId === wt.id" v-model="wt.workType">
+                <v-text-field class="one-hunned" v-if="selectedEventTypeId === st.id" v-model="st.eventType">
                 </v-text-field>
-                <div v-else>{{wt.workType}}</div>
+                <div v-else>{{st.eventType}}</div>
               </v-list-item-content>
               <v-list-item-action class="clickable">
-                <v-icon v-if="selectedWorkTypeId === wt.id" @click="saveType(wt)">save</v-icon>
-                <v-icon v-else @click="selectedWorkTypeId = wt.id">edit</v-icon>
+                <v-icon v-if="selectedEventTypeId === st.id" @click="saveType(st)">save</v-icon>
+                <v-icon v-else @click="selectedEventTypeId = st.id">edit</v-icon>
               </v-list-item-action>
               <v-dialog
-                  v-model="wt.deleteConfirm"
+                  v-model="st.deleteConfirm"
                   width="500">
                 <template v-slot:activator="{ on }">
                   <v-list-item-action class="clickable" v-on="on">
@@ -48,7 +48,7 @@
                   </v-card-title>
 
                   <v-card-text>
-                    Are you sure you want to delete this work type: <strong>{{ wt.workType }}</strong>?
+                    Are you sure you want to delete this event type: <strong>{{ st.eventType }}</strong>?
                   </v-card-text>
 
                   <v-divider></v-divider>
@@ -56,13 +56,13 @@
                   <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
-                        @click="wt.deleteConfirm = false">
+                        @click="st.deleteConfirm = false">
                       No
                     </v-btn>
                     <v-btn
                         color="primary"
                         text
-                        @click="wt.archived = true; deleteType(wt.id)">
+                        @click="st.archived = true; deleteType(st.id)">
                       Yes
                     </v-btn>
                   </v-card-actions>
@@ -86,7 +86,7 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
-    name: 'Works',
+    name: 'Events',
     mixins: [Vue2Filters.mixin],
     components: {
       Snackbar
@@ -95,38 +95,38 @@
       return {
         snackbar: {},
         IS_MOBILE,
-        workTypes: [],
+        eventTypes: [],
         addNew: false,
         newType: {},
-        selectedWorkTypeId: null,
+        selectedEventTypeId: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId
       }
     },
     computed: {},
     methods: {
-      async getWorkTypes() {
+      async getEventTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/workType`)
-          this.workTypes = orderBy(data, [wt => wt.workType.toLowerCase()])
+          const {data} = await getRequest(`/eventType`)
+          this.eventTypes = orderBy(data, [st => st.eventType.toLowerCase()])
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Types')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async deleteType(typeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/workType/type/${typeId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Type')
+          await deleteRequest(`/eventType/type/${typeId}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Event Type')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Type')
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Event Type')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -134,13 +134,13 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newType.companyId = this.companyId
-          const {data} = await postRequest(`/workType/type`, this.newType)
+          const {data} = await postRequest(`/eventType/type`, this.newType)
 
-          this.snackbar = getSnackbar('SUCCESS', 'Work Type Added')
+          this.snackbar = getSnackbar('SUCCESS', 'Event Type Added')
 
           // add it to the records already on the screen
-          this.workTypes.push(data)
-          this.workTypes = orderBy(this.workTypes, [wt => wt.workType.toLowerCase()])
+          this.eventTypes.push(data)
+          this.eventTypes = orderBy(this.eventTypes, [st => st.eventType.toLowerCase()])
 
           // reset the new process fields
           this.addNew = false
@@ -149,27 +149,27 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Work Type')
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Event Type')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async saveType(wt) {
+      async saveType(st) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          this.selectedWorkTypeId = null
-          wt.modifiedById = this.userId
-          await putRequest(`/workType/type`, wt)
-          this.snackbar = getSnackbar('SUCCESS', 'Work Type Saved')
+          this.selectedEventTypeId = null
+          st.modifiedById = this.userId
+          await putRequest(`/eventType/type`, st)
+          this.snackbar = getSnackbar('SUCCESS', 'Event Type Saved')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Work Type')
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Event Type')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
     },
     async created() {
-      this.getWorkTypes()
+      this.getEventTypes()
     }
   }
 </script>

@@ -7,8 +7,8 @@ import lombok.Data;
  */
 
 @Data
-public class WorkType {
+public class EventType {
     private Long id, companyId;
-    private String workType;
+    private String eventType;
     private Boolean archived;
 }

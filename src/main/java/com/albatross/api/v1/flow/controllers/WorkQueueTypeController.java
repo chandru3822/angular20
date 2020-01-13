@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.ScheduleType;
-import com.albatross.api.v1.flow.services.ScheduleTypeService;
+import com.albatross.api.v1.flow.model.WorkQueueType;
+import com.albatross.api.v1.flow.services.WorkQueueTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,30 +17,30 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/flow/scheduleType")
-public class ScheduleTypeController {
+@RequestMapping(value = "/api/v1/flow/workQueueType")
+public class WorkQueueTypeController {
 
   @Autowired
-  private ScheduleTypeService scheduleTypeService;
+  private WorkQueueTypeService workQueueTypeService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ScheduleType> getScheduleTypes () {
-    return scheduleTypeService.getScheduleTypes();
+  public List<WorkQueueType> getWorkQueueTypes () {
+    return workQueueTypeService.getWorkQueueTypes();
   }
 
   @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteType(@PathVariable Long typeId) {
-    scheduleTypeService.deleteType(typeId);
+    workQueueTypeService.deleteType(typeId);
   }
 
   @PutMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateType(@RequestBody ScheduleType type) {
-    scheduleTypeService.updateType(type);
+  public void updateType(@RequestBody WorkQueueType type) {
+    workQueueTypeService.updateType(type);
   }
 
   @PostMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ScheduleType> insertType(@RequestBody ScheduleType type) {
-    return scheduleTypeService.insertType(type);
+  public Optional<WorkQueueType> insertType(@RequestBody WorkQueueType type) {
+    return workQueueTypeService.insertType(type);
   }
 
 }

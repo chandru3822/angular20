@@ -120,13 +120,13 @@ public class CustomFieldGroupService {
     return results;
   }
 
-  public List<ScheduleFieldType> getScheduleTypesAndFields() {
+  public List<ScheduleFieldType> getEventTypesAndFields() {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
 
-    List<ScheduleFieldType> results = sqlCache.query("customFieldGroupAssignment.getScheduleTypesAndFields", params, new ScheduleFieldTypeMapper<>(ScheduleFieldType.class, om));
+    List<ScheduleFieldType> results = sqlCache.query("customFieldGroupAssignment.getEventTypesAndFields", params, new ScheduleFieldTypeMapper<>(ScheduleFieldType.class, om));
     return results;
   }
 
@@ -152,7 +152,7 @@ public class CustomFieldGroupService {
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupOrder", customFieldGroup.getGroupOrder());
-    params.put("scheduleTypeId", customFieldGroup.getScheduleTypeId());
+    params.put("eventTypeId", customFieldGroup.getEventTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();
@@ -173,7 +173,7 @@ public class CustomFieldGroupService {
 
     CustomFieldGroup cfg = addCustomFieldGroup(customFieldGroup, companyObjectTypeId);
 
-    if(null != customFieldGroup.getScheduleTypeId() && null != customFieldGroup.getSchedulingFields()) {
+    if(null != customFieldGroup.getEventTypeId() && null != customFieldGroup.getSchedulingFields()) {
       List<CustomField> newFieldList = new ArrayList<>();
       for(CustomField cf : customFieldGroup.getSchedulingFields()) {
         cf.setCustomFieldGroupId(cfg.getId());

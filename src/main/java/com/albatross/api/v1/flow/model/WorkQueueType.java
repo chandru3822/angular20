@@ -7,8 +7,8 @@ import lombok.Data;
  */
 
 @Data
-public class ScheduleType {
+public class WorkQueueType {
     private Long id, companyId;
-    private String scheduleType;
+    private String workQueueType;
     private Boolean archived;
 }
