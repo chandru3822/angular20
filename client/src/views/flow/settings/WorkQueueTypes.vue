@@ -82,6 +82,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
+  import {getWorkQueueTypes} from '@/services/workQueueTypeService'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
@@ -108,7 +109,7 @@
       async getWorkQueueTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/workQueueType`)
+          const {data} = await getWorkQueueTypes()
           this.workQueueTypes = orderBy(data, [wt => wt.workQueueType.toLowerCase()])
 
           this.$store.commit(AppMutations.SET_LOADING, false)

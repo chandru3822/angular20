@@ -89,7 +89,16 @@
                                    FROM flow.custom_field_group cfg
                                        inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
                                        left join flow.event_type et on et.id = cfg.event_type_id
-                                   WHERE cfg.process_step_id = ps.id AND cfg.archived is not true) cfGroups), '[]') AS custom_field_groups
+                                   WHERE cfg.process_step_id = ps.id AND cfg.archived is not true) cfGroups), '[]') AS custom_field_groups,
+                  coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(workQueueTypes)))
+                    FROM (
+                             SELECT pswqt.id,
+                                     pswqt.work_queue_type_id as "workQueueTypeId",
+                                     pswqt.process_step_id as "processStepId",
+                                     pswqt.archived
+                              FROM flow.process_step_work_queue_type pswqt
+                              WHERE pswqt.process_step_id = ps.id AND pswqt.archived is not true) workQueueTypes), '[]') AS "workQueueTypes"
       from flow.process_step ps
       where ps.id = :id
   ]]></processStep.get>
@@ -114,6 +123,29 @@
       insert into flow.process_step (company_id, process_step_name, created_by_id)
         values (:companyId, :name, :createdById)
   ]]></processStep.insert>
+
+  <processStep.updateWorkQueueType><![CDATA[
+      update flow.process_step_work_queue_type
+      set modified_by_id = :userId,
+          date_modified = now(),
+          archived = :archived
+      where id = :id;
+  ]]></processStep.updateWorkQueueType>
+
+  <processStep.insertWorkQueueType><![CDATA[
+      insert into flow.process_step_work_queue_type (process_step_id, work_queue_type_id, created_by_id)
+        values (:processStepId, :workQueueTypeId, :userId)
+  ]]></processStep.insertWorkQueueType>
+
+  <processStep.getWorkQueueTypesForStep><![CDATA[
+      select id,
+        work_queue_type_id,
+        process_step_id,
+        archived
+      from flow.process_step_work_queue_type
+      where process_step_id = :processStepId
+      and archived is not true
+  ]]></processStep.getWorkQueueTypesForStep>
 
   <processStep.getParentObjects><![CDATA[
     select *

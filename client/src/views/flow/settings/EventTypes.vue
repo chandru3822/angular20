@@ -82,6 +82,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
+  import {getEventTypes} from '@/services/scheduleService'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
@@ -108,7 +109,7 @@
       async getEventTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/eventType`)
+          const {data} = await getEventTypes()
           this.eventTypes = orderBy(data, [st => st.eventType.toLowerCase()])
 
           this.$store.commit(AppMutations.SET_LOADING, false)

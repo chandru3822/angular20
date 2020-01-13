@@ -4,6 +4,15 @@
       <v-col cols="12" class="py-0">
         <v-row class="mb-2">
           <v-col cols="12" class="py-0">
+            <v-select
+                v-model="selectedOptions"
+                :items="workQueueTypes"
+                multiple
+                label="Work Queue Types"
+                item-text="workQueueType"
+                return-object
+            ></v-select>
+            <v-btn @click="saveWorkQueueTypes">Save</v-btn>
             <ProcessStepCustomFieldGroups :customFieldGroups="processStep.customFieldGroups"></ProcessStepCustomFieldGroups>
           </v-col>
         </v-row>
@@ -158,6 +167,7 @@
   import Vue2Filters from 'vue2-filters'
   import Snackbar from '@/components/Snackbar.vue'
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
+  import {getWorkQueueTypes} from '@/services/workQueueTypeService'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
@@ -181,6 +191,9 @@
         companyId: this.$store.state.user.details.companyId,
         processStep: {},
         availableAttachmentTypes: [],
+        workQueueTypes: [],
+        checkedIds: [],
+        selectedOptions: [],
         breadcrumbs: [
           {
             text: 'Back',
@@ -194,7 +207,8 @@
     computed: {
     },
     async created () {
-      this.getProcessStepDetails()
+      await this.getProcessStepDetails()
+      this.getWorkQueueTypes()
     },
     methods: {
       async getProcessStepDetails () {
@@ -317,7 +331,64 @@
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async getWorkQueueTypes() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getWorkQueueTypes()
+          // this makes the multi-select work
+          data.forEach(d => {
+            let match = this.processStep.workQueueTypes.find(wqt => wqt.workQueueTypeId === d.id)
+            if(match) {
+              this.selectedOptions.push(d)
+            }
+          })
+          this.workQueueTypes = data
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveWorkQueueTypes() {
+        console.log('save here', this.selectedOptions)
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          //check each processStep.workQueueType, if not exists in selectedOptions then it got archived
+          this.processStep.workQueueTypes.forEach(wqt => {
+            let match = this.selectedOptions.find(o => o.id === wqt.workQueueTypeId)
+            if (!match) {
+              wqt.archived = true
+            }
+          })
+
+          //check each selectedOptions, if not exists in processStep.workQueueType already then it needs to be added
+          this.selectedOptions.forEach(o => {
+            let match = this.processStep.workQueueTypes.find(wqt => wqt.workQueueTypeId === o.id)
+            if (!match) {
+              let object = {
+                id: null,
+                processStepId: this.processStep.id,
+                workQueueTypeId: o.id,
+                archived: false
+              }
+              this.processStep?.workQueueTypes.push(object)
+            }
+          })
+
+          const {data} = await putRequest(`/processStep/saveWorkQueueTypesToStep`, this.processStep)
+          this.processStep.workQueueTypes = data
+          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Types Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Work Queue Types')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
 
   }

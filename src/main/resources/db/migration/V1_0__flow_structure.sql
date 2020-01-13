@@ -1302,6 +1302,30 @@ CREATE TABLE if not exists flow.process_step
 
 CREATE INDEX if not exists ps_company_id_idx ON flow.process_step (company_id);
 
+CREATE TABLE if not exists flow.process_step_work_queue_type
+(
+    id              serial                NOT NULL,
+    process_step_id      integer,
+    work_queue_type_id integer,
+    archived boolean default false,
+    date_created   timestamp without time zone DEFAULT now(),
+    date_modified   timestamp without time zone,
+    created_by_id  integer                not null,
+    modified_by_id integer,
+    CONSTRAINT process_step_work_queue_type_pk PRIMARY KEY (id),
+    CONSTRAINT pswqt_process_step_id_fk FOREIGN KEY (process_step_id)
+        REFERENCES flow.process_step (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT pswqt_work_queue_type_id_fk FOREIGN KEY (work_queue_type_id)
+        REFERENCES flow.work_queue_type (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT pswqt_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT pswqt_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
 
 CREATE TABLE if not exists flow.process_step_action
 (

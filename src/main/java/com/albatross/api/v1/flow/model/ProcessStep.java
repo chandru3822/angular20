@@ -23,5 +23,7 @@ public class ProcessStep {
   private List<CustomFieldGroup> customFieldGroups;
   private List<ProcessStepAttachmentType> attachmentTypes;
   private List<ProcessStepLink> links;
+
+  private List<ProcessStepWorkQueueType> workQueueTypes;
 }
 

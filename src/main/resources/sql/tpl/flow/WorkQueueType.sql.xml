@@ -4,6 +4,7 @@
     from flow.work_queue_type
     where company_id = :companyId
       and archived is not true
+    order by work_queue_type
   ]]></workQueueType.getTypesForCompany>
 
   <workQueueType.getType><![CDATA[
