@@ -99,6 +99,7 @@ public class CustomFieldValueService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("objectTypeId", ObjectType.PROJECT.id);
+    params.put("processStepTypeId", ObjectType.PROCESS_STEP.id);
     params.put("projectId", projectId);
 
     List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
@@ -112,8 +113,6 @@ public class CustomFieldValueService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-
-    // todo @humes - this is right, right? for projectProcessStep the object type is still 4? same as Process Step?
     params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
     params.put("projectProcessStepId", projectProcessStepId);
 
