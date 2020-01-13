@@ -1,38 +1,36 @@
 <template>
 <v-row id="project-container">
-  <v-row>
-    <v-col cols="12">
-      <v-row class="project-header">
-        <v-col cols="4" class="text-left pl-5">
-          <div class="project-title">
-            <router-link :to="`/lead/${customer.id}`">{{ customer.fullName}}</router-link>
-          </div>
-          <div class="project-subtitle">
-            {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
-          </div>
-        </v-col>
+  <v-col cols="12">
+    <v-row class="project-header">
+      <v-col cols="4" class="text-left pl-5">
+        <div class="project-title">
+          <router-link :to="`/lead/${customer.id}`">{{ customer.fullName}}</router-link>
+        </div>
+        <div class="project-subtitle">
+          {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
+        </div>
+      </v-col>
 
-        <v-col cols="8" class="pb-0">
-          <v-row justify="end" class="pb-0">
-            <UserCard
-              name="Riley Burgess"
-              role="Setter"
-              location="Colorado"
-              imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
-              class="user-card"/>
+      <v-col cols="8" class="pb-0">
+        <v-row justify="end" class="pb-0">
+          <UserCard
+            name="Riley Burgess"
+            role="Setter"
+            location="Colorado"
+            imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
+            class="user-card"/>
 
-            <UserCard
-              name="Mike Falls"
-              role="Closer"
-              location="Colorado"
-              imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
-              class="user-card"/>
-          </v-row>
-        </v-col>
+          <UserCard
+            name="Mike Falls"
+            role="Closer"
+            location="Colorado"
+            imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
+            class="user-card"/>
+        </v-row>
+      </v-col>
 
-      </v-row>
-    </v-col>
-  </v-row>
+    </v-row>
+  </v-col>
 
   <v-col cols="12" lg="6">
 

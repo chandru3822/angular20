@@ -22,6 +22,7 @@
             cfga.id as "customFieldGroupAssignmentId",
             cfga.custom_field_id as "customFieldId",
             cfga.field_order as "fieldOrder",
+            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
             cf.list_of_value_id as "listOfValueId",
             cf.field_name as "fieldName",
             cf.custom_field_sql_key_id as "customFieldSqlKeyId",
@@ -47,8 +48,9 @@
               order by lov.display_order
             ) listOfValues), '[]') AS "listOfValues"
         from flow.custom_field_group_assignment cfga
-        inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
+        left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
+        inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
+        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id in (cot.id, :processStepTypeId)
         inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
         left join flow.project_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_id = :projectId
         left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
