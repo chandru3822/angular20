@@ -20,7 +20,9 @@
                       label="Select Requirement Type"
                       item-value="id"
                       item-text="processStepRequirementType"
-                      @input="selectRequirementType(); selectedDataTypeRequirement = {}"
+                      @input="selectRequirementType(); parent = {}; selectedCustomField = {}; selectedDataTypeRequirement = {};
+                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
+                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
             ></v-select>
             <!-- if it is a custom field -->
             <v-select
@@ -30,7 +32,9 @@
                 label="Parent Object"
                 item-text="processStepName"
                 return-object
-                @input="loadFieldsByParent(parent); selectedDataTypeRequirement = {}"
+                @input="loadFieldsByParent(parent); selectedCustomField = {}; selectedDataTypeRequirement = {};
+                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
+                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
             ></v-select>
             <v-select v-if="parent.id"
                       v-model="selectedCustomField"
@@ -38,7 +42,10 @@
                       label="Custom Field"
                       item-text="fieldName"
                       return-object
-                      @input="loadOperatorTypes(selectedCustomField.dataTypeId); loadDataTypeRequirements(selectedCustomField.dataTypeId); selectedDataTypeRequirement = {}"
+                      @input="loadOperatorTypes(selectedCustomField.dataTypeId); loadDataTypeRequirements(selectedCustomField.dataTypeId);
+                              selectedDataTypeRequirement = {};
+                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
+                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
             ></v-select>
             <!-- if it is a function -->
             <v-select
@@ -66,11 +73,11 @@
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
-                @change="selectedDataTypeRequirement = {}"
+                @change="newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
-            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" class="mx-2" label="Custom"></v-switch>
+            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null" class="mx-2" label="Custom"></v-switch>
             <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKeyId === null && selectedCustomField.systemListId === null"
                           v-model="newRequirement.requirementValue"
                           placeholder="Enter a value"
