@@ -102,8 +102,17 @@ export default new Router({
             path: 'eventTypes',
             component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/EventTypes.vue'),
           }, {
-            path: 'workQueueTypes',
-            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/WorkQueueTypes.vue'),
+            path: 'workQueue',
+            component: () => import (/* webpackChunkName: "workQueue" */ './views/flow/settings/WorkQueue.vue'),
+            children: [
+              {
+                path: 'types',
+                component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/WorkQueueTypes.vue'),
+              }, {
+                path: 'categories',
+                component: () => import (/* webpackChunkName: "workQueueCategories" */ './views/flow/settings/WorkQueueCategories.vue'),
+              }
+            ]
           }, {
             path: 'customFields',
             component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue'),

@@ -89,15 +89,51 @@ CREATE TABLE if not exists flow.event_type
 
 CREATE INDEX if not exists st_company_id_idx ON flow.event_type (company_id);
 
+CREATE TABLE if not exists flow.work_queue_category
+(
+    id                       serial  NOT NULL,
+    company_id integer not null,
+    work_queue_category       character varying(250) not null,
+    date_created     timestamp without time zone DEFAULT now(),
+    date_modified   timestamp without time zone,
+    created_by_id    integer      not null,
+    modified_by_id integer,
+    archived       boolean not null default false,
+    CONSTRAINT flow_work_queue_category_pk PRIMARY KEY (id),
+    CONSTRAINT flow_wqc_company_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT flow_wqc_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT flow_wqc_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
 CREATE TABLE if not exists flow.work_queue_type
 (
     id              serial                NOT NULL,
     company_id      integer,
     work_queue_type character varying(30),
+    work_queue_category_id int not null,
+    date_created     timestamp without time zone DEFAULT now(),
+    date_modified   timestamp without time zone,
+    created_by_id    integer      not null,
+    modified_by_id integer,
     archived boolean default false,
     CONSTRAINT work_queue_type_pk PRIMARY KEY (id),
     CONSTRAINT wt_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT flow_wqt_work_queue_category_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.work_queue_category (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT flow_wqt_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT flow_wqt_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 )
     WITH (

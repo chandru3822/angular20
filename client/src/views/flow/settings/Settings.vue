@@ -143,8 +143,8 @@ export default {
           path: '/settings/eventTypes',
           title: 'Scheduling Tool Event Types',
         }, {
-          path: '/settings/workQueueTypes',
-          title: 'Work Queue Types',
+          path: '/settings/workQueue/types',
+          title: 'Work Queue',
         }, {
           header: 'Processes'
         }, {

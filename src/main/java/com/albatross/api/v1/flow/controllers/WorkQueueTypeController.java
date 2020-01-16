@@ -34,8 +34,8 @@ public class WorkQueueTypeController {
   }
 
   @PutMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateType(@RequestBody WorkQueueType type) {
-    workQueueTypeService.updateType(type);
+  public Optional<WorkQueueType> updateType(@RequestBody WorkQueueType type) {
+    return workQueueTypeService.updateType(type);
   }
 
   @PostMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)

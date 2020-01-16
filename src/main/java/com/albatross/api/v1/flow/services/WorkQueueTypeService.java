@@ -46,24 +46,35 @@ public class WorkQueueTypeService {
   }
 
   public void deleteType(Long typeId) {
+    User user = securityService.getCurrentUser();
     sqlCache.update("workQueueType.deleteType",
-        ImmutableMap.of("id", typeId));
+        ImmutableMap.of("id", typeId,
+            "modifiedById", user.getId()));
   }
 
-  public void updateType(WorkQueueType type) {
+
+  public Optional<WorkQueueType> updateType(WorkQueueType type) {
+    User user = securityService.getCurrentUser();
     sqlCache.update("workQueueType.updateType",
-        ImmutableMap.of("companyId", type.getCompanyId(),
+        ImmutableMap.of("companyId", user.getCompanyId(),
             "id", type.getId(),
+            "modifiedById", user.getId(),
+            "workQueueCategoryId", type.getWorkQueueCategoryId(),
             "workQueueType", type.getWorkQueueType()));
+
+    return getType(user.getCompanyId(), type.getId());
   }
 
   public Optional<WorkQueueType> insertType(WorkQueueType type) {
+    User user = securityService.getCurrentUser();
     Long id = sqlCache.updateReturningId("workQueueType.insertType",
         ImmutableMap.of("workQueueType", type.getWorkQueueType(),
-            "companyId", type.getCompanyId()),
+            "createdById", user.getId(),
+            "workQueueCategoryId", type.getWorkQueueCategoryId(),
+            "companyId", user.getCompanyId()),
         "id").longValue();
 
-    return getType(type.getCompanyId(), id);
+    return getType(user.getCompanyId(), id);
   }
 
 

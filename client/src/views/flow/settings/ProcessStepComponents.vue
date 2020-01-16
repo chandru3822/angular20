@@ -167,7 +167,7 @@
   import Vue2Filters from 'vue2-filters'
   import Snackbar from '@/components/Snackbar.vue'
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import {getWorkQueueTypes} from '@/services/workQueueTypeService'
+  import {getWorkQueueTypes} from '@/services/workQueueService'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {

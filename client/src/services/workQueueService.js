@@ -9,6 +9,15 @@ export async function getWorkQueueTypes() {
   }
 }
 
+export async function getWorkQueueCategories() {
+  try {
+    const {data, status} = await getRequest(`/workQueueCategory`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 
 
 
