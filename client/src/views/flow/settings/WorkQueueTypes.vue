@@ -35,7 +35,6 @@
               single-expand
               :expanded.sync="expanded"
               hide-default-footer
-              hide-default-header
               class="elevation-1 mt-1"
           >
             <template #no-data>
