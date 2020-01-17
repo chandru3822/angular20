@@ -1146,13 +1146,13 @@ where id = cfv_id;
 
 with parent as (
     insert into brs.list_of_value( name, parent_id, display_order, date_created, created_by_id, archived)
-        values('Scheduling Lead Time (Days)',null,1,now(),99999999,false)
+        values('Customer Scheduling Lead Time (Days)',null,1,now(),99999999,false)
         returning id ),
      lov as ( insert into brs.list_of_value( name, parent_id, show_other, display_order, date_created, created_by_id, archived)
          ( select a.name,(select p.id from parent p), case when a.name = 'Other' then true else false end,1,now(),2350555, not a.active
            from blueraven.ahj_scheduling_lead_time_type a)),
      cf as (insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
-         ( select p.id, 'Scheduling Lead Time (Days)', 7, now(), 99999999, false from parent p) returning id),
+         ( select p.id, 'Customer Scheduling Lead Time (Days)', 7, now(), 99999999, false from parent p) returning id),
      cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
          (select 17, cf.id, 1, false, now(), 99999999 from cf) returning id)
 insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
@@ -1177,6 +1177,43 @@ from (
                   inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
                   inner join brs.custom_field cf on cf.id = cfga.custom_field_id
                   inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = hit.name
+     ) as v
+where id = cfv_id;
+
+with parent as (
+    insert into brs.list_of_value( name, parent_id, display_order, date_created, created_by_id, archived)
+        values('AHJ Maximum Advanced Scheduling (Days)',null,1,now(),99999999,false)
+        returning id ),
+     lov as ( insert into brs.list_of_value( name, parent_id, show_other, display_order, date_created, created_by_id, archived)
+         ( select cdv.title,(select p.id from parent p), case when cdv.title = 'Other' then true else false end,1,now(),2350555, cdv.archived
+           from blueraven.custom_dropdown_value cdv
+           where cdv.custom_dropdown_field_id = 32)),
+     cf as (insert into brs.custom_field(list_of_value_id, field_name, data_type_id, date_created, created_by_id, archived)
+         ( select p.id, 'AHJ Maximum Advanced Scheduling (Days)', 7, now(), 99999999, false from parent p) returning id),
+     cfga as (insert into brs.custom_field_group_assignment(custom_field_group_id, custom_field_id, field_order, archived, date_created, created_by_id)
+         (select 17, cf.id, 1, false, now(), 99999999 from cf) returning id)
+insert into brs.custom_field_value(source_id, custom_field_group_assignment_id, text_value, int_value, date_created, created_by_id)
+    (select insp.id,
+            (select id from cfga),
+            insp.ahj_max_advanced_scheduling_type_other,
+            null,
+            now(),
+            99999999
+     from blueraven.ahj_inspection insp
+     where insp.ahj_max_advanced_scheduling_type_id is not null
+    )
+;
+update brs.custom_field_value
+set int_value = v.lov_id
+from (
+         select lov.id as lov_id,
+                cfv.id as cfv_id
+         from brs.custom_field_value cfv
+                  inner join blueraven.ahj_inspection a on a.id = cfv.source_id
+                  inner join blueraven.custom_dropdown_value cdv on cdv.id = a.ahj_max_advanced_scheduling_type_id
+                  inner join brs.custom_field_group_assignment cfga on cfga.id = cfv.custom_field_group_assignment_id
+                  inner join brs.custom_field cf on cf.id = cfga.custom_field_id
+                  inner join brs.list_of_value lov on lov.parent_id = cf.list_of_value_id and lov.name = cdv.title
      ) as v
 where id = cfv_id;
 
