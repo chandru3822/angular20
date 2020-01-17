@@ -54,13 +54,12 @@
           <v-icon small class="mr-3" @click="editRequirement(requirement)" title="Edit requirement">edit</v-icon>
         </v-list-item-action>
         <v-list-item-action>
-          <v-icon small @click="archiveRequirement(requirement.id)" title="Archive requirement">delete</v-icon>
+          <v-icon small @click="archiveRequirement(requirement.originalRequirementId)" title="Archive requirement">delete</v-icon>
         </v-list-item-action>
       </v-list-item>
     </v-list>
-    <div class="empty-list"
-         v-show="requirementsCopy.length < 1">
-      No AHJ-specific installation requirements found
+    <div class="empty-list" v-show="requirementsCopy.length < 1">
+      No requirements found
     </div>
 
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -133,7 +132,6 @@
       async saveRequirement(requirement, checkboxWasClicked) {
         if (!requirement) {
           this.requirement.requirementTypeId = this.requirementTypeId
-          this.requirement.archived = this.requirement.archived ? this.requirement.archived : false
           this.requirement.complete = this.requirement.complete ? this.requirement.complete : false
           this.requirement.position = parseInt(this.requirement.position)
         } else {
@@ -143,40 +141,77 @@
         // runs when user clicks a checkbox next to a requirement
         if (checkboxWasClicked) {
           this.requirement.complete = this.requirement.complete ? this.requirement.complete : false
-
           this.$store.commit(AppMutations.SET_LOADING, true)
+
           try {
             const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
             let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.originalRequirementId)
             this.requirementsCopy[updatedRequirementIndex].formattedDateModified = moment(data.dateModifed).format('MM/DD/YY h:mm A')
-            this.snackbar = getSnackbar('SUCCESS', 'AHJ Specific Installation Requirement completion status updated')
+
+            this.snackbar = getSnackbar('SUCCESS', 'Requirement completion status updated')
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving AHJ Specific Installation Requirement')
+            this.snackbar = getSnackbar('ERROR', 'Error updating requirement completion status')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
+
         // runs when user clicks Add button
         } else if (this.addMode) {
-          const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement`, this.requirement, 'blueraven')
-          this.requirementsCopy.push(cloneDeep(data))
-          let addedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.id)
-          this.requirementsCopy[addedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
-          this.addMode = false
+          try {
+            const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement`, this.requirement, 'blueraven')
+            this.requirementsCopy.push(cloneDeep(data))
+            let addedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.id)
+            this.requirementsCopy[addedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
+
+            this.addMode = false
+            this.snackbar = getSnackbar('SUCCESS', 'Requirement added')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error adding requirement')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+
         // runs when user clicks Update button
         } else {
-          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
-          let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.originalRequirementId)
-          this.requirementsCopy[updatedRequirementIndex].description = data.description
-          this.editMode = false
+          try {
+            const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
+            let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data.originalRequirementId)
+            this.requirementsCopy[updatedRequirementIndex].description = data.description
+
+            if (data.dateModified) {
+              this.requirementsCopy[updatedRequirementIndex].formattedDateModified = moment(data.dateModified).format('MM/DD/YY h:mm A')
+            } else {
+              this.requirementsCopy[updatedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
+            }
+
+            this.editMode = false
+            this.snackbar = getSnackbar('SUCCESS', 'Requirement updated')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
+
         this.requirementsCopy = orderBy(this.requirementsCopy, requirement => requirement.position)
       },
-      async archiveRequirement(requirementId) {
-        await putRequest(`/ahj/${this.itemType}/requirement/${requirementId}/archive`, null, 'blueraven')
-        let archivedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === requirementId)
-        this.requirementsCopy.splice([archivedRequirementIndex], 1)
-        this.editMode = false
+      async archiveRequirement(originalRequirementId) {
+        try {
+          await putRequest(`/ahj/${this.itemType}/requirement/${originalRequirementId}/archive`, null, 'blueraven')
+          let archivedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === originalRequirementId)
+          this.requirementsCopy.splice([archivedRequirementIndex], 1)
+
+          this.editMode = false
+          this.snackbar = getSnackbar('SUCCESS', 'Requirement archived')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error archiving requirement')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     }
   }

@@ -54,6 +54,12 @@ public class AhjRequirementService {
     public AhjRequirement updateRequirement(Long ahjId, Long requirementId, AhjRequirement ahjRequirement) {
         User user = securityService.getCurrentUser();
 
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("originalRequirementId", ahjRequirement.getOriginalRequirementId());
+        params.put("ahjId", ahjId);
+
+        sqlCache.update("ahj.requirement.setStatusDateModifiedAndArchived", params);
+
         String sqlQuery = "SELECT * FROM brs.ahj_update_requirement(:utilityId::integer, :ahjId::integer, :requirementId::integer, :description::text, :position::integer, :complete::boolean, :statusId::integer, :userId::integer, :archived::boolean)";
 
         MapSqlParameterSource parameters = new MapSqlParameterSource();
@@ -69,18 +75,14 @@ public class AhjRequirementService {
 
         jdbc.queryForObject(sqlQuery, parameters, String.class);
 
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("originalRequirementId", ahjRequirement.getOriginalRequirementId());
-        params.put("ahjId", ahjId);
-
         return sqlCache.get("ahj.requirement.active.detail", params, AhjRequirement.class).get();
     }
 
-    public void archiveRequirement(Long requirementId) {
+    public void archiveRequirement(Long originalRequirementId) {
       User user = securityService.getCurrentUser();
 
       HashMap<String, Object> params = new HashMap<>();
-      params.put("requirementId", requirementId);
+      params.put("originalRequirementId", originalRequirementId);
       params.put("modifiedById", user.getId());
 
       sqlCache.update("ahj.requirement.archive", params);

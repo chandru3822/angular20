@@ -80,13 +80,13 @@ public class AhjController {
     }
   }
 
-  @PutMapping(value = "/{itemType}/requirement/{requirementId}/archive")
+  @PutMapping(value = "/{itemType}/requirement/{originalRequirementId}/archive")
   public void archiveRequirement(@PathVariable String itemType,
-                                 @PathVariable Long requirementId) {
+                                 @PathVariable Long originalRequirementId) {
     if (itemType.equals("utility")) {
 //      ahjUtilityService.archiveRequirement(requirement);
     } else {
-      ahjRequirementService.archiveRequirement(requirementId);
+      ahjRequirementService.archiveRequirement(originalRequirementId);
     }
   }
 }
