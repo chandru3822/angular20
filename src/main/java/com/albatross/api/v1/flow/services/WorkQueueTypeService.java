@@ -38,10 +38,9 @@ public class WorkQueueTypeService {
     return results;
   }
 
-  public Optional<WorkQueueType> getType(Long companyId, Long id) {
+  public Optional<WorkQueueType> getType(Long id) {
     return sqlCache.get("workQueueType.getType",
-        ImmutableMap.of("companyId", companyId,
-            "id", id),
+        ImmutableMap.of("id", id),
         WorkQueueType.class);
   }
 
@@ -62,7 +61,7 @@ public class WorkQueueTypeService {
             "workQueueCategoryId", type.getWorkQueueCategoryId(),
             "workQueueType", type.getWorkQueueType()));
 
-    return getType(user.getCompanyId(), type.getId());
+    return getType(type.getId());
   }
 
   public Optional<WorkQueueType> insertType(WorkQueueType type) {
@@ -74,7 +73,7 @@ public class WorkQueueTypeService {
             "companyId", user.getCompanyId()),
         "id").longValue();
 
-    return getType(user.getCompanyId(), id);
+    return getType(id);
   }
 
 

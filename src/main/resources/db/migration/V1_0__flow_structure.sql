@@ -94,6 +94,7 @@ CREATE TABLE if not exists flow.work_queue_category
     id                       serial  NOT NULL,
     company_id integer not null,
     work_queue_category       character varying(250) not null,
+    color           varchar(10),
     date_created     timestamp without time zone DEFAULT now(),
     date_modified   timestamp without time zone,
     created_by_id    integer      not null,

@@ -1,6 +1,6 @@
 <sql>
   <workQueueCategory.getCategoriesForCompany><![CDATA[
-    select id, company_id, work_queue_category, archived
+    select id, company_id, work_queue_category, archived, color
     from flow.work_queue_category
     where company_id = :companyId
       and archived is not true
@@ -8,7 +8,7 @@
   ]]></workQueueCategory.getCategoriesForCompany>
 
   <workQueueCategory.getCategory><![CDATA[
-    select id, company_id, work_queue_category, archived
+    select id, company_id, work_queue_category, archived, color
     from flow.work_queue_category
     where id = :id
   ]]></workQueueCategory.getCategory>
@@ -24,13 +24,14 @@
   <workQueueCategory.updateCategory><![CDATA[
     update flow.work_queue_category
     set work_queue_category = :workQueueCategory,
+        color = :color,
         date_modified = now(),
         modified_by_id = :modifiedById
     where id = :id
   ]]></workQueueCategory.updateCategory>
 
   <workQueueCategory.insertCategory><![CDATA[
-    insert into flow.work_queue_category(company_id, work_queue_category, created_by_id)
-    values (:companyId, :workQueueCategory, :createdById)
+    insert into flow.work_queue_category(company_id, work_queue_category, created_by_id, color)
+    values (:companyId, :workQueueCategory, :createdById, :color)
   ]]></workQueueCategory.insertCategory>
 </sql>

@@ -9,6 +9,6 @@ import lombok.Data;
 @Data
 public class WorkQueueCategory {
     private Long id, companyId;
-    private String workQueueCategory;
+    private String workQueueCategory, color;
     private Boolean archived;
 }

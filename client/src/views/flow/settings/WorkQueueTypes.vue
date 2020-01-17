@@ -3,7 +3,6 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-<!--          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Work Queue Types</v-toolbar-title>-->
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="addNew = !addNew; newType = {}">
@@ -100,7 +99,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="wt.archived = true; deleteType(wt.id)">
+                              @click="item.archived = true; deleteType(item.id)">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -112,59 +111,6 @@
             </template>
 
           </v-data-table>
-<!--          <v-list v-for="(wt, index) in filterBy(workQueueTypes, false, 'archived')"-->
-<!--                  :key="index" class="pa-0">-->
-<!--            <v-list-item :class="{'shaded-row': index % 2}">-->
-<!--              <v-list-item-content class="text-left">-->
-<!--                <v-text-field class="one-hunned" v-if="selectedWorkQueueTypeId === wt.id" v-model="wt.workQueueType">-->
-<!--                </v-text-field>-->
-<!--                <div v-else>{{wt.workQueueType}}</div>-->
-<!--              </v-list-item-content>-->
-<!--              <v-list-item-action class="clickable">-->
-<!--                <v-icon v-if="selectedWorkQueueTypeId === wt.id" @click="saveType(wt)">save</v-icon>-->
-<!--                <v-icon v-else @click="selectedWorkQueueTypeId = wt.id">edit</v-icon>-->
-<!--              </v-list-item-action>-->
-<!--              <v-dialog-->
-<!--                  v-model="wt.deleteConfirm"-->
-<!--                  width="500">-->
-<!--                <template v-slot:activator="{ on }">-->
-<!--                  <v-list-item-action class="clickable" v-on="on">-->
-<!--                    <v-icon>delete</v-icon>-->
-<!--                  </v-list-item-action>-->
-<!--                </template>-->
-<!--                <v-card>-->
-<!--                  <v-card-title-->
-<!--                      class="headline grey lighten-2"-->
-<!--                      primary-title-->
-<!--                  >-->
-<!--                    Confirm-->
-<!--                  </v-card-title>-->
-
-<!--                  <v-card-text>-->
-<!--                    Are you sure you want to delete this work queue type: <strong>{{ wt.workQueueType }}</strong>?-->
-<!--                  </v-card-text>-->
-
-<!--                  <v-divider></v-divider>-->
-
-<!--                  <v-card-actions>-->
-<!--                    <v-spacer></v-spacer>-->
-<!--                    <v-btn-->
-<!--                        @click="wt.deleteConfirm = false">-->
-<!--                      No-->
-<!--                    </v-btn>-->
-<!--                    <v-btn-->
-<!--                        color="primary"-->
-<!--                        text-->
-<!--                        @click="wt.archived = true; deleteType(wt.id)">-->
-<!--                      Yes-->
-<!--                    </v-btn>-->
-<!--                  </v-card-actions>-->
-<!--                </v-card>-->
-<!--              </v-dialog>-->
-<!--            </v-list-item>-->
-<!--          </v-list>-->
-
-
         </v-container>
       </v-col>
     </v-row>

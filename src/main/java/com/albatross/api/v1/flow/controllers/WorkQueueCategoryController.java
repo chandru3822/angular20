@@ -28,17 +28,17 @@ public class WorkQueueCategoryController {
     return workQueueCategoryService.getWorkQueueCategories();
   }
 
-  @DeleteMapping(value = "/category/{categoryId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{categoryId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteCategory(@PathVariable Long categoryId) {
     workQueueCategoryService.deleteCategory(categoryId);
   }
 
-  @PutMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateCategory(@RequestBody WorkQueueCategory category) {
-    workQueueCategoryService.updateCategory(category);
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<WorkQueueCategory> updateCategory(@RequestBody WorkQueueCategory category) {
+    return workQueueCategoryService.updateCategory(category);
   }
 
-  @PostMapping(value = "/category", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<WorkQueueCategory> insertCategory(@RequestBody WorkQueueCategory category) {
     return workQueueCategoryService.insertCategory(category);
   }
