@@ -23,6 +23,41 @@ insert into flow.company_state(state_id, company_id, map_latitude, map_longitude
         where ( active_flag is true OR map_latitude is not null OR map_longitude is not null OR map_zoom is not null)
     );
 
+insert into flow.company_state(state_id, company_id, map_latitude, map_longitude, map_zoom, active)
+    (
+        select s.id, (select id from flow.company where company_name = 'B+C Electric'), s.map_latitude, s.map_longitude, s.map_zoom, s.active_flag
+        from flow.state s
+        where ( active_flag is true OR map_latitude is not null OR map_longitude is not null OR map_zoom is not null)
+    );
+
+insert into flow.company_state(state_id, company_id, map_latitude, map_longitude, map_zoom, active)
+    (
+        select s.id, (select id from flow.company where company_name = 'Eco Lux Solar'), s.map_latitude, s.map_longitude, s.map_zoom, s.active_flag
+        from flow.state s
+        where ( active_flag is true OR map_latitude is not null OR map_longitude is not null OR map_zoom is not null)
+    );
+
+insert into flow.company_state(state_id, company_id, map_latitude, map_longitude, map_zoom, active)
+    (
+        select s.id, (select id from flow.company where company_name = 'Salient Solar'), s.map_latitude, s.map_longitude, s.map_zoom, s.active_flag
+        from flow.state s
+        where ( active_flag is true OR map_latitude is not null OR map_longitude is not null OR map_zoom is not null)
+    );
+
+insert into flow.company_state(state_id, company_id, map_latitude, map_longitude, map_zoom, active)
+    (
+        select s.id, (select id from flow.company where company_name = 'Solenrgi'), s.map_latitude, s.map_longitude, s.map_zoom, s.active_flag
+        from flow.state s
+        where ( active_flag is true OR map_latitude is not null OR map_longitude is not null OR map_zoom is not null)
+    );
+
+insert into flow.company_state(state_id, company_id, map_latitude, map_longitude, map_zoom, active)
+    (
+        select s.id, (select id from flow.company where company_name = 'Sun Run'), s.map_latitude, s.map_longitude, s.map_zoom, s.active_flag
+        from flow.state s
+        where ( active_flag is true OR map_latitude is not null OR map_longitude is not null OR map_zoom is not null)
+    );
+
 SELECT setval('flow.company_state_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.company_state), 1), false);
 
 alter table flow.state
@@ -94,6 +129,36 @@ insert into flow.company_country(country_id, company_id, archived)
         from flow.country c
     );
 
+insert into flow.company_country(country_id, company_id, archived)
+    (
+        select c.id, (select id from flow.company where company_name = 'B+C Electric'), false
+        from flow.country c
+    );
+
+insert into flow.company_country(country_id, company_id, archived)
+    (
+        select c.id, (select id from flow.company where company_name = 'Eco Lux Solar'), false
+        from flow.country c
+    );
+
+insert into flow.company_country(country_id, company_id, archived)
+    (
+        select c.id, (select id from flow.company where company_name = 'Salient Solar'), false
+        from flow.country c
+    );
+
+insert into flow.company_country(country_id, company_id, archived)
+    (
+        select c.id, (select id from flow.company where company_name = 'Solenrgi'), false
+        from flow.country c
+    );
+
+insert into flow.company_country(country_id, company_id, archived)
+    (
+        select c.id, (select id from flow.company where company_name = 'Sun Run'), false
+        from flow.country c
+    );
+
 alter table flow.country
     drop column if exists active_flag;
 
@@ -111,11 +176,38 @@ VALUES (2, 1, false),
        (4, 3, false),
        (5, 4, true);
 
+insert into flow.org_type(id,org_type, org_parent_type_id, org_level_id, company_id)
+    (  with org_types as (
+        select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+        from blueraven.org_hierarchy_filter_down('{215}') a
+                 inner join blueraven.org_type ot on ot.id = a.org_type_id
+        where org_type_id not in (15,16)
+        union
+        select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+        from blueraven.org_hierarchy_filter_up('{215}') a
+                 inner join blueraven.org_type ot on ot.id = a.org_type_id
+        where org_type_id not in (15,16))
+       select ot2.id, ot2.org_type, ot2.org_parent_type_id, case when ot2.level is null then 1 else ot2.level end, (select id from flow.company where company_name = 'Blue Raven Solar')
+       from blueraven.org_type ot2
+                inner join org_types ot3 on ot3.id = ot2.id);
+
 
 insert into flow.org_type(id,org_type, org_parent_type_id, org_level_id, company_id)
-(select id, org_type, org_parent_type_id, case when level is null then 1 else level end, (select id from flow.company where company_name = 'Blue Raven Solar')
-from blueraven.org_type
-    where id not in (15,16));
+(  with org_types as (
+    select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+    from blueraven.org_hierarchy_filter_down('{216,217}') a
+             inner join blueraven.org_type ot on ot.id = a.org_type_id
+    where org_type_id not in (15,16)
+    union
+    select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+    from blueraven.org_hierarchy_filter_up('{216,217}') a
+             inner join blueraven.org_type ot on ot.id = a.org_type_id
+    where org_type_id not in (15,16))
+    select ot2.id, ot2.org_type, ot2.org_parent_type_id, case when ot2.level is null then 1 else ot2.level end, (select id from flow.company where company_name = 'Blue Raven Corporate')
+from blueraven.org_type ot2
+    inner join org_types ot3 on ot3.id = ot2.id);
+
+
 
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
@@ -127,37 +219,120 @@ SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
                     display_order, active_flag, color, email, sales_metro_area_id,
                      schedulable)
-    (select (select id from flow.company where company_name = 'Blue Raven Solar'),
-            id,
-            org_name,
-            parent_org_id,
-            sales_area_id,
-            org_type_id,
-            display_order,
-            active_flag,
-            color,
-            email,
-            sales_metro_area_id,
-            has_calendar
-     from blueraven.org
-        where org_type_id not in (15,16));
+    (
+        with org_types as (
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_down('{215}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16)
+            union
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_up(
+                         '{215}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16))
+        select (select id from flow.company where company_name = 'Blue Raven Solar'),
+            o.id,
+               o.org_name,
+               o.parent_org_id,
+               o.sales_area_id,
+               o.org_type_id,
+               o.display_order,
+               o.active_flag,
+               o.color,
+               o.email,
+               o.sales_metro_area_id,
+               o.has_calendar
+     from blueraven.org o
+        inner join org_types ot on ot.id = o.org_type_id
+        where o.id not in (216,217));
 
-
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
+                     display_order, active_flag, color, email, sales_metro_area_id,
+                     schedulable)
+    (
+        with org_types as (
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_down('{216,217}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16)
+            union
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_up(
+                         '{216,217}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16))
+        select (select id from flow.company where company_name = 'Blue Raven Corporate'),
+               o.id,
+               o.org_name,
+               o.parent_org_id,
+               o.sales_area_id,
+               o.org_type_id,
+               o.display_order,
+               o.active_flag,
+               o.color,
+               o.email,
+               o.sales_metro_area_id,
+               o.has_calendar
+        from blueraven.org o
+                 inner join org_types ot on ot.id = o.org_type_id
+        and o.id != 215);
 
 
 update flow.org set owning_org = true where org_type_id = 10;
 
 INSERT INTO flow."position"(id, company_id, "position", org_type_id, secondary_org_type_id,
                            active)
-    (select id,
+    (
+        with positions as (
+            select position_id,org_id, count(1)
+            from blueraven.user_position
+            group by position_id,org_id),
+        all_positions as (
+        select distinct p.id,p.position
+        from blueraven.user_position up
+                 inner join blueraven.position p on p.id = up.position_id
+                 inner join positions p1 on p1.position_id = p.id
+        where up.org_id in (
+            select a.id from blueraven.org_hierarchy_filter_down(
+                                     '{215}') a
+            where a.id = up.org_id))
+        select p.id,
             (select id from flow.company where company_name = 'Blue Raven Solar'),
-            "position",
-            org_type_id,
-            secondary_org_type_id,
-            active
-     from blueraven.position
-        where id not in (176,175,197,156,149,174));
+               p."position",
+               p.org_type_id,
+               p.secondary_org_type_id,
+               p.active
+     from blueraven.position p
+        inner join all_positions p1 on p1.id = p.id
+        where p.id not in (176,175,197,156,149,174));
 
+
+INSERT INTO flow."position"(id, company_id, "position", org_type_id, secondary_org_type_id,
+                            active)
+    (
+        with positions as (
+            select position_id,org_id, count(1)
+            from blueraven.user_position
+            group by position_id,org_id),
+             all_positions as (
+                 select distinct p.id,p.position
+                 from blueraven.user_position up
+                          inner join blueraven.position p on p.id = up.position_id
+                          inner join positions p1 on p1.position_id = p.id
+                 where up.org_id in (
+                     select a.id from blueraven.org_hierarchy_filter_down(
+                                              '{216,217}') a
+                     where a.id = up.org_id))
+        select p.id,
+               (select id from flow.company where company_name = 'Blue Raven Corporate'),
+               p."position",
+               p.org_type_id,
+               p.secondary_org_type_id,
+               p.active
+        from blueraven.position p
+                 inner join all_positions p1 on p1.id = p.id
+        where p.id not in (176,175,197,156,149,174));
 
 
 insert into flow.user_status_type(id, user_status_type, company_id)
@@ -268,17 +443,71 @@ INSERT INTO flow."user" (
                             and o.org_type_id in (15,16)));
 
 
-
+insert into flow.user_company(company_id,user_id,is_default)
+(with something as (select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+                    from blueraven.org_hierarchy_filter_down('{215}') a
+                             inner join blueraven.org_type ot on ot.id = a.org_type_id
+                    where org_type_id not in (15,16)
+                    union
+                    select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+                    from blueraven.org_hierarchy_filter_up(
+                                 '{215}') a
+                             inner join blueraven.org_type ot on ot.id = a.org_type_id
+                    where org_type_id not in (15,16))
+ select (select id from flow.company where company_name = 'Blue Raven Solar'),u1.id,true
+ FROM blueraven."user" u1
+ where u1.id not in (2350555,99999999)
+   and u1.id not in ( select distinct u.id
+                      from blueraven.user u
+                               inner join blueraven.user_position up on up.user_id = u.id
+                               inner join blueraven.org o on o.id = up.org_id
+                          and o.org_type_id in (15,16))
+   and u1.id in (select up1.user_id from blueraven.user_position up1
+                                             inner join blueraven.org o1 on o1.id = up1.org_id
+                                             inner join something s on s.id = o1.org_type_id )
+ union
+ select (select id from flow.company where company_name = 'Blue Raven Solar'),u2.id,true
+ FROM blueraven."user" u2
+ where u2.id not in (select user_id from blueraven.user_position));
 
 insert into flow.user_company(company_id,user_id,is_default)
-(select (select id from flow.company where company_name = 'Blue Raven Solar'),id,true
- FROM blueraven."user"
- where id not in (2350555,99999999)
-   and id not in ( select distinct u.id
-                   from blueraven.user u
-                            inner join blueraven.user_position up on up.user_id = u.id
-                            inner join blueraven.org o on o.id = up.org_id
-                       and o.org_type_id in (15,16)));
+(with something as (select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+                    from blueraven.org_hierarchy_filter_down('{216,217}') a
+                             inner join blueraven.org_type ot on ot.id = a.org_type_id
+                    where org_type_id not in (15,16)
+                    union
+                    select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+                    from blueraven.org_hierarchy_filter_up(
+                                 '{216,217}') a
+                             inner join blueraven.org_type ot on ot.id = a.org_type_id
+                    where org_type_id not in (15,16)),
+      companies as (
+          select id from flow.company where company_name = 'Blue Raven Corporate'
+          union
+          select id from flow.company where company_name = 'Blue Raven Solar'
+          union
+          select id from flow.company where company_name = 'B+C Electric'
+          union
+          select id from flow.company where company_name = 'Eco Lux Solar'
+          union
+          select id from flow.company where company_name = 'Salient Solar'
+          union
+          select id from flow.company where company_name = 'Solenrgi'
+          union
+          select id from flow.company where company_name = 'Sun Run'
+      )
+ select c.id,u1.id,true
+ FROM blueraven."user" u1
+          cross join companies c
+ where u1.id not in (2350555,99999999)
+   and u1.id not in ( select distinct u.id
+                      from blueraven.user u
+                               inner join blueraven.user_position up on up.user_id = u.id
+                               inner join blueraven.org o on o.id = up.org_id
+                          and o.org_type_id in (15,16))
+   and u1.id in (select up1.user_id from blueraven.user_position up1
+                                             inner join blueraven.org o1 on o1.id = up1.org_id
+                                             inner join something s on s.id = o1.org_type_id ));
 
 
 insert into flow.user_position
@@ -290,10 +519,6 @@ where user_id not in (select distinct u.id
                                inner join blueraven.org o on o.id = up.org_id
                           and o.org_type_id in (15,16))
 and position_id not in (176,175,197,156,149,174);
-
-
-
-
 
 
 INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 1, 'Parent');
