@@ -375,6 +375,7 @@
       <v-col cols="12" md="12" class="px-1">
         <AhjRequirement v-if="dataReady"
                         title="AHJ Specific Installation Requirements"
+                        :transparent="false"
                         :requirementTypeId="5"
                         :itemType="itemType"
                         :ahjId="ahjId"
@@ -450,7 +451,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -472,7 +473,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving AHJ Inspection')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Inspection')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -500,11 +501,11 @@
           this.ahjInspection.customFieldGroups = this.customFieldGroupAssignments
           const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
           this.ahjInspection = cloneDeep(data)
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ Inspection Saved')
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ Inspection saved')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Inspection')
+          this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Inspection')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }

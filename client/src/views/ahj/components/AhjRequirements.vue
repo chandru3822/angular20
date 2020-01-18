@@ -1,69 +1,137 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-requirements">
-  <v-card>
-    <v-toolbar class="primaryCustom">
-      <v-toolbar-title class="white--text font-weight-bold" :title="title">
-        {{title}}
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px">
-        <v-icon v-show="!addMode && !editMode"
-                @click="addRequirement" class="white--text">add</v-icon>
-        <v-icon v-show="addMode || editMode"
-                @click="hideCtrls" class="white--text">remove</v-icon>
-      </v-btn>
-    </v-toolbar>
-    <form class="requirement-edit-ctrls px-3"
-          ref="requirementForm" v-show="addMode || editMode">
-      <v-textarea required label="Requirement Details" auto-grow filled
-                  style="margin: 15px 0 -15px 0"
-                  v-model="requirement.description">
-      </v-textarea>
-      <v-text-field required label="Display Order" filled
-                    type="number"
-                    v-model="requirement.position">
-      </v-text-field>
-      <div class="requirement-btns">
-        <a @click="hideCtrls"
-           class="cancel-link">Cancel</a>
-        <v-btn @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
-               :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
-          {{ addMode ? 'Add' : 'Update' }}
+  <div>
+    <div id="transparent-header" v-if="transparent">
+      <div class="requirement-header-bar px-4 pb-2 font-weight-bold">
+        <span>{{title}}</span>
+        <v-btn class="add-hide-btn" icon>
+          <v-icon v-show="!addMode && !editMode"
+                  @click="addRequirement">add</v-icon>
+          <v-icon v-show="addMode || editMode"
+                  @click="hideCtrls">remove</v-icon>
         </v-btn>
       </div>
-    </form>
-    <v-list v-for="requirement in requirementsCopy"
-            :key="requirement.id">
-      <v-list-item v-show="requirementsCopy.length > 0">
-        <v-list-item-action :title="requirement.complete ? 'Mark requirement as incomplete' : 'Mark requirement as complete'"
-                            @click="saveRequirement(requirement, true)">
-          <v-checkbox v-model="requirement.complete"></v-checkbox>
-        </v-list-item-action>
-        <v-list-item-content class="ml-3">
-          <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}">
-            <span>{{ requirement.description }}</span>
-          </v-list-item-title>
-          <v-list-item-subtitle v-if="!requirement.formattedDateModified && requirement.formattedDateCreated"
-                                v-text="'Created ' + requirement.formattedDateCreated + ' by ' + requirement.createdBy">
-          </v-list-item-subtitle>
-          <v-list-item-subtitle v-if="requirement.formattedDateModified"
-                                v-text="'Updated ' + requirement.formattedDateModified + ' by ' + requirement.modifiedBy">
-          </v-list-item-subtitle>
-        </v-list-item-content>
-        <v-list-item-action>
-          <v-icon small class="mr-3" @click="editRequirement(requirement)" title="Edit requirement">edit</v-icon>
-        </v-list-item-action>
-        <v-list-item-action>
-          <v-icon small @click="archiveRequirement(requirement.originalRequirementId)" title="Archive requirement">delete</v-icon>
-        </v-list-item-action>
-      </v-list-item>
-    </v-list>
-    <div class="empty-list" v-show="requirementsCopy.length < 1">
-      No requirements found
+
+      <form class="requirement-edit-ctrls px-3"
+            ref="requirementForm" v-show="addMode || editMode">
+        <v-textarea required label="Requirement Details" auto-grow filled
+                    style="margin: 15px 0 -15px 0"
+                    v-model="requirement.description">
+        </v-textarea>
+        <v-text-field required label="Display Order" filled
+                      type="number"
+                      v-model="requirement.position">
+        </v-text-field>
+        <div class="requirement-btns">
+          <a @click="hideCtrls"
+             class="cancel-link">Cancel</a>
+          <v-btn @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
+                 :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
+            {{ addMode ? 'Add' : 'Update' }}
+          </v-btn>
+        </div>
+      </form>
+      <v-list class="mt-0"
+              v-for="requirement in requirementsCopy"
+              :key="requirement.id">
+        <v-list-item v-show="requirementsCopy.length > 0">
+          <v-list-item-action :title="requirement.complete ? 'Mark requirement as incomplete' : 'Mark requirement as complete'"
+                              @click="saveRequirement(requirement, true)">
+            <v-checkbox v-model="requirement.complete"></v-checkbox>
+          </v-list-item-action>
+          <v-list-item-content class="ml-3">
+            <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}">
+              <span>{{ requirement.description }}</span>
+            </v-list-item-title>
+            <v-list-item-subtitle v-if="!requirement.formattedDateModified && requirement.formattedDateCreated"
+                                  v-text="'Created ' + requirement.formattedDateCreated + ' by ' + requirement.createdBy">
+            </v-list-item-subtitle>
+            <v-list-item-subtitle v-if="requirement.formattedDateModified"
+                                  v-text="'Updated ' + requirement.formattedDateModified + ' by ' + requirement.modifiedBy">
+            </v-list-item-subtitle>
+          </v-list-item-content>
+          <v-list-item-action>
+            <v-icon small class="mr-3" @click="editRequirement(requirement)" title="Edit requirement">edit</v-icon>
+          </v-list-item-action>
+          <v-list-item-action>
+            <v-icon small @click="archiveRequirement(requirement.originalRequirementId)" title="Archive requirement">delete</v-icon>
+          </v-list-item-action>
+        </v-list-item>
+      </v-list>
+      <div class="empty-list mx-4 mt-2" v-show="requirementsCopy.length < 1">
+        No requirements found
+      </div>
+
+      <Snackbar :snackbar="snackbar"></Snackbar>
     </div>
 
-    <Snackbar :snackbar="snackbar"></Snackbar>
-  </v-card>
+    <v-card v-if="!transparent">
+      <v-toolbar class="primaryCustom">
+        <v-toolbar-title class="white--text font-weight-bold" :title="title">
+          {{title}}
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn icon color="#ddd" style="border-radius: 3px">
+          <v-icon v-show="!addMode && !editMode"
+                  @click="addRequirement" class="white--text">add</v-icon>
+          <v-icon v-show="addMode || editMode"
+                  @click="hideCtrls" class="white--text">remove</v-icon>
+        </v-btn>
+      </v-toolbar>
+
+      <form class="requirement-edit-ctrls px-3"
+            ref="requirementForm" v-show="addMode || editMode">
+        <v-textarea required label="Requirement Details" auto-grow filled
+                    style="margin: 15px 0 -15px 0"
+                    v-model="requirement.description">
+        </v-textarea>
+        <v-text-field required label="Display Order" filled
+                      type="number"
+                      v-model="requirement.position">
+        </v-text-field>
+        <div class="requirement-btns">
+          <a @click="hideCtrls"
+             class="cancel-link">Cancel</a>
+          <v-btn @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
+                 :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
+            {{ addMode ? 'Add' : 'Update' }}
+          </v-btn>
+        </div>
+      </form>
+      <v-list v-for="requirement in requirementsCopy"
+              :key="requirement.id">
+        <v-list-item v-show="requirementsCopy.length > 0">
+          <v-list-item-action :title="requirement.complete ? 'Mark requirement as incomplete' : 'Mark requirement as complete'"
+                              @click="saveRequirement(requirement, true)">
+            <v-checkbox v-model="requirement.complete"></v-checkbox>
+          </v-list-item-action>
+          <v-list-item-content class="ml-3">
+            <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}">
+              <span>{{ requirement.description }}</span>
+            </v-list-item-title>
+            <v-list-item-subtitle v-if="!requirement.formattedDateModified && requirement.formattedDateCreated"
+                                  v-text="'Created ' + requirement.formattedDateCreated + ' by ' + requirement.createdBy">
+            </v-list-item-subtitle>
+            <v-list-item-subtitle v-if="requirement.formattedDateModified"
+                                  v-text="'Updated ' + requirement.formattedDateModified + ' by ' + requirement.modifiedBy">
+            </v-list-item-subtitle>
+          </v-list-item-content>
+          <v-list-item-action>
+            <v-icon small class="mr-3" @click="editRequirement(requirement)" title="Edit requirement">edit</v-icon>
+          </v-list-item-action>
+          <v-list-item-action>
+            <v-icon small @click="archiveRequirement(requirement.originalRequirementId)" title="Archive requirement">delete</v-icon>
+          </v-list-item-action>
+        </v-list-item>
+      </v-list>
+      <div class="empty-list" v-show="requirementsCopy.length < 1">
+        No requirements found
+      </div>
+
+      <Snackbar :snackbar="snackbar"></Snackbar>
+    </v-card>
+  </div>
+
 </template>
 
 <script>
@@ -82,6 +150,9 @@
     props: {
       title: {
         type: String
+      },
+      transparent: {
+        type: Boolean
       },
       requirementTypeId: {
         type: Number
@@ -254,5 +325,23 @@
   .empty-list {
     padding: 20px;
     font-size: 0.85em;
+  }
+  #transparent-header {
+    .requirement-header-bar {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1em;
+      color: var(--v-primaryText-base);
+      border-bottom: 1px solid var(--v-primaryText-base);
+      margin-bottom: 20px;
+    }
+
+    .add-hide-btn,
+    .empty-list {
+      background-color: var(--v-secondary-base);
+      border-radius: 3px;
+    }
   }
 </style>

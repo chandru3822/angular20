@@ -578,7 +578,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -597,7 +597,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving AHJ Permit')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Permit')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -621,7 +621,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Documents')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -641,11 +641,11 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
           this.ahjPermit = cloneDeep(data)
           this.reformatDates()
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ Permit Saved')
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ Permit saved')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Permit')
+          this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Permit')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
