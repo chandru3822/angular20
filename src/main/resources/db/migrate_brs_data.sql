@@ -580,7 +580,7 @@ where user_id not in (select distinct u.id
                                inner join blueraven.user_position up on up.user_id = u.id
                                inner join blueraven.org o on o.id = up.org_id
                           and o.org_type_id in (15,16))
-and position_id not in (176,175,197,156,149,174,10,23,33,78);
+and position_id not in (176,175,197,156,149,174,10,23,33,78,31);
 
 
 INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 1, 'Parent');
@@ -1410,49 +1410,6 @@ INSERT INTO flow.asset(id, company_id, tag, model, asset_type_id, active, archiv
      from blueraven.asset);
 
 SELECT setval('flow.asset_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.asset), 1), false);
-
-
-INSERT INTO flow.permission(id, permission_name, permission_code, archived,is_system)
-    (select id, permission_name, permission_code, archived,false
-     from blueraven.permission);
-
-SELECT setval('flow.permission_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.permission), 1), false);
-
-INSERT INTO flow.company_permission(permission_name,company_id, permission_id, archived)
-    (select  p.permission_name,(select id from flow.company where company_name = 'Blue Raven Solar'),p.id ,false
-     from flow.permission p);
-
--- @keller - this one permission needs to be assigned to the Albatross company, i think this works
-UPDATE flow.company_permission set company_id = (select id from flow.company where company_name = 'Albatross')
-where permission_name = 'System Admin';
-
-INSERT INTO flow.role(id, company_id, role_name, archived,is_system)
-    (select id, (select id from flow.company where company_name = 'Blue Raven Solar'), role_name, archived,false
-     from blueraven.role);
-
-SELECT setval('flow.role_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.role), 1), false);
-
-insert into flow.role_permission(id,role_id, company_permission_id)
-select rp.id,rp.role_id, cp.id
-from blueraven.role_permission rp
-         inner join flow.company_permission cp on cp.permission_id = rp.permission_id;
-
-SELECT setval('flow.role_permission_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.role_permission), 1), false);
-
-insert into flow.user_role
-select *
-from blueraven.user_role;
-
-SELECT setval('flow.user_role_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.user_role), 1), false);
-
-insert into flow.user_permission(user_id,
-                                 company_permission_id,
-                                 deny)
-    (select user_id, cp.id, true
-     from blueraven.user_deny_permission udp
-              inner join flow.company_permission cp on cp.permission_id = udp.permission_id);
-
-SELECT setval('flow.user_permission_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.user_permission), 1), false);
 
 
 insert into flow.user_asset
@@ -4129,7 +4086,8 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, user_positio
             (SELECT id FROM flow.process_step WHERE process_step_name = 'Complete Final Design') AS process_step_id,
             7514 AS user_position_id, -- arbitrary user position id; I have no idea what to use here
             -- TODO how will these projects be assigned to individuals? Should this be optional?
-            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active') AS process_step_status_id,
+            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
+                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id
      FROM flow.project
               INNER JOIN blueraven.deal d
