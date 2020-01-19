@@ -89,59 +89,6 @@ CREATE TABLE if not exists flow.event_type
 
 CREATE INDEX if not exists st_company_id_idx ON flow.event_type (company_id);
 
-CREATE TABLE if not exists flow.work_queue_category
-(
-    id                       serial  NOT NULL,
-    company_id integer not null,
-    work_queue_category       character varying(250) not null,
-    color           varchar(10),
-    date_created     timestamp without time zone DEFAULT now(),
-    date_modified   timestamp without time zone,
-    created_by_id    integer      not null,
-    modified_by_id integer,
-    archived       boolean not null default false,
-    CONSTRAINT flow_work_queue_category_pk PRIMARY KEY (id),
-    CONSTRAINT flow_wqc_company_id_fk FOREIGN KEY (company_id)
-        REFERENCES flow.company (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT flow_wqc_created_by_id_fk FOREIGN KEY (created_by_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT flow_wqc_modified_by_id_fk FOREIGN KEY (modified_by_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION
-);
-
-CREATE TABLE if not exists flow.work_queue_type
-(
-    id              serial                NOT NULL,
-    company_id      integer,
-    work_queue_type character varying(30),
-    work_queue_category_id int not null,
-    date_created     timestamp without time zone DEFAULT now(),
-    date_modified   timestamp without time zone,
-    created_by_id    integer      not null,
-    modified_by_id integer,
-    archived boolean default false,
-    CONSTRAINT work_queue_type_pk PRIMARY KEY (id),
-    CONSTRAINT wt_company_id_fk FOREIGN KEY (company_id)
-        REFERENCES flow.company (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT flow_wqt_work_queue_category_id_fk FOREIGN KEY (company_id)
-        REFERENCES flow.work_queue_category (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT flow_wqt_created_by_id_fk FOREIGN KEY (created_by_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT flow_wqt_modified_by_id_fk FOREIGN KEY (modified_by_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION
-)
-    WITH (
-        OIDS= FALSE
-    );
-
-CREATE INDEX if not exists wqt_company_id_idx ON flow.work_queue_type (company_id);
 
 CREATE TABLE if NOT EXISTS flow.flow_type
 (
@@ -509,7 +456,7 @@ CREATE TABLE if not exists flow."user"
     hire_date                          date,
     image_id                           bigint,
     default_company_id                 integer references flow.company(id),
-    username                           character varying(255) not null,
+    username                           character varying(255),
     CONSTRAINT user_pk PRIMARY KEY (id),
 --     CONSTRAINT u_user_status_type_id_fk FOREIGN KEY (user_status_type_id)
 --         REFERENCES flow.user_status_type (id) MATCH SIMPLE
@@ -631,6 +578,61 @@ CREATE INDEX if not exists u_last_name_idx
 
 alter table flow."user"
     add column if not exists archived boolean default false;
+
+CREATE TABLE if not exists flow.work_queue_category
+(
+    id                       serial  NOT NULL,
+    company_id integer not null,
+    work_queue_category       character varying(250) not null,
+    color           varchar(10),
+    date_created     timestamp without time zone DEFAULT now(),
+    date_modified   timestamp without time zone,
+    created_by_id    integer      not null,
+    modified_by_id integer,
+    archived       boolean not null default false,
+    CONSTRAINT flow_work_queue_category_pk PRIMARY KEY (id),
+    CONSTRAINT flow_wqc_company_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT flow_wqc_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT flow_wqc_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE TABLE if not exists flow.work_queue_type
+(
+    id              serial                NOT NULL,
+    company_id      integer,
+    work_queue_type character varying(30),
+    work_queue_category_id int not null,
+    date_created     timestamp without time zone DEFAULT now(),
+    date_modified   timestamp without time zone,
+    created_by_id    integer      not null,
+    modified_by_id integer,
+    archived boolean default false,
+    CONSTRAINT work_queue_type_pk PRIMARY KEY (id),
+    CONSTRAINT wt_company_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT flow_wqt_work_queue_category_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.work_queue_category (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT flow_wqt_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT flow_wqt_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+    WITH (
+        OIDS= FALSE
+    );
+
+CREATE INDEX if not exists wqt_company_id_idx ON flow.work_queue_type (company_id);
+
 
 CREATE TABLE if not exists flow.user_company
 (
@@ -1015,40 +1017,55 @@ alter table flow.position
     alter column company_id set not null;
 
 
-CREATE TABLE if not exists flow.permission
+CREATE TABLE if not exists flow.access_control
 (
     id              serial                NOT NULL,
-    permission_name character varying(250) not null,
-    permission_code character varying(50) NOT NULL,
+    access_level character varying(20) not null,
+    access_code character varying(20) NOT NULL,
     archived        boolean DEFAULT false,
-    is_system boolean not null default false,
-    CONSTRAINT permission_pk PRIMARY KEY (id)
+    CONSTRAINT access_control_pk PRIMARY KEY (id)
 )
     WITH (
         OIDS= FALSE
     );
 
-CREATE TABLE if not exists flow.company_permission
+
+CREATE TABLE if not exists flow.feature
 (
     id              serial                NOT NULL,
-    permission_name character varying(250) not null,
-    company_id integer not null,
-    permission_id integer not null,
+    feature_name character varying(250) not null,
+    feature_code character varying(50) NOT NULL,
     archived        boolean DEFAULT false,
-    CONSTRAINT company_permission_pk PRIMARY KEY (id),
-    CONSTRAINT p_company_id_fk FOREIGN KEY (company_id)
+    is_system boolean not null default false,
+    CONSTRAINT feature_pk PRIMARY KEY (id)
+)
+    WITH (
+        OIDS= FALSE
+    );
+
+CREATE TABLE if not exists flow.company_feature
+(
+    id              serial                NOT NULL,
+    feature_name character varying(250) not null,
+    company_id integer not null,
+    feature_id integer not null,
+    archived        boolean DEFAULT false,
+    CONSTRAINT company_feature_pk PRIMARY KEY (id),
+    CONSTRAINT cf_company_id_fk FOREIGN KEY (company_id)
         REFERENCES flow.company (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT p_permission_id_fk FOREIGN KEY (permission_id)
-        REFERENCES flow.permission (id) MATCH SIMPLE
+    CONSTRAINT cf_feature_id_fk FOREIGN KEY (feature_id)
+        REFERENCES flow.feature (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
 )
     WITH (
         OIDS= FALSE
     );
 
-CREATE INDEX if not exists cp1_company_id_idx ON flow.company_permission (company_id);
-CREATE INDEX if not exists cp1_permission_id_idx ON flow.company_permission (permission_id);
+CREATE INDEX if not exists cp1_company_id_idx ON flow.company_feature (company_id);
+CREATE INDEX if not exists cp1_feature_id_idx ON flow.company_feature (feature_id);
+
+
 
 CREATE TABLE if not exists flow.role
 (
@@ -1062,6 +1079,32 @@ CREATE TABLE if not exists flow.role
     WITH (
         OIDS= FALSE
     );
+
+CREATE TABLE if not exists flow.feature_access_control
+(
+    id              serial                NOT NULL,
+    company_feature_id integer not null,
+    access_control_id  integer not null,
+    role_id integer not null,
+    archived        boolean DEFAULT false,
+    CONSTRAINT feature_access_control_pk PRIMARY KEY (id),
+    CONSTRAINT fac_company_feature_id_fk FOREIGN KEY (company_feature_id)
+        REFERENCES flow.company_feature (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT fac_access_control_id_fk FOREIGN KEY (access_control_id)
+        REFERENCES flow.access_control (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT fac_role_id_fk FOREIGN KEY (role_id)
+        REFERENCES flow.role (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+    WITH (
+        OIDS= FALSE
+    );
+
+CREATE INDEX if not exists fac_company_feature_id_idx ON flow.feature_access_control (company_feature_id);
+CREATE INDEX if not exists fac_access_control_id_idx ON flow.feature_access_control (access_control_id);
+CREATE INDEX if not exists fac_role_id_idx ON flow.feature_access_control (role_id);
 
 CREATE TABLE if not exists flow.position_role
 (
@@ -1086,47 +1129,21 @@ CREATE INDEX if not exists pr_position_id_idx ON flow.position_role (position_id
 
 
 
-CREATE TABLE if not exists flow.role_permission
-(
-    id            serial  NOT NULL,
-    role_id       integer NOT NULL,
-    company_permission_id integer NOT NULL,
-    CONSTRAINT role_permission_pk PRIMARY KEY (id),
-    CONSTRAINT rp_permission_id_fk FOREIGN KEY (company_permission_id)
-        REFERENCES flow.company_permission (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT rp_role_id_fk FOREIGN KEY (role_id)
-        REFERENCES flow.role (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT
-)
-    WITH (
-        OIDS= FALSE
-    );
-
-
-CREATE INDEX if not exists rp_permission_id_idx
-    ON flow.role_permission
-        USING btree
-        (company_permission_id);
-
-CREATE INDEX if not exists rp_role_id_idx
-    ON flow.role_permission
-        USING btree
-        (role_id);
-
-
-CREATE TABLE if not exists flow.user_permission
+CREATE TABLE if not exists flow.user_feature_access_control_override
 (
     id            serial  NOT NULL,
     user_id       integer NOT NULL,
-    company_permission_id integer NOT NULL,
-    deny          boolean default false,
-    CONSTRAINT user_permission_pk PRIMARY KEY (id),
-    CONSTRAINT up_permission_id_fk FOREIGN KEY (company_permission_id)
-        REFERENCES flow.company_permission (id) MATCH SIMPLE
+    company_feature_id integer NOT NULL,
+    access_control_id integer NOT NULL,
+    CONSTRAINT user_feature_access_control_override_pk PRIMARY KEY (id),
+    CONSTRAINT ufaco_permission_id_fk FOREIGN KEY (user_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT up_user_id_fk FOREIGN KEY (user_id)
-        REFERENCES flow."user" (id) MATCH SIMPLE
+    CONSTRAINT ufaco_company_feature_id_fk FOREIGN KEY (company_feature_id)
+        REFERENCES flow.company_feature (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT ufaco_access_control_id_fk FOREIGN KEY (access_control_id)
+        REFERENCES flow.access_control (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT
 )
     WITH (
@@ -1134,18 +1151,20 @@ CREATE TABLE if not exists flow.user_permission
     );
 
 
-
-
-CREATE INDEX if not exists up_permission_id_idx
-    ON flow.user_permission
-        USING btree
-        (company_permission_id);
-
-
-CREATE INDEX if not exists user_permission_user_id_idx
-    ON flow.user_permission
+CREATE INDEX if not exists ufaco_user_id_idx
+    ON flow.user_feature_access_control_override
         USING btree
         (user_id);
+
+CREATE INDEX if not exists ufaco_company_feature_id_idx
+    ON flow.user_feature_access_control_override
+        USING btree
+        (company_feature_id);
+
+CREATE INDEX if not exists ufaco_access_control_id_idx
+    ON flow.user_feature_access_control_override
+        USING btree
+        (access_control_id);
 
 
 CREATE TABLE if not exists flow.user_role

@@ -1,5 +1,5 @@
 insert into flow.company(company_name,aws_bucket, abbreviation)values('Albatross','albatross', 'alb');
-insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Blue Raven Corporate','blueravenc', 'brsc',,(select id from flow.company where company_name = 'Albatross'));
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Blue Raven Corporate','blueravenc', 'brsc',(select id from flow.company where company_name = 'Albatross'));
 insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Blue Raven Solar','blueraven', 'brs',(select id from flow.company where company_name = 'Blue Raven Corporate'));
 insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('B+C Electric','bcelectric', 'bce',(select id from flow.company where company_name = 'Blue Raven Corporate'));
 insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Eco Lux Solar','ecolux', 'els',(select id from flow.company where company_name = 'Blue Raven Corporate'));
@@ -77,6 +77,11 @@ INSERT INTO flow."user" (
      where id  in (99999999));
 
 insert into flow.user_company(company_id, user_id) values(1,99999999);
+
+insert into flow.access_control(access_level,access_code)values('view','VIEW');
+insert into flow.access_control(access_level,access_code)values('edit','EDIT');
+insert into flow.access_control(access_level,access_code)values('add','ADD');
+insert into flow.access_control(access_level,access_code)values('delete','DELETE');
 
 insert into flow.process_step_status_type(id, process_step_status_type)
 values(1,'ACTIVE');
