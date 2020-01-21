@@ -29,7 +29,12 @@
                         :label="item.fieldName"
                         filled
               ></v-select>
-              <v-icon v-if="item.customFieldId === 1" class="mb-8 ml-6 clickable">insert_drive_file</v-icon>
+              <AhjDocumentsButton v-if="item.customFieldId === 1"
+                                  title="Documents"
+                                  :documentTypeId="17"
+                                  :sourceId="ahjDesign.id"
+                                  :ahjId="ahjId"
+              ></AhjDocumentsButton>
             </div>
             <v-textarea v-model="ahjDesign.referenceStandards"
                         label="Reference Standards"
@@ -61,16 +66,16 @@
       <!-- SECOND COLUMN -->
       <v-col cols="12" md="8" class="pl-1 mb-3">
         <!-- DESIGN REQUIREMENTS -->
-        <v-card class="mb-3">
+        <v-card class="mb-3 pb-10">
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Design Requirements
           </v-card-title>
-          <v-card-text class="mt-4">
+          <v-card-text class="mt-2">
             <v-card-subtitle class="font-weight-bold px-4 pb-3 mb-5">
               PV Design Basics
             </v-card-subtitle>
-            <div class="flex-display flex-wrap justify-space-between px-4">
-              <div class="flex-display custom-field" v-for="item in getCustomFieldsForGroup(14)" :key="item.id">
+            <div class="flex-display flex-wrap justify-space-between px-2">
+              <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(14)" :key="item.id">
                 <v-select v-model="item.intValue"
                           :items="item.listOfValues"
                           item-text="name"
@@ -78,7 +83,12 @@
                           :label="item.fieldName"
                           filled
                 ></v-select>
-                <v-icon v-if="item.customFieldId === 7" class="mb-8 ml-6 clickable">insert_drive_file</v-icon>
+                <AhjDocumentsButton v-if="item.customFieldId === 7"
+                                    title="Documents"
+                                    :documentTypeId="18"
+                                    :sourceId="ahjDesign.id"
+                                    :ahjId="ahjId"
+                ></AhjDocumentsButton>
               </div>
             </div>
             <AhjRequirement v-if="dataReady"
@@ -93,16 +103,16 @@
         </v-card>
 
         <!-- ELECTRICAL REQUIREMENTS -->
-        <v-card class="mb-3">
+        <v-card class="mb-3 pb-10">
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Electrical Requirements
           </v-card-title>
-          <v-card-text class="mt-4">
+          <v-card-text class="mt-2">
             <v-card-subtitle class="font-weight-bold px-4 pb-3 mb-5">
               Electrical Design Basics
             </v-card-subtitle>
-            <div class="flex-display flex-wrap justify-space-between px-4">
-              <div class="flex-display custom-field" v-for="item in getCustomFieldsForGroup(15)" :key="item.id">
+            <div class="flex-display flex-wrap justify-space-between px-2">
+              <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(15)" :key="item.id">
                 <v-select v-model="item.intValue"
                           :items="item.listOfValues"
                           item-text="name"
@@ -110,7 +120,12 @@
                           :label="item.fieldName"
                           filled
                 ></v-select>
-                <v-icon v-if="item.customFieldId === 10" class="mb-8 ml-6 clickable">insert_drive_file</v-icon>
+                <AhjDocumentsButton v-if="item.customFieldId === 10"
+                                    title="Documents"
+                                    :documentTypeId="19"
+                                    :sourceId="ahjDesign.id"
+                                    :ahjId="ahjId"
+                ></AhjDocumentsButton>
               </div>
             </div>
             <AhjRequirement v-if="dataReady"
@@ -125,16 +140,16 @@
         </v-card>
 
         <!-- STRUCTURAL REQUIREMENTS -->
-        <v-card>
+        <v-card class="pb-10">
           <v-card-title class="primaryCustom white--text font-weight-bold">
             Structural Requirements
           </v-card-title>
-          <v-card-text class="mt-4">
+          <v-card-text class="mt-2">
             <v-card-subtitle class="font-weight-bold px-4 pb-3 mb-5">
               Structural Design Loads
             </v-card-subtitle>
-            <div class="flex-display flex-wrap justify-space-between px-4">
-              <div class="flex-display custom-field" v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
+            <div class="flex-display flex-wrap justify-space-between px-2">
+              <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
                 <v-select v-model="item.intValue"
                           :items="item.listOfValues"
                           item-text="name"
@@ -142,7 +157,46 @@
                           :label="item.fieldName"
                           filled
                 ></v-select>
+                <AhjDocumentsButton v-if="item.customFieldId === 14"
+                                    title="Documents"
+                                    :documentTypeId="13"
+                                    :sourceId="ahjDesign.id"
+                                    :ahjId="ahjId"
+                ></AhjDocumentsButton>
+                <AhjDocumentsButton v-if="item.customFieldId === 16"
+                                    title="Documents"
+                                    :documentTypeId="14"
+                                    :sourceId="ahjDesign.id"
+                                    :ahjId="ahjId"
+                ></AhjDocumentsButton>
+                <AhjDocumentsButton v-if="item.customFieldId === 17"
+                                    title="Documents"
+                                    :documentTypeId="15"
+                                    :sourceId="ahjDesign.id"
+                                    :ahjId="ahjId"
+                ></AhjDocumentsButton>
+                <AhjDocumentsButton v-if="item.customFieldId === 19"
+                                    title="Documents"
+                                    :documentTypeId="16"
+                                    :sourceId="ahjDesign.id"
+                                    :ahjId="ahjId"
+                ></AhjDocumentsButton>
               </div>
+              <v-text-field class="structural-design-text-field mx-2"
+                            v-model="ahjDesign.groundSnowLoad"
+                            label="Ground Snow Load"
+                            filled
+              ></v-text-field>
+              <v-text-field class="structural-design-text-field mx-2"
+                            v-model="ahjDesign.roofSnowLoad"
+                            label="Roof Snow Load"
+                            filled
+              ></v-text-field>
+              <v-text-field class="structural-design-text-field mx-2"
+                            v-model="ahjDesign.windSpeed"
+                            label="Wind Speed"
+                            filled
+              ></v-text-field>
             </div>
             <AhjRequirement v-if="dataReady"
                             title="Structural Design Notes and Additional Requirements"
@@ -162,8 +216,9 @@
 </template>
 
 <script>
-  import moment from 'moment'
+  // import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
+  import AhjDocumentsButton from './components/AhjDocumentsButton'
   import AhjRequirement from './components/AhjRequirements'
   import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
@@ -172,6 +227,7 @@
   export default {
     name: 'ahjDesign',
     components: {
+      AhjDocumentsButton,
       AhjRequirement,
       Snackbar
     },
@@ -286,7 +342,15 @@
     color: var(--v-primaryText-base) !important;
     border-bottom: 1px solid var(--v-primaryText-base) !important;
   }
-  .custom-field {
-    min-width: 450px;
+
+  .custom-field,
+  .structural-design-text-field {
+    width: 100%;
+  }
+  @media (min-width: 960px) {
+    .custom-field,
+    .structural-design-text-field {
+      max-width: 46%;
+    }
   }
 </style>

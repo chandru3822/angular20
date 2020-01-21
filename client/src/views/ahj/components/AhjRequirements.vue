@@ -58,7 +58,7 @@
           </v-list-item-action>
         </v-list-item>
       </v-list>
-      <div class="empty-list mx-4 mt-2" v-show="requirementsCopy.length < 1">
+      <div class="empty-list mx-3 mt-2" v-show="requirementsCopy.length < 1">
         No requirements found
       </div>
 
