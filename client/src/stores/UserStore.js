@@ -78,7 +78,9 @@ export const UserStore = {
   },
   getters: {
     hasPermission: state => perm => {
-      return !!state.details.permissions.find(p => p.permissionCode === perm)
+      // todo: @Randa add this back when the re-write is complete
+      // return !!state.details.permissions.find(p => p.permissionCode === perm)
+      return true
     },
   }
 }
