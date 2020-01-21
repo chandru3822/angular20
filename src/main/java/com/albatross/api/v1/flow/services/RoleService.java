@@ -50,7 +50,7 @@ public class RoleService {
     return result.orElse(null);
   }
 
-  public void insertRole(Role role) {
+  public Role insertRole(Role role) {
     User user = securityService.getCurrentUser();
     //insert role and get ID back
     HashMap<String, Object> params = new HashMap<>();
@@ -68,16 +68,16 @@ public class RoleService {
         }
       }
     }
+    return getRole(roleId);
   }
 
   public void deleteRole(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     sqlCache.update("role.archiveRole", params);
-
   }
 
-  public void updateRole(Role role) {
+  public Role updateRole(Role role) {
     //update the name
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", role.getId());
@@ -99,7 +99,8 @@ public class RoleService {
       }
     }
     // todo look into making this an upsert
-    //for each feature if id save the enabled status, if no id insert a row
+
+    return getRole(role.getId());
   }
 
   public Role saveRole(Role role) {

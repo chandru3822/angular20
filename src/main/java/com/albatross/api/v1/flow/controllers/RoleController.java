@@ -33,13 +33,13 @@ public class RoleController {
   }
 
   @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void insertRole(@RequestBody Role role) {
-    roleService.insertRole(role);
+  public Role insertRole(@RequestBody Role role) {
+    return roleService.insertRole(role);
   }
 
   @PutMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateRole(@RequestBody Role role) {
-    roleService.updateRole(role);
+  public Role updateRole(@RequestBody Role role) {
+    return roleService.updateRole(role);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

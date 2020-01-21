@@ -91,8 +91,11 @@
         try {
           if(this.roleId) {
             const {data} = await putRequest(`/role/`, this.role)
+            this.$router.push({name: 'role', params: {id: this.roleId}})
           } else {
             const {data} = await postRequest(`/role/`, this.role)
+            this.roleId = data.id
+            this.$router.push({name: 'role', params: {id: this.roleId}})
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -100,6 +103,7 @@
           this.snackbar = getSnackbar('ERROR', 'Error Saving Role')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+
       },
       populateHeaders () {
         //todo. not my favorite
