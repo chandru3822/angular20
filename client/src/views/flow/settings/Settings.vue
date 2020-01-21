@@ -117,9 +117,6 @@ export default {
         }, {
           header: 'User Management'
         }, {
-          path: '/settings/permissions',
-          title: 'Permissions',
-        }, {
           path: '/settings/positions',
           title: 'Positions',
         }, {

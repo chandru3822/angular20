@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Roles</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newRoles" color="primary">
+            <v-btn text to="/settings/role" color="primary">
               <v-icon>add</v-icon>
               Add Role
             </v-btn>
@@ -14,7 +14,7 @@
         </v-toolbar>
         <v-data-table
             :headers="headers"
-            :items="roles"
+            :items="filterRoles()"
             :fixed-header="true"
             disable-sort
             :items-per-page="-1"
@@ -31,8 +31,51 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
+            <tr class="clickable" :class="{'shaded-row': index % 2}" @click="">
               <td class="text-left">{{item.roleName}}</td>
+              <!-- icon column -->
+              <td class="text-right">
+                <v-btn text @click="clickRow(item.id)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-dialog
+                    v-model="item.deleteConfirm"
+                    width="500">
+                  <template v-slot:activator="{ on }">
+                    <v-btn text v-on="on">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title
+                        class="headline grey lighten-2"
+                        primary-title
+                    >
+                      Confirm
+                    </v-card-title>
+
+                    <v-card-text>
+                      Are you sure you want to delete this role: <strong>{{ item.roleName }}</strong>?
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                          @click="item.deleteConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                          color="primary"
+                          text
+                          @click="item.archived = true; deleteRole(item.id)">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -63,6 +106,7 @@
         dataLoading: true,
         headers: [
           {text: 'Role Name', value: 'roleName', show: true},
+          { text: null, value: 'icons', show: true }
         ],
       }
     },
@@ -71,7 +115,7 @@
     },
     methods: {
       clickRow(id) {
-        this.$router.push({name: 'roles', params: {id: id}})
+        this.$router.push({name: 'role', params: {id: id}})
       },
       async getRoles() {
         try {
@@ -84,7 +128,21 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Roles')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async deleteRole(id) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/role/${id}`)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Role')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      filterRoles () {
+        return this.roles.filter(r => { return !r.archived})
+      },
     }
   }
 </script>

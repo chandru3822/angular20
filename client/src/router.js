@@ -161,14 +161,15 @@ export default new Router({
             path: 'function/:id',
             component: () => import (/* webpackChunkName: "function" */ './views/flow/settings/Function.vue')
           }, {
-            path: 'permissions',
-            component: () => import (/* webpackChunkName: "permissions" */ './views/flow/settings/Permissions.vue')
-          },  {
             path: 'positions',
-            component: () => import (/* webpackChunkName: "permissions" */ './views/flow/settings/Positions.vue')
+            component: () => import (/* webpackChunkName: "positions" */ './views/flow/settings/Positions.vue')
           },  {
             path: 'roles',
-            component: () => import (/* webpackChunkName: "permissions" */ './views/flow/settings/Roles.vue')
+            component: () => import (/* webpackChunkName: "roles" */ './views/flow/settings/Roles.vue')
+          },  {
+            path: 'role/:id?',
+            name: 'role',
+            component: () => import (/* webpackChunkName: "role" */ './views/flow/settings/Role.vue')
           },
         ]
       }, {

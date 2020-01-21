@@ -1,0 +1,36 @@
+<sql>
+  <feature.getAllForCompany><![CDATA[
+    select cf.id,
+           cf.feature_name,
+           cf.company_id,
+           cf.feature_id,
+           cf.archived
+    from flow.company_feature cf
+    where cf.company_id = :companyId
+    and cf.archived is not true
+  ]]></feature.getAllForCompany>
+
+  <feature.getAllForCompanyWithAccess><![CDATA[
+    select cf.id,
+           cf.feature_name,
+           cf.company_id,
+           cf.feature_id,
+           cf.archived,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(accessControl)))
+                        FROM (
+                                 select ac.id,
+                                        ac.access_level as "accessLevel",
+                                        ac.access_code as "accessCode",
+                                        false as enabled
+                                 from flow.access_control ac
+                                 where ac.archived is not true
+                                 order by ac.id
+                             ) accessControl), '[]') AS "accessControl"
+    from flow.company_feature cf
+    where cf.company_id = :companyId
+      and cf.archived is not true
+  ]]></feature.getAllForCompanyWithAccess>
+
+
+</sql>
