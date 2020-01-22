@@ -46,7 +46,18 @@ export default new Router({
         name: 'user',
         props: true,
         component: () => import (/*webpackChunkName: "user" */ './views/flow/users/User.vue'),
-        children: []
+        children: [
+          {
+            path: 'details',
+            component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserDetails.vue'),
+          }, {
+            path: 'positions',
+            component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserPositions.vue'),
+          }, {
+            path: 'access',
+            component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserAccess.vue'),
+          }
+        ]
       }, {
         path: '/newUser',
         name: 'newUser',
