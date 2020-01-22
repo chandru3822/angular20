@@ -120,9 +120,9 @@ export default {
           path: '/settings/positions',
           title: 'Positions',
         }, {
-          path: '/settings/roles',
-          title: 'Roles',
-        }, {
+          // path: '/settings/roles',
+          // title: 'Roles',
+        // }, {
           header: 'Custom Components'
         }, {
           path: '/settings/customFields',

@@ -118,7 +118,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       const params = {
         companyId,
-        isAdmin: this.$store.getters.hasPermission('SYSTEM_ADMIN')
+        isAdmin: this.$store.getters.isFullAdmin
       }
       await this.$store.dispatch(UserActions.CHANGE_CONTEXT, params )
     },
@@ -127,7 +127,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let url
-        if(this.$store.getters.hasPermission('SYSTEM_ADMIN')) {
+        if(this.$store.getters.isFullAdmin) {
           url = `/companies`
         } else {
           url = `/companies/assignedToUser`
