@@ -1,30 +1,37 @@
 <template>
-  <v-container id="roles-container">
+  <v-container id="positions-container">
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">
-            <span v-if="roleId">Update Role</span>
-            <span v-else>New Role</span>
+            <span v-if="positionId">Update Position</span>
+            <span v-else>New Position</span>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!role.roleName" @click="saveRole" color="primary">
+            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary">
               <v-icon>save</v-icon>
               Save
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="mt-2 pa-5">
-          <v-text-field v-model="role.roleName"
+          <v-text-field v-model="position.position"
                         placeholder="Enter a value"
                         required
-                        label="Role Name">
+                        label="Position Name">
           </v-text-field>
+          <v-select
+              v-model="position.orgTypeId"
+              :items="orgTypes"
+              label="Organization Type"
+              item-text="orgType"
+              item-value="id"
+          ></v-select>
           <h3>Access Control</h3>
           <v-data-table
               :headers="headers"
-              :items="role.companyFeatures"
+              :items="position.companyFeatures"
               :fixed-header="true"
               :items-per-page="-1"
               hide-default-footer
@@ -59,18 +66,20 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
+  import {getOrgTypes} from '@/services/orgService'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
-    name: 'Role',
+    name: 'Position',
     components: {
       Snackbar
     },
     data() {
       return {
         snackbar: {},
-        role: {},
-        roleId: this.$route.params.id,
+        position: {},
+        orgTypes: [],
+        positionId: this.$route.params.id,
         features: [],
         accessControlList: [],
         headers: [
@@ -80,35 +89,48 @@
       }
     },
     created () {
-      if(this.roleId) {
-        this.getRole()
+      if(this.positionId) {
+        this.getPosition()
       } else {
         this.getFeatures()
       }
+      this.getOrgTypes()
     },
     methods: {
-      async saveRole() {
+      async getOrgTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if(this.roleId) {
-            const {data} = await putRequest(`/role/`, this.role)
-            this.$router.push({name: 'role', params: {id: this.roleId}})
+          const {data} = await getOrgTypes()
+          this.orgTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async savePosition() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          if(this.positionId) {
+            const {data} = await putRequest(`/position/`, this.position)
+            this.$router.push({name: 'position', params: {id: this.positionId}})
           } else {
-            const {data} = await postRequest(`/role/`, this.role)
-            this.roleId = data.id
-            this.$router.push({name: 'role', params: {id: this.roleId}})
+            const {data} = await postRequest(`/position/`, this.position)
+            this.positionId = data.id
+            this.$router.push({name: 'position', params: {id: this.positionId}})
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Role')
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Position')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
       },
       populateHeaders () {
         //todo. not my favorite
-        this.role.companyFeatures[0]?.accessControl?.forEach(acl => {
+        this.position.companyFeatures[0]?.accessControl?.forEach(acl => {
           this.headers.push({
             text: acl.accessLevel,
             value: acl.accessCode,
@@ -120,7 +142,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/feature/withAccess`)
-          this.role.companyFeatures = data
+          this.position.companyFeatures = data
           this.populateHeaders()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -129,16 +151,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getRole() {
+      async getPosition() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/role/${this.roleId}`)
-          this.role = data
+          const {data} = await getRequest(`/position/${this.positionId}`)
+          this.position = data
           this.populateHeaders()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Role')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Position')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -147,21 +169,21 @@
 </script>
 
 <style lang="scss">
-  #roles-container .v-data-table__wrapper {
+  #positions-container .v-data-table__wrapper {
     height: calc(100vh - 400px);
     min-height: 300px;
   }
 </style>
 
 <style lang="scss" scoped>
-  #roles-container {
+  #positions-container {
     margin-top: -15px;
     padding-left: 0;
     padding-right: 0;
     padding-top: 0;
   }
 
-  .roles-table {
+  .positions-table {
     margin-top: 2px;
   }
 

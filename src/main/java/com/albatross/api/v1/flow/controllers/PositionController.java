@@ -27,9 +27,19 @@ public class PositionController {
     return positionService.getPositionsForCompany();
   }
 
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Position getPosition(@PathVariable Long id) {
+    return positionService.getPosition(id);
+  }
+
+  @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Position insertPosition(@RequestBody Position p) {
+    return positionService.insertPosition(p);
+  }
+
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Position savePosition(@RequestBody Position p) {
-    return positionService.savePosition(p);
+  public Position updatePosition(@RequestBody Position p) {
+    return positionService.updatePosition(p);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

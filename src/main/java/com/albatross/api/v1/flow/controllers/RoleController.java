@@ -43,7 +43,7 @@ public class RoleController {
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateRole(@PathVariable Long id) {
+  public void deleteRole(@PathVariable Long id) {
     roleService.deleteRole(id);
   }
 

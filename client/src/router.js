@@ -175,6 +175,10 @@ export default new Router({
             path: 'positions',
             component: () => import (/* webpackChunkName: "positions" */ './views/flow/settings/Positions.vue')
           },  {
+            path: 'position/:id?',
+            name: 'position',
+            component: () => import (/* webpackChunkName: "role" */ './views/flow/settings/Position.vue')
+          },  {
             path: 'roles',
             component: () => import (/* webpackChunkName: "roles" */ './views/flow/settings/Roles.vue')
           },  {
