@@ -113,18 +113,18 @@ export default {
       }
     },
     async getCustomFieldGroups() {
-      // @humes - maybe you have this data on the process step. i didnt even look
-      // this.$store.commit(AppMutations.SET_LOADING, true)
+      //@TODO: @humes, make this use local loading so entire screen isn't blocked waiting
+      //this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep`, { params: {
             projectProcessStepId: this.projectProcessStepId
           }})
         this.customFieldGroups = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getNotes() {

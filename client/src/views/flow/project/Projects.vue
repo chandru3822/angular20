@@ -2,11 +2,11 @@
 <v-container id="projects-container">
   <v-row>
     <v-col cols="12">
+      <v-toolbar class="elevation-1">
+        <v-toolbar-title>Projects</v-toolbar-title>
+      </v-toolbar>
       <v-toolbar class="white elevation-1 mt-3">
         <v-row class="justify-space-between align-center">
-          <v-col class="text-left" cols="12" lg="6">
-            <v-toolbar-title>Projects</v-toolbar-title>
-          </v-col>
           <v-col cols="12" lg="6">
             <v-text-field
               class="mt-5"
@@ -131,7 +131,7 @@ export default {
 
 @import "@/styles/main.scss";
 
-tr:nth-of-type(odd) {
+tr:nth-of-type(even) {
   @extend .shaded-row;
 }
 </style>
