@@ -325,7 +325,7 @@
     },
     methods: {
       clickRow(id){
-        this.$router.push({name: 'user', params: {id}})
+        this.$router.push({name: 'userDetails', params: {id}})
       },
       debounceGetUsers: debounce( function () {
         this.getUsers()

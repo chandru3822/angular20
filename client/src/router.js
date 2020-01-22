@@ -49,6 +49,7 @@ export default new Router({
         children: [
           {
             path: 'details',
+            name: 'userDetails',
             component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserDetails.vue'),
           }, {
             path: 'positions',
