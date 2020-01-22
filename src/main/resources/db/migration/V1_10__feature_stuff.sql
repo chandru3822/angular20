@@ -7,6 +7,9 @@ ALTER TABLE if exists flow.user_feature_access_control_override
 alter table flow.role_feature_access_control
     rename column archived to enabled;
 
+alter table flow.user_feature_access_control
+    add column if not exists enabled boolean not null default false;
+
 CREATE TABLE if not exists flow.position_feature_access_control
 (
     id              serial                NOT NULL,

@@ -5,9 +5,7 @@ import com.albatross.api.v1.flow.services.FeatureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,6 +30,16 @@ public class FeatureController {
   @GetMapping(value = "/withAccess", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyFeature> getFeaturesForCompanyWithAccess() {
     return featureService.getFeaturesForCompanyWithAccess();
+  }
+
+  @GetMapping(value = "/user/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CompanyFeature> getFeaturesForUser(@PathVariable Long userId) {
+    return featureService.getFeaturesForUser(userId);
+  }
+
+  @PutMapping(value = "/user/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveCompanyFeatures(@PathVariable Long userId, @RequestBody List<CompanyFeature> companyFeatures) {
+    featureService.saveCompanyFeatures(userId, companyFeatures);
   }
 
 }

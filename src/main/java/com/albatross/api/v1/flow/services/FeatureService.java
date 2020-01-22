@@ -3,8 +3,8 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.CompanyFeature;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +47,34 @@ public class FeatureService {
     params.put("companyId", user.getCompanyId());
     List<CompanyFeature> results = sqlCache.query("feature.getAllForCompanyWithAccess", params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
     return results;
+  }
+
+  public List<CompanyFeature> getFeaturesForUser(Long userId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", userId);
+    List<CompanyFeature> results = sqlCache.query("feature.getForUser", params, new CompanyFeatureMapper<>(CompanyFeature.class, om));
+    return results;
+  }
+
+  public void saveCompanyFeatures(Long userId, List<CompanyFeature> features) {
+    HashMap<String, Object> params = new HashMap<>();
+
+    for(CompanyFeature cf : features) {
+      for (FeatureAccessControl ac : cf.getAccessControl()) {
+        if(null != ac.getId()) {
+          params.put("enabled", ac.isEnabled());
+          params.put("userFeatureAccessControlId", ac.getAccessControlId());
+          sqlCache.update("feature.updateUserFeatureAccessControl", params);
+        } else if (ac.isEnabled()) {
+          params.put("companyFeatureId", cf.getId());
+          params.put("accessControlId", ac.getAccessControlId());
+          params.put("userId", userId);
+          sqlCache.update("feature.insertUserFeatureAccessControl", params);
+        }
+      }
+    }
   }
 
   public static class CompanyFeatureMapper<T> extends BeanPropertyRowMapper<T> {

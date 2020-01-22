@@ -75,7 +75,6 @@
         accessControlList: [],
         headers: [
           { text: 'Feature', value: 'featureName', show: true },
-
         ],
       }
     },

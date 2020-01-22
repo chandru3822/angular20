@@ -45,7 +45,7 @@
       return {
         breadcrumbs: [
           {
-            text: 'Back',
+            text: 'Back to Users',
             disabled: false,
             exact: true,
             to: `/users`
