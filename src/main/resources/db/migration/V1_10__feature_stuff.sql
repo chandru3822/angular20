@@ -35,3 +35,7 @@ CREATE TABLE if not exists flow.position_feature_access_control
 CREATE INDEX if not exists pfac_company_feature_id_idx ON flow.position_feature_access_control (company_feature_id);
 CREATE INDEX if not exists pfac_access_control_id_idx ON flow.position_feature_access_control (access_control_id);
 CREATE INDEX if not exists pfac_position_id_idx ON flow.position_feature_access_control (position_id);
+
+
+alter table flow.company
+    add column if not exists default_password varchar(100);
