@@ -1,8 +1,11 @@
 <template>
 <v-row class="d-flex justify-space-between align-center">
-  <v-col>{{field.fieldName}}</v-col>
+  <v-col>
+    {{field.fieldName}}
+    <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
+  </v-col>
 
-  <v-col class="d-flex justify-end">
+  <v-col class="d-flex justify-end align-self-start">
     <template v-if="field.dataTypeId === 1">
 
       <span v-if="readonly">{{ field.dateValue | formatDate('date') }}</span>
@@ -78,6 +81,7 @@
       v-if="field.dataTypeId === 6 && field.hasListValues"
       v-model="field.intValue"
       text
+      :readonly="readonly"
       placeholder=" "
       :items="field.listOfValues"
       :label="field.fieldName"
@@ -162,7 +166,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.field-label {
+.ancillary {
   font-size: 12px;
 }
 </style>

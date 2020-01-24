@@ -38,8 +38,23 @@
       <SpinnerInline :size="20" color="primary"/>
     </v-col>
 
-    <v-col v-else v-for="group in customFieldGroups" :key="group.customFieldId">
-      <ProjectFieldGroup :group="group"/>
+    <v-col
+      v-else
+      class="mt-4"
+      v-for="(group, index) in customFieldGroups"
+      :key="index"
+    >
+<!--      <ProjectFieldGroup :group="group"/>-->
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <!--              <v-btn text @click="saveLead">Save</v-btn>-->
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card class="pa-4 text-left">
+        <CustomValueInput v-for="(field, idx) in group.customFieldValues" :key="idx" :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null" :field="field"/>
+      </v-card>
     </v-col>
 
     <v-col>
@@ -139,6 +154,7 @@ import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import Snackbar from '@/components/Snackbar.vue'
 import UserCard from '@/views/flow/components/UserCard'
+import CustomValueInput from '@/views/flow/components/CustomValueInput'
 
 export default {
   name: 'ProjectOverview',
@@ -150,7 +166,8 @@ export default {
     Attachments,
     NotesAndActivity,
     Snackbar,
-    UserCard
+    UserCard,
+    CustomValueInput
   },
   data () {
     return {

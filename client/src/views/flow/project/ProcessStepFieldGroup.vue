@@ -11,7 +11,7 @@
   </v-row>
   <v-row class="valueContainer elevation-2">
     <v-col cols="12" lg="6" v-for="(field, index) in group.customFieldValues" :key="index">
-      <CustomValueInput :field="field" :readonly="!isEditMode"/>
+      <CustomValueInput :field="field" :readonly="!isEditMode || field.ancillaryCustomFieldGroupAssignmentId !== null"/>
     </v-col>
   </v-row>
 </v-container>
