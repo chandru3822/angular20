@@ -119,8 +119,10 @@ public class OrgService {
   }
 
   public Org getOrg(Long id) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("companyId", user.getCompanyId());
     Optional<Org> result = sqlCache.get("org.getOne", params, Org.class);
     return result.orElse(null);
   }

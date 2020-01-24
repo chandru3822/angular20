@@ -12,29 +12,6 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-<!--        <v-card flat class="my-1 pa-4" v-if="addNew">-->
-<!--          <h3>Add New Position</h3>-->
-<!--          <v-text-field v-model="newPosition.position"-->
-<!--                        placeholder="Enter a position name"-->
-<!--                        required-->
-<!--                        label="Position">-->
-<!--          </v-text-field>-->
-<!--          <v-select-->
-<!--              v-model="newPosition.orgTypeId"-->
-<!--              :items="orgTypes"-->
-<!--              label="Organization Type"-->
-<!--              item-text="orgType"-->
-<!--              item-value="id"-->
-<!--          ></v-select>-->
-<!--          <v-btn color="primary" class="white&#45;&#45;text" :disabled="!newPosition.position || !newPosition.orgTypeId" @click="savePosition(newPosition, true)">-->
-<!--            Save-->
-<!--          </v-btn>-->
-<!--          <v-btn class="ml-3" @click="addNew = false; newPosition = {}">-->
-<!--            Cancel-->
-<!--          </v-btn>-->
-<!--        </v-card>-->
-<!--        <v-divider v-if="addNew"></v-divider>-->
-        <v-data-table
             :headers="headers"
             :items="filterPositions()"
             :fixed-header="true"

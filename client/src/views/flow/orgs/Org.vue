@@ -25,7 +25,7 @@
                       label="Organization Type"
                       item-text="orgType"
                       item-value="id"
-                      @input="getOrgsByType()"
+                      @input="getOrgsByType(org.orgTypeId)"
             ></v-select>
             <v-select v-model="org.parentOrgId"
                       :items="parents"
@@ -98,7 +98,7 @@
       this.getCustomFieldGroups()
       this.getOrgTypes()
       await this.getOrg()
-      this.getOrgsByType()
+      this.getOrgsByType(this.org.parentOrgTypeId)
       this.getStates()
     },
     methods: {
@@ -153,10 +153,10 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getOrgsByType () {
+      async getOrgsByType (orgTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgsByType(this.org.orgTypeId)
+          const {data} = await getOrgsByType(orgTypeId)
           this.parents = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

@@ -141,7 +141,8 @@
              u.first_name || ' ' || u.last_name as title
       from flow.user_positions_vw u
       where u.company_id = :companyId
-        and case when :stateId::integer is not null then u.state_id = :stateId::integer else u.user_schedulable is true end
+        and u.user_schedulable is true
+        and case when :stateId::integer is not null then u.state_id = :stateId::integer and u.user_schedulable is true else u.user_schedulable is true end
         and u.user_archived is not true
       order by full_name
     ]]>

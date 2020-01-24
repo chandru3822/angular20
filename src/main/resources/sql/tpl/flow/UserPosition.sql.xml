@@ -1,0 +1,17 @@
+<sql>
+  <userPosition.getAll><![CDATA[
+      select distinct upv.user_position_id as id,
+                upv.primary_flag,
+                upv.start_date,
+                upv.end_date,
+                upv.position,
+                upv.position_id,
+                upv.company_id,
+                upv.hierarchy
+      from flow.user_positions_vw upv
+      where upv.company_id = :companyId
+        and upv.user_id = :userId
+      order by upv.start_date desc
+  ]]></userPosition.getAll>
+
+</sql>
