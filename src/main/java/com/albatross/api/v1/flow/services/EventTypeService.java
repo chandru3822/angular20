@@ -32,7 +32,7 @@ public class EventTypeService {
   public List<EventType> getEventTypes() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", user.getParentCompanyId());
 
     List<EventType> results = sqlCache.query("eventType.getTypesForCompany", params, EventType.class);
     return results;

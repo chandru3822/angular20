@@ -174,19 +174,4 @@
     order by name
   ]]></processStep.getParentObjectsIncludingTypes>
 
-  <processStep.getSchedulableProcessSteps><![CDATA[
-    select distinct ps.id,
-           ps.process_step_name,
-           ps.company_id,
-           ps.archived,
-           ps.date_created,
-           ps.date_modified,
-           ps.created_by_id,
-           ps.modified_by_id
-    from flow.process_step ps
-        inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id and cfg.schedulable is true
-    where ps.company_id = :companyId
-      and ps.archived is not true
-    order by ps.process_step_name
-  ]]></processStep.getSchedulableProcessSteps>
 </sql>

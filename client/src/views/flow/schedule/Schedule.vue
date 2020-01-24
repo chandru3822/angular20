@@ -27,10 +27,10 @@
                       @input="getProjects()"
             ></v-select>
 
-            <v-select v-model="selectedProcessSteps"
-                      :items="processSteps"
-                      label="Process Step"
-                      item-text="processStepName"
+            <v-select v-model="selectedEventTypes"
+                      :items="eventTypes"
+                      label="Event Type"
+                      item-text="eventType"
                       item-value="id"
                       return-object
                       :disabled="!state || !state.id"
@@ -55,15 +55,15 @@
                   slot="selection"
                   slot-scope="{ item, index }"
               >
-                <div v-if="index === 0 && selectedProcessSteps.length < 3">
-                  <v-chip small v-for="sp in selectedProcessSteps">
-                    <span>{{ sp.processStepName }}</span>
+                <div v-if="index === 0 && selectedEventTypes.length < 3">
+                  <v-chip small v-for="sp in selectedEventTypes">
+                    <span>{{ sp.eventType }}</span>
                   </v-chip>
                 </div>
                 <span
-                    v-if="index === 1 && selectedProcessSteps.length >= 3"
+                    v-if="index === 1 && selectedEventTypes.length >= 3"
                     class="primary--text caption"
-                >{{ selectedProcessSteps.length }} selected</span>
+                >{{ selectedEventTypes.length }} selected</span>
               </template>
             </v-select>
 
@@ -72,7 +72,7 @@
                       label="Status"
                       item-text="processStepStatusType"
                       item-value="id"
-                      :disabled="selectedProcessSteps.length === 0"
+                      :disabled="selectedEventTypes.length === 0"
                       return-object
                       multiple
                       @input="filterProjects"
@@ -109,15 +109,15 @@
                             >
 
             </v-autocomplete>
-            <v-select v-model="searchProcessStep"
-                      :items="processSteps"
-                      label="Process Step"
-                      item-text="processStepName"
+            <v-select v-model="searchEventType"
+                      :items="eventTypes"
+                      label="Event Type"
+                      item-text="eventType"
                       item-value="id"
                       return-object
             >
             </v-select>
-            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchProcessStep.id" @click="getSingleProject(searchProject.projectId, searchProcessStep.id)">Go</v-btn>
+            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -240,6 +240,7 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
   import {getActiveStates} from '@/services/stateService'
   import Map from './components/Map'
+  import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
 
@@ -277,13 +278,13 @@
         states: [],
         processStepStatusTypes: [],
         selectedProcessStepStatusTypes: [],
-        processSteps: [],
+        eventTypes: [],
         //used for multi select
-        selectedProcessSteps: [],
+        selectedEventTypes: [],
         //used for single select
         selectedProject: {},
         //used for search
-        searchProcessStep: {},
+        searchEventType: {},
         searchProject: {},
         searchProjects: [],
         searchProjectsLoading: false,
@@ -302,13 +303,13 @@
     },
     computed: {
       selectAll () {
-        return this.selectedProcessSteps.length === this.processSteps.length
+        return this.selectedEventTypes.length === this.eventTypes.length
       },
       selectSome () {
-        return this.selectedProcessSteps.length > 0 && !this.selectAll
+        return this.selectedEventTypes.length > 0 && !this.selectAll
       },
       icon () {
-        if (this.selectedProcessSteps && this.processSteps && this.selectedProcessSteps.length === this.processSteps.length) {
+        if (this.selectedEventTypes && this.eventTypes && this.selectedEventTypes.length === this.eventTypes.length) {
           return 'check_box'
         }
         if (this.selectSome) {
@@ -334,10 +335,10 @@
     created() {
       console.log('MEMEMEMEMEMEEM', this.$route.query)
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
-      this.selectedProcessSteps = JSON.parse(localStorage.getItem('scheduleSteps')) || []
+      this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
       this.getActiveStates()
       this.getStatusTypes()
-      this.getProcessSteps()
+      this.getEventTypes()
       if(this.$route.query && this.$route.query.processStepId && this.$route.query.projectId) {
         this.getSingleProject(parseInt(this.$route.query.projectId), parseInt(this.$route.query.processStepId))
       }
@@ -387,17 +388,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-
-      async getProcessSteps() {
+      async getEventTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           // 'event types' is just schedulable process steps
-          const {data} = await getRequest(`/processStep/getSchedulableProcessSteps`)
-          this.processSteps = data
+          const {data} = await getEventTypes()
+          this.eventTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -409,7 +409,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Types')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -417,16 +417,16 @@
       async getProjects(resetQuery) {
         if(resetQuery) {
           // todo: should we remove this.$route.query params if the button is clicked?
-          this.$route.query = {}
+          // this.$route.query = {}
         }
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
-        localStorage.setItem('scheduleSteps', JSON.stringify(this.selectedProcessSteps))
+        localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
 
-        if(this.selectedProcessSteps?.length > 0) {
+        if(this.selectedEventTypes?.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             let params = {
-              stepIds: this.selectedProcessSteps?.length > 0 ? this.selectedProcessSteps.map(o => o.id) : [],
+              eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
               stateId: this.state.id,
               startTime: this.startTime,
               endTime: this.endTime
@@ -466,10 +466,10 @@
       toggleSelectAllSteps () {
         this.$nextTick(() => {
           if (this.selectAll) {
-            this.selectedProcessSteps = []
+            this.selectedEventTypes = []
             this.getProjects()
           } else {
-            this.selectedProcessSteps = cloneDeep(this.processSteps)
+            this.selectedEventTypes = cloneDeep(this.eventTypes)
             this.getProjects()
           }
         })
@@ -500,12 +500,12 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, processStepId) {
+      async getSingleProject(projectId, eventTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
             projectId,
-            processStepId,
+            eventTypeId,
             // i dont think we need this for finding specific projects
             // startTime: this.startTime,
             // endTime: this.endTime

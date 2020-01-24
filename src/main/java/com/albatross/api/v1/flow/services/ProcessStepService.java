@@ -126,16 +126,6 @@ public class ProcessStepService {
     return results;
   }
 
-  public List<ProcessStep> getSchedulableProcessSteps() {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-
-    // todo: for now this just gets all process steps till i determine what "schedulable" meaans
-    List<ProcessStep> results = sqlCache.query("processStep.getSchedulableProcessSteps", params, ProcessStep.class);
-    return results;
-  }
-
   public static class ProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

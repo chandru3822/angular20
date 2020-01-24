@@ -55,7 +55,7 @@ public class ScheduleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("stateId", esp.getStateId());
-    params.put("stepIds", esp.getStepIds());
+    params.put("eventTypeIds", esp.getEventTypeIds());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProjects", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
@@ -67,7 +67,7 @@ public class ScheduleService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("projectId", esp.getProjectId());
-    params.put("processStepId", esp.getProcessStepId());
+    params.put("eventTypeId", esp.getEventTypeId());
 //    params.put("startTime", esp.getStartTime());
 //    params.put("endTime", esp.getEndTime());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProject", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));

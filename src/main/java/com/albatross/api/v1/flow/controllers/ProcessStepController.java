@@ -64,8 +64,4 @@ public class ProcessStepController {
     return processStepService.getParentObjectsIncludingTypes(id);
   }
 
-  @GetMapping(value = "/getSchedulableProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStep> getSchedulableProcessSteps () {
-    return processStepService.getSchedulableProcessSteps();
-  }
 }

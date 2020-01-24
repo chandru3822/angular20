@@ -146,7 +146,7 @@
                inner join flow.customer c on c.id = p.customer_id
                inner join flow.state s on s.id = c.state_id
                inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-               inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id and cfg.schedulable is true
+               inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
                left join flow.custom_field_group_assignment cfga1 on cfga1.custom_field_group_id = cfg.id and cfga1.schedule_field_type_id = 1
                left join flow.custom_field_group_assignment cfga2 on cfga2.custom_field_group_id = cfg.id and cfga2.schedule_field_type_id = 2
                left join flow.custom_field_group_assignment cfga3 on cfga3.custom_field_group_id = cfg.id and cfga3.schedule_field_type_id = 3
@@ -165,7 +165,7 @@
         and c.state_id = :stateId
         and case when st.timestamp_value is not null then st.timestamp_value >= :startTime::date else 1=1 end
         and case when st.timestamp_value is not null then st.timestamp_value <= :endTime::date else 1=1 end
-        and case when array_length(ARRAY[ :stepIds ]::INTEGER[], 1) = 0 OR ARRAY[ :stepIds ]::integer[] is null then 1=1 else ARRAY[pps.process_step_id] <@ ARRAY[ :stepIds ]::INTEGER[] end
+        and case when array_length(ARRAY[ :eventTypeIds ]::INTEGER[], 1) = 0 OR ARRAY[ :eventTypeIds ]::integer[] is null then 1=1 else ARRAY[cfg.event_type_id] <@ ARRAY[ :eventTypeIds ]::INTEGER[] end
       ]]>
   </schedule.getProjects>
 
@@ -231,7 +231,7 @@
                  inner join flow.customer c on c.id = p.customer_id
                  inner join flow.state s on s.id = c.state_id
                  inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-                 inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id and cfg.schedulable is true
+                 inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
                  left join flow.custom_field_group_assignment cfga1 on cfga1.custom_field_group_id = cfg.id and cfga1.schedule_field_type_id = 1
                  left join flow.custom_field_group_assignment cfga2 on cfga2.custom_field_group_id = cfg.id and cfga2.schedule_field_type_id = 2
                  left join flow.custom_field_group_assignment cfga3 on cfga3.custom_field_group_id = cfg.id and cfga3.schedule_field_type_id = 3
@@ -248,7 +248,7 @@
         where ps.company_id = :companyId
           and ps.archived is not true
           and pps.project_id = :projectId
-          and pps.process_step_id = :processStepId
+          and cfg.event_type_id = :eventTypeId
       ]]>
   </schedule.getProject>
 

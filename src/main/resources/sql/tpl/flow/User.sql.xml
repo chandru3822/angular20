@@ -149,31 +149,26 @@
 
   <user.findByUsernameIgnoreCase><![CDATA[
     select u.id,
-           u.first_name,
-           u.last_name,
-           u.email,
-           u.username,
-           u.password,
-           case when u.default_company_id is not null then u.default_company_id else uc.company_id end as company_id,
-           null as "timezone",
-           u.first_name || ' ' || u.last_name as full_name,
-           u.user_status_type_id
+       u.first_name,
+       u.last_name,
+       u.email,
+       u.username,
+       u.password,
+       coalesce(u.default_company_id, uc.company_id) as company_id,
+            ( select case when parent_company_id is null or parent_company_id = 1
+                    then coalesce(u.default_company_id, uc.company_id)
+                else parent_company_id end
+                from flow.company c
+             where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
+       null as "timezone",
+       u.first_name || ' ' || u.last_name as full_name,
+       u.user_status_type_id
     from flow.user u
-         inner join flow.user_company uc on uc.user_id = u.id
+             inner join flow.user_company uc on uc.user_id = u.id
     where case when :username::text is not null then lower(username) = lower(:username::text)
-      else u.id = :userId::integer end
-    and uc.is_default = true
+               else u.id = :userId::integer end
+      and uc.is_default = true
   ]]></user.findByUsernameIgnoreCase>
-
-  <user.findByUserUuid><![CDATA[
-        select id,
-          first_name,
-          last_name,
-          first_name || ' ' || last_name as full_name,
-          user_status_type_id
-        from flow.user
-        where uuid = :uuid
-  ]]></user.findByUserUuid>
 
   <user.findUserById>
     <![CDATA[
@@ -182,8 +177,14 @@
                u.last_name,
                u.first_name || ' ' || u.last_name as full_name,
                u.user_status_type_id,
-               case when u.default_company_id is not null then u.default_company_id else uc.company_id end as company_id,
-               c.aws_bucket
+               coalesce(u.default_company_id, uc.company_id) as company_id,
+               c.aws_bucket,
+               coalesce(u.default_company_id, uc.company_id) as company_id,
+                ( select case when parent_company_id is null or parent_company_id = 1
+                        then coalesce(u.default_company_id, uc.company_id)
+                    else parent_company_id end
+                    from flow.company c
+                 where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id
         from flow.user u
           inner join flow.user_company uc on uc.user_id = u.id
           inner join flow.company c on c.id = uc.company_id
