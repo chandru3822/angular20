@@ -67,7 +67,7 @@ BEGIN
              select o.id,
                     o.org_name::text as name
              from flow.org o
-             where o.company_id = 1
+             where o.company_id = p_company_id
                and ARRAY[o.org_type_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
              order by name;
      -- = All users
