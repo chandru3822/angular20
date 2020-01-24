@@ -1,9 +1,10 @@
 <template id="ahj-documents-button">
   <div>
-    <v-btn class="mt-3 ml-2 clickable" text icon
-           @click="documentsDialog = true">
-      <v-icon>insert_drive_file</v-icon>
-    </v-btn>
+    <div id="documents-btn" :title="title" @click="documentsDialog = true"
+         :class="[{'mt-4': !small}, {'ml-2': !small}, 'clickable']">
+      <v-icon v-if="!small">insert_drive_file</v-icon>
+      <v-icon v-if="small" small style="margin-top: -10px">insert_drive_file</v-icon>
+    </div>
 
     <v-dialog v-model="documentsDialog" max-width="600px">
       <v-card class="pt-4 pb-2">
@@ -16,7 +17,7 @@
           ></AhjDocument>
         </v-card-text>
         <v-card-actions class="flex-display justify-end px-4 pt-0">
-          <v-btn @click="documentsDialog = !documentsDialog">Close</v-btn>
+          <v-btn @click="documentsDialog = false">Close</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -47,6 +48,10 @@
       documents: {
         type: Array,
         default: () => []
+      },
+      small: {
+        type: Boolean,
+        default: false
       }
     },
     data () {
@@ -59,4 +64,7 @@
 </script>
 
 <style scoped lang="scss">
+  #documents-btn {
+    height: 16px !important;
+  }
 </style>

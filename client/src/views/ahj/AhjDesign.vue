@@ -216,7 +216,6 @@
 </template>
 
 <script>
-  // import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
   import AhjDocumentsButton from './components/AhjDocumentsButton'
   import AhjRequirement from './components/AhjRequirements'
