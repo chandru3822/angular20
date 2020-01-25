@@ -31,6 +31,7 @@
           </v-btn>
         </div>
       </form>
+
       <v-list class="mt-0"
               v-for="requirement in requirementsCopy"
               :key="requirement.id">
@@ -40,7 +41,8 @@
             <v-checkbox v-model="requirement.complete"></v-checkbox>
           </v-list-item-action>
           <v-list-item-content class="ml-3">
-            <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}">
+            <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}"
+                               :title="requirement.description">
               <span>{{ requirement.description }}</span>
             </v-list-item-title>
             <v-list-item-subtitle v-if="!requirement.formattedDateModified && requirement.formattedDateCreated"
@@ -50,8 +52,26 @@
                                   v-text="'Updated ' + requirement.formattedDateModified + ' by ' + requirement.modifiedBy">
             </v-list-item-subtitle>
           </v-list-item-content>
+          <v-list-item-content class="ml-4 flex-display requirement-history-tags mr-3">
+            <span v-if="requirement.hasOpenChallenge">
+              Active Challenge
+            </span>
+            <AhjRequirementHistory :class="[{'history-link-max-width': requirement.hasOpenChallenge}]"
+                                   :itemType="itemType"
+                                   :ahjId="ahjId"
+                                   :requirement="requirement"
+            ></AhjRequirementHistory>
+          </v-list-item-content>
+          <v-list-item-action v-if="!requirement.hasOpenChallenge">
+            <v-icon small @click="editRequirement(requirement)" title="Edit requirement">edit</v-icon>
+          </v-list-item-action>
           <v-list-item-action>
-            <v-icon small class="mr-3" @click="editRequirement(requirement)" title="Edit requirement">edit</v-icon>
+            <AhjDocumentsButton title="Notes and requirements"
+                                :documentTypeId="12"
+                                :sourceId="requirement.id"
+                                :ahjId="ahjId"
+                                :small="true"
+            ></AhjDocumentsButton>
           </v-list-item-action>
           <v-list-item-action>
             <v-icon small @click="archiveRequirement(requirement.originalRequirementId)" title="Archive requirement">delete</v-icon>
@@ -131,20 +151,23 @@
       <Snackbar :snackbar="snackbar"></Snackbar>
     </v-card>
   </div>
-
 </template>
 
 <script>
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
   import orderBy from 'lodash.orderby'
-  import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import AhjDocumentsButton from './AhjDocumentsButton'
+  import AhjRequirementHistory from './AhjRequirementHistory'
   import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
+  import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjRequirements",
     components: {
+      AhjDocumentsButton,
+      AhjRequirementHistory,
       Snackbar
     },
     props: {
@@ -212,9 +235,9 @@
         // runs when user clicks a checkbox next to a requirement
         if (checkboxWasClicked) {
           this.requirement.complete = this.requirement.complete ? this.requirement.complete : false
-          this.$store.commit(AppMutations.SET_LOADING, true)
 
           try {
+            this.$store.commit(AppMutations.SET_LOADING, true)
             const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
             let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.originalRequirementId)
             this.requirementsCopy[updatedRequirementIndex].formattedDateModified = moment(data.dateModifed).format('MM/DD/YY h:mm A')
@@ -230,6 +253,7 @@
         // runs when user clicks Add button
         } else if (this.addMode) {
           try {
+            this.$store.commit(AppMutations.SET_LOADING, true)
             const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement`, this.requirement, 'blueraven')
             this.requirementsCopy.push(cloneDeep(data))
             let addedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.id)
@@ -247,6 +271,7 @@
         // runs when user clicks Update button
         } else {
           try {
+            this.$store.commit(AppMutations.SET_LOADING, true)
             const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
             let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data.originalRequirementId)
             this.requirementsCopy[updatedRequirementIndex].description = data.description
@@ -271,6 +296,7 @@
       },
       async archiveRequirement(originalRequirementId) {
         try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
           await putRequest(`/ahj/${this.itemType}/requirement/${originalRequirementId}/archive`, null, 'blueraven')
           let archivedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === originalRequirementId)
           this.requirementsCopy.splice([archivedRequirementIndex], 1)
@@ -284,17 +310,35 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
+    },
+    created() {
+      if (this.requirementsCopy.length > 0) {
+        this.requirementsCopy.forEach(requirement => {
+          if (requirement.dateCreated && requirement.createdBy) {
+            requirement.formattedDateCreated = moment(requirement.dateCreated).format('MM/DD/YY h:mm A')
+          }
+
+          if (requirement.dateModified && requirement.modifiedBy) {
+            requirement.formattedDateModified = moment(requirement.dateModified).format('MM/DD/YY h:mm A')
+          }
+        })
+      }
     }
   }
 </script>
 
 <style scoped lang="scss">
-  .cancel-link,
-  .requirement {
+  .requirement,
+  .cancel-link {
     font-size: 0.85em !important;
     text-decoration: none;
   }
-  .cancel-link:hover {
+  .history-link {
+    text-decoration: none;
+    color: var(--v-primaryText-base) !important;
+  }
+  .cancel-link:hover,
+  .history-link:hover {
     text-decoration: underline;
   }
   .v-card__title,
@@ -305,9 +349,12 @@
   .v-input ::v-deep label {
     font-size: 0.95em !important;
   }
+  .v-input--checkbox {
+    display: flex;
+    align-items: center;
+  }
   .v-list-item__action {
     margin: 0 !important;
-    max-width: 24px;
   }
   .v-list-item__title {
     font-size: 0.95em !important;
@@ -326,6 +373,58 @@
     padding: 20px;
     font-size: 0.85em;
   }
+
+  .requirement-history-tags {
+    text-align: right;
+    max-width: 40%;
+    span {
+      color: #d00;
+      margin-bottom: 0;
+      max-width: 67%;
+    }
+    .history-link-max-width {
+      max-width: 28%;
+    }
+  }
+  @media (min-width: 1400px) {
+    .requirement-history-tags {
+      max-width: 30%;
+    }
+  }
+  @media (min-width: 1575px) {
+    .requirement-history-tags {
+      max-width: 25%;
+    }
+  }
+
+  .close-modal-x {
+    font-size: 20px;
+    &:hover {
+      font-weight: bolder;
+    }
+  }
+  #requirement-status-table {
+    tr:hover {
+      background-color: initial;
+    }
+  }
+  #requirement-status-btns {
+    margin-top: -20px;
+  }
+
+  .v-data-table__wrapper {
+    th {
+      font-size: 1em;
+    }
+    td {
+      color: rgba(0, 0, 0, 0.54);
+
+      a:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
   #transparent-header {
     .requirement-header-bar {
       display: flex;
@@ -335,7 +434,6 @@
       font-size: 1em;
       color: var(--v-primaryText-base);
       border-bottom: 1px solid var(--v-primaryText-base);
-      margin-bottom: 20px;
     }
 
     .add-hide-btn,

@@ -49,7 +49,7 @@ public class AhjController {
   }
 
   // REQUIREMENTS
-  @GetMapping(value = "/{originalRequirementId}/history")
+  @GetMapping(value = "/{ahjId}/requirement/{originalRequirementId}/history")
   public List<AhjRequirement> getRequirementHistory(@PathVariable Long ahjId,
                                                     @PathVariable Long originalRequirementId) {
     return ahjRequirementService.getRequirementHistory(ahjId, originalRequirementId);
