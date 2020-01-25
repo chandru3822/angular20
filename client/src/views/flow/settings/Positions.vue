@@ -12,6 +12,7 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <v-data-table
             :headers="headers"
             :items="filterPositions()"
             :fixed-header="true"
