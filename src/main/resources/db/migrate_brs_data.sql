@@ -243,9 +243,9 @@ SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org
 --Migrate only orgs with originator_id = 1
 --Randa thinks she want s to rename active_flag to active
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                    display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (
         with org_types as (
             select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
@@ -262,14 +262,15 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org
             o.id,
                o.org_name,
                o.parent_org_id,
-               o.sales_area_id,
                o.org_type_id,
-               o.display_order,
                o.active_flag,
-               o.color,
                o.email,
-               o.sales_metro_area_id,
-               o.has_calendar
+               o.has_calendar,
+               case when o.active_flag is true then false else true end,
+               2350555,
+               now(),
+               2350555,
+               now()
      from blueraven.org o
         inner join org_types ot on ot.id = o.org_type_id
         where o.id not in (216,217)
@@ -277,18 +278,23 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org
 
 SELECT setval('flow.org_id_seq', COALESCE((SELECT MAX(id) + 2000 FROM flow.org), 1), false);
 
-INSERT INTO flow.org(company_id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
-(select (select id from flow.company where company_name = 'Blue Raven Corporate'), org_name, parent_org_id, sales_area_id,
+INSERT INTO flow.org(company_id, org_name, parent_org_id, org_type_id
+                     , active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
+(select (select id from flow.company where company_name = 'Blue Raven Corporate'), org_name, parent_org_id,
         (select id from flow.org_type where org_type = 'Parent' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),
-    display_order, active_flag, color, email, sales_metro_area_id,
-    o.has_calendar
+     active_flag, email,
+    o.has_calendar,
+        case when o.active_flag is true then false else true end,
+        2350555,
+        now(),
+        2350555,
+        now()
     from blueraven.org o where id = 40);
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                    active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (
         with org_types as (
             select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
@@ -305,17 +311,18 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org
                o.id,
                o.org_name,
                o.parent_org_id,
-               o.sales_area_id,
                case when o.org_type_id = 10 then (select id from flow.org_type where org_type = 'Department' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
                     when o.org_type_id = 1 then (select id from flow.org_type where org_type = 'Organization' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
                     when o.org_type_id = 9 then (select id from flow.org_type where org_type = 'Parent' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
                     else o.org_type_id  end,
-               o.display_order,
                o.active_flag,
-               o.color,
                o.email,
-               o.sales_metro_area_id,
-               o.has_calendar
+               o.has_calendar,
+               case when o.active_flag is true then false else true end,
+               2350555,
+               now(),
+               2350555,
+               now()
         from blueraven.org o
                  inner join org_types ot on ot.id = o.org_type_id
         and o.id not in (215,218,40)
@@ -506,43 +513,30 @@ INSERT INTO flow."user" (
 
 
 insert into flow.user_company(company_id,user_id,is_default)
-(with something as (select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
-                    from blueraven.org_hierarchy_filter_down('{215}') a
-                             inner join blueraven.org_type ot on ot.id = a.org_type_id
-                    where org_type_id not in (15,16)
-                    union
-                    select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
-                    from blueraven.org_hierarchy_filter_up(
-                                 '{215}') a
-                             inner join blueraven.org_type ot on ot.id = a.org_type_id
-                    where org_type_id not in (15,16))
+(
  select (select id from flow.company where company_name = 'Blue Raven Solar'),u1.id,true
  FROM blueraven."user" u1
  where u1.id not in (2350555,99999999)
    and u1.id not in ( select distinct u.id
                       from blueraven.user u
-                               inner join blueraven.user_position up on up.user_id = u.id
+                               inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                                inner join blueraven.org o on o.id = up.org_id
                           and o.org_type_id in (15,16))
    and u1.id in (select up1.user_id from blueraven.user_position up1
-                                             inner join blueraven.org o1 on o1.id = up1.org_id
-                                             inner join something s on s.id = o1.org_type_id )
+                                    inner join blueraven.org o1 on o1.id = up1.org_id
+                                    where up1.primary_flag is true and
+                                          up1.org_id in (select distinct a.id
+                                                         from blueraven.org_hierarchy_filter_down(
+                                                                      '{215}') a
+                                                                  inner join blueraven.org_type ot on ot.id = a.org_type_id
+                                                         where org_type_id not in (15,16)))
  union
  select (select id from flow.company where company_name = 'Blue Raven Solar'),u2.id,true
  FROM blueraven."user" u2
  where u2.id not in (select user_id from blueraven.user_position));
 
 insert into flow.user_company(company_id,user_id,is_default)
-(with something as (select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
-                    from blueraven.org_hierarchy_filter_down('{216,217}') a
-                             inner join blueraven.org_type ot on ot.id = a.org_type_id
-                    where org_type_id not in (15,16)
-                    union
-                    select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
-                    from blueraven.org_hierarchy_filter_up(
-                                 '{216,217}') a
-                             inner join blueraven.org_type ot on ot.id = a.org_type_id
-                    where org_type_id not in (15,16)),
+(with
       companies as (
           select id from flow.company where company_name = 'Blue Raven Corporate'
           union
@@ -558,22 +552,34 @@ insert into flow.user_company(company_id,user_id,is_default)
           union
           select id from flow.company where company_name = 'Sun Run'
       )
- select c.id,u1.id,true
+ select c.id,u1.id,case when c.id = (select id from flow.company where company_name = 'Blue Raven Corporate') then true else false end
  FROM blueraven."user" u1
           cross join companies c
  where u1.id not in (2350555,99999999)
    and u1.id not in ( select distinct u.id
                       from blueraven.user u
-                               inner join blueraven.user_position up on up.user_id = u.id
+                               inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                                inner join blueraven.org o on o.id = up.org_id
                           and o.org_type_id in (15,16))
    and u1.id in (select up1.user_id from blueraven.user_position up1
                                              inner join blueraven.org o1 on o1.id = up1.org_id
-                                             inner join something s on s.id = o1.org_type_id ));
+                                             where up1.primary_flag is true and
+                                                   up1.org_id in (select distinct a.id
+                                                                  from blueraven.org_hierarchy_filter_down(
+                                                                               '{216,217}') a
+                                                                           inner join blueraven.org_type ot on ot.id = a.org_type_id
+                                                                  where org_type_id not in (15,16))));
 
 
-insert into flow.user_position
-select *
+insert into flow.user_position(id, user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
+select id,
+       user_id,
+       position_id,
+       start_date,
+       end_date,
+       org_id,
+       primary_flag,
+       2350555
 from blueraven.user_position
 where user_id not in (select distinct u.id
                       from blueraven.user u
@@ -597,55 +603,62 @@ INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_
 ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.company where company_name = 'B+C Electric'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, color, email, calendar_oid, sales_metro_area_id, originator_id, owning_org, schedulable, state_id)
-    (select (select id from flow.company where company_name = 'B+C Electric'), 'B+C Electric', null, (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true, null, null, null, null, null, false, false, null);
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+    (select (select id from flow.company where company_name = 'B+C Electric'), 'B+C Electric', null,
+            (select id from flow.org_type where org_type.org_type = 'Parent' and
+    company_id in (select id from flow.company where company_name = 'B+C Electric')), true, null, null, false,null,false,
+            2350555,
+            now(),
+            2350555,
+            now());
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'B+C Electric'),
             id,
             org_name,
             (select id
              from flow.org where org_name = 'B+C Electric' and company_id in (select id from flow.company where company_name = 'B+C Electric')),
-            sales_area_id,
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')),
-            display_order,
             active_flag,
-            color,
             email,
-            sales_metro_area_id,
-            has_calendar
+            has_calendar,case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org
      where originator_id = 4 and org_type_id = 15);
 
 
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'B+C Electric'),
             o.id,
             o.org_name,
             (select id
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'B+C Electric')),
-            o.sales_area_id,
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')),
-            o.display_order,
-            o.active_flag,
-            o.color,
+             o.active_flag,
             o.email,
-            o.sales_metro_area_id,
-            o.has_calendar
+            o.has_calendar,
+            case when o.active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org o
               inner join blueraven.org  p on p.id = o.parent_org_id
      where p.originator_id = 4 and p.org_type_id = 15);
 
 SELECT setval('flow.position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.position), 1), false);
 
-INSERT INTO flow.position (company_id, position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), null, true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), null, true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), null, true,now(),2350555);
+INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
+INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
+INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
 
 
 
@@ -702,12 +715,12 @@ insert into flow.user_company(company_id,user_id,is_default)
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
                        from blueraven.user u
-                                inner join blueraven.user_position up on up.user_id = u.id
+                                inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (575,574)));
 
 
-insert into flow.user_position( user_id, position_id, start_date, end_date, active, org_id, primary_flag)
+insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
                           (select id from flow.position
                            where position = 'Closer Regional Manager'
@@ -719,7 +732,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       when up.position_id = 176 then
                           (select id from flow.position
                            where position = 'Closer'
-                             and company_id in (select id from flow.company where company_name = 'B+C Electric')) end ,up.start_date,up.end_date,up.active,
+                             and company_id in (select id from flow.company where company_name = 'B+C Electric')) end ,up.start_date,up.end_date,
             case when o.org_type_id = 15 then
                      (select o1.id from flow.org o1
                       where o1.org_type_id = (select id from flow.org_type
@@ -730,7 +743,8 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       where o1.org_type_id = (select id from flow.org_type
                                               where org_type = 'Office' and
                                                       company_id in (select id from flow.company where company_name = 'B+C Electric'))
-                        and o1.id = o.id) end,up.primary_flag
+                        and o1.id = o.id) end,up.primary_flag,
+            2350555
      from blueraven."user" u
               inner join blueraven.user_position up on up.user_id = u.id
               inner join blueraven.org o on o.id = up.org_id and o.org_type_id in (15,16) and o.id in (575,574));
@@ -754,54 +768,62 @@ INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_
 ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.company where company_name = 'Eco Lux Solar'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, color, email, calendar_oid, sales_metro_area_id, originator_id, owning_org, schedulable, state_id)
-    (select (select id from flow.company where company_name = 'Eco Lux Solar'), 'Eco Lux Solar', null, (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true, null, null, null, null, null, false, false, null);
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+    (select (select id from flow.company where company_name = 'Eco Lux Solar'), 'Eco Lux Solar', null,
+            (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
+             true, null, null, false,null,false,
+            2350555,
+            now(),
+            2350555,
+            now());
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Eco Lux Solar'),
             id,
             org_name,
             (select id
              from flow.org where org_name = 'Eco Lux Solar' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
-            sales_area_id,
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
-            display_order,
             active_flag,
-            color,
             email,
-            sales_metro_area_id,
-            has_calendar
+            has_calendar,
+            case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org
      where originator_id = 8 and org_type_id = 15);
 
 
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Eco Lux Solar'),
             o.id,
             o.org_name,
             (select id
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
-            o.sales_area_id,
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
-            o.display_order,
             o.active_flag,
-            o.color,
             o.email,
-            o.sales_metro_area_id,
-            o.has_calendar
+            o.has_calendar,
+            case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org o
               inner join blueraven.org  p on p.id = o.parent_org_id
      where p.originator_id = 8 and p.org_type_id = 15);
 
 
-INSERT INTO flow.position (company_id, position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), null, true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), null, true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), null, true,now(),2350555);
+INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
+INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
+INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
 
 
 
@@ -858,12 +880,12 @@ insert into flow.user_company(company_id,user_id,is_default)
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
                        from blueraven.user u
-                                inner join blueraven.user_position up on up.user_id = u.id
+                                inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (684,683)));
 
 
-insert into flow.user_position( user_id, position_id, start_date, end_date, active, org_id, primary_flag)
+insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
                           (select id from flow.position
                            where position = 'Closer Regional Manager'
@@ -875,7 +897,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       when up.position_id = 176 then
                           (select id from flow.position
                            where position = 'Closer'
-                             and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')) end ,up.start_date,up.end_date,up.active,
+                             and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')) end ,up.start_date,up.end_date,
             case when o.org_type_id = 15 then
                      (select o1.id from flow.org o1
                       where o1.org_type_id = (select id from flow.org_type
@@ -886,7 +908,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       where o1.org_type_id = (select id from flow.org_type
                                               where org_type = 'Office' and
                                                       company_id in (select id from flow.company where company_name = 'Eco Lux Solar'))
-                        and o1.id = o.id) end,up.primary_flag
+                        and o1.id = o.id) end,up.primary_flag,2350555
      from blueraven."user" u
               inner join blueraven.user_position up on up.user_id = u.id
               inner join blueraven.org o on o.id = up.org_id and o.org_type_id in (15,16) and o.id in (684,683));
@@ -909,54 +931,62 @@ INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_
 ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.company where company_name = 'Salient Solar'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, color, email, calendar_oid, sales_metro_area_id, originator_id, owning_org, schedulable, state_id)
-    (select (select id from flow.company where company_name = 'Salient Solar'), 'Salient Solar', null, (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true, null, null, null, null, null, false, false, null);
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+    (select (select id from flow.company where company_name = 'Salient Solar'), 'Salient Solar', null,
+            (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Salient Solar')),
+            true, null, null, false,null,false,
+            2350555,
+            now(),
+            2350555,
+            now());
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Salient Solar'),
             id,
             org_name,
             (select id
              from flow.org where org_name = 'Salient Solar' and company_id in (select id from flow.company where company_name = 'Salient Solar')),
-            sales_area_id,
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')),
-            display_order,
             active_flag,
-            color,
             email,
-            sales_metro_area_id,
-            has_calendar
+            has_calendar,
+            case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org
      where originator_id = 6 and org_type_id = 15);
 
 
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Salient Solar'),
             o.id,
             o.org_name,
             (select id
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Salient Solar')),
-            o.sales_area_id,
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')),
-            o.display_order,
             o.active_flag,
-            o.color,
             o.email,
-            o.sales_metro_area_id,
-            o.has_calendar
+            o.has_calendar,
+            case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org o
               inner join blueraven.org  p on p.id = o.parent_org_id
      where p.originator_id = 6 and p.org_type_id = 15);
 
 
-INSERT INTO flow.position (company_id, position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), null, true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), null, true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), null, true,now(),2350555);
+INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
+INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
+INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
 
 
 
@@ -1013,12 +1043,12 @@ insert into flow.user_company(company_id,user_id,is_default)
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
                        from blueraven.user u
-                                inner join blueraven.user_position up on up.user_id = u.id
+                                inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (572,573)));
 
 
-insert into flow.user_position( user_id, position_id, start_date, end_date, active, org_id, primary_flag)
+insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
                           (select id from flow.position
                            where position = 'Closer Regional Manager'
@@ -1030,7 +1060,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       when up.position_id = 176 then
                           (select id from flow.position
                            where position = 'Closer'
-                             and company_id in (select id from flow.company where company_name = 'Salient Solar')) end ,up.start_date,up.end_date,up.active,
+                             and company_id in (select id from flow.company where company_name = 'Salient Solar')) end ,up.start_date,up.end_date,
             case when o.org_type_id = 15 then
                      (select o1.id from flow.org o1
                       where o1.org_type_id = (select id from flow.org_type
@@ -1041,7 +1071,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       where o1.org_type_id = (select id from flow.org_type
                                               where org_type = 'Office' and
                                                       company_id in (select id from flow.company where company_name = 'Salient Solar'))
-                        and o1.id = o.id) end,up.primary_flag
+                        and o1.id = o.id) end,up.primary_flag,2350555
      from blueraven."user" u
               inner join blueraven.user_position up on up.user_id = u.id
               inner join blueraven.org o on o.id = up.org_id and o.org_type_id in (15,16) and o.id in (572,573));
@@ -1063,54 +1093,62 @@ INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_
 ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.company where company_name = 'Solenrgi'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, color, email, calendar_oid, sales_metro_area_id, originator_id, owning_org, schedulable, state_id)
-    (select (select id from flow.company where company_name = 'Solenrgi'), 'Solenrgi', null, (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true, null, null, null, null, null, false, false, null);
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,,archived,modified_by_id,date_modified,created_by_id,date_created)
+    (select (select id from flow.company where company_name = 'Solenrgi'), 'Solenrgi', null,
+            (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Solenrgi')),
+            true, null, null, false,null,false,
+            2350555,
+            now(),
+            2350555,
+            now());
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Solenrgi'),
             id,
             org_name,
             (select id
              from flow.org where org_name = 'Solenrgi' and company_id in (select id from flow.company where company_name = 'Solenrgi')),
-            sales_area_id,
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')),
-            display_order,
             active_flag,
-            color,
             email,
-            sales_metro_area_id,
-            has_calendar
+            has_calendar,
+            case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org
      where originator_id = 2 and org_type_id = 15);
 
 
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Solenrgi'),
             o.id,
             o.org_name,
             (select id
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Solenrgi')),
-            o.sales_area_id,
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')),
-            o.display_order,
             o.active_flag,
-            o.color,
             o.email,
-            o.sales_metro_area_id,
-            o.has_calendar
+            o.has_calendar,
+            case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org o
               inner join blueraven.org  p on p.id = o.parent_org_id
      where p.originator_id = 2 and p.org_type_id = 15);
 
 
-INSERT INTO flow.position (company_id, position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), null, true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), null, true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), null, true,now(),2350555);
+INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
+INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
+INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
 
 
 
@@ -1167,12 +1205,12 @@ insert into flow.user_company(company_id,user_id,is_default)
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
                        from blueraven.user u
-                                inner join blueraven.user_position up on up.user_id = u.id
+                                inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (569,571,570)));
 
 
-insert into flow.user_position( user_id, position_id, start_date, end_date, active, org_id, primary_flag)
+insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
                           (select id from flow.position
                            where position = 'Closer Regional Manager'
@@ -1184,7 +1222,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       when up.position_id = 176 then
                           (select id from flow.position
                            where position = 'Closer'
-                             and company_id in (select id from flow.company where company_name = 'Solenrgi')) end ,up.start_date,up.end_date,up.active,
+                             and company_id in (select id from flow.company where company_name = 'Solenrgi')) end ,up.start_date,up.end_date,
             case when o.org_type_id = 15 then
                      (select o1.id from flow.org o1
                       where o1.org_type_id = (select id from flow.org_type
@@ -1195,7 +1233,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       where o1.org_type_id = (select id from flow.org_type
                                               where org_type = 'Office' and
                                                       company_id in (select id from flow.company where company_name = 'Solenrgi'))
-                        and o1.id = o.id) end,up.primary_flag
+                        and o1.id = o.id) end,up.primary_flag,2350555
      from blueraven."user" u
               inner join blueraven.user_position up on up.user_id = u.id
               inner join blueraven.org o on o.id = up.org_id and o.org_type_id in (15,16) and o.id in (569,571,570));
@@ -1219,54 +1257,62 @@ INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_
 ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.company where company_name = 'Sun Run'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, color, email, calendar_oid, sales_metro_area_id, originator_id, owning_org, schedulable, state_id)
-    (select (select id from flow.company where company_name = 'Sun Run'), 'Sun Run', null, (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Sun Run')), true, null, null, null, null, null, false, false, null);
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+    (select (select id from flow.company where company_name = 'Sun Run'), 'Sun Run', null,
+            (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Sun Run')),
+            true, null, null, false,null,false,
+            2350555,
+            now(),
+            2350555,
+            now());
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Sun Run'),
             id,
             org_name,
             (select id
              from flow.org where org_name = 'Sun Run' and company_id in (select id from flow.company where company_name = 'Sun Run')),
-            sales_area_id,
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')),
-            display_order,
             active_flag,
-            color,
             email,
-            sales_metro_area_id,
-            has_calendar
+            has_calendar,
+            case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org
      where originator_id = 7 and org_type_id = 15);
 
 
 
-INSERT INTO flow.org(company_id, id, org_name, parent_org_id, sales_area_id, org_type_id,
-                     display_order, active_flag, color, email, sales_metro_area_id,
-                     schedulable)
+INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
+                     active_flag, email,
+                     schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Sun Run'),
             o.id,
             o.org_name,
             (select id
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Sun Run')),
-            o.sales_area_id,
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')),
-            o.display_order,
             o.active_flag,
-            o.color,
             o.email,
-            o.sales_metro_area_id,
-            o.has_calendar
+            o.has_calendar,
+            case when active_flag is true then false else true end,
+            2350555,
+            now(),
+            2350555,
+            now()
      from blueraven.org o
               inner join blueraven.org  p on p.id = o.parent_org_id
      where p.originator_id = 7 and p.org_type_id = 15);
 
 
-INSERT INTO flow.position (company_id, position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), null, true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), null, true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, secondary_org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), null, true,now(),2350555);
+INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
+INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
+INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
 
 
 
@@ -1323,12 +1369,12 @@ insert into flow.user_company(company_id,user_id,is_default)
      where id not in (2350555,99999999)
        and id in ( select distinct u.id
                        from blueraven.user u
-                                inner join blueraven.user_position up on up.user_id = u.id
+                                inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
                                 inner join blueraven.org o on o.id = up.org_id
                            and o.org_type_id in (15,16) and o.id in (620,619)));
 
 
-insert into flow.user_position( user_id, position_id, start_date, end_date, active, org_id, primary_flag)
+insert into flow.user_position( user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
     (select u.id,case when up.position_id = 174 then
                           (select id from flow.position
                            where position = 'Closer Regional Manager'
@@ -1340,7 +1386,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       when up.position_id = 176 then
                           (select id from flow.position
                            where position = 'Closer'
-                             and company_id in (select id from flow.company where company_name = 'Sun Run')) end ,up.start_date,up.end_date,up.active,
+                             and company_id in (select id from flow.company where company_name = 'Sun Run')) end ,up.start_date,up.end_date,
             case when o.org_type_id = 15 then
                      (select o1.id from flow.org o1
                       where o1.org_type_id = (select id from flow.org_type
@@ -1351,7 +1397,7 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, acti
                       where o1.org_type_id = (select id from flow.org_type
                                               where org_type = 'Office' and
                                                       company_id in (select id from flow.company where company_name = 'Sun Run'))
-                        and o1.id = o.id) end,up.primary_flag
+                        and o1.id = o.id) end,up.primary_flag,2350555
      from blueraven."user" u
               inner join blueraven.user_position up on up.user_id = u.id
               inner join blueraven.org o on o.id = up.org_id and o.org_type_id in (15,16) and o.id in (620,619));
