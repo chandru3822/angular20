@@ -41,5 +41,6 @@ alter table flow.org
 
 
 CREATE unique INDEX uc_comp1_index ON flow.user_company(user_id) WHERE is_default IS TRUE;
+CREATE unique INDEX uc_user_company_index ON flow.user_company(user_id, company_id);
 
 
