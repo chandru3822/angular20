@@ -1,11 +1,15 @@
 <sql>
-  <country.getAll><![CDATA[
+  <country.getAllForCompany><![CDATA[
     select c.id,
-           c.country,
-           c.active_flag,
-           c.abbreviation
-    from flow.country c
+       cc.company_id,
+       cc.archived,
+       c.country,
+       c.abbreviation
+    from flow.company_country cc
+        inner join flow.country c on c.id = cc.country_id
+    where cc.archived is not true
+      and cc.company_id = :companyId
     order by c.country
-  ]]></country.getAll>
+  ]]></country.getAllForCompany>
 
 </sql>

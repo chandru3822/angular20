@@ -4,6 +4,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldObjectType;
+import com.albatross.api.v1.flow.model.ScheduleFieldType;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,8 +49,8 @@ public class CustomFieldGroupController {
   }
 
   @GetMapping(value = "/getCustomFieldGroupsByObjectTypeId", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId (@RequestParam Long objectTypeId) {
-    return customFieldGroupService.getCustomFieldGroupsByObjectTypeId(objectTypeId);
+  public List<CustomFieldGroup> getCustomFieldGroupsByObjectTypeId (@RequestParam Long companyObjectTypeId) {
+    return customFieldGroupService.getCustomFieldGroupsByObjectTypeId(companyObjectTypeId);
   }
 
   @GetMapping(value = "/getCustomFieldsInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -57,18 +58,27 @@ public class CustomFieldGroupController {
     return customFieldGroupService.getCustomFieldsInGroup(groupId);
   }
 
+  @GetMapping(value = "/getEventTypesAndFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ScheduleFieldType> getEventTypesAndFields () {
+    return customFieldGroupService.getEventTypesAndFields();
+  }
+
   @GetMapping(value = "/getAvailableCustomFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long objectTypeId,
+  public List<CustomField> getAvailableCustomFieldsInGroup (@RequestParam Long companyObjectTypeId,
                                                             @RequestParam Long groupId,
                                                             @RequestParam(required = false) Long processStepId) {
-    return customFieldGroupService.getAvailableCustomFieldsInGroup(objectTypeId, groupId, processStepId);
+    return customFieldGroupService.getAvailableCustomFieldsInGroup(companyObjectTypeId, groupId, processStepId);
   }
 
   @PostMapping(value = "/addCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public CustomFieldGroup addCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
-    return customFieldGroupService.addCustomFieldGroup(customFieldGroup);
+    return customFieldGroupService.addCustomFieldGroup(customFieldGroup, customFieldGroup.getCompanyObjectTypeId());
   }
 
+  @PostMapping(value = "/addProcessStepCustomFieldGroup", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomFieldGroup addProcessStepCustomFieldGroup(@RequestBody CustomFieldGroup customFieldGroup) {
+    return customFieldGroupService.addProcessStepCustomFieldGroup(customFieldGroup);
+  }
 
   @DeleteMapping(value = "/deleteCustomFieldGroup/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteCustomFieldGroup(@PathVariable Long id) {

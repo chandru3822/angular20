@@ -1,0 +1,3 @@
+[build]
+  base  = "client"
+  ignore = "git diff --quiet HEAD^ HEAD ."

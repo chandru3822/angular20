@@ -43,24 +43,20 @@
     name: "AhjDocuments",
     props: {
       title: {
-        type: String,
-        default: null
+        type: String
       },
       documentTypeId: {
-        type: Number,
-        default: null
+        type: Number
       },
       sourceId: {
-        type: Number,
-        default: null
+        type: Number
       },
       ahjId: {
-        type: Number,
-        default: null
+        type: Number
       },
       documents: {
         type: Array,
-        default: null
+        default: () => []
       }
     },
     components: {
@@ -78,8 +74,9 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
             file: this.$refs.fileInput.files[0],
-            attachmentSourceTypeId: this.documentTypeId,
+            attachmentTypeId: this.documentTypeId,
             sourceId: this.sourceId,
+            deleteFirst: false,
             callback: async (document) => {
               this.documentsCopy.push(document)
               this.snackbar = getSnackbar('SUCCESS', 'Successfully Uploaded Document')
@@ -95,7 +92,7 @@
       async deleteDocument(documentId) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await deleteRequest(`/api/v1/flow/document/${documentId}`)
+          await deleteRequest(`/document/${documentId}`)
           let deletedDocumentIndex = this.documentsCopy.findIndex(i => i.id === documentId)
           this.documentsCopy.splice([deletedDocumentIndex], 1)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Document')
@@ -140,6 +137,6 @@
   }
   .empty-list {
     padding: 20px;
-    font-size: 0.85em;
+    font-size: 0.95em;
   }
 </style>

@@ -7,11 +7,15 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+
+/**
+ * This class copies fields from CustomFieldValue since Java is horrible and can't do multiple inheritance
+ */
 @Getter
 @Setter
 public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
-  private Boolean booleanValue;
+  private Boolean booleanValue, hasListValues;
 
   private Timestamp timestampValue, dateValue;
 
@@ -19,7 +23,9 @@ public class ProjectProcessStepRequirement extends ProcessStepRequirement {
 
   private BigDecimal numericValue;
 
-  private Long intValue, dataTypeRequirementId;
+  private Long intValue, dataTypeRequirementId, listOfValueId, projectId;
 
-  private List<Long> intArrayValue;
+  private List<Integer> intArrayValue;
+
+  private List<CompanyFunctionParam> companyFunctionParams;
 }

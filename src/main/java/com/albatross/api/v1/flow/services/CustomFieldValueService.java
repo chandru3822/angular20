@@ -30,6 +30,9 @@ public class CustomFieldValueService {
   SecurityService securityService;
 
   @Autowired
+  SystemListService systemListService;
+
+  @Autowired
   ObjectMapper om;
 
   public List<CustomFieldGroup> getCustomerCustomValues(Long primaryId) {
@@ -83,6 +86,9 @@ public class CustomFieldValueService {
             List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
             cv.setListOfValues(listOfValues);
           }
+        } else if (null != cv.getCompanySystemListId()) {
+          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds());
+          cv.setListOfValues(listOfValues);
         }
       }
     }
@@ -93,9 +99,24 @@ public class CustomFieldValueService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("objectTypeId", ObjectType.PROJECT.id);
+    params.put("processStepTypeId", ObjectType.PROCESS_STEP.id);
     params.put("projectId", projectId);
 
     List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+
+    handleCustomListOfValue(fieldGroups);
+
+    return fieldGroups;
+  }
+
+  public List<CustomFieldGroup> getProjectProcessStepCustomValues(Long projectProcessStepId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
+    params.put("projectProcessStepId", projectProcessStepId);
+
+    List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectProcessStepFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
     handleCustomListOfValue(fieldGroups);
 
@@ -119,6 +140,10 @@ public class CustomFieldValueService {
       TypeReference<List<CustomField>> customFieldRef = new TypeReference<List<CustomField>>() {};
       bw.registerCustomEditor(List.class, "customFields",
           new JsonCollectionDeserializer(customFieldRef, objectMapper));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds",
+          new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
     }
   }
 

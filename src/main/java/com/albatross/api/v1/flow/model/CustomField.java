@@ -15,9 +15,11 @@ import java.util.List;
 public class CustomField {
 
   private Long id, companyDataTypeId, listOfValueId, companyId, fieldOrder, createdById, modifiedById,
-      customFieldGroupId, ancillaryCustomFieldGroupAssignmentId, customFieldGroupAssignmentId, customFieldSqlKeyId, customFieldObjectTypeId, dataTypeId;
+      customFieldGroupId, ancillaryCustomFieldGroupAssignmentId, customFieldGroupAssignmentId, customFieldSqlKeyId,
+      customFieldObjectTypeId, dataTypeId, companySystemListId, scheduleFieldTypeId;
+  private List<Long> systemListOptionIds;
   private String fieldName, objectType, groupName, customFieldSqlKey;
-  private Boolean archived, showOnInsert, hasListValues;
+  private Boolean archived, showOnInsert, hasListValues, allowMultiple;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private Date dateCreated, dateModified;

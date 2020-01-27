@@ -2,10 +2,13 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.AttachmentType;
 import com.albatross.api.v1.flow.model.ProcessStepAttachmentType;
+import com.albatross.api.v1.flow.model.ProjectAttachmentType;
 import com.albatross.api.v1.flow.services.AttachmentTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,14 +37,39 @@ public class AttachmentTypeController {
     return attachmentTypeService.getAvailableTypesForProcessStep(id);
   }
 
+  @GetMapping(value = "/typesForProjects", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AttachmentType> getAttachmentTypesForProject () {
+    return attachmentTypeService.getAttachmentTypesForProject();
+  }
+
   @DeleteMapping(value = "/processStepType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteProcessStepType(@PathVariable Long id) {
     attachmentTypeService.deleteProcessStepType(id);
   }
 
+  @GetMapping(value = "/processStepTypes/{processStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStepAttachmentType>> getProcessStepTypes(@PathVariable Long processStepId) {
+    return new ResponseEntity<>(attachmentTypeService.getProcessStepTypes(processStepId), HttpStatus.OK);
+  }
+
   @PostMapping(value = "/processStepType", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProcessStepAttachmentType> insertProcessStepType(@RequestBody ProcessStepAttachmentType attachmentType) {
     return attachmentTypeService.insertProcessStepType(attachmentType);
+  }
+
+  @DeleteMapping(value = "/projectType/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteProjectType(@PathVariable Long id) {
+    attachmentTypeService.deleteProjectType(id);
+  }
+
+  @PostMapping(value = "/projectType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProjectAttachmentType> insertProjectType(@RequestBody ProjectAttachmentType attachmentType) {
+    return attachmentTypeService.insertProjectType(attachmentType);
+  }
+
+  @GetMapping(value = "/projectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProjectAttachmentType> getProjectTypes() {
+    return attachmentTypeService.getProjectTypes();
   }
 
   @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)

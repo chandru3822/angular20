@@ -1,20 +1,23 @@
 package com.albatross.api.v1.flow.model;
 
+import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.List;
-
-import lombok.Data;
 
 @Data
 public class ProjectProcessStep {
 
-  private Long projectProcessStepId, statusId, processStepId;
+  //@TODO: This repeats a lot of the stuff the ProcessStep model does and should probably inherit from it
 
-  private String owner, name, status;
+  private Long projectProcessStepId, processStepId, userPositionId, projectId, processStepStatusTypeId;
 
-  private LocalDate dateModified;
+  private String owner, processStepName, processStepStatusType;
 
-  private LocalDate completionDate;
+  private LocalDate lastUpdated, processStepCompleteDate;
 
   List<ProcessStepAction> actions;
+
+  //so far this is only used for saving
+  List<CustomFieldGroup> customFieldGroups;
 }

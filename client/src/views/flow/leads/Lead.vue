@@ -1,18 +1,18 @@
 <template>
-  <v-container>
-    <v-breadcrumbs :items="breadcrumbs"></v-breadcrumbs>
-    <v-row class="lead-header elevation-1">
-      <v-col cols="8" class="text-left">
+  <v-container class="pt-0">
+    <v-row class="lead-header elevation-0">
+      <v-col cols="6" class="text-left pb-2">
         <div class="lead-title">
           {{customer.fullName}}
           <v-menu
+              v-if="customer.customerTypeId === 2"
               bottom
               offset-y
               :close-on-content-click="false"
           >
             <template v-slot:activator="{ on }">
               <v-btn v-on="on" dark color="primary" class="white--text"  @click="getAvailableProcesses">
-                Convert {{customer.customerTypeId}}
+                Convert
               </v-btn>
             </template>
             <v-card class="pa-5">
@@ -35,12 +35,12 @@
           {{customer.street1}} - {{customer.city}}, {{customer.state}}
         </div>
       </v-col>
-      <v-col cols="4" class="lead-owner">
+      <v-col cols="4" class="lead-owner pb-2">
         <div v-if="!changeOwner">
           <div v-if="customer.owner">
             <v-avatar
                 :tile="false"
-                :size="40"
+                :size="25"
                 color="grey lighten-4"
                 class="account-img mr-2"
             >
@@ -56,20 +56,24 @@
                     label="Select Owner"
                     item-text="fullName"
                     return-object
-                    autocomplete="new-password"
+                    autocomplete="off"
                     @change="updateOwner"
           >
           </v-autocomplete>
         </div>
-        <v-btn text small class="change-owner-button" @click="changeOwner = !changeOwner">
+        <v-btn text x-small class="change-owner-button" @click="changeOwner = !changeOwner">
           <span v-if="changeOwner">cancel</span>
           <span v-else-if="customer.owner && customer.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
       </v-col>
+      <v-col cols="2" class="lead-owner pb-2">
+        Associated Projects<br/>
+        <router-link v-for="p in customer.projects" :key="p.id" :to="`/project/${p.id}`">{{p.projectName}}</router-link>
+      </v-col>
     </v-row>
     <v-row>
-      <v-col cols="6" class="text-left">
+      <v-col cols="12" md="6" class="text-left">
         <div>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>Summary</v-toolbar-title>
@@ -91,10 +95,20 @@
                           label="E-Mail"
                           placeholder=" "
                           v-model="customer.email"></v-text-field>
-            <v-text-field text
-                          label="Created Date"
-                          placeholder=" "
-                          v-model="customer.dateCreated"></v-text-field>
+            <div class="field-label">Created Date</div>
+            <datetime
+                type="datetime"
+                v-model="customer.dateCreated"
+                input-class="one-hunned"
+                :zone="timezone.value"
+                :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
+                :phrases="{ok: 'Ok', cancel: 'Close'}"
+                :hour-step="1"
+                :minute-step="15"
+                use12-hour
+                disabled
+                auto
+            ></datetime>
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -110,7 +124,7 @@
           </v-card>
         </div>
       </v-col>
-      <v-col cols="6" class="text-left">
+      <v-col cols="12" md="6" class="text-left">
         <NotesAndActivity :showNotes="true" :showActivity="false"
                           :notes="notes" :primaryId="parseInt(customerId)"
                           type="Customer"
@@ -126,25 +140,19 @@ import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import { Datetime } from 'vue-datetime'
 
 export default {
   name: 'Lead',
   components: {
     Snackbar,
     CustomValueInput,
-    NotesAndActivity
+    NotesAndActivity,
+    Datetime
   },
   data () {
     return {
-      breadcrumbs: [
-        {
-          text: 'Back',
-          disabled: false,
-          exact: true,
-          to: `/leads`
-        },
-      ],
       snackbar: {},
       customer: {},
       customFieldGroups: [],
@@ -152,6 +160,7 @@ export default {
       owners: [],
       customerId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
+      timezone: this.$store.state.user.details.timezone,
       changeOwner: false,
       selectedProcess: null,
       availableProcesses: []
@@ -180,10 +189,8 @@ export default {
     async getCustomFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldValues/customer`, { params: {
-          primaryId: this.customerId,
-          //  2 = customer
-          objectTypeId: 2
+        const {data} = await getRequestWithParams(`/customFieldValues/customer`, { params: {
+          primaryId: this.customerId
         }})
         this.customFieldGroups = data
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -222,7 +229,7 @@ export default {
     async getNotes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/note/getCustomerNotes`, { params: {
+        const {data} = await getRequestWithParams(`/note/getCustomerNotes`, { params: {
             primaryId: this.customerId
           }})
         this.notes = data
@@ -259,22 +266,11 @@ export default {
       }
     },
     async convertToCustomer() {
-      console.log('will convert here', this.customer)
-    /*  conversion steps:
-        done 1) get list of available processes to kick of
-        done 2) choose one (dont let save without this)
-        3) save customer_type_id from 2 to 1 (unless company specific options or whatever)
-        4) create project
-        5) create project_process
-        6) create project_process_step with the initial step
-        7) take them to the project screen?
-
-    * */
-
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/customer/${this.customer.id}/convert`)
+        const {data} = await putRequest(`/customer/${this.customer.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
+        this.$router.push({name: 'projectOverview', params: {projectId: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -288,22 +284,22 @@ export default {
 
 <style lang="scss" scoped>
   .lead-header {
-    background-color: white;
+    border-bottom: solid 1px #EAEAF4
   }
   .lead-title {
-    font-size: 30px;
+    font-size: 20px;
   }
   .lead-subtitle {
-    font-size: 20px;
+    font-size: 15px;
   }
   .lead-status {
-    font-size: 20px;
+    font-size: 15px;
     display: flex;
     align-items: flex-end;
     text-align: left;
   }
   .lead-owner {
-    font-size: 18px;
+    font-size: 15px;
     /*display: flex;*/
     /*align-items: flex-end;*/
     text-align: right;

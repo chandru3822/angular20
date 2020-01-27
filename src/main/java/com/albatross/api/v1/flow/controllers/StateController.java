@@ -29,4 +29,9 @@ public class StateController {
     return stateService.getAllStates();
   }
 
+  @GetMapping(value = "/active", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<State> getActiveStatesByCompany() {
+    return stateService.getActiveStatesByCompany();
+  }
+
 }

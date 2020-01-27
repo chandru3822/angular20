@@ -12,6 +12,7 @@
             :items="details.companyFunctionParams"
             :items-per-page="-1"
             single-expand
+            :mobile-breakpoint="0"
             item-key="dbFunctionParamId"
             :expanded.sync="expanded"
             hide-default-footer
@@ -216,7 +217,6 @@
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {data} = await postRequest(`/function/${this.functionId}/param`, item)
-          console.log('randaLoggerData', data)
           if(item.parameterTypeId === 1) {
             item.systemValue = data.systemValue
           }else if(item.parameterTypeId === 3) {

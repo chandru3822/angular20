@@ -1,117 +1,176 @@
 <template>
-  <div>
-    <!-- todo: this needs lots of work, just round 1   -->
-    <!-- todo: need to handle modifying and saving field changes   -->
-    <div v-if="field.companyDataTypeId === 2" class="mt-1">
-      <div class="field-label">{{field.fieldName}}</div>
-      <flat-pickr
-          v-model="field.dateValue"
-          :config="config"
-          class="field-picker"
-          placeholder=" "
-      ></flat-pickr>
-    </div>
+<v-row class="d-flex justify-space-between align-center">
+  <v-col>
+    {{field.fieldName}}
+    <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
+  </v-col>
 
-    <div v-if="field.companyDataTypeId === 3" class="mt-1">
-      <div class="field-label">{{field.fieldName}}</div>
-      <flat-pickr
-          v-model="field.timestampValue"
-          :config="config"
-          class="field-picker"
-          placeholder=" "
-      ></flat-pickr>
-    </div>
+  <v-col class="d-flex justify-end align-self-start">
+    <template v-if="field.dataTypeId === 1">
 
-    <div v-if="field.companyDataTypeId === 4">
-      <div class="field-label">{{field.fieldName}}</div>
-      <input type="checkbox" v-model="field.booleanValue" :readonly="readonly">
-    </div>
+      <span v-if="readonly">{{ field.dateValue | formatDate('date') }}</span>
 
-    <v-text-field v-if="field.companyDataTypeId === 5"
-                  text
-                  :readonly="readonly"
-                  :label="field.fieldName"
-                  placeholder=" "
-                  v-model="field.intValue"
-    ></v-text-field>
+      <datetime
+        v-else
+        class="text-right"
+        v-model="field.dateValue"
+        input-class="one-hunned"
+        :zone="timezone"
+        :format="{ year: 'numeric', month: 'long', day: 'numeric' }"
+        :phrases="{ok: 'Ok', cancel: 'Close'}"
+        auto
+      />
+    </template>
 
-    <v-text-field v-if="field.companyDataTypeId === 6"
-                  text
-                  :readonly="readonly"
-                  placeholder=" "
-                  :label="field.fieldName"
-                  v-model="field.numericValue"
-    ></v-text-field>
 
-    <v-text-field v-if="field.companyDataTypeId === 1"
-                  text
-                  :readonly="readonly"
-                  placeholder=" "
-                  :label="field.fieldName"
-                  v-model="field.textValue"
-    ></v-text-field>
+    <template v-if="field.dataTypeId === 2">
 
-    <v-select v-if="field.companyDataTypeId === 7"
-                  v-model="field.intValue"
-                  text
-                  placeholder=" "
-                  :items="field.listOfValues"
-                  :label="field.fieldName"
-                  item-value="id"
-                  item-text="name"
-    ></v-select>
+      <span v-if="readonly">{{field.timestampValue | formatDate('timestamp')}}</span>
 
-    <v-text-field v-if="field.companyDataTypeId === 8"
-                  text
-                  placeholder=" "
-                  :readonly="readonly"
-                  :label="field.fieldName"
-                  v-model="field.intArrayValue"
-    ></v-text-field>
+      <datetime
+        v-else
+        class="text-right"
+        type="datetime"
+        v-model="field.timestampValue"
+        input-class="one-hunned"
+        :zone="timezone"
+        :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
+        :phrases="{ok: 'Ok', cancel: 'Close'}"
+        :hour-step="1"
+        :minute-step="15"
+        use12-hour
+        auto
+      />
+    </template>
 
-    <v-select v-if="field.companyDataTypeId === 9"
-              v-model="field.intValue"
-              text
-              :items="field.listOfValues"
-              :label="field.fieldName"
-              placeholder=" "
-              item-value="id"
-              item-text="name"
-    ></v-select>
-  </div>
+    <input
+      v-if="field.dataTypeId === 3"
+      type="checkbox"
+      v-model="field.booleanValue"
+      :disabled="readonly"
+    />
+
+    <v-text-field
+      v-if="field.dataTypeId === 4"
+      text
+      :readonly="readonly"
+      placeholder=" "
+      :label="field.fieldName"
+      v-model="field.numericValue"
+    />
+
+    <v-text-field
+      v-if="field.dataTypeId === 5"
+      text
+      :readonly="readonly"
+      placeholder=" "
+      :label="field.fieldName"
+      v-model="field.textValue"
+    />
+
+    <v-text-field
+      v-if="field.dataTypeId === 6 && !field.hasListValues"
+      text
+      :readonly="readonly"
+      :label="field.fieldName"
+      placeholder=" "
+      v-model="field.intValue"
+    />
+
+    <v-select
+      v-if="field.dataTypeId === 6 && field.hasListValues"
+      v-model="field.intValue"
+      text
+      :readonly="readonly"
+      placeholder=" "
+      :items="field.listOfValues"
+      :label="field.fieldName"
+      item-value="id"
+      item-text="name"
+   />
+
+    <v-text-field
+      v-if="field.dataTypeId === 7"
+      text
+      placeholder=" "
+      :readonly="readonly"
+      :label="field.fieldName"
+      v-model="field.intArrayValue"
+    />
+
+    <v-select
+      v-if="field.dataTypeId === 8"
+      v-model="field.intValue"
+      text
+      :items="field.listOfValues"
+      :label="field.fieldName"
+      :readonly="readonly"
+      placeholder=" "
+      item-value="id"
+      item-text="name"
+    />
+
+    <v-select
+      v-if="field.dataTypeId === 9"
+      v-model="field.intValue"
+      text
+      :items="field.listOfValues"
+
+      :readonly="readonly"
+      placeholder=" "
+      item-value="id"
+      item-text="name"
+    />
+  </v-col>
+</v-row>
 </template>
 
 <script>
-  export default {
-    name: 'CustomValueInput',
-    props: {
-      readonly: Boolean,
-      field: Object
-    },
-    data () {
-      return {
-        // todo: allow the component to pass in the format
-        // todo: allow the component to pass in readonly value to config.clickOpens
-        config: {
-          altFormat: 'F j, Y h:i K',
-          altInput: true,
-          altInputClass: 'field-picker',
-          allowInput: false,
-          time_24hr: false,
-          enableTime: true,
-          clickOpens: true
-        },
+
+import { Datetime } from 'vue-datetime'
+import moment from 'moment'
+
+export default {
+  name: 'CustomValueInput',
+  props: {
+    readonly: Boolean,
+    field: Object
+  },
+  components: {
+    Datetime
+  },
+  data () {
+    return {
+      // todo: allow the component to pass in the format
+      // todo: allow the component to pass in readonly value to config.clickOpens
+      timezone: this.$store.state.user.details.timezone.value,
+      config: {
+        altFormat: 'F j, Y h:i K',
+        altInput: true,
+        altInputClass: 'field-picker',
+        allowInput: false,
+        time_24hr: false,
+        enableTime: true,
+        clickOpens: true,
+        dateFormat: 'Z'
       }
     }
+  },
+  computed: {
+    // formattedDateTime: function () {
+    //   const dateTime = this.field.dateValue || this.field.timestampValue
+    //   return moment(dateTime).tz(this.timezone).format('MMMM D, YYYY, H:mm A')
+    // }
   }
+}
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-.field-label {
+.ancillary {
   font-size: 12px;
 }
 </style>
+
 <style lang="scss">
   .field-picker {
     border-bottom: solid 1px rgba(0,0,0,0.4);

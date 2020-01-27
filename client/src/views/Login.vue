@@ -2,7 +2,7 @@
   <v-content>
     <v-container class="fill-height">
       <v-row align="center" justify="center">
-        <v-col xs="12" sm="8">
+        <v-col cols="12" sm="8">
           <v-card color="secondaryMaster" class="elevation-12">
             <v-toolbar dark color="primary">
               <v-toolbar-title>Albatross</v-toolbar-title>
@@ -76,13 +76,6 @@
         }
       },
       async loginSuccess (details) {
-        // todo fix this
-        console.log('DO_THIS_HERE', details)
-        // let tempDetails = {
-        //   companyId: 1,
-        //   firstName: 'System',
-        //   id: 99999999
-        // }
         await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
         this.$router.push('/')
       }

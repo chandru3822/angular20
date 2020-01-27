@@ -2,7 +2,6 @@
   <state.getAllStates><![CDATA[
     select s.id,
            s.state,
-           s.active_flag,
            s.abbreviation,
            s.time_zone_abbreviation,
            s.map_latitude,
@@ -11,5 +10,22 @@
     from flow.state s
     order by s.state
   ]]></state.getAllStates>
+
+  <state.getActiveStatesByCompany><![CDATA[
+    select s.id,
+       s.state,
+       s.abbreviation,
+       s.time_zone_abbreviation,
+       cs.active,
+       case when cs.map_latitude is not null then cs.map_latitude else s.map_latitude end as map_latitude,
+       case when cs.map_longitude is not null then cs.map_longitude else s.map_longitude end as map_longitude,
+       case when cs.map_zoom is not null then cs.map_zoom else s.map_zoom end as map_zoom
+    from flow.company_state cs
+        inner join flow.state s on s.id = cs.state_id
+    where cs.active is true
+      and cs.company_id = :companyId
+    order by s.state
+  ]]></state.getActiveStatesByCompany>
+
 
 </sql>

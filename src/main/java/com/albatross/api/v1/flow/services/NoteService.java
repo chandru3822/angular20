@@ -46,6 +46,7 @@ public class NoteService {
   public Note getNote(Long noteId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", noteId);
+    //currently won't return child notes. this is only called when saving a new note so it doesn't matter, but would matter later on
     Optional<Note> result = sqlCache.get("note.getNote", params, Note.class);
     return result.orElse(null);
   }
@@ -58,6 +59,7 @@ public class NoteService {
     // parentId is used for a hierarchy of notes - currently we don't use it
     params.put("parentId", note.getParentId());
 
+    // @randa: Would an upsert be better here?
     Long noteId;
     if(null != note.getId()) {
       noteId = note.getId();
@@ -89,7 +91,7 @@ public class NoteService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Note>> childNoteRef = new TypeReference<List<Note>>() {};
+      TypeReference<List<Note>> childNoteRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "childNotes",
           new JsonCollectionDeserializer(childNoteRef, objectMapper));
 

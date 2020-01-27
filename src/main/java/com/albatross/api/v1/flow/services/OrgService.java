@@ -49,6 +49,16 @@ public class OrgService {
     return results;
   }
 
+  public List<Org> getSchedulingOrgs(Long stateId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("stateId", stateId);
+
+    List<Org> results = sqlCache.query("org.getSchedulingOrgs", params, Org.class);
+    return results;
+  }
+
   public List<Org> getOrgsByType(Long typeId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -109,8 +119,10 @@ public class OrgService {
   }
 
   public Org getOrg(Long id) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("companyId", user.getCompanyId());
     Optional<Org> result = sqlCache.get("org.getOne", params, Org.class);
     return result.orElse(null);
   }
@@ -130,6 +142,8 @@ public class OrgService {
     params.put("orgTypeId", org.getOrgTypeId());
     params.put("parentOrgId", org.getParentOrgId());
     params.put("companyId", user.getCompanyId());
+    params.put("schedulable", org.getSchedulable());
+    params.put("stateId", org.getStateId());
     params.put("active", org.getActiveFlag());
 
     Long id;

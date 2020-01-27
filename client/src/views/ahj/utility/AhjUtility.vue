@@ -1,51 +1,46 @@
 <template>
-  <v-row no-gutters style="width: 100% !important">
+  <v-row>
     <v-col cols="12">
-      <v-row class="mb-1 px-3" align="center">
-        <v-col class="pa-0 text-left" cols="6">
-          <v-tabs
-            v-model="tabs"
-            background-color="rgba(0,0,0,0)"
-            slider-color="primaryCustom"
-          >
-            <v-tab to="/ahj" class="ma-0">AHJ</v-tab>
-            <v-tab to="/ahjUtility" class="text-capitalize">Utility</v-tab>
-          </v-tabs>
-        </v-col>
-        <v-col class="pa-0 text-right" cols="6">
-          <v-btn
-            color="primaryButton"
-            class="ma-0 app-button white--text"
-            @click="addItem"
-          >Add New</v-btn>
-        </v-col>
-      </v-row>
+      <v-toolbar color="white" class="elevation-1">
+        <v-toolbar-title class="app-title">
+          <v-btn text to="/ahj" color="primary">
+            AHJ
+          </v-btn>
+          <v-btn text to="/ahjUtility" color="primary">
+            Utility
+          </v-btn>
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn text @click="addItem" color="primary">
+            <v-icon>add</v-icon>
+            <span v-if="!IS_MOBILE">Add New</span>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
 
-      <v-divider></v-divider>
-
-      <v-row no-gutters class="my-5">
-        <v-col cols="12">
-          <v-card>
-            <v-card-title>
-              <v-spacer></v-spacer>
+            <v-toolbar color="white" class="elevation-1 mt-3">
               <v-text-field
-                v-model="ahjUtilitySearch"
-                append-icon="search"
-                label="Search"
-                single-line
-                hide-details
+                  class="mt-2"
+                  v-model="ahjUtilitySearch"
+                  prepend-inner-icon="search"
+                  label="Search..."
+                  single-line
+                  hide-details
               ></v-text-field>
-            </v-card-title>
+              <v-spacer v-if="!IS_MOBILE"></v-spacer>
+            </v-toolbar>
             <v-data-table
               :headers="visibleHeaders"
               :items="filteredAhjUtilities"
               :search="ahjUtilitySearch"
               :options="pagination"
               :items-per-page="-1"
+              :mobile-breakpoint="0"
               fixed-header
               dense
               hide-default-footer
-              class="elevation-1"
+              class="elevation-1 ahj-utility-table"
             >
 <!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
 <!--                    <template #header="{ headers }">-->
@@ -80,12 +75,12 @@
                     :key="ahjUtility.id"
                     :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
                   >
-                    <td :class="{ 'strike': ahjUtility.archived}">
+                    <td class="text-left" :class="{ 'strike': ahjUtility.archived}">
                       {{ ahjUtility.name ? ahjUtility.name : '' }}
                     </td>
-                    <td>{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
-                    <td>{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
-                    <td>
+                    <td class="text-left">{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
+                    <td class="text-left">{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
+                    <td class="text-left">
                       <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
                       <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">
                         edit
@@ -132,16 +127,13 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
-          </v-card>
         </v-col>
       </v-row>
-    </v-col>
-  </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { getRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import { getRequest, putRequest, postRequest, IS_MOBILE } from '@/helpers/helpers'
   import { mapState } from 'vuex'
   import { AppMutations } from '@/stores/AppStore'
 
@@ -160,6 +152,7 @@
     name: 'ahjUtilities',
     data: () => ({
       FILTER_TYPE,
+      IS_MOBILE,
       tabs: [
         {
           label: 'AHJ',
@@ -176,7 +169,7 @@
         { text: 'Name', value: 'name', show: true },
         { text: 'Metro Area', value: 'metroArea', show: true },
         { text: 'State', value: 'state', show: true },
-        { text: null, value: null, sortable: false, show: true }
+        { text: null, value: null, sortable: false, show: true, width: 120 }
       ],
       ahjUtilities: [],
       ahjUtilitySearch: '',
@@ -235,11 +228,11 @@
     },
     methods: {
       async fetchAhjUtilities () {
-        const {data} = await getRequest('/api/v1/company/blueraven/ahjUtility/list/all')
+        const {data} = await getRequest('/ahjUtility/list/all', 'blueraven')
         this.ahjUtilities = cloneDeep(data)
       },
       async getActiveMetroAreas () {
-        const {data} = await getRequest('/api/v1/company/blueraven/metro/getActive')
+        const {data} = await getRequest('/metro/getActive', 'blueraven')
         data.forEach(item => {
           let option = {
             text: item.metroArea + ' (' + item.area + ')',
@@ -268,9 +261,9 @@
       },
       async saveAhjUtility () {
         if (this.addMode) {
-          await postRequest('/api/v1/company/blueraven/ahjUtility', this.editedItem)
+          await postRequest('/ahjUtility', this.editedItem, 'blueraven')
         } else {
-          await putRequest('/api/v1/company/blueraven/ahjUtility/simpleUpdate', this.editedItem)
+          await putRequest('/ahjUtility/simpleUpdate', this.editedItem, 'blueraven')
         }
 
         this.close()
@@ -339,5 +332,8 @@
   }
   .strike {
     text-decoration: line-through;
+  }
+  .ahj-utility-table {
+    margin-top: 2px;
   }
 </style>

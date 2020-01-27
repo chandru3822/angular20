@@ -1,0 +1,14 @@
+<sql>
+  <accessControl.getAll>
+    <![CDATA[
+      select ac.id,
+             ac.access_level,
+             ac.access_code,
+             ac.archived
+      from flow.access_control ac
+      where ac.archived is not true
+    ]]>
+  </accessControl.getAll>
+
+
+</sql>

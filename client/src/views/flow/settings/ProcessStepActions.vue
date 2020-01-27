@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="getRequirementTypes" text>
+            <v-btn @click="getRequirementTypes(); selectedDataTypeRequirement = {}" text>
               <v-icon v-if="!addNewRequirement">add</v-icon>
               {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}
             </v-btn>
@@ -20,7 +20,9 @@
                       label="Select Requirement Type"
                       item-value="id"
                       item-text="processStepRequirementType"
-                      @input="selectRequirementType"
+                      @input="selectRequirementType(); parent = {}; selectedCustomField = {}; selectedDataTypeRequirement = {};
+                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
+                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
             ></v-select>
             <!-- if it is a custom field -->
             <v-select
@@ -30,7 +32,9 @@
                 label="Parent Object"
                 item-text="processStepName"
                 return-object
-                @input="loadFieldsByParent(parent)"
+                @input="loadFieldsByParent(parent); selectedCustomField = {}; selectedDataTypeRequirement = {};
+                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
+                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
             ></v-select>
             <v-select v-if="parent.id"
                       v-model="selectedCustomField"
@@ -38,7 +42,10 @@
                       label="Custom Field"
                       item-text="fieldName"
                       return-object
-                      @input="loadOperatorTypes(selectedCustomField.dataTypeId); loadDataTypeRequirements(selectedCustomField.dataTypeId)"
+                      @input="loadOperatorTypes(selectedCustomField.dataTypeId); loadDataTypeRequirements(selectedCustomField.dataTypeId);
+                              selectedDataTypeRequirement = {};
+                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
+                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
             ></v-select>
             <!-- if it is a function -->
             <v-select
@@ -66,15 +73,37 @@
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
+                @change="newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
-            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" class="mx-2" label="Custom"></v-switch>
-            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue"
+            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null" class="mx-2" label="Custom"></v-switch>
+            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKeyId === null && selectedCustomField.systemListId === null"
                           v-model="newRequirement.requirementValue"
                           placeholder="Enter a value"
                           label="Value">
             </v-text-field>
+            <v-select
+                v-else-if="newRequirement.operatorTypeId
+                              && newRequirement.customValue
+                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKeyId !== null || selectedCustomField.systemListId !== null)
+                              && !selectedCustomField.allowMultiple"
+                v-model="selectedListValue"
+                :items="selectedCustomField.listOfValues"
+                label="Available Values"
+                item-text="name"
+                return-object
+            ></v-select>
+            <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
+            <v-select
+                v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"
+                v-model="selectedListOfValues"
+                :items="selectedCustomField.listOfValues"
+                label="Available Values"
+                multiple
+                item-text="name"
+                return-object
+            ></v-select>
             <v-select
                 v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"
                 v-model="selectedDataTypeRequirement"
@@ -101,6 +130,7 @@
                 :headers="headers"
                 :items="filterRequirements()"
                 :items-per-page="-1"
+                :mobile-breakpoint="0"
                 single-expand
                 :expanded.sync="expanded"
                 hide-default-footer
@@ -118,33 +148,108 @@
                 <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">
                   <div v-if="item.requirementParamDynamicValues && item.requirementParamDynamicValues.length > 0">
                     <h5 class="text-left">Dynamic Function Parameters</h5>
-                    <v-card flat>
-                      <v-text-field
-                          v-for="(fp, index) in item.requirementParamDynamicValues"
-                          :key="index"
-                          placeholder="Enter a dynamic value"
-                          v-model="fp.dynamicValue"
-                          :label="fp.parameterName"></v-text-field>
+                    <v-card flat color="transparent">
+                      <div v-for="(fp, index) in item.requirementParamDynamicValues" :key="index">
+                        <v-text-field
+                            v-if="fp.dataTypeId === 1"
+                            placeholder="Enter a date"
+                            type="date"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-if="fp.dataTypeId === 2"
+                            placeholder="Enter a timestamp"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-if="fp.dataTypeId === 3"
+                            placeholder="Enter a boolean"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-if="fp.dataTypeId === 4"
+                            placeholder="Enter a number"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-if="fp.dataTypeId === 6"
+                            placeholder="Enter an integer"
+                            type="number"
+                            step="1"
+                            v-mask="intMask"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        <v-text-field
+                            v-else
+                            placeholder="Enter a dynamic value"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                      </div>
                     </v-card>
                   </div>
                   <v-select v-model="item.operatorTypeId"
                             :items="operatorTypes"
                             class="one-hunned"
                             label="Operator"
+                            :disabled="item.immutable"
                             item-text="operatorType"
                             item-value="id"
                   ></v-select>
                   <v-switch v-model="item.customValue" class="mx-2"
+                            :disabled="item.immutable"
                             label="Custom"></v-switch>
-                  <v-text-field v-if="item.customValue"
+                  <!-- single text field for non list custom values -->
+                  <v-text-field v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKeyId && !item.systemListId "
                                 v-model="item.requirementValue"
+                                :disabled="item.immutable"
                                 placeholder="Enter a value"
                                 label="Value">
                   </v-text-field>
+                  <!-- single select for dropdown, custom sql list, or system list -->
+                  <v-select
+                      v-else-if="item.customValue && item.listOfValueId"
+                      v-model="item.listOfValueId"
+                      :disabled="item.immutable"
+                      :items="item.availableListOfValues"
+                      label="Available Values"
+                      item-text="name"
+                      item-value="id"
+                  ></v-select>
+                  <v-select
+                      v-else-if="item.customValue && item.systemListId"
+                      v-model="item.systemListOptionId"
+                      :disabled="item.immutable"
+                      :items="item.availableListOfValues"
+                      label="Available Values"
+                      item-text="name"
+                      item-value="id"
+                  ></v-select>
+                  <!-- not sure what to do with this custom sql one yet -->
+                  <v-select
+                      v-else-if="item.customValue && item.customFieldSqlKeyId"
+                      v-model="item.listOfValueId"
+                      :disabled="item.immutable"
+                      :items="item.availableListOfValues"
+                      label="Available Values"
+                      item-text="name"
+                      item-value="id"
+                  ></v-select>
+                  <!-- at this point it should only show for multiselects -->
+                  <v-select
+                      v-else-if="item.customValue && item.listOfValues"
+                      v-model="item.listOfValues"
+                      :disabled="item.immutable"
+                      :items="item.availableListOfValues"
+                      label="Available Values"
+                      item-text="name"
+                      multiple
+                      return-object
+                  ></v-select>
                   <v-select
                       v-else
                       v-model="item.dataTypeRequirement"
                       :items="dataTypeRequirements"
+                      :disabled="item.immutable"
                       label="Available Values"
                       item-text="dataTypeValue"
                       return-object
@@ -152,6 +257,7 @@
                   <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
                                 v-model="item.secondaryRequirementValue"
                                 placeholder="Enter a value"
+                                :disabled="item.immutable"
                                 label="Value">
                   </v-text-field>
                   <v-btn @click="updateRequirement(item)">
@@ -166,21 +272,37 @@
                   <td class="text-left" style="width: 65px">{{item.requirementNbr}}</td>
                   <td class="text-left">{{item.processStepRequirementType}}</td>
                   <td class="text-left">
-                  <span v-if="item.processStepRequirementTypeId === 1">
-                    {{ item.parentName }} | {{ item.fieldName }}
-                  </span>
-                    <span>
-                    {{ item.companyFunctionName }}
-                  </span>
+                    <span v-if="item.processStepRequirementTypeId === 1">
+                      {{ item.parentName }} | {{ item.fieldName }}
+                    </span>
+                    <span v-else>
+                      {{ item.companyFunctionName }}
+                    </span>
                   </td>
                   <td class="text-left">{{item.operatorType}}</td>
-                  <td class="text-left">{{item.requirementValue}}</td>
+                  <td class="text-left">
+                    <span v-if="item.requirementValue">
+                      {{item.requirementValue}}
+                    </span>
+                    <span v-else-if="item.dataTypeRequirementId">
+                      {{item.dataTypeRequirement ? item.dataTypeRequirement.dataTypeValue : 'unknown'}} {{item.secondaryRequirementValue}}
+                    </span>
+                    <span v-else-if="item.listOfValueId || item.customFieldSqlKeyId || item.companySystemListId">
+<!--                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}-->
+                      {{ getListValueName(item) }}
+                    </span>
+                    <span v-else-if="item.listOfValues">
+                      <!-- todo: show the selected values here -->
+                      {{ item.listOfValues.map(v => ' ' + v.name).toString() }}
+                    </span>
+                  </td>
                   <td>
                     <div style="display: flex;">
                       <v-btn small text @click="expanded = [item];loadOperatorTypes(item.dataTypeId);
                                     loadDataTypeRequirements(item.dataTypeId); selectedRequirementIndex = index"
                              v-if="!expanded.includes(item)">
-                        <v-icon>edit</v-icon>
+                        <v-icon v-if="item.immutable">expand_more</v-icon>
+                        <v-icon v-else>edit</v-icon>
                       </v-btn>
                       <v-btn small text @click="expanded = []; selectedRequirementIndex = index"
                              v-if="expanded.includes(item)">cancel
@@ -253,7 +375,7 @@
                       item-text="actionType"
                       item-value="id"
             ></v-select>
-            <v-select v-model="newAction.processStepStatusTypeId"
+            <v-select v-model="newAction.companyProcessStepStatusTypeId"
                       :items="statusTypes"
                       :clearable="true"
                       label="Action changes status of parent process step to"
@@ -272,6 +394,7 @@
                 :items="filterActions()"
                 :items-per-page="-1"
                 single-expand
+                :mobile-breakpoint="0"
                 :expanded.sync="actionExpanded"
                 hide-default-footer
                 class="elevation-1 fix-column-width-bug"
@@ -297,7 +420,7 @@
                               item-text="actionType"
                               item-value="id"
                     ></v-select>
-                    <v-select v-model="item.processStepStatusTypeId"
+                    <v-select v-model="item.companyProcessStepStatusTypeId"
                               :items="statusTypes"
                               :clearable="true"
                               label="Action changes status of parent process step to"
@@ -582,7 +705,7 @@
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
 
   export default {
@@ -594,6 +717,7 @@
     data() {
       return {
         snackbar: {},
+        intMask: '############',
         headers: [
           {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
           {text: 'Type', value: 'processStepRequirementType', show: true},
@@ -616,6 +740,9 @@
         dataTypeRequirements: [],
         selectedDataTypeRequirement: {},
         selectedCustomField: {},
+        listOfValues: [],
+        selectedListOfValues: [],
+        selectedListValue: {},
         selectedFunction: {},
         selectedRequirementIndex: null,
         selectedActionIndex: null,
@@ -714,7 +841,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (!this.parentObjects || this.parentObjects.length === 0) {
-            const {data} = await getRequest(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
+            const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
             this.parentObjects = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
@@ -783,23 +910,92 @@
           })
         }
 
-        return invalidParams || (!this.newRequirement.requirementValue && !this.selectedDataTypeRequirement.id)
-          || (this.selectedDataTypeRequirement.secondaryRequirement && !this.newRequirement.secondaryRequirementValue)
+        //check validity of initial value
+        let invalidValue = (!this.newRequirement.requirementValue && !this.selectedDataTypeRequirement.id && !this.selectedListValue.id && this.selectedListOfValues.length === 0 )
+
+        //if a secondary requirement is required check for a value there
+        let invalidSecondaryValue = (this.selectedDataTypeRequirement.secondaryRequirement && !this.newRequirement.secondaryRequirementValue)
+
+        return invalidParams || invalidValue || invalidSecondaryValue
       },
       async saveNewRequirement() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          this.newRequirement.processStepId = this.processStepId
           this.newRequirement.customFieldGroupAssignmentId = this.selectedCustomField.customFieldGroupAssignmentId
           this.newRequirement.companyFunctionId = this.selectedFunction.id
-          this.newRequirement.dataTypeRequirementId = this.selectedDataTypeRequirement.id
+          this.newRequirement.processStepId = this.processStepId
+
+          //todo: holy crap figure out how to fix the object being sent up so i dont have to do all this validation
+          //adjust value of requirementValue as needed:
+          if(this.newRequirement.customValue && this.selectedCustomField.listOfValueId && this.selectedCustomField.allowMultiple) {
+            // if from list of values and allow multiple build the json array of selected ids
+            this.newRequirement.listOfValueIds = this.selectedListOfValues.map(v => v.id)
+
+            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.customSqlOptionId = null
+            this.newRequirement.listOfValueId = null
+            this.newRequirement.dataTypeRequirementId = null
+            this.newRequirement.requirementValue = null
+          } else if (this.newRequirement.customValue && this.selectedCustomField.listOfValueId && !this.selectedCustomField.allowMultiple) {
+            //  if from a list of values and not allow multiple use the selected value id,
+            this.newRequirement.listOfValueId = this.selectedListValue.id
+
+            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.customSqlOptionId = null
+            this.newRequirement.listOfValueIds = null
+            this.newRequirement.dataTypeRequirementId = null
+            this.newRequirement.requirementValue = null
+          } else if (this.newRequirement.customValue && this.selectedCustomField.companySystemListId && !this.selectedCustomField.allowMultiple) {
+            //  if from a system list and not allow multiple use the selected value id,
+            console.log('here here here', this.selectedListValue)
+            this.newRequirement.systemListOptionId = this.selectedListValue.id
+
+            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.listOfValueId = null
+            this.newRequirement.listOfValueIds = null
+            this.newRequirement.customSqlOptionId = null
+            this.newRequirement.dataTypeRequirementId = null
+            this.newRequirement.requirementValue = null
+          } else if (this.newRequirement.customValue && this.selectedCustomField.customFieldSqlKeyId && !this.selectedCustomField.allowMultiple) {
+            //  if from a list of values and not allow multiple use the selected value id,
+            this.newRequirement.customSqlOptionId = this.selectedListValue.id
+
+            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.listOfValueId = null
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.listOfValueIds = null
+            this.newRequirement.dataTypeRequirementId = null
+            this.newRequirement.requirementValue = null
+          } else if (this.newRequirement.customValue) {
+            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.listOfValueIds = null
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.customSqlOptionId = null
+            this.newRequirement.listOfValueId = null
+            this.newRequirement.dataTypeRequirementId = null
+          } else if (!this.newRequirement.customValue) {
+            this.newRequirement.dataTypeRequirementId = this.selectedDataTypeRequirement.id
+
+            //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
+            this.newRequirement.listOfValueIds = null
+            this.newRequirement.systemListOptionId = null
+            this.newRequirement.customSqlOptionId = null
+            this.newRequirement.listOfValueId = null
+            this.newRequirement.requirementValue = null
+          }
 
           const {data} = await postRequest(`/processStep/${this.processStepId}/requirement`, this.newRequirement)
           this.requirements.push(data)
+          this.selectedCustomField = {}
+          this.selectedListOfValues = []
+          this.selectedListValue = {}
           this.addNewRequirement = false
           this.newRequirement = {
             requirementParamDynamicValues: []
           }
+          this.selectedDataTypeRequirement = {}
           this.parent = {}
           this.availableFunctions = []
           this.snackbar = getSnackbar('SUCCESS', 'Requirement Added')
@@ -816,7 +1012,25 @@
           requirement.dataTypeRequirementId = requirement.customValue ? null : requirement.dataTypeRequirement.id
           requirement.dataTypeRequirement = requirement.customValue ? {} : requirement.dataTypeRequirement
           requirement.secondaryRequirementValue = !requirement.customValue && requirement.dataTypeRequirement.secondaryRequirement ? requirement.secondaryRequirementValue : null
-          requirement.requirementValue = requirement.customValue ? requirement.requirementValue : null
+
+          //adjust value of requirementValue as needed:
+          if(requirement.customValue && requirement.listOfValues) {
+            // if from list of values and allow multiple build the json array of selected ids
+            requirement.listOfValueIds = requirement.listOfValues.map(v => v.id)
+            //reset this in case they changed values around
+            requirement.dataTypeRequirementId = null
+          } else if (requirement.customValue && this.selectedCustomField.listOfValueId && !this.selectedCustomField.allowMultiple) {
+            //  if from a list of values and not allow multiple use the selected value id,
+            requirement.listOfValueId = this.selectedListValue.id
+            //reset this in case they changed values around
+            requirement.dataTypeRequirementId = null
+          } else if (!requirement.customValue) {
+            //reset these in case they changed values around
+            requirement.listOfValueIds = null
+            requirement.listOfValueId = null
+            requirement.requirementValue = null
+          }
+
           const {data} = await putRequest(`/processStep/${this.processStepId}/requirement`, requirement)
           this.expanded = []
           // this forces the list to update the operator displayed ... using requirement = data did not work
@@ -882,13 +1096,28 @@
             return !l.archived
           })
 
+          // build the list of psr's that need to be set to immutable  do that if the save is successful
+          const psrListToUpdate = action.processStepLogicList.filter(l => {
+            return l.processStepRequirementId && !l.processStepRequirementImmutable
+          })
+
           const {data} = await putRequest(`/processStep/${this.processStepId}/action`, action)
           // this forces the list to update the values displayed ... using action = data did not work
           action.actionType = data.actionType
           action.processStepStatusType = data.processStepStatusType
           action.processStepActionChildProcesses = data.processStepActionChildProcesses
           action.processStepActionLinks = data.processStepActionLinks
+          action.processStepLogicList = data.processStepLogicList
           this.actionExpanded = []
+
+          //update the necessary psr's to immutable
+          if(psrListToUpdate.length > 0){
+            psrListToUpdate.forEach(psr => {
+              let match = this.requirements.find(r => r.id === psr.processStepRequirementId)
+              match.immutable = true
+            })
+          }
+
           this.snackbar = getSnackbar('SUCCESS', 'Action Updated')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -1023,6 +1252,12 @@
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Link From Action')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      getListValueName(item) {
+        let idToUse = item.customSqlOptionId ? item.customSqlOptionId :
+                      item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
+        let match = item.availableListOfValues.find(i => i.id === idToUse)
+        return match ? match.name : 'unknown'
       }
     }
 

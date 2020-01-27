@@ -8,26 +8,53 @@
           <v-toolbar-items>
             <v-btn text v-if="!createNew" @click="createNew = !createNew">
               <v-icon>add</v-icon>
-              Create Group
+              <span v-if="!IS_MOBILE">Create Group</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="createNew" text class="text-center one-hunned pa-3" flat
+        <v-card v-if="createNew" text class="text-left one-hunned pa-3" flat
                 color="rowShadeCustom">
-          <v-text-field
-              label="Group Name"
-              tabindex=1
-              v-model="newGroup.groupName"
-          ></v-text-field>
+          <div>
+            <v-text-field
+                label="Group Name"
+                tabindex=1
+                v-model="newGroup.groupName"
+            ></v-text-field>
+            <div v-if="showScheduleGroupCheckbox()">
+              <label>Schedule Group:</label>
+              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="getSchedulingFields(); getEventTypes()">
+            </div>
+            <div v-if="newGroup.schedulable">
+              <v-select
+                  v-model="newGroup.eventTypeId"
+                  :items="eventTypes"
+                  label="Scheduling Tool Event Type"
+                  placeholder="Select One..."
+                  item-text="eventType"
+                  item-value="id"
+              ></v-select>
+              <div  v-for="(sf, index) in schedulingFields" :key="index">
+                <v-select v-model="newGroup.schedulingFields[index]"
+                          text
+                          :items="sf.availableCustomFields"
+                          :label="`Please select a field to be used as the ${sf.fieldType}`"
+                          placeholder="Select One..."
+                          item-value="id"
+                          item-text="fieldName"
+                          return-object
+                ></v-select>
+              </div>
+            </div>
+          </div>
           <v-btn
               color="primary"
               class="white--text mr-2"
-              :disabled="!newGroup.groupName"
+              :disabled="!newGroup.groupName || (newGroup.schedulable && ((newGroup.schedulingFields.length !== schedulingFields.length) || (!newGroup.eventTypeId)))"
               @click="saveFieldGroup()">
             Save
           </v-btn>
           <v-btn
-              @click="newGroup = {}; createNew = false;">
+              @click="newGroup = { schedulingFields: [], schedulable: false }; createNew = false;">
             Cancel
           </v-btn>
         </v-card>
@@ -57,7 +84,7 @@
                     {{item.groupName}}
                   </td>
                   <td><div class="item-icons">
-                    <v-btn small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.objectTypeId, item.id)">
+                    <v-btn v-if="!item.eventTypeId" small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
@@ -109,7 +136,7 @@
                 <td :colspan="headers.length" class="pb-2 px-0"  :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
-                    <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.objectTypeId, item.id)">
+                    <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
                       <v-radio label="Native Field"
                                value="native"></v-radio>
                       <v-radio label="Reference Field: viewed only from other process steps or objects"
@@ -148,19 +175,20 @@
                   </v-col>
                   <v-col  cols="12" justify="center" class="px-3 py-0"
                           v-if="item.customFields && item.customFields.length > 0">
-      <!--              <h3 class="text-left">Assigned Custom Fields</h3>-->
+                    <div v-if="item.eventTypeId">Scheduling Tool Event Type: {{item.eventType}}</div>
                     <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                                group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                       <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
-                              :key="index" dense class="pa-0">
-                        <v-list-item class="grab">
+                              :key="index" dense class="pa-0"  color="transparent">
+                        <v-list-item :class="{grab: !item.eventTypeId}">
                           <v-list-item-action dense>
-                            <v-icon>drag_handle</v-icon>
+                            <v-icon v-if="!item.eventTypeId">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content class="pa-0">
                             {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
                           </v-list-item-content>
                           <v-dialog
+                              v-if="!item.eventTypeId"
                               v-model="cf.deleteConfirm"
                               width="500">
                             <template v-slot:activator="{ on }">
@@ -218,7 +246,8 @@
   import draggable from 'vuedraggable'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getEventTypes} from '@/services/scheduleService'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
@@ -233,7 +262,11 @@
     data() {
       return {
         snackbar: {},
-        newGroup: {},
+        IS_MOBILE,
+        newGroup: {
+          schedulingFields: [],
+          schedulable: false
+        },
         newField: {},
         // selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet.
         selectedIndex: null,
@@ -253,6 +286,8 @@
           { text: null, value: 'icons', show: true }
         ],
         expanded: [],
+        schedulingFields: [],
+        eventTypes: []
       }
     },
     computed: {},
@@ -260,20 +295,38 @@
       async saveFieldGroup() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          // todo: what is the best way to NOT hardcode this?  processStep objectTypeId = 4
-          this.newGroup.objectTypeId = 4
           this.newGroup.groupOrder = 0
           this.newGroup.processStepId = this.$route.params.id
 
-          const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
+          this.newGroup.schedulingFields = this.newGroup.schedulable ? this.newGroup.schedulingFields : []
+          this.newGroup.eventTypeId = this.newGroup.schedulable ? this.newGroup.eventTypeId : null
+
+          const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
           this.customFieldGroups.push(data)
-          this.newGroup = {}
+          this.newGroup = {
+            schedulingFields: [],
+            schedulable: false,
+          }
           this.createNew = false
           this.snackbar = getSnackbar('SUCCESS', 'Group Saved')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Group')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async updateFieldGroup(group) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          //for now this is only used to update the schedule color
+          const {data} = await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+          group.showColor = false
+          this.snackbar = getSnackbar('SUCCESS', 'Color Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Color')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -311,9 +364,9 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           if (this.addField && this.newFieldType === 'native') {
-            const {data} = await getRequest(`/customFieldGroup/getAvailableCustomFields`, {
+            const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
               params: {
-                objectTypeId,
+                companyObjectTypeId: objectTypeId,
                 groupId,
                 processStepId: this.processStepId
               }
@@ -322,7 +375,7 @@
             this.parentObjects = []
             this.ancillaryCustomFields = []
           } else if (this.addField && this.newFieldType === 'ancillary') {
-            const {data} = await getRequest(`/processStep/getParentObjectsWithTypes`, { params: { id: this.processStepId}})
+            const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, { params: { id: this.processStepId}})
             this.selectedAncillaryField = {}
             this.parentObjects = data
             this.availableCustomFields = []
@@ -331,26 +384,6 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async assignCustomField(cfg) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.addField = false
-          this.newField.fieldOrder = 0
-          this.newField.customFieldGroupId = cfg.id
-          //this line makes pushing it to the list work
-          this.newField.archived = false
-
-          await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
-          cfg.customFields.push(this.newField)
-          this.newField = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Assigning Custom Field')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -385,7 +418,6 @@
             }
           })
           // save them here
-          console.log('randaLogger', fieldsToSave)
           if(fieldsToSave.length > 0) {
             await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
           }
@@ -397,6 +429,26 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
+      },
+      async assignCustomField(cfg) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.addField = false
+          this.newField.fieldOrder = 0
+          this.newField.customFieldGroupId = cfg.id
+          //this line makes pushing it to the list work
+          this.newField.archived = false
+
+          await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
+          cfg.customFields.push(this.newField)
+          this.newField = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Assigning Custom Field')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async assignAncillaryCustomField(cfg) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -423,6 +475,39 @@
       filterCustomFieldGroups () {
         return this.customFieldGroups.filter(cfg => { return !cfg.archived})
       },
+      async getSchedulingFields () {
+        if(this.newGroup.schedulable) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/customFieldGroup/getEventTypesAndFields`)
+            this.schedulingFields = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async getEventTypes () {
+        if(this.newGroup.schedulable) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getEventTypes()
+            this.eventTypes = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      showScheduleGroupCheckbox () {
+        let tempGroups = this.customFieldGroups.filter(cfg => !cfg.archived)
+        return tempGroups?.length === 0 ||
+          tempGroups.find(cfg => cfg.eventTypeId) === undefined
+      }
     }
 
   }
@@ -440,5 +525,11 @@
   .item-icons {
     display: flex;
     float: right;
+  }
+
+  .color-swatch {
+    height: 30px;
+    width: 30px;
+    border-radius: 5px;
   }
 </style>

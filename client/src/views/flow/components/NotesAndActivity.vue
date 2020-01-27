@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar color="transparent" class="elevation-0">
-      <v-toolbar-title>Notes & Activity Feed</v-toolbar-title>
+      <h3>Notes & Activity Feed</h3>
       <v-spacer></v-spacer>
       <v-toolbar-items>
       </v-toolbar-items>
@@ -48,7 +48,7 @@
               {{item.note}}
               <div class="mt-2 note-created-by">
                 Created by: {{item.createdBy}}<br/>
-                Created at: {{item.dateCreated | formatDate('timestamp', $store.state.user.details.timezone)}}
+                Created at: {{item.dateCreated | formatDate('timestamp')}}
               </div>
             </td>
             <td class="text-right">
@@ -83,11 +83,11 @@
             </div>
             <h4>Replies:</h4>
             <v-list>
-              <v-list-item v-for="(cn, index) in item.childNotes" :key="index" dense>
+              <v-list-item v-for="(cn, index) in item.childNotes" :key="index" dense class="mb-4">
                 <v-list-item-content>
                   <v-list-item-title>{{cn.note}}</v-list-item-title>
                   <v-list-item-subtitle>Left by: {{cn.createdBy}}</v-list-item-subtitle>
-                  <v-list-item-subtitle>Left at: {{cn.dateCreated | formatDate('timestamp', $store.state.user.details.timezone)}}</v-list-item-subtitle>
+                  <v-list-item-subtitle>Left at: {{cn.dateCreated | formatDate('timestamp')}}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -108,7 +108,7 @@ import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@
 import Snackbar from '@/components/Snackbar.vue'
 
 export default {
-  name: 'CustomValueInput',
+  name: 'NotesAndActivity',
   props: {
     showNotes: Boolean,
     showActivity: Boolean,
@@ -135,6 +135,7 @@ export default {
   methods: {
     async saveNote(n) {
       try {
+        // @randa: Probably should create an object type enum on the frontend that mimics the backend?
         const {data} = await postRequest(`/note/save${this.$props.type}Note`, {
           primaryId: this.primaryId,
           note: n.reply ? n.reply : n.note,
@@ -144,9 +145,9 @@ export default {
         if(n.reply) {
           n.reply = null
           n.showReply = false
-          n.childNotes.push(data)
+          n.childNotes == null ? n.childNotes = [data] : n.childNotes.push(data)
         } else {
-          this.$props.notes.push(data)
+          this.$props.notes.unshift(data)
           this.note = {}
         }
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')

@@ -1,0 +1,27 @@
+package com.albatross.api.v1.company.blueraven.models;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+
+/**
+ * Created by randanunn on 2019-05-20.
+ * !Describe Purpose!
+ */
+@Getter
+@Setter
+public class CustomFieldGroup {
+
+  private Long id, objectTypeId, groupOrder;
+  private String groupName, objectType;
+  private Boolean archived;
+
+  //todo: cant remember what this is
+  // This list is used when looking at custom field ASSIGNMENTS to a group
+  private List<CustomField> customFields;
+
+  // This list is used when looking at custom field VALUES in a group
+  private List<CustomFieldValue> customFieldValues;
+}
+

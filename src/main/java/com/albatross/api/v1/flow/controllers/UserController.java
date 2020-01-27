@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.exceptions.EmailInUseException;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserSearch;
 import com.albatross.api.v1.flow.model.UserStatusType;
@@ -36,17 +37,36 @@ public class UserController {
     }
 
     @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public User saveOrg(@RequestBody User user) {
+    public ResponseEntity saveUser(@RequestBody User user) throws EmailInUseException {
+        if (userService.emailExists(user.getEmail(), user.getId())) {
+            throw new EmailInUseException(user.getEmail(), "Email");
+        }
+
         return userService.saveUser(user);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public User getUser(@PathVariable Long id) {
+    public ResponseEntity getUser(@PathVariable Long id) {
         return userService.getUser(id);
+    }
+
+    @GetMapping(value = "/getSchedulingUsers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getSchedulingUsers(@RequestParam(required = false) Long stateId) {
+        return userService.getSchedulingUsers(stateId);
     }
 
     @GetMapping(value = "/statuses", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UserStatusType> getUserStatuses() {
         return userService.getUserStatuses();
+    }
+
+    @PostMapping(value = "/changeContextAdmin/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity changeContextAdmin(@PathVariable Long id) {
+        return userService.changeContextAdmin(id);
+    }
+
+    @PostMapping(value = "/changeContext/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity changeContext(@PathVariable Long id) {
+        return userService.changeContext(id);
     }
 }

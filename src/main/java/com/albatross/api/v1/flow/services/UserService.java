@@ -109,16 +109,28 @@ public class UserService {
     }
   }
 
-  public User saveUser(User user) {
+  public boolean emailExists(String email, Long userId) {
+    //using ILIKE to prevent duplicates with different casing
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("email", email);
+    params.put("userId", userId);
+
+    List<User> results = sqlCache.query("user.checkEmailExists", params, User.class);
+    return null != results && !results.isEmpty();
+  }
+
+  public ResponseEntity saveUser(User user) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("firstName", user.getFirstName());
     params.put("lastName", user.getLastName());
     params.put("phone", user.getPhoneNumber());
     params.put("email", user.getEmail());
+    params.put("schedulable", user.getSchedulable() != null ? user.getSchedulable() : false);
     params.put("companyId", currentUser.getCompanyId());
 
     Long id;
+
     if(null != user.getId()) {
       id = user.getId();
       params.put("modifiedById", currentUser.getId());
@@ -126,7 +138,12 @@ public class UserService {
       sqlCache.update("user.updateUser", params);
     } else {
       params.put("createdById", currentUser.getId());
+      //for now we are inserting new users with the same email and username. maybe we will change that later and let them enter it here
       id = sqlCache.updateReturningId("user.insertUser", params, "id").longValue();
+      //insert a row into user_company
+      params.put("id", id);
+      params.put("isDefault", true);
+      sqlCache.update("user.insertUserCompany", params);
     }
 
     handleSavingCustomFieldValues(user.getCustomFieldGroups(), id);
@@ -134,11 +151,28 @@ public class UserService {
     return getUser(id);
   }
 
-  public User getUser(Long id) {
+  public ResponseEntity getUser(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<User> result = sqlCache.get("user.getOne", params, User.class);
-    return result.orElse(null);
+    Optional<User> result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
+
+    User currentUser = securityService.getCurrentUser();
+
+    if(result.isPresent() && !currentUser.getCompanyId().equals(result.get().getCompanyId())) {
+      return ResponseEntity.badRequest().body("Cannot Access User");
+    } else {
+      return ResponseEntity.ok(result);
+    }
+  }
+
+  public List<User> getSchedulingUsers(Long stateId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("stateId", stateId);
+    params.put("companyId", currentUser.getCompanyId());
+    List<User> results = sqlCache.query("user.getSchedulingUsers", params, User.class);
+    return results;
   }
 
 
@@ -177,9 +211,11 @@ public class UserService {
     }
   }
 
-  public User findByUsernameIgnoreCase(String username) {
+  public User findByUsernameIgnoreCase(String username, Long userId) {
+    // i updated this to find by username or by userId so that we can call the same function on login AND on change context
     HashMap<String, Object> params = new HashMap<>();
     params.put("username", username);
+    params.put("userId", userId);
     Optional<User> user = sqlCache.get("user.findByUsernameIgnoreCase", params, new UserMapper<>(User.class, om));
     return user.orElse(null);
   }
@@ -206,6 +242,45 @@ public class UserService {
     return results;
   }
 
+  public ResponseEntity changeContextAdmin(Long companyId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("companyId", companyId);
+
+    sqlCache.update("user.updateAdminDefault", params);
+
+    return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
+  }
+
+  public ResponseEntity changeContext(Long companyId) {
+    User user = securityService.getCurrentUser();
+    Boolean match = false;
+    // get list of companies the user has access to
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    List<Company> companies = sqlCache.query("company.getCompaniesAssignedToUser", params, Company.class);
+
+    // verify they have access to the company id that was sent in
+    for(Company c : companies) {
+      if(c.getId().equals(companyId)) {
+        match = true;
+        break;
+      }
+    }
+
+    // if valid, update the default for the user and return full user details including permissions
+    if(match) {
+      params.put("companyId", companyId);
+      sqlCache.update("user.updateDefault", params);
+
+      return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
+    } else {
+      return ResponseEntity.badRequest().body("Invalid Company For User");
+    }
+  }
+
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -223,6 +298,10 @@ public class UserService {
       TypeReference<List<UserOrgHierarchy>> userOrgHierarchyRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "hierarchy",
           new JsonCollectionDeserializer(userOrgHierarchyRef, objectMapper));
+
+      TypeReference<List<Company>> companiesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "companies",
+          new JsonCollectionDeserializer(companiesRef, objectMapper));
     }
   }
 }

@@ -2,17 +2,15 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.enums.AhjType;
-import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 
 import com.albatross.api.utils.SqlCache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -63,7 +61,7 @@ public class AhjService {
     if (id == null) {
       Optional<AhjSummary> ahj = sqlCache.get("ahj.checkForDuplicate", params, AhjSummary.class);
 
-      if (!ahj.isPresent()) {
+      if (ahj.isEmpty()) {
         id = sqlCache.updateReturningId("ahj.create", params, "id").longValue();
 
         // create an empty permit and inspection tied to the ahj - only required for new
@@ -95,11 +93,6 @@ public class AhjService {
     return sqlCache.get("ahj.findById", params, AhjSummary.class);
   }
 
-  public String getInspectionTypeFields() {
-    Optional<String> results = sqlCache.get("ahj.getInspectionTypeFields", Collections.emptyMap(), new SingleColumnRowMapper<>(String.class));
-    return results.orElse("");
-  }
-
   // CHECKLISTS
   private Optional<AhjChecklistItem> getChecklistItemById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -126,10 +119,10 @@ public class AhjService {
 
       if (AhjType.PERMIT.equals(ahjType)) {
         ahjPermitService.createPermitChecklistItem(ahjItemTypeId, itemId);
-      } else if(AhjType.UTILITY.equals(ahjType)){
+      } else if (AhjType.UTILITY.equals(ahjType)){
 //        ahjUtilityService.createUtilityChecklistItem(ahjItemTypeId, itemId);
       } else {
-//        ahjInspectionService.createInspectionChecklistItem(ahjItemTypeId, itemId);
+        ahjInspectionService.createInspectionChecklistItem(ahjItemTypeId, itemId);
       }
     } else {
       params.put("id", itemId);
@@ -173,13 +166,12 @@ public class AhjService {
     params.put("contactTypeId", contact.getContactTypeId());
 
     if (contactId == null) {
-
       contactId = sqlCache.updateReturningId("ahj.contact.create", params, "id").longValue();
 
       if (AhjType.PERMIT.equals(ahjType)) {
         ahjPermitService.savePermitContact(id, contactId);
       } else if (AhjType.INSPECTION.equals(ahjType)) {
-//        ahjInspectionService.saveInspectionContact(id, contactId);
+        ahjInspectionService.saveInspectionContact(id, contactId);
       } else if (AhjType.DESIGN.equals(ahjType)){
 //        ahjDesignService.saveDesignContact(id, contactId);
       } else {

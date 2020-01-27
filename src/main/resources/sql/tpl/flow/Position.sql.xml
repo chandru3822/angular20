@@ -1,13 +1,87 @@
 <sql>
-  <position.getAllForCompany>
-    <![CDATA[
-      select p.id,
-             p.position
-      from blueraven.position p
-          inner join flow.org_type ot on ot.id = p.org_type_id
-      where ot.company_id = :companyId
-      order by p.position
-    ]]>
-  </position.getAllForCompany>
+  <position.getAllForCompany><![CDATA[
+    select p.id,
+           p.position,
+           p.org_type_id,
+           ot.org_type,
+           p.archived
+    from flow.position p
+        inner join flow.org_type ot on ot.id = p.org_type_id
+    where ot.company_id = :companyId
+    order by p.position
+  ]]></position.getAllForCompany>
+
+  <position.getOne><![CDATA[
+    select p.id,
+           p.position,
+           p.org_type_id,
+           ot.org_type,
+           p.archived,
+           coalesce((
+               SELECT array_to_json(array_agg(row_to_json(companyFeatures)))
+               FROM (
+                        select cf.id,
+                               cf.feature_name as "featureName",
+                               cf.company_id as "companyId",
+                               cf.feature_id as "featureId",
+                               cf.archived,
+                               coalesce((
+                                    SELECT array_to_json(array_agg(row_to_json(accessControl)))
+                                    FROM (
+                                             select pfac.id,
+                                                    pfac.position_id as "positionId",
+                                                    pfac.company_feature_id as "companyFeatureId",
+                                                    ac.id as "accessControlId",
+                                                    ac.access_level as "accessLevel",
+                                                    ac.access_code as "accessCode",
+                                                    pfac.enabled
+                                             from flow.access_control ac
+                                                      left join flow.position_feature_access_control pfac on ac.id = pfac.access_control_id
+                                                                                                             and pfac.company_feature_id = cf.id
+                                                                                                             and pfac.position_id = p.id
+                                             order by "accessControlId"
+                                         ) accessControl), '[]') AS "accessControl"
+                        from flow.company_feature cf
+                        where cf.company_id = :companyId
+                          and cf.archived is not true
+                ) companyFeatures), '[]') AS "companyFeatures"
+    from flow.position p
+        inner join flow.org_type ot on ot.id = p.org_type_id
+    where p.id = :id
+  ]]></position.getOne>
+
+  <position.insert><![CDATA[
+    insert into flow.position(company_id, position, org_type_id, created_by_id)
+    values (:companyId, :position, :orgTypeId, :createdById )
+  ]]></position.insert>
+
+  <position.update><![CDATA[
+    update flow.position
+        set position = :position,
+            org_type_id = :orgTypeId,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></position.update>
+
+  <position.delete><![CDATA[
+    update flow.position
+        set archived = true,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></position.delete>
+
+  <position.insertPositionFeatureAccessControl><![CDATA[
+    insert into flow.position_feature_access_control(company_feature_id, access_control_id, position_id, enabled)
+    values (:companyFeatureId, :accessControlId, :positionId, true);
+  ]]></position.insertPositionFeatureAccessControl>
+
+  <position.updatePositionFeatureAccessControl><![CDATA[
+    update flow.position_feature_access_control
+    set enabled = :enabled
+    where id = :positionFeatureAccessControlId
+  ]]></position.updatePositionFeatureAccessControl>
+
 
 </sql>

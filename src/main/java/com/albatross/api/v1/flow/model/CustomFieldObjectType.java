@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class CustomFieldObjectType {
 
-  private Long id, customFieldId, objectTypeId;
+  private Long id, customFieldId, objectTypeId, companyObjectTypeId;
   private Boolean archived = false, showOnInsert;
   private String objectType;
 }

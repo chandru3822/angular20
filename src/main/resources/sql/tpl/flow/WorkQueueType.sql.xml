@@ -1,0 +1,39 @@
+<sql>
+  <workQueueType.getTypesForCompany><![CDATA[
+    select wqt.id, wqt.company_id, wqt.work_queue_type, wqt.archived, wqt.work_queue_category_id, wqc.work_queue_category
+    from flow.work_queue_type wqt
+      inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
+    where wqt.company_id = :companyId
+      and wqt.archived is not true
+    order by wqt.work_queue_type
+  ]]></workQueueType.getTypesForCompany>
+
+  <workQueueType.getType><![CDATA[
+    select wqt.id, wqt.company_id, wqt.work_queue_type, wqt.archived, wqt.work_queue_category_id, wqc.work_queue_category
+    from flow.work_queue_type wqt
+      inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
+    where wqt.id = :id
+  ]]></workQueueType.getType>
+
+  <workQueueType.deleteType><![CDATA[
+    update flow.work_queue_type
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></workQueueType.deleteType>
+
+  <workQueueType.updateType><![CDATA[
+    update flow.work_queue_type
+    set work_queue_type = :workQueueType,
+        modified_by_id = :modifiedById,
+        date_modified = now(),
+        work_queue_category_id = :workQueueCategoryId
+    where id = :id
+  ]]></workQueueType.updateType>
+
+  <workQueueType.insertType><![CDATA[
+    insert into flow.work_queue_type(company_id, work_queue_type, created_by_id, work_queue_category_id)
+    values (:companyId, :workQueueType, :createdById, :workQueueCategoryId)
+  ]]></workQueueType.insertType>
+</sql>

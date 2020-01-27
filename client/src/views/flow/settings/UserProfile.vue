@@ -2,23 +2,23 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-toolbar flat class="app-toolbar">
+        <v-toolbar flat class="app-toolbar" v-if="!IS_MOBILE">
           <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
         </v-toolbar>
-        <v-card flat style="background: aliceblue" class="text-center">
-          <div class="pt-5">
-            Changing the timezone in the account menu should change this value: <br/>
-            (this section is just temporary for testing)
-          </div>
-          <div class="pt-5 font-weight-bold">
-            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone) }}
-          </div>
-        </v-card>
+<!--        <v-card flat style="background: aliceblue" class="text-center">-->
+<!--          <div class="pt-5">-->
+<!--            Changing the timezone in the account menu should change this value: <br/>-->
+<!--            (this section is just temporary for testing)-->
+<!--          </div>-->
+<!--          <div class="pt-5 font-weight-bold">-->
+<!--            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone.value) }}-->
+<!--          </div>-->
+<!--        </v-card>-->
       </v-col>
     </v-row>
     <v-form ref="userForm">
       <v-row>
-        <v-col xs="12" md="6">
+        <v-col cols="12" md="6">
           <v-text-field v-model="user.firstName"
                         placeholder="Enter a value"
                         required
@@ -38,7 +38,7 @@
                         label="E-mail">
           </v-text-field>
         </v-col>
-        <v-col xs="12" md="6">
+        <v-col cols="12" md="6">
           <v-text-field v-model="user.newPassword"
                         placeholder="Enter a new password"
                         required
@@ -54,9 +54,9 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12" class="text-center">
           <v-btn @click="validate">
-            <v-icon>save</v-icon>
+            <v-icon>mdi-content-save</v-icon>
             Save Changes
           </v-btn>
         </v-col>
@@ -106,7 +106,7 @@ import { Actions } from '@/store'
 import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, EMAIL_RULES, BASIC_REQUIRED_RULE, STANDARD_IMAGES_ONLY} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, EMAIL_RULES, BASIC_REQUIRED_RULE, STANDARD_IMAGES_ONLY, IS_MOBILE} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
 
 export default {
@@ -117,6 +117,7 @@ export default {
   data () {
     return {
       loadComplete: false,
+      IS_MOBILE,
       addImage: false,
       snackbar: {},
       // timeValue: '2014-06-01T12:00:00Z',
@@ -137,7 +138,6 @@ export default {
   methods: {
     validate () {
       if (this.$refs.userForm.validate()) {
-        console.log('randaLogger form is valid')
         this.saveUser()
       }
     },

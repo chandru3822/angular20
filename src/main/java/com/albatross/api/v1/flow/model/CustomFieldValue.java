@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 
 @EqualsAndHashCode
@@ -13,15 +15,19 @@ public class CustomFieldValue {
 
   private Long id, customerId, customFieldGroupAssignmentId, customFieldGroupId,
       customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId,
-      customFieldSqlKeyId;
+      customFieldSqlKeyId, companySystemListId, projectProcessStepId, scheduleFieldTypeId, ancillaryCustomFieldGroupAssignmentId;
 
-  // not sure on these types
-  private String dateValue, timestampValue, fieldName, fieldValue, textValue, customFieldSqlKey;
-  private Integer intValue, intArrayValue;
-  // double??
-  private Double numericValue;
-  private Boolean booleanValue;
+  private String fieldName, fieldValue, textValue, customFieldSqlKey;
+  private Long intValue;
+
+  private List<Integer> intArrayValue;
+
+  private BigDecimal numericValue;
+  private Boolean booleanValue, hasListValues;
+
+  private Timestamp dateValue, timestampValue;
 
   private List<ListOfValue> listOfValues;
+  private List<Long> systemListOptionIds;
 
 }

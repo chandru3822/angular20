@@ -3,11 +3,12 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="addNew = !addNew; newGroup = {}">
-              {{addNew ? 'Cancel' : 'Add New'}}
+              <v-icon v-if="IS_MOBILE">add</v-icon>
+              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -30,7 +31,7 @@
               :expanded.sync="expanded"
               hide-default-footer
               hide-default-header
-              class="elevation-1 fix-column-width-bug"
+              class="elevation-1 fix-column-width-bug mb-5"
           >
             <template #no-data>
               No available field groups
@@ -112,8 +113,15 @@
             </template>
             <template #expanded-item="{ headers, item, index }">
               <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
-                <v-col  cols="12" justify="center"  class="px-3 py-0" >
-                  <v-select v-if="addField"
+                <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
+                  <h3 class="text-left">Add New Field</h3>
+                  <v-radio-group v-if="$route.params.id === '1'" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
+                    <v-radio label="Project Custom Field"
+                             value="native"></v-radio>
+                    <v-radio label="Reference Field: from Process Step"
+                             value="ancillary"></v-radio>
+                  </v-radio-group>
+                  <v-select v-if="newFieldType === 'native' || $route.params.id !== '1'"
                             v-model="newField"
                             :items="availableCustomFields"
                             label="Select Custom Field to Add"
@@ -121,6 +129,24 @@
                             return-object
                             @input="assignCustomField(item)"
                   ></v-select>
+                  <v-select v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
+                            v-model="parent"
+                            :items="parentObjects"
+                            label="Process Step"
+                            item-text="processStepName"
+                            return-object
+                            @input="loadFieldsByParent"
+                  ></v-select>
+                  <v-select v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
+                            v-model="selectedAncillaryField"
+                            :items="ancillaryCustomFields"
+                            label="Custom Field"
+                            item-text="fieldName"
+                            return-object
+                            @input="assignAncillaryCustomField(item)"
+                  ></v-select>
+                </v-col>
+                <v-col  cols="12" justify="center"  class="px-3 py-0" >
 <!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->
                   <draggable v-model="item.customFields" v-if="item.customFields && item.customFields.length > 0"
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
@@ -132,7 +158,7 @@
                         </v-list-item-action>
                         <v-list-item-content>
                           {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
-                          <div class="text-left">
+                          <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
                             <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
                             Show On Insert
                           </div>
@@ -182,9 +208,79 @@
               </td>
             </template>
           </v-data-table>
-        </v-container>
-      </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
+        <v-divider v-if="$route.params.id === '1'"></v-divider>
+        <v-row v-if="$route.params.id === '1'">
+          <v-col cols="12" class="pt-0">
+            <v-toolbar flat>
+              <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-btn text @click="getAttachmentTypesForProjects">
+                  <v-icon v-if="!addNewType">add</v-icon>
+                  {{ addNewType ? 'Cancel' : 'Add Type'}}
+                </v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <v-select v-if="addNewType"
+                      v-model="newType.attachmentTypeId"
+                      :items="availableAttachmentTypes"
+                      label="Select Attachment Type"
+                      item-text="attachmentType"
+                      item-value="id"
+                      @input="assignNewType"
+            ></v-select>
+            <v-card flat >
+              <v-list v-for="(a, index) in filterBy(projectAttachmentTypes, false, 'archived')"
+                      :key="index">
+                <v-list-item :class="{'shaded-row': index % 2}">
+                  <v-list-item-content>
+                    {{a.attachmentType}}
+                  </v-list-item-content>
+                  <v-dialog
+                      v-model="a.deleteConfirm"
+                      width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-list-item-action class="clickable" v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-list-item-action>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                      >
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Are you sure you want to delete this attachment type: <strong>{{ a.attachmentType }}</strong>?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="a.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="a.archived = true; deleteAttachmentType(a.id)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-col>
+    <Snackbar :snackbar="snackbar"></Snackbar>
     </v-row>
   </v-container>
 </template>
@@ -196,7 +292,7 @@ import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
-import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
 
 export default {
   name: 'CustomFieldGroup',
@@ -208,7 +304,9 @@ export default {
   data () {
     return {
       snackbar: {},
+      IS_MOBILE,
       addNew: false,
+      newFieldType: 'native',
       selectedIndex: null,
       fieldOrderChanged: false,
       groupOrderChanged: false,
@@ -228,6 +326,15 @@ export default {
         { text: null, value: 'icons', show: true }
       ],
       expanded: [],
+      parent: {},
+      parentObjects: [],
+      selectedAncillaryField: {},
+      ancillaryCustomFields: [],
+
+      addNewType: false,
+      newType: {},
+      availableAttachmentTypes: [],
+      projectAttachmentTypes: []
     }
   },
   mounted() {
@@ -257,14 +364,15 @@ export default {
   },
   created () {
     this.getCustomFieldGroups()
+    this.getProjectAttachmentTypes()
   },
   methods: {
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
+        const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
           params: {
-            objectTypeId: this.$route.params.id
+            companyObjectTypeId: this.$route.params.id
           }
         })
         this.customFieldGroups = cloneDeep(data)
@@ -278,13 +386,20 @@ export default {
     async fetchAvailableCustomFields (groupId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldGroup/getAvailableCustomFields`, {
-          params: {
-            objectTypeId: this.$route.params.id,
-            groupId
-          }
-        })
-        this.availableCustomFields = data
+        if(this.addField && this.newFieldType === 'native') {
+          const {data} = await getRequestWithParams(`/customFieldGroup/getAvailableCustomFields`, {
+            params: {
+              companyObjectTypeId: this.$route.params.id,
+              groupId
+            }
+          })
+          this.availableCustomFields = data
+        } else if (this.addField && this.newFieldType === 'ancillary') {
+          const {data} = await getRequest(`/processStep/getParentObjects`)
+          this.selectedAncillaryField = {}
+          this.parentObjects = data
+          this.availableCustomFields = []
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -295,7 +410,7 @@ export default {
     async addCustomFieldGroup () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.newGroup.objectTypeId = this.$route.params.id
+        this.newGroup.companyObjectTypeId = this.$route.params.id
         // setting groupOrder to 0, then they can sort later
         this.newGroup.groupOrder = 0
         const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
@@ -318,6 +433,27 @@ export default {
         this.newField.fieldOrder = 0
         this.newField.customFieldGroupId = item.id
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
+        item.customFields.unshift(data)
+        this.newField = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Field to Group')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignAncillaryCustomField (item) {
+      console.log('will ancillary', item)
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const params = {
+          customFieldGroupId: item.id,
+          id: null,
+          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
+          fieldOrder: 0
+        }
+        const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
         item.customFields.unshift(data)
         this.newField = {}
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
@@ -394,7 +530,6 @@ export default {
           }
         })
         // save them here
-        console.log('randaLogger', fieldsToSave)
         if(fieldsToSave.length > 0) {
           await putRequest(`/customFieldGroup/updateFieldsInGroup`, fieldsToSave)
         }
@@ -424,7 +559,80 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    }
+    },
+    async loadFieldsByParent() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
+        this.ancillaryCustomFields = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getProjectAttachmentTypes () {
+      //this one loads attachment types already assigned to a project
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const { data } = await getRequest(`/attachmentType/projectTypes`)
+        this.projectAttachmentTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getAttachmentTypesForProjects () {
+      //this one loads attachment types AVAILABLE TO BE assigned to a project ...idk maybe this should be one function
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewType = !this.addNewType
+        if(this.addNewType){
+          const { data } = await getRequest(`/attachmentType/typesForProjects`)
+          this.availableAttachmentTypes = data
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async assignNewType () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.newType.processStepId = this.$route.params.id
+        const { data } = await postRequest(`/attachmentType/projectType`, this.newType)
+        this.projectAttachmentTypes.push(data)
+        // reset fields
+        this.addNewType = false
+        this.newType = {}
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Added')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Attachment Type')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteAttachmentType (id) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.addNewType = false
+        console.log('deleting')
+        await deleteRequest(`/attachmentType/projectType/${id}`)
+        // this.availableAttachmentTypes = data
+        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>

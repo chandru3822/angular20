@@ -3,21 +3,22 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Process Step Status Types</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newType = {}">
-              {{addNew ? 'Cancel' : 'Add New'}}
-            </v-btn>
-          </v-toolbar-items>
+          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Process Step Status Types</v-toolbar-title>
+<!--          <v-spacer></v-spacer>-->
+<!--          <v-toolbar-items>-->
+<!--            <v-btn text @click="addNew = !addNew; newType = {}">-->
+<!--              <v-icon v-if="IS_MOBILE">add</v-icon>-->
+<!--              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>-->
+<!--            </v-btn>-->
+<!--          </v-toolbar-items>-->
         </v-toolbar>
         <v-container>
-          <v-text-field v-if="addNew"
-                        v-model="newType.statusType"
-                        placeholder="Enter a type"
-                        label="Status Type">
-          </v-text-field>
-          <v-btn v-if="addNew" :disabled="!newType.statusType" @click="addNewType">Save</v-btn>
+<!--          <v-text-field v-if="addNew"-->
+<!--                        v-model="newType.statusType"-->
+<!--                        placeholder="Enter a type"-->
+<!--                        label="Status Type">-->
+<!--          </v-text-field>-->
+<!--          <v-btn v-if="addNew" :disabled="!newType.statusType" @click="addNewType">Save</v-btn>-->
           <v-list v-for="(s, index) in filterBy(statusTypes, false, 'archived')"
                   :key="index"  class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
@@ -30,43 +31,43 @@
                 <v-icon v-if="selectedStatusTypeId === s.id" @click="saveType(s)">save</v-icon>
                 <v-icon v-else @click="selectedStatusTypeId = s.id">edit</v-icon>
               </v-list-item-action>
-              <v-dialog
-                  v-model="s.deleteConfirm"
-                  width="500">
-                <template v-slot:activator="{ on }">
-                  <v-list-item-action class="clickable" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-list-item-action>
-                </template>
-                <v-card>
-                  <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title
-                  >
-                    Confirm
-                  </v-card-title>
+<!--              <v-dialog-->
+<!--                  v-model="s.deleteConfirm"-->
+<!--                  width="500">-->
+<!--                <template v-slot:activator="{ on }">-->
+<!--                  <v-list-item-action class="clickable" v-on="on">-->
+<!--                    <v-icon>delete</v-icon>-->
+<!--                  </v-list-item-action>-->
+<!--                </template>-->
+<!--                <v-card>-->
+<!--                  <v-card-title-->
+<!--                      class="headline grey lighten-2"-->
+<!--                      primary-title-->
+<!--                  >-->
+<!--                    Confirm-->
+<!--                  </v-card-title>-->
 
-                  <v-card-text>
-                    Are you sure you want to delete this status type: <strong>{{ s.processStepStatusType }}</strong>?
-                  </v-card-text>
+<!--                  <v-card-text>-->
+<!--                    Are you sure you want to delete this status type: <strong>{{ s.processStepStatusType }}</strong>?-->
+<!--                  </v-card-text>-->
 
-                  <v-divider></v-divider>
+<!--                  <v-divider></v-divider>-->
 
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        @click="s.deleteConfirm = false">
-                      No
-                    </v-btn>
-                    <v-btn
-                        color="primary"
-                        text
-                        @click="s.archived = true; deleteType(s.id)">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
+<!--                  <v-card-actions>-->
+<!--                    <v-spacer></v-spacer>-->
+<!--                    <v-btn-->
+<!--                        @click="s.deleteConfirm = false">-->
+<!--                      No-->
+<!--                    </v-btn>-->
+<!--                    <v-btn-->
+<!--                        color="primary"-->
+<!--                        text-->
+<!--                        @click="s.archived = true; deleteType(s.id)">-->
+<!--                      Yes-->
+<!--                    </v-btn>-->
+<!--                  </v-card-actions>-->
+<!--                </v-card>-->
+<!--              </v-dialog>-->
             </v-list-item>
           </v-list>
         </v-container>
@@ -82,7 +83,8 @@
   import Vue2Filters from 'vue2-filters'
   import Snackbar from '@/components/Snackbar.vue'
   import orderBy from 'lodash.orderby'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getStatusTypes} from '@/services/processStepStatusTypeService'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
     name: 'Statuses',
@@ -93,6 +95,7 @@
     data () {
       return {
         snackbar: {},
+        IS_MOBILE,
         statusTypes: [],
         addNew: false,
         newType: {},
@@ -107,8 +110,8 @@
       async getStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/processStep/status`)
-          this.statusTypes = orderBy(data, [s => s.processStepStatusType.toLowerCase()])
+          const {data} = await getStatusTypes()
+          this.statusTypes = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

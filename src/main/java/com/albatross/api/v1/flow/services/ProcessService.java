@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -127,13 +128,21 @@ public class ProcessService {
 
     public Optional<ProcessStepProcess> insertProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {
         User currentUser = securityService.getCurrentUser();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("processId", processId);
+        params.put("createdById", currentUser.getId());
+        params.put("orgId", processStepProcess.getOrgId());
+        params.put("processStepId", processStepProcess.getProcessStepId());
 
-        Long id = sqlCache.updateReturningId("process.insertProcessStepProcess",
-            ImmutableMap.of("processId", processId,
-                            "createdById", currentUser.getId(),
-                            "orgId", processStepProcess.getOrgId(),
-                            "initialStep", processStepProcess.isInitialStep(),
-                            "processStepId", processStepProcess.getProcessStepId()), "id").longValue();
+        // temporarily allowing null
+        Long id = sqlCache.updateReturningId("process.insertProcessStepProcess", params, "id").longValue();
+
+
+//        Long id = sqlCache.updateReturningId("process.insertProcessStepProcess",
+//            ImmutableMap.of("processId", processId,
+//                            "createdById", currentUser.getId(),
+//                            "orgId", processStepProcess.getOrgId(),
+//                            "processStepId", processStepProcess.getProcessStepId()), "id").longValue();
 
         return getOneProcessStepProcess(id);
     }
@@ -149,12 +158,27 @@ public class ProcessService {
         }
     }
 
-    public void setInitialProcessStep(Long processId, Long processStepProcessId) {
+    public List<ProcessStepProcess> getInitialProcessStepProcesses(Long processId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("processId", processId);
+
+        List<ProcessStepProcess> results = sqlCache.query("process.getInitialProcessStepProcesses", params, ProcessStepProcess.class);
+
+        return results;
+    }
+
+    public Optional<ProcessStepProcess> setInitialProcessStep(Long processId, ProcessStepProcess processStepProcess) {
         User currentUser = securityService.getCurrentUser();
 
-            sqlCache.update("process.setInitialProcessStep",
-                ImmutableMap.of("processId", processId,
-                    "modifiedById", currentUser.getId(),
-                    "processStepProcessId", processStepProcessId));
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("processId", processId);
+        params.put("modifiedById", currentUser.getId());
+        params.put("initialStep", processStepProcess.isInitialStep());
+        params.put("companyProcessStepStatusTypeId", processStepProcess.getCompanyProcessStepStatusTypeId());
+        params.put("processStepProcessId", processStepProcess.getId());
+
+        sqlCache.update("process.setInitialProcessStep", params);
+
+        return getOneProcessStepProcess(processStepProcess.getId());
     }
 }

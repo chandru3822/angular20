@@ -1,27 +1,20 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.ProcessStep;
-import com.albatross.api.v1.flow.model.ProcessStepAction;
-import com.albatross.api.v1.flow.model.ProcessStepActionChildProcess;
-import com.albatross.api.v1.flow.model.ProcessStepActionLink;
-import com.albatross.api.v1.flow.model.ProcessStepLogic;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -78,7 +71,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionName", action.getActionName());
     params.put("actionTypeId", action.getActionTypeId());
-    params.put("processStepStatusTypeId", action.getProcessStepStatusTypeId());
+    params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("modifiedById", currentUser.getId());
     params.put("id", action.getId());
 
@@ -96,14 +89,24 @@ public class ProcessStepActionService {
         deleteLinkFromAction(link.getId());
       }
     }
+    // @randa - do this
 
     if(!action.getProcessStepLogicList().isEmpty()) {
+
+
       // handle saving logic items.
       // archive all old ones
       sqlCache.update("processStepAction.archiveOldLogic", params);
       // insert the new ones
       int count = 0;
       for(ProcessStepLogic logic : action.getProcessStepLogicList()) {
+        if(null != logic.getProcessStepRequirementId() && (null == logic.getProcessStepRequirementImmutable() || !logic.getProcessStepRequirementImmutable()) ) {
+          // update psr.immutable, if it is not already true. (don't have to do this for updates because it should already be true by now)
+          HashMap<String, Object> psrParams = new HashMap<>();
+          psrParams.put("id", logic.getProcessStepRequirementId());
+          sqlCache.update("processStepRequirement.setImmutable", psrParams);
+        }
+
         HashMap<String, Object> logicParams = new HashMap<>();
         logicParams.put("id", action.getId());
         logicParams.put("processStepRequirementId", logic.getProcessStepRequirementId());
@@ -124,7 +127,7 @@ public class ProcessStepActionService {
     params.put("actionTypeId", action.getActionTypeId());
     params.put("createdById", currentUser.getId());
     params.put("processStepId", action.getProcessStepId());
-    params.put("processStepStatusTypeId", action.getProcessStepStatusTypeId());
+    params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
 
     Long id = sqlCache.updateReturningId("processStepAction.insertAction", params, "id").longValue();
     return getActionById(id);

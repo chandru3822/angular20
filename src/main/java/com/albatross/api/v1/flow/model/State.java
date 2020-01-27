@@ -13,7 +13,7 @@ public class State {
 
   private Long id;
   private String state, abbreviation, timeZoneAbbreviation;
-  private Boolean activeFlag;
+  private Boolean active;
   private Double mapLatitude, mapLongitude, mapZoom;
 }
 

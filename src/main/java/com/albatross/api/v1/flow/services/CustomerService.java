@@ -46,6 +46,9 @@ public class CustomerService {
   ProjectService projectService;
 
   @Autowired
+  ProcessService processService;
+
+  @Autowired
   ObjectMapper om;
 
   public Page<Customer> searchCustomers(String query, Pageable pageable) {
@@ -173,7 +176,6 @@ public class CustomerService {
     params.put("companyId", user.getCompanyId());
     List<Long> statusIds = new ArrayList<>();
     statusIds.add(UserStatusType.ACTIVE.id);
-    statusIds.add(UserStatusType.PENDING_TERMINATION.id);
 
     params.put("statusIds", statusIds);
     List<Owner> results = sqlCache.query("customer.getOwners", params, Owner.class);
@@ -188,23 +190,25 @@ public class CustomerService {
     params.put("customerId", customerId);
     params.put("customerTypeId", CustomerType.CUSTOMER.id);
     params.put("modifiedById", currentUser.getId());
-
     sqlCache.update("customer.convertToCustomer", params);
 
-    //create project (use customer_full_name as project_name)
-    Optional<Project> project = projectService.insertProject(customerId, process.getId());
+    //get customer to get their full name for the project
+    Customer customer = getCustomer(customerId);
 
-    //todo: get initial process steps including the initial status
-    List<ProcessStepProcess> initialProcessSteps = new ArrayList<>();
+    //create project (use customer_full_name as project_name)
+    Optional<Project> project = projectService.insertProject(customerId, process.getId(), customer.getFullName());
+
+    //get initial process steps including the initial status
+    List<ProcessStepProcess> initialProcessSteps = processService.getInitialProcessStepProcesses(process.getId());
 
     if(project.isPresent()) {
-      //create all initial project_process_step s
+      //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectService.insertProjectProcessStep(project.get().getId(), step.getId(), step.getInitialProcessStepStatusTypeId());
+        projectService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), null);
       }
     }
 
-    //todo: return project data so the frontend can navigate to project/{id}
+    //return project data so the frontend can navigate to project/{id}
     return project.orElse(null);
   }
 
@@ -253,11 +257,14 @@ public class CustomerService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<Owner> ownerRef = new TypeReference<Owner>() {
-      };
+      TypeReference<Owner> ownerRef = new TypeReference<Owner>() {};
 
       bw.registerCustomEditor(Object.class, "owner",
           new JsonCollectionDeserializer(ownerRef, objectMapper));
+
+      TypeReference<List<Project>> projectsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "projects",
+          new JsonCollectionDeserializer(projectsRef, objectMapper));
     }
   }
 

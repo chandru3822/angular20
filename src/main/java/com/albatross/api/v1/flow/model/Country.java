@@ -11,9 +11,9 @@ import lombok.Setter;
 @Setter
 public class Country {
 
-  private Long id;
+  private Long id, companyId;
   private String country, abbreviation;
-  private Boolean activeFlag;
+  private Boolean archived;
 
 }
 

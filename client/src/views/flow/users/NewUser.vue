@@ -11,7 +11,7 @@
       <v-form ref="userForm">
         <v-container>
           <v-row>
-            <v-col xs="12" sm="6">
+            <v-col cols="12" sm="6">
               <v-text-field text
                             label="First Name"
                             :rules="requiredRules"
@@ -36,7 +36,7 @@
                         item-value="id"
               ></v-select>
             </v-col>
-            <v-col xs="12" sm="6">
+            <v-col cols="12" sm="6">
               <v-text-field text
                             label="Phone"
                             :rules="requiredRules"
@@ -161,7 +161,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding User')
+        let errorMsg = 'Error Adding User'
+        if(e?.data?.message?.includes('Email already exists')) {
+          errorMsg += ': Email Already in Use'
+        }
+        this.snackbar = getSnackbar('ERROR', errorMsg)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

@@ -33,6 +33,11 @@ public class OrgController {
     return orgService.getOrgsForCompany();
   }
 
+  @GetMapping(value = "/getSchedulingOrgs", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Org> getSchedulingOrgs(@RequestParam(required = false) Long stateId) {
+    return orgService.getSchedulingOrgs(stateId);
+  }
+
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Org getOrg(@PathVariable Long id) {
     return orgService.getOrg(id);

@@ -33,6 +33,11 @@ export default new Router({
         name: 'serverError',
         component: () => import(/* webpackChunkName: "serverError" */ './views/ServerError.vue')
       }, {
+        path: 'schedule',
+        name: 'schedule',
+        props: true,
+        component: () => import(/* webpackChunkName: "schedule" */ './views/flow/schedule/Schedule.vue')
+      }, {
         path: 'users',
         name: 'users',
         component: () => import(/* webpackChunkName: "users" */ './views/flow/users/Users.vue')
@@ -41,16 +46,24 @@ export default new Router({
         name: 'user',
         props: true,
         component: () => import (/*webpackChunkName: "user" */ './views/flow/users/User.vue'),
-        children: []
+        children: [
+          {
+            path: 'details',
+            name: 'userDetails',
+            component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserDetails.vue'),
+          }, {
+            path: 'positions',
+            component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserPositions.vue'),
+          }, {
+            path: 'access',
+            component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserAccess.vue'),
+          }
+        ]
       }, {
         path: '/newUser',
         name: 'newUser',
         component: () => import (/*webpackChunkName: "newUser" */ './views/flow/users/NewUser.vue'),
         children: []
-      }, {
-        path: '/ahjTest',
-        name: 'ahjTest',
-        component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj_Test.vue')
       }, {
           path: '/ahj',
           name: 'ahj',
@@ -92,8 +105,26 @@ export default new Router({
             path: 'userProfile',
             component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
           }, {
+            path: 'company',
+            component: () => import (/* webpackChunkName: "company" */ './views/flow/settings/Company.vue'),
+          }, {
             path: 'orgTypes',
             component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/OrgTypes.vue'),
+          }, {
+            path: 'eventTypes',
+            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/EventTypes.vue'),
+          }, {
+            path: 'workQueue',
+            component: () => import (/* webpackChunkName: "workQueue" */ './views/flow/settings/WorkQueue.vue'),
+            children: [
+              {
+                path: 'types',
+                component: () => import (/* webpackChunkName: "workQueueTypes" */ './views/flow/settings/WorkQueueTypes.vue'),
+              }, {
+                path: 'categories',
+                component: () => import (/* webpackChunkName: "workQueueCategories" */ './views/flow/settings/WorkQueueCategories.vue'),
+              }
+            ]
           }, {
             path: 'customFields',
             component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue'),
@@ -141,18 +172,37 @@ export default new Router({
           }, {
             path: 'function/:id',
             component: () => import (/* webpackChunkName: "function" */ './views/flow/settings/Function.vue')
-          }
+          }, {
+            path: 'positions',
+            component: () => import (/* webpackChunkName: "positions" */ './views/flow/settings/Positions.vue')
+          },  {
+            path: 'position/:id?',
+            name: 'position',
+            component: () => import (/* webpackChunkName: "role" */ './views/flow/settings/Position.vue')
+          },  {
+            path: 'roles',
+            component: () => import (/* webpackChunkName: "roles" */ './views/flow/settings/Roles.vue')
+          },  {
+            path: 'role/:id?',
+            name: 'role',
+            component: () => import (/* webpackChunkName: "role" */ './views/flow/settings/Role.vue')
+          },
         ]
       }, {
-        path: '/project/:projectId',
+        path: '/project',
         name: 'project',
         component: () => import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue'),
-        children: [
-          {
-            path: '',
+        children: [{
+            path: 'search',
+            name: 'projects',
+            component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/Projects.vue')
+          }, {
+            path: ':projectId',
+            name: 'projectOverview',
             component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/ProjectOverview.vue')
           }, {
-            path: 'processStep/:processStepId',
+            name: 'projectProcessStep',
+            path: ':projectId/processStep/:processStepId',
             component: () => import (/*webpackChunkName: "projectProcessStep" */ './views/flow/project/ProjectProcessStep.vue')
           }
         ]
@@ -173,7 +223,7 @@ export default new Router({
         component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/NewLead.vue'),
         children: []
       }, {
-        path: '/orgs',
+        path: '/orgs/:orgFilter?',
         name: 'orgs',
         component: () => import (/*webpackChunkName: "orgs" */ './views/flow/orgs/Orgs.vue'),
         children: []

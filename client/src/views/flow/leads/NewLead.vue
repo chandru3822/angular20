@@ -4,14 +4,18 @@
       <v-card-title>
         Add Lead
         <v-spacer></v-spacer>
+        <v-btn v-if="!IS_MOBILE" text class="mr-3" to="/leads">Cancel</v-btn>
+        <v-btn v-if="!IS_MOBILE" color="primary" dark @click="validate">Save</v-btn>
+      </v-card-title>
+      <v-card-text  v-if="IS_MOBILE">
         <v-btn text class="mr-3" to="/leads">Cancel</v-btn>
         <v-btn color="primary" dark @click="validate">Save</v-btn>
-      </v-card-title>
+      </v-card-text>
 
       <v-form ref="leadForm">
         <v-container>
           <v-row>
-            <v-col xs="12" sm="6">
+            <v-col cols="12" sm="6">
               <v-text-field text
                             label="First Name"
                             :rules="requiredRules"
@@ -36,7 +40,7 @@
                         item-value="id"
               ></v-select>
             </v-col>
-            <v-col xs="12" sm="6">
+            <v-col cols="12" sm="6">
               <v-text-field text
                             label="Phone"
                             :rules="requiredRules"
@@ -76,7 +80,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, BASIC_REQUIRED_RULE, EMAIL_RULES, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, BASIC_REQUIRED_RULE, EMAIL_RULES, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
@@ -92,6 +96,7 @@ export default {
   data () {
     return {
       snackbar: {},
+      IS_MOBILE,
       lead: {},
       states: [],
       countries: [],

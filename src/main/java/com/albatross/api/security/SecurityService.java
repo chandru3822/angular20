@@ -15,10 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class SecurityService implements UserDetailsService {
@@ -41,12 +38,14 @@ public class SecurityService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("Could not find user " + username);
         }
-        List<UserPermission> permissions = this.getUserPermissions(user.getId());
+        // todo: come back and add permissions when the re-write is complete
+//        List<UserPermission> permissions = this.getUserPermissions(user.getId(), user.getCompanyId());
+        List<UserPermission> permissions = new ArrayList<>();
         return new UserAccountDetails(user, permissions);
     }
 
     public User getUser(String username) {
-        User user = userService.findByUsernameIgnoreCase(username);
+        User user = userService.findByUsernameIgnoreCase(username, null);
         return user;
     }
 
@@ -55,7 +54,8 @@ public class SecurityService implements UserDetailsService {
         if (!user.isPresent()) {
             return Optional.empty();
         }
-        List<UserPermission> permissions = getUserPermissions(user.get().getId());
+//        List<UserPermission> permissions = getUserPermissions(user.get().getId(), user.get().getCompanyId());
+        List<UserPermission> permissions = new ArrayList<>();
         return Optional.of(new UserAccountDetails(user.get(), permissions));
     }
 
@@ -183,9 +183,10 @@ public class SecurityService implements UserDetailsService {
     }
 
     @SuppressWarnings("unchecked")
-    public List<UserPermission> getUserPermissions(Long userId) {
+    public List<UserPermission> getUserPermissions(Long userId, Long companyId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("userId", userId);
+        params.put("companyId", companyId);
         List<UserPermission> userPermissions = sqlCache.query("permission.getUserPermissions", params, UserPermission.class);
         return userPermissions;
     }

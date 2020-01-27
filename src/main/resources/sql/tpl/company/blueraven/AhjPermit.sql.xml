@@ -156,20 +156,26 @@
           SELECT array_to_json(array_agg(row_to_json(fots)))
           FROM (
             SELECT
-              u.id,
-              u.first_name AS "firstName",
-              u.last_name AS "lastName",
-              u.first_name || ' ' || u.last_name AS "fullName",
-              o.org_name AS "office",
-              o.id AS "officeId"
-            FROM flow."user" u
-              INNER JOIN flow.user_position up ON up.user_id = u.id
-                AND ((now() at time zone 'US/Mountain')::date) BETWEEN up.start_date::date
-                AND coalesce(up.end_date::date, (now() at time zone 'US/Mountain')::date)
-              INNER JOIN flow.org o ON o.id = up.org_id
+              upv.user_id AS "id",
+              upv.first_name AS "firstName",
+              upv.last_name AS "lastName",
+              upv.first_name || ' ' || upv.last_name AS "fullName",
+              (select array_to_json(array_agg(row_to_json(fots)))
+               from (select o.id AS "orgId",
+                            upv.org_level_id AS "orgLevelId",
+                            o.org_name AS "orgName",
+                            upv.position_level AS "positionLevel"
+                     from flow.org o
+                     where o.id = upv.org_id) fots
+              ) AS "hierarchy"
+            FROM flow.user_positions_vw upv
+              INNER JOIN flow.org o ON o.id = upv.org_id
               LEFT JOIN brs.org_metro_area oma ON oma.org_id = o.id
               LEFT JOIN brs.ahj ON ahj.metro_area_id = oma.metro_area_id
-            WHERE o.org_type_id = 8
+            WHERE upv.end_date IS NULL
+              AND upv.user_archived IS FALSE
+              AND upv.primary_flag IS TRUE
+              AND o.org_type_id = 8
               AND ahj.id = p.ahj_id) fots
           ), '[]'
         ) AS servicingFots
@@ -225,45 +231,22 @@
         contractor_license_expiration_date = :contractorLicenseExpirationDate,
         other_license = :otherLicense,
         other_license_expiration_date = :otherLicenseExpirationDate,
-
-        submission_note = :submissionNote,
-        revision_note = :revisionNote,
-        as_built_note = :asBuiltNote,
-        delivery_note = :deliveryNote,
-
-        submittal_type_id = :submittalTypeId,
-        revision_submittal_type_id = :revisionSubmittalTypeId,
-        as_built_submittal_type_id = :asBuiltSubmittalTypeId,
-        delivery_pickup_type_id = :deliveryPickupTypeId,
-        submission_payment_type_id = :submissionPaymentTypeId,
-        revision_payment_type_id = :revisionPaymentTypeId,
-        as_built_payment_type_id = :asBuiltPaymentTypeId,
-        follow_up_payment_type_id = :followUpPaymentTypeId,
-        delivery_payment_type_id = :deliveryPaymentTypeId,
-        hoa_approval_required_type_id = :hoaApprovalRequiredTypeId,
-        nem_approval_required_type_id = :nemApprovalRequiredTypeId,
-
-        submittal_type_other = :submittalTypeOther,
-        revision_submittal_type_other = :revisionSubmittalTypeOther,
-        as_built_submittal_type_other = :asBuiltSubmittalTypeOther,
-        delivery_pickup_type_other = :deliveryPickupTypeOther,
-        submission_payment_type_other = :submissionPaymentTypeOther,
-        revision_payment_type_other = :revisionPaymentTypeOther,
-        as_built_payment_type_other = :asBuiltPaymentTypeOther,
-        follow_up_payment_type_other = :followUpPaymentTypeOther,
-        delivery_payment_type_other = :deliveryPaymentTypeOther,
-        hoa_approval_required_type_other = :hoaApprovalRequiredTypeOther,
-        nem_approval_required_type_other = :nemApprovalRequiredTypeOther,
         revision_fee_amount = :revisionFeeAmount,
         as_built_fee_amount = :asBuiltFeeAmount,
         follow_up_fee_amount = :followUpFeeAmount,
         delivery_fee_amount = :deliveryFeeAmount,
         approval_timeline = :approvalTimeline,
-        documents_available = :documentsAvailable
+        documents_available = :documentsAvailable,
+
+        submission_note = :submissionNote,
+        revision_note = :revisionNote,
+        as_built_note = :asBuiltNote,
+        delivery_note = :deliveryNote
       WHERE id = :id
     ]]>
   </ahj.permit.update>
 
+  <!-- CHECKLIST STUFF -->
   <ahj.permit.checklist.create>
     <![CDATA[
       INSERT INTO brs.ahj_permit_checklist (ahj_permit_id, ahj_checklist_id)
@@ -271,6 +254,7 @@
     ]]>
   </ahj.permit.checklist.create>
 
+  <!-- CONTACT STUFF -->
   <ahj.permit.contact.create>
     <![CDATA[
       INSERT INTO brs.ahj_permit_contact (ahj_permit_id, ahj_contact_id)
@@ -278,7 +262,7 @@
     ]]>
   </ahj.permit.contact.create>
 
-  <!-- PERMIT LINKS STUFF -->
+  <!-- PERMIT LINK STUFF -->
   <ahj.permit.link.findById>
     <![CDATA[
       SELECT * FROM brs.ahj_permit_link WHERE id = :id
@@ -320,4 +304,127 @@
       WHERE id = :id
     ]]>
   </ahj.permit.link.delete>
+
+  <!-- TODO: come back to this after the migration of custom fields has taken place -->
+  <!-- PERMIT CYCLE TIME STUFF -->
+  <ahj.permit.cycle-time.permits>
+    <![CDATA[
+      -- returns data as a JSON array of objects with keys
+      -- dealId, customerName, permitIssuer, submitted, approved, cycleTime
+      select array_to_json(array_agg(row_to_json(permits)))
+      from (
+          select *,
+              (case when approved is not null then (approved - submitted)
+                    else ((now() at time zone 'US/Mountain')::date - submitted)
+               end) as "cycleTime",
+              (case when approved is null then 'pending'
+                    else 'approved' end) as status
+          from (
+              select p.id as "dealId",
+                     c.first_name || ' ' || c.last_name as "customerName",
+                     a.name as "permitIssuer",
+                     coalesce(permit_revision_c_submittal_date,
+                              permit_revision_b_submittal_date,
+                              permit_pack_revision_submittal_date,
+                              permit_packet_submitted_date) as submitted,
+                     (case when permit_revision_c_submittal_date    is not null then permit_revision_c_approved_date
+                           when permit_revision_b_submittal_date    is not null then permit_revision_b_approved_date
+                           when permit_pack_revision_submittal_date is not null then permit_pack_revision_approved_date
+                           when permit_packet_submitted_date        is not null then permit_approved_date
+                      end) as approved
+              from flow.project p
+                inner join flow.customer c on c.id = p.customer_id
+                inner join brs.ahj_permit ap on ap.ahj_id = d.ahj_id
+                inner join brs.ahj a on a.id = ap.ahj_id
+              where d.ahj_id = :ahjId
+              order by submitted asc
+          ) s
+          where submitted between :startDate and :endDate
+      ) permits
+      where permits.status = :status
+    ]]>
+  </ahj.permit.cycle-time.permits>
+
+  <ahj.permit.cycle-time.as-builts>
+    <![CDATA[
+      -- returns data as a JSON array of objects with keys
+      -- dealId, customerName, permitIssuer, submitted, approved, cycleTime
+      select array_to_json(array_agg(row_to_json(as_builts)))
+      from (
+          select p.id as "dealId",
+                 c.first_name || ' ' || c.last_name as "customerName",
+                 a.name as "permitIssuer",
+                 asbuilt_permit_pack_submittal_date as submitted,
+                 asbuilt_permit_approved_date as approved,
+                 (case when asbuilt_permit_approved_date is not null then
+                            (asbuilt_permit_approved_date::date - asbuilt_permit_pack_submittal_date::date)
+                       else (now() at time zone 'US/Mountain')::date - asbuilt_permit_pack_submittal_date::date
+                  end) as "cycleTime",
+                 (case when asbuilt_permit_approved_date is null then 'pending'
+                       else 'approved'
+                  end) as status
+          from flow.project p
+            inner join flow.customer c on c.id = p.customer_id
+            inner join brs.ahj_permit ap on ap.ahj_id = d.ahj_id
+            inner join brs.ahj a on a.id = ap.ahj_id
+          where asbuilt_permit_pack_submittal_date between :startDate and :endDate
+            and d.ahj_id = :ahjId
+          order by submitted asc
+      ) as_builts
+      where status = :status
+    ]]>
+  </ahj.permit.cycle-time.as-builts>
+
+  <ahj.permit.cycle-time.summary-stats>
+    <![CDATA[
+      select 'permits'                         as type,
+             status                            as status,
+             round(avg(t.cycle_time), 2)       as avg,
+             cast(median(t.cycle_time) as int) as median,
+             max(t.cycle_time)                 as max,
+             count(t.cycle_time)               as count
+      from (
+          select (case when s.latest_permit_approval_date is not null then 'approved'
+                       else 'pending' end) as status,
+                 (case when s.latest_permit_approval_date is not null then (s.latest_permit_approval_date - s.latest_permit_submit_date)
+                       else ((now() at time zone 'US/Mountain')::date - s.latest_permit_submit_date)
+                  end) as cycle_time
+          from (
+              select coalesce(permit_revision_c_submittal_date,
+                              permit_revision_b_submittal_date,
+                              permit_pack_revision_submittal_date,
+                              permit_packet_submitted_date) as latest_permit_submit_date,
+                     (case when permit_revision_c_submittal_date    is not null then permit_revision_c_approved_date
+                           when permit_revision_b_submittal_date    is not null then permit_revision_b_approved_date
+                           when permit_pack_revision_submittal_date is not null then permit_pack_revision_approved_date
+                           when permit_packet_submitted_date        is not null then permit_approved_date
+                      end) as latest_permit_approval_date
+              from blueraven.deal
+              where ahj_id = :ahjId
+          ) s
+          where latest_permit_submit_date between :startDate and :endDate
+      ) t
+      group by t.status
+
+      union
+
+      select 'as-builts'                       as type,
+             t.status                          as status,
+             round(avg(t.cycle_time), 2)       as avg,
+             cast(median(t.cycle_time) as int) as median,
+             max(t.cycle_time)                 as max,
+             count(t.cycle_time)               as count
+      from (
+          select case when asbuilt_permit_approved_date is not null then 'approved'
+                      else 'pending' end as status,
+                 case when asbuilt_permit_approved_date is not null then
+                           (asbuilt_permit_approved_date::date - asbuilt_permit_pack_submittal_date::date)
+                      else (now() at time zone 'US/Mountain')::date - asbuilt_permit_pack_submittal_date::date end as cycle_time
+          from blueraven.deal
+          where ahj_id = :ahjId
+            and asbuilt_permit_pack_submittal_date between :startDate and :endDate
+      ) t
+      group by t.status
+    ]]>
+  </ahj.permit.cycle-time.summary-stats>
 </sql>

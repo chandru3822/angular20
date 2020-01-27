@@ -39,7 +39,7 @@ public class ProcessStepService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<ProcessStep> results = sqlCache.query("processStep.getAllForCompany", params, ProcessStep.class);
+    List<ProcessStep> results = sqlCache.query("processStep.getAllForCompany", params, new ProcessStepMapper<>(ProcessStep.class, om));
     return results;
   }
 
@@ -58,8 +58,35 @@ public class ProcessStepService {
     sqlCache.update("processStep.delete", params);
   }
 
+  public List<ProcessStepWorkQueueType> saveWorkQueueTypesToStep(ProcessStep processStep) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStep.getId());
+    params.put("userId", currentUser.getId());
+
+    for(ProcessStepWorkQueueType wqt : processStep.getWorkQueueTypes()) {
+      if(null != wqt.getId() && wqt.getArchived()) {
+        params.put("archived", wqt.getArchived());
+        params.put("id", wqt.getId());
+        sqlCache.update("processStep.updateWorkQueueType", params);
+      } else if (null == wqt.getId()) {
+        params.put("workQueueTypeId", wqt.getWorkQueueTypeId());
+        sqlCache.update("processStep.insertWorkQueueType", params);
+      }
+    }
+
+    return getWorkQueueTypesForStep(processStep.getId());
+  }
+
+  public List<ProcessStepWorkQueueType> getWorkQueueTypesForStep (Long processStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+
+    List<ProcessStepWorkQueueType> results = sqlCache.query("processStep.getWorkQueueTypesForStep", params, ProcessStepWorkQueueType.class);
+    return results;
+  }
+
   public void updateStep(ProcessStep processStep) {
-    // this is going to have to change when process steps are shared between companies
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", processStep.getId());
@@ -69,7 +96,6 @@ public class ProcessStepService {
   }
 
   public ProcessStep insertStep(ProcessStep processStep) {
-    // this is going to have to change when process steps are shared between companies
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
@@ -113,6 +139,7 @@ public class ProcessStepService {
       TypeReference<List<CustomFieldGroup>> customFieldGroupRef = new TypeReference<List<CustomFieldGroup>>() {};
       TypeReference<List<ProcessStepAttachmentType>> processStepAttachmentTypeRef = new TypeReference<List<ProcessStepAttachmentType>>() {};
       TypeReference<List<ProcessStepLink>> processStepLinkRef = new TypeReference<List<ProcessStepLink>>() {};
+      TypeReference<List<ProcessStepWorkQueueType>> workQueueTypeRef = new TypeReference<List<ProcessStepWorkQueueType>>() {};
 
       bw.registerCustomEditor(List.class, "customFieldGroups",
           new JsonCollectionDeserializer(customFieldGroupRef, objectMapper));
@@ -122,6 +149,9 @@ public class ProcessStepService {
 
       bw.registerCustomEditor(List.class, "links",
           new JsonCollectionDeserializer(processStepLinkRef, objectMapper));
+
+      bw.registerCustomEditor(List.class, "workQueueTypes",
+          new JsonCollectionDeserializer(workQueueTypeRef, objectMapper));
     }
   }
 

@@ -1,21 +1,24 @@
 <template>
-<v-card class="card">
+<v-card class="card pa-0" flat color="transparent">
   <v-card-text>
     <v-row no-gutters>
     <v-col>
-      <v-row align="center" no-gutters>
-        <v-col
-          v-if="imageUrl"
-          offset="1"
-          class="image-container"
+      <v-row class="justify-end" no-gutters>
+        <v-avatar
+            v-if="imageUrl"
+            :tile="false"
+            :size="25"
+            color="grey lighten-4"
+            class="text-right mr-2"
         >
-          <v-img :src="imageUrl" class="image"/></v-col>
-        <v-col class="text-left name">{{ name }}</v-col>
+          <img name="accountImg" :src="imageUrl">
+        </v-avatar>
+        {{ name }}
       </v-row>
     </v-col>
   </v-row>
   <v-row>
-    <v-col cols="12">{{ role }} | {{ location }}</v-col>
+    <v-col cols="12" class="text-right">{{ role }} | {{ location }}</v-col>
   </v-row>
   </v-card-text>
 </v-card>
@@ -38,7 +41,11 @@ export default {
 .card {
   font-size: 14px;
   font-weight: bold;
-  width: 200px;
+  width: 170px;
+}
+
+.card .v-card__text {
+  padding: 0px;
 }
 
 .image-container {
@@ -51,9 +58,4 @@ export default {
   font-size: 16px;
 }
 
-.image {
-  width: 30px;
-  height: 30px;
-  border-radius: 15px;
-}
 </style>

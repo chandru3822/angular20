@@ -1,51 +1,66 @@
 <template>
-  <v-row no-gutters style="width: 100% !important">
+  <v-row>
     <v-col cols="12">
-      <v-row class="mb-1 px-3" align="center">
-        <v-col class="pa-0 text-left" cols="6">
-          <v-tabs
-            v-model="tabs"
-            background-color="rgba(0,0,0,0)"
-            slider-color="primaryCustom"
-          >
-            <v-tab to="/ahj" class="ma-0">AHJ</v-tab>
-            <v-tab to="/ahjUtility" class="text-capitalize">Utility</v-tab>
-          </v-tabs>
-        </v-col>
-        <v-col class="pa-0 text-right" cols="6">
-          <v-btn
-            color="primaryButton"
-            class="ma-0 app-button white--text"
-            @click="addItem"
-          >Add New</v-btn>
-        </v-col>
-      </v-row>
+<!--      <v-row class="mb-1 px-3" align="center">-->
+<!--        <v-col class="pa-0 text-left" cols="6">-->
+<!--          <v-tabs-->
+<!--            v-model="tabs"-->
+<!--            background-color="rgba(0,0,0,0)"-->
+<!--            slider-color="primaryCustom"-->
+<!--          >-->
+<!--            <v-tab to="/ahj" class="ma-0">AHJ</v-tab>-->
+<!--            <v-tab to="/ahjUtility" class="text-capitalize">Utility</v-tab>-->
+<!--          </v-tabs>-->
+<!--        </v-col>-->
+<!--        <v-col class="pa-0 text-right" cols="6">-->
+<!--          <v-btn-->
+<!--            color="primaryButton"-->
+<!--            class="ma-0 app-button white&#45;&#45;text"-->
+<!--            @click="addItem"-->
+<!--          >Add New</v-btn>-->
+<!--        </v-col>-->
+<!--      </v-row>-->
+      <v-toolbar color="white" class="elevation-1">
+        <v-toolbar-title class="app-title">
+          <v-btn text to="/ahj" color="primary">
+            AHJ
+          </v-btn>
+          <v-btn text to="/ahjUtility" color="primary">
+            Utility
+          </v-btn>
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn text @click="addItem" color="primary">
+            <v-icon>add</v-icon>
+            <span v-if="!IS_MOBILE">Add New</span>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
 
-      <v-divider></v-divider>
 
-      <v-row no-gutters class="my-5">
-        <v-col cols="12">
-          <v-card>
-            <v-card-title>
-              <v-spacer></v-spacer>
+          <v-toolbar color="white" class="elevation-1 mt-3">
               <v-text-field
-                v-model="ahjSearch"
-                append-icon="search"
-                label="Search"
-                single-line
-                hide-details
+                  class="mt-2"
+                  v-model="ahjSearch"
+                  prepend-inner-icon="search"
+                  label="Search..."
+                  single-line
+                  hide-details
               ></v-text-field>
-            </v-card-title>
+            <v-spacer v-if="!IS_MOBILE"></v-spacer>
+          </v-toolbar>
             <v-data-table
               :headers="visibleHeaders"
               :items="filteredAhjs"
               :search="ahjSearch"
               :options="pagination"
               :items-per-page="-1"
+              :mobile-breakpoint="0"
               fixed-header
               dense
               hide-default-footer
-              class="elevation-1"
+              class="elevation-1 ahj-table"
               style="width: 100%"
             >
 <!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
@@ -91,13 +106,16 @@
                   :key="ahj.id"
                   :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
                 >
-                  <td>{{ ahj.name ? ahj.name : '' }}</td>
-                  <td>{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
-                  <td>{{ ahj.state ? ahj.state : '' }}</td>
-                  <td>
-                    <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
-                    <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
-                    <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
+                  <td class="text-left">{{ ahj.name ? ahj.name : '' }}</td>
+                  <td class="text-left">{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
+                  <td class="text-left">{{ ahj.state ? ahj.state : '' }}</td>
+                  <td class="text-left">
+                    <router-link v-if="IS_MOBILE" :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
+                    <span v-else>
+                      <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
+                      <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
+                      <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
+                    </span>
                     <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">
                       edit
                     </v-icon>
@@ -160,16 +178,15 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
-          </v-card>
         </v-col>
-      </v-row>
-    </v-col>
-  </v-row>
+      <Snackbar :snackbar="snackbar"></Snackbar>
+    </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { getRequest, deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
   import { mapState } from 'vuex'
   import { AppMutations } from '@/stores/AppStore'
 
@@ -186,8 +203,13 @@
 
   export default {
     name: 'ahjs',
+    components: {
+      Snackbar
+    },
     data: () => ({
       FILTER_TYPE,
+      snackbar: {},
+      IS_MOBILE,
       tabs: [
         {
           label: 'AHJ',
@@ -204,7 +226,7 @@
         { text: 'Name', value: 'name', show: true },
         { text: 'Metro Area', value: 'metroArea', show: true },
         { text: 'State', value: 'state', show: true },
-        { text: null, value: null, sortable: false, show: true }
+        { text: null, value: null, sortable: false, show: true, width: IS_MOBILE ? 135 : 300 }
       ],
       ahjs: [],
       ahjSearch: '',
@@ -264,18 +286,34 @@
     },
     methods: {
       async fetchAhjs () {
-        const {data} = await getRequest('/api/v1/company/blueraven/ahj')
-        this.ahjs = cloneDeep(data)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest('/ahj', 'blueraven')
+          this.ahjs = cloneDeep(data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getActiveMetroAreas () {
-        const {data} = await getRequest('/api/v1/company/blueraven/metro/getActive')
-        data.forEach(item => {
-          let option = {
-            text: item.metroArea + ' (' + item.area + ')',
-            value: item.id
-          }
-          this.metroAreas.push(option)
-        })
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest('/metro/getActive', 'blueraven')
+          data.forEach(item => {
+            let option = {
+              text: item.metroArea + ' (' + item.area + ')',
+              value: item.id
+            }
+            this.metroAreas.push(option)
+          })
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       initFilters () {
         this.ahjFilters = cloneDeep(FILTER_DEFAULTS)
@@ -303,10 +341,27 @@
         this.ahjDeleteDialog = false
       },
       async saveAhj () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         if (!this.editedItem.id) {
-          await postRequest('/api/v1/company/blueraven/ahj', this.editedItem)
+          try {
+            await postRequest('/ahj', this.editedItem, 'blueraven')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ Created')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Creating AHJ')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         } else {
-          await putRequest(`/api/v1/company/blueraven/ahj/${this.editedItem.id}`, this.editedItem)
+          try {
+            await putRequest(`/ahj/${this.editedItem.id}`, this.editedItem, 'blueraven')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ Saved')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving AHJ')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
 
         this.close()
@@ -316,12 +371,22 @@
         this.editedItem = {}
       },
       async deleteAhj (id) {
-        await deleteRequest(`/api/v1/company/blueraven/ahj/${id}`)
-        this.close()
-        this.initFilters()
-        this.fetchAhjs()
-        this.fetchAhjSearchFilters()
-        this.ahjToDelete = {}
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/ahj/${id}`, 'blueraven')
+          this.close()
+          this.initFilters()
+          this.fetchAhjs()
+          this.fetchAhjSearchFilters()
+          this.ahjToDelete = {}
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting AHJ')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+
       },
       fetchAhjSearchFilters () {
         let ahjNames = []
@@ -381,5 +446,8 @@
     &:hover {
       color: var(--v-primaryText-base) !important;
     }
+  }
+  .ahj-table {
+    margin-top: 2px;
   }
 </style>

@@ -7,7 +7,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col  cols="6" class="text-left">
+      <v-col cols="12" md="6" class="text-left">
         <div>
           <v-toolbar color="transparent" class="elevation-0">
             <v-toolbar-title>Summary</v-toolbar-title>
@@ -25,7 +25,7 @@
                       label="Organization Type"
                       item-text="orgType"
                       item-value="id"
-                      @input="getOrgsByType()"
+                      @input="getOrgsByType(org.orgTypeId)"
             ></v-select>
             <v-select v-model="org.parentOrgId"
                       :items="parents"
@@ -33,6 +33,14 @@
                       item-text="orgName"
                       item-value="id"
             ></v-select>
+            <v-select v-model="org.stateId"
+                      :items="states"
+                      label="State"
+                      item-text="state"
+                      item-value="id"
+            ></v-select>
+            <label>Show in Scheduling Tool:</label>
+            <input type="checkbox" class="ml-2" v-model="org.schedulable">
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -43,7 +51,7 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="cf.id" :readonly="false" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
@@ -55,8 +63,9 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
+  import {getStates} from '@/services/stateService'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
 
   export default {
@@ -80,6 +89,7 @@
         customFieldGroups: [],
         orgTypes: [],
         parents: [],
+        states: [],
         orgId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId
       }
@@ -88,7 +98,8 @@
       this.getCustomFieldGroups()
       this.getOrgTypes()
       await this.getOrg()
-      this.getOrgsByType()
+      this.getOrgsByType(this.org.parentOrgTypeId)
+      this.getStates()
     },
     methods: {
       async saveOrg() {
@@ -106,7 +117,7 @@
       async getCustomFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldValues/org`, { params: {
+          const {data} = await getRequestWithParams(`/customFieldValues/org`, { params: {
               primaryId: this.orgId
             }})
           this.customFieldGroups = data
@@ -142,15 +153,27 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getOrgsByType () {
+      async getOrgsByType (orgTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgsByType(this.org.orgTypeId)
+          const {data} = await getOrgsByType(orgTypeId)
           this.parents = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getStates () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getStates()
+          this.states = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

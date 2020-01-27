@@ -23,7 +23,10 @@
           ></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="handleOrgFilterChange(true)">Reset Filters</v-btn>
+            <v-btn text @click="handleOrgFilterChange(true)">
+              <v-icon v-if="IS_MOBILE">filter_list</v-icon>
+              <span v-else>Reset Filters</span>
+            </v-btn>
             <v-btn text v-if="totalUsers <= 100000" @click="exportUsers">Export</v-btn>
             <v-dialog
                 v-model="dialog"
@@ -76,6 +79,7 @@
             :fixed-header="true"
             :options.sync="options"
             disable-sort
+            :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
             :server-items-length="totalUsers"
@@ -235,7 +239,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   import max from 'lodash.max'
@@ -249,6 +253,7 @@
     data () {
       return {
         delay: 500,
+        IS_MOBILE,
         dialog: false,
         snackbar: {},
         users: [],
@@ -259,7 +264,8 @@
         positions: [],
         descending: true,
         footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000]
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
         },
         options: {
           itemsPerPage: 100
@@ -319,7 +325,7 @@
     },
     methods: {
       clickRow(id){
-        this.$router.push({name: 'user', params: {id}})
+        this.$router.push({name: 'userDetails', params: {id}})
       },
       debounceGetUsers: debounce( function () {
         this.getUsers()
@@ -382,6 +388,7 @@
         }
       },
       async getOrgFilters (initialLoad) {
+        // filter out any org filters that were left empty like {"4": []}
         Object.keys(this.filters.orgs).forEach(key => {
           if (this.filters.orgs[key] && this.filters.orgs[key].length === 0) {
             delete this.filters.orgs[key]
@@ -389,28 +396,31 @@
         })
         try {
           if(Object.keys(this.filters.orgs).length > 0) {
-            //org filters have already been loaded. load their orgs again and repopulate the org list only
+            //org filters are being used. load their orgs again and repopulate the org lists accordingly
             const params = {
               orgs: this.getOrgIds()
             }
             const {data} = await postRequest(`/org/orgHierarchyFilter`, params)
             data.forEach(d => {
+              //get index of the each header
               let index = this.headers.findIndex(h => h.level === d.orgLevelId)
               if(d.orgLevelId === this.selectedLevel) {
+                // if it is the same as the selected level reset the list values to the master list
                 let masterIndex = this.masterOrgFilterList.findIndex(mf => mf.orgLevelId === d.orgLevelId)
                 this.headers[index].orgs = this.masterOrgFilterList[masterIndex].orgs
               }else {
-                //get index of the right header
+                // otherwise use the new result list of orgs
                 this.headers[index].orgs = d.orgs
               }
             })
           } else if(initialLoad) {
-            //org filters not yet loaded. load them from main list
+            //org filters not used yet and is initial load, get the full list of orgs and use those, also populate master list
             const {data} = await getRequest(`/org/filters`)
             this.masterOrgFilterList = cloneDeep(data)
             this.orgFilters = cloneDeep(this.masterOrgFilterList)
             this.resetHeaderOrgs()
           } else {
+            //org filters were unset and is not initial load, reset headers to master list
             this.filters.orgs = {}
             this.orgFilters = cloneDeep(this.masterOrgFilterList)
             this.resetHeaderOrgs()
@@ -484,7 +494,6 @@
         if(resetSelected){
           this.selectedLevel = parseInt(maxKey)
         }
-        console.log('MAX KEY', maxKey)
         return this.filters.orgs && maxKey ? this.filters.orgs[maxKey].map(o => o.id) : []
       },
       getOrgIds() {

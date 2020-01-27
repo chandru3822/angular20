@@ -13,9 +13,13 @@ import java.util.List;
 @Setter
 public class Org {
 
-  private Long id, companyId, parentOrgId, orgTypeId, orgLevelId;
-  private String orgName, orgType, parentOrgName;
-  private Boolean activeFlag, owningOrg;
+
+  private Long id, companyId, parentOrgId, orgTypeId, orgLevelId, stateId, parentOrgTypeId;
+  private String orgName, orgType, parentOrgName, title; //title used for scheduling tool
+  private Boolean activeFlag, owningOrg, schedulable;
+
+  //when getting orgs for scheduling, I had to "type" the id by putting a 1 in front of it. this field should only be used in the scheduling tool
+  private Long masterId;
 
   //so far this is only used for saving
   List<CustomFieldGroup> customFieldGroups;

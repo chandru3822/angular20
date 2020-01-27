@@ -21,8 +21,8 @@
         and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'
-        and upv.email ILIKE '%' || :email || '%'
-        and upv.phone_number ILIKE '%' || :phone || '%'
+        and coalesce(upv.email) ILIKE '%' || :email || '%'
+        and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
         and upv.user_status_type_id in (:statuses)
         and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
@@ -40,8 +40,8 @@
         and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'
-        and upv.email ILIKE '%' || :email || '%'
-        and upv.phone_number ILIKE '%' || :phone || '%'
+        and coalesce(upv.email) ILIKE '%' || :email || '%'
+        and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
         and upv.user_status_type_id in (:statuses)
         and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
@@ -56,15 +56,15 @@
         u.first_name || ' ' || u.last_name as full_name,
         u.email,
         u.phone_number,
-        u.company_id,
         u.user_status_type_id,
         ust.user_status_type,
         p.position
     from flow.user u
       inner join flow.user_status_type ust on ust.id = u.user_status_type_id
+      inner join flow.user_company uc on uc.id = u.user_id
       left join flow.user_position up on up.user_id = u.id
       left join flow.position p on p.id = up.position_id
-    where u.company_id = :companyId
+    where uc.company_id = :companyId
        and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
        and u.first_name ILIKE '%' || :firstName || '%'
        and u.last_name ILIKE '%' || :lastName || '%'
@@ -81,28 +81,72 @@
       set first_name = :firstName,
           last_name = :lastName,
           email = :email,
+          schedulable = :schedulable,
           phone_number = :phone,
           modified_by_id = :modifiedById,
-          date_modified = now(),
-          company_id = :companyId
+          date_modified = now()
       where id = :id
     ]]>
   </user.updateUser>
 
   <user.insertUser>
     <![CDATA[
-      insert into flow.user(first_name, last_name, created_by_id, company_id)
-      values(:firstName, :lastName, :createdById, :companyId)
+      insert into flow.user(first_name, last_name, created_by_id, schedulable, phone_number, email, username)
+      values(:firstName, :lastName, :createdById, :schedulable, :phone, :email, :email);
     ]]>
   </user.insertUser>
 
   <user.getOne>
     <![CDATA[
-      select u.*
+      select u.id,
+             u.phone_number,
+             u.email,
+             u.schedulable,
+             u.created_by_id,
+             u.first_name,
+             u.last_name,
+             u.first_name || ' ' || u.last_name as full_name,
+             case when u.default_company_id is not null then u.default_company_id else uc.company_id end as company_id,
+             u.modified_by_id,
+             u.date_modified,
+             u.default_company_id,
+             coalesce((
+              SELECT array_to_json(array_agg(row_to_json(companies)))
+              FROM (
+                       select c.id,
+                              c.company_name as "companyName",
+                              c.parent_company_id as "parentCompanyId",
+                              c.aws_bucket as "awsBucket",
+                              c.abbreviation
+                       from flow.user_company uc
+                                inner join flow.company c on c.id = uc.company_id
+                       where uc.user_id = u.id
+                         and uc.archived is not true
+                       order by c.company_name
+                   ) companies), '[]') as companies
       from flow."user" u
+        inner join flow.user_company uc on uc.user_id = u.id
       where u.id = :id
+        and uc.archived is not true
+        and uc.is_default is true
     ]]>
   </user.getOne>
+
+  <user.getSchedulingUsers>
+    <![CDATA[
+      select distinct u.user_id as id,
+             u.first_name,
+             u.last_name,
+             u.first_name || ' ' || u.last_name as full_name,
+             u.first_name || ' ' || u.last_name as title
+      from flow.user_positions_vw u
+      where u.company_id = :companyId
+        and u.user_schedulable is true
+        and case when :stateId::integer is not null then u.state_id = :stateId::integer and u.user_schedulable is true else u.user_schedulable is true end
+        and u.user_archived is not true
+      order by full_name
+    ]]>
+  </user.getSchedulingUsers>
 
   <user.findByUsernameIgnoreCase><![CDATA[
     select u.id,
@@ -111,63 +155,42 @@
        u.email,
        u.username,
        u.password,
-       u.company_id,
+       coalesce(u.default_company_id, uc.company_id) as company_id,
+            ( select case when parent_company_id is null or parent_company_id = 1
+                    then coalesce(u.default_company_id, uc.company_id)
+                else parent_company_id end
+                from flow.company c
+             where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
        null as "timezone",
        u.first_name || ' ' || u.last_name as full_name,
-       u.user_status_type_id,
-       c.aws_bucket,
-       c.company_name,
-       c.abbreviation as company_abbreviation,
-       coalesce((
-            SELECT array_to_json(array_agg(row_to_json(permissions)))
-            FROM (
-                     select per.id,
-                            per.permission_name as "permissionName",
-                            per.permission_code as "permissionCode"
-                     from flow.permission per
-                        left join flow.role_permission rp on per.id = rp.permission_id
-                        left join flow.role role on rp.role_id = role.id
-                        left join flow.user_role ur on ur.role_id = role.id
-                     where ur.user_id = u.id
-                        AND role.archived is not true
-                        and per.archived is not true
-                    except
-                     select per.id,
-                            per.permission_name,
-                            per.permission_code
-                     from flow.permission per
-                        left join flow.user_permission udp on udp.permission_id = per.id
-                     where udp.user_id = u.id
-                       and udp.deny is true
-                       and per.archived is not true
-                 ) permissions), '[]') as permissions
+       u.user_status_type_id
     from flow.user u
-        inner join flow.company c on c.id = u.company_id
-    where lower(username) = lower(:username)
+             inner join flow.user_company uc on uc.user_id = u.id
+    where case when :username::text is not null then lower(username) = lower(:username::text)
+               else u.id = :userId::integer end
+      and uc.is_default = true
   ]]></user.findByUsernameIgnoreCase>
-
-  <user.findByUserUuid><![CDATA[
-        select id,
-          first_name,
-          last_name,
-          first_name || ' ' || last_name as full_name,
-          user_status_type_id
-        from flow.user
-        where uuid = :uuid
-  ]]></user.findByUserUuid>
 
   <user.findUserById>
     <![CDATA[
         select u.id,
-          u.first_name,
-          u.last_name,
-          u.company_id,
-          c.aws_bucket,
-          u.first_name || ' ' || u.last_name as full_name,
-          u.user_status_type_id
+               u.first_name,
+               u.last_name,
+               u.first_name || ' ' || u.last_name as full_name,
+               u.user_status_type_id,
+               coalesce(u.default_company_id, uc.company_id) as company_id,
+               c.aws_bucket,
+               coalesce(u.default_company_id, uc.company_id) as company_id,
+                ( select case when parent_company_id is null or parent_company_id = 1
+                        then coalesce(u.default_company_id, uc.company_id)
+                    else parent_company_id end
+                    from flow.company c
+                 where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id
         from flow.user u
-         inner join flow.company c on c.id = u.company_id
+          inner join flow.user_company uc on uc.user_id = u.id
+          inner join flow.company c on c.id = uc.company_id
         where u.id = :id
+          and uc.is_default is true
       ]]>
   </user.findUserById>
 
@@ -178,4 +201,41 @@
       from flow.user_status_type
     ]]>
   </user.getUserStatuses>
+
+  <user.updateDefault>
+    <![CDATA[
+      update flow.user_company
+        set is_default = false
+      where user_id = :userId;
+      update flow.user_company
+      set is_default = true
+      where company_id = :companyId
+        and user_id = :userId;
+    ]]>
+  </user.updateDefault>
+
+  <user.updateAdminDefault>
+    <![CDATA[
+      update flow.user
+       set default_company_id = :companyId
+       where id = :userId
+    ]]>
+  </user.updateAdminDefault>
+
+  <user.insertUserCompany>
+    <![CDATA[
+      insert into flow.user_company(company_id, user_id, is_default)
+      values (:companyId, :id, :isDefault)
+    ]]>
+  </user.insertUserCompany>
+
+  <user.checkEmailExists>
+    <![CDATA[
+      select id,
+         email
+      from flow."user"
+      where email ILIKE :email
+      and case when :userId::int is not null then :userId::int != id else 1=1 end
+    ]]>
+  </user.checkEmailExists>
 </sql>

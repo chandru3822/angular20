@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 
 @EqualsAndHashCode
@@ -17,10 +18,11 @@ public class Customer  {
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
       phone, mobile, customerType;
   private Double latitude, longitude;
-  // dates as strings or dates?
-  private String dateCreated;
+  private Date dateCreated;
 
   private Owner owner;
+
+  private List<Project> projects;
 
   //so far this is only used for saving
   List<CustomFieldGroup> customFieldGroups;

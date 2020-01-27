@@ -18,43 +18,32 @@
       <v-col cols="12" md="3" class="px-1 mb-3">
         <!-- SUBMISSION DETAILS -->
         <v-card>
-          <v-card-title class="primaryCustom white--text font-weight-bold">
+          <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
             Submission Details
+            <router-link :to="'/schedule'" title="Go to Scheduling Tool">
+              <v-icon class="white--text">launch</v-icon>
+            </router-link>
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-model="ahjPermit.submittalTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Submittal Method"
-                      filled
-            ></v-select>
-            <v-select v-model="ahjPermit.hoaApprovalRequiredTypeId"
-                      :items="approvalRequiredOptions"
-                      item-text="name"
-                      item-value="id"
-                      label="HOA Approval Required for Submission"
-                      filled
-            ></v-select>
-            <v-select v-model="ahjPermit.nemApprovalRequiredTypeId"
-                      :items="approvalRequiredOptions"
-                      item-text="name"
-                      item-value="id"
-                      label="NEM Approval Required for Submission"
-                      filled
-            ></v-select>
+            <div v-for="item in getCustomFieldsForGroup(1)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+              ></v-text-field>
+            </div>
             <v-text-field v-model="ahjPermit.depositAmount"
                           label="Deposit Amount"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.submissionPaymentTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Payment Method"
-                      filled
-            ></v-select>
             <v-row>
               <v-col cols="6">
                 <v-text-field v-model="ahjPermit.businessLicense"
@@ -68,7 +57,6 @@
                         :nudge-right="40"
                         transition="scale-transition"
                         offset-y
-                        full-width
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.businessLicenseExpirationDate"
@@ -98,7 +86,6 @@
                         :nudge-right="40"
                         transition="scale-transition"
                         offset-y
-                        full-width
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.contractorLicenseExpirationDate"
@@ -128,7 +115,6 @@
                         :nudge-right="40"
                         transition="scale-transition"
                         offset-y
-                        full-width
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.otherLicenseExpirationDate"
@@ -148,7 +134,8 @@
             <AhjChecklist v-if="dataReady"
                           title="Submission Checklist"
                           :checklistTypeId="1"
-                          :permitId="ahjPermit.id"
+                          :itemId="ahjPermit.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjPermit.submissionChecklist"
             ></AhjChecklist>
@@ -170,11 +157,13 @@
             Revision Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-model="ahjPermit.revisionSubmittalTypeId"
-                      :items="submittalMethods"
+            <v-select v-for="item in getCustomFieldsForGroup(2)"
+                      :key="item.id"
+                      v-model="item.intValue"
+                      :items="item.listOfValues"
                       item-text="name"
                       item-value="id"
-                      label="Submittal Method"
+                      :label="item.fieldName"
                       filled
             ></v-select>
             <v-text-field v-model="ahjPermit.revisionFeeAmount"
@@ -182,17 +171,11 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.revisionPaymentTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Payment Method"
-                      filled
-            ></v-select>
             <AhjChecklist v-if="dataReady"
                           title="Revision Submission Checklist"
                           :checklistTypeId="2"
-                          :permitId="ahjPermit.id"
+                          :itemId="ahjPermit.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklist-items="ahjPermit.revisionChecklist"
             ></AhjChecklist>
@@ -214,11 +197,13 @@
             As-Built Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-model="ahjPermit.asBuiltSubmittalTypeId"
-                      :items="submittalMethods"
+            <v-select v-for="item in getCustomFieldsForGroup(3)"
+                      :key="item.id"
+                      v-model="item.intValue"
+                      :items="item.listOfValues"
                       item-text="name"
                       item-value="id"
-                      label="Submittal Method"
+                      :label="item.fieldName"
                       filled
             ></v-select>
             <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
@@ -226,17 +211,11 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.asBuiltPaymentTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Payment Method"
-                      filled
-            ></v-select>
             <AhjChecklist v-if="dataReady"
                           title="As-Built Submission Checklist"
                           :checklistTypeId="3"
-                          :permitId="ahjPermit.id"
+                          :itemId="ahjPermit.id"
+                          :itemType="itemType"
                           :ahjId="ahjId"
                           :checklist-items="ahjPermit.asBuiltChecklist"
             ></AhjChecklist>
@@ -267,11 +246,13 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.followUpPaymentTypeId"
-                      :items="submittalMethods"
+            <v-select v-for="item in getCustomFieldsForGroup(4)"
+                      :key="item.id"
+                      v-model="item.intValue"
+                      :items="item.listOfValues"
                       item-text="name"
                       item-value="id"
-                      label="Payment Method"
+                      :label="item.fieldName"
                       filled
             ></v-select>
             <v-text-field v-model="ahjPermit.documentsAvailable"
@@ -287,11 +268,13 @@
             Delivery Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-model="ahjPermit.deliveryPickupTypeId"
-                      :items="submittalMethods"
+            <v-select v-for="item in getCustomFieldsForGroup(5)"
+                      :key="item.id"
+                      v-model="item.intValue"
+                      :items="item.listOfValues"
                       item-text="name"
                       item-value="id"
-                      label="Pickup Method"
+                      :label="item.fieldName"
                       filled
             ></v-select>
             <v-text-field v-model="ahjPermit.deliveryFeeAmount"
@@ -299,13 +282,6 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-model="ahjPermit.deliveryPaymentTypeId"
-                      :items="submittalMethods"
-                      item-text="name"
-                      item-value="id"
-                      label="Payment Method"
-                      filled
-            ></v-select>
             <AhjDocument v-if="dataReady"
                          title="Documents Required for Inspection"
                          :documentTypeId="1"
@@ -321,69 +297,70 @@
           </v-card-text>
         </v-card>
 
+        <!-- TODO: come back to this after the migration of custom fields has taken place -->
         <!-- PERMITTING CYCLE TIMES -->
-        <v-card style="overflow-x: auto">
-          <v-card-title class="primaryCustom white--text font-weight-bold">
-            Permitting Cycle Times
-          </v-card-title>
-          <v-card-text class="mt-4">
-            <v-select v-model="permittingCycleTimes.timePeriod"
-                      :items="timePeriods"
-                      @change="setTimePeriodDates"
-                      label="Viewing Data For:"
-                      filled
-            ></v-select>
-            <p style="margin: -15px 0">{{permittingCycleTimes.startDate}} to {{permittingCycleTimes.endDate}}</p>
-          </v-card-text>
-          <table class="pa-3" style="width: 100%">
-            <thead>
-              <tr>
-                <th>{{ permittingCycleTimes.headers.approvedHeaders[0] }}</th>
-                <th class="pr-1 centered">{{ permittingCycleTimes.headers.approvedHeaders[1] }}</th>
-                <th class="centered">{{ permittingCycleTimes.headers.approvedHeaders[2] }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{ permittingCycleTimes.headers.approvedSubheaders[0] }}</td>
-                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.avgTime }}</td>
-                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.avgTime }}</td>
-              </tr>
-              <tr>
-                <td>{{ permittingCycleTimes.headers.approvedSubheaders[1] }}</td>
-                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.medianTime }}</td>
-                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.medianTime }}</td>
-              </tr>
-              <tr>
-                <td>{{ permittingCycleTimes.headers.approvedSubheaders[2] }}</td>
-                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.approvals }}</td>
-                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.approvals }}</td>
-              </tr>
-            </tbody>
-            <thead>
-              <tr>
-                <th>{{ permittingCycleTimes.headers.pendingHeaders[0] }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{ permittingCycleTimes.headers.pendingSubheaders[0] }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.avgAge }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.avgAge }}</td>
-              </tr>
-              <tr>
-                <td>{{ permittingCycleTimes.headers.pendingSubheaders[1] }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.medianAge }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.medianAge }}</td>
-              </tr>
-              <tr>
-                <td>{{ permittingCycleTimes.headers.pendingSubheaders[2] }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.maxAge }}</td>
-                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.maxAge }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </v-card>
+<!--        <v-card style="overflow-x: auto">-->
+<!--          <v-card-title class="primaryCustom white&#45;&#45;text font-weight-bold">-->
+<!--            Permitting Cycle Times-->
+<!--          </v-card-title>-->
+<!--          <v-card-text class="mt-4">-->
+<!--            <v-select v-model="permittingCycleTimes.timePeriod"-->
+<!--                      :items="timePeriods"-->
+<!--                      @change="setTimePeriodDates"-->
+<!--                      label="Viewing Data For:"-->
+<!--                      filled-->
+<!--            ></v-select>-->
+<!--            <p style="margin: -15px 0">{{permittingCycleTimes.startDate}} to {{permittingCycleTimes.endDate}}</p>-->
+<!--          </v-card-text>-->
+<!--          <table class="pa-3" style="width: 100%">-->
+<!--            <thead>-->
+<!--              <tr>-->
+<!--                <th>{{ permittingCycleTimes.headers.approvedHeaders[0] }}</th>-->
+<!--                <th class="pr-1 centered">{{ permittingCycleTimes.headers.approvedHeaders[1] }}</th>-->
+<!--                <th class="centered">{{ permittingCycleTimes.headers.approvedHeaders[2] }}</th>-->
+<!--              </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--              <tr>-->
+<!--                <td>{{ permittingCycleTimes.headers.approvedSubheaders[0] }}</td>-->
+<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.avgTime }}</td>-->
+<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.avgTime }}</td>-->
+<!--              </tr>-->
+<!--              <tr>-->
+<!--                <td>{{ permittingCycleTimes.headers.approvedSubheaders[1] }}</td>-->
+<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.medianTime }}</td>-->
+<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.medianTime }}</td>-->
+<!--              </tr>-->
+<!--              <tr>-->
+<!--                <td>{{ permittingCycleTimes.headers.approvedSubheaders[2] }}</td>-->
+<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.approvals }}</td>-->
+<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.approvals }}</td>-->
+<!--              </tr>-->
+<!--            </tbody>-->
+<!--            <thead>-->
+<!--              <tr>-->
+<!--                <th>{{ permittingCycleTimes.headers.pendingHeaders[0] }}</th>-->
+<!--              </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--              <tr>-->
+<!--                <td>{{ permittingCycleTimes.headers.pendingSubheaders[0] }}</td>-->
+<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.avgAge }}</td>-->
+<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.avgAge }}</td>-->
+<!--              </tr>-->
+<!--              <tr>-->
+<!--                <td>{{ permittingCycleTimes.headers.pendingSubheaders[1] }}</td>-->
+<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.medianAge }}</td>-->
+<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.medianAge }}</td>-->
+<!--              </tr>-->
+<!--              <tr>-->
+<!--                <td>{{ permittingCycleTimes.headers.pendingSubheaders[2] }}</td>-->
+<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.maxAge }}</td>-->
+<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.maxAge }}</td>-->
+<!--              </tr>-->
+<!--            </tbody>-->
+<!--          </table>-->
+<!--        </v-card>-->
       </v-col>
     </v-row>
 
@@ -393,18 +370,20 @@
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
       <v-col cols="12" md="4" class="px-1 mb-3">
-        <AhjPermitLink v-if="dataReady"
+        <AhjLink v-if="dataReady"
                        title="Submission Links"
                        :linkTypeId="4"
-                       :permitId="ahjPermit.id"
+                       :itemId="ahjPermit.id"
+                       :itemType="itemType"
                        :ahjId="ahjId"
                        :links="ahjPermit.submissionLinks"
-        ></AhjPermitLink>
+        ></AhjLink>
 
         <AhjContact v-if="dataReady"
                     title="Submission Contacts"
                     :contactTypeId="1"
-                    :permitId="ahjPermit.id"
+                    :itemId="ahjPermit.id"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjPermit.submissionContacts"
         ></AhjContact>
@@ -412,18 +391,20 @@
 
       <!-- SECOND COLUMN -->
       <v-col cols="12" md="4" class="px-1 mb-3">
-        <AhjPermitLink v-if="dataReady"
+        <AhjLink v-if="dataReady"
                        title="Follow-up and Delivery Links"
                        :linkTypeId="5"
-                       :permitId="ahjPermit.id"
+                       :itemId="ahjPermit.id"
+                       :itemType="itemType"
                        :ahjId="ahjId"
                        :links="ahjPermit.followUpLinks"
-        ></AhjPermitLink>
+        ></AhjLink>
 
         <AhjContact v-if="dataReady"
                     title="Print Locations"
                     :contactTypeId="7"
-                    :permitId="ahjPermit.id"
+                    :itemId="ahjPermit.id"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjPermit.printLocations"
         ></AhjContact>
@@ -431,51 +412,36 @@
 
       <!-- THIRD COLUMN -->
       <v-col cols="12" md="4" class="px-1 mb-3">
-        <v-card class="mb-3">
-          <v-toolbar class="primaryCustom">
-            <v-toolbar-title class="white--text font-weight-bold"
-                             title="Servicing FOT's"
-            >Servicing FOT's</v-toolbar-title>
-          </v-toolbar>
-          <v-list v-show="ahjPermit.servicingFots.length > 0"
-                  v-for="fot in ahjPermit.servicingFots"
-                  :key="fot.officeId"
-                  class="px-2">
-            <v-list-item :title="fot.office">
-              <v-list-item-content class="flex-row-center">
-                <v-list-item-title>
-                  <a class="list-link">{{fot.office}}</a>
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-          <div class="empty-list"
-               v-show="ahjPermit.servicingFots.length < 1"
-          >No FOT's found</div>
-        </v-card>
+        <AhjServicingFot v-if="dataReady"
+                         :servicingFots="ahjPermit.servicingFots"
+        ></AhjServicingFot>
 
         <AhjContact v-if="dataReady"
                     title="Follow-up and Delivery Contacts"
                     :contactTypeId="6"
-                    :permitId="ahjPermit.id"
+                    :itemId="ahjPermit.id"
+                    :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjPermit.followUpContacts"
         ></AhjContact>
       </v-col>
     </v-row>
-
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
-  import AhjChecklist from './components/AhjChecklist.vue'
-  import AhjContact from './components/AhjContacts.vue'
-  import AhjDocument from './components/AhjDocuments.vue'
-  import AhjPermitLink from './components/AhjPermitLinks.vue'
+  import AhjChecklist from './components/AhjChecklist'
+  import AhjContact from './components/AhjContacts'
+  import AhjDocument from './components/AhjDocuments'
+  import AhjLink from './components/AhjLinks'
+  import AhjServicingFot from './components/AhjServicingFots'
+  import orderBy from 'lodash.orderby'
+  import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequest, putRequest } from '@/helpers/helpers'
+  import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: 'ahjPermit',
@@ -483,10 +449,16 @@
       AhjChecklist,
       AhjContact,
       AhjDocument,
-      AhjPermitLink
+      AhjLink,
+      AhjServicingFot,
+      Snackbar
     },
     data: () => ({
+      ahjId: null,
+      itemType: 'permit',
+      snackbar: {},
       dataReady: false,
+      customFieldGroupAssignments: [],
       approvalRequiredOptions: [{ id: null, name: '' }],
       submittalMethods: [{ id: null, name: '' }],
       timePeriods: [
@@ -498,43 +470,43 @@
         'Last Year',
         'Last Six Weeks'
       ],
-      permittingCycleTimes: {
-        timePeriod: 'Last Six Weeks',
-        startDate: moment().subtract(6, 'w').format('MM/DD/YYYY'),
-        endDate: moment().format('MM/DD/YYYY'),
-        headers: {
-          approvedHeaders: ['Approved Permits', 'Permits', 'As-Builts'],
-          approvedSubheaders: ['Average Cycle Time', 'Median Cycle Time', '# of Approvals'],
-          pendingHeaders: ['Permits Pending Approval'],
-          pendingSubheaders: ['Average Age', 'Median Age', 'Max Age']
-        },
-        data: {
-          approvedPermits: {
-            permits: {
-              avgTime: 0,
-              medianTime: 0,
-              approvals: 0
-            },
-            asBuilts: {
-              avgTime: 0,
-              medianTime: 0,
-              approvals: 0
-            }
-          },
-          pendingPermits: {
-            permits: {
-              avgAge: 0,
-              medianAge: 0,
-              maxAge: 0
-            },
-            asBuilts: {
-              avgAge: 0,
-              medianAge: 0,
-              maxAge: 0
-            }
-          }
-        }
-      },
+      // permittingCycleTimes: {
+      //   timePeriod: 'Last Six Weeks',
+      //   startDate: moment().subtract(6, 'w').format('MM/DD/YYYY'),
+      //   endDate: moment().format('MM/DD/YYYY'),
+      //   headers: {
+      //     approvedHeaders: ['Approved Permits', 'Permits', 'As-Builts'],
+      //     approvedSubheaders: ['Average Cycle Time', 'Median Cycle Time', '# of Approvals'],
+      //     pendingHeaders: ['Permits Pending Approval'],
+      //     pendingSubheaders: ['Average Age', 'Median Age', 'Max Age']
+      //   },
+      //   data: {
+      //     approvedPermits: {
+      //       permits: {
+      //         avgTime: 0,
+      //         medianTime: 0,
+      //         approvals: 0
+      //       },
+      //       asBuilts: {
+      //         avgTime: 0,
+      //         medianTime: 0,
+      //         approvals: 0
+      //       }
+      //     },
+      //     pendingPermits: {
+      //       permits: {
+      //         avgAge: 0,
+      //         medianAge: 0,
+      //         maxAge: 0
+      //       },
+      //       asBuilts: {
+      //         avgAge: 0,
+      //         medianAge: 0,
+      //         maxAge: 0
+      //       }
+      //     }
+      //   }
+      // },
       businessLicenseMenu: false,
       contractorLicenseMenu: false,
       otherLicenseMenu: false,
@@ -552,59 +524,106 @@
       documents: []
     }),
     methods: {
-      setTimePeriodDates() {
-        switch (this.permittingCycleTimes.timePeriod) {
-          case 'This Week':
-            this.permittingCycleTimes.startDate = moment().startOf('w').format('MM/DD/YYYY')
-            this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
-            break
-          case 'This Period':
-            this.permittingCycleTimes.startDate = moment().startOf('W').format('MM/DD/YYYY')
-            this.permittingCycleTimes.endDate = moment().startOf('w').add(4, 'w').format('MM/DD/YYYY')
-            break
-          case 'This Year':
-            this.permittingCycleTimes.startDate = moment().startOf('y').format('MM/DD/YYYY')
-            this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
-            break
-          case 'Last Week':
-            this.permittingCycleTimes.startDate = moment().startOf('w').subtract(1, 'w').format('MM/DD/YYYY')
-            this.permittingCycleTimes.endDate = moment().endOf('W').subtract(1, 'w').format('MM/DD/YYYY')
-            break
-          case 'Last Period':
-            this.permittingCycleTimes.startDate = moment().startOf('W').subtract(4, 'w').format('MM/DD/YYYY')
-            this.permittingCycleTimes.endDate = moment().startOf('w').format('MM/DD/YYYY')
-            break
-          case 'Last Year':
-            this.permittingCycleTimes.startDate = moment().startOf('y').subtract(1, 'y').format('MM/DD/YYYY')
-            this.permittingCycleTimes.endDate = moment().endOf('y').subtract(1, 'y').format('MM/DD/YYYY')
-            break
-          case 'Last Six Weeks':
-            this.permittingCycleTimes.startDate = moment().subtract(6, 'w').format('MM/DD/YYYY')
-            this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
-            break
-          default:
-            this.permittingCycleTimes.startDate = moment().subtract(6, 'w').format('MM/DD/YYYY')
-            this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
-            break
-        }
-      },
+      // setTimePeriodDates() {
+      //   switch (this.permittingCycleTimes.timePeriod) {
+      //     case 'This Week':
+      //       this.permittingCycleTimes.startDate = moment().startOf('w').format('MM/DD/YYYY')
+      //       this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
+      //       break
+      //     case 'This Period':
+      //       this.permittingCycleTimes.startDate = moment().startOf('W').format('MM/DD/YYYY')
+      //       this.permittingCycleTimes.endDate = moment().startOf('w').add(4, 'w').format('MM/DD/YYYY')
+      //       break
+      //     case 'This Year':
+      //       this.permittingCycleTimes.startDate = moment().startOf('y').format('MM/DD/YYYY')
+      //       this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
+      //       break
+      //     case 'Last Week':
+      //       this.permittingCycleTimes.startDate = moment().startOf('w').subtract(1, 'w').format('MM/DD/YYYY')
+      //       this.permittingCycleTimes.endDate = moment().endOf('W').subtract(1, 'w').format('MM/DD/YYYY')
+      //       break
+      //     case 'Last Period':
+      //       this.permittingCycleTimes.startDate = moment().startOf('W').subtract(4, 'w').format('MM/DD/YYYY')
+      //       this.permittingCycleTimes.endDate = moment().startOf('w').format('MM/DD/YYYY')
+      //       break
+      //     case 'Last Year':
+      //       this.permittingCycleTimes.startDate = moment().startOf('y').subtract(1, 'y').format('MM/DD/YYYY')
+      //       this.permittingCycleTimes.endDate = moment().endOf('y').subtract(1, 'y').format('MM/DD/YYYY')
+      //       break
+      //     case 'Last Six Weeks':
+      //       this.permittingCycleTimes.startDate = moment().subtract(6, 'w').format('MM/DD/YYYY')
+      //       this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
+      //       break
+      //     default:
+      //       this.permittingCycleTimes.startDate = moment().subtract(6, 'w').format('MM/DD/YYYY')
+      //       this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
+      //       break
+      //   }
+      // },
       reformatDates() {
         // Reformat dates to remove timestamps
         this.ahjPermit.businessLicenseExpirationDate = this.ahjPermit.businessLicenseExpirationDate ? moment(this.ahjPermit.businessLicenseExpirationDate).format('YYYY-MM-DD') : null
         this.ahjPermit.contractorLicenseExpirationDate = this.ahjPermit.contractorLicenseExpirationDate ? moment(this.ahjPermit.contractorLicenseExpirationDate).format('YYYY-MM-DD') : null
         this.ahjPermit.otherLicenseExpirationDate = this.ahjPermit.otherLicenseExpirationDate ? moment(this.ahjPermit.otherLicenseExpirationDate).format('YYYY-MM-DD') : null
       },
+      async getCustomFieldGroupAssignmentsForScreen() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {
+            sourceId: this.ahjPermit.id,
+            objectTypeId: 4
+          }
+          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          this.customFieldGroupAssignments = cloneDeep(data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getAhjPermit() {
-        const {data} = await getRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit`)
-        this.ahjPermit = cloneDeep(data)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/ahj/${this.ahjId}/permit`, 'blueraven')
+          data.servicingFots.forEach(servicingFot => servicingFot.hierarchy = servicingFot.hierarchy[0])
+          this.ahjPermit = cloneDeep(data)
+          this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name.toLowerCase())
+          this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name.toLowerCase())
+          this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name.toLowerCase())
+          this.ahjPermit.printLocations = orderBy(this.ahjPermit.printLocations, location => location.name.toLowerCase())
+          this.ahjPermit.servicingFots = orderBy(this.ahjPermit.servicingFots, fot => fot.hierarchy.orgName.toLowerCase())
+          this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Permit')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      getCustomFieldsForGroup(groupId) {
+        let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
+        return match ? match.customFieldValues : []
+      },
+      showOtherField(int, list) {
+        let match = list.find(l => l.id === int)
+        return match ? match.showOther : false
       },
       async getDocuments() {
-        const params = {
-          sourceId: this.ahjPermit.id,
-          attachmentSourceTypeId: 1
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {
+            sourceId: this.ahjPermit.id,
+            attachmentSourceTypeId: 1
+          }
+          const {data} = await getRequestWithParams('/document/getSourceAttachments', {params})
+          this.documents = cloneDeep(data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        const {data} = await getRequest('/api/v1/flow/document/getSourceAttachments', {params})
-        this.documents = cloneDeep(data)
       },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -616,29 +635,35 @@
         })
       },
       async saveAhjPermit() {
-        const {data} = await putRequest(`/api/v1/company/blueraven/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit)
-        this.ahjPermit = cloneDeep(data)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.ahjPermit.customFieldGroups = this.customFieldGroupAssignments
+          const {data} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
+          this.ahjPermit = cloneDeep(data)
+          this.reformatDates()
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ Permit saved')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Permit')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async created() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.ahjId = parseInt(this.$route.params.ahjId)
 
-      const {data} = await getRequest('/api/v1/company/blueraven/ahj/getInspectionTypeFields')
-      this.types = cloneDeep(data[0])
-      this.types.simple_list.forEach(item => {
-        this.approvalRequiredOptions.push(item)
-      })
-      this.types.submit_types.forEach(item => {
-        this.submittalMethods.push(item)
-      })
-
       this.getAhjPermit().then(() => {
         this.reformatDates()
-        this.getDocuments().then(() => {
-          this.dataReady = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        })
+        this.getCustomFieldGroupAssignmentsForScreen()
+        this.dataReady = true
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        // turned off for now.
+        // this.getDocuments().then(() => {
+        //   this.dataReady = true
+        //   this.$store.commit(AppMutations.SET_LOADING, false)
+        // })
       })
     }
   }
@@ -647,6 +672,13 @@
 <style scoped lang="scss">
   .padded-sides {
     padding: 0 5px;
+  }
+  .title-with-icon {
+    display: flex;
+    justify-content: space-between;
+    .v-icon {
+      cursor: pointer;
+    }
   }
   .v-card__title,
   .v-toolbar__title {

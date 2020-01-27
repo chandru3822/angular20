@@ -1,10 +1,10 @@
 <template>
   <v-container id="custom-field-container">
-    <v-row class="fill-height" align="center" justify="start">
-      <v-col class="shrink" cols="12">
+    <v-row>
+      <v-col cols="12">
         <v-toolbar flat>
-          <v-toolbar-title class="app-title">Custom Fields</v-toolbar-title>
-          <v-spacer></v-spacer>
+          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
+          <v-spacer v-if="!IS_MOBILE"></v-spacer>
           <v-toolbar-items>
             <v-select
                 class="mt-4"
@@ -43,7 +43,7 @@
               </td>
               <td class="text-right">
                 <div class="item-icons">
-                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
+                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.companySystemListId)">
                     <v-icon v-if="expanded.includes(item)">remove</v-icon>
                     <v-icon v-else-if="item.custom">add</v-icon>
                     <v-icon v-else>edit</v-icon>
@@ -110,7 +110,7 @@
                       label="Data Type"
                       item-text="companyDataType"
                       item-value="id"
-                      autocomplete="new-password"
+                      autocomplete="off"
                       return-object
                   ></v-autocomplete>
 
@@ -119,8 +119,28 @@
                                 label="SQL Key"
                   ></v-text-field>
 
+                  <v-select v-if="item.companyDataType && item.companyDataType.systemList"
+                            v-model="item.companySystemListId"
+                            :items="systemLists"
+                            :disabled="!item.custom"
+                            :readonly="!item.custom"
+                            label="System List Type"
+                            item-text="systemList"
+                            item-value="id"
+                            @change="getSystemListOptions(item.companySystemListId)"
+                  ></v-select>
+
+                  <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
+                            v-model="item.systemListOptionIds"
+                            :items="systemListOptions"
+                            multiple
+                            label="System List Options"
+                            item-text="name"
+                            item-value="id"
+                  ></v-select>
+
                   <v-col class="options-container"
-                          v-if="item.companyDataType && item.companyDataType.hasListValues">
+                          v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
                     <span>Selectable Options</span>
                     <draggable v-model="item.listOfValues"
                                group="listOfValues" @start="drag=true" @end="drag=false">
@@ -191,7 +211,8 @@
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
     name: 'CustomFields',
@@ -203,6 +224,7 @@
     data() {
       return {
         snackbar: {},
+        IS_MOBILE,
         selectedFieldId: null,
         // this is used so the expanded row uses the full width...bug in vuetify
         headers: Array(2).fill({}),
@@ -210,6 +232,8 @@
         selectedIndex: null,
         expanded: [],
         customFields: [],
+        systemLists: [],
+        systemListOptions: [],
         dataTypes: [],
         companyId: this.$store.state.user.details.companyId,
         selectedObjectType: {id: -1, objectType: 'All'},
@@ -226,6 +250,13 @@
         },
 
       }
+    },
+    async created() {
+      this.$store.getters.hasPermission('SYSTEM_ADMIN')
+      await this.getCompanyDataTypes()
+      this.getCustomFieldObjectTypes()
+      this.getCustomFields()
+      this.getSystemLists()
     },
     methods: {
       filterDataTypes (item) {
@@ -251,6 +282,39 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getSystemLists() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/systemList`)
+          this.systemLists = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getSystemListOptions(listId) {
+        let match = this.systemLists.find(sl => sl.id === listId)
+        if(listId && match?.hasSubOptions) {
+
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequestWithParams(`/systemList/${listId}/options`, {params: {
+                //well i named these poorly...
+                //  if a list itself has sub options it means they can select suboptions
+                // this parameter means whether to get the subOptions or not
+              subOptions: false
+            }})
+            this.systemListOptions = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       async getCustomFieldObjectTypes() {
@@ -370,7 +434,7 @@
       invalid(item) {
         // todo: use real form validation?
         let invalidOptions = false
-        if (item.companyDataType && item.companyDataType.hasListValues) {
+        if (item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList) {
           if (item.listOfValues && item.listOfValues.length === 0) {
             invalidOptions = true
           } else {
@@ -387,12 +451,6 @@
       filterCustomFields () {
         return this.customFields.filter(cf => { return !cf.archived})
       },
-    },
-    async created() {
-      this.$store.getters.hasPermission('SYSTEM_ADMIN')
-      await this.getCompanyDataTypes()
-      this.getCustomFieldObjectTypes()
-      this.getCustomFields()
     }
   }
 </script>

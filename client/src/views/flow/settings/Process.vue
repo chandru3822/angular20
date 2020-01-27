@@ -43,7 +43,9 @@
                     item-text="orgName"
                     item-value="id"
           ></v-select>
-          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>
+<!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
+          <!--  per scott: temporarily removing requirement for orgId        -->
+          <v-btn :disabled="!newProcessStep.processStepId" @click="assignProcessStep">Save</v-btn>
         </v-container>
         <v-data-table
             :headers="headers"
@@ -52,6 +54,8 @@
             :sort-by="['displayOrder']"
             :sort-desc="[false]"
             hide-default-footer
+            single-expand
+            :expanded.sync="expanded"
             class="elevation-1"
         >
           <template v-slot:no-data>
@@ -60,6 +64,34 @@
 
           <template v-slot:no-results>
             NO RESULTS HERE!
+          </template>
+
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pb-4" :class="{'shaded-row': selectedIndex % 2}">
+              <v-card flat color="transparent" class="text-left pt-4">
+                <label>Initial Step:</label>
+                <input type="checkbox" class="ml-2" v-model="item.initialStep">
+                <v-select v-model="item.companyProcessStepStatusTypeId"
+                          v-if="item.initialStep"
+                          :items="processStepStatusTypes"
+                          label="Initial Process Step Status Type"
+                          item-text="processStepStatusType"
+                          item-value="id"
+                          class="mt-4"
+                ></v-select>
+                <div class="mt-3 text-center">
+                  <v-btn :disabled="item.initialStep && !item.companyProcessStepStatusTypeId"
+                         @click="updateInitialStep(item)">
+                    <v-icon>save</v-icon>
+                    Save
+                  </v-btn>
+                  <v-btn class="ml-3" @click="expanded = []">
+                    <v-icon>remove</v-icon>
+                    Cancel
+                  </v-btn>
+                </div>
+              </v-card>
+            </td>
           </template>
 
           <template #item="{ item, index }">
@@ -71,51 +103,55 @@
               </td>
               <td class="text-left">{{ item.processStepName }}</td>
               <td class="text-left">{{ item.orgName }}</td>
-              <td class="text-left">{{ item.dateCreated | formatDate('date', $store.state.user.details.timezone) }}</td>
-              <td class="text-left">{{ item.dateModified | formatDate('date', $store.state.user.details.timezone) }}</td>
+              <td class="text-left">{{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date') }}</td>
               <td class="text-center">
                 <input type="checkbox" v-model="item.initialStep"
-                       :disabled="item.initialStep"
-
-                       @change="updateInitialStep(item)">
+                       disabled readonly>
               </td>
+              <td class="text-left">{{ item.processStepStatusType }}</td>
               <td>
-                <v-dialog
-                    v-model="item.deleteConfirm"
-                    width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                        class="headline grey lighten-2"
-                        primary-title>
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete <strong>{{ item.processStepName }}</strong> from <strong>{{process.processName}}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                          @click="item.deleteConfirm = false">
-                        No
+                <div style="display: flex; float: right;">
+                  <v-btn text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
+                    <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
+                    <v-icon v-else>expand_more</v-icon>
+                  </v-btn>
+                  <v-dialog
+                      v-model="item.deleteConfirm"
+                      width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-btn text v-on="on">
+                        <v-icon>delete</v-icon>
                       </v-btn>
-                      <v-btn
-                          color="primary"
-                          text
-                          @click="item.archived = true; deleteStepFromProcess(item.id)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title>
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Are you sure you want to delete <strong>{{ item.processStepName }}</strong> from <strong>{{process.processName}}</strong>?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="item.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="item.archived = true; deleteStepFromProcess(item.id)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </div>
               </td>
             </tr>
           </template>
@@ -133,6 +169,7 @@ import orderBy from 'lodash.orderby'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
+import {getStatusTypes} from '@/services/processStepStatusTypeService'
 import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
 export default {
@@ -148,6 +185,7 @@ export default {
       editName: false,
       newProcessStep: {},
       availableProcessSteps: [],
+      processStepStatusTypes: [],
       owningOrgs: [],
       processId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
@@ -167,11 +205,13 @@ export default {
         { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
         { text: 'Name', value: 'processStepName', sortable: false},
         { text: 'Owning Org', value: 'orgName', sortable: false},
-        { text: 'Created', value: 'dateCreated', sortable: false},
         { text: 'Last Modified', value: 'dateModified', sortable: false},
         { text: 'Initial', value: 'initial', sortable: false},
+        { text: 'Status Type', value: 'statusType', sortable: false},
         { text: null, value: null},
-      ]
+      ],
+      expanded: [],
+      selectedIndex: null
     }
   },
   mounted() {
@@ -193,6 +233,7 @@ export default {
   },
   created () {
     this.getProcessDetails()
+    this.getStatusTypes()
   },
   computed: {
   },
@@ -283,9 +324,7 @@ export default {
     async assignProcessStep () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        this.newProcessStep.initialStep = this.process.processStepProcesses?.length === 0
         const {data} = await postRequest(`/processes/${this.processId}/processStep`, this.newProcessStep)
-        console.log('randaLogger', data)
         this.process.processStepProcesses.push(data)
         this.process.processStepProcesses = orderBy(this.process.processStepProcesses, p => p.processStepName.toLowerCase())
         this.addNew = false
@@ -299,22 +338,34 @@ export default {
       }
     },
     async updateInitialStep(item) {
-      console.log('randaLogger', item)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await putRequest(`/processes/${this.processId}/processStepProcess/${item.id}`)
-        console.log('randaLogger', data)
-        this.process.processStepProcesses.forEach(psp => { psp.initialStep = false})
-        item.initialStep = true
-        //todo: remove all other initial steps
-        this.snackbar = getSnackbar('SUCCESS', 'Initial Process Step Saved')
+        item.companyProcessStepStatusTypeId = item.initialStep ? item.companyProcessStepStatusTypeId : null
+        const {data} = await putRequest(`/processes/${this.processId}/initialProcessStepProcess`, item)
+        item.initialStep = data.initialStep
+        item.companyProcessStepStatusTypeId = data.companyProcessStepStatusTypeId
+        item.processStepStatusType = data.processStepStatusType
+        this.expanded = []
+        this.snackbar = getSnackbar('SUCCESS', 'Process Step Saved')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Setting Process Step as Initial Step')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Process Step')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    }
+    },
+    async getStatusTypes () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getStatusTypes()
+        this.processStepStatusTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   },
 }
 </script>
@@ -323,4 +374,5 @@ export default {
 .handle {
   cursor: move !important;
 }
+
 </style>

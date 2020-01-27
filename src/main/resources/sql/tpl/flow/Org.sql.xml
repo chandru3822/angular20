@@ -12,6 +12,30 @@
     ]]>
   </org.getAllForCompany>
 
+  <org.getSchedulingOrgs>
+    <![CDATA[
+      select o.id,
+       o.company_id,
+       o.org_name,
+       o.parent_org_id,
+       o.org_type_id,
+       o.active_flag,
+       o.email,
+       o.owning_org,
+       o.schedulable,
+       o.state_id,
+       p.org_name as parentOrgName,
+       o.org_name as title,
+       ot.org_type
+    from flow.org o
+             left join flow.org p on p.id = o.parent_org_id
+             inner join flow.org_type ot on ot.id = o.org_type_id
+    where o.company_id = :companyId
+      and case when :stateId::integer is not null then o.state_id = :stateId::integer else o.schedulable is true end
+    order by o.org_name
+    ]]>
+  </org.getSchedulingOrgs>
+
   <org.getOrgsByType>
     <![CDATA[
       select o.*,
@@ -84,6 +108,8 @@
        set org_name = :orgName,
            parent_org_id = :parentOrgId,
            org_type_id = :orgTypeId,
+           schedulable = :schedulable,
+           state_id = :stateId,
            active_flag = :active
       where id = :id
     ]]>
@@ -91,20 +117,22 @@
 
   <org.insertOrg>
     <![CDATA[
-      insert into flow.org(company_id, org_name, parent_org_id, org_type_id)
-      values(:companyId, :orgName, :parentOrgId, :orgTypeId)
+      insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, state_id)
+      values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :stateId)
     ]]>
   </org.insertOrg>
 
   <org.getOne>
     <![CDATA[
       select o.*,
-             p.org_name as parentOrgName,
+             p.org_name as parent_org_name,
+             p.org_type_id as parent_org_type_id,
              ot.org_type
       from flow.org o
           left join flow.org p on p.id = o.parent_org_id
           inner join flow.org_type ot on ot.id = o.org_type_id
       where o.id = :id
+        and o.company_id = :companyId
     ]]>
   </org.getOne>
 
@@ -137,15 +165,9 @@
              o.company_id,
              org_name,
              parent_org_id,
-             sales_area_id,
              org_type_id,
-             display_order,
              active_flag,
-             color,
              email,
-             calendar_oid,
-             sales_metro_area_id,
-             originator_id,
              owning_org,
              ot.org_type,
              ot.org_level_id

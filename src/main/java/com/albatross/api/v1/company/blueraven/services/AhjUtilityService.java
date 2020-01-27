@@ -2,9 +2,9 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.models.*;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +32,9 @@ public class AhjUtilityService {
 
     @Autowired
     private SecurityService securityService;
+
+    @Autowired
+    private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
 
     public List<AhjUtility> getAllAhjUtilities() {
         HashMap<String, Object> params = new HashMap<>();
@@ -66,11 +69,6 @@ public class AhjUtilityService {
         params.put("currentUser", currentUser.getId());
         params.put("utilityName", utility.getName());
         params.put("metroAreaId", utility.getMetroAreaId());
-        params.put("acDisconnectRequired", utility.getAcDisconnectRequired());
-        params.put("pvProductionMeterRequired", utility.getPvProductionMeterRequired());
-        params.put("meterCanTapsAllowed", utility.getMeterCanTapsAllowed());
-        params.put("pvacSwapLocations", utility.getPvAcSwapLocations());
-        params.put("utilityWarningLabelsOverride", utility.getUtilityWarningLabelsOverride());
         params.put("timelinesAndStages", utility.getTimelinesAndStages());
         params.put("regulatedBy", utility.getRegulatedBy());
         params.put("monthlyFacilityCharge", utility.getMonthlyFacilityCharge());
@@ -78,34 +76,12 @@ public class AhjUtilityService {
         params.put("netMeteringRate", utility.getNetMeteringRate());
         params.put("rebateRates", utility.getRebateRates());
         params.put("utilityRateNotes", utility.getUtilityRateNotes());
-        params.put("rebateProgramTypeId", utility.getRebateProgramTypeId());
-        params.put("rebateProgramTypeOther", utility.getRebateProgramTypeOther());
-        params.put("signatureRequiredPriorTypeId", utility.getSignatureRequiredPriorTypeId());
-        params.put("signatureRequiredPriorTypeOther", utility.getSignatureRequiredPriorTypeOther());
-        params.put("signatureRequestedAtTypeId", utility.getSignatureRequestedAtTypeId());
-        params.put("signatureRequestedAtTypeOther", utility.getSignatureRequestedAtTypeOther());
         params.put("customerSignatureInstructions", utility.getCustomerSignatureInstructions());
         params.put("expectedApprovalTimeline", utility.getExpectedApprovalTimeline());
-        params.put("customerSignatureResubmissionTypeId", utility.getCustomerSignatureResubmissionTypeId());
-        params.put("customerSignatureResubmissionTypeOther", utility.getCustomerSignatureResubmissionTypeOther());
         params.put("rejectionInstructions", utility.getRejectionInstructions());
         params.put("notes", utility.getNotes());
         params.put("overviewOfSubmissionProcess", utility.getOverviewOfSubmissionProcess());
-        params.put("whenToCreateApplicationTypeId", utility.getWhenToCreateApplicationTypeId());
-        params.put("whenToCreateApplicationTypeOther", utility.getWhenToCreateApplicationTypeOther());
-        params.put("submissionMethodTypeId", utility.getSubmissionMethodTypeId());
-        params.put("submissionMethodTypeOther", utility.getSubmissionMethodTypeOther());
-        params.put("interconnectionFeeTypeId", utility.getInterconnectionFeeTypeId());
-        params.put("interconnectionFeeTypeOther", utility.getInterconnectionFeeTypeOther());
         params.put("submissionInstructions", utility.getSubmissionInstructions());
-        params.put("utilityMethodTypeId", utility.getUtilityMethodTypeId());
-        params.put("utilityMethodTypeOther", utility.getUtilityMethodTypeOther());
-        params.put("inspectionSubmissionTypeId", utility.getInspectionSubmissionTypeId());
-        params.put("inspectionSubmissionTypeOther", utility.getInspectionSubmissionTypeOther());
-        params.put("utilityInspectionRequiredTypeId", utility.getUtilityInspectionRequiredTypeId());
-        params.put("utilityInspectionRequiredTypeOther", utility.getUtilityInspectionRequiredTypeOther());
-        params.put("followupMethodTypeId", utility.getFollowupMethodTypeId());
-        params.put("followupMethodTypeOther", utility.getFollowupMethodTypeOther());
         params.put("timelines", utility.getTimelines());
         params.put("ptoFollowupInstructions", utility.getPtoFollowupInstructions());
         params.put("finalCompletionInstructions", utility.getFinalCompletionInstructions());
@@ -120,6 +96,8 @@ public class AhjUtilityService {
         } else {
             id = sqlCache.updateReturningId("ahj.utility.insert", params, "id").longValue();
         }
+
+        blueravenCustomFieldGroupService.handleSavingCustomFieldValues(utility.getCustomFieldGroups(), id);
 
         return getUtilityById(id);
     }

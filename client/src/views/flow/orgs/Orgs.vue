@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <v-btn text to="/newOrg" color="primary">
               <v-icon>add</v-icon>
-              Add Organization
+              <span v-if="!IS_MOBILE">Add Organization</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -75,6 +75,7 @@
             :fixed-header="true"
             :options.sync="options"
             disable-sort
+            :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
             :server-items-length="totalOrgs"
@@ -105,7 +106,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar.vue'
   import debounce from 'lodash.debounce'
   import { saveAs } from 'file-saver'
@@ -118,9 +119,11 @@
     data () {
       return {
         snackbar: {},
+        IS_MOBILE,
         delay: 500,
         dialog: false,
         orgs: [],
+        orgFilter: this.$route.params.orgFilter ? this.$route.params.orgFilter : '',
         headers: [
           { text: 'Organization', value: 'orgName', show: true },
           { text: 'Type', value: 'orgType', show: true },
@@ -129,7 +132,8 @@
         ],
         descending: true,
         footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000]
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
         },
         options: {
           itemsPerPage: 100
@@ -160,7 +164,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequest(`/org/search`, { params: {
+          const {data} = await getRequestWithParams(`/org/search`, { params: {
               query: this.search,
               page: page - 1,
               size: itemsPerPage
@@ -179,7 +183,7 @@
         this.dialog = false
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/org/exportOrgs`, { params: {
+          const {data} = await getRequestWithParams(`/org/exportOrgs`, { params: {
               query: this.search
             }})
           let blob = new Blob([data], {
@@ -194,18 +198,29 @@
         }
       }
     },
-    async created () {}
+    async created () {
+      if (this.orgFilter) {
+        this.search = this.orgFilter
+      }
+    }
   }
 </script>
 
 <style lang="scss">
   #orgs-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 290px);
     min-height: 300px;
   }
 </style>
 
 <style lang="scss" scoped>
+  #orgs-container {
+    margin-top: -15px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+  }
+
   .org-table {
     margin-top: 2px;
   }

@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import com.albatross.api.v1.flow.model.ProcessStep;
+import com.albatross.api.v1.flow.model.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.services.ProcessStepService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,6 @@ public class ProcessStepController {
     return processStepService.getProcessStep(id);
   }
 
-
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteStep(@PathVariable Long id) {
     processStepService.deleteStep(id);
@@ -49,14 +49,19 @@ public class ProcessStepController {
     return processStepService.insertStep(processStep);
   }
 
+  @PutMapping(value = "/saveWorkQueueTypesToStep", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepWorkQueueType> saveWorkQueueTypesToStep(@RequestBody ProcessStep processStep) {
+    return processStepService.saveWorkQueueTypesToStep(processStep);
+  }
+
   @GetMapping(value = "/getParentObjects", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStep> getParentObjects (@RequestParam(required = false) Long id) {
     return processStepService.getParentObjects(id);
   }
 
-
   @GetMapping(value = "/getParentObjectsWithTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CombinedStepAndType> getParentObjectsIncludingTypes (@RequestParam(required = false) Long id) {
     return processStepService.getParentObjectsIncludingTypes(id);
   }
+
 }

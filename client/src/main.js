@@ -5,17 +5,34 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from 'axios'
-import VueFlatPickr from 'vue-flatpickr-component'
-import 'flatpickr/dist/flatpickr.css'
+// import VueFlatPickr from 'vue-flatpickr-component'
+// import 'flatpickr/dist/flatpickr.css'
+import 'mapbox-gl/dist/mapbox-gl.css'
+import '@fullcalendar/core/main.css'
+import '@fullcalendar/timeline/main.css'
+import '@fullcalendar/resource-timeline/main.css'
 import { UserMutations } from './stores/UserStore'
 import JsonExcel from 'vue-json-excel'
 // import moment from 'moment'
 import moment from 'moment-timezone'
+import devtools from '@vue/devtools'
+import VueMapbox from 'vue-mapbox'
+import Mapbox from 'mapbox-gl'
+import Datetime from 'vue-datetime'
+// You need a specific loader for CSS files
+import 'vue-datetime/dist/vue-datetime.css'
+
+
 
 // @todo: make PWA awesomeness
 import './registerServiceWorker'
 
-const { VUE_APP_BASE_API, VUE_APP_ENV } = process.env
+const { VUE_APP_BASE_API, VUE_APP_ENV, NODE_ENV } = process.env
+
+// if (NODE_ENV === 'development') {
+//   devtools.connect('http://localhost', 8098)
+// }
+
 const JWT_EXPIRED = 'invalid token'
 
 Vue.config.productionTip = false
@@ -23,16 +40,20 @@ Vue.config.productionTip = false
 Vue.component('downloadExcel', JsonExcel)
 
 Vue.use(Vue2Filters)
-Vue.use(VueFlatPickr)
+// Vue.use(VueFlatPickr)
+Vue.use(Datetime)
+Vue.use(VueMapbox, { mapboxgl: Mapbox });
 
-Vue.filter('formatDate', function (value, type, timezone, format) {
+Vue.filter('formatDate', function (value, type, format) {
   /*
   //  this part of the code: `moment(String(value))` was throwing format warnings from moment with regular timestamp formats
   //  i can probably handle more scenarios but for now these don't throw errors: .format('YYYY-MM-DD') OR .format('YYYY-MM-DDTHH:mm:ssZ')
   //  TYPES: 'date', 'timestamp'
   */
 
-  if(!type || (type === 'timezone' && !timezone)) {
+  const timezone = store.state.user.details.timezone.value
+
+  if(!type || (type === 'timestamp' && !timezone)) {
     console.error('TYPE IS REQUIRED, TIMEZONE IS REQUIRED FOR TIMESTAMPS')
     return
   }
@@ -61,23 +82,26 @@ axios.interceptors.response.use((response) => {
   return response
 }, ({ response }) => {
   if (response && response.data) {
-    console.log('randaLogger', response)
-    const { message } = response.data
+    const { message, status } = response.data
     console.log('*** Request Error ***', response)
     // if the jwt token expired, or 401 unauthorized, or 403 Forbidden
     if ((message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1)
-        || response.status === 401  || response.status === 403) {
+        || status === 401  || status === 403) {
       const msg = response.status === 401  || response.status === 403 ? 'User Unauthorized' : 'Session Expired'
       localStorage.removeItem('store')
       store.commit(UserMutations.LOGIN_ERROR, msg)
       router.push({ name: 'login' })
-    } else if (VUE_APP_ENV !== 'local' && response.status >= 500 && response.status <= 599) {
+    } else if (VUE_APP_ENV !== 'local' && status >= 500 && status <= 599) {
+      //remove the loading spinner that was likely turned on before this error happened
+      store.commit(UserMutations.SET_LOADING, false)
       //dont do this reroute on local, it is super annoying
       router.push({path: `/serverError?code=${response.status}`})
+    } else if (![200, 201, 204].includes(status)) {
+      //dont take this out, it makes axios await errors work correctly
+      throw response
     }
   }
 })
-
 
 Vue.use(Vuetify)
 

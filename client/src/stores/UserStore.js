@@ -1,5 +1,8 @@
+import {postRequest} from "@/helpers/helpers";
+
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
+  CHANGE_CONTEXT: 'changeContext',
   LOGOUT: 'logout',
   CHANGE_TIMEZONE: 'changeTimezone'
 }
@@ -30,6 +33,7 @@ export const UserStore = {
   actions: {
     [UserActions.CHANGE_TIMEZONE]: async ({ commit, getters, state }, timezone) => {
       state.details.timezone = timezone
+      //todo: date/time inputs don't update when the zone is changed. should we refresh?
 
       commit(UserMutations.SET_DETAILS, state.details)
     },
@@ -50,13 +54,39 @@ export const UserStore = {
       //   )
       // }
     },
+    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters }, params) => {
+
+      //change context
+      let url
+      if(params.isAdmin) {
+        url = `/user/changeContextAdmin/${params.companyId}`
+      } else {
+        url = `/user/changeContext/${params.companyId}`
+      }
+
+      const {data} = await postRequest(url)
+
+      //update vuex store - user details
+      commit(UserMutations.SET_DETAILS, data)
+
+      //refresh entire app
+      window.location.reload()
+    },
     [UserActions.LOGOUT]: () => {
       localStorage.removeItem('store')
     }
   },
   getters: {
     hasPermission: state => perm => {
-      return !!state.details.permissions.find(p => p.permissionCode === perm)
+      // todo: @Randa add this back when the re-write is complete
+      // return !!state.details.permissions.find(p => p.permissionCode === perm)
+      return true
     },
+    isFullAdmin: state => {
+      // 1 is the master company id
+      // return !!state.details.companies.find(c => c.companyId === 1)
+      //todo: make this based on having access to company_id 1, but for now this is the only full admin
+      return state.details.id === 99999999
+    }
   }
 }

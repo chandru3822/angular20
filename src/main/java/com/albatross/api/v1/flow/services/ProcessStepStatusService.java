@@ -1,19 +1,17 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.ProcessStepStatusType;
+import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.StatusType;
 import com.albatross.api.v1.flow.model.User;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -31,20 +29,20 @@ public class ProcessStepStatusService {
   @Autowired
   SecurityService securityService;
 
-  public List<ProcessStepStatusType> getStatusTypesForCompany() {
+  public List<CompanyProcessStepStatusType> getStatusTypesForCompany() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    List<ProcessStepStatusType> attachmentTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, ProcessStepStatusType.class);
-    return attachmentTypes;
+    List<CompanyProcessStepStatusType> companyProcessStepStatusTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, CompanyProcessStepStatusType.class);
+    return companyProcessStepStatusTypes;
   }
 
-  public Optional<ProcessStepStatusType> getType(Long companyId, Long typeId) {
+  public Optional<CompanyProcessStepStatusType> getType(Long companyId, Long typeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", companyId);
     params.put("typeId", typeId);
-    return sqlCache.get("processStepStatus.getType", params, ProcessStepStatusType.class);
+    return sqlCache.get("processStepStatus.getType", params, CompanyProcessStepStatusType.class);
   }
 
   public void deleteType(Long typeId) {
@@ -56,7 +54,7 @@ public class ProcessStepStatusService {
     sqlCache.update("processStepStatus.deleteType", params);
   }
 
-  public void updateType(ProcessStepStatusType type) {
+  public void updateType(CompanyProcessStepStatusType type) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -68,7 +66,7 @@ public class ProcessStepStatusService {
     sqlCache.update("processStepStatus.updateType", params);
   }
 
-  public Optional<ProcessStepStatusType> insertType(StatusType type) {
+  public Optional<CompanyProcessStepStatusType> insertType(StatusType type) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();

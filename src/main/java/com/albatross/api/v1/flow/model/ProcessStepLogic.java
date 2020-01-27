@@ -13,6 +13,6 @@ public class ProcessStepLogic {
 
   private Long id, processStepRequirementId, operationTypeId, createdById, modifiedById, sqlOrder, requirementNbr;
   private String operationType, operationCode;
-  private Boolean archived;
+  private Boolean archived, processStepRequirementImmutable;
 }
 

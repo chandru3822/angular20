@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <v-btn text to="/newLead" color="primary">
               <v-icon>add</v-icon>
-              Add Customer
+              <span v-if="!IS_MOBILE">Add Customer</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -75,6 +75,7 @@
             :fixed-header="true"
             :options.sync="options"
             disable-sort
+            :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
             :server-items-length="totalLeads"
@@ -89,11 +90,12 @@
           </template>
 
           <template #item="{ item, index }">
+
             <tr class="clickable" :class="{'shaded-row': index % 2}" @click="clickRow(item.id)">
               <td class="text-left">{{item.fullName}}</td>
               <td class="text-left">{{item.owner ? item.owner.fullName : ''}}</td>
               <td class="text-left">{{item.state}}</td>
-              <td class="text-left">{{item.dateCreated | formatDate('date', $store.state.user.details.timezone)}}</td>
+              <td class="text-left">{{item.dateCreated | formatDate('date')}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -106,7 +108,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 import debounce from 'lodash.debounce'
 import { saveAs } from 'file-saver'
 
@@ -118,12 +120,14 @@ export default {
   data () {
     return {
       delay: 500,
+      IS_MOBILE,
       dialog: false,
       snackbar: {},
       leads: [],
       descending: true,
       footerProps: {
-        'items-per-page-options': [25, 50, 100, 1000]
+        'items-per-page-options': [25, 50, 100, 1000],
+        'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
       },
       options: {
         itemsPerPage: 100
@@ -158,7 +162,7 @@ export default {
     async getLeads () {
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
       try {
-        const {data} = await getRequest(`/customer/search`, { params: {
+        const {data} = await getRequestWithParams(`/customer/search`, { params: {
             query: this.search,
             page: page - 1,
             size: itemsPerPage
@@ -177,7 +181,7 @@ export default {
       this.dialog = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customer/exportCustomers`, { params: {
+        const {data} = await getRequestWithParams(`/customer/exportCustomers`, { params: {
             query: this.search
         }})
         let blob = new Blob([data], {
@@ -200,6 +204,10 @@ export default {
     height: calc(100vh - 290px);
     min-height: 300px;
   }
+
+
+
+
 </style>
 
 <style lang="scss" scoped>
@@ -212,6 +220,9 @@ export default {
   .lead-table {
     margin-top: 2px;
   }
+
+
+
 
 </style>
 

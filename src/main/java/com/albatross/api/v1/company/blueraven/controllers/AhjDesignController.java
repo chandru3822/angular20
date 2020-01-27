@@ -1,7 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.models.AhjDesign;
-import com.albatross.api.v1.company.blueraven.models.AhjDesignDetail;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesign;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesignDetail;
 import com.albatross.api.v1.company.blueraven.services.AhjDesignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

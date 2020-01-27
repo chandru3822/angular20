@@ -1,0 +1,31 @@
+<sql>
+  <eventType.getTypesForCompany><![CDATA[
+    select id, company_id, event_type, archived
+    from flow.event_type
+    where company_id = :companyId
+      and archived is not true
+  ]]></eventType.getTypesForCompany>
+
+  <eventType.getType><![CDATA[
+    select id, company_id, event_type, archived
+    from flow.event_type
+    where id = :id
+  ]]></eventType.getType>
+
+  <eventType.deleteType><![CDATA[
+    update flow.event_type
+    set archived = true
+    where id = :id
+  ]]></eventType.deleteType>
+
+  <eventType.updateType><![CDATA[
+    update flow.event_type
+    set event_type = :eventType
+    where id = :id
+  ]]></eventType.updateType>
+
+  <eventType.insertType><![CDATA[
+    insert into flow.event_type(company_id, event_type)
+    values (:companyId, :eventType)
+  ]]></eventType.insertType>
+</sql>

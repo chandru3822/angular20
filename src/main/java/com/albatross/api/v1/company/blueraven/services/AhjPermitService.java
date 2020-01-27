@@ -1,8 +1,11 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
+//import com.albatross.api.v1.company.blueraven.models.ahj.cycle_times.AhjPermitCycleTimeStats;
+//import com.albatross.api.v1.company.blueraven.models.ahj.cycle_times.PermitCycleTimeDbProcessor;
 import com.albatross.api.v1.flow.model.User;
+import lombok.extern.slf4j.Slf4j;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import com.albatross.api.utils.SqlCache;
 
+//import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +26,7 @@ import java.util.Optional;
 /**
  * Created by Joseph Canto on 2019-07-17.
  */
+@Slf4j
 @Service
 public class AhjPermitService {
   @Autowired
@@ -32,6 +37,9 @@ public class AhjPermitService {
 
   @Autowired
   private SecurityService securityService;
+
+  @Autowired
+  private BlueravenCustomFieldGroupService blueravenCustomFieldGroupService;
 
   public Optional<AhjPermitDetail> getAhjPermitDetailByAhjId(Long ahjId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -72,35 +80,6 @@ public class AhjPermitService {
     params.put("currentUser", currentUser.getId());
     params.put("otherLicense", permit.getOtherLicense());
     params.put("otherLicenseExpirationDate", permit.getOtherLicenseExpirationDate());
-
-    // NOTES
-    params.put("submissionNote", permit.getSubmissionNote());
-    params.put("revisionNote", permit.getRevisionNote());
-    params.put("asBuiltNote", permit.getAsBuiltNote());
-    params.put("deliveryNote", permit.getDeliveryNote());
-
-    params.put("submittalTypeId", permit.getSubmittalTypeId());
-    params.put("revisionSubmittalTypeId", permit.getRevisionSubmittalTypeId());
-    params.put("asBuiltSubmittalTypeId", permit.getAsBuiltSubmittalTypeId());
-    params.put("deliveryPickupTypeId", permit.getDeliveryPickupTypeId());
-    params.put("submissionPaymentTypeId", permit.getSubmissionPaymentTypeId());
-    params.put("revisionPaymentTypeId", permit.getRevisionPaymentTypeId());
-    params.put("asBuiltPaymentTypeId", permit.getAsBuiltPaymentTypeId());
-    params.put("followUpPaymentTypeId", permit.getFollowUpPaymentTypeId());
-    params.put("deliveryPaymentTypeId", permit.getDeliveryPaymentTypeId());
-    params.put("hoaApprovalRequiredTypeId", permit.getHoaApprovalRequiredTypeId());
-    params.put("nemApprovalRequiredTypeId", permit.getNemApprovalRequiredTypeId());
-    params.put("submittalTypeOther", permit.getSubmittalTypeOther());
-    params.put("revisionSubmittalTypeOther", permit.getRevisionSubmittalTypeOther());
-    params.put("asBuiltSubmittalTypeOther", permit.getAsBuiltSubmittalTypeOther());
-    params.put("deliveryPickupTypeOther", permit.getDeliveryPickupTypeOther());
-    params.put("submissionPaymentTypeOther", permit.getSubmissionPaymentTypeOther());
-    params.put("revisionPaymentTypeOther", permit.getRevisionPaymentTypeOther());
-    params.put("asBuiltPaymentTypeOther", permit.getAsBuiltPaymentTypeOther());
-    params.put("followUpPaymentTypeOther", permit.getFollowUpPaymentTypeOther());
-    params.put("deliveryPaymentTypeOther", permit.getDeliveryPaymentTypeOther());
-    params.put("hoaApprovalRequiredTypeOther", permit.getHoaApprovalRequiredTypeOther());
-    params.put("nemApprovalRequiredTypeOther", permit.getNemApprovalRequiredTypeOther());
     params.put("revisionFeeAmount", permit.getRevisionFeeAmount());
     params.put("asBuiltFeeAmount", permit.getAsBuiltFeeAmount());
     params.put("followUpFeeAmount", permit.getFollowUpFeeAmount());
@@ -108,12 +87,23 @@ public class AhjPermitService {
     params.put("approvalTimeline", permit.getApprovalTimeline());
     params.put("documentsAvailable", permit.getDocumentsAvailable());
 
+    // NOTES
+    params.put("submissionNote", permit.getSubmissionNote());
+    params.put("revisionNote", permit.getRevisionNote());
+    params.put("asBuiltNote", permit.getAsBuiltNote());
+    params.put("deliveryNote", permit.getDeliveryNote());
+
+    Long pId;
     if (permitId == null) {
-      sqlCache.update("ahj.permit.create", params);
+      pId = permitId;
+      sqlCache.updateReturningId("ahj.permit.create", params, "id");
     } else {
+      pId = permitId;
       params.put("id", permitId);
       sqlCache.update("ahj.permit.update", params);
     }
+
+    blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), pId);
 
     return getAhjPermitDetailByAhjId(ahjId);
   }
@@ -186,7 +176,7 @@ public class AhjPermitService {
       TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjNote>> noteTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjBaseNoteTemplate>> baseNoteTemplateTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjNoteTemplate>> baseNoteTemplateTypeRef = new TypeReference<>() {};
       TypeReference<List<User>> userRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementRef = new TypeReference<>() {};
 
@@ -302,4 +292,42 @@ public class AhjPermitService {
       super.initBeanWrapper(bw);
     }
   }
+
+  // TODO: come back to this after the migration of custom fields has taken place
+//  public Optional<AhjPermitCycleTimeStats> getPermitCycleTimeStats(Long ahjId, LocalDate startDate, LocalDate endDate) {
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("ahjId", ahjId);
+//    params.put("startDate", startDate);
+//    params.put("endDate", endDate);
+//    log.debug("Retrieving permit cycle time summary statistics using params: {}", params);
+//
+//    PermitCycleTimeDbProcessor resultProcessor = new PermitCycleTimeDbProcessor();
+//    sqlCache.query("ahj.permit.cycle-time.summary-stats", params, resultProcessor);
+//    log.debug("Stats: {}", resultProcessor.getStats());
+//    return resultProcessor.getStats();
+//  }
+//
+//  public String getPermitCycleTimeDetails(Long ahjId, LocalDate startDate, LocalDate endDate, String status) {
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("ahjId", ahjId);
+//    params.put("startDate", startDate);
+//    params.put("endDate", endDate);
+//    params.put("status", status);
+//
+//    Optional<String> result = sqlCache.get("ahj.permit.cycle-time.permits", params,
+//      SingleColumnRowMapper.newInstance(String.class));
+//    return result.orElse("");
+//  }
+//
+//  public String getAsBuiltsCycleTimeDetails(Long ahjId, LocalDate startDate, LocalDate endDate, String status) {
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("ahjId", ahjId);
+//    params.put("startDate", startDate);
+//    params.put("endDate", endDate);
+//    params.put("status", status);
+//
+//    Optional<String> result = sqlCache.get("ahj.permit.cycle-time.as-builts", params,
+//      SingleColumnRowMapper.newInstance(String.class));
+//    return result.orElse("");
+//  }
 }

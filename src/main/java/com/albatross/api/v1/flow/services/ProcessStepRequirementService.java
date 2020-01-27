@@ -34,6 +34,9 @@ public class ProcessStepRequirementService {
   SecurityService securityService;
 
   @Autowired
+  SystemListService systemListService;
+
+  @Autowired
   ObjectMapper om;
 
   public List<ProcessStepRequirement> getRequirementsForStep(Long processStepId) {
@@ -42,6 +45,18 @@ public class ProcessStepRequirementService {
     params.put("companyId", user.getCompanyId());
     params.put("processStepId", processStepId);
     List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.getRequirementsForStep", params, new ProcessStepRequirementMapper<>(ProcessStepRequirement.class, om));
+
+    // todo: this is duplicated from custom field value service but didn't quite match up, probably could re-write to combine the two
+    for(ProcessStepRequirement psr : results ) {
+      if(null != psr.getCustomFieldSqlKey()) {
+        String sql = sqlCache.getByKey(psr.getCustomFieldSqlKey());
+        if(null != sql) {
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          psr.setAvailableListOfValues(listOfValues);
+        }
+      }
+    }
+
     return results;
   }
 
@@ -76,6 +91,10 @@ public class ProcessStepRequirementService {
     params.put("requirementValue", requirement.getRequirementValue());
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
+    params.put("listOfValueId", requirement.getListOfValueId());
+    params.put("systemListOptionId", requirement.getSystemListOptionId());
+    params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
+    params.put("listOfValueIds", requirement.getListOfValueIds());
     params.put("modifiedById", currentUser.getId());
     params.put("id", requirement.getId());
 
@@ -94,11 +113,15 @@ public class ProcessStepRequirementService {
     params.put("requirementValue", requirement.getRequirementValue());
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
+    params.put("listOfValueId", requirement.getListOfValueId());
+    params.put("listOfValueIds", requirement.getListOfValueIds());
     params.put("customFieldGroupAssignmentId", requirement.getCustomFieldGroupAssignmentId());
     params.put("companyFunctionId", requirement.getCompanyFunctionId());
     params.put("requirementNbr", requirement.getRequirementNbr());
     params.put("createdById", currentUser.getId());
     params.put("processStepId", requirement.getProcessStepId());
+    params.put("systemListOptionId", requirement.getSystemListOptionId());
+    params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
 
     Long id = sqlCache.updateReturningId("processStepRequirement.insertRequirement", params, "id").longValue();
 
@@ -139,13 +162,34 @@ public class ProcessStepRequirementService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<List<RequirementParamDynamicValue>>() {};
+      TypeReference<List<RequirementParamDynamicValue>> requirementParamDynamicValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "requirementParamDynamicValues",
           new JsonCollectionDeserializer(requirementParamDynamicValuesRef, objectMapper));
 
-      TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<DataTypeRequirement>() {};
+      TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "dataTypeRequirement",
           new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
+
+      TypeReference<ListOfValue> listOfValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "listOfValue",
+          new JsonCollectionDeserializer(listOfValueRef, objectMapper));
+
+      TypeReference<List<ListOfValue>> listOfValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValues",
+          new JsonCollectionDeserializer(listOfValuesRef, objectMapper));
+
+      TypeReference<List<ListOfValue>> availableListOfValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "availableListOfValues",
+          new JsonCollectionDeserializer(availableListOfValuesRef, objectMapper));
+
+      TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValueIds",
+          new JsonCollectionDeserializer(listOfValueIdsRef, objectMapper));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds",
+          new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+
     }
   }
 

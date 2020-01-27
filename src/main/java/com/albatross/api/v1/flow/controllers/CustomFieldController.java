@@ -1,7 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.CompanyObjectType;
 import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.ObjectType;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,8 @@ public class CustomFieldController {
   }
 
   @GetMapping(value = "/getCustomFieldObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ObjectType> getCustomFieldObjectTypes() {
-    return customFieldService.getObjectTypes();
+  public List<CompanyObjectType> getCustomFieldObjectTypes() {
+    return customFieldService.getCompanyObjectTypes();
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,4 +54,5 @@ public class CustomFieldController {
   public List<CustomField> getByParentType(@PathVariable Long id) {
     return customFieldService.getByParentType(id);
   }
+
 }
