@@ -22,7 +22,7 @@
             </v-toolbar>
           </template>
           <v-list dense class="pa-3">
-            <template v-for="(item, index) in items">
+            <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
 
               <v-list-item
@@ -49,7 +49,7 @@
         </v-menu>
         <v-card class="px-5 py-2" v-else>
           <v-list dense>
-            <template v-for="(item, index) in items">
+            <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
 
               <v-list-item
@@ -89,7 +89,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
+import { getRequest, getSnackbar, IS_MOBILE, isParent } from '@/helpers/helpers'
 
 export default {
   name: 'Settings',
@@ -105,67 +105,90 @@ export default {
       title: null,
       companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
-      items: [
-        {
-          header: 'Preferences'
-        }, {
-          path: '/settings/userProfile',
-          title: 'User Profile',
-        }, {
-          path: '/settings/company',
-          title: 'Company',
-        }, {
-          header: 'User Management'
-        }, {
-          path: '/settings/positions',
-          title: 'Positions',
-        }, {
-          // path: '/settings/roles',
-          // title: 'Roles',
-        // }, {
-          header: 'Custom Components'
-        }, {
-          path: '/settings/customFields',
-          title: 'Custom Fields',
-        }, {
-          path: '/settings/attachments',
-          title: 'Attachments',
-        }, {
-          path: '/settings/links',
-          title: 'Links',
-        }, {
-          path: '/settings/orgTypes',
-          title: 'Organization Types',
-        }, {
-          path: '/settings/eventTypes',
-          title: 'Scheduling Tool Event Types',
-        }, {
-          path: '/settings/workQueue/types',
-          title: 'Work Queue',
-        }, {
-          header: 'Processes'
-        }, {
-          path: '/settings/processes',
-          pathMatch: '/settings/processes',
-          title: 'Processes',
-        }, {
-          path: '/settings/processSteps',
-          pathMatch: '/settings/processStep',
-          title: 'Process Steps',
-        }, {
-          path: '/settings/functions',
-          pathMatch: '/settings/function',
-          title: 'Functions',
-        }, {
-          path: '/settings/statuses',
-          title: 'Statuses',
-        }, {
-          header: 'Objects'
-        }
-      ]
+      parentId: this.$store.state.user.details.parentCompanyId,
+
     }
   },
   computed: {
+    companyIsParent() {
+      return true
+    },
+    items() { return [
+      {
+        header: 'Preferences'
+      }, {
+        path: '/settings/userProfile',
+        title: 'User Profile',
+        show: true
+      }, {
+        path: '/settings/company',
+        title: 'Company',
+        show: true
+      }, {
+        header: 'User Management',
+        show: true
+      }, {
+        path: '/settings/positions',
+        title: 'Positions',
+        show: true
+      }, {
+        // path: '/settings/roles',
+        // title: 'Roles',
+        // }, {
+        header: 'Custom Components',
+        show: true
+      }, {
+        path: '/settings/customFields',
+        title: 'Custom Fields',
+        show: true
+      }, {
+        path: '/settings/attachments',
+        title: 'Attachments',
+        show: true
+      }, {
+        path: '/settings/links',
+        title: 'Links',
+        show: true
+      }, {
+        path: '/settings/orgTypes',
+        title: 'Organization Types',
+        show: true
+      }, {
+        path: '/settings/eventTypes',
+        title: 'Scheduling Tool Event Types',
+        show: isParent(this.parentId)
+      }, {
+        path: '/settings/workQueue/types',
+        title: 'Work Queue',
+        show: isParent(this.parentId)
+      }, {
+        header: 'Processes',
+        show: true
+      }, {
+        path: '/settings/processes',
+        pathMatch: '/settings/processes',
+        title: 'Processes',
+        show: true
+      }, {
+        path: '/settings/processSteps',
+        pathMatch: '/settings/processStep',
+        title: 'Process Steps',
+        show: true
+      }, {
+        path: '/settings/functions',
+        pathMatch: '/settings/function',
+        title: 'Functions',
+        show: true
+      }, {
+        path: '/settings/statuses',
+        title: 'Statuses',
+        show: true
+      }, {
+        header: 'Objects',
+        show: true
+      }
+    ]
+  }
   },
   methods: {
     async getCustomFieldObjectTypes () {

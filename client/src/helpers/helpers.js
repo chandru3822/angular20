@@ -69,6 +69,12 @@ export function getSnackbar(type, text) {
   return snackbar
 }
 
+export function isParent(parentId) {
+  console.log('randaLogger', parentId)
+  //todo: for now this is the only function where the frontend checks for a hardcoded id
+  // to see if the company is a parent or not, maybe a better way?
+  return parentId === 1 || parentId == null
+}
 // functions
 export async function getRequest (path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'

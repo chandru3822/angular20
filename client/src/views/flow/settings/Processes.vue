@@ -97,7 +97,7 @@ export default {
       selectedProcessId: null,
       newProcess: {},
       companyId: this.$store.state.user.details.companyId,
-      parentCompanyId: this.$store.state.user.details.parentCompanyId,
+      parentCompanyId: this.$store.state.user.details.highestParentCompanyId,
       userId: this.$store.state.user.details.id,
       processes: []
     }

@@ -27,7 +27,7 @@ public class UserAccountDetails implements UserDetails {
     @JsonIgnore
     private boolean accountNonExpired, accountNonLocked, credentialsNonExpired, enabled;
     private String firstName, lastName, fullName, awsBucket, companyAbbreviation;
-    private Long masqueradeId, companyId, parentCompanyId;
+    private Long masqueradeId, companyId, parentCompanyId, highestParentCompanyId;
     private Set<GrantedAuthority> authorities;
 
     public UserAccountDetails() {
@@ -43,6 +43,8 @@ public class UserAccountDetails implements UserDetails {
         this.awsBucket = user.getAwsBucket();
         this.companyId = user.getCompanyId();
         this.parentCompanyId = user.getParentCompanyId();
+        // parent = true parent, highest = max in a company tier
+        this.highestParentCompanyId = user.getHighestParentCompanyId();
         this.companyAbbreviation = user.getCompanyAbbreviation();
 
         // TODO: determine expired, lock, enabled, etc.
@@ -154,6 +156,14 @@ public class UserAccountDetails implements UserDetails {
 
     public void setParentCompanyId(Long parentCompanyId) {
         this.parentCompanyId = parentCompanyId;
+    }
+
+    public Long getHighestParentCompanyId() {
+        return highestParentCompanyId;
+    }
+
+    public void setHighestParentCompanyId(Long highestParentCompanyId) {
+        this.highestParentCompanyId = highestParentCompanyId;
     }
 
     @JsonComponent

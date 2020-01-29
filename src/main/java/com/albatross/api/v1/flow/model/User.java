@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 public class User {
 
-    private Long id, companyId, parentCompanyId;
+    private Long id, companyId, parentCompanyId, highestParentCompanyId;
     private String email, phoneNumber, username, password, firstName, lastName, fullName,
         userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position, title; //title used for scheduling tool resource name
     private Long userStatusTypeId;
