@@ -101,6 +101,10 @@ export default {
         label: 'Schedule',
         path: '/schedule',
         display: true
+      }, {
+        label: 'Work Queue',
+        path: '/workQueue',
+        display: false
       }]
     }
   },

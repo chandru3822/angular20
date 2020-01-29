@@ -32,7 +32,7 @@ public class WorkQueueCategoryService {
   public List<WorkQueueCategory> getWorkQueueCategories() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", user.getHighestParentCompanyId());
 
     List<WorkQueueCategory> results = sqlCache.query("workQueueCategory.getCategoriesForCompany", params, WorkQueueCategory.class);
     return results;

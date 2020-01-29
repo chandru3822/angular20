@@ -115,7 +115,7 @@ export default new Router({
             component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/EventTypes.vue'),
           }, {
             path: 'workQueue',
-            component: () => import (/* webpackChunkName: "workQueue" */ './views/flow/settings/WorkQueue.vue'),
+            component: () => import (/* webpackChunkName: "workQueueAdmin" */ './views/flow/settings/WorkQueue.vue'),
             children: [
               {
                 path: 'types',
@@ -188,6 +188,10 @@ export default new Router({
             component: () => import (/* webpackChunkName: "role" */ './views/flow/settings/Role.vue')
           },
         ]
+      }, {
+        path: '/workQueue',
+        name: 'workQueue',
+        component: () => import (/*webpackChunkName: "workQueue" */ './views/flow/workQueue/WorkQueue.vue'),
       }, {
         path: '/project',
         name: 'project',
