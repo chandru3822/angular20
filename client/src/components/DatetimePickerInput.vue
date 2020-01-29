@@ -1,0 +1,114 @@
+<template>
+<v-menu
+  v-model="menu"
+  :close-on-content-click="false"
+  transition="scale-transition"
+  offset-y
+  max-width="290px"
+  min-width="290px"
+>
+  <template #activator="{on}">
+    <v-text-field
+      :value="value"
+      :label="label"
+      prepend-icon="event"
+      readonly
+      v-on="on"
+    ></v-text-field>
+  </template>
+  <v-date-picker
+    v-if="showDate"
+    v-model="date"
+  >
+    <v-spacer></v-spacer>
+    <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
+    <v-btn text color="primary" @click="saveDate()">OK</v-btn>
+  </v-date-picker>
+
+  <v-time-picker
+    v-model="time"
+    v-if="showTime"
+    :ampm-in-title="true"
+  >
+    <v-spacer></v-spacer>
+    <v-btn text color="primary" @click="cancel()">Cancel</v-btn>
+    <v-btn text color="primary" @click="saveTime()">OK</v-btn>
+  </v-time-picker>
+</v-menu>
+</template>
+
+<script>
+
+import {DateTime} from 'luxon'
+
+export default {
+  name: 'DatetimePickerInput',
+  props: {
+    value: String,
+    timezone: String,
+    type: String,
+    label: String
+  },
+  data: () => ({
+    date: null,
+    time: null,
+    menu: false,
+    showDate: false,
+    showTime: false
+  }),
+  created() {
+    this.init()
+  },
+  methods: {
+    saveDate () {
+      if (this.type === 'date') {
+        DateTime.local()
+        this.$emit('input', DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: this.timezone}).toISODate())
+        this.menu = false
+      } else {
+        this.showDate = false
+        this.showTime = true
+      }
+    },
+    saveTime () {
+      if (this.type === 'datetime') {
+        const date = DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: this.timezone})
+        let time = DateTime.fromISO(this.time, {zone: this.timezone})
+        const datetime = time.set({
+          year: date.year,
+          month: date.month,
+          day: date.day
+        })
+        this.$emit('input', datetime.toISO())
+        this.showDate = true
+        this.showTime = false
+      } else {
+        this.$emit('input', DateTime.fromISO(this.time, {zone: this.timezone}).toISOTime())
+      }
+      this.menu = false
+    },
+    cancel () {
+      this.menu = false
+      this.init()
+    },
+    init () {
+      const value = DateTime.fromISO(this.$props.value, {zone: this.timezone})
+      const now = DateTime.local().setZone(this.timezone)
+      const dateToUse = (value.isValid) ? value : now
+      this.date = dateToUse.toFormat('yyyy-MM-dd')
+      this.time = dateToUse.toFormat('HH:mm')
+
+      if (['datetime', 'date'].includes(this.type)) {
+        this.showDate = true
+        this.showTime = false
+      } else {
+        this.showDate = false
+        this.showTime = true
+      }
+    }
+  }
+}
+</script>
+
+<style scoped lang="scss">
+</style>

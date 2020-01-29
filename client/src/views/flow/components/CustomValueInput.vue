@@ -1,6 +1,6 @@
 <template>
 <v-row class="d-flex justify-space-between align-center">
-  <v-col>
+  <v-col v-if="showFieldName">
     {{field.fieldName}}
     <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
   </v-col>
@@ -23,25 +23,33 @@
     </template>
 
 
-    <template v-if="field.dataTypeId === 2">
+<!--    <template v-if="field.dataTypeId === 2">-->
 
-      <span v-if="readonly">{{field.timestampValue | formatDate('timestamp')}}</span>
+<!--      <span v-if="readonly">{{field.timestampValue | formatDate('timestamp')}}</span>-->
 
-      <datetime
-        v-else
-        class="text-right"
-        type="datetime"
-        v-model="field.timestampValue"
-        input-class="one-hunned"
-        :zone="timezone"
-        :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
-        :phrases="{ok: 'Ok', cancel: 'Close'}"
-        :hour-step="1"
-        :minute-step="15"
-        use12-hour
-        auto
-      />
-    </template>
+<!--      <datetime-->
+<!--        v-else-->
+<!--        class="datetime-input"-->
+<!--        type="datetime"-->
+<!--        v-model="field.timestampValue"-->
+<!--        :zone="timezone"-->
+<!--        :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"-->
+<!--        :phrases="{ok: 'Ok', cancel: 'Close'}"-->
+<!--        :hour-step="1"-->
+<!--        :minute-step="15"-->
+<!--        use12-hour-->
+<!--        auto-->
+<!--      />-->
+<!--    </template>-->
+
+
+    <DatetimePickerInput
+      v-if="field.dataTypeId === 2"
+      v-model="field.timestampValue"
+      :timezone="this.$store.state.user.details.timezone.value"
+      type="datetime"
+      :label="field.fieldName"
+    />
 
     <input
       v-if="field.dataTypeId === 3"
@@ -128,16 +136,22 @@
 <script>
 
 import { Datetime } from 'vue-datetime'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import moment from 'moment'
 
 export default {
   name: 'CustomValueInput',
   props: {
     readonly: Boolean,
-    field: Object
+    field: Object,
+    showFieldName: {
+      type: Boolean,
+      default: true
+    }
   },
   components: {
-    Datetime
+    Datetime,
+    DatetimePickerInput
   },
   data () {
     return {
@@ -168,6 +182,10 @@ export default {
 <style scoped lang="scss">
 .ancillary {
   font-size: 12px;
+}
+
+.datetime-input {
+  width: 100%;
 }
 </style>
 

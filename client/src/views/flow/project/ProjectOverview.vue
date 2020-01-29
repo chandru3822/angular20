@@ -53,7 +53,12 @@
         </v-toolbar-items>
       </v-toolbar>
       <v-card class="pa-4 text-left">
-        <CustomValueInput v-for="(field, idx) in group.customFieldValues" :key="idx" :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null" :field="field"/>
+        <CustomValueInput
+          v-for="(field, idx) in group.customFieldValues"
+          :key="idx"
+          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
+          :showFieldName="false"
+          :field="field"/>
       </v-card>
     </v-col>
 
