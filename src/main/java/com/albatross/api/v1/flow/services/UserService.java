@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -136,6 +137,8 @@ public class UserService {
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
+      //todo: handle saving user_companies here as well
+      handleSavingUserCompanies(user.getCompanies(), user.getId());
     } else {
       params.put("createdById", currentUser.getId());
       //for now we are inserting new users with the same email and username. maybe we will change that later and let them enter it here
@@ -179,6 +182,24 @@ public class UserService {
   public Boolean fieldHasValue (CustomFieldValue cv) {
     return null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
         || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
+  }
+
+  public void handleSavingUserCompanies(List<Company> companies, Long userId){
+    log.info("COMPANIA!!!!!!!!!!! {}", companies);
+    //archive any existing rows that are no longer there
+    List<Long> companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("companyIds", companyIds);
+    sqlCache.update("user.archiveUserCompanies", params);
+
+    for(Company company: companies) {
+      //upsert any new/existing rows
+      HashMap<String, Object> vars = new HashMap<>();
+      vars.put("userId", userId);
+      vars.put("companyId", company.getId());
+      sqlCache.update("user.upsertUserCompany", vars);
+    }
   }
 
   public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long primaryId){

@@ -89,15 +89,12 @@
     ]]>
   </user.updateUser>
 
-  <user.insertUser>
-    <![CDATA[
+  <user.insertUser><![CDATA[
       insert into flow.user(first_name, last_name, created_by_id, schedulable, phone_number, email, username)
       values(:firstName, :lastName, :createdById, :schedulable, :phone, :email, :email);
-    ]]>
-  </user.insertUser>
+  ]]></user.insertUser>
 
-  <user.getOne>
-    <![CDATA[
+  <user.getOne><![CDATA[
       select u.id,
              u.phone_number,
              u.email,
@@ -129,11 +126,9 @@
       where u.id = :id
         and uc.archived is not true
         and uc.is_default is true
-    ]]>
-  </user.getOne>
+  ]]></user.getOne>
 
-  <user.getSchedulingUsers>
-    <![CDATA[
+  <user.getSchedulingUsers><![CDATA[
       select distinct u.user_id as id,
              u.first_name,
              u.last_name,
@@ -145,8 +140,7 @@
         and case when :stateId::integer is not null then u.state_id = :stateId::integer and u.user_schedulable is true else u.user_schedulable is true end
         and u.user_archived is not true
       order by full_name
-    ]]>
-  </user.getSchedulingUsers>
+  ]]></user.getSchedulingUsers>
 
   <user.findByUsernameIgnoreCase><![CDATA[
     select u.id,
@@ -171,39 +165,34 @@
       and uc.is_default = true
   ]]></user.findByUsernameIgnoreCase>
 
-  <user.findUserById>
-    <![CDATA[
-        select u.id,
-               u.first_name,
-               u.last_name,
-               u.first_name || ' ' || u.last_name as full_name,
-               u.user_status_type_id,
-               coalesce(u.default_company_id, uc.company_id) as company_id,
-               c.aws_bucket,
-               coalesce(u.default_company_id, uc.company_id) as company_id,
-                ( select case when parent_company_id is null or parent_company_id = 1
-                        then coalesce(u.default_company_id, uc.company_id)
-                    else parent_company_id end
-                    from flow.company c
-                 where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id
-        from flow.user u
-          inner join flow.user_company uc on uc.user_id = u.id
-          inner join flow.company c on c.id = uc.company_id
-        where u.id = :id
-          and uc.is_default is true
-      ]]>
-  </user.findUserById>
+  <user.findUserById><![CDATA[
+    select u.id,
+           u.first_name,
+           u.last_name,
+           u.first_name || ' ' || u.last_name as full_name,
+           u.user_status_type_id,
+           coalesce(u.default_company_id, uc.company_id) as company_id,
+           c.aws_bucket,
+           coalesce(u.default_company_id, uc.company_id) as company_id,
+            ( select case when parent_company_id is null or parent_company_id = 1
+                    then coalesce(u.default_company_id, uc.company_id)
+                else parent_company_id end
+                from flow.company c
+             where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id
+    from flow.user u
+      inner join flow.user_company uc on uc.user_id = u.id
+      inner join flow.company c on c.id = uc.company_id
+    where u.id = :id
+      and uc.is_default is true
+  ]]></user.findUserById>
 
-  <user.getUserStatuses>
-    <![CDATA[
+  <user.getUserStatuses><![CDATA[
       select id,
              user_status_type
       from flow.user_status_type
-    ]]>
-  </user.getUserStatuses>
+  ]]></user.getUserStatuses>
 
-  <user.updateDefault>
-    <![CDATA[
+  <user.updateDefault><![CDATA[
       update flow.user_company
         set is_default = false
       where user_id = :userId;
@@ -211,31 +200,38 @@
       set is_default = true
       where company_id = :companyId
         and user_id = :userId;
-    ]]>
-  </user.updateDefault>
+  ]]></user.updateDefault>
 
-  <user.updateAdminDefault>
-    <![CDATA[
+  <user.updateAdminDefault><![CDATA[
       update flow.user
        set default_company_id = :companyId
        where id = :userId
-    ]]>
-  </user.updateAdminDefault>
+  ]]></user.updateAdminDefault>
 
-  <user.insertUserCompany>
-    <![CDATA[
+  <user.insertUserCompany><![CDATA[
       insert into flow.user_company(company_id, user_id, is_default)
       values (:companyId, :id, :isDefault)
-    ]]>
-  </user.insertUserCompany>
+  ]]></user.insertUserCompany>
 
-  <user.checkEmailExists>
-    <![CDATA[
+  <user.archiveUserCompanies><![CDATA[
+      update flow.user_company
+        set archived = true
+      where user_id = :userId
+        and company_id not in (:companyIds)
+  ]]></user.archiveUserCompanies>
+
+  <user.upsertUserCompany><![CDATA[
+    insert into flow.user_company(company_id, user_id)
+    values (:companyId, :userId)
+    ON CONFLICT (company_id, user_id)
+        DO UPDATE SET archived = false;
+  ]]></user.upsertUserCompany>
+
+  <user.checkEmailExists><![CDATA[
       select id,
          email
       from flow."user"
       where email ILIKE :email
       and case when :userId::int is not null then :userId::int != id else 1=1 end
-    ]]>
-  </user.checkEmailExists>
+  ]]></user.checkEmailExists>
 </sql>

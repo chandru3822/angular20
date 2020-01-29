@@ -151,9 +151,7 @@
       async getCompanies () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/companies/availableForUser`, { params: {
-              userId: this.userId
-            }})
+          const {data} = await getRequestWithParams(`/companies/availableForUser`)
           this.companies = data
 
           this.$store.commit(AppMutations.SET_LOADING, false)
