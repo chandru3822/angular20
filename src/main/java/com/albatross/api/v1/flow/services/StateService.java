@@ -41,4 +41,13 @@ public class StateService {
     return states;
   }
 
+  public List<State> getActiveStatesByHierarchy() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<State> states = sqlCache.query("state.getActiveStatesByHierarchy", params, State.class);
+    return states;
+  }
+
 }

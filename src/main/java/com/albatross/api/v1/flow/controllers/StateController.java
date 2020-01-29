@@ -34,4 +34,9 @@ public class StateController {
     return stateService.getActiveStatesByCompany();
   }
 
+  @GetMapping(value = "/activeByHierarchy", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<State> getActiveStatesByHierarchy() {
+    return stateService.getActiveStatesByHierarchy();
+  }
+
 }

@@ -238,7 +238,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
-  import {getActiveStates} from '@/services/stateService'
+  import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
   import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
@@ -336,7 +336,7 @@
       console.log('MEMEMEMEMEMEEM', this.$route.query)
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
-      this.getActiveStates()
+      this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
       if(this.$route.query && this.$route.query.processStepId && this.$route.query.projectId) {
@@ -376,10 +376,10 @@
         this.startTime = startTime
         this.endTime = endTime
       },
-      async getActiveStates() {
+      async getActiveStatesByHierarchy() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getActiveStates()
+          const {data} = await getActiveStatesByHierarchy()
           this.states = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
