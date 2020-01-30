@@ -223,7 +223,7 @@
               <td class="text-left user-column">{{item.email}}</td>
               <td class="text-left user-column">{{item.phoneNumber}}</td>
               <td class="text-left user-column">{{item.userStatusType}}</td>
-              <td class="text-left user-column">{{item.position}}</td>
+              <td class="text-left user-column">{{item.position || 'N/A'}}</td>
               <td class="text-left user-column" v-for="(f, index) in orgFilters" :key="index">
                 {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
