@@ -37,8 +37,9 @@
               :key="requirement.id">
         <v-list-item v-show="requirementsCopy.length > 0">
           <v-list-item-action :title="requirement.complete ? 'Mark requirement as incomplete' : 'Mark requirement as complete'"
+                              :class="{'disabled-checkbox': requirement.hasOpenChallenge}"
                               @click="saveRequirement(requirement, true)">
-            <v-checkbox v-model="requirement.complete"></v-checkbox>
+            <v-checkbox v-model="requirement.complete" :disabled="requirement.hasOpenChallenge"></v-checkbox>
           </v-list-item-action>
           <v-list-item-content class="ml-3">
             <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}"
@@ -46,9 +47,11 @@
               <span>{{ requirement.description }}</span>
             </v-list-item-title>
             <v-list-item-subtitle v-if="!requirement.formattedDateModified && requirement.formattedDateCreated"
+                                  :title="'Created ' + requirement.formattedDateCreated + ' by ' + requirement.createdBy"
                                   v-text="'Created ' + requirement.formattedDateCreated + ' by ' + requirement.createdBy">
             </v-list-item-subtitle>
             <v-list-item-subtitle v-if="requirement.formattedDateModified"
+                                  :title="'Updated ' + requirement.formattedDateModified + ' by ' + requirement.modifiedBy"
                                   v-text="'Updated ' + requirement.formattedDateModified + ' by ' + requirement.modifiedBy">
             </v-list-item-subtitle>
           </v-list-item-content>
@@ -59,7 +62,7 @@
             <AhjRequirementHistory :class="[{'history-link-max-width': requirement.hasOpenChallenge}]"
                                    :itemType="itemType"
                                    :ahjId="ahjId"
-                                   :requirement="requirement"
+                                   :originalRequirement="requirement"
             ></AhjRequirementHistory>
           </v-list-item-content>
           <v-list-item-action v-if="!requirement.hasOpenChallenge">
@@ -74,11 +77,30 @@
             ></AhjDocumentsButton>
           </v-list-item-action>
           <v-list-item-action>
-            <v-icon small @click="archiveRequirement(requirement.originalRequirementId)" title="Archive requirement">delete</v-icon>
+            <v-dialog v-model="deleteConfirm" max-width="500px">
+              <template #activator="{ on }">
+                <v-icon v-on="on" small title="Archive requirement">delete</v-icon>
+              </template>
+              <v-card>
+                <v-card-title>
+                  <span class="headline">Confirm</span>
+                </v-card-title>
+                <v-card-text>
+                  Are you sure you want to archive this requirement?<br>
+                  <strong>{{ requirement.description }}</strong>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="secondaryButton" text @click="deleteConfirm = false">No</v-btn>
+                  <v-btn color="brRed" class="white--text"
+                         @click="archiveRequirement(requirement.originalRequirementId)">Yes</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-list-item-action>
         </v-list-item>
       </v-list>
-      <div class="empty-list mx-3 mt-2" v-show="requirementsCopy.length < 1">
+      <div class="empty-list mx-3 mt-3" v-show="requirementsCopy.length < 1">
         No requirements found
       </div>
 
@@ -203,6 +225,7 @@
         },
         addMode: false,
         editMode: false,
+        deleteConfirm: false,
         snackbar: {},
         requirementsCopy: orderBy(this.requirements, requirement => requirement.position)
       }
@@ -224,6 +247,13 @@
         this.requirement = Object.assign({}, requirement)
       },
       async saveRequirement(requirement, checkboxWasClicked) {
+        // prevents user from marking a requirement with the "Open Challenge" status as complete
+        if (checkboxWasClicked) {
+          if ((requirement && requirement.hasOpenChallenge) || this.requirement.hasOpenChallenge) {
+            return
+          }
+        }
+
         if (!requirement) {
           this.requirement.requirementTypeId = this.requirementTypeId
           this.requirement.complete = this.requirement.complete ? this.requirement.complete : false
@@ -275,6 +305,7 @@
             const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
             let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data.originalRequirementId)
             this.requirementsCopy[updatedRequirementIndex].description = data.description
+            this.requirementsCopy[updatedRequirementIndex].position = this.requirement.position
 
             if (data.dateModified) {
               this.requirementsCopy[updatedRequirementIndex].formattedDateModified = moment(data.dateModified).format('MM/DD/YY h:mm A')
@@ -309,6 +340,7 @@
           this.snackbar = getSnackbar('ERROR', 'Error archiving requirement')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.deleteConfirm = false
       }
     },
     created() {
@@ -352,6 +384,9 @@
   .v-input--checkbox {
     display: flex;
     align-items: center;
+  }
+  .disabled-checkbox {
+    cursor: not-allowed;
   }
   .v-list-item__action {
     margin: 0 !important;

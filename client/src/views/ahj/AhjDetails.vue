@@ -3,9 +3,8 @@
     <v-col cols="12">
       <v-row justify="space-between">
         <v-col class="text-left" cols="12">
-          <v-btn id="back-btn" color="primaryButton" class="white--text my-2" :to="'/ahj'">
-            <v-icon dark>arrow_left</v-icon>
-            Back to menu
+          <v-btn id="back-btn" text class="pl-0 pr-2" :to="'/ahj'">
+            <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
           </v-btn>
 
           <v-row justify="space-between" align="center" no-gutters>
@@ -71,17 +70,13 @@
 
 <style scoped lang="scss">
   #back-btn {
-    margin: 5px 0 0 0;
-    color: #fff !important;
-  }
-  @media (min-width: 769px) {
-    #back-btn {
-      margin: 20px 0 0 0;
+    text-transform: unset;
+    letter-spacing: unset;
+    &:before {
+      background-color: initial;
     }
-  }
-  @media (min-width: 960px) {
-    #back-btn {
-      margin: 12px 0 0 0;
+    #back-btn-text:hover {
+      text-decoration: underline;
     }
   }
   .page-title {

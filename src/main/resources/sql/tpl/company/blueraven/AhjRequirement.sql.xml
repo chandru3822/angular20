@@ -40,24 +40,6 @@
     ]]>
   </ahj.requirement.add>
 
-  <ahj.requirement.setStatusDateModifiedAndArchived>
-    <![CDATA[
-      UPDATE brs.ahj_requirements
-      SET status_id = 2,
-          date_modified = now(),
-          archived = TRUE
-      WHERE ahj_id = :ahjId
-        AND original_requirement_id = :originalRequirementId;
-
-      UPDATE brs.ahj_requirement
-      SET date_modified = now(),
-          archived = TRUE
-      WHERE id IN (select requirement_id
-                   from brs.ahj_requirements
-                   where original_requirement_id = :originalRequirementId);
-    ]]>
-  </ahj.requirement.setStatusDateModifiedAndArchived>
-
   <ahj.requirement.active.detail>
     <![CDATA[
       WITH open_challenge AS (
