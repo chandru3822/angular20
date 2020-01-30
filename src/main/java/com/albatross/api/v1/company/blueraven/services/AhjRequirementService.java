@@ -58,9 +58,6 @@ public class AhjRequirementService {
         params.put("originalRequirementId", ahjRequirement.getOriginalRequirementId());
         params.put("ahjId", ahjId);
 
-        // TODO: Figure out what to do with this query call
-//        sqlCache.update("ahj.requirement.setStatusDateModifiedAndArchived", params);
-
         String sqlQuery = "SELECT * FROM brs.ahj_update_requirement(:utilityId::integer, :ahjId::integer, :requirementId::integer, :description::text, :position::integer, :complete::boolean, :statusId::integer, :userId::integer, :archived::boolean)";
 
         MapSqlParameterSource parameters = new MapSqlParameterSource();

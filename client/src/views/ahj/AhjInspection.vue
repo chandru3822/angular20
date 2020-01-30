@@ -16,7 +16,7 @@
     <!-- UPPER SECTION -->
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-col cols="12" md="3" class="pr-1 mb-3">
+      <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
         <!-- SCHEDULING WITH AHJ -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
@@ -62,7 +62,7 @@
       </v-col>
 
       <!-- SECOND COLUMN -->
-      <v-col cols="12" md="3" class="px-1 mb-3">
+      <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- SCHEDULING WITH BRS TECHNICIAN -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -106,7 +106,7 @@
       </v-col>
 
       <!-- THIRD COLUMN -->
-      <v-col cols="12" md="3" class="px-1 mb-3">
+      <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- SCHEDULING WITH CUSTOMER -->
         <v-card class="mb-3">
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -188,7 +188,7 @@
       </v-col>
 
       <!-- FOURTH COLUMN -->
-      <v-col cols="12" md="3" class="pl-1 mb-3">
+      <v-col cols="12" md="3" class="pl-sm-0 pl-md-1 mb-3">
         <!-- RE-INSPECTIONS -->
         <v-card class="mb-3">
           <v-card-title class="primaryCustom white--text font-weight-bold">

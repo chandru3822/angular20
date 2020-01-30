@@ -1,7 +1,7 @@
 <!-- suppress CssInvalidPseudoSelector -->
 <template id="ahj-requirement-history">
   <div>
-    <a class="history-link" title="View requirement history" @click="historyDialog = true">History</a>
+    <a class="history-link" title="View requirement history" @click="getRequirementHistory">History</a>
 
     <v-dialog v-model="historyDialog" max-width="800px">
       <v-card class="pt-2 pb-2 px-0">
@@ -13,7 +13,7 @@
           <div v-if="requirementHistory.length > 0 && requirementHistory[0].statusId !== 3"
                class="flex-display justify-end mb-4">
             <v-btn color="primaryButton" class="white--text text-capitalize"
-                   @click="challengeForm = !challengeForm"
+                   @click="toggleChallengeForm"
             >Challenge</v-btn>
           </div>
 
@@ -24,7 +24,7 @@
                           v-model="challenge.details">
             </v-text-field>
             <div class="requirement-challenge-btns flex-display justify-end align-center">
-              <a @click="hideChallengeForm" class="cancel-link text-capitalize">Cancel</a>
+              <a @click="toggleChallengeForm" class="cancel-link text-capitalize">Cancel</a>
               <v-btn color="primaryButton" class="white--text text-capitalize py-1 px-3 ml-2"
                      :disabled="challenge.details === ''" small
                      @click="submitChallenge">
@@ -44,31 +44,32 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>{{ requirement.description }}</td>
-                  <td v-if="!requirement.formattedDateModified && requirement.formattedDateCreated">
-                    {{ requirement.createdBy }} - {{ requirement.formattedDateCreated }}
+                  <td>{{ selectedRequirement.description }}</td>
+                  <td v-if="!selectedRequirement.formattedDateModified && selectedRequirement.formattedDateCreated">
+                    {{ selectedRequirement.createdBy }} - {{ selectedRequirement.formattedDateCreated }}
                   </td>
-                  <td v-if="requirement.formattedDateModified">
-                    {{ requirement.modifiedBy }} - {{ requirement.formattedDateModified }}
+                  <td v-if="selectedRequirement.formattedDateModified">
+                    {{ selectedRequirement.modifiedBy }} - {{ selectedRequirement.formattedDateModified }}
                   </td>
                   <td class="py-2 pr-3">
-                    <v-select v-if="requirement.statusId === 1"
-                              v-model="updatedRequirementStatusId"
+                    <v-select v-if="selectedRequirement.statusId === 3"
+                              v-model="selectedRequirementStatusId"
                               :items="challengeStatuses"
                               label="Challenge Status"
                               required filled dense
                     ></v-select>
-                    <span v-if="requirement.statusId === 4">Denied</span>
+                    <span v-if="selectedRequirement.statusId === 4">Denied</span>
                   </td>
                 </tr>
               </tbody>
             </v-simple-table>
 
             <div class="flex-display justify-end" id="requirement-status-btns">
-              <a class="cancel-link mr-2 mt-2"
+              <a v-if="this.selectedRequirement.statusId === 3"
+                 class="cancel-link mr-2 mt-2"
                  title="Cancel challenge status update"
-                 @click="hideChallengeDetails">Cancel</a>
-              <v-btn v-if="requirement.statusId === 1"
+                 @click="toggleChallengeDetails">Cancel</a>
+              <v-btn v-if="this.selectedRequirement.statusId === 3"
                      class="text-capitalize mr-3 px-2 white--text"
                      color="primaryButton"
                      style="font-size: 0.85em"
@@ -76,13 +77,7 @@
                      @click="updateChallengeStatus">
                 <v-icon class="white--text mr-1" small>save</v-icon>Save
               </v-btn>
-              <v-btn v-if="requirement.statusId === 4"
-                     class="text-capitalize"
-                     @click="challengeDetails = false">
-                <span style="font-size: 0.85em"
-                      title="Hide challenge details"
-                      class="font-weight-bold mr-1">×</span>Close
-              </v-btn>
+              <v-btn v-else small class="mt-8" style="text-transform: unset; color: inherit !important;" @click="challengeDetails = false">Hide details</v-btn>
             </div>
           </div>
 
@@ -106,7 +101,7 @@
                 <td>
                   <a v-if="[3,4].indexOf(requirement.statusId) !== -1"
                      title="View challenge details"
-                     @click="challengeDetails = true">
+                     @click="toggleChallengeDetails(requirement)">
                     {{ requirement.status }}
                   </a>
                   <span v-if="[3,4].indexOf(requirement.statusId) === -1">
@@ -147,15 +142,15 @@
       ahjId: {
         type: Number
       },
-      requirement: {
+      originalRequirement: {
         type: Object
       }
     },
     data () {
       return {
-        originalRequirementId: this.requirement.originalRequirementId,
+        originalRequirementId: this.originalRequirement.originalRequirementId,
         historyDialog: false,
-        requirementHistory: [],
+        requirementHistory: [{ statusId: 0}],
         challengeForm: false,
         challenge: {
           details: null
@@ -166,12 +161,22 @@
           { value: 1, text: "Accepted" },
           { value: 4, text: "Denied" }
         ],
-        updatedRequirementStatusId: 3,
+        selectedRequirement: null,
+        selectedRequirementStatusId: 3,
         snackbar: {}
+      }
+    },
+    watch: {
+      historyDialog (val) {
+        if (!val) {
+          this.closeHistoryDialog()
+        }
       }
     },
     methods: {
       async getRequirementHistory() {
+        this.historyDialog = true
+
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           const {data} = await getRequest(`/ahj/${this.ahjId}/requirement/${this.originalRequirementId}/history`, 'blueraven')
@@ -194,66 +199,91 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving requirement history')
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.closeHistoryDialog()
         }
       },
-      async saveRequirement() {
+      async submitChallenge() {
+        this.requirementHistory[0].description = this.challenge.details
+        this.requirementHistory[0].archived = false
+        this.requirementHistory[0].statusId = 3
+
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
-          console.log("data:", data)
-
-          let updatedRequirementIndex = this.requirementHistory.findIndex(i => i.originalRequirementId === data.originalRequirementId)
-          this.requirementHistory[updatedRequirementIndex].description = data.description
-
-          if (data.dateModified) {
-            this.requirementHistory[updatedRequirementIndex].formattedDateModified = moment(data.dateModified).format('MM/DD/YY h:mm A')
-          } else {
-            this.requirementHistory[updatedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
-          }
-
-          this.snackbar = getSnackbar('SUCCESS', 'Requirement updated')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Challenge submitted')
+          this.originalRequirement.hasOpenChallenge = true
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      hideChallengeForm() {
-        this.challenge.details = ''
-        this.challengeForm = false
-        this.challengeDetails = false
-      },
-      async submitChallenge() {
-        this.requirement.requirementTypeId = this.requirementTypeId
-        this.requirement.description = this.challenge.details
-        this.requirement.hasOpenChallenge = true
-        this.requirement.status = "Open Challenge"
-        this.requirement.statusId = 3
-        this.requirement.archived = false
-
-        this.hideChallengeForm()
-        this.saveRequirement()
-      },
-      hideChallengeDetails() {
-        this.challengeDetails = false
-        this.updatedRequirementStatusId = 3
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.closeHistoryDialog()
       },
       async updateChallengeStatus() {
-        this.requirement.requirementTypeId = this.requirementTypeId
-        this.requirement.statusId = this.updatedRequirementStatusId
-        this.requirement.archived = false
+        /* if the user selects "Open" as the status, then the dialog window just closes,                 *
+         * because the status should already be set to "Open" if the user was able to get to this point, *
+         * and when the user selects "Open" when that was already the status, weird things happen...     */
+        if (this.selectedRequirementStatusId === 3) {
+          this.closeHistoryDialog()
+          return
+        }
 
-        this.hideChallengeDetails()
-        this.saveRequirement()
+        this.requirementHistory[0].archived = false
+        // this.requirementHistory[0].requirementTypeId = this.requirementTypeId
+        this.requirementHistory[0].statusId = this.selectedRequirementStatusId
+        // this.requirementHistory[0].hasOpenChallenge = false
+
+        try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
+
+          this.originalRequirement.hasOpenChallenge = false
+          this.originalRequirement.statusId = this.selectedRequirementStatusId
+
+          // only runs when the challenge status isn't "Denied"
+          if (this.originalRequirement.statusId !== 4) {
+            this.originalRequirement.description = this.requirementHistory[0].description
+            this.originalRequirement.formattedDateModified = moment().format('MM/DD/YY hh:mm A')
+          }
+
+          this.snackbar = getSnackbar('SUCCESS', 'Challenge status updated')
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error updating challenge status')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.closeHistoryDialog()
+      },
+      toggleChallengeForm() {
+        if (this.challengeForm) {
+          this.challenge.details = ''
+          this.challengeForm = false
+        } else {
+          this.challenge.details = this.requirementHistory[0].description
+          this.challengeForm = true
+        }
+      },
+      toggleChallengeDetails(requirement) {
+        if (this.challengeDetails) {
+          this.selectedRequirementStatusId = 3
+          this.challengeDetails = false
+        } else {
+          this.challengeDetails = true
+        }
+
+        if (requirement) {
+          this.selectedRequirement = requirement
+        }
       },
       closeHistoryDialog() {
         this.historyDialog = false
-        // TODO: Return updated requirement info to AhjRequirements parent component
+        if (this.challengeForm) {
+          this.toggleChallengeForm()
+        }
+        if (this.challengeDetails) {
+          this.toggleChallengeDetails()
+        }
       }
-    },
-    created() {
-      this.getRequirementHistory()
     }
   }
 </script>

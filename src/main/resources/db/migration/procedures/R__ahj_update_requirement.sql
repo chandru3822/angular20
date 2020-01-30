@@ -97,7 +97,8 @@ BEGIN
           SET
             status_id     = 2,
             date_modified  = now(),
-            modified_by_id = p_user_id
+            modified_by_id = p_user_id,
+            archived = true
           WHERE ahj_id = p_ahj_id
                 AND requirement_id <> p_requirement_id
                 AND position = p_position
@@ -200,7 +201,8 @@ BEGIN
         SET
           status_id     = 2, -- Archived
           date_modified  = now(),
-          modified_by_id = p_user_id
+          modified_by_id = p_user_id,
+          archived = true
         WHERE ahj_id = p_ahj_id
               AND requirement_id = p_requirement_id
               AND status_id = 1;
