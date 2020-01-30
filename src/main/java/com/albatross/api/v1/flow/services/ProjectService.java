@@ -334,7 +334,7 @@ public class ProjectService {
             break;
           case 6:
           case 9:
-            requirementMet = (r.getHasListValues()) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
+            requirementMet = (r.getHasListValues() || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
             break;
           case 7:
             requirementMet = calculateMultiselectRequirement(r);
@@ -517,6 +517,7 @@ public class ProjectService {
 
     if (r.getDataTypeRequirementId() == null) {
       try {
+        // @TODO: @humes, need to verify a value is properly fetched here if requirement is a system list
         Long reqValue = r.getListOfValueId();
         passed = compareDropdown(fieldValue, reqValue, r.getOperatorTypeId());
       } catch (Exception e) {
