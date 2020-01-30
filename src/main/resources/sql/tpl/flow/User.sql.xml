@@ -56,19 +56,41 @@
   ]]></user.searchUsers>
 
   <user.searchUserCount><![CDATA[
-      select count(*)
-      from flow.user_positions_vw upv
-      where upv.company_id = :companyId
-        and upv.position_level = 0
-        and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
-        and upv.first_name ILIKE '%' || :firstName || '%'
-        and upv.last_name ILIKE '%' || :lastName || '%'
-        and coalesce(upv.email) ILIKE '%' || :email || '%'
-        and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-        and upv.user_status_type_id in (:statuses)
-        and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
-        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
-        and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
+     with t1 as (
+        select distinct user_id as id
+        from flow.user_positions_vw upv
+        where upv.company_id = :companyId
+          and upv.position_level = 0
+          and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
+          and upv.first_name ILIKE '%' || :firstName || '%'
+          and upv.last_name ILIKE '%' || :lastName || '%'
+          and coalesce(upv.email, '') ILIKE '%' || :email || '%'
+          and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
+          and upv.user_status_type_id in (:statuses)
+          and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
+          and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
+          and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
+       union
+         select u.id
+          from flow."user" u
+                   inner join flow.user_company uc on u.id = uc.user_id
+                   inner join flow.user_status_type ust on ust.id = u.user_status_type_id
+          where uc.company_id = :companyId
+              and not exists (select up2.id from flow.user_position up2
+                        inner join flow.position p on p.id = up2.position_id
+                      where up2.user_id = u.id
+                        and p.company_id = uc.company_id)
+            and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+            and u.first_name ILIKE '%' || :firstName || '%'
+            and u.last_name ILIKE '%' || :lastName || '%'
+            and coalesce(u.email, '') ILIKE '%' || :email || '%'
+            and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then false else 1=1 end
+            and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then false else 1=1 end
+            and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
+              and u.user_status_type_id in (:statuses)
+      )
+     select count(*)
+      from t1
   ]]></user.searchUserCount>
 
   <user.exportUsers><![CDATA[
