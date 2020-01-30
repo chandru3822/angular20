@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">{{results[0].workQueueType}}</v-toolbar-title>
+          <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
         </v-toolbar>
         <v-data-table
             :headers="headers"
