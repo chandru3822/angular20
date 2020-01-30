@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -140,7 +141,16 @@ public class UserService {
       //todo: handle saving user_companies here as well
       handleSavingUserCompanies(user.getCompanies(), user.getId());
     } else {
+      //get the default password
+      HashMap<String, Object> p2 = new HashMap<>();
+      p2.put("id", currentUser.getCompanyId());
+      Optional<Company> c = sqlCache.get("company.getById", p2, Company.class);
       params.put("createdById", currentUser.getId());
+      String newPwd = null;
+      if(c.isPresent()) {
+        newPwd = BCrypt.hashpw(c.get().getDefaultPassword(), BCrypt.gensalt(10));
+      }
+      params.put("defaultPassword", newPwd);
       //for now we are inserting new users with the same email and username. maybe we will change that later and let them enter it here
       id = sqlCache.updateReturningId("user.insertUser", params, "id").longValue();
       //insert a row into user_company
@@ -312,9 +322,9 @@ public class UserService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<UserPermission>> userPermissionRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "permissions",
-          new JsonCollectionDeserializer(userPermissionRef, objectMapper));
+      TypeReference<List<FeatureAccessControl>> featureAccessRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "featureAccess",
+          new JsonCollectionDeserializer(featureAccessRef, objectMapper));
 
       TypeReference<List<UserOrgHierarchy>> userOrgHierarchyRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "hierarchy",

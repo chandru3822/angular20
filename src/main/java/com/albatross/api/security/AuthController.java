@@ -2,6 +2,7 @@ package com.albatross.api.security;
 
 import com.albatross.api.security.jwt.JwtClaims;
 import com.albatross.api.security.jwt.JwtUtils;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -49,6 +51,9 @@ public class AuthController {
       log.info(msg);
       return ResponseEntity.badRequest().body(msg);
     }
+
+    List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+    user.setFeatureAccess(results);
 
     JwtClaims body = createJwtBody(user);
     String jwt = jwtUtils.encodeDetails(body);

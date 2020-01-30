@@ -18,7 +18,7 @@ public class User {
     private Long userStatusTypeId;
     private Boolean schedulable;
     private List<Company> companies;
-    private List<UserPermission> permissions;
+    private List<FeatureAccessControl> featureAccess;
 
     private List<UserOrgHierarchy> hierarchy;
 

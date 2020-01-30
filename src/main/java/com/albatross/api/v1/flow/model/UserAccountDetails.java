@@ -33,7 +33,7 @@ public class UserAccountDetails implements UserDetails {
     public UserAccountDetails() {
     }
 
-    public UserAccountDetails(User user, List<UserPermission> permissions) {
+    public UserAccountDetails(User user, List<FeatureAccessControl> featureAccess) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.password = user.getPassword();
@@ -54,8 +54,8 @@ public class UserAccountDetails implements UserDetails {
         this.enabled = true;
 
         this.authorities = new HashSet<>();
-        for (UserPermission userPermission : permissions) {
-            this.authorities.add(new SimpleGrantedAuthority(userPermission.getPermissionName()));
+        for (FeatureAccessControl fc : featureAccess) {
+            this.authorities.add(new SimpleGrantedAuthority(fc.getAccessCode()));
         }
     }
 
