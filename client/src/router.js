@@ -193,6 +193,10 @@ export default new Router({
         name: 'workQueue',
         component: () => import (/*webpackChunkName: "workQueue" */ './views/flow/workQueue/WorkQueue.vue'),
       }, {
+        path: '/workQueue/:id',
+        name: 'workQueueDrilldown',
+        component: () => import (/*webpackChunkName: "workQueueDrilldown" */ './views/flow/workQueue/WorkQueueDrilldown.vue'),
+      }, {
         path: '/project',
         name: 'project',
         component: () => import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue'),

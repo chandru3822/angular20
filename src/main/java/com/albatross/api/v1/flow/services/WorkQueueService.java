@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WorkQueue;
+import com.albatross.api.v1.flow.model.WorkQueueDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,16 @@ public class WorkQueueService {
     params.put("companyId", user.getHighestParentCompanyId());
 
     List<WorkQueue> results = sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
+    return results;
+  }
+
+  public List<WorkQueueDetail> getWorkQueueDetails(Long workQueueTypeId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("workQueueTypeId", workQueueTypeId);
+    params.put("companyId", user.getHighestParentCompanyId());
+
+    List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, WorkQueueDetail.class);
     return results;
   }
 

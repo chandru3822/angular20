@@ -1,24 +1,30 @@
 <template>
-  <v-container class="custom-field-group-container">
+  <v-container class="app-container">
     <v-row>
-      <v-col class="shrink" cols="12">
+      <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">Work Queue</v-toolbar-title>
         </v-toolbar>
         <v-divider class="mt-3"/>
         <v-row class="justify-center mt-3">
-          <v-btn v-for="(c, index) in workQueueCategories" class="white--text"
+          <v-btn v-for="(c, index) in workQueueCategories" class="wq-button mx-2"
+                 :outlined="selectedWorkQueueCategory.id === c.id"
+                 :style="{color: selectedWorkQueueCategory.id === c.id ? `${c.color} !important` : 'white !important'}"
                  :color="c.color" :key="index" @click="getWorkQueues(c)">
             {{c.workQueueCategory}}
           </v-btn>
         </v-row>
         <v-divider class="mt-3"/>
         <v-row>
-          <v-card v-for="wq in workQueues"
-                  width="200" height="100">
-            <div style="height: 100px; background-color: blue; width: 20px;"></div>
-            <div>{{wq.workQueueType}}</div>
-            <div>{{wq.workQueueCount}}</div>
+          <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
+                  :class="{'clickable': wq.workQueueCount > 0}"
+                  @click="loadDrilldown(wq)"
+                  width="200" height="100" >
+            <div class="card-accent" :style="{'background-color': wq.color}"></div>
+            <v-card-text class="pt-1 pr-0">
+              <div class="text-left">{{wq.workQueueType}}</div>
+              <div class="card-count">{{wq.workQueueCount}}</div>
+            </v-card-text>
           </v-card>
         </v-row>
       </v-col>
@@ -70,11 +76,12 @@
         }
       },
       async getWorkQueues(c) {
-        this.selectedWorkQueueCategory = c??
+        // console.log('randaLogger', c)
+        this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequestWithParams(`/workQueue`, { params: {
-              workQueueCategoryId: c?.id
+              workQueueCategoryId: this.selectedWorkQueueCategory.id
             }})
           this.workQueues = data
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -83,6 +90,13 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      loadDrilldown(wq) {
+        if(wq.workQueueCount > 0) {
+          console.log('randaLogger',wq)
+          this.$router.push({name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}})
+          // this.$router.push({name: 'lead', params: {id: data.id}})
+        }
       }
     },
 
@@ -90,5 +104,18 @@
 </script>
 
 <style scoped lang="scss">
-
+.card-main {
+  /* @click adds the pointer but i didnt want the pointer on count == 0 */
+  cursor: default;
+}
+.card-accent {
+  height: 100%;
+  width: 5px;
+  /*border-radius: 4px 0 0 4px !important;*/
+}
+.card-count {
+  line-height: 2;
+  font-size: 30px;
+  font-weight: 600;
+}
 </style>

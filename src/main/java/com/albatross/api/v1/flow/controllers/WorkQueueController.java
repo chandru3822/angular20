@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.WorkQueue;
+import com.albatross.api.v1.flow.model.WorkQueueDetail;
 import com.albatross.api.v1.flow.services.WorkQueueService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,11 @@ public class WorkQueueController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<WorkQueue> getWorkQueues (@RequestParam(required = false) Long workQueueCategoryId) {
     return workQueueService.getWorkQueues(workQueueCategoryId);
+  }
+
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueDetail> getWorkQueueDetails (@PathVariable Long id) {
+    return workQueueService.getWorkQueueDetails(id);
   }
 
 }
