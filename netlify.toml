@@ -2,3 +2,6 @@
   base  = "client"
   publish = "dist/"
   ignore = "git diff --quiet HEAD^ HEAD ."
+
+[context.release]
+  publish = "client/dist/"
