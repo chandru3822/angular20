@@ -176,7 +176,6 @@
                   use12-hour
                   auto
               ></datetime>
-<!--              <div class="map-field-label mt-3">{{selectedProject.resourceFieldName || 'Resource'}}</div>-->
               <v-select v-model="selectedProject.resourceId"
                         :items="selectedProject.resources"
                         :label="selectedProject.resourceFieldName  || 'Resource'"
@@ -321,7 +320,6 @@
     watch: {
       search(val) {
         if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
-          console.log('randaLogger', this.searchProject.projectName)
           this.getProjectsSearchedFor(val);
         }
       },
@@ -437,6 +435,7 @@
               d.coordinates = [ d.longitude, d.latitude ]
             })
             this.projects = data
+            console.log('randaLogger HH', this.projects)
             this.masterProjects = cloneDeep(data)
             if(this.selectedProcessStepStatusTypes?.length > 0) {
               this.filterProjects()
@@ -453,13 +452,12 @@
         }
       },
       filterProjects () {
-        let statusIds = this.selectedProcessStepStatusTypes.map(st => st.id)
+        let statusIds = this.selectedProcessStepStatusTypes.map(st => st.processStepStatusTypeId)
         if(statusIds?.length === 0) {
           this.projects = cloneDeep(this.masterProjects)
         } else {
           this.projects = this.masterProjects.filter(p => {
-            console.log('randaLogger',p.companyProcessStepStatusTypeId)
-            return statusIds.includes(p.companyProcessStepStatusTypeId)
+            return statusIds.includes(p.processStepStatusTypeId)
           })
         }
       },

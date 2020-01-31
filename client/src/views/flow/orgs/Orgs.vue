@@ -94,7 +94,7 @@
               <td class="text-left">{{item.orgName}}</td>
               <td class="text-left">{{item.orgType}}</td>
               <td class="text-left">{{item.parentOrgName}}</td>
-              <td class="text-left">{{item.active ? 'Yes' : 'No'}}</td>
+              <td class="text-left">{{item.activeFlag ? 'Yes' : 'No'}}</td>
             </tr>
           </template>
         </v-data-table>

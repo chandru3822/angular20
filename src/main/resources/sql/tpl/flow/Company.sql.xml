@@ -26,6 +26,7 @@
          inner join flow.user_company uc on uc.company_id = c.id
       where uc.user_id = :userId
           and uc.archived is not true
+      order by c.level, c.company_name
     ]]>
   </company.getCompaniesAssignedToUser>
 

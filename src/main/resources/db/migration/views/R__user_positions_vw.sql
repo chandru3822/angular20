@@ -14,9 +14,9 @@ select u.id as user_id,u.first_name,u.last_name,
         from flow.user_org_hierarchy(o.id) as h) as hierarchy
 from flow."user" u
          inner join flow.user_status_type ust on ust.id = u.user_status_type_id
-         inner join flow.user_position up on up.user_id = u.id
-         inner join flow.position p on p.id = up.position_id
-         inner join  flow.org o on o.id = up.org_id
+         left join flow.user_position up on up.user_id = u.id
+         left join flow.position p on p.id = up.position_id
+         left join  flow.org o on o.id = up.org_id
          cross join flow.user_org_hierarchy(o.id) org_hierarchy
     WITH DATA;
 

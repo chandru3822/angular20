@@ -32,7 +32,9 @@ public class WorkQueueService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
-    params.put("companyId", user.getHighestParentCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
+    params.put("companyId", user.getCompanyId());
 
     List<WorkQueue> results = sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
     return results;
@@ -42,7 +44,9 @@ public class WorkQueueService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
-    params.put("companyId", user.getHighestParentCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
+    params.put("companyId", user.getCompanyId());
 
     List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, WorkQueueDetail.class);
     return results;

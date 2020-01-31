@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">{{results[0].workQueueType}}</v-toolbar-title>
+          <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
         </v-toolbar>
         <v-data-table
             :headers="headers"
@@ -35,8 +35,6 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import orderBy from 'lodash.orderby'
-  import {getWorkQueueCategories} from '@/services/workQueueService'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
@@ -75,7 +73,6 @@
         }
       },
       clickRow(row) {
-        console.log('randaLogger',row)
         this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}`})
       }
     },

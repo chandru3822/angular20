@@ -165,13 +165,15 @@ public class UserService {
   }
 
   public ResponseEntity getUser(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    // using currentUser.companyId validates that the user requesting the info can actually access this user...i think
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("companyId", currentUser.getCompanyId());
     Optional<User> result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
 
-    User currentUser = securityService.getCurrentUser();
 
-    if(result.isPresent() && !currentUser.getCompanyId().equals(result.get().getCompanyId())) {
+    if(result.isEmpty()) {
       return ResponseEntity.badRequest().body("Cannot Access User");
     } else {
       return ResponseEntity.ok(result);
@@ -179,11 +181,15 @@ public class UserService {
   }
 
   public List<User> getSchedulingUsers(Long stateId) {
-    User currentUser = securityService.getCurrentUser();
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);
-    params.put("companyId", currentUser.getCompanyId());
+    params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+
     List<User> results = sqlCache.query("user.getSchedulingUsers", params, User.class);
     return results;
   }

@@ -31,8 +31,11 @@ public class ProcessStepStatusService {
 
   public List<CompanyProcessStepStatusType> getStatusTypesForCompany() {
     User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
 
     List<CompanyProcessStepStatusType> companyProcessStepStatusTypes = sqlCache.query("processStepStatus.getTypesForCompany", params, CompanyProcessStepStatusType.class);
     return companyProcessStepStatusTypes;
