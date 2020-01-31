@@ -289,7 +289,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.ahjDesign.customFieldGroups = this.customFieldGroupAssignments
-          const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
+          const {data} = await putRequest(`/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
           this.ahjDesign = cloneDeep(data)
           this.snackbar = getSnackbar('SUCCESS', 'AHJ Design saved')
           this.$store.commit(AppMutations.SET_LOADING, false)
