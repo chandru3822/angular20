@@ -2,8 +2,10 @@
   <processStepStatus.getTypesForCompany><![CDATA[
     select *
     from flow.company_process_step_status_type
-    where company_id = :companyId
-      and archived is not true
+    where archived is not true
+    and case when :isParent
+        then company_id = :parentCompanyId
+        else company_id = :companyId end
     order by process_step_status_type
   ]]></processStepStatus.getTypesForCompany>
 

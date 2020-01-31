@@ -180,8 +180,10 @@
              u.first_name || ' ' || u.last_name as full_name,
              u.first_name || ' ' || u.last_name as title
       from flow.user_positions_vw u
-      where u.company_id = :companyId
-        and u.user_schedulable is true
+      where u.user_schedulable is true
+        and case when :isParent
+            then array[u.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            else u.company_id = :companyId end
         and case when :stateId::integer is not null then u.state_id = :stateId::integer and u.user_schedulable is true else u.user_schedulable is true end
         and u.user_archived is not true
       order by full_name

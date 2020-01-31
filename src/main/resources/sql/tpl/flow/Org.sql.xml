@@ -30,8 +30,14 @@
     from flow.org o
              left join flow.org p on p.id = o.parent_org_id
              inner join flow.org_type ot on ot.id = o.org_type_id
-    where o.company_id = :companyId
-      and case when :stateId::integer is not null then o.state_id = :stateId::integer else o.schedulable is true end
+    where case when :isParent
+        then array[o.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+        else o.company_id = :companyId end
+      and case when :stateId::integer is not null
+          then o.state_id = :stateId::integer and o.schedulable is true
+          else o.schedulable is true end
+      and o.archived is not true
+      and o.active_flag is true
     order by o.org_name
     ]]>
   </org.getSchedulingOrgs>

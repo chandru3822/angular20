@@ -90,6 +90,13 @@ values(2,'COMPLETE');
 insert into flow.process_step_status_type(id, process_step_status_type)
 values(3,'CANCELLED');
 
+insert into flow.company_process_step_status_type(process_step_status_type_id, process_step_status_type, company_id, created_by_id)
+values(1, 'Active', (select id from flow.company where company_name = 'Blue Raven Corporate'), 2350555);
+insert into flow.company_process_step_status_type(process_step_status_type_id, process_step_status_type, company_id, created_by_id)
+values(2, 'Active', (select id from flow.company where company_name = 'Blue Raven Corporate'), 2350555);
+insert into flow.company_process_step_status_type(process_step_status_type_id, process_step_status_type, company_id, created_by_id)
+values(3, 'Active', (select id from flow.company where company_name = 'Blue Raven Corporate'), 2350555);
+
 insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)
 values('Active',1,(select id from flow.company where company_name = 'Blue Raven Solar'),false,now(),2350555);
 insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)

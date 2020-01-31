@@ -181,11 +181,15 @@ public class UserService {
   }
 
   public List<User> getSchedulingUsers(Long stateId) {
-    User currentUser = securityService.getCurrentUser();
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);
-    params.put("companyId", currentUser.getCompanyId());
+    params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+
     List<User> results = sqlCache.query("user.getSchedulingUsers", params, User.class);
     return results;
   }
