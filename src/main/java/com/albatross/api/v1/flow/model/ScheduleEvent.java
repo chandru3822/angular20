@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 public class ScheduleEvent {
 
-  private Long resourceId, processStepId, systemListTypeId, projectId, projectProcessStepId, stateId, companyProcessStepStatusTypeId,
+  private Long resourceId, processStepId, systemListTypeId, projectId, projectProcessStepId, stateId, processStepStatusTypeId, companyProcessStepStatusTypeId,
       startCustomFieldValueId, startCustomFieldGroupAssignmentId, endCustomFieldValueId, endCustomFieldGroupAssignmentId,
       resourceCustomFieldValueId, resourceCustomFieldGroupAssignmentId;
   private String resourceName, groupName, customerFirstName, customerLastName, customerFullName, projectName, processStepName,

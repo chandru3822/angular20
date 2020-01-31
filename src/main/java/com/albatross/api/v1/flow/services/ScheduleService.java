@@ -40,24 +40,30 @@ public class ScheduleService {
 
   public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("userIds", esp.getUserIds());
     params.put("orgIds", esp.getOrgIds());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
     List<ScheduleEvent> results = sqlCache.query("schedule.getEvents", params, ScheduleEvent.class);
     return results;
   }
   // todo: @randa schedule.getProjects, schedule.getProject and schedule.getEvents are the exact same query except for the where clause. can we make them one? _rn
   public List<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("stateId", esp.getStateId());
     params.put("eventTypeIds", esp.getEventTypeIds());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
     List<ScheduleEvent> results = sqlCache.query("schedule.getProjects", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
     return results;
   }

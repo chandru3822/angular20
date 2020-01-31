@@ -65,7 +65,9 @@
                left join flow.company_system_list csl on csl.id = cf.company_system_list_id
                left join flow.system_list sl on sl.id = csl.system_list_id
       where cfg.event_type_id is not null
-        and cf.company_id = :companyId
+        and case when :isParent
+            then array[cf.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            else cf.company_id = :companyId end
         and cfg.archived is not true
         and st.timestamp_value is not null
         and et.timestamp_value is not null
@@ -134,12 +136,13 @@
           s.state,
           pps.company_process_step_status_type_id,
           cpsst.process_step_status_type,
+          cpsst.process_step_status_type_id,
           case when sl.id is not null then coalesce((
-                                                        SELECT array_to_json(array_agg(row_to_json(sys)))
-                                                        FROM (
-                                                                 select *
-                                                                 from flow.get_system_list_options(:companyId::integer, sl.id::integer, true, cf3.system_list_option_ids::integer[])
-                                                             ) sys), '[]') else '[]' end as resources
+              SELECT array_to_json(array_agg(row_to_json(sys)))
+              FROM (
+                     select *
+                     from flow.get_system_list_options(ps.company_id::integer, sl.id::integer, true, cf3.system_list_option_ids::integer[])
+                 ) sys), '[]') else '[]' end as resources
       from flow.project_process_step pps
                inner join flow.project p on p.id = pps.project_id
                inner join flow.process_step ps on ps.id = pps.process_step_id
@@ -160,7 +163,9 @@
                left join flow.system_list sl on sl.id = csl.system_list_id
                left join flow.user u on u.id = r.int_value
                left join flow.org o on o.id = r.int_value
-      where ps.company_id = :companyId
+      where case when :isParent
+        then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+        else ps.company_id = :companyId end
         and ps.archived is not true
         and c.state_id = :stateId
         and case when st.timestamp_value is not null then st.timestamp_value >= :startTime::date else 1=1 end

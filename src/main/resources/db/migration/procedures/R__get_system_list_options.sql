@@ -69,6 +69,7 @@ BEGIN
              from flow.org o
              where o.company_id = p_company_id
                and ARRAY[o.org_type_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
+               and o.active_flag is true
              order by name;
      -- = All users
      when v_system_list_id = 4 then
