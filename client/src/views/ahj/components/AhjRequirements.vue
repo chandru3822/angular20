@@ -183,7 +183,7 @@
   import AhjRequirementHistory from './AhjRequirementHistory'
   import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
-  import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjRequirements",
