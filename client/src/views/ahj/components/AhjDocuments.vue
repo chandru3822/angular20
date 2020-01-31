@@ -17,7 +17,7 @@
             :key="document.id">
       <v-list-item :title="document.filename">
         <v-list-item-content>
-          <v-list-item-title>
+          <v-list-item-title :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
             <a :href="document.presignedUrl" download class="list-document">{{document.filename}}</a>
           </v-list-item-title>
         </v-list-item-content>
@@ -26,7 +26,8 @@
         </v-list-item-action>
       </v-list-item>
     </v-list>
-    <div class="empty-list" v-show="documents.length < 1">
+    <div class="empty-list" v-show="documents.length < 1"
+         :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No documents uploaded
     </div>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -57,6 +58,10 @@
       documents: {
         type: Array,
         default: () => []
+      },
+      isNested: {
+        type: Boolean,
+        default: false
       }
     },
     components: {
@@ -137,6 +142,6 @@
   }
   .empty-list {
     padding: 20px;
-    font-size: 0.95em;
+    text-align: left;
   }
 </style>

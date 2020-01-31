@@ -138,6 +138,7 @@
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjPermit.submissionChecklist"
+                          :isNested="true"
             ></AhjChecklist>
             <v-textarea v-model="ahjPermit.submissionNote"
                         label="Submission Instructions"
@@ -178,6 +179,7 @@
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklist-items="ahjPermit.revisionChecklist"
+                          :isNested="true"
             ></AhjChecklist>
             <v-textarea v-model="ahjPermit.revisionNote"
                         label="Revision Submission Instructions"
@@ -218,6 +220,7 @@
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklist-items="ahjPermit.asBuiltChecklist"
+                          :isNested="true"
             ></AhjChecklist>
             <v-textarea v-model="ahjPermit.asBuiltNote"
                         label="As-Built Submission Instructions"
@@ -288,6 +291,7 @@
                          :sourceId="ahjPermit.id"
                          :ahjId="ahjId"
                          :documents="documents"
+                         :isNested="true"
             ></AhjDocument>
             <v-textarea v-model="ahjPermit.deliveryNote"
                         label="Delivery Instructions"
@@ -432,13 +436,13 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
+  import orderBy from 'lodash.orderby'
   import moment from 'moment'
   import AhjChecklist from './components/AhjChecklist'
   import AhjContact from './components/AhjContacts'
   import AhjDocument from './components/AhjDocuments'
   import AhjLink from './components/AhjLinks'
   import AhjServicingFot from './components/AhjServicingFots'
-  import orderBy from 'lodash.orderby'
   import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
@@ -461,15 +465,15 @@
       customFieldGroupAssignments: [],
       approvalRequiredOptions: [{ id: null, name: '' }],
       submittalMethods: [{ id: null, name: '' }],
-      timePeriods: [
-        'This Week',
-        'This Period',
-        'This Year',
-        'Last Week',
-        'Last Period',
-        'Last Year',
-        'Last Six Weeks'
-      ],
+      // timePeriods: [
+      //   'This Week',
+      //   'This Period',
+      //   'This Year',
+      //   'Last Week',
+      //   'Last Period',
+      //   'Last Year',
+      //   'Last Six Weeks'
+      // ],
       // permittingCycleTimes: {
       //   timePeriod: 'Last Six Weeks',
       //   startDate: moment().subtract(6, 'w').format('MM/DD/YYYY'),
@@ -566,22 +570,6 @@
         this.ahjPermit.contractorLicenseExpirationDate = this.ahjPermit.contractorLicenseExpirationDate ? moment(this.ahjPermit.contractorLicenseExpirationDate).format('YYYY-MM-DD') : null
         this.ahjPermit.otherLicenseExpirationDate = this.ahjPermit.otherLicenseExpirationDate ? moment(this.ahjPermit.otherLicenseExpirationDate).format('YYYY-MM-DD') : null
       },
-      async getCustomFieldGroupAssignmentsForScreen() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {
-            sourceId: this.ahjPermit.id,
-            objectTypeId: 4
-          }
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroupAssignments = cloneDeep(data)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       async getAhjPermit() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -594,12 +582,23 @@
           this.ahjPermit.printLocations = orderBy(this.ahjPermit.printLocations, location => location.name.toLowerCase())
           this.ahjPermit.servicingFots = orderBy(this.ahjPermit.servicingFots, fot => fot.hierarchy.orgName.toLowerCase())
           this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Permit')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+      async getCustomFieldGroupAssignmentsForScreen() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {sourceId: this.ahjPermit.id, objectTypeId: 4}
+          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          this.customFieldGroupAssignments = cloneDeep(data)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       getCustomFieldsForGroup(groupId) {
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
@@ -612,26 +611,20 @@
       async getDocuments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {
-            sourceId: this.ahjPermit.id,
-            attachmentSourceTypeId: 1
-          }
+          const params = {sourceId: this.ahjPermit.id, attachmentSourceTypeId: 1}
           const {data} = await getRequestWithParams('/document/getSourceAttachments', {params})
           this.documents = cloneDeep(data)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async resetForm() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataReady = false
         this.getAhjPermit().then(() => {
           this.reformatDates()
           this.dataReady = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
         })
       },
       async saveAhjPermit() {
@@ -642,28 +635,21 @@
           this.ahjPermit = cloneDeep(data)
           this.reformatDates()
           this.snackbar = getSnackbar('SUCCESS', 'AHJ Permit saved')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Permit')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async created() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       this.ahjId = parseInt(this.$route.params.ahjId)
-
       this.getAhjPermit().then(() => {
         this.reformatDates()
         this.getCustomFieldGroupAssignmentsForScreen()
         this.dataReady = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
         // turned off for now.
-        // this.getDocuments().then(() => {
-        //   this.dataReady = true
-        //   this.$store.commit(AppMutations.SET_LOADING, false)
-        // })
+        // this.getDocuments().then(() => this.dataReady = true)
       })
     }
   }

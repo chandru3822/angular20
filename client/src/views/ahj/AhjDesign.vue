@@ -93,11 +93,12 @@
             </div>
             <AhjRequirement v-if="dataReady"
                             title="PV Design Notes and Additional Requirements"
-                            :transparent="true"
                             :requirementTypeId="3"
                             :itemType="itemType"
                             :ahjId="ahjId"
                             :requirements="ahjDesign.designRequirements"
+                            :transparent="true"
+                            :isNested="true"
             ></AhjRequirement>
           </v-card-text>
         </v-card>
@@ -130,11 +131,12 @@
             </div>
             <AhjRequirement v-if="dataReady"
                             title="Electrical Design Notes and Additional Requirements"
-                            :transparent="true"
                             :requirementTypeId="1"
                             :itemType="itemType"
                             :ahjId="ahjId"
                             :requirements="ahjDesign.electricalRequirements"
+                            :transparent="true"
+                            :isNested="true"
             ></AhjRequirement>
           </v-card-text>
         </v-card>
@@ -149,7 +151,8 @@
               Structural Design Loads
             </v-card-subtitle>
             <div class="flex-display flex-wrap justify-space-between px-2">
-              <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
+              <div class="flex-display custom-field mx-2"
+                   v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
                 <v-select v-model="item.intValue"
                           :items="item.listOfValues"
                           item-text="name"
@@ -200,17 +203,17 @@
             </div>
             <AhjRequirement v-if="dataReady"
                             title="Structural Design Notes and Additional Requirements"
-                            :transparent="true"
                             :requirementTypeId="2"
                             :itemType="itemType"
                             :ahjId="ahjId"
                             :requirements="ahjDesign.structuralRequirements"
+                            :transparent="true"
+                            :isNested="true"
             ></AhjRequirement>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
-
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
@@ -246,30 +249,25 @@
       async getCustomFieldGroupAssignmentsForScreen() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {
-            sourceId: this.ahjDesign.id,
-            objectTypeId: 1
-          }
+          const params = {sourceId: this.ahjDesign.id, objectTypeId: 1}
           const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
           this.customFieldGroupAssignments = cloneDeep(data)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getAhjDesign() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/design`, 'blueraven')
           this.ahjDesign = cloneDeep(data)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Design')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       getCustomFieldsForGroup(groupId) {
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
@@ -279,10 +277,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataReady = false
         this.getAhjDesign().then(() => {
-          this.getCustomFieldGroupAssignmentsForScreen().then(() => {
-            this.dataReady = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          })
+          this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
         })
       },
       async saveAhjDesign() {
@@ -292,22 +287,17 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
           this.ahjDesign = cloneDeep(data)
           this.snackbar = getSnackbar('SUCCESS', 'AHJ Design saved')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Design')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async created () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       this.ahjId = parseInt(this.$route.params.ahjId)
-
       this.getAhjDesign().then(() => {
-        this.getCustomFieldGroupAssignmentsForScreen()
-        this.dataReady = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
       })
     }
   }

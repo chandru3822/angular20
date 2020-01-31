@@ -56,6 +56,7 @@
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.schedulingWithAhjChecklist"
+                          :isNested="true"
             ></AhjChecklist>
           </v-card-text>
         </v-card>
@@ -100,6 +101,7 @@
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.schedulingWithBrsTechnicianChecklist"
+                          :isNested="true"
             ></AhjChecklist>
           </v-card-text>
         </v-card>
@@ -142,6 +144,7 @@
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.schedulingChecklist"
+                          :isNested="true"
             ></AhjChecklist>
           </v-card-text>
         </v-card>
@@ -182,6 +185,7 @@
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.obtainingResultsChecklist"
+                          :isNested="true"
             ></AhjChecklist>
           </v-card-text>
         </v-card>
@@ -230,6 +234,7 @@
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.reinspectionsChecklist"
+                          :isNested="true"
             ></AhjChecklist>
           </v-card-text>
         </v-card>
@@ -264,11 +269,11 @@
             <AhjContact v-if="dataReady"
                         title="Utility Service Department Contacts"
                         :contactTypeId="9"
-                        :isNested="true"
                         :itemId="ahjInspection.id"
                         :itemType="itemType"
                         :ahjId="ahjId"
                         :contacts="ahjInspection.utilityServiceDeptContacts"
+                        :isNested="true"
             ></AhjContact>
           </v-card-text>
         </v-card>
@@ -442,18 +447,14 @@
       async getCustomFieldGroupAssignmentsForScreen() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {
-            sourceId: this.ahjInspection.id,
-            objectTypeId: 3
-          }
+          const params = {sourceId: this.ahjInspection.id, objectTypeId: 3}
           const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
           this.customFieldGroupAssignments = cloneDeep(data)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async getAhjInspection() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -470,12 +471,11 @@
             }
           })
           this.ahjInspection = cloneDeep(data)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Inspection')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       getCustomFieldsForGroup(groupId) {
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
@@ -489,10 +489,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataReady = false
         this.getAhjInspection().then(() => {
-          this.getCustomFieldGroupAssignmentsForScreen().then(() => {
-            this.dataReady = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          })
+          this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
         })
       },
       async saveAhjInspection() {
@@ -502,22 +499,17 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
           this.ahjInspection = cloneDeep(data)
           this.snackbar = getSnackbar('SUCCESS', 'AHJ Inspection saved')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Inspection')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async created () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       this.ahjId = parseInt(this.$route.params.ahjId)
-
       this.getAhjInspection().then(() => {
-        this.getCustomFieldGroupAssignmentsForScreen()
-        this.dataReady = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
       })
     }
   }

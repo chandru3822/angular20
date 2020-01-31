@@ -148,7 +148,8 @@
             <v-checkbox v-model="requirement.complete"></v-checkbox>
           </v-list-item-action>
           <v-list-item-content class="ml-3">
-            <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}">
+            <v-list-item-title :style="[{'text-decoration': requirement.complete ? 'line-through' : ''},
+                                        {'font-size': isNested ? '0.95em !important' : '0.85em !important'}]">
               <span>{{ requirement.description }}</span>
             </v-list-item-title>
             <v-list-item-subtitle v-if="!requirement.formattedDateModified && requirement.formattedDateCreated"
@@ -166,7 +167,8 @@
           </v-list-item-action>
         </v-list-item>
       </v-list>
-      <div class="empty-list" v-show="requirementsCopy.length < 1">
+      <div class="empty-list" v-show="requirementsCopy.length < 1"
+           :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
         No requirements found
       </div>
 
@@ -196,9 +198,6 @@
       title: {
         type: String
       },
-      transparent: {
-        type: Boolean
-      },
       requirementTypeId: {
         type: Number
       },
@@ -211,6 +210,14 @@
       requirements: {
         type: Array,
         default: () => []
+      },
+      transparent: {
+        type: Boolean,
+        default: false
+      },
+      isNested: {
+        type: Boolean,
+        default: false
       }
     },
     data () {
@@ -407,6 +414,7 @@
   .empty-list {
     padding: 20px;
     font-size: 0.85em;
+    text-align: left;
   }
 
   .requirement-history-tags {
