@@ -38,6 +38,7 @@
                             v-model="item.textValue"
                             label="Other Value"
                             filled
+                            class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjInspection.requiredInspectionTypes"
@@ -82,6 +83,7 @@
                             v-model="item.textValue"
                             label="Other Value"
                             filled
+                            class="other-field"
               ></v-text-field>
             </div>
             <v-textarea v-model="ahjInspection.technicianInstructionNote"
@@ -171,6 +173,7 @@
                             v-model="item.textValue"
                             label="Other Value"
                             filled
+                            class="other-field"
               ></v-text-field>
             </div>
             <v-textarea v-model="ahjInspection.obtainingResultsNote"
@@ -211,6 +214,7 @@
                             v-model="item.textValue"
                             label="Other Value"
                             filled
+                            class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjInspection.inspectionFee"
@@ -575,5 +579,8 @@
   .lower-section {
     border-bottom: 1px solid #ccc;
     width: 100%;
+  }
+  .other-field {
+    margin-top: -20px;
   }
 </style>

@@ -91,7 +91,7 @@
                                     v-model="item.textValue"
                                     label="Other Value"
                                     filled
-                                    style="margin-top: -20px"
+                                    class="other-field"
                       ></v-text-field>
                     </div>
                   </v-col>
@@ -229,7 +229,7 @@
                                 v-model="item.textValue"
                                 label="Other Value"
                                 filled
-                                style="margin-top: -20px"
+                                class="other-field"
                   ></v-text-field>
                 </div>
                 <AhjLink v-if="dataReady"
@@ -421,5 +421,8 @@
   }
   .custom-field {
     width: 48%;
+  }
+  .other-field {
+    margin-top: -20px;
   }
 </style>

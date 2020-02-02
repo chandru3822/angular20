@@ -37,6 +37,7 @@
                             v-model="item.textValue"
                             label="Other Value"
                             filled
+                            class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjPermit.depositAmount"
@@ -158,15 +159,21 @@
             Revision Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-for="item in getCustomFieldsForGroup(2)"
-                      :key="item.id"
-                      v-model="item.intValue"
-                      :items="item.listOfValues"
-                      item-text="name"
-                      item-value="id"
-                      :label="item.fieldName"
-                      filled
-            ></v-select>
+            <div v-for="item in getCustomFieldsForGroup(2)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+                            class="other-field"
+              ></v-text-field>
+            </div>
             <v-text-field v-model="ahjPermit.revisionFeeAmount"
                           label="Fee Amount"
                           filled
@@ -199,15 +206,21 @@
             As-Built Submission Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-for="item in getCustomFieldsForGroup(3)"
-                      :key="item.id"
-                      v-model="item.intValue"
-                      :items="item.listOfValues"
-                      item-text="name"
-                      item-value="id"
-                      :label="item.fieldName"
-                      filled
-            ></v-select>
+            <div v-for="item in getCustomFieldsForGroup(3)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+                            class="other-field"
+              ></v-text-field>
+            </div>
             <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
                           label="Fee Amount"
                           filled
@@ -249,15 +262,21 @@
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
-            <v-select v-for="item in getCustomFieldsForGroup(4)"
-                      :key="item.id"
-                      v-model="item.intValue"
-                      :items="item.listOfValues"
-                      item-text="name"
-                      item-value="id"
-                      :label="item.fieldName"
-                      filled
-            ></v-select>
+            <div v-for="item in getCustomFieldsForGroup(4)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+                            class="other-field"
+              ></v-text-field>
+            </div>
             <v-text-field v-model="ahjPermit.documentsAvailable"
                           label="When are documents available?"
                           filled
@@ -271,15 +290,21 @@
             Delivery Details
           </v-card-title>
           <v-card-text class="mt-4">
-            <v-select v-for="item in getCustomFieldsForGroup(5)"
-                      :key="item.id"
-                      v-model="item.intValue"
-                      :items="item.listOfValues"
-                      item-text="name"
-                      item-value="id"
-                      :label="item.fieldName"
-                      filled
-            ></v-select>
+            <div v-for="item in getCustomFieldsForGroup(5)" :key="item.id">
+              <v-select v-model="item.intValue"
+                        :items="item.listOfValues"
+                        item-text="name"
+                        item-value="id"
+                        :label="item.fieldName"
+                        filled
+              ></v-select>
+              <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                            v-model="item.textValue"
+                            label="Other Value"
+                            filled
+                            class="other-field"
+              ></v-text-field>
+            </div>
             <v-text-field v-model="ahjPermit.deliveryFeeAmount"
                           label="Fee Amount"
                           filled
@@ -710,5 +735,8 @@
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
+  }
+  .other-field {
+    margin-top: -20px;
   }
 </style>
