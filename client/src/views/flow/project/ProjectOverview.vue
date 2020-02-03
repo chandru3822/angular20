@@ -48,7 +48,10 @@
         <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-        <v-btn text @click="updateFieldGroups">Save</v-btn>
+        <v-btn
+          v-if="index === 0"
+          text
+          @click="updateFieldGroups">Save</v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-card class="pa-4 text-left">

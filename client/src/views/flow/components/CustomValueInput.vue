@@ -5,7 +5,7 @@
     <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
   </v-col>
 
-  <v-col class="d-flex justify-end align-self-start">
+  <v-col class="d-flex justify-start align-self-start">
 
     <DatetimePickerInput
       v-if="field.dataTypeId === 1"
@@ -25,11 +25,12 @@
       :label="field.fieldName"
     />
 
-    <input
+    <v-checkbox
       v-if="field.dataTypeId === 3"
-      type="checkbox"
       v-model="field.booleanValue"
+      :label="field.fieldName"
       :disabled="readonly"
+      :ripple="false"
     />
 
     <v-text-field
