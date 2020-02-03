@@ -9,7 +9,7 @@
 >
   <template #activator="{on}">
     <v-text-field
-      :value="value | formatDate('date', format)"
+      :value="value | formatDate(type, format)"
       :label="label"
       prepend-icon="event"
       readonly

@@ -44,12 +44,11 @@
       v-for="(group, index) in customFieldGroups"
       :key="index"
     >
-<!--      <ProjectFieldGroup :group="group"/>-->
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <!--              <v-btn text @click="saveLead">Save</v-btn>-->
+        <v-btn text @click="updateFieldGroups">Save</v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-card class="pa-4 text-left">
@@ -151,7 +150,8 @@
 
 <script>
 
-import {getRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {getRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
 import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
@@ -226,6 +226,18 @@ export default {
         logError(e)
       } finally {
         this.isFieldsLoading = false
+      }
+    },
+    updateFieldGroups: async function () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.customFieldGroups)
+        this.customFieldGroups = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     getNotes: async function () {
