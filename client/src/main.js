@@ -58,11 +58,14 @@ Vue.filter('formatDate', function (value, type, format) {
     return
   }
 
-  if (value && format) {
-    return moment(String(value)).tz(timezone).format(format)
-  } else if (value) {
-    // default format if none provided, date doesn't do anything with timezone, just reformats the string
-    return type === 'date' ? moment(String(value)).format('M/D/YYYY') : moment(String(value)).tz(timezone).format('M/D/YYYY h:mm a')
+  // default format if none provided
+  if (!format) {
+    format = (type === 'date') ? 'M/D/YYYY' : 'M/D/YYYY h:mm a'
+  }
+
+  if (value) {
+    // date doesn't do anything with timezone, just reformats the string
+    return type === 'date' ? moment.utc(String(value)).format(format) : moment(String(value)).tz(timezone).format(format)
   }
 })
 

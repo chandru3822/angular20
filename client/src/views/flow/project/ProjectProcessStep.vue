@@ -142,7 +142,6 @@ export default {
     },
     async randaSaveCustomFields() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      debugger
       this.processStep.customFieldGroups = this.customFieldGroups
       try {
         await putRequest(`/projectProcessStep`, this.processStep)

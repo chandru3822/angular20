@@ -58,7 +58,8 @@
           :key="idx"
           :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
           :showFieldName="false"
-          :field="field"/>
+          :field="field"
+        />
       </v-card>
     </v-col>
 
