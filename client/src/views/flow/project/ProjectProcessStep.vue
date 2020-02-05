@@ -8,15 +8,45 @@
     <h3>{{ processStep.name }}</h3>
   </v-col>
 
-
   <v-col cols="12" lg="6" class="text-left">
+
+    <v-col v-if="isProjectFieldsLoading" class="text-center">
+      <SpinnerInline :size="20" color="primary"/>
+    </v-col>
+
+    <v-col
+      v-else
+      class="mt-4"
+      v-for="(group, index) in projectFieldGroups"
+      :key="index"
+    >
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn
+            v-if="index === 0"
+            text
+            @click="updateProjectFieldGroups">Save</v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card class="pa-4 text-left">
+        <CustomValueInput
+          v-for="(field, idx) in group.customFieldValues"
+          :key="idx"
+          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
+          :showFieldName="false"
+          :field="field"
+        />
+      </v-card>
+    </v-col>
 
     <v-row v-for="(group, index) in customFieldGroups" :key="index">
 <!--  @TODO: @randa, this is the reactjs way to do this. Does vue have a better way? -->
       <v-col>
         <ProcessStepFieldGroup :group="group" :onSaveHandler="randaSaveCustomFields"/>
       </v-col>
-    </v-row>
+    </v-row
 
     <h3>Actions</h3>
 
@@ -67,13 +97,15 @@
 
 <script>
 
-import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest} from '@/helpers/helpers'
+import {getRequest, logError, getSnackbar, getRequestWithParams, putRequest, postRequest} from '@/helpers/helpers'
 import ActionButton from './ActionButton'
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
-import ProcessStepFieldGroup from "./ProcessStepFieldGroup";
+import ProcessStepFieldGroup from './ProcessStepFieldGroup'
+import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: 'ProjectProcessStep',
@@ -82,7 +114,9 @@ export default {
     Snackbar,
     Attachments,
     NotesAndActivity,
-    ProcessStepFieldGroup
+    ProcessStepFieldGroup,
+    CustomValueInput,
+    SpinnerInline
   },
   data () {
     return {
@@ -91,13 +125,16 @@ export default {
       projectProcessStepId: this.$route.params.processStepId,
       processStepId: this.$route.query.processStepId,
       processStep: {},
+      projectFieldGroups: [],
       customFieldGroups: [],
       isProcessStepLoading: true,
+      isProjectFieldsLoading: false,
       notes: []
     }
   },
   created () {
     this.getProcessStep()
+    this.getProjectFieldGroups()
     this.getCustomFieldGroups()
     this.getNotes()
   },
@@ -110,6 +147,17 @@ export default {
         logError(e)
       } finally {
         this.isProcessStepLoading = false
+      }
+    },
+    async getProjectFieldGroups() {
+      try {
+        this.isProjectFieldsLoading = true
+        const {data} = await getRequest(`/customFieldValues/project/${this.projectId}`)
+        this.projectFieldGroups = data
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.isProjectFieldsLoading = false
       }
     },
     async getCustomFieldGroups() {
@@ -138,6 +186,18 @@ export default {
       } catch {
         console.log('suck')
 
+      }
+    },
+    async updateProjectFieldGroups() {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.customFieldGroups)
+        this.customFieldGroups = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async randaSaveCustomFields() {
