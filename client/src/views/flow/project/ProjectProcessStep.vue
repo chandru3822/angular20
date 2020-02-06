@@ -5,7 +5,7 @@
   </v-col>
 
   <v-col cols="12" class="text-left">
-    <h3>{{ processStep.name }}</h3>
+    <h2>{{ processStep.processStepName }}</h2>
   </v-col>
 
   <v-col cols="12" lg="6" class="text-left">
@@ -42,11 +42,12 @@
       </v-card>
     </v-col>
 
-<!--    process field groups -->
+<!--    process field groups-->
+<!--    duplicate keys were occurring between this and the project field group v-for. This key is a random number of [0, 99999999) -->
     <v-col
       class="mt-4"
       v-for="(cfg, index) in customFieldGroups"
-      :key="index"
+      :key="Math.floor(Math.random() * (99999999 - 0 + 1)) + 0"
     >
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
@@ -76,7 +77,7 @@
       <ActionButton
         v-if="action.actionTypeId === 2"
         :actionId="action.id"
-        :projectProcessStepId="projectProcessStepId"
+        :projectProcessStepId="parseInt(projectProcessStepId)"
         :label="action.actionName"
         :handleOnComplete="handleActionCompleted"
         :handleOnCompleteError="handleOnCompleteError"

@@ -10,25 +10,6 @@
           {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
         </div>
       </v-col>
-
-      <v-col cols="8" class="pb-0">
-        <v-row justify="end" class="pb-0">
-          <UserCard
-            name="Riley Burgess"
-            role="Setter"
-            location="Colorado"
-            imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
-            class="user-card"/>
-
-          <UserCard
-            name="Mike Falls"
-            role="Closer"
-            location="Colorado"
-            imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
-            class="user-card"/>
-        </v-row>
-      </v-col>
-
     </v-row>
   </v-col>
 
@@ -161,7 +142,6 @@ import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import Snackbar from '@/components/Snackbar.vue'
-import UserCard from '@/views/flow/components/UserCard'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 
 export default {
@@ -173,7 +153,6 @@ export default {
     Attachments,
     NotesAndActivity,
     Snackbar,
-    UserCard,
     CustomValueInput
   },
   data () {
