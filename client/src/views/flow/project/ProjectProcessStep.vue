@@ -1,5 +1,53 @@
 <template>
 <v-row>
+
+<!--  screen header -->
+  <v-col cols="12">
+    <v-row class="process-step-header">
+      <v-col cols="8" class="text-left pl-5">
+        <div class="project-title">
+          <router-link :to="`/lead/${customer.id}`">{{ customer.fullName}}</router-link>
+        </div>
+        <div class="project-subtitle">
+          {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
+        </div>
+      </v-col>
+
+      <v-col cols="4" class="lead-owner pb-2 text-right">
+        <div v-if="!displayChangeOwner">
+          <div v-if="processStep.owner && processStep.owner.userId">
+            <v-avatar
+              :tile="false"
+              :size="25"
+              color="grey lighten-4"
+              class="account-img mr-2"
+            >
+              <img name="accountImg" src="../../../assets/user_img_placeholder.png">
+            </v-avatar>
+            {{processStep.owner.fullName}}<br/>
+            {{processStep.owner.position}}
+          </div>
+        </div>
+        <div v-if="displayChangeOwner">
+          <v-autocomplete v-model="processStep.owner"
+                          :items="availableOwners"
+                          label="Select Owner"
+                          item-text="fullName"
+                          return-object
+                          autocomplete="off"
+                          @change="updateOwner"
+          >
+          </v-autocomplete>
+        </div>
+        <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
+          <span v-if="displayChangeOwner">cancel</span>
+          <span v-else-if="customer.owner && customer.owner.userId">change</span>
+          <span v-else>add owner</span>
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-col>
+
   <v-col class="text-left">
     <router-link :to="`/project/${projectId}`">Back</router-link>
   </v-col>
@@ -148,14 +196,19 @@ export default {
       customFieldGroups: [],
       isProcessStepLoading: true,
       isProjectFieldsLoading: false,
-      notes: []
+      notes: [],
+      customer: {},
+      displayChangeOwner: false,
+      availableOwners: []
     }
   },
-  created () {
+  async created () {
     this.getProcessStep()
     this.getProjectFieldGroups()
     this.getCustomFieldGroups()
     this.getNotes()
+    this.getCustomer()
+    this.getAvailableOwners()
   },
   methods: {
     getProcessStep: async function() {
@@ -207,6 +260,32 @@ export default {
 
       }
     },
+    async getCustomer () {
+      // this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/customer/${this.$route.query.customerId}`)
+        this.customer = data
+        // this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Customer')
+        // this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getAvailableOwners () {
+      // this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //@TODO: @randa, pretty sure the customer list will work for process steps and projects but double checking
+        const {data} = await getRequest(`/customer/owners`)
+        this.availableOwners = data
+
+        // this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+        // this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async updateProjectFieldGroups() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -232,6 +311,18 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async updateOwner() {
+      this.displayChangeOwner = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await postRequest(`/projectProcessStep/${this.projectProcessStepId}/owner`, this.processStep.owner)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     handleActionCompleted () {
       this.$router.push({
         name: 'project',
@@ -249,5 +340,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+.process-step-header {
+  border-bottom: solid 1px #EAEAF4;
+}
 </style>

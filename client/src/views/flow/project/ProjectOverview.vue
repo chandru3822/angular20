@@ -57,7 +57,10 @@
         </v-col>
 
         <v-col cols="12" v-else>
-          <ActiveProjectProcessStepSnippet :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)" :projectId="projectId"/>
+          <ActiveProjectProcessStepSnippet
+            :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)"
+            :projectId="projectId"
+            :customerId="customer.id"/>
         </v-col>
       </v-row>
     </v-col>
@@ -102,7 +105,10 @@
           <v-col cols="12" v-else>
             <template v-for="step in processStepsByName">
               <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
-              <ProjectProcessStepSnippet :steps="step.processSteps" :projectId="projectId"/>
+              <ProjectProcessStepSnippet
+                :steps="step.processSteps"
+                :projectId="projectId"
+                :customerId="customer.id"/>
             </template>
           </v-col>
 
@@ -166,7 +172,7 @@ export default {
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
-      customer: {}
+      customer: {},
     }
   },
   created () {
