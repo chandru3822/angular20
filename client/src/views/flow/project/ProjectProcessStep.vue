@@ -109,10 +109,10 @@
       </v-toolbar>
       <v-card class="pa-4">
         <CustomValueInput
-          v-for="(cf, idx) in cfg.customFieldValues"
+          v-for="(field, idx) in cfg.customFieldValues"
           :key="idx"
-          :readonly="false"
-          :field="cf"
+          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
+          :field="field"
         />
       </v-card>
     </v-col>
