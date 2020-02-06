@@ -9,12 +9,12 @@
 >
   <template #activator="{on}">
     <v-text-field
-      :value="value"
+      :value="value | formatDate(type, format)"
       :label="label"
       prepend-icon="event"
       readonly
       v-on="on"
-    ></v-text-field>
+    />
   </template>
   <v-date-picker
     v-if="showDate"
@@ -48,7 +48,8 @@ export default {
     value: String,
     timezone: String,
     type: String,
-    label: String
+    label: String,
+    format: String
   },
   data: () => ({
     date: null,
@@ -60,11 +61,16 @@ export default {
   created() {
     this.init()
   },
+  computed: {
+    formattedValue () {
+      return this.value
+    }
+  },
   methods: {
     saveDate () {
       if (this.type === 'date') {
         DateTime.local()
-        this.$emit('input', DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: this.timezone}).toISODate())
+        this.$emit('input', DateTime.fromFormat(this.date, 'yyyy-MM-dd').toISODate())
         this.menu = false
       } else {
         this.showDate = false
@@ -72,7 +78,7 @@ export default {
       }
     },
     saveTime () {
-      if (this.type === 'datetime') {
+      if (this.type === 'timestamp') {
         const date = DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: this.timezone})
         let time = DateTime.fromISO(this.time, {zone: this.timezone})
         const datetime = time.set({
@@ -93,13 +99,18 @@ export default {
       this.init()
     },
     init () {
-      const value = DateTime.fromISO(this.$props.value, {zone: this.timezone})
+      let value = DateTime.fromISO(this.$props.value)
+
+      if (['timestamp', 'time'].includes(this.type)) {
+        value = value.setZone(this.timezone)
+      }
+
       const now = DateTime.local().setZone(this.timezone)
       const dateToUse = (value.isValid) ? value : now
       this.date = dateToUse.toFormat('yyyy-MM-dd')
       this.time = dateToUse.toFormat('HH:mm')
 
-      if (['datetime', 'date'].includes(this.type)) {
+      if (['timestamp', 'date'].includes(this.type)) {
         this.showDate = true
         this.showTime = false
       } else {

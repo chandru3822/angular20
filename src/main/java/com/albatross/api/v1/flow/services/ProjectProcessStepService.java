@@ -2,10 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.AttachmentType;
-import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -91,5 +88,13 @@ public class ProjectProcessStepService {
     params.put("userId", user.getId());
 
     sqlCache.update("projectProcessStep.setStatus", params);
+  }
+
+  public void updateOwner(Long projectProcessStepId, Owner owner) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userPositionId", (owner == null) ? null : owner.getUserPositionId());
+    params.put("projectProcessStepId", projectProcessStepId);
+    params.put("userId", securityService.getCurrentUser().getId());
+    sqlCache.update("projectProcessStep.updateOwner", params);
   }
 }

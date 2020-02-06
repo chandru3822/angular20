@@ -44,13 +44,14 @@
           <v-list-item-action @click="editLink(link)">
             <v-icon small>edit</v-icon>
           </v-list-item-action>
-          <v-list-item-title>
+          <v-list-item-title :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
             <a :href="link.link" class="list-link">{{ link.name }}</a>
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </v-list>
-    <div class="empty-list" v-show="links.length < 1">
+    <div class="empty-list" v-show="links.length < 1"
+         :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No links found
     </div>
   </v-card>
@@ -81,6 +82,10 @@
       links: {
         type: Array,
         default: () => []
+      },
+      isNested: {
+        type: Boolean,
+        default: false
       }
     },
     data () {
@@ -207,6 +212,6 @@
   }
   .empty-list {
     padding: 20px;
-    font-size: 0.85em;
+    text-align: left;
   }
 </style>

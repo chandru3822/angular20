@@ -10,11 +10,22 @@
           <v-btn v-for="(c, index) in workQueueCategories" class="wq-button mx-2"
                  :outlined="selectedWorkQueueCategory.id === c.id"
                  :style="{color: selectedWorkQueueCategory.id === c.id ? `${c.color} !important` : 'white !important'}"
-                 :color="c.color" :key="index" @click="getWorkQueues(c)">
+                 :color="c.color" :key="index" @click="getWorkQueues(true, c)">
             {{c.workQueueCategory}}
           </v-btn>
         </v-row>
         <v-divider class="mt-3"/>
+        <v-row class="px-4">
+          <div style="width: 250px">
+            <v-select v-model="selectedUserPositionId"
+                      :items="workQueueOwners"
+                      label="Assigned to"
+                      item-text="fullName"
+                      item-value="userPositionId"
+                      @input="getWorkQueues(false)"
+            ></v-select>
+          </div>
+        </v-row>
         <v-row>
           <v-card tile v-for="wq in workQueues" class="ma-3 flex-display card-main"
                   :class="{'clickable': wq.workQueueCount > 0}"
@@ -53,12 +64,16 @@
         model: {},
         selectedWorkQueueCategory: {},
         workQueueCategories: [],
-        workQueues: []
+        workQueues: [],
+        selectedUserPositionId: null,
+        workQueueOwners: [],
+        anyOwner: { id: -1, fullName: 'Anyone', userPositionId: null}
       }
     },
     computed: {},
     async created() {
       this.getWorkQueueCategories()
+      this.getWorkQueueOwners()
       this.getWorkQueues()
     },
     methods: {
@@ -75,13 +90,29 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getWorkQueues(c) {
-        // console.log('randaLogger', c)
-        this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
+      async getWorkQueueOwners() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/workQueue/owners`)
+          this.workQueueOwners = data
+          this.workQueueOwners.unshift(this.anyOwner)
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Owners')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getWorkQueues(reset, c) {
+        if(reset) {
+          this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
+        }
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequestWithParams(`/workQueue`, { params: {
-              workQueueCategoryId: this.selectedWorkQueueCategory.id
+              workQueueCategoryId: this.selectedWorkQueueCategory.id,
+              userPositionId: this.selectedUserPositionId
             }})
           this.workQueues = data
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -94,7 +125,7 @@
       loadDrilldown(wq) {
         if(wq.workQueueCount > 0) {
           console.log('randaLogger',wq)
-          this.$router.push({name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}})
+          this.$router.push({name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: this.selectedUserPositionId}})
           // this.$router.push({name: 'lead', params: {id: data.id}})
         }
       }

@@ -41,6 +41,11 @@ public class CustomFieldValueController {
     return new ResponseEntity<>(customFieldValueService.getProjectCustomValues(projectId), HttpStatus.OK);
   }
 
+  @PostMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<CustomFieldGroup>> updateProjectCustomFieldValues(@RequestBody List<CustomFieldGroup> groups, @PathVariable Long projectId) {
+    return new ResponseEntity<>(customFieldValueService.updateProjectCustomFieldValues(projectId, groups), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/project/{projectId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectProcessStepId(@PathVariable Long projectId,
                                                                                 @RequestParam Long projectProcessStepId) {

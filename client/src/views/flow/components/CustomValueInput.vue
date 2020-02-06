@@ -5,57 +5,32 @@
     <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
   </v-col>
 
-  <v-col class="d-flex justify-end align-self-start">
-    <template v-if="field.dataTypeId === 1">
+  <v-col class="d-flex justify-start align-self-start">
 
-      <span v-if="readonly">{{ field.dateValue | formatDate('date') }}</span>
-
-      <datetime
-        v-else
-        class="text-right"
-        v-model="field.dateValue"
-        input-class="one-hunned"
-        :zone="timezone"
-        :format="{ year: 'numeric', month: 'long', day: 'numeric' }"
-        :phrases="{ok: 'Ok', cancel: 'Close'}"
-        auto
-      />
-    </template>
-
-
-<!--    <template v-if="field.dataTypeId === 2">-->
-
-<!--      <span v-if="readonly">{{field.timestampValue | formatDate('timestamp')}}</span>-->
-
-<!--      <datetime-->
-<!--        v-else-->
-<!--        class="datetime-input"-->
-<!--        type="datetime"-->
-<!--        v-model="field.timestampValue"-->
-<!--        :zone="timezone"-->
-<!--        :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"-->
-<!--        :phrases="{ok: 'Ok', cancel: 'Close'}"-->
-<!--        :hour-step="1"-->
-<!--        :minute-step="15"-->
-<!--        use12-hour-->
-<!--        auto-->
-<!--      />-->
-<!--    </template>-->
-
+    <DatetimePickerInput
+      v-if="field.dataTypeId === 1"
+      v-model="field.dateValue"
+      :timezone="this.timezone"
+      :type="'date'"
+      :format="'MMMM DD, YYYY'"
+      :label="field.fieldName"
+    />
 
     <DatetimePickerInput
       v-if="field.dataTypeId === 2"
       v-model="field.timestampValue"
-      :timezone="this.$store.state.user.details.timezone.value"
-      type="datetime"
+      :timezone="this.timezone"
+      type="timestamp"
+      :format="'MMMM DD, YYYY, h:mm A'"
       :label="field.fieldName"
     />
 
-    <input
+    <v-checkbox
       v-if="field.dataTypeId === 3"
-      type="checkbox"
       v-model="field.booleanValue"
+      :label="field.fieldName"
       :disabled="readonly"
+      :ripple="false"
     />
 
     <v-text-field
@@ -123,7 +98,6 @@
       v-model="field.intValue"
       text
       :items="field.listOfValues"
-
       :readonly="readonly"
       placeholder=" "
       item-value="id"
@@ -135,9 +109,7 @@
 
 <script>
 
-import { Datetime } from 'vue-datetime'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-import moment from 'moment'
 
 export default {
   name: 'CustomValueInput',
@@ -150,31 +122,12 @@ export default {
     }
   },
   components: {
-    Datetime,
     DatetimePickerInput
   },
   data () {
     return {
-      // todo: allow the component to pass in the format
-      // todo: allow the component to pass in readonly value to config.clickOpens
-      timezone: this.$store.state.user.details.timezone.value,
-      config: {
-        altFormat: 'F j, Y h:i K',
-        altInput: true,
-        altInputClass: 'field-picker',
-        allowInput: false,
-        time_24hr: false,
-        enableTime: true,
-        clickOpens: true,
-        dateFormat: 'Z'
-      }
+      timezone: this.$store.state.user.details.timezone.value
     }
-  },
-  computed: {
-    // formattedDateTime: function () {
-    //   const dateTime = this.field.dateValue || this.field.timestampValue
-    //   return moment(dateTime).tz(this.timezone).format('MMMM D, YYYY, H:mm A')
-    // }
   }
 }
 </script>
@@ -182,10 +135,6 @@ export default {
 <style scoped lang="scss">
 .ancillary {
   font-size: 12px;
-}
-
-.datetime-input {
-  width: 100%;
 }
 </style>
 

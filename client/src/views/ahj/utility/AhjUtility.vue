@@ -19,116 +19,116 @@
         </v-toolbar-items>
       </v-toolbar>
 
-            <v-toolbar color="white" class="elevation-1 mt-3">
-              <v-text-field
-                  class="mt-2"
-                  v-model="ahjUtilitySearch"
-                  prepend-inner-icon="search"
-                  label="Search..."
-                  single-line
-                  hide-details
-              ></v-text-field>
-              <v-spacer v-if="!IS_MOBILE"></v-spacer>
-            </v-toolbar>
-            <v-data-table
-              :headers="visibleHeaders"
-              :items="filteredAhjUtilities"
-              :search="ahjUtilitySearch"
-              :options="pagination"
-              :items-per-page="-1"
-              :mobile-breakpoint="0"
-              fixed-header
-              dense
-              hide-default-footer
-              class="elevation-1 ahj-utility-table"
-            >
+      <v-toolbar color="white" class="elevation-1 mt-3">
+        <v-text-field
+            class="mt-2"
+            v-model="ahjUtilitySearch"
+            prepend-inner-icon="search"
+            label="Search..."
+            single-line
+            hide-details
+        ></v-text-field>
+        <v-spacer v-if="!IS_MOBILE"></v-spacer>
+      </v-toolbar>
+      <v-data-table
+        :headers="visibleHeaders"
+        :items="filteredAhjUtilities"
+        :search="ahjUtilitySearch"
+        :options="pagination"
+        :items-per-page="-1"
+        :mobile-breakpoint="0"
+        fixed-header
+        dense
+        hide-default-footer
+        class="elevation-1 ahj-utility-table"
+      >
 <!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
-<!--                    <template #header="{ headers }">-->
-<!--                      <tr>-->
-<!--                        <th-->
-<!--                          v-for="header in headers"-->
-<!--                          :key="header.text"-->
-<!--                          :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"-->
-<!--                          @click="changeSort(header.value)"-->
-<!--                        >-->
-<!--                          {{ header.text }}-->
-<!--                          <v-icon small>arrow_upward</v-icon>-->
-<!--                        </th>-->
-<!--                        <th></th>-->
-<!--                      </tr>-->
-<!--                      <tr>-->
-<!--                        <th-->
-<!--                          v-for="header in headers"-->
-<!--                          :key="header.text"-->
-<!--                        >-->
-<!--                          <v-text-field style="margin-top: 10px"-->
-<!--                            v-model="ahjUtilityFilters[header.value].value" box-->
-<!--                          />-->
-<!--                        </th>-->
-<!--                        <th></th>-->
-<!--                      </tr>-->
-<!--                    </template>-->
+<!--        <template #header="{ headers }">-->
+<!--          <tr>-->
+<!--            <th-->
+<!--              v-for="header in headers"-->
+<!--              :key="header.text"-->
+<!--              :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"-->
+<!--              @click="changeSort(header.value)"-->
+<!--            >-->
+<!--              {{ header.text }}-->
+<!--              <v-icon small>arrow_upward</v-icon>-->
+<!--            </th>-->
+<!--            <th></th>-->
+<!--          </tr>-->
+<!--          <tr>-->
+<!--            <th-->
+<!--              v-for="header in headers"-->
+<!--              :key="header.text"-->
+<!--            >-->
+<!--              <v-text-field style="margin-top: 10px"-->
+<!--                v-model="ahjUtilityFilters[header.value].value" box-->
+<!--              />-->
+<!--            </th>-->
+<!--            <th></th>-->
+<!--          </tr>-->
+<!--        </template>-->
 
-                <template #body="{ items }" class="table-body">
-                  <tr
-                    v-for="(ahjUtility, index) in items"
-                    :key="ahjUtility.id"
-                    :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
-                  >
-                    <td class="text-left" :class="{ 'strike': ahjUtility.archived}">
-                      {{ ahjUtility.name ? ahjUtility.name : '' }}
-                    </td>
-                    <td class="text-left">{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
-                    <td class="text-left">{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
-                    <td class="text-left">
-                      <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
-                      <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">
-                        edit
-                      </v-icon>
-                    </td>
-                  </tr>
-                </template>
-              </v-data-table>
+        <template #body="{ items }" class="table-body">
+          <tr
+            v-for="(ahjUtility, index) in items"
+            :key="ahjUtility.id"
+            :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
+          >
+            <td class="text-left" :class="{ 'strike': ahjUtility.archived}">
+              {{ ahjUtility.name ? ahjUtility.name : '' }}
+            </td>
+            <td class="text-left">{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
+            <td class="text-left">{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
+            <td class="text-left">
+              <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
+              <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">
+                edit
+              </v-icon>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
 
-            <v-dialog v-model="ahjUtilityDialog" max-width="500px">
-              <v-card>
-                <v-card-title>
-                  <span class="headline">{{ ahjUtilityFormTitle }}</span>
-                </v-card-title>
+      <v-dialog v-model="ahjUtilityDialog" max-width="500px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">{{ ahjUtilityFormTitle }}</span>
+          </v-card-title>
 
-                <v-card-text>
-                  <v-text-field
-                    label="Name"
-                    v-model="editedItem.name"
-                    required
-                    filled
-                  ></v-text-field>
-                  <v-select
-                    label="Metro Area"
-                    :items="metroAreas"
-                    v-model="editedItem.metroAreaId"
-                    required
-                    filled
-                  ></v-select>
-                  <v-checkbox
-                    v-if="!addMode"
-                    label="Archived"
-                    v-model="editedItem.archived"
-                  ></v-checkbox>
-                </v-card-text>
+          <v-card-text>
+            <v-text-field
+              label="Name"
+              v-model="editedItem.name"
+              required
+              filled
+            ></v-text-field>
+            <v-select
+              label="Metro Area"
+              :items="metroAreas"
+              v-model="editedItem.metroAreaId"
+              required
+              filled
+            ></v-select>
+            <v-checkbox
+              v-if="!addMode"
+              label="Archived"
+              v-model="editedItem.archived"
+            ></v-checkbox>
+          </v-card-text>
 
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-                  <v-btn color="primaryButton" class="white--text" raised @click="saveAhjUtility"
-                         :disabled="!editedItem.name || !editedItem.metroAreaId">
-                    {{ ahjUtilityBtnTxt }}
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-        </v-col>
-      </v-row>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
+            <v-btn color="primaryButton" class="white--text" raised @click="saveAhjUtility"
+                   :disabled="!editedItem.name || !editedItem.metroAreaId">
+              {{ ahjUtilityBtnTxt }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-col>
+  </v-row>
 </template>
 
 <script>

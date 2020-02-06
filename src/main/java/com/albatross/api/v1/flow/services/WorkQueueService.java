@@ -5,6 +5,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WorkQueue;
 import com.albatross.api.v1.flow.model.WorkQueueDetail;
+import com.albatross.api.v1.flow.model.WorkQueueOwner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,27 +29,40 @@ public class WorkQueueService {
   @Autowired
   SecurityService securityService;
 
-  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId) {
+  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userPositionId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
+    params.put("userPositionId", userPositionId);
 
     List<WorkQueue> results = sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
     return results;
   }
 
-  public List<WorkQueueDetail> getWorkQueueDetails(Long workQueueTypeId) {
+  public List<WorkQueueDetail> getWorkQueueDetails(Long workQueueTypeId, Long userPositionId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
+    params.put("userPositionId", userPositionId);
 
     List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, WorkQueueDetail.class);
+    return results;
+  }
+
+  public List<WorkQueueOwner> getWorkQueueOwners() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
+    params.put("companyId", user.getCompanyId());
+
+    List<WorkQueueOwner> results = sqlCache.query("workQueue.getWorkQueueOwners", params, WorkQueueOwner.class);
     return results;
   }
 

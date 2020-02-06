@@ -2,6 +2,8 @@
 <v-btn
   :disabled="!proceed"
   :loading="isResultLoading"
+  color="primary"
+  class="action-button"
   @click="completeAction"
 >{{ label }}</v-btn>
 </template>
@@ -43,10 +45,10 @@ export default {
         if (status === 204) {
           this.handleOnComplete()
         } else {
-          this.handleOnCompleteError()
+          this.handleOnCompleteError(this.$props.actionId)
         }
       } catch (e) {
-        this.handleOnCompleteError()
+        this.handleOnCompleteError(this.$props.actionId)
       }
     }
   },
@@ -59,6 +61,9 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 
+.action-button > .v-btn__content {
+  color: white !important;
+}
 </style>

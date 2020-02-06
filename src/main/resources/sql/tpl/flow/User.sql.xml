@@ -106,7 +106,7 @@
         p.position
     from flow.user u
       inner join flow.user_status_type ust on ust.id = u.user_status_type_id
-      inner join flow.user_company uc on uc.id = u.user_id
+      inner join flow.user_company uc on uc.user_id = u.id
       left join flow.user_position up on up.user_id = u.id
       left join flow.position p on p.id = up.position_id
     where uc.company_id = :companyId

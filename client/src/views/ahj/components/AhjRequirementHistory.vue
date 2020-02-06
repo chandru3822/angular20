@@ -65,11 +65,11 @@
             </v-simple-table>
 
             <div class="flex-display justify-end" id="requirement-status-btns">
-              <a v-if="this.selectedRequirement.statusId === 3"
+              <a v-if="selectedRequirement.statusId === 3"
                  class="cancel-link mr-2 mt-2"
                  title="Cancel challenge status update"
                  @click="toggleChallengeDetails">Cancel</a>
-              <v-btn v-if="this.selectedRequirement.statusId === 3"
+              <v-btn v-if="selectedRequirement.statusId === 3"
                      class="text-capitalize mr-3 px-2 white--text"
                      color="primaryButton"
                      style="font-size: 0.85em"
@@ -193,14 +193,12 @@
             })
             this.requirementHistory = data
           }
-
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving requirement history')
-          this.$store.commit(AppMutations.SET_LOADING, false)
           this.closeHistoryDialog()
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async submitChallenge() {
         this.requirementHistory[0].description = this.challenge.details
@@ -229,14 +227,11 @@
         }
 
         this.requirementHistory[0].archived = false
-        // this.requirementHistory[0].requirementTypeId = this.requirementTypeId
         this.requirementHistory[0].statusId = this.selectedRequirementStatusId
-        // this.requirementHistory[0].hasOpenChallenge = false
 
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
           await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
-
           this.originalRequirement.hasOpenChallenge = false
           this.originalRequirement.statusId = this.selectedRequirementStatusId
 

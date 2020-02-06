@@ -111,6 +111,37 @@ public class CustomFieldValueService {
     return fieldGroups;
   }
 
+  public List<CustomFieldGroup> updateProjectCustomFieldValues(Long projectId, List<CustomFieldGroup> groups) {
+    User currentUser = securityService.getCurrentUser();
+    for(CustomFieldGroup group : groups) {
+      for(CustomFieldValue cfv : group.getCustomFieldValues()){
+        //todo: only save if something changed
+        if(fieldHasValue(cfv)) {
+          HashMap<String, Object> params = new HashMap<>();
+          params.put("dateValue", cfv.getDateValue());
+          params.put("timestampValue", cfv.getTimestampValue());
+          params.put("booleanValue", null != cfv.getBooleanValue() ? cfv.getBooleanValue() : false);
+          params.put("textValue", cfv.getTextValue());
+          params.put("numericValue", cfv.getNumericValue());
+          params.put("intValue", cfv.getIntValue());
+          params.put("intArrayValue", cfv.getIntArrayValue());
+          params.put("projectId", projectId);
+          params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+
+          if(null != cfv.getId()){
+            params.put("id", cfv.getId());
+            params.put("modifiedById", currentUser.getId());
+            sqlCache.update("customFieldValues.updateProjectCustomFieldValue", params);
+          } else {
+            params.put("createdById", currentUser.getId());
+            sqlCache.update("customFieldValues.insertProjectCustomFieldValue", params);
+          }
+        }
+      }
+    }
+    return getProjectCustomValues(projectId);
+  }
+
   public List<CustomFieldGroup> getProjectProcessStepCustomValues(Long projectProcessStepId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -123,6 +154,11 @@ public class CustomFieldValueService {
     handleCustomListOfValue(fieldGroups);
 
     return fieldGroups;
+  }
+
+  private Boolean fieldHasValue (CustomFieldValue cv) {
+    return null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
+      || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
@@ -148,6 +184,4 @@ public class CustomFieldValueService {
           new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
     }
   }
-
-
 }

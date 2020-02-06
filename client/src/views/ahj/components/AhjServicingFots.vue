@@ -13,12 +13,13 @@
          class="my-0">
         <router-link v-if="fot.hierarchy !== null"
                      class="list-link"
+                     :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}"
                      :to="{ name: 'orgs', params: {orgFilter: fot.hierarchy.orgName} }"
         >{{ fot.hierarchy.orgName }}</router-link>
       </p>
     </div>
-    <div class="empty-list"
-         v-show="servicingFots.length < 1"
+    <div class="empty-list" v-show="servicingFots.length < 1"
+         :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}"
     >No Servicing FOT's found</div>
   </v-card>
 </template>
@@ -30,6 +31,10 @@
       servicingFots: {
         type: Array,
         default: () => []
+      },
+      isNested: {
+        type: Boolean,
+        default: false
       }
     }
   }

@@ -47,6 +47,7 @@
         snackbar: {},
         IS_MOBILE,
         workQueueTypeId: this.$route.params.id,
+        userPositionId: this.$route.query.upId,
         results: [],
         headers: [
           { text: 'Project', value: 'projectName', show: true },
@@ -63,7 +64,9 @@
       async getWorkDetails() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`)
+          const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`, { params: {
+              userPositionId: this.userPositionId
+            }})
           this.results = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

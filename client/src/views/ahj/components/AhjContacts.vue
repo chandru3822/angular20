@@ -70,7 +70,7 @@
       <v-spacer v-if="index !== contacts.length - 1"
                 class="mt-2" style="border-bottom: 1px solid #ccc"></v-spacer>
     </div>
-    <div class="py-3 px-5" v-show="contacts.length < 1"
+    <div class="py-3 px-5 empty-list" v-show="contacts.length < 1"
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
     </div>
@@ -90,10 +90,6 @@
       contactTypeId: {
         type: Number
       },
-      isNested: {
-        type: Boolean,
-        default: false
-      },
       itemId: {
         type: Number
       },
@@ -106,6 +102,10 @@
       contacts: {
         type: Array,
         default: () => []
+      },
+      isNested: {
+        type: Boolean,
+        default: false
       }
     },
     data () {
@@ -199,6 +199,13 @@
     button {
       margin: 0 0 0 7px;
     }
+  }
+  .empty-list {
+    text-align: left;
+    font-size: 0.95em;
+  }
+  .nested-list {
+    font-size: 0.85em !important;
   }
   /*Definition list styles*/
   .horizontal-dl {
