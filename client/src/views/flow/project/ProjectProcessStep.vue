@@ -14,6 +14,7 @@
       <SpinnerInline :size="20" color="primary"/>
     </v-col>
 
+<!--    project field groups -->
     <v-col
       v-else
       class="mt-4"
@@ -27,7 +28,7 @@
           <v-btn
             v-if="index === 0"
             text
-            @click="updateProjectFieldGroups">Save</v-btn>
+            @click="updateProjectFieldGroups">Save Project Fields</v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-card class="pa-4 text-left">
@@ -41,12 +42,39 @@
       </v-card>
     </v-col>
 
-    <v-row v-for="(group, index) in customFieldGroups" :key="index">
-<!--  @TODO: @randa, this is the reactjs way to do this. Does vue have a better way? -->
-      <v-col>
-        <ProcessStepFieldGroup :group="group" :onSaveHandler="randaSaveCustomFields"/>
-      </v-col>
-    </v-row
+<!--    process field groups -->
+    <v-col
+      class="mt-4"
+      v-for="(cfg, index) in customFieldGroups"
+      :key="index"
+    >
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn
+            v-if="index === 0"
+            text
+            @click="updateFieldGroups"
+          >Save Process Fields</v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card class="pa-4">
+        <CustomValueInput
+          v-for="(cf, idx) in cfg.customFieldValues"
+          :key="idx"
+          :readonly="false"
+          :field="cf"
+        />
+      </v-card>
+    </v-col>
+
+<!--    <v-row v-for="(group, index) in customFieldGroups" :key="index">-->
+<!--&lt;!&ndash;  @TODO: @randa, this is the reactjs way to do this. Does vue have a better way? &ndash;&gt;-->
+<!--      <v-col>-->
+<!--        <ProcessStepFieldGroup :group="group" :onSaveHandler="updateFieldGroups"/>-->
+<!--      </v-col>-->
+<!--    </v-row>-->
 
     <h3>Actions</h3>
 
@@ -200,7 +228,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async randaSaveCustomFields() {
+    async updateFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.processStep.customFieldGroups = this.customFieldGroups
       try {
