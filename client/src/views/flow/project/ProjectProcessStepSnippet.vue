@@ -21,7 +21,7 @@
               <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}?processStepId=${step.processStepId}&customerId=${customerId}`">{{ step.projectProcessStepId }}</router-link>
             </v-col>
             <v-col cols="3">{{ step.processStepName }}</v-col>
-            <v-col cols="3">{{ step.owner.fullName }}</v-col>
+            <v-col cols="3">{{ step.owner && step.owner.fullName }}</v-col>
             <v-col cols="3">{{ step.lastUpdated }}</v-col>
             <v-col cols="2">{{ step.processStepStatusType }}</v-col>
           </v-row>
