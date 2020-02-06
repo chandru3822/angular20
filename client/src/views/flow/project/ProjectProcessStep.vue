@@ -67,7 +67,7 @@
       v-else
       class="mt-4"
       v-for="(group, index) in projectFieldGroups"
-      :key="index"
+      :key="group.id"
     >
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
@@ -91,11 +91,10 @@
     </v-col>
 
 <!--    process field groups-->
-<!--    duplicate keys were occurring between this and the project field group v-for. This key is a random number of [0, 99999999) -->
     <v-col
       class="mt-4"
       v-for="(cfg, index) in customFieldGroups"
-      :key="Math.floor(Math.random() * (99999999 - 0 + 1)) + 0"
+      :key="cfg.id"
     >
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>

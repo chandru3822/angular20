@@ -114,7 +114,10 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 export default {
   name: 'CustomValueInput',
   props: {
-    readonly: Boolean,
+    readonly: {
+      type: Boolean,
+      default: false
+    },
     field: Object,
     showFieldName: {
       type: Boolean,
