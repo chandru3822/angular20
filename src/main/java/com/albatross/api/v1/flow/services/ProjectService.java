@@ -160,7 +160,7 @@ public class ProjectService {
   }
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {
-    return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), ProjectProcessStep.class);
+    return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), new ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
