@@ -155,7 +155,6 @@
 
 import {getRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
@@ -169,7 +168,6 @@ export default {
   name: 'ProjectOverview',
   components: {
     SpinnerInline,
-    ProjectFieldGroup,
     ActiveProjectProcessStepSnippet,
     ProjectProcessStepSnippet,
     Attachments,

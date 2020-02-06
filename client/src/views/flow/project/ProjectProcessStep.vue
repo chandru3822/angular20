@@ -69,27 +69,19 @@
       </v-card>
     </v-col>
 
-<!--    <v-row v-for="(group, index) in customFieldGroups" :key="index">-->
-<!--&lt;!&ndash;  @TODO: @randa, this is the reactjs way to do this. Does vue have a better way? &ndash;&gt;-->
-<!--      <v-col>-->
-<!--        <ProcessStepFieldGroup :group="group" :onSaveHandler="updateFieldGroups"/>-->
-<!--      </v-col>-->
-<!--    </v-row>-->
-
-    <h3>Actions</h3>
-
-    <v-row>
-      <v-col v-for="action in processStep.actions" :key="action.id">
-        <ActionButton
-          v-if="action.actionTypeId === 2"
-          :actionId="action.id"
-          :projectProcessStepId="projectProcessStepId"
-          :label="action.actionName"
-          :handleOnComplete="handleActionCompleted"
-          :handleOnCompleteError="handleOnCompleteError"
-        />
-      </v-col>
-    </v-row>
+    <v-toolbar color="transparent" class="elevation-0">
+      <v-toolbar-title>Actions</v-toolbar-title>
+    </v-toolbar>
+    <v-col v-for="action in processStep.actions" :key="action.id">
+      <ActionButton
+        v-if="action.actionTypeId === 2"
+        :actionId="action.id"
+        :projectProcessStepId="projectProcessStepId"
+        :label="action.actionName"
+        :handleOnComplete="handleActionCompleted"
+        :handleOnCompleteError="handleOnCompleteError"
+      />
+    </v-col>
 
     <!-- todo: @humes just putting this here so i can test scheduling.  feel free to do what you want with it. i dont even know if this is the right spot -->
     <!-- @TODO: @randa, Uncommenting for now until I can add it in programatically. How do we not hardcode the processStepid and projectId vals? (they harcoded for testing?)   -->
@@ -131,7 +123,6 @@ import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
-import ProcessStepFieldGroup from './ProcessStepFieldGroup'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import SpinnerInline from '@/components/SpinnerInline'
 
@@ -142,7 +133,6 @@ export default {
     Snackbar,
     Attachments,
     NotesAndActivity,
-    ProcessStepFieldGroup,
     CustomValueInput,
     SpinnerInline
   },
@@ -249,8 +239,9 @@ export default {
         }
       })
     },
-    handleOnCompleteError () {
-      console.log('don blewed up!!!!')
+    handleOnCompleteError (actionId) {
+      logError(`Failed to complete action with actionId: ${actionId}`)
+      this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
     }
   }
 }
