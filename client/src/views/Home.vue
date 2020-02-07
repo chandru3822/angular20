@@ -104,7 +104,7 @@ export default {
       }, {
         label: 'Work Queue',
         path: '/workQueue',
-        display: false
+        display: true
       }]
     }
   },

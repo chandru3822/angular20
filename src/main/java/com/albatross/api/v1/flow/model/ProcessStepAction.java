@@ -18,6 +18,6 @@ public class ProcessStepAction {
   private List<ProcessStepLogic> processStepLogicList;
   private List<ProcessStepActionChildProcess> processStepActionChildProcesses;
   private List<ProcessStepActionLink> processStepActionLinks;
-  private Boolean archived;
+  private Boolean archived, alwaysEnabled, logicListChanged;
 }
 

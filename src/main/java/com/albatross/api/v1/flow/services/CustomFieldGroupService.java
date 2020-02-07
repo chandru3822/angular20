@@ -42,6 +42,9 @@ public class CustomFieldGroupService {
   CustomFieldValueService customFieldValueService;
 
   @Autowired
+  ProcessStepRequirementService processStepRequirementService;
+
+  @Autowired
   ObjectMapper om;
 
   public CustomField addFieldToGroup(CustomField customField) {
@@ -191,6 +194,8 @@ public class CustomFieldGroupService {
     params.put("id", id);
 
     sqlCache.update("customFieldGroup.deleteCustomFieldGroup", params);
+
+    processStepRequirementService.deleteRequirementIfUsingCustomFieldGroup(id);
   }
 
   public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {

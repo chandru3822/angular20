@@ -107,7 +107,10 @@
                           Confirm
                         </v-card-title>
 
-                        <v-card-text>
+                        <v-card-text class="pt-4">
+                          <div class="error-text">
+                            WARNING: Any requirements currently using a field from this group will also be archived and any actions currently using those requirements will be reset.
+                          </div>
                           Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
                         </v-card-text>
 
