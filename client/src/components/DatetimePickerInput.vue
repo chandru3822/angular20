@@ -13,7 +13,8 @@
       :label="label"
       prepend-icon="event"
       readonly
-      v-on="on"
+      :disabled="readonly"
+      v-on="!readonly && on"
     />
   </template>
   <v-date-picker
@@ -49,7 +50,11 @@ export default {
     timezone: String,
     type: String,
     label: String,
-    format: String
+    format: String,
+    readonly: {
+      type: Boolean,
+      default: false
+    }
   },
   data: () => ({
     date: null,
@@ -60,11 +65,6 @@ export default {
   }),
   created() {
     this.init()
-  },
-  computed: {
-    formattedValue () {
-      return this.value
-    }
   },
   methods: {
     saveDate () {
