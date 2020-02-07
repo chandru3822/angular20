@@ -185,10 +185,10 @@
     },
     created() {
       // console.log('randaLogger',moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'))
-      this.getSchedulingOrgs()
-      this.getSchedulingUsers()
       this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
+      this.getSchedulingOrgs()
+      this.getSchedulingUsers()
     },
     data() {
       return {
@@ -313,6 +313,9 @@
             d.id = `${1}${d.id}`
           })
           this.orgs = data
+          this.selectedOrgs = this.selectedOrgs.filter(so => {
+            return this.orgs.some(o => o.id === so.id)
+          })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -334,6 +337,9 @@
             d.id = `${2}${d.id}`
           })
           this.users = data
+          this.selectedUsers = this.selectedUsers.filter(su => {
+            return this.users.some(u => u.id === su.id)
+          })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
