@@ -192,5 +192,6 @@
   .empty-list {
     padding: 20px;
     font-size: 0.95em;
+    text-align: left;
   }
 </style>

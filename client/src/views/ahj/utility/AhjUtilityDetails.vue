@@ -212,7 +212,7 @@
             </v-card>
 
             <!-- CUSTOMER SIGNATURES -->
-            <v-card>
+            <v-card class="mb-3">
               <v-card-title class="primaryCustom white--text font-weight-bold">
                 Customer Signatures
               </v-card-title>
@@ -248,11 +248,281 @@
                 ></v-textarea>
               </v-card-text>
             </v-card>
+
+            <!-- SUBMISSION DETAILS -->
+            <v-card class="mb-sm-3">
+              <v-card-title class="primaryCustom white--text font-weight-bold">
+                Submission Details
+              </v-card-title>
+              <v-card-text class="mt-4">
+                <v-textarea v-model="ahjUtility.overviewOfSubmissionProcess"
+                            label="Overview of Submission Process"
+                            filled
+                            auto-grow
+                ></v-textarea>
+                <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id">
+                  <v-select v-if="item.customFieldId === 56"
+                            v-model="item.intValue"
+                            :items="item.listOfValues"
+                            item-text="name"
+                            item-value="id"
+                            :label="item.fieldName"
+                            filled
+                  ></v-select>
+                  <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 56"
+                                v-model="item.textValue"
+                                label="Other Value"
+                                filled
+                                class="other-field"
+                  ></v-text-field>
+                </div>
+                <AhjChecklist v-if="dataReady"
+                              title="Checklist"
+                              :checklistTypeId="4"
+                              :itemId="ahjUtility.id"
+                              :itemType="itemType"
+                              :checklistItems="ahjUtility.submissionChecklist"
+                              :isNested="true"
+                              class="mb-4"
+                ></AhjChecklist>
+                <AhjDocument v-if="dataReady"
+                             title="Documents"
+                             :documentTypeId="6"
+                             :sourceId="ahjUtility.id"
+                             :documents="documents"
+                             :isNested="true"
+                ></AhjDocument>
+                <AhjLink v-if="dataReady"
+                         title="Links"
+                         :linkTypeId="9"
+                         :itemId="ahjUtility.id"
+                         :itemType="itemType"
+                         :links="ahjUtility.submissionLinks"
+                         :isNested="true"
+                         class="mb-8"
+                ></AhjLink>
+                <div class="flex-display justify-space-between flex-nowrap">
+                  <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id"
+                       :class="[{'mr-4': item.customFieldId === 55}, {'ml-4': item.customFieldId === 61}]">
+                    <v-select v-if="[55,61].indexOf(item.customFieldId) !== -1"
+                              v-model="item.intValue"
+                              :items="item.listOfValues"
+                              item-text="name"
+                              item-value="id"
+                              :label="item.fieldName"
+                              filled
+                    ></v-select>
+                    <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [55,61].indexOf(item.customFieldId) !== -1"
+                                  v-model="item.textValue"
+                                  label="Other Value"
+                                  filled
+                                  class="other-field"
+                    ></v-text-field>
+                  </div>
+                </div>
+                <v-textarea v-model="ahjUtility.submissionInstructions"
+                            label="Instructions"
+                            filled
+                            auto-grow
+                ></v-textarea>
+              </v-card-text>
+            </v-card>
           </v-col>
 
           <!-- THIRD COLUMN -->
           <v-col cols="12" md="4" class="px-1 mb-3">
+            <!-- APPROVAL DETAILS -->
+            <v-card class="mb-3">
+              <v-card-title class="primaryCustom white--text font-weight-bold">
+                Approval Details
+              </v-card-title>
+              <v-card-text class="mt-4">
+                <v-text-field v-model="ahjUtility.expectedApprovalTimeline"
+                              label="Expected Timeline for Approval"
+                              filled
+                ></v-text-field>
+                <AhjChecklist v-if="dataReady"
+                              title="Checklist"
+                              :checklistTypeId="5"
+                              :itemId="ahjUtility.id"
+                              :itemType="itemType"
+                              :checklistItems="ahjUtility.approvalChecklist"
+                              :isNested="true"
+                              class="mb-4"
+                ></AhjChecklist>
+                <AhjDocument v-if="dataReady"
+                             title="Documents"
+                             :documentTypeId="25"
+                             :sourceId="ahjUtility.id"
+                             :documents="documents"
+                             :isNested="true"
+                ></AhjDocument>
+                <v-card>
+                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                    Rejections
+                  </v-card-title>
+                  <v-card-text>
+                    <div v-for="item in getCustomFieldsForGroup(23)" :key="item.id" class="mt-4">
+                      <v-select v-model="item.intValue"
+                                :items="item.listOfValues"
+                                item-text="name"
+                                item-value="id"
+                                :label="item.fieldName"
+                                filled
+                      ></v-select>
+                      <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
+                                    v-model="item.textValue"
+                                    label="Other Value"
+                                    filled
+                                    class="other-field"
+                      ></v-text-field>
+                    </div>
+                    <v-textarea v-model="ahjUtility.rejectionInstructions"
+                                label="Instructions"
+                                filled
+                                auto-grow
+                    ></v-textarea>
+                  </v-card-text>
+                </v-card>
+              </v-card-text>
+            </v-card>
 
+            <!-- PTO DETAILS -->
+            <v-card class="mb-3">
+              <v-card-title class="primaryCustom white--text font-weight-bold">
+                PTO Details
+              </v-card-title>
+              <v-card-text class="mt-4">
+                <div class="flex-display flex-row-reverse flex-nowrap justify-space-between">
+                  <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id"
+                       :class="[{'mr-4': item.customFieldId === 54}, {'ml-4': item.customFieldId === 53}]">
+                    <v-select v-if="[54,53].indexOf(item.customFieldId) !== -1"
+                              v-model="item.intValue"
+                              :items="item.listOfValues"
+                              item-text="name"
+                              item-value="id"
+                              :label="item.fieldName"
+                              filled
+                    ></v-select>
+                    <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [54,53].indexOf(item.customFieldId) !== -1"
+                                  v-model="item.textValue"
+                                  label="Other Value"
+                                  filled
+                                  class="other-field"
+                    ></v-text-field>
+                  </div>
+                </div>
+                <AhjChecklist v-if="dataReady"
+                              title="Checklist for Submission"
+                              :checklistTypeId="6"
+                              :itemId="ahjUtility.id"
+                              :itemType="itemType"
+                              :checklistItems="ahjUtility.ptoChecklist"
+                              :isNested="true"
+                              class="mb-4"
+                ></AhjChecklist>
+                <AhjLink v-if="dataReady"
+                         title="Links"
+                         :linkTypeId="7"
+                         :itemId="ahjUtility.id"
+                         :itemType="itemType"
+                         :links="ahjUtility.ptoLinks"
+                         :isNested="true"
+                         class="mb-8"
+                ></AhjLink>
+                <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
+                  <v-select v-if="item.customFieldId === 60"
+                            v-model="item.intValue"
+                            :items="item.listOfValues"
+                            item-text="name"
+                            item-value="id"
+                            :label="item.fieldName"
+                            filled
+                  ></v-select>
+                  <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 60"
+                                v-model="item.textValue"
+                                label="Other Value"
+                                filled
+                                class="other-field"
+                  ></v-text-field>
+                </div>
+                <AhjChecklist v-if="dataReady"
+                              title="Checklist for Utility Inspection"
+                              :checklistTypeId="7"
+                              :itemId="ahjUtility.id"
+                              :itemType="itemType"
+                              :checklistItems="ahjUtility.utilityInspectionChecklist"
+                              :isNested="true"
+                              class="mb-4"
+                ></AhjChecklist>
+                <v-card class="mb-4">
+                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                    Pending PTO Followup
+                  </v-card-title>
+                  <v-card-text class="mt-4">
+                    <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
+                      <v-select v-if="item.customFieldId === 40"
+                                v-model="item.intValue"
+                                :items="item.listOfValues"
+                                item-text="name"
+                                item-value="id"
+                                :label="item.fieldName"
+                                filled
+                      ></v-select>
+                      <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 40"
+                                    v-model="item.textValue"
+                                    label="Other Value"
+                                    filled
+                                    class="other-field"
+                      ></v-text-field>
+                    </div>
+                    <v-text-field v-model="ahjUtility.timelines"
+                                  label="Timelines"
+                                  filled
+                    ></v-text-field>
+                    <AhjLink v-if="dataReady"
+                             title="Links"
+                             :linkTypeId="8"
+                             :itemId="ahjUtility.id"
+                             :itemType="itemType"
+                             :links="ahjUtility.ptoFollowupLinks"
+                             :isNested="true"
+                             class="mb-8"
+                    ></AhjLink>
+                    <v-textarea v-model="ahjUtility.ptoFollowupInstructions"
+                                label="Instructions"
+                                filled
+                                auto-grow
+                    ></v-textarea>
+                  </v-card-text>
+                </v-card>
+                <v-card class="mb-sm-3">
+                  <v-card-title class="primaryCustom white--text font-weight-bold">
+                    Final Completion Submission
+                  </v-card-title>
+                  <v-card-text class="mt-4">
+                    <v-select v-model="selectedFinancier"
+                              :items="financiers"
+                              item-text="name"
+                              item-value="id"
+                              label="Financier"
+                              filled
+                              return-object
+                    ></v-select>
+                    <v-text-field label="Submission Method"
+                                  v-model="selectedFinancier.submissionMethod"
+                                  :disabled="!selectedFinancier.id"
+                                  filled
+                    ></v-text-field>
+                    <v-textarea v-model="ahjUtility.finalCompletionInstructions"
+                                label="Instructions"
+                                filled
+                                auto-grow
+                    ></v-textarea>
+                  </v-card-text>
+                </v-card>
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
       </v-row>
@@ -291,6 +561,7 @@
       snackbar: {},
       dataReady: false,
       customFieldGroupAssignments: [],
+      selectedFinancier: {submissionMethod: null},
       ahjUtility: {
         customerSignatureLinks: [],
         ptoLinks: [],
@@ -303,7 +574,17 @@
         contacts: [],
         utilityRequirements: []
       },
-      documents: []
+      documents: [],
+      // TODO: Replace hard-coded financiers data with actual data from DB after financier table is migrated
+      financiers: [
+        {id: 1, name: 'Mosaic', submissionMethod: 'Online', archived: false},
+        {id: 2, name: 'GreenSky', submissionMethod: 'Not Required', archived: false},
+        {id: 3, name: 'LoanPal', submissionMethod: 'Online', archived: false},
+        {id: 4, name: 'Salal', submissionMethod: 'Online', archived: false},
+        {id: 5, name: 'Cash', submissionMethod: 'Not Required', archived: false},
+        {id: 6, name: 'Dividend', submissionMethod: 'N/A', archived: false},
+        {id: 7, name: 'One Roof Energy', submissionMethod: 'N/A', archived: false}
+      ]
     }),
     methods: {
       async getAhjUtility() {
@@ -311,6 +592,7 @@
         try {
           const {data} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
           this.ahjUtility = cloneDeep(data)
+          this.selectedFinancier = this.ahjUtility.financierId ? this.financiers.filter(financier => financier.id === this.ahjUtility.financierId)[0] : {submissionMethod: null}
           this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name.toLowerCase())
           this.ahjUtility.ptoLinks = orderBy(this.ahjUtility.ptoLinks, link => link.name.toLowerCase())
           this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name.toLowerCase())
@@ -318,7 +600,7 @@
           this.ahjUtility.contacts = orderBy(this.ahjUtility.contacts, contact => contact.name.toLowerCase())
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Permit')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Utility')
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -343,15 +625,19 @@
         return match ? match.showOther : false
       },
       async resetForm() {
+        this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
+        console.log("this.ahjUtility:", this.ahjUtility)
         this.dataReady = false
         this.getAhjUtility().then(() => this.dataReady = true)
       },
       async saveAhjUtility() {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
+
         try {
-          this.ahjPermit.customFieldGroups = this.customFieldGroupAssignments
+          this.ahjUtility.customFieldGroups = this.customFieldGroupAssignments
           const {data} = await putRequest('/ahjUtility', this.ahjUtility, 'blueraven')
-          this.ahjPermit = cloneDeep(data)
+          this.ahjUtility = cloneDeep(data)
           this.snackbar = getSnackbar('SUCCESS', 'AHJ Utility saved')
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -366,6 +652,8 @@
 
       this.getAhjUtility().then(() => {
         this.getCustomFieldGroupAssignmentsForScreen()
+        // TODO: remove orderBy statement below after financier table is migrated
+        this.financiers = orderBy(this.financiers, financier => financier.name)
         this.dataReady = true
       })
     }
@@ -424,5 +712,8 @@
   }
   .other-field {
     margin-top: -20px;
+  }
+  .v-input--is-disabled ::v-deep label {
+    color: rgba(0, 0, 0, 0.38) !important;
   }
 </style>
