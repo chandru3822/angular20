@@ -326,6 +326,14 @@
         where id = :requirementId
   ]]></processStepRequirement.deleteRequirement>
 
+  <processStepRequirement.requirementsUsingCustomFieldGroup><![CDATA[
+      select psr.id
+      from flow.process_step_requirement psr
+        inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+      where cfga.custom_field_group_id = :customFieldGroupId
+        and psr.archived is not true
+  ]]></processStepRequirement.requirementsUsingCustomFieldGroup>
+
   <processStepRequirement.getRequirementTypes><![CDATA[
     select *
     from flow.process_step_requirement_type

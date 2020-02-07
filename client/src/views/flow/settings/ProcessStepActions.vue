@@ -322,7 +322,10 @@
                             Confirm
                           </v-card-title>
 
-                          <v-card-text>
+                          <v-card-text class="pt-4">
+                            <div class="error-text">
+                              WARNING: Any actions currently using this requirement will be reset.
+                            </div>
                             Are you sure you want to delete this requirement?
                           </v-card-text>
 
@@ -409,7 +412,7 @@
 
               <template #expanded-item="{ headers, item }">
                 <td :colspan="actionHeaders.length" class="pb-4" :class="{'shaded-row': selectedActionIndex % 2}">
-                  <v-card flat class="text-left">
+                  <v-card flat class="text-left" color="transparent">
                     <v-text-field v-model="item.actionName"
                                   placeholder="Enter a name"
                                   label="Action Name">
@@ -604,7 +607,7 @@
                       </v-btn>
                     </v-toolbar-items>
                   </v-toolbar>
-                  <v-card flat class="text-left">
+                  <v-card flat class="text-left" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1"
                            v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
                            @click="l.archived = true">
@@ -614,7 +617,7 @@
                   <v-toolbar flat dense color="transparent">
                     <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
                   </v-toolbar>
-                  <v-card flat class="text-left">
+                  <v-card flat class="text-left" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="(ot, index) in operationTypes" :key="index"
                            @click="item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})">
                       {{ot.operationType}}
@@ -623,7 +626,7 @@
                   <v-toolbar flat dense color="transparent">
                     <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
                   </v-toolbar>
-                  <v-card flat class="text-left mb-4">
+                  <v-card flat class="text-left mb-4" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
                            @click="item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })">
                       {{r.requirementNbr}}
@@ -1047,6 +1050,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await deleteRequest(`/processStep/${this.processStepId}/requirement/${id}`)
+          //have to reload actions here as deleting a requirement could have affected the current logic
+          this.actionExpanded = []
+          this.selectedActionIndex = null
+          this.getActions()
           this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

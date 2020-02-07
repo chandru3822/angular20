@@ -37,6 +37,9 @@ public class ProcessStepRequirementService {
   SystemListService systemListService;
 
   @Autowired
+  ProcessStepActionService processStepActionService;
+
+  @Autowired
   ObjectMapper om;
 
   public List<ProcessStepRequirement> getRequirementsForStep(Long processStepId) {
@@ -67,6 +70,22 @@ public class ProcessStepRequirementService {
     params.put("modifiedById", currentUser.getId());
     params.put("requirementId", requirementId);
     sqlCache.update("processStepRequirement.deleteRequirement", params);
+
+    processStepActionService.deleteLogicIfActionsUseRequirement(requirementId);
+  }
+
+  public void deleteRequirementIfUsingCustomFieldGroup(Long customFieldGroupId) {
+    User currentUser = securityService.getCurrentUser();
+    // this method is called when a customFieldGroup gets archived. if a requirement is using a field from that group the requirement will also be archived
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("customFieldGroupId", customFieldGroupId);
+    params.put("modifiedById", currentUser.getId());
+    List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.requirementsUsingCustomFieldGroup", params, ProcessStepRequirement.class);
+
+    for(ProcessStepRequirement requirement : results) {
+      //archive any requirements using that custom field group
+      deleteRequirement(requirement.getId());
+    }
   }
 
   public List<ProcessStepRequirementType> getRequirementTypes() {

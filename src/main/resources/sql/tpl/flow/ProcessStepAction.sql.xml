@@ -75,6 +75,13 @@
         where id = :actionId
   ]]></processStepAction.deleteAction>
 
+  <processStepAction.actionsUsingRequirement><![CDATA[
+      select psl.process_step_action_id as id
+      from flow.process_step_logic psl
+      where psl.process_step_requirement_id = :requirementId
+        and psl.archived is not true
+  ]]></processStepAction.actionsUsingRequirement>
+
   <processStepAction.updateAction><![CDATA[
     update flow.process_step_action
     set action_name = :actionName,
@@ -92,7 +99,9 @@
 
   <processStepAction.archiveOldLogic><![CDATA[
     update flow.process_step_logic
-    set archived = true
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :modifiedById
     where process_step_action_id = :id;
   ]]></processStepAction.archiveOldLogic>
 

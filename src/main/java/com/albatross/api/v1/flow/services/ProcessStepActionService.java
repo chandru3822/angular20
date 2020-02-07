@@ -55,6 +55,21 @@ public class ProcessStepActionService {
     sqlCache.update("processStepAction.deleteAction", params);
   }
 
+  public void deleteLogicIfActionsUseRequirement(Long requirementId) {
+    User currentUser = securityService.getCurrentUser();
+    // this method is called when a requirement gets archived. if an action is using that requirement in its current logic we wipe out ALL current logic
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("requirementId", requirementId);
+    params.put("modifiedById", currentUser.getId());
+    List<ProcessStepAction> results = sqlCache.query("processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
+
+    for(ProcessStepAction action : results) {
+      //archive any current logic using that action id
+      params.put("id", action.getId());
+      sqlCache.update("processStepAction.archiveOldLogic", params);
+    }
+  }
+
   public ProcessStepAction getActionById(Long id) {
 
     HashMap<String, Object> params = new HashMap<>();
