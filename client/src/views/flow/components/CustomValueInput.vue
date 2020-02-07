@@ -14,6 +14,7 @@
       :type="'date'"
       :format="'MMMM DD, YYYY'"
       :label="field.fieldName"
+      :readonly="readonly"
     />
 
     <DatetimePickerInput
@@ -23,6 +24,7 @@
       type="timestamp"
       :format="'MMMM DD, YYYY, h:mm A'"
       :label="field.fieldName"
+      :readonly="readonly"
     />
 
     <v-checkbox
