@@ -600,8 +600,8 @@
                   <v-toolbar flat dense color="transparent">
                     <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-toolbar-items v-if="item.processStepLogicList && item.processStepLogicList.length > 0">
-                      <v-btn text @click="item.processStepLogicList = []">
+                    <v-toolbar-items v-if="(item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled">
+                      <v-btn text @click="item.logicListChanged = true; item.processStepLogicList = []; item.alwaysEnabled = false">
                         <v-icon>clear</v-icon>
                         Clear All
                       </v-btn>
@@ -610,8 +610,11 @@
                   <v-card flat class="text-left" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1"
                            v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
-                           @click="l.archived = true">
+                           @click="l.archived = true; item.logicListChanged = true">
                       {{l.processStepRequirementId ? l.requirementNbr : l.operationType}}
+                    </v-btn>
+                    <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled" @click="item.logicListChanged = true; item.alwaysEnabled = !item.alwaysEnabled">
+                      Always Enabled
                     </v-btn>
                   </v-card>
                   <v-toolbar flat dense color="transparent">
@@ -619,8 +622,12 @@
                   </v-toolbar>
                   <v-card flat class="text-left" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="(ot, index) in operationTypes" :key="index"
-                           @click="item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})">
+                           @click="item.logicListChanged = true; item.alwaysEnabled = false; item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})">
                       {{ot.operationType}}
+                    </v-btn>
+                    <v-btn small class="ml-1 mr-1 mt-1"
+                           @click="item.logicListChanged = true; item.processStepLogicList = []; item.alwaysEnabled = true">
+                      Always Enabled
                     </v-btn>
                   </v-card>
                   <v-toolbar flat dense color="transparent">
@@ -628,7 +635,7 @@
                   </v-toolbar>
                   <v-card flat class="text-left mb-4" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
-                           @click="item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })">
+                           @click="item.logicListChanged = true; item.alwaysEnabled = false; item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })">
                       {{r.requirementNbr}}
                     </v-btn>
                   </v-card>

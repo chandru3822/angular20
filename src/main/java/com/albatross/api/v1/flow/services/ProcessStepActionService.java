@@ -86,6 +86,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("actionName", action.getActionName());
     params.put("actionTypeId", action.getActionTypeId());
+    params.put("alwaysEnabled", action.getAlwaysEnabled());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("modifiedById", currentUser.getId());
     params.put("id", action.getId());
@@ -104,32 +105,31 @@ public class ProcessStepActionService {
         deleteLinkFromAction(link.getId());
       }
     }
-    // @randa - do this
-
-    if(!action.getProcessStepLogicList().isEmpty()) {
-
-
-      // handle saving logic items.
-      // archive all old ones
+    if(action.getLogicListChanged()) {
+      // archive all old logic before saving new logi
       sqlCache.update("processStepAction.archiveOldLogic", params);
-      // insert the new ones
-      int count = 0;
-      for(ProcessStepLogic logic : action.getProcessStepLogicList()) {
-        if(null != logic.getProcessStepRequirementId() && (null == logic.getProcessStepRequirementImmutable() || !logic.getProcessStepRequirementImmutable()) ) {
-          // update psr.immutable, if it is not already true. (don't have to do this for updates because it should already be true by now)
-          HashMap<String, Object> psrParams = new HashMap<>();
-          psrParams.put("id", logic.getProcessStepRequirementId());
-          sqlCache.update("processStepRequirement.setImmutable", psrParams);
-        }
 
-        HashMap<String, Object> logicParams = new HashMap<>();
-        logicParams.put("id", action.getId());
-        logicParams.put("processStepRequirementId", logic.getProcessStepRequirementId());
-        logicParams.put("operationTypeId", logic.getOperationTypeId());
-        logicParams.put("sqlOrder", count);
-        logicParams.put("createdById", currentUser.getId());
-        sqlCache.update("processStepAction.insertLogic", logicParams);
-        count++;
+      if (!action.getProcessStepLogicList().isEmpty()) {
+        // handle saving logic items.
+        // insert the new ones
+        int count = 0;
+        for (ProcessStepLogic logic : action.getProcessStepLogicList()) {
+          if (null != logic.getProcessStepRequirementId() && (null == logic.getProcessStepRequirementImmutable() || !logic.getProcessStepRequirementImmutable())) {
+            // update psr.immutable, if it is not already true. (don't have to do this for updates because it should already be true by now)
+            HashMap<String, Object> psrParams = new HashMap<>();
+            psrParams.put("id", logic.getProcessStepRequirementId());
+            sqlCache.update("processStepRequirement.setImmutable", psrParams);
+          }
+
+          HashMap<String, Object> logicParams = new HashMap<>();
+          logicParams.put("id", action.getId());
+          logicParams.put("processStepRequirementId", logic.getProcessStepRequirementId());
+          logicParams.put("operationTypeId", logic.getOperationTypeId());
+          logicParams.put("sqlOrder", count);
+          logicParams.put("createdById", currentUser.getId());
+          sqlCache.update("processStepAction.insertLogic", logicParams);
+          count++;
+        }
       }
     }
     return getActionById(id);

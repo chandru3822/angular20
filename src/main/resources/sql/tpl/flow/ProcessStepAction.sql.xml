@@ -87,6 +87,7 @@
     set action_name = :actionName,
         action_type_id = :actionTypeId,
         company_process_step_status_type_id = :companyProcessStepStatusTypeId,
+        always_enabled = :alwaysEnabled,
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
