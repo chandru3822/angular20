@@ -713,6 +713,11 @@
   .other-field {
     margin-top: -20px;
   }
+  .v-input--is-disabled ::v-deep .v-input__slot,
+  .v-input--is-disabled ::v-deep input {
+    cursor: not-allowed;
+    pointer-events: all;
+  }
   .v-input--is-disabled ::v-deep label {
     color: rgba(0, 0, 0, 0.38) !important;
   }
