@@ -18,10 +18,10 @@
           class="py-2"
         >
           <v-col cols="1" >
-            <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}?processStepId=${step.processStepId}`">{{ step.projectProcessStepId }}</router-link>
+            <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}?processStepId=${step.processStepId}&customerId=${customerId}`">{{ step.projectProcessStepId }}</router-link>
           </v-col>
           <v-col>{{step.processStepName}}</v-col>
-          <v-col cols="3">{{ step.owner }}</v-col>
+          <v-col cols="3">{{ step.owner && step.owner.fullName }}</v-col>
           <v-col cols="3">{{ step.lastUpdated }}</v-col>
           <v-col cols="2">{{ step.processStepStatusType }}</v-col>
         </v-row>
@@ -36,7 +36,8 @@ export default {
   name: 'ActiveProjectProcessStepSnippet',
   props: {
     projectId: Number,
-    steps: Array
+    steps: Array,
+    customerId: Number
   }
 }
 </script>

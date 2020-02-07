@@ -14,6 +14,7 @@
       :type="'date'"
       :format="'MMMM DD, YYYY'"
       :label="field.fieldName"
+      :readonly="readonly"
     />
 
     <DatetimePickerInput
@@ -23,6 +24,7 @@
       type="timestamp"
       :format="'MMMM DD, YYYY, h:mm A'"
       :label="field.fieldName"
+      :readonly="readonly"
     />
 
     <v-checkbox
@@ -114,7 +116,10 @@ import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 export default {
   name: 'CustomValueInput',
   props: {
-    readonly: Boolean,
+    readonly: {
+      type: Boolean,
+      default: false
+    },
     field: Object,
     showFieldName: {
       type: Boolean,

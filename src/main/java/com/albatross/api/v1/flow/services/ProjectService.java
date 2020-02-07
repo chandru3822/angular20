@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
@@ -8,9 +9,12 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -19,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -59,6 +64,8 @@ public class ProjectService {
   private String s3Url = "https://%s.s3.amazonaws.com/%s";
 
   private final AmazonS3 s3;
+
+  private final ObjectMapper om;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -153,13 +160,13 @@ public class ProjectService {
   }
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {
-    return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), ProjectProcessStep.class);
+    return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), new ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("stepId", stepId);
-    ProjectProcessStep step = sqlCache.get("project.getProjectProcessStep", params, ProjectProcessStep.class).orElse(null);
+    ProjectProcessStep step = sqlCache.get("project.getProjectProcessStep", params, new ProjectProcessStepMapper<>(ProjectProcessStep.class, om)).orElse(null);
 
     if (step != null) {
       step.setActions(processStepActionService.getActionsForStep(step.getProcessStepId()));
@@ -260,7 +267,7 @@ public class ProjectService {
 
     List<ProjectProcessStep> newSteps = new ArrayList<>();
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, projectProcessStep.getUserPositionId()));
+      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, projectProcessStep.getOwner().getUserId()));
     });
 
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
@@ -1016,5 +1023,20 @@ public class ProjectService {
     }
 
     return passed;
+  }
+
+  public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProjectProcessStepMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<Owner> ownerRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
+    }
   }
 }

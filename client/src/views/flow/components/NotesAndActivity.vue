@@ -1,10 +1,7 @@
 <template>
   <div>
     <v-toolbar color="transparent" class="elevation-0">
-      <h3>Notes & Activity Feed</h3>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-      </v-toolbar-items>
+      <v-toolbar-title>Notes & Activity Feed</v-toolbar-title>
     </v-toolbar>
     <v-card class="pa-4">
       <v-toolbar flat color="white" class="elevation-0">

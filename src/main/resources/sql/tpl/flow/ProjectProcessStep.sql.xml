@@ -14,4 +14,13 @@
             case when :processStepStatusTypeId = 2 then now() end)
       where id = :projectProcessStepId;
   ]]></projectProcessStep.setStatus>
+
+  <projectProcessStep.updateOwner><![CDATA[
+    update flow.project_process_step
+    set
+      user_position_id = :userPositionId,
+      modified_by_id = :userId,
+      date_modified = now()
+    where id = :projectProcessStepId
+  ]]></projectProcessStep.updateOwner>
 </sql>

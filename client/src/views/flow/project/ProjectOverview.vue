@@ -10,25 +10,6 @@
           {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
         </div>
       </v-col>
-
-      <v-col cols="8" class="pb-0">
-        <v-row justify="end" class="pb-0">
-          <UserCard
-            name="Riley Burgess"
-            role="Setter"
-            location="Colorado"
-            imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
-            class="user-card"/>
-
-          <UserCard
-            name="Mike Falls"
-            role="Closer"
-            location="Colorado"
-            imageUrl="https://s3.amazonaws.com/blueraven-apps/brLogo-57.png"
-            class="user-card"/>
-        </v-row>
-      </v-col>
-
     </v-row>
   </v-col>
 
@@ -76,7 +57,10 @@
         </v-col>
 
         <v-col cols="12" v-else>
-          <ActiveProjectProcessStepSnippet :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)" :projectId="projectId"/>
+          <ActiveProjectProcessStepSnippet
+            :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)"
+            :projectId="projectId"
+            :customerId="customer.id"/>
         </v-col>
       </v-row>
     </v-col>
@@ -121,7 +105,10 @@
           <v-col cols="12" v-else>
             <template v-for="step in processStepsByName">
               <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
-              <ProjectProcessStepSnippet :steps="step.processSteps" :projectId="projectId"/>
+              <ProjectProcessStepSnippet
+                :steps="step.processSteps"
+                :projectId="projectId"
+                :customerId="customer.id"/>
             </template>
           </v-col>
 
@@ -155,27 +142,23 @@
 
 import {getRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
-import ProjectFieldGroup from '@/views/flow/project/ProjectFieldGroup'
 import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import Snackbar from '@/components/Snackbar.vue'
-import UserCard from '@/views/flow/components/UserCard'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 
 export default {
   name: 'ProjectOverview',
   components: {
     SpinnerInline,
-    ProjectFieldGroup,
     ActiveProjectProcessStepSnippet,
     ProjectProcessStepSnippet,
     Attachments,
     NotesAndActivity,
     Snackbar,
-    UserCard,
     CustomValueInput
   },
   data () {
@@ -189,7 +172,7 @@ export default {
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
-      customer: {}
+      customer: {},
     }
   },
   created () {
