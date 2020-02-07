@@ -35,8 +35,8 @@ public class AhjUtilityController {
     }
 
     @PutMapping(value = "/simpleUpdate")
-    public Optional<AhjUtilityDetail> updateSimple(@RequestBody AhjUtility utility) {
-        return ahjUtilityService.simpleUpdateUtility(utility);
+    public Optional<AhjUtilityDetail> simpleUpdate(@RequestBody AhjUtility utility) {
+        return ahjUtilityService.simpleUpdate(utility);
     }
 
     @PutMapping(value = "")

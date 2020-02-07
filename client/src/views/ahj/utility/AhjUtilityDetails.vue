@@ -575,16 +575,7 @@
         utilityRequirements: []
       },
       documents: [],
-      // TODO: Replace hard-coded financiers data with actual data from DB after financier table is migrated
-      financiers: [
-        {id: 1, name: 'Mosaic', submissionMethod: 'Online', archived: false},
-        {id: 2, name: 'GreenSky', submissionMethod: 'Not Required', archived: false},
-        {id: 3, name: 'LoanPal', submissionMethod: 'Online', archived: false},
-        {id: 4, name: 'Salal', submissionMethod: 'Online', archived: false},
-        {id: 5, name: 'Cash', submissionMethod: 'Not Required', archived: false},
-        {id: 6, name: 'Dividend', submissionMethod: 'N/A', archived: false},
-        {id: 7, name: 'One Roof Energy', submissionMethod: 'N/A', archived: false}
-      ]
+      financiers: []
     }),
     methods: {
       async getAhjUtility() {
@@ -592,7 +583,6 @@
         try {
           const {data} = await getRequest(`/ahjUtility/${this.ahjUtilityId}`, 'blueraven')
           this.ahjUtility = cloneDeep(data)
-          this.selectedFinancier = this.ahjUtility.financierId ? this.financiers.filter(financier => financier.id === this.ahjUtility.financierId)[0] : {submissionMethod: null}
           this.ahjUtility.customerSignatureLinks = orderBy(this.ahjUtility.customerSignatureLinks, link => link.name.toLowerCase())
           this.ahjUtility.ptoLinks = orderBy(this.ahjUtility.ptoLinks, link => link.name.toLowerCase())
           this.ahjUtility.ptoFollowupLinks = orderBy(this.ahjUtility.ptoFollowupLinks, link => link.name.toLowerCase())
@@ -601,6 +591,18 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Utility')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+      async getFinancierList() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest('/financier/active', 'blueraven')
+          this.financiers = cloneDeep(data)
+          this.selectedFinancier = this.ahjUtility.financierId ? this.financiers.filter(financier => financier.id === this.ahjUtility.financierId)[0] : {submissionMethod: null}
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving list of financiers')
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -651,10 +653,11 @@
       this.ahjUtilityId = parseInt(this.$route.params.ahjUtilityId)
 
       this.getAhjUtility().then(() => {
-        this.getCustomFieldGroupAssignmentsForScreen()
-        // TODO: remove orderBy statement below after financier table is migrated
-        this.financiers = orderBy(this.financiers, financier => financier.name)
-        this.dataReady = true
+        this.getFinancierList().then(() => {
+          this.getCustomFieldGroupAssignmentsForScreen().then(() => {
+            this.dataReady = true
+          })
+        })
       })
     }
   }
