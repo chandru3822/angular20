@@ -44,7 +44,7 @@
           <v-list-item-action @click="editLink(link)">
             <v-icon small>edit</v-icon>
           </v-list-item-action>
-          <v-list-item-title :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
+          <v-list-item-title :style="[{'font-size': isNested ? '0.95em !important' : '0.85em !important'}, {'text-align': 'left'}]">
             <a :href="link.link" class="list-link">{{ link.name }}</a>
           </v-list-item-title>
         </v-list-item-content>
@@ -167,9 +167,11 @@
     flex-flow: row nowrap;
     align-items: center;
   }
-  .cancel-link,
-  .list-link {
+  .cancel-link {
     font-size: 0.85em !important;
+    text-decoration: none;
+  }
+  .list-link {
     text-decoration: none;
   }
   .cancel-link:hover,
