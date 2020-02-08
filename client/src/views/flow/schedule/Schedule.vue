@@ -392,6 +392,9 @@
           // 'event types' is just schedulable process steps
           const {data} = await getEventTypes()
           this.eventTypes = data
+          this.selectedEventTypes = this.selectedEventTypes.filter(set => {
+            return this.eventTypes.some(et => et.id === set.id)
+          })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

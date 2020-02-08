@@ -110,12 +110,10 @@ export default {
     }
   },
   computed: {
-    companyIsParent() {
-      return true
-    },
     items() { return [
       {
-        header: 'Preferences'
+        header: 'Preferences',
+        show: true
       }, {
         path: '/settings/userProfile',
         title: 'User Profile',
@@ -228,9 +226,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-testing {
-  background-color: red;
-}
 a {
   text-decoration: none;
 }

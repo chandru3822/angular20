@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class OrgFilter {
 
-  private Long companyId, orgLevelId, rank;
+  private Long id, companyId, orgLevelId, rank;
   private String levelName;
   private List<Org> orgs;
   private Boolean showType;

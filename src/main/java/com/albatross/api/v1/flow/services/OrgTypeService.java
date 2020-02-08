@@ -46,6 +46,40 @@ public class OrgTypeService {
     return results;
   }
 
+  public OrgLevel getOrgLevel(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<OrgLevel> results = sqlCache.get("orgType.getOrgLevel", params, OrgLevel.class);
+
+    return results.orElse(null);
+  }
+
+  public void deleteOrgLevel(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("orgType.deleteOrgLevel", params);
+    //todo: randa i hate this. talk to keller about adding the 5 columns for tracking/archiving. don't actually delete
+  }
+
+  public OrgLevel saveOrgLevel(OrgLevel level) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("level", level.getLevel());
+    params.put("levelName", level.getLevelName());
+
+    Long id;
+    if (null != level.getId()) {
+      id = level.getId();
+      params.put("id", id);
+      sqlCache.update("orgType.updateOrgLevel", params);
+    } else {
+      id = sqlCache.updateReturningId("orgType.insertOrgLevel", params, "id").longValue();
+    }
+
+    return getOrgLevel(id);
+  }
+
   public OrgType getOrgType(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);

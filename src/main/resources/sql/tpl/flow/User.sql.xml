@@ -197,18 +197,25 @@
        u.username,
        u.password,
        coalesce(u.default_company_id, uc.company_id) as company_id,
-            ( select parent_company_id
-                from flow.company c
-             where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
-           coalesce(u.default_company_id, uc.company_id) as company_id,
-            ( select case when parent_company_id is null or parent_company_id = 1
-                    then coalesce(u.default_company_id, uc.company_id)
+       ( select parent_company_id
+          from flow.company c
+        where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
+       ( select case when parent_company_id is null or parent_company_id = 1
+              then coalesce(u.default_company_id, uc.company_id)
                 else parent_company_id end
                 from flow.company c
              where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
        null as "timezone",
        u.first_name || ' ' || u.last_name as full_name,
-       u.user_status_type_id
+       u.user_status_type_id,
+       (
+         select c.id from flow.company c
+         inner join flow.user_company uc on uc.company_id = c.id
+         where uc.user_id = u.id
+          and uc.archived is not true
+         order by level
+         limit 1
+       ) as highest_company_id
     from flow.user u
              inner join flow.user_company uc on uc.user_id = u.id
     where case when :username::text is not null then lower(username) = lower(:username::text)
@@ -227,12 +234,19 @@
            ( select parent_company_id
                 from flow.company c
              where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
-           coalesce(u.default_company_id, uc.company_id) as company_id,
-            ( select case when parent_company_id is null or parent_company_id = 1
-                    then coalesce(u.default_company_id, uc.company_id)
+             ( select case when parent_company_id is null or parent_company_id = 1
+                then coalesce(u.default_company_id, uc.company_id)
                 else parent_company_id end
                 from flow.company c
-             where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id
+             where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
+           (
+             select c.id from flow.company c
+             inner join flow.user_company uc on uc.company_id = c.id
+             where uc.user_id = u.id
+              and uc.archived is not true
+             order by level
+             limit 1
+           ) as highest_company_id
     from flow.user u
       inner join flow.user_company uc on uc.user_id = u.id
       inner join flow.company c on c.id = uc.company_id

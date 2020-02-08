@@ -41,7 +41,7 @@
     </v-list>
     <v-divider class="hr-non-transparent"></v-divider>
     <v-list>
-      <v-list-item v-for="(item, index) in menuItems" :key="index" @click="menuOpen = false" :to="item.path">
+      <v-list-item v-for="(item, index) in filterBy(menuItems, true, 'show')" :key="index" @click="menuOpen = false" :to="item.path">
         <v-list-item-title>{{item.title}}</v-list-item-title>
         <v-list-item-action class="account-menu-icon">
           <v-icon>{{item.icon}}</v-icon>
@@ -66,9 +66,12 @@
   import { IS_MOBILE } from '@/helpers/helpers'
   import { UserActions } from '@/stores/UserStore'
   import moment from 'moment-timezone'
+  import Vue2Filters from "vue2-filters"
+  import { isSystemAdmin } from '@/helpers/helpers'
 
   export default {
     name: 'AccountMenu',
+    mixins: [Vue2Filters.mixin],
     props: {
       showImage: Boolean
     },
@@ -89,6 +92,7 @@
         userFirstName: this.getFirstName(),
         menuOpen: false,
         timezone: null,
+        highestCompanyId: this.$store.state.user.details.highestCompanyId,
         timezones: [
           { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
           { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -98,22 +102,31 @@
           { friendlyValue: 'US/Eastern', value: 'America/New_York'},
           { friendlyValue: 'US/Mountain', value: 'America/Denver'}
         ],
-        menuItems: [
-          // {
-          //   header: 'Custom Components'
-          // },
+      }
+    },
+    computed: {
+      menuItems() {
+        return [
           {
             path: '/settings/userProfile',
             title: 'Settings',
-            icon: 'settings'
+            icon: 'settings',
+            show: true
           }, {
             path: '/users',
             title: 'Users',
-            icon: 'people'
+            icon: 'people',
+            show: true
           }, {
             path: '/orgs',
             title: 'Organizations',
-            icon: 'list'
+            icon: 'list',
+            show: true
+          }, {
+            path: '/admin',
+            title: 'Admin',
+            icon: 'mdi-cogs',
+            show: isSystemAdmin(this.highestCompanyId)
           },
 
         ]

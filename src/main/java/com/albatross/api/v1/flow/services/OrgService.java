@@ -219,6 +219,41 @@ public class OrgService {
     return results;
   }
 
+  public OrgFilter getOneOrgFilter(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<OrgFilter> results = sqlCache.get("org.getOneOrgFilter", params, OrgFilter.class);
+
+    return results.orElse(null);
+  }
+
+  public void deleteOrgFilter(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("org.deleteOrgFilter", params);
+    //todo: randa i hate this. talk to keller about adding the 5 columns for tracking/archiving. don't actually delete
+  }
+
+  public OrgFilter saveOrgFilter(OrgFilter filter) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("orgLevelId", filter.getOrgLevelId());
+    params.put("rank", filter.getRank());
+    params.put("showType", filter.getShowType());
+
+    Long id;
+    if (null != filter.getId()) {
+      id = filter.getId();
+      params.put("id", id);
+      sqlCache.update("org.updateOrgFilter", params);
+    } else {
+      id = sqlCache.updateReturningId("org.insertOrgFilter", params, "id").longValue();
+    }
+
+    return getOneOrgFilter(id);
+  }
+
   public List<OrgFilter> getHierarchyFilteredOrgsForCompany(List<Integer> selectedOrgs) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

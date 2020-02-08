@@ -48,7 +48,7 @@ public class AhjUtilityService {
         return sqlCache.get("ahj.utility.detailById", params, new AhjUtilityDetailMapper<>(AhjUtilityDetail.class, om));
     }
 
-    public Optional<AhjUtilityDetail> simpleUpdateUtility(AhjUtility utility) {
+    public Optional<AhjUtilityDetail> simpleUpdate(AhjUtility utility) {
         User currentUser = securityService.getCurrentUser();
 
         HashMap<String, Object> params = new HashMap<>();
@@ -85,6 +85,7 @@ public class AhjUtilityService {
         params.put("timelines", utility.getTimelines());
         params.put("ptoFollowupInstructions", utility.getPtoFollowupInstructions());
         params.put("finalCompletionInstructions", utility.getFinalCompletionInstructions());
+        params.put("financierId", utility.getFinancierId());
         params.put("archived", utility.getArchived());
 
         Long id;

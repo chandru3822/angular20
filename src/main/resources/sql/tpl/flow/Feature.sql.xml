@@ -1,13 +1,28 @@
 <sql>
+  <feature.getAll><![CDATA[
+    select f.id,
+           f.feature_name,
+           f.feature_code,
+           f.archived,
+           f.is_system
+    from flow.feature f
+    where f.archived is not true
+    order by f.feature_name
+  ]]></feature.getAll>
+
   <feature.getAllForCompany><![CDATA[
     select cf.id,
            cf.feature_name,
            cf.company_id,
            cf.feature_id,
-           cf.archived
+           cf.archived,
+           f.feature_code,
+           f.is_system
     from flow.company_feature cf
+        inner join flow.feature f on f.id = cf.feature_id
     where cf.company_id = :companyId
     and cf.archived is not true
+    order by cf.feature_name
   ]]></feature.getAllForCompany>
 
   <feature.getAllForCompanyWithAccess><![CDATA[
@@ -91,4 +106,62 @@
     where id = :userFeatureAccessControlId
   ]]></feature.updateUserFeatureAccessControl>
 
+  <feature.getOneCompanyFeature><![CDATA[
+    select cf.id,
+           cf.feature_name,
+           cf.company_id,
+           cf.feature_id,
+           cf.archived,
+           f.is_system,
+           f.feature_code
+    from flow.company_feature cf
+        inner join flow.feature f on f.id = cf.feature_id
+    where cf.id = :id
+  ]]></feature.getOneCompanyFeature>
+
+  <feature.insertCompanyFeature><![CDATA[
+    insert into flow.company_feature(feature_name, company_id, feature_id)
+    values (:featureName, :companyId, :featureId)
+  ]]></feature.insertCompanyFeature>
+
+  <feature.updateCompanyFeature><![CDATA[
+    update flow.company_feature
+        set feature_name = :featureName
+    where id = :id
+  ]]></feature.updateCompanyFeature>
+
+  <feature.deleteCompanyFeature><![CDATA[
+    update flow.company_feature
+        set archived = true
+    where id = :id
+  ]]></feature.deleteCompanyFeature>
+
+  <feature.getOneFeature><![CDATA[
+    select f.id,
+           f.feature_name,
+           f.feature_code,
+           f.archived,
+           f.is_system
+    from flow.feature f
+    where f.id = :id
+  ]]></feature.getOneFeature>
+
+  <feature.insertFeature><![CDATA[
+    insert into flow.feature(feature_name, feature_code, is_system)
+    values (:featureName, :featureCode, :isSystem)
+  ]]></feature.insertFeature>
+
+  <feature.updateFeature><![CDATA[
+    update flow.feature
+        set feature_name = :featureName,
+            feature_code = :featureCode,
+            is_system = :isSystem
+    where id = :id
+  ]]></feature.updateFeature>
+
+  <feature.deleteFeature><![CDATA[
+    update flow.feature
+        set archived = true
+    where id = :id
+  ]]></feature.deleteFeature>
 </sql>

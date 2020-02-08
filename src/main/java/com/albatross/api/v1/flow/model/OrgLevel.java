@@ -12,5 +12,6 @@ import lombok.Setter;
 public class OrgLevel {
 
   private Long id, level, companyId;
+  private String levelName;
 }
 

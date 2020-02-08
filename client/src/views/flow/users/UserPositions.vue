@@ -82,6 +82,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import keyBy from 'lodash.keyby'
+  import {getOrgFilters} from '@/services/orgService'
   import cloneDeep from 'lodash.clonedeep'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
@@ -141,7 +142,7 @@
       async getFilters () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/org/filters`)
+          const {data} = await getOrgFilters()
           this.filters = data
           this.populateHeaders()
           this.$store.commit(AppMutations.SET_LOADING, false)

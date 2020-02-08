@@ -53,7 +53,8 @@
         submission_instructions = :submissionInstructions,
         timelines = :timelines,
         pto_followup_instructions = :ptoFollowupInstructions,
-        final_completion_instructions = :finalCompletionInstructions
+        final_completion_instructions = :finalCompletionInstructions,
+        financier_id = :financierId
       WHERE id = :id
     ]]>
   </ahj.utility.update>
@@ -69,6 +70,7 @@
     <![CDATA[
       SELECT
         u.*,
+        f.name as "financier",
         ma.metro_area,
         s.id AS "state_id",
         s.abbreviation AS "state",
@@ -251,6 +253,7 @@
         ), '[]') AS utility_requirements
       FROM brs.ahj_utility u
         LEFT JOIN brs.metro_area ma ON ma.id = u.metro_area_id
+        LEFT JOIN brs.financier f on f.id = u.financier_id
         LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
         LEFT JOIN flow.state s ON s.id = sa.state_id
       WHERE u.id = :id
