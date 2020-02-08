@@ -38,10 +38,9 @@ public class StateController {
   }
 
   @DeleteMapping(value = "/companyState/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void saveCompanyState(@PathVariable Long id) {
+  public void deleteCompanyState(@PathVariable Long id) {
     stateService.deleteCompanyState(id);
   }
-
 
   @GetMapping(value = "/active", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<State> getActiveStatesByCompany() {

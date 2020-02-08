@@ -1,4 +1,14 @@
 <sql>
+  <feature.getAll><![CDATA[
+    select f.id,
+           f.feature_name,
+           f.feature_code,
+           f.archived
+    from flow.feature f
+    where f.archived is not true
+    order by f.feature_name
+  ]]></feature.getAll>
+
   <feature.getAllForCompany><![CDATA[
     select cf.id,
            cf.feature_name,
@@ -8,6 +18,7 @@
     from flow.company_feature cf
     where cf.company_id = :companyId
     and cf.archived is not true
+    order by cf.feature_name
   ]]></feature.getAllForCompany>
 
   <feature.getAllForCompanyWithAccess><![CDATA[
@@ -90,5 +101,32 @@
     set enabled = :enabled
     where id = :userFeatureAccessControlId
   ]]></feature.updateUserFeatureAccessControl>
+
+  <feature.getOneCompanyFeature><![CDATA[
+    select cf.id,
+           cf.feature_name,
+           cf.company_id,
+           cf.feature_id,
+           cf.archived
+    from flow.company_feature cf
+    where cf.id = :id
+  ]]></feature.getOneCompanyFeature>
+
+  <feature.insertCompanyFeature><![CDATA[
+    insert into flow.company_feature(feature_name, company_id, feature_id)
+    values (:featureName, :companyId, :featureId)
+  ]]></feature.insertCompanyFeature>
+
+  <feature.updateCompanyFeature><![CDATA[
+    update flow.company_feature
+        set feature_name = :featureName
+    where id = :id
+  ]]></feature.updateCompanyFeature>
+
+  <feature.deleteCompanyFeature><![CDATA[
+    update flow.company_feature
+        set archived = true
+    where id = :id
+  ]]></feature.deleteCompanyFeature>
 
 </sql>

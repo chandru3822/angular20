@@ -97,6 +97,10 @@ export default {
         header: 'Admin',
         show: true
       }, {
+        path: '/admin/features',
+        title: 'Features',
+        show: true
+      }, {
         path: '/admin/orgFilters',
         title: 'Org Filters',
         show: true

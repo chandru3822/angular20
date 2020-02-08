@@ -260,6 +260,9 @@ export default new Router({
           }, {
             path: 'states',
             component: () => import (/* webpackChunkName: "states" */ './views/flow/admin/States.vue'),
+          }, {
+            path: 'features',
+            component: () => import (/* webpackChunkName: "features" */ './views/flow/admin/Features.vue'),
           }
         ]
       }
