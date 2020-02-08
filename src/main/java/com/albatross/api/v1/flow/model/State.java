@@ -11,9 +11,10 @@ import lombok.Setter;
 @Setter
 public class State {
 
-  private Long id;
+  private Long id, companyId, companyStateId;
+  // todo: @randa this is all kinds of whack. i don't have time to fix it right now. but when loading company states the "id" field is state.id, not company_state.id -- this is used to many places for me to fix right this second. sorry self _rn
   private String state, abbreviation, timeZoneAbbreviation;
-  private Boolean active;
+  private Boolean active, archived;
   private Double mapLatitude, mapLongitude, mapZoom;
 }
 

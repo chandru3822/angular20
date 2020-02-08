@@ -257,6 +257,9 @@ export default new Router({
           }, {
             path: 'orgLevels',
             component: () => import (/* webpackChunkName: "orgLevels" */ './views/flow/admin/OrgLevels.vue'),
+          }, {
+            path: 'states',
+            component: () => import (/* webpackChunkName: "states" */ './views/flow/admin/States.vue'),
           }
         ]
       }

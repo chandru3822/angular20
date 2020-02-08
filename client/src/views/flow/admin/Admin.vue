@@ -104,6 +104,10 @@ export default {
         path: '/admin/orgLevels',
         title: 'Org Levels',
         show: true
+      }, {
+        path: '/admin/states',
+        title: 'States',
+        show: true
       }
     ]
   }
