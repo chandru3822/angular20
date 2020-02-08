@@ -70,10 +70,14 @@ export function getSnackbar(type, text) {
 }
 
 export function isParent(parentId) {
-  console.log('randaLogger', parentId)
   //todo: for now this is the only function where the frontend checks for a hardcoded id
   // to see if the company is a parent or not, maybe a better way?
   return parentId === 1 || parentId == null
+}
+
+export function isSystemAdmin(highestCompanyId) {
+  //todo: better way?
+  return highestCompanyId === 1
 }
 // functions
 export async function getRequest (path, companyAbbreviation) {

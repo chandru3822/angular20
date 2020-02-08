@@ -18,6 +18,24 @@ export async function getOrgsByType(typeId) {
   }
 }
 
+export async function getOrgFilters() {
+  try {
+    const {data, status} = await getRequest(`/org/filters`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
+export async function getOrgLevels() {
+  try {
+    const {data, status} = await getRequest(`/orgType/levels`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 
 
 

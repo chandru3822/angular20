@@ -246,8 +246,19 @@ export default new Router({
         name: 'newOrg',
         component: () => import (/*webpackChunkName: "newOrg" */ './views/flow/orgs/NewOrg.vue'),
         children: []
+      }, {
+        path: '/admin',
+        name: 'admin',
+        component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/Admin.vue'),
+        children: [
+          {
+            path: 'orgFilters',
+            component: () => import (/* webpackChunkName: "orgFilters" */ './views/flow/admin/OrgFilters.vue'),
+          }
+        ]
       }
-      ]
+    ],
+
     }
   ]
 })

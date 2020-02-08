@@ -105,10 +105,10 @@
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar.vue'
   import orderBy from 'lodash.orderby'
-  import {getOrgTypes} from '@/services/orgService'
+  import {getOrgTypes, getOrgLevels} from '@/services/orgService'
 
   export default {
-    name: 'OrgHierarchy',
+    name: 'OrgTypes',
     components: {
       Snackbar
     },
@@ -146,7 +146,7 @@
       async getOrgLevels() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/orgType/levels`)
+          const {data} = await getOrgLevels()
           this.levels = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
