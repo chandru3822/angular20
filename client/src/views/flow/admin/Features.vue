@@ -13,9 +13,18 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
-          <h3>Add Feature to Company</h3>
+          <h3>{{isCompanyRoot(companyId) ? 'Add New Feature' : 'Add Feature to Company'}}</h3>
           <div class="mb-3">
+            <div v-if="isCompanyRoot(companyId)">
+              <v-text-field text label="Enter the name of a new feature"
+                            v-model="selectedFeature.featureName"></v-text-field>
+              <v-text-field text label="Enter Feature Code"
+                            v-model="selectedFeature.featureCode"></v-text-field>
+              <label>Is System:</label>
+              <input class="ml-3" type="checkbox" v-model="selectedFeature.isSystem">
+            </div>
             <v-select
+                v-else
                 v-model="selectedFeature"
                 :items="features"
                 label="Select a feature to use"
@@ -24,9 +33,9 @@
                 return-object
             ></v-select>
           </div>
-          <v-btn :disabled="!selectedFeature"
+          <v-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
                  color="primary" class="white--text mr-2"
-                 @click="saveCompanyFeature(true)">
+                 @click="saveFeature(true)">
             Save
           </v-btn>
           <v-btn @click="addNew = !addNew; selectedFeature = {}">Cancel</v-btn>
@@ -56,10 +65,16 @@
               <div class="mb-3">
                 <v-text-field text v-model="item.featureName"
                               label="Feature Name" />
+                <div v-if="isCompanyRoot(companyId)">
+                  <v-text-field text v-model="item.featureCode"
+                                label="Feature Name" />
+                  <label>Is System:</label>
+                  <input class="ml-3" type="checkbox" v-model="item.isSystem">
+                </div>
               </div>
               <v-btn :disabled="!item.featureName"
                      color="primary" class="white--text mr-2"
-                     @click="saveCompanyFeature(false, item)">
+                     @click="saveFeature(false, item)">
                 Save
               </v-btn>
             </td>
@@ -90,7 +105,8 @@
 
                     <v-card-text class="pt-4">
                       <div class="error-text">
-                        WARNING: Feature access control will be completely reset for this feature even if you add the same one back in.
+                        {{isCompanyRoot(companyId) ? 'WARNING: This will delete this feature system-wide!'
+                          : 'WARNING: Feature access control will be completely reset for this feature even if you add the same one back in.'}}
                       </div>
                       Are you sure you want to delete this feature: {{ item.featureName }}?
                     </v-card-text>
@@ -106,7 +122,7 @@
                       <v-btn
                           color="primary"
                           text
-                          @click="deleteCompanyFeature(item)">
+                          @click="deleteFeature(item)">
                         Yes
                       </v-btn>
                     </v-card-actions>
@@ -126,11 +142,11 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE, isCompanyRoot} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
   export default {
-    name: 'CompanyFeatures',
+    name: 'Features',
     components: {
       Snackbar
     },
@@ -138,12 +154,14 @@
       return {
         snackbar: {},
         IS_MOBILE,
+        isCompanyRoot,
         addNew: false,
         levels: [],
         companyFeatures: [],
         selectedFeature: {},
         features: [],
-        selectedCompanyFeatureId: null,
+        apiUrl: isCompanyRoot(this.$store.state.user.details.companyId) ? `/feature` : `/feature/company`,
+        selectedFeatureId: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         headers: [
@@ -158,16 +176,16 @@
       this.getFeatures()
     },
     methods: {
-      async saveCompanyFeature(isNew, cf) {
+      async saveFeature(isNew, feature) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if(isNew) {
-            cf = {
+          feature = isNew && isCompanyRoot(this.companyId) ? this.selectedFeature :
+            isNew && !isCompanyRoot(this.companyId) ?
+            {
               featureId: this.selectedFeature.id,
               featureName: this.selectedFeature.featureName,
-            }
-          }
-          const {data} = await putRequest(`/feature`, cf)
+            } : feature
+          const {data} = await putRequest(`${this.apiUrl}`, feature)
           if(isNew){
             this.companyFeatures.push(data)
             this.addNew = false
@@ -187,19 +205,19 @@
       async getCompanyFeatures() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/feature`)
+          const {data} = await getRequest(`${this.apiUrl}`)
           this.companyFeatures = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Company Features')
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Features')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getFeatures() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/feature/all`)
+          const {data} = await getRequest(`/feature`)
           this.features = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -208,11 +226,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteCompanyFeature(companyFeature) {
+      async deleteFeature(feature) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/feature/${companyFeature.id}`)
-          companyFeature.archived = true
+          await deleteRequest(`${this.apiUrl}/${feature.id}`)
+          feature.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Feature Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

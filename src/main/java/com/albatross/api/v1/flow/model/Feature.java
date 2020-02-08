@@ -13,7 +13,7 @@ public class Feature {
 
   private Long id;
   private String featureName, featureCode;
-  private Boolean archived;
+  private Boolean archived, isSystem;
 
 }
 

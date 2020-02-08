@@ -23,22 +23,32 @@ public class FeatureController {
   @Autowired
   private FeatureService featureService;
 
-  @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Feature> getAllFeatures() {
     return featureService.getAllFeatures();
   }
 
-  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteFeature(@PathVariable Long id) {
+    featureService.deleteFeature(id);
+  }
+
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Feature saveFeature(@RequestBody Feature feature) {
+    return featureService.saveFeature(feature);
+  }
+
+  @GetMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CompanyFeature> getFeaturesForCompany() {
     return featureService.getFeaturesForCompany();
   }
 
-  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PutMapping(value = "/company", produces = MediaType.APPLICATION_JSON_VALUE)
   public CompanyFeature saveCompanyFeature(@RequestBody CompanyFeature feature) {
     return featureService.saveCompanyFeature(feature);
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @DeleteMapping(value = "/company/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteCompanyFeature(@PathVariable Long id) {
     featureService.deleteCompanyFeature(id);
   }

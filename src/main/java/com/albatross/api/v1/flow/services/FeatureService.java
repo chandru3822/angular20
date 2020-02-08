@@ -39,6 +39,41 @@ public class FeatureService {
     return results;
   }
 
+  public Feature saveFeature(Feature f) {
+    //this is used for adding/updating features to system
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("featureName", f.getFeatureName());
+    params.put("featureCode", f.getFeatureCode());
+    params.put("isSystem", f.getIsSystem());
+
+    Long id;
+    if(null != f.getId()) {
+      id = f.getId();
+      params.put("id", id);
+      sqlCache.update("feature.updateFeature", params);
+
+    } else {
+      id = sqlCache.updateReturningId("feature.insertFeature", params, "id").longValue();
+    }
+    return getOneFeature(id);
+  }
+
+  public Feature getOneFeature(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<Feature> f = sqlCache.get("feature.getOneFeature", params, Feature.class);
+    return f.orElse(null);
+  }
+
+  public void deleteFeature(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("feature.deleteFeature", params);
+  }
+
   public List<CompanyFeature> getFeaturesForCompany() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
