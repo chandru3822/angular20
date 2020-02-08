@@ -200,7 +200,11 @@
        ( select parent_company_id
           from flow.company c
         where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
-       (select id from flow.company_hierarchy_filter_down(coalesce(u.default_company_id, uc.company_id)) limit 1) as highest_parent_company_id,
+       ( select case when parent_company_id is null or parent_company_id = 1
+              then coalesce(u.default_company_id, uc.company_id)
+                else parent_company_id end
+                from flow.company c
+             where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
        null as "timezone",
        u.first_name || ' ' || u.last_name as full_name,
        u.user_status_type_id,
@@ -230,7 +234,11 @@
            ( select parent_company_id
                 from flow.company c
              where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
-           (select id from flow.company_hierarchy_filter_down(coalesce(u.default_company_id, uc.company_id)) limit 1) as highest_parent_company_id,
+             ( select case when parent_company_id is null or parent_company_id = 1
+                then coalesce(u.default_company_id, uc.company_id)
+                else parent_company_id end
+                from flow.company c
+             where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
            (
              select c.id from flow.company c
              inner join flow.user_company uc on uc.company_id = c.id
