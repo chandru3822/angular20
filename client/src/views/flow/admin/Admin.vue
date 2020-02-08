@@ -73,7 +73,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar, IS_MOBILE, isParent } from '@/helpers/helpers'
+import { getRequest, getSnackbar, IS_MOBILE, isCompanyRoot } from '@/helpers/helpers'
 
 export default {
   name: 'Settings',
@@ -103,15 +103,16 @@ export default {
       }, {
         path: '/admin/orgFilters',
         title: 'Org Filters',
-        show: true
+        show: !isCompanyRoot(this.companyId)
       }, {
         path: '/admin/orgLevels',
         title: 'Org Levels',
-        show: true
+        show: !isCompanyRoot(this.companyId)
       }, {
         path: '/admin/states',
         title: 'States',
-        show: true
+        //todo: make this page work like features. so that if at root you add a state to flow.state instead of flow.company_state
+        show: !isCompanyRoot(this.companyId)
       }
     ]
   }
