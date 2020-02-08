@@ -254,6 +254,9 @@ export default new Router({
           {
             path: 'orgFilters',
             component: () => import (/* webpackChunkName: "orgFilters" */ './views/flow/admin/OrgFilters.vue'),
+          }, {
+            path: 'orgLevels',
+            component: () => import (/* webpackChunkName: "orgLevels" */ './views/flow/admin/OrgLevels.vue'),
           }
         ]
       }

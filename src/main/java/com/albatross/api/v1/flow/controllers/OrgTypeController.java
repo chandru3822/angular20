@@ -38,4 +38,14 @@ public class OrgTypeController {
     return orgTypeService.getOrgLevels();
   }
 
+  @PutMapping(value = "/level", produces = MediaType.APPLICATION_JSON_VALUE)
+  public OrgLevel saveOrgLevel(@RequestBody OrgLevel level) {
+    return orgTypeService.saveOrgLevel(level);
+  }
+
+  @DeleteMapping(value = "/level/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteOrgLevel(@PathVariable Long id) {
+    orgTypeService.deleteOrgLevel(id);
+  }
+
 }

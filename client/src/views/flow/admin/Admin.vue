@@ -100,6 +100,10 @@ export default {
         path: '/admin/orgFilters',
         title: 'Org Filters',
         show: true
+      }, {
+        path: '/admin/orgLevels',
+        title: 'Org Levels',
+        show: true
       }
     ]
   }

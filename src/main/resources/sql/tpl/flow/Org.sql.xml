@@ -166,6 +166,11 @@
       values (:orgLevelId, :rank, :showType)
   ]]></org.insertOrgFilter>
 
+  <org.deleteOrgFilter><![CDATA[
+    delete from flow.org_filter
+        where id = :id
+  ]]></org.deleteOrgFilter>
+
   <org.getOrgsByHierarchyFilter><![CDATA[
     select * from flow.org_hierarchy_filter_down(ARRAY[ :selectedOrgs ]::integer[])
     union

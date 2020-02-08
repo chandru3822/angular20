@@ -227,6 +227,12 @@ public class OrgService {
     return results.orElse(null);
   }
 
+  public void deleteOrgFilter(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("org.deleteOrgFilter", params);
+    //todo: randa i hate this. talk to keller about adding the 5 columns for tracking/archiving. don't actually delete
+  }
 
   public OrgFilter saveOrgFilter(OrgFilter filter) {
     User user = securityService.getCurrentUser();

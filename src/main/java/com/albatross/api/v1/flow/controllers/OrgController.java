@@ -78,6 +78,11 @@ public class OrgController {
     return orgService.saveOrgFilter(filter);
   }
 
+  @DeleteMapping(value = "/filters/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteOrgFilter(@PathVariable Long id) {
+    orgService.deleteOrgFilter(id);
+  }
+
   @PostMapping(value = "/orgHierarchyFilter", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<OrgFilter> getHierarchyFilteredOrgsForCompany(@RequestBody UserSearch search) {
     return orgService.getHierarchyFilteredOrgsForCompany(search.getOrgs());
