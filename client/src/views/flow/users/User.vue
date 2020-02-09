@@ -1,7 +1,7 @@
 <template>
-  <v-container>
+  <v-container class="pt-0">
     <v-row class="user-header">
-      <v-col cols="12">
+      <v-col cols="12" class="py-0">
         <v-toolbar flat color="transparent" class="app-toolbar">
             <v-tooltip bottom max-width="300px" content-class="user-img-tooltip">
               <template v-slot:activator="{ on }">
