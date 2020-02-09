@@ -11,7 +11,7 @@
                           color="grey lighten-4"
                           class="account-img mr-3"
                 >
-                  <v-img name="userImg" v-if="loadComplete && userImage && userImage.url" :src="userImage.url"></v-img>
+                  <v-img name="userImg" alt="user-image" v-if="loadComplete && userImage && userImage.url && !imageFailed" v-on:error="onImgError()" :src="userImage.url"></v-img>
                   <img name="userImg" v-else src="@/assets/user_img_placeholder.png">
                 </v-avatar>
               </template>
@@ -80,6 +80,7 @@
         userImage: {},
         loadComplete: false,
         attachmentTypeId: 9,
+        imageFailed: false
       }
     },
     created () {
@@ -87,6 +88,10 @@
       this.getUserImage()
     },
     methods: {
+      onImgError () {
+        console.log('WE HIT THIS ERRORORROROROROROROROR')
+        this.imageFailed = true
+      },
       async getUser () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

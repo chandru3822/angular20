@@ -5,19 +5,19 @@
         <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
              :zoom="state.mapZoom" :map-resources="mapResources"></Map>
       </v-col>
-      <v-col cols="12" md="7">
+      <v-col cols="12" md="7" class="map-row" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources" :callback="this.resourceMapCallback" :date-callback="this.dateCallback"></Calendar>
       </v-col>
     </v-row>
-    <v-row class="schedule-row mt-4">
-      <v-col cols="12" md="5">
-        <v-card color="white" class="text-left">
+    <v-row class="schedule-row">
+      <v-col cols="12" md="5" class="py-0">
+        <v-card color="white" class="text-left py-0">
           <v-card-actions v-if="!selectedProject || !selectedProject.projectId">
             <v-btn text @click="showFilters = true" :class="{underline: showFilters}">Filters</v-btn>
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
           </v-card-actions>
-          <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)">
+          <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)" class="pt-0">
             <v-select v-model="state"
                       :items="states"
                       label="State"
@@ -193,7 +193,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="7">
+      <v-col cols="12" md="7" class="py-0">
         <div>
           <v-data-table
               :headers="headers"
@@ -534,8 +534,12 @@
 
 <style lang="scss">
   #schedule-container .v-data-table__wrapper {
-    height: calc(50vh - 95px);
-    min-height: 200px;
+    height: calc(35vh);
+    min-height: 300px;
+  }
+
+  #schedule-container .v-data-table td {
+    height: 30px;
   }
 
   .map-field-input {
@@ -562,7 +566,8 @@
 
   @media (min-width: 769px) {
     .map-row {
-      min-height: calc(50vh - 95px);
+      height: calc(65vh - 95px);
+      min-height: 200px;
     }
   }
 </style>

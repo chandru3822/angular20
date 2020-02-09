@@ -1,80 +1,89 @@
 <template>
   <div id="calendar-container">
-    <div>
-      <v-select v-model="selectedOrgs"
-                :items="orgs"
-                label="Organizations"
-                multiple
-                return-object
-                item-text="orgName"
-                item-value="id"
-                @input="getEvents"
-      >
-        <template
-            slot="selection"
-            slot-scope="{ item, index }"
-        >
-          <div v-if="index === 0 && selectedOrgs.length < 3">
-            <v-chip small v-for="sr in selectedOrgs">
-              <span>{{ sr.orgName }}</span>
-            </v-chip>
-          </div>
-          <span
-              v-if="index === 1 && selectedOrgs.length >= 3"
-              class="primary--text caption"
-          >{{ selectedOrgs.length }} selected</span>
-        </template>
-        <v-list-item
-            slot="prepend-item"
-            ripple
-            @click="toggleSelectAllOrgs()">
-          <v-list-item-action>
-            <v-icon>{{ icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Select All</v-list-item-title>
-        </v-list-item>
-        <v-divider
-            slot="prepend-item"
-            class="mt-2"
-        ></v-divider>
-      </v-select>
-      <v-select v-model="selectedUsers"
-                :items="users"
-                label="Users"
-                multiple
-                return-object
-                item-text="fullName"
-                item-value="id"
-                @input="getEvents"
-      >
-        <template
-            slot="selection"
-            slot-scope="{ item, index }"
-        >
-          <div v-if="index === 0 && selectedUsers.length < 3">
-            <v-chip small v-for="sr in selectedUsers">
-              <span>{{ sr.fullName }}</span>
-            </v-chip>
-          </div>
-          <span
-              v-if="index === 1 && selectedUsers.length >= 3"
-              class="primary--text caption"
-          >{{ selectedUsers.length }} selected</span>
-        </template>
-        <v-list-item
-            slot="prepend-item"
-            ripple
-            @click="toggleSelectAllUsers()">
-          <v-list-item-action>
-            <v-icon>{{ iconUsers }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Select All</v-list-item-title>
-        </v-list-item>
-        <v-divider
-            slot="prepend-item"
-            class="mt-2"
-        ></v-divider>
-      </v-select>
+    <div class="mb-2">
+      <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
+      <v-row class="py-0">
+        <v-col class="py-0" cols="12" md="6">
+          <v-select v-model="selectedOrgs"
+                    :items="orgs"
+                    label="Organizations"
+                    multiple
+                    hide-details
+                    return-object
+                    item-text="orgName"
+                    item-value="id"
+                    @input="getEvents"
+          >
+            <template
+                slot="selection"
+                slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedOrgs.length < 3">
+                <v-chip small v-for="sr in selectedOrgs">
+                  <span>{{ sr.orgName }}</span>
+                </v-chip>
+              </div>
+              <span
+                  v-if="index === 1 && selectedOrgs.length >= 3"
+                  class="primary--text caption"
+              >{{ selectedOrgs.length }} selected</span>
+            </template>
+            <v-list-item
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllOrgs()">
+              <v-list-item-action>
+                <v-icon>{{ icon }}</v-icon>
+              </v-list-item-action>
+              <v-list-item-title>Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+                slot="prepend-item"
+                class="mt-2"
+            ></v-divider>
+          </v-select>
+        </v-col>
+        <v-col class="py-0" cols="12" md="6">
+          <v-select v-model="selectedUsers"
+                    :items="users"
+                    label="Users"
+                    multiple
+                    hide-details
+                    return-object
+                    item-text="fullName"
+                    item-value="id"
+                    @input="getEvents"
+          >
+            <template
+                slot="selection"
+                slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedUsers.length < 3">
+                <v-chip small v-for="sr in selectedUsers">
+                  <span>{{ sr.fullName }}</span>
+                </v-chip>
+              </div>
+              <span
+                  v-if="index === 1 && selectedUsers.length >= 3"
+                  class="primary--text caption"
+              >{{ selectedUsers.length }} selected</span>
+            </template>
+            <v-list-item
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllUsers()">
+              <v-list-item-action>
+                <v-icon>{{ iconUsers }}</v-icon>
+              </v-list-item-action>
+              <v-list-item-title>Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+                slot="prepend-item"
+                class="mt-2"
+            ></v-divider>
+          </v-select>
+        </v-col>
+      </v-row>
     </div>
     <div class="calendar-resize-container">
       <FullCalendar ref="eventCalendar"
@@ -459,6 +468,17 @@
     -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
     box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
   }
+
+  #calendar-container .fc-rows tr,
+  #calendar-container .fc-rows tr .fc-widget-content div{
+    height: 25px !important;
+  }
+
+  #calendar-container .fc-cell-content {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
 </style>
 
 <style lang="scss" scoped>
@@ -468,7 +488,7 @@
   flex-flow: column;
 }
 .calendar-resize-container {
-  /* without this when you resize the scree the calendar goes whackadoodle */
+  /* without this when you resize the screen the calendar goes whackadoodle */
   flex: 1 1 auto;
 }
 </style>
