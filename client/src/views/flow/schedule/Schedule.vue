@@ -331,7 +331,6 @@
       }
     },
     created() {
-      console.log('MEMEMEMEMEMEEM', this.$route.query)
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
       this.getActiveStatesByHierarchy()
