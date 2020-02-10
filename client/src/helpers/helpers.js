@@ -70,14 +70,12 @@ export function getSnackbar(type, text) {
 }
 
 export function isParent(parentId) {
-  //todo: for now these ar the only functions where the frontend checks for a hardcoded id
-  // to see if the company is a parent or not, maybe a better way?
+  //todo: better way?
   return parentId === 1 || parentId == null
 }
 
 export function isCompanyRoot(companyId) {
-  //todo: for now these are the only functions where the frontend checks for a hardcoded id
-  // to see if the company is the root parent company
+  //todo: better way?
   return companyId === 1
 }
 
@@ -85,6 +83,18 @@ export function isSystemAdmin(highestCompanyId) {
   //todo: better way?
   return highestCompanyId === 1
 }
+
+export function userHasFeatureAccess(store, featureCode) {
+  // this function returns true if the user has any access level (edit, view, etc)
+  // or if the user is a system admin
+  return isSystemAdmin(store.state.user.details.highestCompanyId) || (store.state.user.details.featureAccess?.length > 0 && store.state.user.details.featureAccess.some(fa => fa.featureCode === featureCode))
+}
+
+export function userHasFeatureAccessLevel(store, featureCode, accessCode) {
+  // this function only returns true if the user a specific access level to a feature
+  return true
+}
+
 // functions
 export async function getRequest (path, companyAbbreviation) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'

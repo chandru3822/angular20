@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Login from './views/Login.vue'
 import store from './store'
+import {userHasFeatureAccess} from '@/helpers/helpers'
+
 
 Vue.use(Router)
 
@@ -33,10 +35,20 @@ export default new Router({
         name: 'serverError',
         component: () => import(/* webpackChunkName: "serverError" */ './views/ServerError.vue')
       }, {
+        path: 'accessDenied',
+        name: 'accessDenied',
+        component: () => import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+      }, {
         path: 'schedule',
         name: 'schedule',
         props: true,
-        component: () => import(/* webpackChunkName: "schedule" */ './views/flow/schedule/Schedule.vue')
+        component: () => {
+          if(userHasFeatureAccess(store, 'SCHEDULE')) {
+            return import(/* webpackChunkName: "schedule" */ './views/flow/schedule/Schedule.vue')
+          } else  {
+            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+          }
+        }
       }, {
         path: 'users',
         name: 'users',

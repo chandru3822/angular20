@@ -47,7 +47,7 @@ public class FeatureService {
     params.put("companyId", user.getCompanyId());
     params.put("featureName", f.getFeatureName());
     params.put("featureCode", f.getFeatureCode());
-    params.put("isSystem", f.getIsSystem());
+    params.put("isSystem", null != f.getIsSystem() ? f.getIsSystem() : false);
 
     Long id;
     if(null != f.getId()) {

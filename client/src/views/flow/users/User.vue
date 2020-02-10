@@ -89,7 +89,6 @@
     },
     methods: {
       onImgError () {
-        console.log('WE HIT THIS ERRORORROROROROROROROR')
         this.imageFailed = true
       },
       async getUser () {

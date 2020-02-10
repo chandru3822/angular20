@@ -86,7 +86,7 @@ export const UserStore = {
       // 1 is the master company id
       // return !!state.details.companies.find(c => c.companyId === 1)
       //todo: make this based on having access to company_id 1, but for now this is the only full admin
-      return state.details.id === 99999999
+      return state.details.highestCompanyId === 1
     }
   }
 }
