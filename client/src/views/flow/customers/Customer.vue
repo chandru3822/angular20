@@ -144,7 +144,7 @@ import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams
 import { Datetime } from 'vue-datetime'
 
 export default {
-  name: 'Lead',
+  name: 'Customer',
   components: {
     Snackbar,
     CustomValueInput,

@@ -87,24 +87,24 @@ export default {
       model: '',
       tabs: [ {
         label: 'Customers',
-        path: '/leads',
-        display: true
+        path: '/customers',
+        display: this.$store.getters.userHasFeatureAccess('CUSTOMERS')
       }, {
         label: 'Projects',
         path: '/project/search',
-        display: true
+        display: this.$store.getters.userHasFeatureAccess('PROJECTS')
       }, {
         label: 'AHJ Database',
         path: '/ahj',
-        display: true
+        display: this.$store.getters.userHasFeatureAccess('AHJ_DATABASE')
       }, {
         label: 'Schedule',
         path: '/schedule',
-        display: true
+        display: this.$store.getters.userHasFeatureAccess('SCHEDULE')
       }, {
         label: 'Work Queue',
         path: '/workQueue',
-        display: true
+        display: this.$store.getters.userHasFeatureAccess('WORK_QUEUE')
       }]
     }
   },

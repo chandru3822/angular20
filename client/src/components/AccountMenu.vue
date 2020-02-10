@@ -67,7 +67,6 @@
   import { UserActions } from '@/stores/UserStore'
   import moment from 'moment-timezone'
   import Vue2Filters from "vue2-filters"
-  import { isSystemAdmin } from '@/helpers/helpers'
 
   export default {
     name: 'AccountMenu',
@@ -126,7 +125,7 @@
             path: '/admin',
             title: 'Admin',
             icon: 'mdi-cogs',
-            show: isSystemAdmin(this.highestCompanyId)
+            show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
           },
 
         ]

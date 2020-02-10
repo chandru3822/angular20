@@ -126,7 +126,7 @@
         if(wq.workQueueCount > 0) {
           console.log('randaLogger',wq)
           this.$router.push({name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: this.selectedUserPositionId}})
-          // this.$router.push({name: 'lead', params: {id: data.id}})
+          // this.$router.push({name: 'customer', params: {id: data.id}})
         }
       }
     },

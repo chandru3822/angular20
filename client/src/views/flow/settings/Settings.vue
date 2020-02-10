@@ -89,7 +89,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar, IS_MOBILE, isParent } from '@/helpers/helpers'
+import { getRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
 
 export default {
   name: 'Settings',
@@ -154,11 +154,11 @@ export default {
       }, {
         path: '/settings/eventTypes',
         title: 'Scheduling Tool Event Types',
-        show: isParent(this.parentId)
+        show: this.$store.getters.isParent(this.parentId)
       }, {
         path: '/settings/workQueue/types',
         title: 'Work Queue',
-        show: isParent(this.parentId)
+        show: this.$store.getters.isParent(this.parentId)
       }, {
         header: 'Processes',
         show: true

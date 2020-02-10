@@ -25,7 +25,7 @@
 
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
-                <div v-if="this.$store.getters.hasPermission('SYSTEM_ADMIN')">
+                <div v-if="this.$store.getters.userHasFeatureAccess('SYSTEM')">
                   <v-select
                       v-model="user.companies"
                       :items="companies"

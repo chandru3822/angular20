@@ -114,7 +114,7 @@
                       return-object
                   ></v-autocomplete>
 
-                  <v-text-field v-if="$store.getters.hasPermission('SYSTEM_ADMIN') && item.companyDataType && item.companyDataType.customBehavior"
+                  <v-text-field v-if="$store.getters.userHasFeatureAccess('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior"
                                 v-model="item.customFieldSqlKey"
                                 label="SQL Key"
                   ></v-text-field>
@@ -252,7 +252,6 @@
       }
     },
     async created() {
-      this.$store.getters.hasPermission('SYSTEM_ADMIN')
       await this.getCompanyDataTypes()
       this.getCustomFieldObjectTypes()
       this.getCustomFields()
@@ -260,7 +259,7 @@
     },
     methods: {
       filterDataTypes (item) {
-        if(this.$store.getters.hasPermission('SYSTEM_ADMIN')) {
+        if(this.$store.getters.userHasFeatureAccess('SYSTEM')) {
           return this.dataTypes
         } else {
           // filter out the system item if not a system admin

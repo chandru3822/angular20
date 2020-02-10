@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Customers</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newLead" color="primary">
+            <v-btn text to="/newCustomer" color="primary">
               <v-icon>add</v-icon>
               <span v-if="!IS_MOBILE">Add Customer</span>
             </v-btn>
@@ -113,7 +113,7 @@ import debounce from 'lodash.debounce'
 import { saveAs } from 'file-saver'
 
 export default {
-  name: 'Leads',
+  name: 'Customers',
   components: {
     Snackbar
   },
@@ -153,7 +153,7 @@ export default {
   },
   methods: {
     clickRow(id){
-      this.$router.push({name: 'lead', params: {id}})
+      this.$router.push({name: 'customer', params: {id}})
     },
     debounceGetLeads: debounce( function () {
       this.dataLoading = true

@@ -5,6 +5,7 @@
                 upv.last_name,
                 upv.company_id,
                 upv.first_name || ' ' || upv.last_name as full_name,
+                upv.email,
                 upv.user_status_type,
                 upv.primary_flag,
                 upv.start_date,
@@ -12,7 +13,6 @@
                 upv.position,
                 upv.position_id,
                 upv.user_position_id,
-                upv.email,
                 upv.phone_number,
                 upv.user_status_type_id,
                 upv.hierarchy
@@ -30,8 +30,9 @@
       union
       select u.id,u.first_name,u.last_name,uc.company_id,
              u.first_name || ' ' || u.last_name as full_name,
+             u.email,
              ust.user_status_type,null,null,
-             null,null,null,null,
+             null,null,null,
              null,null,null,null
       from flow."user" u
                inner join flow.user_company uc on u.id = uc.user_id

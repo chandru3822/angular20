@@ -45,14 +45,14 @@ export const UserStore = {
       //TODO: permissions when we know how they are being genericized
       commit(UserMutations.AUTH_STATUS, true)
 
-      // if (getters.hasPermission) {
-      //   commit(UserMutations.AUTH_STATUS, true)
-      // } else {
-      //   commit(
-      //     UserMutations.LOGIN_ERROR,
-      //     'You do not have permission to access this app.'
-      //   )
-      // }
+      if (getters.userHasAnyFeatureAccess) {
+        commit(UserMutations.AUTH_STATUS, true)
+      } else {
+        commit(
+          UserMutations.LOGIN_ERROR,
+          'You do not have permission to access this app.'
+        )
+      }
     },
     [UserActions.CHANGE_CONTEXT]: async ({ commit, getters }, params) => {
 
@@ -77,16 +77,33 @@ export const UserStore = {
     }
   },
   getters: {
-    hasPermission: state => perm => {
-      // todo: @Randa add this back when the re-write is complete
-      // return !!state.details.permissions.find(p => p.permissionCode === perm)
-      return true
+    userHasAnyFeatureAccess: state => {
+      // this function returns true if the user has any access level for any feature -
+      // or if the user is a system admin
+      console.log('sss', state)
+      return UserStore.getters.isSystemAdmin(state.details.highestCompanyId) || state.details.featureAccess?.length > 0
+    },
+    userHasFeatureAccess: (state, getters) => featureCode => {
+      // this function returns true if the user has any access level (edit, view, etc)
+      // or if the user is a system admin (send 'SYSTEM' as the feature code if you only care it is a system admin)
+      return getters.isSystemAdmin(state.details.highestCompanyId) || (state.details.featureAccess?.length > 0 && state.details.featureAccess.some(fa => fa.featureCode === featureCode))
     },
     isFullAdmin: state => {
       // 1 is the master company id
-      // return !!state.details.companies.find(c => c.companyId === 1)
-      //todo: make this based on having access to company_id 1, but for now this is the only full admin
       return state.details.highestCompanyId === 1
+    },
+    isParent: state => parentId => {
+      return parentId === 1 || parentId == null
+    },
+    isCompanyRoot: state => companyId => {
+      return companyId === 1
+    },
+    isSystemAdmin: state => highestCompanyId => {
+      return highestCompanyId === 1
+    },
+    userHasFeatureAccessLevel: state => (featureCode, accessCode) => {
+      // this function only returns true if the user a specific access level to a feature (or is a system admin)
+      return true
     }
   }
 }
