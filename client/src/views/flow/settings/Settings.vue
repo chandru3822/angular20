@@ -210,7 +210,6 @@ export default {
       // this determines the title if the page is refreshed
       else if( this.$route.path.includes('/settings/customFieldGroup')) {
         if(this.companyObjectTypes.length > 0) {
-          debugger
           const match = this.companyObjectTypes.find(ot => ot.id.toString() === this.$route.params.id)
           this.title = match?.objectType
         }
