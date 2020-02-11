@@ -22,7 +22,7 @@ export default new Router({
         if(store.getters.userHasAnyFeatureAccess) {
           return import(/* webpackChunkName: "home" */ './views/Home.vue')
         } else  {
-          return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+          return accessDenied()
         }
       },
       beforeEnter: (to, from, next) => {
@@ -50,7 +50,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('SCHEDULE')) {
             return import(/* webpackChunkName: "schedule" */ './views/flow/schedule/Schedule.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         }
       }, {
@@ -60,7 +60,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('USERS')) {
             return import(/* webpackChunkName: "users" */ './views/flow/users/Users.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         }
       }, {
@@ -71,7 +71,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('USERS')) {
             return import (/*webpackChunkName: "user" */ './views/flow/users/User.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: [
@@ -94,7 +94,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('USERS')) {
             return import (/*webpackChunkName: "newUser" */ './views/flow/users/NewUser.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: []
@@ -105,7 +105,7 @@ export default new Router({
             if(store.getters.userHasFeatureAccess('AHJ_DATABASE')) {
               return import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
             } else  {
-              return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+              return accessDenied()
             }
           },
       }, {
@@ -116,7 +116,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('AHJ_DATABASE')) {
             return import (/* webpackChunkName: "ahjDetails" */ './views/ahj/AhjDetails.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: [
@@ -140,7 +140,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('AHJ_DATABASE')) {
             return import (/* webpackChunkName: "ahj" */ './views/ahj/utility/AhjUtility.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
       }, {
@@ -151,7 +151,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('AHJ_DATABASE')) {
             return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
       }, {
@@ -161,7 +161,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('SETTINGS')) {
             return import (/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: [
@@ -259,7 +259,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('WORK_QUEUE')) {
             return import (/*webpackChunkName: "workQueue" */ './views/flow/workQueue/WorkQueue.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
       }, {
@@ -269,7 +269,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('WORK_QUEUE')) {
             return import (/*webpackChunkName: "workQueueDrilldown" */ './views/flow/workQueue/WorkQueueDrilldown.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
       }, {
@@ -279,7 +279,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('PROJECTS')) {
             return import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: [{
@@ -303,7 +303,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('CUSTOMERS')) {
             return import (/*webpackChunkName: "customers" */ './views/flow/customers/Customers.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: []
@@ -315,7 +315,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('CUSTOMERS')) {
             return import (/*webpackChunkName: "customer" */ './views/flow/customers/Customer.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: []
@@ -326,7 +326,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('CUSTOMERS')) {
             return import (/*webpackChunkName: "customer" */ './views/flow/customers/NewCustomer.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: []
@@ -337,7 +337,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('ORGS')) {
             return import (/*webpackChunkName: "orgs" */ './views/flow/orgs/Orgs.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: []
@@ -349,7 +349,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('ORGS')) {
             return import (/*webpackChunkName: "org" */ './views/flow/orgs/Org.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: []
@@ -360,7 +360,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('ORGS')) {
             return import (/*webpackChunkName: "newOrg" */ './views/flow/orgs/NewOrg.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: []
@@ -371,7 +371,7 @@ export default new Router({
           if(store.getters.userHasFeatureAccess('SYSTEM')) {
             return import (/* webpackChunkName: "admin" */ './views/flow/admin/Admin.vue')
           } else  {
-            return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+            return accessDenied()
           }
         },
         children: [
@@ -395,3 +395,7 @@ export default new Router({
     }
   ]
 })
+
+function accessDenied() {
+  return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+}
