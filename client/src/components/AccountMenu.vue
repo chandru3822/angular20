@@ -115,12 +115,12 @@
             path: '/users',
             title: 'Users',
             icon: 'people',
-            show: true
+            show: this.$store.getters.userHasFeatureAccess('USERS')
           }, {
             path: '/orgs',
             title: 'Organizations',
             icon: 'list',
-            show: true
+            show: this.$store.getters.userHasFeatureAccess('ORGS')
           }, {
             path: '/admin',
             title: 'Admin',

@@ -28,6 +28,15 @@
               item-text="orgType"
               item-value="id"
           ></v-select>
+          <div class="mb-3">
+            <label>Show in Scheduling Tool:</label>
+            <input type="checkbox" class="ml-3" v-model="position.schedulable">
+          </div>
+          <div v-if="$store.getters.isParent(parentId)">
+            <label>Make Available in Children</label>
+            <input type="checkbox" class="ml-3" v-model="position.availableToChildren">
+          </div>
+          <v-divider class="my-2"></v-divider>
           <h3>Access Control</h3>
           <v-data-table
               :headers="headers"
@@ -82,6 +91,7 @@
         positionId: this.$route.params.id,
         features: [],
         accessControlList: [],
+        parentId: this.$store.state.user.details.parentCompanyId,
         headers: [
           { text: 'Feature', value: 'featureName', show: true },
 

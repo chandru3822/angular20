@@ -88,7 +88,7 @@ export default {
       tabs: [ {
         label: 'Customers',
         path: '/customers',
-        display: this.$store.getters.userHasFeatureAccess('CUSTOMERS')
+          display: this.$store.getters.userHasFeatureAccess('CUSTOMERS')
       }, {
         label: 'Projects',
         path: '/project/search',

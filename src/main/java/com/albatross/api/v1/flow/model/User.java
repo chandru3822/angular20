@@ -20,7 +20,6 @@ public class User {
     private String email, phoneNumber, username, password, firstName, lastName, fullName,
         userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position, title; //title used for scheduling tool resource name
     private Long userStatusTypeId;
-    private Boolean schedulable;
     private List<Company> companies;
     private List<FeatureAccessControl> featureAccess;
 

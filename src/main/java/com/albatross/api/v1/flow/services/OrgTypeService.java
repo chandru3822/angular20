@@ -96,6 +96,7 @@ public class OrgTypeService {
     params.put("orgParentTypeId", orgType.getOrgParentTypeId());
     params.put("orgLevelId", orgType.getOrgLevelId());
     params.put("archived", orgType.getArchived());
+    params.put("availableToChildren", null != orgType.getAvailableToChildren() ? orgType.getAvailableToChildren() : false);
 
     Long id;
 

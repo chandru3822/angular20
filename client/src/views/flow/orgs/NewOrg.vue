@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card class="pa-3">
+    <v-card class="pa-3 text-left" >
       <v-card-title>
         Add Organization
         <v-spacer></v-spacer>
@@ -30,6 +30,14 @@
                         item-text="orgName"
                         item-value="id"
               ></v-select>
+              <div class="mb-3">
+                <label>Show in Scheduling Tool:</label>
+                <input type="checkbox" class="ml-2" v-model="org.schedulable">
+              </div>
+              <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+                <label>Make available in children:</label>
+                <input type="checkbox" class="ml-3" v-model="org.availableToChildren">
+              </div>
             </v-col>
           </v-row>
         </v-container>
@@ -65,6 +73,7 @@
         orgTypes: [],
         parents: [],
         customFieldGroups: [],
+        parentId: this.$store.state.user.details.parentCompanyId,
         requiredRules: BASIC_REQUIRED_RULE,
         companyId: this.$store.state.user.details.companyId,
       }

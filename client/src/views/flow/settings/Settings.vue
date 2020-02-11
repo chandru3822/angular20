@@ -103,6 +103,7 @@ export default {
       menuOpen: false,
       IS_MOBILE,
       title: null,
+      hasSettingsAccess: this.$store.getters.userHasFeatureAccess('SETTINGS'),
       companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
       parentId: this.$store.state.user.details.parentCompanyId,
@@ -121,85 +122,87 @@ export default {
       }, {
         path: '/settings/company',
         title: 'Company',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         header: 'User Management',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/positions',
         title: 'Positions',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         // path: '/settings/roles',
         // title: 'Roles',
         // }, {
         header: 'Custom Components',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/customFields',
         title: 'Custom Fields',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/attachments',
         title: 'Attachments',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/links',
         title: 'Links',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/orgTypes',
         title: 'Organization Types',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/eventTypes',
         title: 'Scheduling Tool Event Types',
-        show: this.$store.getters.isParent(this.parentId)
+        show: this.$store.getters.isParent(this.parentId) && this.hasSettingsAccess
       }, {
         path: '/settings/workQueue/types',
         title: 'Work Queue',
-        show: this.$store.getters.isParent(this.parentId)
+        show: this.$store.getters.isParent(this.parentId) && this.hasSettingsAccess
       }, {
         header: 'Processes',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/processes',
         pathMatch: '/settings/processes',
         title: 'Processes',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/processSteps',
         pathMatch: '/settings/processStep',
         title: 'Process Steps',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/functions',
         pathMatch: '/settings/function',
         title: 'Functions',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/statuses',
         title: 'Statuses',
-        show: true
+        show: this.hasSettingsAccess
       }, {
         header: 'Objects',
-        show: true
+        show: this.hasSettingsAccess
       }
     ]
   }
   },
   methods: {
     async getCustomFieldObjectTypes () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
-        this.companyObjectTypes = data
-        this.setTitle()
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if(this.hasSettingsAccess) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
+          this.companyObjectTypes = data
+          this.setTitle()
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     setTitle (title) {

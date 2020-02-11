@@ -20,9 +20,6 @@
                             label="E-Mail"
                             placeholder=" "
                             v-model="user.email"></v-text-field>
-              <label>Show in Scheduling Tool:</label>
-              <input type="checkbox" class="ml-2" v-model="user.schedulable">
-
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
                 <div v-if="this.$store.getters.userHasFeatureAccess('SYSTEM')">

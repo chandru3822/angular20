@@ -39,8 +39,14 @@
                       item-text="state"
                       item-value="id"
             ></v-select>
-            <label>Show in Scheduling Tool:</label>
-            <input type="checkbox" class="ml-2" v-model="org.schedulable">
+            <div class="mb-3">
+              <label>Show in Scheduling Tool:</label>
+              <input type="checkbox" class="ml-2" v-model="org.schedulable">
+            </div>
+            <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+              <label>Make available in children:</label>
+              <input type="checkbox" class="ml-3" v-model="org.availableToChildren">
+            </div>
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -91,7 +97,8 @@
         parents: [],
         states: [],
         orgId: this.$route.params.id,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        parentId: this.$store.state.user.details.parentCompanyId,
       }
     },
     async created () {

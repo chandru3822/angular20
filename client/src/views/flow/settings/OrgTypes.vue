@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Organization Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newType = {}">
+            <v-btn text @click="addType = !addType; newType = {}">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addType ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -29,6 +29,10 @@
                     item-text="orgType"
                     item-value="id"
           ></v-select>
+          <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+            <label>Make available in children:</label>
+            <input type="checkbox" class="ml-3" v-model="newOrgType.availableToChildren">
+          </div>
 
           <v-btn :disabled="!newOrgType.orgType || !newOrgType.orgLevelId"
                  color="primary" class="white--text mr-2"
@@ -74,6 +78,10 @@
                         item-text="orgType"
                         item-value="id"
               ></v-select>
+              <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+                <label>Make available in children:</label>
+                <input type="checkbox" class="ml-3" v-model="item.availableToChildren">
+              </div>
               <v-btn :disabled="!item.orgType || !item.orgLevelId"
                      color="primary" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
             </td>
@@ -120,6 +128,7 @@
         newOrgType: {},
         addType: false,
         levels: [],
+        parentId: this.$store.state.user.details.parentCompanyId,
         headers: [
           { text: 'Org Type', value: 'orgType', show: true },
           { text: 'Level', value: 'level', width: 80, show: true },
