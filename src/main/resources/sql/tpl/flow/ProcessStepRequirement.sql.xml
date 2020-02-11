@@ -314,7 +314,8 @@
            left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfga.id
     where
       psr.archived is not true and
-      pps.id = :projectProcessStepId
+      pps.id = :projectProcessStepId and
+      psr.id in (:requirementIds)
     order by psr.requirement_nbr;
   ]]></processStepRequirement.getRequirementsWithValuesByProjectProcessStepId>
 

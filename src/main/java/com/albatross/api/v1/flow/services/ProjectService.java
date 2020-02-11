@@ -276,14 +276,28 @@ public class ProjectService {
   public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
 
     ProcessStepAction action = processStepActionService.getActionById(actionId);
-    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(projectProcessStepId);
+
+    if (action.getAlwaysEnabled()) {
+      return true;
+    }
+
+    if (action.getProcessStepLogicList().isEmpty()) {
+      return false;
+    }
+
+    List<Long> requirementIds = action.getProcessStepLogicList().stream()
+                                  .filter(step -> step.getProcessStepRequirementId() != null)
+                                  .map(ProcessStepLogic::getProcessStepRequirementId)
+                                  .collect(Collectors.toList());
+
+    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(projectProcessStepId, requirementIds);
 
     // If there are not any requirements, then it can be completed
     if (requirements.isEmpty()) {
       return true;
     }
 
-    // Check to if individual requirements are fulfilled and create a map of true/false with the requirementIds
+    // Check to if individual requirements are fulfilled
     // @TODO: Unable to do this with a lambda like requirements.foreach(r ->... while being able to throw an exception ¯\_(ツ)_/¯
     for (ProjectProcessStepRequirement r: requirements) {
       try {
