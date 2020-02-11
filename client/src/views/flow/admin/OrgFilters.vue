@@ -29,7 +29,8 @@
             </v-select>
             <v-text-field text v-model="newOrgFilter.rank" type="number"
                           label="Rank" />
-            <input type="checkbox" v-model="newOrgFilter.showType">
+            <label>Show Type:</label>
+            <input type="checkbox" class="ml-3" v-model="newOrgFilter.showType">
           </div>
           <v-btn :disabled="!newOrgFilter.orgLevelId || !newOrgFilter.rank"
                  color="primary" class="white--text mr-2"

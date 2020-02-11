@@ -241,7 +241,7 @@ public class OrgService {
     params.put("companyId", user.getCompanyId());
     params.put("orgLevelId", filter.getOrgLevelId());
     params.put("rank", filter.getRank());
-    params.put("showType", filter.getShowType());
+    params.put("showType", null != filter.getShowType() ? filter.getShowType() : false);
 
     Long id;
     if (null != filter.getId()) {
