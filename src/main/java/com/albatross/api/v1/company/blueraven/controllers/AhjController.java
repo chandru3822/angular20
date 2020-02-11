@@ -4,6 +4,7 @@ import com.albatross.api.v1.company.blueraven.models.ahj.AhjRequirement;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjSummary;
 import com.albatross.api.v1.company.blueraven.services.AhjRequirementService;
 import com.albatross.api.v1.company.blueraven.services.AhjService;
+import com.albatross.api.v1.company.blueraven.services.AhjUtilityService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,9 @@ public class AhjController {
 
   @Autowired
   private AhjRequirementService ahjRequirementService;
+
+  @Autowired
+  private AhjUtilityService ahjUtilityService;
 
   @GetMapping(value = "")
   public List<AhjSummary> getAhjList() {
@@ -49,19 +53,23 @@ public class AhjController {
   }
 
   // REQUIREMENTS
-  @GetMapping(value = "/{ahjId}/requirement/{originalRequirementId}/history")
+  @GetMapping(value = "/{ahjId}/{itemType}/requirement/{originalRequirementId}/history")
   public List<AhjRequirement> getRequirementHistory(@PathVariable Long ahjId,
+                                                    @PathVariable String itemType,
                                                     @PathVariable Long originalRequirementId) {
-    return ahjRequirementService.getRequirementHistory(ahjId, originalRequirementId);
+    if (itemType.equals("utility")) {
+      return ahjUtilityService.getRequirementHistory(ahjId, originalRequirementId);
+    } else {
+      return ahjRequirementService.getRequirementHistory(ahjId, originalRequirementId);
+    }
   }
 
   @PostMapping(value = "/{ahjId}/{itemType}/requirement")
-  public AhjRequirement createRequirement(@PathVariable Long ahjId,
-                                          @PathVariable String itemType,
-                                          @RequestBody AhjRequirement requirement) {
+  public AhjRequirement addRequirement(@PathVariable Long ahjId,
+                                       @PathVariable String itemType,
+                                       @RequestBody AhjRequirement requirement) {
     if (itemType.equals("utility")) {
-//      return ahjUtilityService.addRequirement(ahjId, requirement);
-      return null; // TODO: Remove this later when the Ahj Utility stuff is set up
+      return ahjUtilityService.addRequirement(ahjId, requirement);
     } else {
       return ahjRequirementService.addRequirement(ahjId, requirement);
     }
@@ -73,8 +81,7 @@ public class AhjController {
                                           @PathVariable Long requirementId,
                                           @RequestBody AhjRequirement requirement) {
     if (itemType.equals("utility")) {
-//      return ahjUtilityService.updateRequirement(ahjId, requirement, requirementId);
-      return null; // TODO: Remove this later when the Ahj Utility stuff is set up
+      return ahjUtilityService.updateRequirement(ahjId, requirementId, requirement);
     } else {
       return ahjRequirementService.updateRequirement(ahjId, requirementId, requirement);
     }
@@ -84,7 +91,7 @@ public class AhjController {
   public void archiveRequirement(@PathVariable String itemType,
                                  @PathVariable Long originalRequirementId) {
     if (itemType.equals("utility")) {
-//      ahjUtilityService.archiveRequirement(requirement);
+      ahjUtilityService.archiveRequirement(originalRequirementId);
     } else {
       ahjRequirementService.archiveRequirement(originalRequirementId);
     }

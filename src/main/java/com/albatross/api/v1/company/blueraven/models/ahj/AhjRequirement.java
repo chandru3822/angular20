@@ -12,7 +12,7 @@ public class AhjRequirement {
     private Long id;
     private Long ahjId, requirementTypeId, originalRequirementId, position, utilityId, createdById, modifiedById,
                  statusId;
-    private String name, description, createdBy, modifiedBy, status, requirementType;
+    private String description, createdBy, modifiedBy, status, requirementType;
     private Date dateCreated, dateModified;
     private Boolean complete, hasOpenChallenge, archived;
 }

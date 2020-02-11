@@ -139,7 +139,7 @@
       itemType: {
         type: String
       },
-      ahjId: {
+      itemId: {
         type: Number
       },
       originalRequirement: {
@@ -179,7 +179,7 @@
 
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data} = await getRequest(`/ahj/${this.ahjId}/requirement/${this.originalRequirementId}/history`, 'blueraven')
+          const {data} = await getRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.originalRequirementId}/history`, 'blueraven')
 
           if (data.length > 0) {
             data.forEach(requirement => {
@@ -207,7 +207,7 @@
 
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
+          await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Challenge submitted')
           this.originalRequirement.hasOpenChallenge = true
         } catch (e) {
@@ -231,7 +231,7 @@
 
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
+          await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
           this.originalRequirement.hasOpenChallenge = false
           this.originalRequirement.statusId = this.selectedRequirementStatusId
 
