@@ -5,7 +5,7 @@
         <div class="lead-title">
           {{customer.fullName}}
           <v-menu
-              v-if="customer.customerTypeId === 2"
+              v-if="customer.customerTypeId === 2 && userCanEdit"
               bottom
               offset-y
               :close-on-content-click="false"
@@ -36,7 +36,7 @@
         </div>
       </v-col>
       <v-col cols="4" class="lead-owner pb-2">
-        <div v-if="!changeOwner">
+        <div v-if="!changeOwner || !userCanEdit">
           <div v-if="customer.owner">
             <v-avatar
                 :tile="false"
@@ -50,7 +50,7 @@
             {{customer.owner.position}}
           </div>
         </div>
-        <div v-if="changeOwner">
+        <div v-if="changeOwner && userCanEdit">
           <v-autocomplete v-model="customer.owner"
                     :items="owners"
                     label="Select Owner"
@@ -69,7 +69,10 @@
       </v-col>
       <v-col cols="2" class="lead-owner pb-2">
         Associated Projects<br/>
-        <router-link v-for="p in customer.projects" :key="p.id" :to="`/project/${p.id}`">{{p.projectName}}</router-link>
+        <div v-for="p in customer.projects" :key="p.id">
+          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}`">{{p.projectName}}</router-link>
+          <span v-else>{{p.projectName}}</span>
+        </div>
       </v-col>
     </v-row>
     <v-row>
@@ -86,14 +89,17 @@
             <v-text-field text
                           label="Phone"
                           placeholder=" "
+                          :readonly="!userCanEdit"
                           v-model="customer.phone"></v-text-field>
             <v-text-field text
                           label="Mobile"
+                          :readonly="!userCanEdit"
                           placeholder=" "
                           v-model="customer.mobile"></v-text-field>
             <v-text-field text
                           label="E-Mail"
                           placeholder=" "
+                          :readonly="!userCanEdit"
                           v-model="customer.email"></v-text-field>
             <div class="field-label">Created Date</div>
             <datetime
@@ -101,6 +107,7 @@
                 v-model="customer.dateCreated"
                 input-class="one-hunned"
                 :zone="timezone.value"
+                :readonly="!userCanEdit"
                 :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
                 :phrases="{ok: 'Ok', cancel: 'Close'}"
                 :hour-step="1"
@@ -120,7 +127,7 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="false" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="!userCanEdit" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
@@ -159,6 +166,7 @@ export default {
       notes: [],
       owners: [],
       customerId: this.$route.params.id,
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CUSTOMERS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
       timezone: this.$store.state.user.details.timezone,
       changeOwner: false,

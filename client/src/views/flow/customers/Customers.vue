@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Customers</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newCustomer" color="primary">
+            <v-btn text to="/newCustomer" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('CUSTOMERS', 'ADD')">
               <v-icon>add</v-icon>
               <span v-if="!IS_MOBILE">Add Customer</span>
             </v-btn>

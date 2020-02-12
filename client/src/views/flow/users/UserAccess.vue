@@ -6,7 +6,7 @@
           Access Control
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="saveUserAccess" color="primary">
+            <v-btn text @click="saveUserAccess" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
               <v-icon>save</v-icon>
               Save
             </v-btn>

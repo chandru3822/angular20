@@ -9,7 +9,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary">
+            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary" v-if="userCanEdit">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -19,18 +19,20 @@
           <v-text-field v-model="position.position"
                         placeholder="Enter a value"
                         required
+                        :readonly="!userCanEdit"
                         label="Position Name">
           </v-text-field>
           <v-select
               v-model="position.orgTypeId"
               :items="orgTypes"
+              :readonly="!userCanEdit"
               label="Organization Type"
               item-text="orgType"
               item-value="id"
           ></v-select>
           <div class="mb-3">
             <label>Show in Scheduling Tool:</label>
-            <input type="checkbox" class="ml-3" v-model="position.schedulable">
+            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.schedulable">
           </div>
           <div v-if="$store.getters.isParent(parentId)">
             <label>Make Available in Children</label>
@@ -39,50 +41,6 @@
           <v-divider class="my-2"></v-divider>
           <h3>Access Control</h3>
           <AccessControl v-if="positionLoaded" :companyFeatures="position.companyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
-<!--          <h3>Access Control</h3>-->
-<!--          <v-data-table-->
-<!--              :headers="headers"-->
-<!--              :items="position.companyFeatures"-->
-<!--              :fixed-header="true"-->
-<!--              :items-per-page="-1"-->
-<!--              v-model="selectedRows"-->
-<!--              hide-default-footer-->
-<!--              disable-sort-->
-<!--              show-select-->
-
-<!--              class="elevation-1 mt-1"-->
-<!--          >-->
-<!--            <template #no-data>-->
-<!--              No available fields-->
-<!--            </template>-->
-
-<!--            <template #no-results>-->
-<!--              No available fields-->
-<!--            </template>-->
-
-<!--            <template v-slot:header.MODIFY-ME="{ header, on, props }">-->
-<!--              <a @click="header.selectAll = !header.selectAll; alterEnabledFlagForColumns(header)">{{header.text}}</a>-->
-<!--            </template>-->
-
-<!--            <template v-slot:header.data-table-select="{ on, props }">-->
-<!--              <v-simple-checkbox v-bind="props" v-on="on"></v-simple-checkbox>-->
-<!--            </template>-->
-
-<!--            <template #item="{ item, index, isSelected, select }">-->
-<!--              <tr :class="{ 'shaded-row': index % 2 }">-->
-<!--                <td class="text-center">-->
-<!--                  <v-simple-checkbox :value="isSelected" @input="select($event)"></v-simple-checkbox>-->
-<!--                </td>-->
-<!--                <td class="text-left">-->
-<!--                  {{ item.featureName }}-->
-<!--                </td>-->
-<!--                <td v-for="acl in item.accessControl">-->
-<!--                  <input type="checkbox" v-model="acl.enabled">-->
-<!--                </td>-->
-<!--              </tr>-->
-<!--            </template>-->
-
-<!--          </v-data-table>-->
         </v-card>
 
       </v-col>
@@ -115,6 +73,7 @@
         position: {},
         selectedRows: [],
         positionLoaded: false,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         orgTypes: [],
         positionId: this.$route.params.id,
         features: [],

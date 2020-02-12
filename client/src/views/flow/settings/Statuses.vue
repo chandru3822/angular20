@@ -27,7 +27,7 @@
                 </v-text-field>
                 <div v-else>{{s.processStepStatusType}}</div>
               </v-list-item-content>
-              <v-list-item-action class="clickable">
+              <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                 <v-icon v-if="selectedStatusTypeId === s.id" @click="saveType(s)">save</v-icon>
                 <v-icon v-else @click="selectedStatusTypeId = s.id">edit</v-icon>
               </v-list-item-action>

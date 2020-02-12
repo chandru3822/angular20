@@ -437,7 +437,6 @@
               d.coordinates = [ d.longitude, d.latitude ]
             })
             this.projects = data
-            console.log('randaLogger HH', this.projects)
             this.masterProjects = cloneDeep(data)
             if(this.selectedProcessStepStatusTypes?.length > 0) {
               this.filterProjects()

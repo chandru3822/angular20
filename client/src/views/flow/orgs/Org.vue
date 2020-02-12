@@ -13,35 +13,39 @@
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="saveOrg">Save</v-btn>
+              <v-btn text @click="saveOrg" v-if="userCanEdit">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
             <v-text-field text
                           label="Organization Name"
+                          :readonly="!userCanEdit"
                           v-model="org.orgName"></v-text-field>
             <v-select v-model="org.orgTypeId"
                       :items="orgTypes"
                       label="Organization Type"
+                      :readonly="!userCanEdit"
                       item-text="orgType"
                       item-value="id"
                       @input="getOrgsByType(org.orgTypeId)"
             ></v-select>
             <v-select v-model="org.parentOrgId"
                       :items="parents"
+                      :readonly="!userCanEdit"
                       label="Parent Organization"
                       item-text="orgName"
                       item-value="id"
             ></v-select>
             <v-select v-model="org.stateId"
                       :items="states"
+                      :readonly="!userCanEdit"
                       label="State"
                       item-text="state"
                       item-value="id"
             ></v-select>
             <div class="mb-3">
               <label>Show in Scheduling Tool:</label>
-              <input type="checkbox" class="ml-2" v-model="org.schedulable">
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-2" v-model="org.schedulable">
             </div>
             <div class="mb-3" v-if="$store.getters.isParent(parentId)">
               <label>Make available in children:</label>
@@ -96,6 +100,7 @@
         orgTypes: [],
         parents: [],
         states: [],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
         orgId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
         parentId: this.$store.state.user.details.parentCompanyId,

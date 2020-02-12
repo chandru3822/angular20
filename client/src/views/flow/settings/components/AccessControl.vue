@@ -99,10 +99,8 @@
         }
       },
       alterEnabledFlagForColumns (header) {
-        console.log('randaLogger HEAD', header)
         this.companyFeatureList.forEach(cf => {
           cf.accessControl.forEach(acl => {
-            console.log('randaLogger acl', acl)
             if(header.accessControlId === acl.accessControlId) {
               acl.enabled = header.selectAll
             }
@@ -121,7 +119,6 @@
         this.callback(this.companyFeatureList)
       },
       async getFeatures() {
-        console.log('randaLogger',this.companyFeatureList)
         if(this.companyFeatureList?.length === 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {

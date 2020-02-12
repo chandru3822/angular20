@@ -238,7 +238,6 @@
                 text: 'Today',
                 click: () => {
                   let calendarApi = this.$refs.eventCalendar.getApi()
-                  console.log('randaLogger MOMENT', moment())
                   calendarApi.gotoDate(new Date)
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents()
@@ -285,7 +284,6 @@
             while (hexColorCode.length < 6) {
               hexColorCode += (Math.random()).toString(16).substr(-6).substr(-1)
             }
-            console.log('randaLogger random color', hexColorCode)
             r.color = '#'+hexColorCode
           }
         })

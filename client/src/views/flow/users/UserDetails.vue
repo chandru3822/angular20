@@ -24,7 +24,7 @@
                             v-model="user.email"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
-                <div v-if="this.$store.getters.userHasFeature('SYSTEM')">
+                <div v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
                   <v-select
                       v-model="user.companies"
                       :items="companies"
