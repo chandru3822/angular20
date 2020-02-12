@@ -66,8 +66,8 @@
                                     ufac.enabled
                              from flow.access_control ac
                                       left join flow.user_feature_access_control ufac on ac.id = ufac.access_control_id
-                                 and ufac.company_feature_id = cf.id
-                                 and ufac.user_id = :userId
+                             where ufac.company_feature_id = cf.id
+                               and ufac.user_id = :userId
                              order by "accessControlId"
                          ) accessControl), '[]') AS "accessControl"
       from flow.company_feature cf
@@ -78,7 +78,7 @@
 
   <feature.getAccessForUser><![CDATA[
     WITH t as (
-     select feature_id, cf.feature_name, f.feature_code, ac.access_code
+     select feature_id, cf.feature_name, f.feature_code, ac.access_code, uac.enabled
          from flow.user_feature_access_control uac
                   inner join flow.company_feature cf on cf.id = uac.company_feature_id
                   inner join flow.feature f on f.id = cf.feature_id
@@ -88,7 +88,7 @@
     SELECT *
     FROM T
     UNION
-    select feature_id, cf.feature_name, f.feature_code, ac.access_code
+    select feature_id, cf.feature_name, f.feature_code, ac.access_code, pac.enabled
     from flow.position_feature_access_control pac
         inner join flow.company_feature cf on cf.id = pac.company_feature_id
         inner join flow.user_position up on up.position_id = pac.position_id and up.end_date is null and up.user_id = :userId

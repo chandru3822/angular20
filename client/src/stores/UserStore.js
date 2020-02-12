@@ -39,11 +39,7 @@ export const UserStore = {
     },
     [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
       commit(UserMutations.LOGIN_ERROR, '')
-
       commit(UserMutations.SET_DETAILS, details)
-
-      //TODO: permissions when we know how they are being genericized
-      commit(UserMutations.AUTH_STATUS, true)
 
       if (getters.userHasAnyFeature) {
         commit(UserMutations.AUTH_STATUS, true)
@@ -55,16 +51,8 @@ export const UserStore = {
       }
     },
     [UserActions.CHANGE_CONTEXT]: async ({ commit, getters }, params) => {
-
       //change context
-      let url
-      if(params.isAdmin) {
-        url = `/user/changeContextAdmin/${params.companyId}`
-      } else {
-        url = `/user/changeContext/${params.companyId}`
-      }
-
-      const {data} = await postRequest(url)
+      const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 
       //update vuex store - user details
       commit(UserMutations.SET_DETAILS, data)
