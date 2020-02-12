@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Login from './views/Login.vue'
 import store from './store'
+import { UserMutations } from './stores/UserStore'
+import { getRequest } from '@/helpers/helpers'
 
 Vue.use(Router)
 
@@ -25,12 +27,16 @@ export default new Router({
           return accessDenied()
         }
       },
-      beforeEnter: (to, from, next) => {
+      beforeEnter: async (to, from, next) => {
         if (!store.state.user.authorized) {
           next('/login')
         } else if (to.path === '/') {
           next('/users')
         } else {
+          if(from.name !== 'login') {
+            const {data} = await getUser()
+            store.commit(UserMutations.SET_DETAILS, data)
+          }
           next()
         }
       },
@@ -503,6 +509,11 @@ export default new Router({
     }
   ]
 })
+
+async function getUser() {
+  const {data} = await getRequest(`/user/current`)
+  return {data}
+}
 
 function accessDenied() {
   return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
