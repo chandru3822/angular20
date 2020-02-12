@@ -38,34 +38,53 @@
           </div>
           <v-divider class="my-2"></v-divider>
           <h3>Access Control</h3>
-          <v-data-table
-              :headers="headers"
-              :items="position.companyFeatures"
-              :fixed-header="true"
-              :items-per-page="-1"
-              hide-default-footer
-              disable-sort
-              class="elevation-1 mt-1"
-          >
-            <template #no-data>
-              No available fields
-            </template>
+          <AccessControl v-if="positionLoaded" :companyFeatures="position.companyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
+<!--          <h3>Access Control</h3>-->
+<!--          <v-data-table-->
+<!--              :headers="headers"-->
+<!--              :items="position.companyFeatures"-->
+<!--              :fixed-header="true"-->
+<!--              :items-per-page="-1"-->
+<!--              v-model="selectedRows"-->
+<!--              hide-default-footer-->
+<!--              disable-sort-->
+<!--              show-select-->
 
-            <template #no-results>
-              No available fields
-            </template>
+<!--              class="elevation-1 mt-1"-->
+<!--          >-->
+<!--            <template #no-data>-->
+<!--              No available fields-->
+<!--            </template>-->
 
-            <template #item="{ item, index }">
-              <tr :class="{ 'shaded-row': index % 2 }">
-                <td class="text-left">{{ item.featureName }}</td>
-                <td v-for="acl in item.accessControl">
-                  <input type="checkbox" v-model="acl.enabled">
-                </td>
-              </tr>
-            </template>
+<!--            <template #no-results>-->
+<!--              No available fields-->
+<!--            </template>-->
 
-          </v-data-table>
+<!--            <template v-slot:header.MODIFY-ME="{ header, on, props }">-->
+<!--              <a @click="header.selectAll = !header.selectAll; alterEnabledFlagForColumns(header)">{{header.text}}</a>-->
+<!--            </template>-->
+
+<!--            <template v-slot:header.data-table-select="{ on, props }">-->
+<!--              <v-simple-checkbox v-bind="props" v-on="on"></v-simple-checkbox>-->
+<!--            </template>-->
+
+<!--            <template #item="{ item, index, isSelected, select }">-->
+<!--              <tr :class="{ 'shaded-row': index % 2 }">-->
+<!--                <td class="text-center">-->
+<!--                  <v-simple-checkbox :value="isSelected" @input="select($event)"></v-simple-checkbox>-->
+<!--                </td>-->
+<!--                <td class="text-left">-->
+<!--                  {{ item.featureName }}-->
+<!--                </td>-->
+<!--                <td v-for="acl in item.accessControl">-->
+<!--                  <input type="checkbox" v-model="acl.enabled">-->
+<!--                </td>-->
+<!--              </tr>-->
+<!--            </template>-->
+
+<!--          </v-data-table>-->
         </v-card>
+
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -76,17 +95,26 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getOrgTypes} from '@/services/orgService'
+  import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Position',
     components: {
-      Snackbar
+      Snackbar,
+      AccessControl
+    },
+    watch: {
+      'selectedRows': function () {
+        this.alterEnabledFlagForRows()
+      }
     },
     data() {
       return {
         snackbar: {},
         position: {},
+        selectedRows: [],
+        positionLoaded: false,
         orgTypes: [],
         positionId: this.$route.params.id,
         features: [],
@@ -102,7 +130,7 @@
       if(this.positionId) {
         this.getPosition()
       } else {
-        this.getFeatures()
+        this.positionLoaded = true
       }
       this.getOrgTypes()
     },
@@ -138,42 +166,22 @@
         }
 
       },
-      populateHeaders () {
-        //todo. not my favorite
-        this.position.companyFeatures[0]?.accessControl?.forEach(acl => {
-          this.headers.push({
-            text: acl.accessLevel,
-            value: acl.accessCode,
-            show: true
-          })
-        })
-      },
-      async getFeatures() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/feature/withAccess`)
-          this.position.companyFeatures = data
-          this.populateHeaders()
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       async getPosition() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/position/${this.positionId}`)
           this.position = data
-          this.populateHeaders()
+          this.positionLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Position')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      companyFeatureCallback (newValue) {
+        this.position.companyFeatures = newValue
+      },
     }
   }
 </script>

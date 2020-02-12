@@ -103,7 +103,7 @@ export default {
       menuOpen: false,
       IS_MOBILE,
       title: null,
-      hasSettingsAccess: this.$store.getters.userHasFeatureAccess('SETTINGS'),
+      hasSettingsAccess: this.$store.getters.userHasFeature('SETTINGS'),
       companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
       parentId: this.$store.state.user.details.parentCompanyId,

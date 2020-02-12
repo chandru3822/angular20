@@ -48,6 +48,7 @@
                         from flow.company_feature cf
                         where cf.company_id = :companyId
                           and cf.archived is not true
+                        order by cf.feature_name
                 ) companyFeatures), '[]') AS "companyFeatures"
     from flow.position p
         inner join flow.org_type ot on ot.id = p.org_type_id

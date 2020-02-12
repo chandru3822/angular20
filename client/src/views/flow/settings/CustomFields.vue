@@ -114,7 +114,7 @@
                       return-object
                   ></v-autocomplete>
 
-                  <v-text-field v-if="$store.getters.userHasFeatureAccess('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior"
+                  <v-text-field v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior"
                                 v-model="item.customFieldSqlKey"
                                 label="SQL Key"
                   ></v-text-field>
@@ -259,7 +259,7 @@
     },
     methods: {
       filterDataTypes (item) {
-        if(this.$store.getters.userHasFeatureAccess('SYSTEM')) {
+        if(this.$store.getters.userHasFeature('SYSTEM')) {
           return this.dataTypes
         } else {
           // filter out the system item if not a system admin

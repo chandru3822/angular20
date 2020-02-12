@@ -106,7 +106,7 @@ public class FeatureService {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
         if(null != ac.getId()) {
           params.put("enabled", ac.isEnabled());
-          params.put("userFeatureAccessControlId", ac.getAccessControlId());
+          params.put("userFeatureAccessControlId", ac.getId());
           sqlCache.update("feature.updateUserFeatureAccessControl", params);
         } else if (ac.isEnabled()) {
           params.put("companyFeatureId", cf.getId());

@@ -45,6 +45,7 @@
     from flow.company_feature cf
     where cf.company_id = :companyId
       and cf.archived is not true
+    order by cf.feature_name
   ]]></feature.getAllForCompanyWithAccess>
 
   <feature.getForUser><![CDATA[
@@ -72,6 +73,7 @@
       from flow.company_feature cf
       where cf.company_id = :companyId
         and cf.archived is not true
+      order by cf.feature_name
   ]]></feature.getForUser>
 
   <feature.getAccessForUser><![CDATA[

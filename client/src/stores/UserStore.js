@@ -45,7 +45,7 @@ export const UserStore = {
       //TODO: permissions when we know how they are being genericized
       commit(UserMutations.AUTH_STATUS, true)
 
-      if (getters.userHasAnyFeatureAccess) {
+      if (getters.userHasAnyFeature) {
         commit(UserMutations.AUTH_STATUS, true)
       } else {
         commit(
@@ -77,13 +77,12 @@ export const UserStore = {
     }
   },
   getters: {
-    userHasAnyFeatureAccess: state => {
+    userHasAnyFeature: state => {
       // this function returns true if the user has any access level for any feature -
       // or if the user is a system admin
-      console.log('sss', state)
       return UserStore.getters.isSystemAdmin(state.details.highestCompanyId) || state.details.featureAccess?.length > 0
     },
-    userHasFeatureAccess: (state, getters) => featureCode => {
+    userHasFeature: (state, getters) => featureCode => {
       // this function returns true if the user has any access level (edit, view, etc)
       // or if the user is a system admin (send 'SYSTEM' as the feature code if you only care it is a system admin)
       return getters.isSystemAdmin(state.details.highestCompanyId) || (state.details.featureAccess?.length > 0 && state.details.featureAccess.some(fa => fa.featureCode === featureCode))
@@ -101,9 +100,14 @@ export const UserStore = {
     isSystemAdmin: state => highestCompanyId => {
       return highestCompanyId === 1
     },
-    userHasFeatureAccessLevel: state => (featureCode, accessCode) => {
-      // this function only returns true if the user a specific access level to a feature (or is a system admin)
-      return true
+    userHasFeatureAccessLevel: (state, getters) => (featureCode, accessCode) => {
+      // this function only returns true if the user a specific access level to a specific feature (or is a system admin)
+      let hasFeatureAccessLevel = false
+      if(state.details.featureAccess?.length > 0 ) {
+        let featureMatch = state.details.featureAccess.find(fa => fa.featureCode === featureCode && fa.accessCode === accessCode)
+        hasFeatureAccessLevel = featureMatch !== null && featureMatch !== undefined
+      }
+      return getters.isSystemAdmin(state.details.highestCompanyId) || hasFeatureAccessLevel
     }
   }
 }

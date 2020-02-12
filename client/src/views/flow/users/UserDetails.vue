@@ -8,21 +8,23 @@
               <v-toolbar-title>Summary</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="saveUser">Save</v-btn>
+                <v-btn text @click="saveUser" v-if="userCanEdit">Save</v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
               <v-text-field text
                             label="Phone"
                             placeholder=" "
+                            :readonly="!userCanEdit"
                             v-model="user.phone"></v-text-field>
               <v-text-field text
                             label="E-Mail"
                             placeholder=" "
+                            :readonly="!userCanEdit"
                             v-model="user.email"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
-                <div v-if="this.$store.getters.userHasFeatureAccess('SYSTEM')">
+                <div v-if="this.$store.getters.userHasFeature('SYSTEM')">
                   <v-select
                       v-model="user.companies"
                       :items="companies"
@@ -48,7 +50,7 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
-              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="false" :field="cf"></CustomValueInput>
+              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="!userCanEdit" :field="cf"></CustomValueInput>
             </v-card>
           </div>
         </v-col>
@@ -89,6 +91,7 @@
           },
         ],
         snackbar: {},
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
         companies: [],
         user: {},
         customFieldGroups: [],
