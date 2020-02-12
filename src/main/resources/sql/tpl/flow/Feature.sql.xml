@@ -66,7 +66,7 @@
                                     ufac.enabled
                              from flow.access_control ac
                                       left join flow.user_feature_access_control ufac on ac.id = ufac.access_control_id
-                               where ufac.company_feature_id = cf.id
+                               and ufac.company_feature_id = cf.id
                                 and ufac.user_id = :userId
                              order by "accessControlId"
                          ) accessControl), '[]') AS "accessControl"

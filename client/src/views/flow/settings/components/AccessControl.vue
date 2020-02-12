@@ -98,6 +98,23 @@
           })
         }
       },
+      populateSelectedRows () {
+        // this determines if the checkbox for selecting the row should be checked or not on page load
+        if(this.companyFeatureList?.length > 0) {
+          let countAccessControlLevels = this.companyFeatureList[0]?.accessControl?.length
+          this.companyFeatureList.forEach(cfl => {
+            let countEnabled = 0
+            cfl.accessControl?.forEach(acl => {
+              if(acl.enabled) {
+                countEnabled++
+              }
+            })
+            if(countEnabled === countAccessControlLevels) {
+              this.selectedRows.push(cfl)
+            }
+          })
+        }
+      },
       alterEnabledFlagForColumns (header) {
         this.companyFeatureList.forEach(cf => {
           cf.accessControl.forEach(acl => {
@@ -125,6 +142,7 @@
             const {data} = await getRequest(`/feature/withAccess`)
             this.companyFeatureList = data
             this.populateHeaders()
+            this.populateSelectedRows()
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -133,6 +151,7 @@
           }
         } else {
           this.populateHeaders()
+          this.populateSelectedRows()
         }
       },
 

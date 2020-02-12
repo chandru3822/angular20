@@ -136,7 +136,6 @@
     created () {
       this.getUserImage()
       if(this.$store.state.user.details.timezone === null) {
-        console.log('ttt', moment.tz.guess())
         this.timezone = {
           friendlyValue: moment.tz.guess(),
           value: moment.tz.guess()
