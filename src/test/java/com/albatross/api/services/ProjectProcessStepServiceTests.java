@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -44,6 +43,12 @@ public class ProjectProcessStepServiceTests {
   private final ObjectMapper om;
 
   private final Map<String, String> jsonObjects = new HashMap<>();
+
+  private ProcessStepAction action;
+
+  private ProcessStepActionService processStepActionService = mock(ProcessStepActionService.class);
+
+  ProjectProcessStepRequirementService projectProcessStepRequirementService = mock(ProjectProcessStepRequirementService.class);
 
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
@@ -64,7 +69,7 @@ public class ProjectProcessStepServiceTests {
 
   @BeforeEach
   public void setup() throws IOException {
-    ProcessStepAction action = om.readValue(this.jsonObjects.get("processStepAction.action"), ProcessStepAction.class);
+    action = om.readValue(this.jsonObjects.get("processStepAction.action"), ProcessStepAction.class);
     ProcessStepLogic logic = new ProcessStepLogic();
     logic.setProcessStepRequirementId(12L);
     logic.setRequirementNbr(12L);
@@ -73,23 +78,27 @@ public class ProjectProcessStepServiceTests {
     ProjectProcessStepRequirement projectProcessStepRequirement = new ProjectProcessStepRequirement();
     projectProcessStepRequirement.setId(20L);
 
-    ProcessStepActionService processStepActionService = mock(ProcessStepActionService.class);
     ReflectionTestUtils.setField(projectProcessStepService, "processStepActionService", processStepActionService);
-
-    ProjectProcessStepRequirementService projectProcessStepRequirementService = mock(ProjectProcessStepRequirementService.class);
     ReflectionTestUtils.setField(projectProcessStepService, "projectProcessStepRequirementService", projectProcessStepRequirementService);
 
     when(processStepActionService.getActionById(1L)).thenReturn(action);
-    when(projectProcessStepRequirementService.getByProjectProcessStepId(7L, List.of(12L))).thenReturn(List.of(projectProcessStepRequirement));
+//    when(projectProcessStepRequirementService.getByProjectProcessStepId(7L, List.of(12L))).thenReturn(List.of(projectProcessStepRequirement));
   }
 
   @Test
-  public void stuff() {
+  public void alwaysEnabled() {
     try {
-      boolean passed = this.projectProcessStepService.canPerformAction(1L, 7L);
+      action.setAlwaysEnabled(true);
+      boolean passed = this.projectProcessStepService.canPerformAction(1L, 1L);
       assertThat(passed).isTrue();
+      verify(this.projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
+
+      action.setAlwaysEnabled(false);
+      this.projectProcessStepService.canPerformAction(1L, 1L);
+      verify(this.projectProcessStepRequirementService, times(1)).getByProjectProcessStepId(anyLong(), anyList());
+      log.info("alwaysEnabled passed");
     } catch (Exception e) {
-      log.error("test failed");
+      log.error("alwaysEnabled failed: " + e.getMessage());
     }
   }
 }
