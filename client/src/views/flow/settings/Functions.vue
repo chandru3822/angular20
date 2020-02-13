@@ -17,43 +17,6 @@
                   <v-icon>edit</v-icon>
                 </v-btn>
               </v-list-item-action>
-  <!--            <v-dialog-->
-  <!--                v-model="f.deleteConfirm"-->
-  <!--                width="500">-->
-  <!--              <template v-slot:activator="{ on }">-->
-  <!--                <v-list-item-action class="clickable" v-on="on">-->
-  <!--                  <v-icon>delete</v-icon>-->
-  <!--                </v-list-item-action>-->
-  <!--              </template>-->
-  <!--              <v-card>-->
-  <!--                <v-card-title-->
-  <!--                    class="headline grey lighten-2"-->
-  <!--                    primary-title-->
-  <!--                >-->
-  <!--                  Confirm-->
-  <!--                </v-card-title>-->
-
-  <!--                <v-card-text>-->
-  <!--                  Are you sure you want to delete this function: <strong>{{ f.companyFunctionName }}</strong>?-->
-  <!--                </v-card-text>-->
-
-  <!--                <v-divider></v-divider>-->
-
-  <!--                <v-card-actions>-->
-  <!--                  <v-spacer></v-spacer>-->
-  <!--                  <v-btn-->
-  <!--                      @click="f.deleteConfirm = false">-->
-  <!--                    No-->
-  <!--                  </v-btn>-->
-  <!--                  <v-btn-->
-  <!--                      color="primary"-->
-  <!--                      text-->
-  <!--                      @click="f.archived = true; deleteFunction(f.id)">-->
-  <!--                    Yes-->
-  <!--                  </v-btn>-->
-  <!--                </v-card-actions>-->
-  <!--              </v-card>-->
-  <!--            </v-dialog>-->
             </v-list-item>
           </v-list>
         </v-container>

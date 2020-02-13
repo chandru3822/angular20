@@ -146,7 +146,8 @@ public class OrgService {
     params.put("orgTypeId", org.getOrgTypeId());
     params.put("parentOrgId", org.getParentOrgId());
     params.put("companyId", user.getCompanyId());
-    params.put("schedulable", org.getSchedulable());
+    params.put("schedulable", null != org.getSchedulable() ? org.getSchedulable() : false);
+    params.put("availableToChildren", null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
     params.put("stateId", org.getStateId());
     params.put("active", org.getActiveFlag());
 
@@ -240,7 +241,7 @@ public class OrgService {
     params.put("companyId", user.getCompanyId());
     params.put("orgLevelId", filter.getOrgLevelId());
     params.put("rank", filter.getRank());
-    params.put("showType", filter.getShowType());
+    params.put("showType", null != filter.getShowType() ? filter.getShowType() : false);
 
     Long id;
     if (null != filter.getId()) {

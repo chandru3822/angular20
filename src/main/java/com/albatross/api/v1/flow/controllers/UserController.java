@@ -60,13 +60,13 @@ public class UserController {
         return userService.getUserStatuses();
     }
 
-    @PostMapping(value = "/changeContextAdmin/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity changeContextAdmin(@PathVariable Long id) {
-        return userService.changeContextAdmin(id);
-    }
-
     @PostMapping(value = "/changeContext/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity changeContext(@PathVariable Long id) {
         return userService.changeContext(id);
+    }
+
+    @GetMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getLoggedInUser() {
+        return userService.getLoggedInUser();
     }
 }

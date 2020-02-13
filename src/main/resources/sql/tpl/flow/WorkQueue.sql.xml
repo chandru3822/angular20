@@ -30,6 +30,7 @@
         wqt.work_queue_type,
         pps.project_id,
         ps.process_step_name,
+        p.customer_id,
         u.first_name || ' ' || u.last_name as owner,
         coalesce(pps.date_modified, pps.date_created) as last_updated
     from flow.project p

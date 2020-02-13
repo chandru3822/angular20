@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Login from './views/Login.vue'
 import store from './store'
+import { UserMutations } from './stores/UserStore'
+import { getRequest } from '@/helpers/helpers'
 
 Vue.use(Router)
 
@@ -18,13 +20,23 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-      component: () => import(/* webpackChunkName: "home" */ './views/Home.vue'),
-      beforeEnter: (to, from, next) => {
+      component: () => {
+        if(store.getters.userHasAnyFeature) {
+          return import(/* webpackChunkName: "home" */ './views/Home.vue')
+        } else  {
+          return accessDenied()
+        }
+      },
+      beforeEnter: async (to, from, next) => {
         if (!store.state.user.authorized) {
           next('/login')
         } else if (to.path === '/') {
           next('/users')
         } else {
+          if(from.name !== 'login') {
+            const {data} = await getUser()
+            store.commit(UserMutations.SET_DETAILS, data)
+          }
           next()
         }
       },
@@ -33,19 +45,41 @@ export default new Router({
         name: 'serverError',
         component: () => import(/* webpackChunkName: "serverError" */ './views/ServerError.vue')
       }, {
+        path: 'accessDenied',
+        name: 'accessDenied',
+        component: () => import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+      }, {
         path: 'schedule',
         name: 'schedule',
         props: true,
-        component: () => import(/* webpackChunkName: "schedule" */ './views/flow/schedule/Schedule.vue')
+        component: () => {
+          if(store.getters.userHasFeature('SCHEDULE')) {
+            return import(/* webpackChunkName: "schedule" */ './views/flow/schedule/Schedule.vue')
+          } else  {
+            return accessDenied()
+          }
+        }
       }, {
         path: 'users',
         name: 'users',
-        component: () => import(/* webpackChunkName: "users" */ './views/flow/users/Users.vue')
+        component: () => {
+          if(store.getters.userHasFeature('USERS')) {
+            return import(/* webpackChunkName: "users" */ './views/flow/users/Users.vue')
+          } else  {
+            return accessDenied()
+          }
+        }
       }, {
         path: '/user/:id',
         name: 'user',
         props: true,
-        component: () => import (/*webpackChunkName: "user" */ './views/flow/users/User.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('USERS')) {
+            return import (/*webpackChunkName: "user" */ './views/flow/users/User.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: [
           {
             path: 'details',
@@ -62,17 +96,35 @@ export default new Router({
       }, {
         path: '/newUser',
         name: 'newUser',
-        component: () => import (/*webpackChunkName: "newUser" */ './views/flow/users/NewUser.vue'),
+        component: () => {
+          if(store.getters.userHasFeatureAccessLevel('USERS', 'ADD')) {
+            return import (/*webpackChunkName: "newUser" */ './views/flow/users/NewUser.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: []
       }, {
           path: '/ahj',
           name: 'ahj',
-          component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
+          component: () => {
+            if(store.getters.userHasFeature('AHJ_DATABASE')) {
+              return import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
+            } else  {
+              return accessDenied()
+            }
+          },
       }, {
         path: '/ahj/:ahjId',
         name: 'ahjDetails',
         props: true,
-        component: () => import (/* webpackChunkName: "ahjDetails" */ './views/ahj/AhjDetails.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('AHJ_DATABASE')) {
+            return import (/* webpackChunkName: "ahjDetails" */ './views/ahj/AhjDetails.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: [
           {
             path: 'permit',
@@ -90,32 +142,68 @@ export default new Router({
       }, {
         path: '/ahjUtility',
         name: 'ahjUtilities',
-        component: () => import (/* webpackChunkName: "ahj" */ './views/ahj/utility/AhjUtility.vue')
+        component: () => {
+          if(store.getters.userHasFeature('AHJ_DATABASE')) {
+            return import (/* webpackChunkName: "ahj" */ './views/ahj/utility/AhjUtility.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
       }, {
         path: '/ahjUtility/:ahjUtilityId/details',
         name: 'ahjUtilityDetails',
         props: true,
-        component: () => import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
+        component: () => {
+          if(store.getters.userHasFeature('AHJ_DATABASE')) {
+            return import (/* webpackChunkName: "ahjUtilityDetails" */ './views/ahj/utility/AhjUtilityDetails.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
       }, {
         path: '/settings',
         name: 'settings',
-        component: () => import (/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
+        component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
         children: [
           {
             path: 'userProfile',
             component: () => import (/* webpackChunkName: "userProfile" */ './views/flow/settings/UserProfile.vue'),
           }, {
             path: 'company',
-            component: () => import (/* webpackChunkName: "company" */ './views/flow/settings/Company.vue'),
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "company" */ './views/flow/settings/Company.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'orgTypes',
-            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/OrgTypes.vue'),
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/OrgTypes.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'eventTypes',
-            component: () => import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/EventTypes.vue'),
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "eventTypes" */ './views/flow/settings/EventTypes.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'workQueue',
-            component: () => import (/* webpackChunkName: "workQueueAdmin" */ './views/flow/settings/WorkQueue.vue'),
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "workQueueAdmin" */ './views/flow/settings/WorkQueue.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
             children: [
               {
                 path: 'types',
@@ -127,33 +215,81 @@ export default new Router({
             ]
           }, {
             path: 'customFields',
-            component: () => import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue'),
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "customFields" */ './views/flow/settings/CustomFields.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'customFieldGroup/:id',
             props: true,
-            component: () => import (/* webpackChunkName: "customFieldGroup" */ './views/flow/settings/CustomFieldGroup.vue'),
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "customFieldGroup" */ './views/flow/settings/CustomFieldGroup.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'attachments',
-            component: () => import (/* webpackChunkName: "attachments" */ './views/flow/settings/Attachments.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "attachments" */ './views/flow/settings/Attachments.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'links',
-            component: () => import (/* webpackChunkName: "links" */ './views/flow/settings/Links.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "links" */ './views/flow/settings/Links.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'processes',
-            component: () => import (/* webpackChunkName: "processes" */ './views/flow/settings/Processes.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "processes" */ './views/flow/settings/Processes.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'processes/:id?',
             name: 'process',
             props: true,
-            component: () => import (/* webpackChunkName: "process" */ './views/flow/settings/Process.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "process" */ './views/flow/settings/Process.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'processSteps',
-            component: () => import (/* webpackChunkName: "processSteps" */ './views/flow/settings/ProcessSteps.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "processSteps" */ './views/flow/settings/ProcessSteps.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'processStep/:id',
             name: 'processStep',
             props: true,
-            component: () => import (/* webpackChunkName: "processStep" */ './views/flow/settings/ProcessStep.vue'),
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "processStep" */ './views/flow/settings/ProcessStep.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
             children: [
               {
                 path: 'components',
@@ -165,41 +301,101 @@ export default new Router({
             ]
           }, {
             path: 'statuses',
-            component: () => import (/* webpackChunkName: "statuses" */ './views/flow/settings/Statuses.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "statuses" */ './views/flow/settings/Statuses.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'functions',
-            component: () => import (/* webpackChunkName: "functions" */ './views/flow/settings/Functions.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "functions" */ './views/flow/settings/Functions.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'function/:id',
-            component: () => import (/* webpackChunkName: "function" */ './views/flow/settings/Function.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "function" */ './views/flow/settings/Function.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           }, {
             path: 'positions',
-            component: () => import (/* webpackChunkName: "positions" */ './views/flow/settings/Positions.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "positions" */ './views/flow/settings/Positions.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           },  {
             path: 'position/:id?',
             name: 'position',
-            component: () => import (/* webpackChunkName: "role" */ './views/flow/settings/Position.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "position" */ './views/flow/settings/Position.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           },  {
             path: 'roles',
-            component: () => import (/* webpackChunkName: "roles" */ './views/flow/settings/Roles.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "roles" */ './views/flow/settings/Roles.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           },  {
             path: 'role/:id?',
             name: 'role',
-            component: () => import (/* webpackChunkName: "role" */ './views/flow/settings/Role.vue')
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "role" */ './views/flow/settings/Role.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
           },
         ]
       }, {
         path: '/workQueue',
         name: 'workQueue',
-        component: () => import (/*webpackChunkName: "workQueue" */ './views/flow/workQueue/WorkQueue.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('WORK_QUEUE')) {
+            return import (/*webpackChunkName: "workQueue" */ './views/flow/workQueue/WorkQueue.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
       }, {
         path: '/workQueue/:id',
         name: 'workQueueDrilldown',
-        component: () => import (/*webpackChunkName: "workQueueDrilldown" */ './views/flow/workQueue/WorkQueueDrilldown.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('WORK_QUEUE')) {
+            return import (/*webpackChunkName: "workQueueDrilldown" */ './views/flow/workQueue/WorkQueueDrilldown.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
       }, {
         path: '/project',
         name: 'project',
-        component: () => import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('PROJECTS')) {
+            return import (/*webpackChunkName: "project" */ './views/flow/project/Project.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: [{
             path: 'search',
             name: 'projects',
@@ -215,41 +411,83 @@ export default new Router({
           }
         ]
       }, {
-        path: '/leads',
-        name: 'leads',
-        component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/Leads.vue'),
+        path: '/customers',
+        name: 'customers',
+        component: () => {
+          if(store.getters.userHasFeature('CUSTOMERS')) {
+            return import (/*webpackChunkName: "customers" */ './views/flow/customers/Customers.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: []
       }, {
-        path: '/lead/:id',
-        name: 'lead',
+        path: '/customer/:id',
+        name: 'customer',
         props: true,
-        component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/Lead.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('CUSTOMERS')) {
+            return import (/*webpackChunkName: "customer" */ './views/flow/customers/Customer.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: []
       }, {
-        path: '/newLead',
-        name: 'newLead',
-        component: () => import (/*webpackChunkName: "leads" */ './views/flow/leads/NewLead.vue'),
+        path: '/newCustomer',
+        name: 'newCustomer',
+        component: () => {
+          if(store.getters.userHasFeature('CUSTOMERS')) {
+            return import (/*webpackChunkName: "customer" */ './views/flow/customers/NewCustomer.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: []
       }, {
         path: '/orgs/:orgFilter?',
         name: 'orgs',
-        component: () => import (/*webpackChunkName: "orgs" */ './views/flow/orgs/Orgs.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('ORGS')) {
+            return import (/*webpackChunkName: "orgs" */ './views/flow/orgs/Orgs.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: []
       }, {
         path: '/org/:id',
         name: 'org',
         props: true,
-        component: () => import (/*webpackChunkName: "org" */ './views/flow/orgs/Org.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('ORGS')) {
+            return import (/*webpackChunkName: "org" */ './views/flow/orgs/Org.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: []
       }, {
         path: '/newOrg',
         name: 'newOrg',
-        component: () => import (/*webpackChunkName: "newOrg" */ './views/flow/orgs/NewOrg.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('ORGS')) {
+            return import (/*webpackChunkName: "newOrg" */ './views/flow/orgs/NewOrg.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: []
       }, {
         path: '/admin',
         name: 'admin',
-        component: () => import (/* webpackChunkName: "admin" */ './views/flow/admin/Admin.vue'),
+        component: () => {
+          if(store.getters.userHasFeature('SYSTEM')) {
+            return import (/* webpackChunkName: "admin" */ './views/flow/admin/Admin.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
         children: [
           {
             path: 'orgFilters',
@@ -271,3 +509,12 @@ export default new Router({
     }
   ]
 })
+
+async function getUser() {
+  const {data} = await getRequest(`/user/current`)
+  return {data}
+}
+
+function accessDenied() {
+  return import(/* webpackChunkName: "accessDenied" */ './views/AccessDenied.vue')
+}

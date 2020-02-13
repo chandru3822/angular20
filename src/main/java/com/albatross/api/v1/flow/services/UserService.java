@@ -128,7 +128,6 @@ public class UserService {
     params.put("lastName", user.getLastName());
     params.put("phone", user.getPhoneNumber());
     params.put("email", user.getEmail());
-    params.put("schedulable", user.getSchedulable() != null ? user.getSchedulable() : false);
     params.put("companyId", currentUser.getCompanyId());
 
     Long id;
@@ -279,6 +278,11 @@ public class UserService {
     return results;
   }
 
+  public ResponseEntity changeContext(Long companyId) {
+    User user = securityService.getCurrentUser();
+    return user.getHighestCompanyId() == 1L ? changeContextAdmin(companyId) : changeContextNonAdmin(companyId);
+  }
+
   public ResponseEntity changeContextAdmin(Long companyId) {
     User user = securityService.getCurrentUser();
 
@@ -291,7 +295,7 @@ public class UserService {
     return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
   }
 
-  public ResponseEntity changeContext(Long companyId) {
+  public ResponseEntity changeContextNonAdmin(Long companyId) {
     User user = securityService.getCurrentUser();
     Boolean match = false;
     // get list of companies the user has access to
@@ -316,6 +320,17 @@ public class UserService {
     } else {
       return ResponseEntity.badRequest().body("Invalid Company For User");
     }
+  }
+
+  public ResponseEntity getLoggedInUser() {
+    User user = securityService.getCurrentUser();
+
+    User response = findByUsernameIgnoreCase(null, user.getId());
+
+    List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+    response.setFeatureAccess(results);
+
+    return ResponseEntity.ok(response);
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

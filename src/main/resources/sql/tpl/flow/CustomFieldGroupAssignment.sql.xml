@@ -140,6 +140,7 @@
              inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
     where cot.id = :companyObjectTypeId
       and cfga.archived is not true
+      and cfg.archived is not true
     order by field_name
   ]]></customFieldGroupAssignment.getAvailableCustomFieldsInGroup>
 

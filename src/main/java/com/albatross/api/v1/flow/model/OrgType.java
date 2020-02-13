@@ -13,6 +13,6 @@ public class OrgType {
 
   private Long id, companyId, orgLevelId, orgParentTypeId;
   private String orgType, orgParentType, level;
-  private Boolean archived;
+  private Boolean archived, availableToChildren;
 }
 

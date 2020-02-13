@@ -15,7 +15,7 @@ public class Position {
 
   private Long id, orgTypeId;
   private String position, orgType;
-  private Boolean archived;
+  private Boolean archived, schedulable, availableToChildren;
 
   private Boolean edit = false;
 

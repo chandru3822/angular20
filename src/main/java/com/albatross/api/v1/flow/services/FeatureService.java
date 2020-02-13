@@ -47,7 +47,7 @@ public class FeatureService {
     params.put("companyId", user.getCompanyId());
     params.put("featureName", f.getFeatureName());
     params.put("featureCode", f.getFeatureCode());
-    params.put("isSystem", f.getIsSystem());
+    params.put("isSystem", null != f.getIsSystem() ? f.getIsSystem() : false);
 
     Long id;
     if(null != f.getId()) {
@@ -106,7 +106,7 @@ public class FeatureService {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
         if(null != ac.getId()) {
           params.put("enabled", ac.isEnabled());
-          params.put("userFeatureAccessControlId", ac.getAccessControlId());
+          params.put("userFeatureAccessControlId", ac.getId());
           sqlCache.update("feature.updateUserFeatureAccessControl", params);
         } else if (ac.isEnabled()) {
           params.put("companyFeatureId", cf.getId());

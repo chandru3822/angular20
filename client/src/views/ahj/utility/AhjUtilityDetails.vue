@@ -145,27 +145,27 @@
                     <AhjDocumentsButton v-if="item.customFieldId === 22"
                                         title="Documents"
                                         :documentTypeId="20"
-                                        :sourceId="ahjUtility.id"
+                                        :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                     <AhjDocumentsButton v-if="item.customFieldId === 23"
                                         title="Documents"
                                         :documentTypeId="21"
-                                        :sourceId="ahjUtility.id"
+                                        :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                     <AhjDocumentsButton v-if="item.customFieldId === 30"
                                         title="Documents"
                                         :documentTypeId="22"
-                                        :sourceId="ahjUtility.id"
+                                        :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                     <AhjDocumentsButton v-if="item.customFieldId === 24"
                                         title="Documents"
                                         :documentTypeId="22"
-                                        :sourceId="ahjUtility.id"
+                                        :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                     <AhjDocumentsButton v-if="item.customFieldId === 25"
                                         title="Documents"
                                         :documentTypeId="23"
-                                        :sourceId="ahjUtility.id"
+                                        :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                   </div>
                 </div>
@@ -173,6 +173,7 @@
                                 title="Utility PV Design Notes and Additional Requirements"
                                 :requirementTypeId="4"
                                 :itemType="itemType"
+                                :itemId="ahjUtilityId"
                                 :requirements="ahjUtility.utilityRequirements"
                                 :transparent="true"
                                 :isNested="true"
@@ -628,7 +629,6 @@
       },
       async resetForm() {
         this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
-        console.log("this.ahjUtility:", this.ahjUtility)
         this.dataReady = false
         this.getAhjUtility().then(() => this.dataReady = true)
       },

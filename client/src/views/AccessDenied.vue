@@ -5,14 +5,13 @@
         <v-col cols="12" sm="8">
           <v-card color="secondaryMaster" class="elevation-12 pb-5">
             <v-toolbar dark color="red">
-              <v-toolbar-title>Server Error</v-toolbar-title>
+              <v-toolbar-title>Access Denied</v-toolbar-title>
             </v-toolbar>
               <v-card-text class="login-card-text">
-              We are having trouble contacting the server.
-              If the problem persists after a few minutes please contact an Administrator.
+              You do not have access to this page. Please contact an administrator if you feel you have reached this page in error.
             </v-card-text>
             <v-card-actions class="justify-center">
-              <v-btn to="/">Click Here to Try Again</v-btn>
+              <v-btn to="/">Go to Home</v-btn>
             </v-card-actions>
           </v-card>
         </v-col>

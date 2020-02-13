@@ -23,9 +23,10 @@ public class ProjectProcessStepRequirementService {
 
   private final ObjectMapper om;
 
-  public List<ProjectProcessStepRequirement> getByProjectProcessStepId(Long projectProcessStepId) {
+  public List<ProjectProcessStepRequirement> getByProjectProcessStepId(Long projectProcessStepId, List<Long> requirementIds) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
+    params.put("requirementIds", requirementIds);
 
     List<ProjectProcessStepRequirement> requirements = sqlCache.query("processStepRequirement.getRequirementsWithValuesByProjectProcessStepId", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
 

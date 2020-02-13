@@ -76,7 +76,7 @@
         }
       },
       clickRow(row) {
-        this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}`})
+        this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&customerId=${row.customerId}`})
       }
     },
 

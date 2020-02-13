@@ -54,6 +54,7 @@ public class CompanyService {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.getId());
+    // this is hardcoded to NOT return albatross as access to albatross is not controlled via user_company
 
     return sqlCache.query("company.getCompaniesAvailableForUser", params, Company.class);
   }

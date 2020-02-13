@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Positions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/settings/position" color="primary">
+            <v-btn text to="/settings/position" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon>add</v-icon>
               Add Position
             </v-btn>
@@ -44,6 +44,7 @@
                 </v-btn>
                 <v-dialog
                     v-model="item.deleteConfirm"
+                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                     width="500">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small fab text class="d-inline-block"  v-on="on">

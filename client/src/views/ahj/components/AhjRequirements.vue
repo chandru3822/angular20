@@ -55,24 +55,28 @@
                                   v-text="'Updated ' + requirement.formattedDateModified + ' by ' + requirement.modifiedBy">
             </v-list-item-subtitle>
           </v-list-item-content>
-          <v-list-item-content class="ml-4 flex-display requirement-history-tags mr-3">
-            <span v-if="requirement.hasOpenChallenge">
+          <v-list-item-content class="ml-4 flex-display flex-wrap text-right mr-3">
+            <span v-if="requirement.hasOpenChallenge" style="color: #d00">
               Active Challenge
             </span>
-            <AhjRequirementHistory :class="[{'history-link-max-width': requirement.hasOpenChallenge}]"
-                                   :itemType="itemType"
-                                   :ahjId="ahjId"
+            <AhjRequirementHistory :itemType="itemType"
+                                   :itemId="itemId"
                                    :originalRequirement="requirement"
             ></AhjRequirementHistory>
           </v-list-item-content>
-          <v-list-item-action v-if="!requirement.hasOpenChallenge">
-            <v-icon small @click="editRequirement(requirement)" title="Edit requirement">edit</v-icon>
+          <v-list-item-action>
+            <v-icon v-if="!requirement.hasOpenChallenge"
+                    @click="editRequirement(requirement)"
+                    title="Edit requirement" small>
+              edit
+            </v-icon>
+            <div v-if="requirement.hasOpenChallenge" class="icon-placeholder" style="width: 20px; height: 20px"></div>
           </v-list-item-action>
           <v-list-item-action>
             <AhjDocumentsButton title="Notes and requirements"
                                 :documentTypeId="12"
                                 :sourceId="requirement.id"
-                                :ahjId="ahjId"
+                                :itemId="itemId"
                                 :small="true"
             ></AhjDocumentsButton>
           </v-list-item-action>
@@ -204,7 +208,7 @@
       itemType: {
         type: String
       },
-      ahjId: {
+      itemId: {
         type: Number
       },
       requirements: {
@@ -275,7 +279,7 @@
 
           try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
+            const {data} = await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
             let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.originalRequirementId)
             this.requirementsCopy[updatedRequirementIndex].formattedDateModified = moment(data.dateModifed).format('MM/DD/YY h:mm A')
 
@@ -291,7 +295,7 @@
         } else if (this.addMode) {
           try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement`, this.requirement, 'blueraven')
+            const {data} = await postRequest(`/ahj/${this.itemId}/${this.itemType}/requirement`, this.requirement, 'blueraven')
             this.requirementsCopy.push(cloneDeep(data))
             let addedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.id)
             this.requirementsCopy[addedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
@@ -309,7 +313,8 @@
         } else {
           try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
+            this.requirement.archived = false
+            const {data} = await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
             let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data.originalRequirementId)
             this.requirementsCopy[updatedRequirementIndex].description = data.description
             this.requirementsCopy[updatedRequirementIndex].position = this.requirement.position
@@ -329,7 +334,6 @@
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
-
         this.requirementsCopy = orderBy(this.requirementsCopy, requirement => requirement.position)
       },
       async archiveRequirement(originalRequirementId) {
@@ -337,7 +341,7 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           await putRequest(`/ahj/${this.itemType}/requirement/${originalRequirementId}/archive`, null, 'blueraven')
           let archivedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === originalRequirementId)
-          this.requirementsCopy.splice([archivedRequirementIndex], 1)
+          this.requirementsCopy.splice(archivedRequirementIndex, 1)
 
           this.editMode = false
           this.snackbar = getSnackbar('SUCCESS', 'Requirement archived')
@@ -400,7 +404,11 @@
   }
   .v-list-item__title {
     font-size: 0.95em !important;
+    text-align: left;
     max-width: 525px;
+  }
+  .v-list-item__subtitle {
+    text-align: left;
   }
   .requirement-btns {
     display: flex;
@@ -416,30 +424,6 @@
     font-size: 0.85em;
     text-align: left;
   }
-
-  .requirement-history-tags {
-    text-align: right;
-    max-width: 40%;
-    span {
-      color: #d00;
-      margin-bottom: 0;
-      max-width: 67%;
-    }
-    .history-link-max-width {
-      max-width: 28%;
-    }
-  }
-  @media (min-width: 1400px) {
-    .requirement-history-tags {
-      max-width: 30%;
-    }
-  }
-  @media (min-width: 1575px) {
-    .requirement-history-tags {
-      max-width: 25%;
-    }
-  }
-
   .close-modal-x {
     font-size: 20px;
     &:hover {
@@ -475,6 +459,7 @@
       justify-content: space-between;
       align-items: center;
       font-size: 1em;
+      text-align: left;
       color: var(--v-primaryText-base);
       border-bottom: 1px solid var(--v-primaryText-base);
     }

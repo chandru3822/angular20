@@ -7,7 +7,7 @@
           <v-spacer></v-spacer>
           <div v-if="changesMade">
             <v-btn class="mr-2" :to="{ path: `/settings/processes`}">cancel</v-btn>
-            <v-btn color="primary white--text" @click="saveProcess">Save Changes</v-btn>
+            <v-btn color="primary white--text" @click="saveProcess" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">Save Changes</v-btn>
           </div>
         </v-toolbar>
         <v-toolbar flat class="app-toolbar">
@@ -15,15 +15,15 @@
             <span v-else>
               {{  processId ? process.processName : 'New Process Step'}}
             </span>
-            <v-btn class="d-inline-block" small text v-if="processId && editName" @click="saveProcess()">
+            <v-btn class="d-inline-block" small text v-if="processId && editName && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveProcess()">
               <v-icon>save</v-icon>
             </v-btn>
-            <v-btn class="d-inline-block" small text v-else-if="processId" @click="editName = true">
+            <v-btn class="d-inline-block" small text v-else-if="processId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="editName = true">
               <v-icon>edit</v-icon>
             </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="getAvailableProcessSteps(); getOwningOrgs()">
+            <v-btn text @click="getAvailableProcessSteps(); getOwningOrgs()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
               {{addNew ? 'Cancel' : 'Add Process Step'}}
             </v-btn>
           </v-toolbar-items>
@@ -111,11 +111,12 @@
               <td class="text-left">{{ item.processStepStatusType }}</td>
               <td>
                 <div style="display: flex; float: right;">
-                  <v-btn text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
+                  <v-btn text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                     <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                     <v-icon v-else>expand_more</v-icon>
                   </v-btn>
                   <v-dialog
+                      v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                       v-model="item.deleteConfirm"
                       width="500">
                     <template v-slot:activator="{ on }">

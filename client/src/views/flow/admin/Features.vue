@@ -13,9 +13,9 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
-          <h3>{{isCompanyRoot(companyId) ? 'Add New Feature' : 'Add Feature to Company'}}</h3>
+          <h3>{{isCompanyRoot ? 'Add New Feature' : 'Add Feature to Company'}}</h3>
           <div class="mb-3">
-            <div v-if="isCompanyRoot(companyId)">
+            <div v-if="isCompanyRoot">
               <v-text-field text label="Enter the name of a new feature"
                             v-model="selectedFeature.featureName"></v-text-field>
               <v-text-field text label="Enter Feature Code"
@@ -65,7 +65,7 @@
               <div class="mb-3">
                 <v-text-field text v-model="item.featureName"
                               label="Feature Name" />
-                <div v-if="isCompanyRoot(companyId)">
+                <div v-if="isCompanyRoot">
                   <v-text-field text v-model="item.featureCode"
                                 label="Feature Name" />
                   <label>Is System:</label>
@@ -105,7 +105,7 @@
 
                     <v-card-text class="pt-4">
                       <div class="error-text">
-                        {{isCompanyRoot(companyId) ? 'WARNING: This will delete this feature system-wide!'
+                        {{isCompanyRoot ? 'WARNING: This will delete this feature system-wide!'
                           : 'WARNING: Feature access control will be completely reset for this feature even if you add the same one back in.'}}
                       </div>
                       Are you sure you want to delete this feature: {{ item.featureName }}?
@@ -142,7 +142,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE, isCompanyRoot} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
   export default {
@@ -154,13 +154,13 @@
       return {
         snackbar: {},
         IS_MOBILE,
-        isCompanyRoot,
+        isCompanyRoot: this.$store.getters.isCompanyRoot(this.$store.state.user.details.companyId),
         addNew: false,
         levels: [],
         companyFeatures: [],
         selectedFeature: {},
         features: [],
-        apiUrl: isCompanyRoot(this.$store.state.user.details.companyId) ? `/feature` : `/feature/company`,
+        apiUrl: this.$store.getters.isCompanyRoot(this.$store.state.user.details.companyId) ? `/feature` : `/feature/company`,
         selectedFeatureId: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
@@ -179,8 +179,8 @@
       async saveFeature(isNew, feature) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          feature = isNew && isCompanyRoot(this.companyId) ? this.selectedFeature :
-            isNew && !isCompanyRoot(this.companyId) ?
+          feature = isNew && this.isCompanyRoot ? this.selectedFeature :
+            isNew && !this.isCompanyRoot ?
             {
               featureId: this.selectedFeature.id,
               featureName: this.selectedFeature.featureName,

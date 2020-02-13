@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newUser" color="primary">
+            <v-btn text to="/newUser" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
               <v-icon>add</v-icon>
               Add User
             </v-btn>

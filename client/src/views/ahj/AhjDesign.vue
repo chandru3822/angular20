@@ -33,7 +33,7 @@
                                   title="Documents"
                                   :documentTypeId="17"
                                   :sourceId="ahjDesign.id"
-                                  :ahjId="ahjId"
+                                  :itemId="ahjId"
               ></AhjDocumentsButton>
             </div>
             <v-textarea v-model="ahjDesign.referenceStandards"
@@ -87,7 +87,7 @@
                                     title="Documents"
                                     :documentTypeId="18"
                                     :sourceId="ahjDesign.id"
-                                    :ahjId="ahjId"
+                                    :itemId="ahjId"
                 ></AhjDocumentsButton>
               </div>
             </div>
@@ -95,7 +95,7 @@
                             title="PV Design Notes and Additional Requirements"
                             :requirementTypeId="3"
                             :itemType="itemType"
-                            :ahjId="ahjId"
+                            :itemId="ahjId"
                             :requirements="ahjDesign.designRequirements"
                             :transparent="true"
                             :isNested="true"
@@ -125,7 +125,7 @@
                                     title="Documents"
                                     :documentTypeId="19"
                                     :sourceId="ahjDesign.id"
-                                    :ahjId="ahjId"
+                                    :itemId="ahjId"
                 ></AhjDocumentsButton>
               </div>
             </div>
@@ -133,7 +133,7 @@
                             title="Electrical Design Notes and Additional Requirements"
                             :requirementTypeId="1"
                             :itemType="itemType"
-                            :ahjId="ahjId"
+                            :itemId="ahjId"
                             :requirements="ahjDesign.electricalRequirements"
                             :transparent="true"
                             :isNested="true"
@@ -164,25 +164,25 @@
                                     title="Documents"
                                     :documentTypeId="13"
                                     :sourceId="ahjDesign.id"
-                                    :ahjId="ahjId"
+                                    :itemId="ahjId"
                 ></AhjDocumentsButton>
                 <AhjDocumentsButton v-if="item.customFieldId === 16"
                                     title="Documents"
                                     :documentTypeId="14"
                                     :sourceId="ahjDesign.id"
-                                    :ahjId="ahjId"
+                                    :itemId="ahjId"
                 ></AhjDocumentsButton>
                 <AhjDocumentsButton v-if="item.customFieldId === 17"
                                     title="Documents"
                                     :documentTypeId="15"
                                     :sourceId="ahjDesign.id"
-                                    :ahjId="ahjId"
+                                    :itemId="ahjId"
                 ></AhjDocumentsButton>
                 <AhjDocumentsButton v-if="item.customFieldId === 19"
                                     title="Documents"
                                     :documentTypeId="16"
                                     :sourceId="ahjDesign.id"
-                                    :ahjId="ahjId"
+                                    :itemId="ahjId"
                 ></AhjDocumentsButton>
               </div>
               <v-text-field class="structural-design-text-field mx-2"
@@ -205,7 +205,7 @@
                             title="Structural Design Notes and Additional Requirements"
                             :requirementTypeId="2"
                             :itemType="itemType"
-                            :ahjId="ahjId"
+                            :itemId="ahjId"
                             :requirements="ahjDesign.structuralRequirements"
                             :transparent="true"
                             :isNested="true"

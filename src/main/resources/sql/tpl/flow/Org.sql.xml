@@ -20,6 +20,7 @@
      o.email,
      o.owning_org,
      o.schedulable,
+     o.available_to_children,
      o.state_id,
      p.org_name as parentOrgName,
      o.org_name as title,
@@ -106,14 +107,15 @@
          parent_org_id = :parentOrgId,
          org_type_id = :orgTypeId,
          schedulable = :schedulable,
+         available_to_children = :availableToChildren,
          state_id = :stateId,
          active_flag = :active
     where id = :id
   ]]></org.updateOrg>
 
   <org.insertOrg><![CDATA[
-    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, state_id)
-    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :stateId)
+    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, state_id, available_to_children)
+    values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :stateId, :availableToChildren)
   ]]></org.insertOrg>
 
   <org.getOne><![CDATA[

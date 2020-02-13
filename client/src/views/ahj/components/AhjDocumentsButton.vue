@@ -12,7 +12,7 @@
           <AhjDocument :title="title"
                        :documentTypeId="documentTypeId"
                        :sourceId="sourceId"
-                       :ahjId="ahjId"
+                       :itemId="itemId"
                        :documents="documents"
           ></AhjDocument>
         </v-card-text>
@@ -42,7 +42,7 @@
       sourceId: {
         type: Number
       },
-      ahjId: {
+      itemId: {
         type: Number
       },
       documents: {

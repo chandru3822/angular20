@@ -238,7 +238,6 @@
                 text: 'Today',
                 click: () => {
                   let calendarApi = this.$refs.eventCalendar.getApi()
-                  console.log('randaLogger MOMENT', moment())
                   calendarApi.gotoDate(new Date)
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents()
@@ -285,7 +284,6 @@
             while (hexColorCode.length < 6) {
               hexColorCode += (Math.random()).toString(16).substr(-6).substr(-1)
             }
-            console.log('randaLogger random color', hexColorCode)
             r.color = '#'+hexColorCode
           }
         })
@@ -364,7 +362,6 @@
         }
         this.calendarInitialRender = false
         // note: this gets called every render of the calendar which makes clicking the 'day' and 'week' buttons work
-        console.log('randaLogger CALLED')
         this.events = []
         if(this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -411,13 +408,10 @@
         this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
       },
       handleEventRender (info) {
-        console.log('event rendered yo', info)
         info.el.querySelector('.fc-title').innerHTML = info.event.title
-        info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px;`
+        info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
       },
       handleResourceRender (renderInfo) {
-        console.log('resource rendered yo', renderInfo)
-
         let checkbox = document.createElement('INPUT');
         checkbox.setAttribute('type', 'checkbox')
         checkbox.setAttribute('class', 'mr-2')
@@ -429,7 +423,6 @@
             let resourceEvents = this.events.filter(e => {
               return e.resourceId === resource.id
             })
-            console.log('randaLogger',resourceEvents)
             resourceEvents.forEach(re => {
               let eventObj = {
                 id: resource.id,

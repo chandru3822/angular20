@@ -9,7 +9,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary">
+            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary" v-if="userCanEdit">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -19,44 +19,30 @@
           <v-text-field v-model="position.position"
                         placeholder="Enter a value"
                         required
+                        :readonly="!userCanEdit"
                         label="Position Name">
           </v-text-field>
           <v-select
               v-model="position.orgTypeId"
               :items="orgTypes"
+              :readonly="!userCanEdit"
               label="Organization Type"
               item-text="orgType"
               item-value="id"
           ></v-select>
+          <div class="mb-3">
+            <label>Show in Scheduling Tool:</label>
+            <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.schedulable">
+          </div>
+          <div v-if="$store.getters.isParent(parentId)">
+            <label>Make Available in Children</label>
+            <input type="checkbox" class="ml-3" v-model="position.availableToChildren">
+          </div>
+          <v-divider class="my-2"></v-divider>
           <h3>Access Control</h3>
-          <v-data-table
-              :headers="headers"
-              :items="position.companyFeatures"
-              :fixed-header="true"
-              :items-per-page="-1"
-              hide-default-footer
-              disable-sort
-              class="elevation-1 mt-1"
-          >
-            <template #no-data>
-              No available fields
-            </template>
-
-            <template #no-results>
-              No available fields
-            </template>
-
-            <template #item="{ item, index }">
-              <tr :class="{ 'shaded-row': index % 2 }">
-                <td class="text-left">{{ item.featureName }}</td>
-                <td v-for="acl in item.accessControl">
-                  <input type="checkbox" v-model="acl.enabled">
-                </td>
-              </tr>
-            </template>
-
-          </v-data-table>
+          <AccessControl v-if="positionLoaded" :companyFeatures="position.companyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
         </v-card>
+
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -67,21 +53,32 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getOrgTypes} from '@/services/orgService'
+  import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Position',
     components: {
-      Snackbar
+      Snackbar,
+      AccessControl
+    },
+    watch: {
+      'selectedRows': function () {
+        this.alterEnabledFlagForRows()
+      }
     },
     data() {
       return {
         snackbar: {},
         position: {},
+        selectedRows: [],
+        positionLoaded: false,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         orgTypes: [],
         positionId: this.$route.params.id,
         features: [],
         accessControlList: [],
+        parentId: this.$store.state.user.details.parentCompanyId,
         headers: [
           { text: 'Feature', value: 'featureName', show: true },
 
@@ -92,7 +89,7 @@
       if(this.positionId) {
         this.getPosition()
       } else {
-        this.getFeatures()
+        this.positionLoaded = true
       }
       this.getOrgTypes()
     },
@@ -128,42 +125,22 @@
         }
 
       },
-      populateHeaders () {
-        //todo. not my favorite
-        this.position.companyFeatures[0]?.accessControl?.forEach(acl => {
-          this.headers.push({
-            text: acl.accessLevel,
-            value: acl.accessCode,
-            show: true
-          })
-        })
-      },
-      async getFeatures() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequest(`/feature/withAccess`)
-          this.position.companyFeatures = data
-          this.populateHeaders()
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Features')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       async getPosition() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/position/${this.positionId}`)
           this.position = data
-          this.populateHeaders()
+          this.positionLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Position')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      companyFeatureCallback (newValue) {
+        this.position.companyFeatures = newValue
+      },
     }
   }
 </script>

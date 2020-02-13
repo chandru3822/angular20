@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newGroup = {}">
+            <v-btn text @click="addNew = !addNew; newGroup = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -72,6 +72,7 @@
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
                     <v-dialog
+                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                         v-model="item.deleteConfirm"
                         width="500">
                       <template #activator="{ on }">
@@ -164,6 +165,7 @@
                           </div>
                         </v-list-item-content>
                         <v-dialog
+                            v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                             v-model="cf.deleteConfirm"
                             width="500">
                           <template #activator="{ on }">
@@ -215,7 +217,7 @@
               <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="getAttachmentTypesForProjects">
+                <v-btn text @click="getAttachmentTypesForProjects" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                   <v-icon v-if="!addNewType">add</v-icon>
                   {{ addNewType ? 'Cancel' : 'Add Type'}}
                 </v-btn>

@@ -331,7 +331,6 @@
       }
     },
     created() {
-      console.log('MEMEMEMEMEMEEM', this.$route.query)
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
       this.getActiveStatesByHierarchy()
@@ -438,7 +437,6 @@
               d.coordinates = [ d.longitude, d.latitude ]
             })
             this.projects = data
-            console.log('randaLogger HH', this.projects)
             this.masterProjects = cloneDeep(data)
             if(this.selectedProcessStepStatusTypes?.length > 0) {
               this.filterProjects()

@@ -8,6 +8,6 @@ import lombok.Data;
 
 @Data
 public class WorkQueueDetail {
-    private Long processStepId, companyId, projectProcessStepId, projectId;
+    private Long processStepId, companyId, projectProcessStepId, projectId, customerId;
     private String projectName, workQueueType, processStepName, owner, lastUpdated;
 }

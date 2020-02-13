@@ -3,7 +3,7 @@ CREATE MATERIALIZED VIEW flow.user_positions_vw AS
 select u.id as user_id,u.first_name,u.last_name,
        org_hierarchy.org_id,org_hierarchy.org_name,org_hierarchy.org_level_id,org_hierarchy.position_level,
        up.primary_flag,up.start_date,up.end_date,
-       o.state_id, u.archived as user_archived, u.schedulable as user_schedulable, p.position,p.id as position_id, up.id as user_position_id,
+       o.state_id, u.archived as user_archived, p.schedulable as position_schedulable, p.position,p.id as position_id, up.id as user_position_id,
        p.company_id, u.email, u.phone_number,u.user_status_type_id, ust.user_status_type,
        (select json_agg( json_build_object(
                'orgId', h.org_id,

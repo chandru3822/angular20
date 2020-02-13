@@ -6,7 +6,7 @@
     <v-row class="process-step-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/lead/${customer.id}`">{{ customer.fullName}}</router-link>
+          <router-link :to="`/customer/${customer.id}`">{{ customer.fullName}}</router-link>
         </div>
         <div class="project-subtitle">
           {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
@@ -97,7 +97,11 @@
       :key="cfg.id"
     >
       <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
+        <v-toolbar-title>
+<!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
+          <router-link v-if="cfg.eventTypeId" :to="`/schedule`">{{cfg.groupName}}</router-link>
+          <template v-else>{{cfg.groupName}}</template>
+        </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-btn

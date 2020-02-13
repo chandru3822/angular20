@@ -50,10 +50,8 @@
               password: this.form.password
             }
             const {data} = await axios.post(`${VUE_BASE_API}/auth/login`, params)
-            console.log('login data', data)
             const {token, details} = data
             if (token) {
-              console.log('setting token', token)
               this.$store.commit(UserMutations.SET_JWT, token)
               this.loginSuccess(details)
             } else {

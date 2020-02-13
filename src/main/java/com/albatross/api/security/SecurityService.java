@@ -184,56 +184,13 @@ public class SecurityService implements UserDetailsService {
 
     @SuppressWarnings("unchecked")
     public List<FeatureAccessControl> getUserFeatureAccess(Long userId, Long companyId) {
+        //this function gets ALL access for a user (combining user/position access control as needed)
         HashMap<String, Object> params = new HashMap<>();
         params.put("userId", userId);
         params.put("companyId", companyId);
         List<FeatureAccessControl> results = sqlCache.query("feature.getAccessForUser", params, FeatureAccessControl.class);
         return results;
     }
-
-//    public boolean hasPermission(UserAccountDetails uad, String permissionName) {
-//        if(uad == null ){
-//            return false;
-//        }
-//
-//        List<String> auths = uad.getAuthorities()
-//                                .stream()
-//                                .map(GrantedAuthority::getAuthority)
-//                                .collect(Collectors.toList());
-//
-//        if( auths.contains("HR_ADMIN") ){
-//            return true;
-//        }
-//
-//        return auths.contains(permissionName);
-//    }
-//
-//    public void ensurePermission(UserAccountDetails uad, String permissionName){
-//        if( !hasPermission(uad, permissionName) ){
-//            throw new InsufficientAuthenticationException("Missing permission: " + permissionName);
-//        }
-//    }
-
-//    @SuppressWarnings("unchecked")
-//    public List<UserRoleDO> getUserRoles(Long userId) {
-//        String sql = "select r.id,r.role_name,ur.id as userRoleId " +
-//                "from blueraven.user_role ur " +
-//                "inner join blueraven.role r on r.id = ur.role_id " +
-//                "where ur.user_id = :userId " +
-//                "   and r.archived is not true ";
-//        List<Object[]> results = entityManager.createNativeQuery(sql).setParameter("userId", userId)
-//                .getResultList();
-//
-//        List<UserRoleDO> userRoleDOs = new ArrayList<>();
-//        for (Object[] row : results) {
-//            UserRoleDO userRoleDO = new UserRoleDO();
-//            userRoleDO.setRoleId((Integer) row[0]);
-//            userRoleDO.setRoleName((String) row[1]);
-//            userRoleDO.setId((Integer) row[2]);
-//            userRoleDOs.add(userRoleDO);
-//        }
-//        return userRoleDOs;
-//    }
 
     @SuppressWarnings("unchecked")
     public Boolean validatePassword(String password){

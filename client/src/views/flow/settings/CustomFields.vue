@@ -43,14 +43,16 @@
               </td>
               <td class="text-right">
                 <div class="item-icons">
-                  <v-btn class="clickable" small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.companySystemListId)">
+                  <v-btn class="clickable" small text
+                         v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                         @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.companySystemListId)">
                     <v-icon v-if="expanded.includes(item)">remove</v-icon>
                     <v-icon v-else-if="item.custom">add</v-icon>
                     <v-icon v-else>edit</v-icon>
                   </v-btn>
                   <v-dialog
                       v-model="item.deleteConfirm"
-                      v-if="!item.custom"
+                      v-if="!item.custom && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                       width="500">
                     <template v-slot:activator="{ on }">
                       <v-btn small text class="clickable" v-on="on">
@@ -114,7 +116,7 @@
                       return-object
                   ></v-autocomplete>
 
-                  <v-text-field v-if="$store.getters.hasPermission('SYSTEM_ADMIN') && item.companyDataType && item.companyDataType.customBehavior"
+                  <v-text-field v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior"
                                 v-model="item.customFieldSqlKey"
                                 label="SQL Key"
                   ></v-text-field>
@@ -189,6 +191,7 @@
                     </v-container>
                   </v-col>
                   <v-btn
+                      v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                       :disabled="invalid(item)"
                       @click="saveChanges(item.custom, item); item.expanded = !item.expanded">
                     {{item.custom ? 'Add Field' : 'Save Changes'}}
@@ -252,7 +255,6 @@
       }
     },
     async created() {
-      this.$store.getters.hasPermission('SYSTEM_ADMIN')
       await this.getCompanyDataTypes()
       this.getCustomFieldObjectTypes()
       this.getCustomFields()
@@ -260,7 +262,7 @@
     },
     methods: {
       filterDataTypes (item) {
-        if(this.$store.getters.hasPermission('SYSTEM_ADMIN')) {
+        if(this.$store.getters.userHasFeature('SYSTEM')) {
           return this.dataTypes
         } else {
           // filter out the system item if not a system admin
