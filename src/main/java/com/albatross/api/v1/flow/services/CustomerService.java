@@ -49,6 +49,9 @@ public class CustomerService {
   ProcessService processService;
 
   @Autowired
+  ProjectProcessStepService projectProcessStepService;
+
+  @Autowired
   ObjectMapper om;
 
   public Page<Customer> searchCustomers(String query, Pageable pageable) {
@@ -208,7 +211,7 @@ public class CustomerService {
     if(project.isPresent()) {
       //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), null);
+        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), null);
       }
     }
 
