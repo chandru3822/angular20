@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WorkQueue;
 import com.albatross.api.v1.flow.model.WorkQueueDetail;
@@ -37,6 +38,7 @@ public class WorkQueueService {
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
     params.put("userPositionId", userPositionId);
+    params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
 
     List<WorkQueue> results = sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
     return results;
@@ -50,6 +52,7 @@ public class WorkQueueService {
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
     params.put("userPositionId", userPositionId);
+    params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
 
     List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, WorkQueueDetail.class);
     return results;
@@ -61,6 +64,7 @@ public class WorkQueueService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
+    params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
 
     List<WorkQueueOwner> results = sqlCache.query("workQueue.getWorkQueueOwners", params, WorkQueueOwner.class);
     return results;

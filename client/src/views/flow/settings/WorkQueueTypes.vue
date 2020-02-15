@@ -28,7 +28,7 @@
           </div>
           <v-data-table
               :headers="headers"
-              :items="workQueueTypes"
+              :items="filterWorkQueueTypes()"
               :fixed-header="true"
               :items-per-page="-1"
               single-expand
@@ -229,12 +229,16 @@
           this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Type')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      filterWorkQueueTypes () {
+        return orderBy(this.workQueueTypes.filter(wqt => { return !wqt.archived}), [wqt => wqt.workQueueType.toLowerCase()])
+      },
     },
     async created() {
       this.getWorkQueueTypes()
       this.getWorkQueueCategories()
-    }
+    },
+
   }
 </script>
 
