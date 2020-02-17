@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
 import com.albatross.api.v1.flow.enums.UserStatusType;
@@ -38,6 +39,9 @@ public class CustomerService {
 
   @Autowired
   SqlCache sqlCache;
+
+  @Autowired
+  LocationUtils locationUtils;
 
   @Autowired
   SecurityService securityService;
@@ -161,9 +165,29 @@ public class CustomerService {
       id = sqlCache.updateReturningId("customer.insertCustomer", params, "id").longValue();
     }
 
+    if(null == customer.getId() || customer.getReloadCoordinates()) {
+      // if new customer or address changed, reload the coordinates
+      getCustomerCoordinates(customer);
+    }
+
     handleSavingCustomFieldValues(customer.getCustomFieldGroups(), id);
 
     return getCustomer(id);
+  }
+
+  public void getCustomerCoordinates(Customer customer) {
+    //todo: when the customer is new or the address changes, need to reload/save their lat/long from mapbox
+    String customerAddress = getCustomerAddress(customer);
+    locationUtils.getGeocode(customerAddress);
+  }
+
+  public String getCustomerAddress(Customer customer) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(customer.getStreet1());
+    sj.add(customer.getCity());
+    sj.add(customer.getState() + ( customer.getPostalCode().isEmpty() ? "" : " " + customer.getPostalCode() ));
+
+    return sj.toString();
   }
 
   public void updateOwner(Long id, Owner owner) {
