@@ -4,6 +4,7 @@ import com.albatross.api.v1.flow.model.ProcessStepAction;
 import com.albatross.api.v1.flow.model.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.ProjectProcessStepRequirement;
 import com.albatross.api.v1.flow.services.*;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.RequiredArgsConstructor;
@@ -44,11 +45,15 @@ public class ProjectProcessStepServiceTests {
 
   private final Map<String, String> jsonObjects = new HashMap<>();
 
-  private ProcessStepAction action;
-
   private ProcessStepActionService processStepActionService = mock(ProcessStepActionService.class);
 
   ProjectProcessStepRequirementService projectProcessStepRequirementService = mock(ProjectProcessStepRequirementService.class);
+
+  private ProcessStepAction action;
+
+  private List<ProcessStepLogic> processStepLogicList;
+
+  private List<ProjectProcessStepRequirement> processStepRequirements;
 
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
@@ -65,40 +70,55 @@ public class ProjectProcessStepServiceTests {
       Map<String, String> converted = mapper.readValue(sr, Map.class);
       jsonObjects.putAll(converted);
     }
+
+    action = om.readValue(jsonObjects.get("processStepAction.action"), ProcessStepAction.class);
+    processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.true"), new TypeReference<List<ProcessStepLogic>>() {});
+    processStepRequirements = om.readValue(jsonObjects.get("processStepRequirement.scheduleWithSystemList"), new TypeReference<List<ProjectProcessStepRequirement>>() {});
   }
 
   @BeforeEach
   public void setup() throws IOException {
-    action = om.readValue(this.jsonObjects.get("processStepAction.action"), ProcessStepAction.class);
-    ProcessStepLogic logic = new ProcessStepLogic();
-    logic.setProcessStepRequirementId(12L);
-    logic.setRequirementNbr(12L);
-    action.setProcessStepLogicList(List.of(logic));
-
-    ProjectProcessStepRequirement projectProcessStepRequirement = new ProjectProcessStepRequirement();
-    projectProcessStepRequirement.setId(20L);
+    action.setProcessStepLogicList(processStepLogicList);
 
     ReflectionTestUtils.setField(projectProcessStepService, "processStepActionService", processStepActionService);
     ReflectionTestUtils.setField(projectProcessStepService, "projectProcessStepRequirementService", projectProcessStepRequirementService);
 
-    when(processStepActionService.getActionById(1L)).thenReturn(action);
-//    when(projectProcessStepRequirementService.getByProjectProcessStepId(7L, List.of(12L))).thenReturn(List.of(projectProcessStepRequirement));
+    when(processStepActionService.getActionById(anyLong())).thenReturn(action);
+    when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(processStepRequirements);
   }
 
   @Test
-  public void alwaysEnabled() {
-    try {
-      action.setAlwaysEnabled(true);
-      boolean passed = this.projectProcessStepService.canPerformAction(1L, 1L);
-      assertThat(passed).isTrue();
-      verify(this.projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
+  public void alwaysEnabled() throws Exception {
+    action.setAlwaysEnabled(true);
+    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    assertThat(passed).isTrue();
+    verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
-      action.setAlwaysEnabled(false);
-      this.projectProcessStepService.canPerformAction(1L, 1L);
-      verify(this.projectProcessStepRequirementService, times(1)).getByProjectProcessStepId(anyLong(), anyList());
-      log.info("alwaysEnabled passed");
-    } catch (Exception e) {
-      log.error("alwaysEnabled failed: " + e.getMessage());
-    }
+    action.setAlwaysEnabled(false);
+    projectProcessStepService.canPerformAction(1L, 1L);
+    verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
+  }
+
+  @Test
+  public void noLogicSteps() throws Exception {
+    action.setProcessStepLogicList(List.of());
+    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    assertThat(passed).isFalse();
+    verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
+
+    List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.true"), new TypeReference<List<ProcessStepLogic>>() {});
+    action.setProcessStepLogicList(processStepLogicList);
+    projectProcessStepService.canPerformAction(1L, 1L);
+    verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
+  }
+
+  @Test
+  public void noRequirements() throws Exception {
+    when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(List.of());
+    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    assertThat(passed).isTrue();
+
+    // @TODO: Would be nice to verify that r.setFulfilled isn't ever called (meaning the code returns early when it should),
+    //  but can't figure out how to mock local vars
   }
 }

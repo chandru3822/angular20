@@ -335,7 +335,7 @@ public class ProjectProcessStepService {
           break;
         case 6:
         case 9:
-          requirementMet = (r.getHasListValues() || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
+          requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
           break;
         case 7:
           requirementMet = calculateMultiselectRequirement(r);
