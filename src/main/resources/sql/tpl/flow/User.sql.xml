@@ -182,7 +182,7 @@
       where upv.position_schedulable is true
         and case when :isParent
             then array[upv.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-            else upv.company_id = :companyId end
+            else (upv.company_id = :companyId OR (upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and case when :stateId::integer is not null then upv.state_id = :stateId::integer and upv.position_schedulable is true else upv.position_schedulable is true end
         and upv.user_archived is not true
       order by full_name

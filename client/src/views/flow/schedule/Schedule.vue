@@ -7,7 +7,10 @@
       </v-col>
       <v-col cols="12" md="7" class="map-row" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->
-        <Calendar :map-resources="mapResources" :callback="this.resourceMapCallback" :date-callback="this.dateCallback"></Calendar>
+        <Calendar :map-resources="mapResources"
+                  ref="calendar"
+                  :callback="this.resourceMapCallback"
+                  :date-callback="this.dateCallback"></Calendar>
       </v-col>
     </v-row>
     <v-row class="schedule-row">
@@ -184,11 +187,12 @@
                   use12-hour
                   auto
               ></datetime>
-              <v-select v-model="selectedProject.resourceId"
+              <v-select v-model="selectedProject.resource"
                         :items="selectedProject.resources"
                         :label="selectedProject.resourceFieldName  || 'Resource'"
                         placeholder=" "
                         item-text="name"
+                        return-object
                         item-value="id"
                         class="mt-3"
               />
@@ -352,14 +356,17 @@
     methods: {
       validateSaveEvent () {
         return !this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
-          || !this.selectedProject.resourceId  || (this.selectedProject.start >= this.selectedProject.end)
+          || !this.selectedProject.resource || !this.selectedProject.resource.id  || (this.selectedProject.start >= this.selectedProject.end)
       },
       async scheduleProject() {
         console.log('will save here', this.selectedProject)
+        this.selectedProject.resourceId = this.selectedProject.resource.id
+        this.selectedProject.resourceName = this.selectedProject.resource.name
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
-          // this.states = data
+          // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
+          this.$refs.calendar.getEvents()
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
         } catch (e) {
