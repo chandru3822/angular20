@@ -16,7 +16,7 @@ from flow."user" u
          inner join flow.user_status_type ust on ust.id = u.user_status_type_id
          left join flow.user_position up on up.user_id = u.id
          left join flow.position p on p.id = up.position_id
-         left join  flow.org o on o.id = up.org_id
+         left join  flow.org o on o.id = up.org_id and o.company_id = p.company_id
          cross join flow.user_org_hierarchy(o.id) org_hierarchy
     WITH DATA;
 
