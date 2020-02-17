@@ -117,7 +117,15 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id)">Go</v-btn>
+            <v-select v-model="searchProcessStepStatusType"
+                      :items="processStepStatusTypes"
+                      label="Status"
+                      item-text="processStepStatusType"
+                      item-value="id"
+                      return-object
+            >
+            </v-select>
+            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.id)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -284,6 +292,7 @@
         selectedProject: {},
         //used for search
         searchEventType: {},
+        searchProcessStepStatusType: {},
         searchProject: {},
         searchProjects: [],
         searchProjectsLoading: false,
@@ -499,12 +508,13 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventTypeId) {
+      async getSingleProject(projectId, eventTypeId, processStepStatusTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
             projectId,
             eventTypeId,
+            processStepStatusTypeId
             // i dont think we need this for finding specific projects
             // startTime: this.startTime,
             // endTime: this.endTime

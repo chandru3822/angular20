@@ -76,6 +76,7 @@ public class ScheduleService {
     params.put("companyId", user.getCompanyId());
     params.put("projectId", esp.getProjectId());
     params.put("eventTypeId", esp.getEventTypeId());
+    params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
 //    params.put("startTime", esp.getStartTime());
