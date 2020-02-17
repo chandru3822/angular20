@@ -276,12 +276,16 @@
         // runs when user clicks a checkbox next to a requirement
         if (checkboxWasClicked) {
           this.requirement.complete = this.requirement.complete ? this.requirement.complete : false
+          this.requirement.archived = false
 
           try {
             this.$store.commit(AppMutations.SET_LOADING, true)
             const {data} = await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
-            let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.originalRequirementId)
-            this.requirementsCopy[updatedRequirementIndex].formattedDateModified = moment(data.dateModifed).format('MM/DD/YY h:mm A')
+            let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data.originalRequirementId)
+
+            if (updatedRequirementIndex !== -1) {
+              this.requirementsCopy[updatedRequirementIndex].formattedDateModified = moment(data.dateModifed).format('MM/DD/YY h:mm A')
+            }
 
             this.snackbar = getSnackbar('SUCCESS', 'Requirement completion status updated')
             this.$store.commit(AppMutations.SET_LOADING, false)
