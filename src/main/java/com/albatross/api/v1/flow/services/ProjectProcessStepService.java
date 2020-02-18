@@ -36,6 +36,10 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+//@TODO: Had to make private functions public in this class to be able to unit test due to this issue. https://github.com/powermock/powermock/issues/929
+// I don't like it and would rather have them be private. Change back if/when possible
+
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
@@ -202,7 +206,7 @@ public class ProjectProcessStepService {
   }
 
   public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
-    private final ObjectMapper objectMapper;
+    public final ObjectMapper objectMapper;
 
     public ProjectProcessStepMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
       super(mappedClass);
@@ -310,7 +314,7 @@ public class ProjectProcessStepService {
   }
 
   // It's assumed for date data types that it's always a data_type_requirement and never a literal comparison of values
-  private boolean isRequirementMet(ProjectProcessStepRequirement r) throws Exception {
+  public boolean isRequirementMet(ProjectProcessStepRequirement r) throws Exception {
 
     boolean requirementMet = false;
 
@@ -352,14 +356,14 @@ public class ProjectProcessStepService {
     return requirementMet;
   }
 
-  private String getFunctionSignature(ProjectProcessStepRequirement r, Map<String, Object> params) {
+  public String getFunctionSignature(ProjectProcessStepRequirement r, Map<String, Object> params) {
 
     StringBuilder signature = new StringBuilder();
 
     return signature.toString();
   }
 
-  private Map<String, Object> prepareFunctionParams(ProjectProcessStepRequirement r) throws Exception {
+  public Map<String, Object> prepareFunctionParams(ProjectProcessStepRequirement r) throws Exception {
     Map<String, Object> params = new HashMap<>();
 
     r.getCompanyFunctionParams().forEach(param -> {
@@ -396,7 +400,7 @@ public class ProjectProcessStepService {
     return params;
   }
 
-  private Object getTypedDynamicValue(CompanyFunctionParam param) {
+  public Object getTypedDynamicValue(CompanyFunctionParam param) {
 
     String startingValue = param.getDynamicValue();
     Object typedValue = null;
@@ -429,7 +433,7 @@ public class ProjectProcessStepService {
     return typedValue;
   }
 
-  private Object getParamValueByDataType(CompanyFunctionParam param) throws Exception {
+  public Object getParamValueByDataType(CompanyFunctionParam param) throws Exception {
 
     Object paramValue = null;
 
@@ -462,7 +466,7 @@ public class ProjectProcessStepService {
     return paramValue;
   }
 
-  private boolean calculateMultiselectRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateMultiselectRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     List<Integer> fieldValue = r.getIntArrayValue();
 
@@ -490,7 +494,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareMultiselect(List<Integer> numbers, List<Integer> compareNumbers, Long operatorTypeId) throws Exception {
+  public boolean compareMultiselect(List<Integer> numbers, List<Integer> compareNumbers, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
     switch (operatorTypeId.intValue()) {
@@ -510,7 +514,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean caclulateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean caclulateDropdownRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Long fieldValue = r.getIntValue();
 
@@ -560,7 +564,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean calculateIntRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateIntRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Long fieldValue = r.getIntValue();
     boolean passed = false;
@@ -588,7 +592,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareInt(Long number, Long compareNumber, Long operatorTypeId) throws Exception {
+  public boolean compareInt(Long number, Long compareNumber, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -612,7 +616,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean calculateTextRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateTextRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     String fieldValue = r.getTextValue();
 
@@ -655,7 +659,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareText(String text, String compareText, Long operatorTypeId) throws Exception {
+  public boolean compareText(String text, String compareText, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -676,7 +680,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean calculateNumericRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateNumericRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Double fieldValue = (r.getNumericValue() == null) ? null : r.getNumericValue().setScale(2, RoundingMode.DOWN).doubleValue();
 
@@ -721,7 +725,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareNumeric(Double number, Double compareNumber, Long operatorTypeId) throws Exception {
+  public boolean compareNumeric(Double number, Double compareNumber, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -745,7 +749,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean calculateBooleanRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateBooleanRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Boolean fieldValue = r.getBooleanValue();
     Boolean reqValue = Boolean.parseBoolean(r.getRequirementValue());
@@ -766,7 +770,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean calculateTimestampRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateTimestampRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     LocalDateTime fieldValue = (r.getTimestampValue() != null) ? r.getTimestampValue().toLocalDateTime().withMinute(0).withSecond(0).withNano(0) : null;
     LocalDateTime now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
@@ -840,7 +844,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareNullDateTime(LocalDateTime date, Long operatorTypeId) throws Exception {
+  public boolean compareNullDateTime(LocalDateTime date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -858,7 +862,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareNonNullDateTime(LocalDateTime date, Long operatorTypeId) throws Exception {
+  public boolean compareNonNullDateTime(LocalDateTime date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -876,7 +880,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareDateTimes(LocalDateTime date, LocalDateTime compareDate, Long operatorTypeId) throws Exception {
+  public boolean compareDateTimes(LocalDateTime date, LocalDateTime compareDate, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -900,7 +904,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean calculateDateRequirement(ProjectProcessStepRequirement r) throws Exception {
+  public boolean calculateDateRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     LocalDate fieldValue = (r.getDateValue() !=  null) ? r.getDateValue().toLocalDateTime().toLocalDate() : null;
     LocalDate now = LocalDate.now();
@@ -959,7 +963,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareNonNullDate(LocalDate date, Long operatorTypeId) throws Exception {
+  public boolean compareNonNullDate(LocalDate date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -977,7 +981,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareNullDate(LocalDate date, Long operatorTypeId) throws Exception {
+  public boolean compareNullDate(LocalDate date, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 
@@ -995,7 +999,7 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  private boolean compareDates(LocalDate date, LocalDate compareDate, Long operatorTypeId) throws Exception {
+  public boolean compareDates(LocalDate date, LocalDate compareDate, Long operatorTypeId) throws Exception {
 
     boolean passed = false;
 

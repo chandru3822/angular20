@@ -1,5 +1,5 @@
 <json>
-  <processStepRequirement.scheduleWithSystemList><![CDATA[
+  <projectProcessStepRequirement.scheduleWithSystemList><![CDATA[
     [{
       "id": 20,
       "processStepRequirementTypeId": 1,
@@ -27,7 +27,6 @@
       "processStepName": null,
       "secondaryRequirementValue": null,
       "customFieldSqlKey": null,
-      "hasListValues": true,
       "listOfValueIds": [
         null
       ],
@@ -61,7 +60,17 @@
       "fulfilled": null,
       "secondaryRequirement": null,
       "customValue": false,
-      "immutable": true
+      "immutable": true,
+      "booleanValue": null,
+      "hasListValues": false,
+      "timestampValue": null,
+      "dateValue": null,
+      "textValue": null,
+      "numericValue": null,
+      "intValue": null,
+      "projectId": 203346,
+      "intArrayValue": [],
+      "companyFunctionParams": null
     },
     {
       "id": 21,
@@ -90,7 +99,6 @@
       "processStepName": null,
       "secondaryRequirementValue": null,
       "customFieldSqlKey": null,
-      "hasListValues": true,
       "listOfValueIds": [
         null
       ],
@@ -124,7 +132,17 @@
       "fulfilled": null,
       "secondaryRequirement": null,
       "customValue": false,
-      "immutable": true
+      "immutable": true,
+      "booleanValue": null,
+      "hasListValues": false,
+      "timestampValue": null,
+      "dateValue": null,
+      "textValue": null,
+      "numericValue": null,
+      "intValue": null,
+      "projectId": 203346,
+      "intArrayValue": [],
+      "companyFunctionParams": null
     },
     {
       "id": 22,
@@ -140,7 +158,7 @@
       "listOfValueId": null,
       "returnDataTypeId": null,
       "customFieldSqlKeyId": null,
-      "companySystemListId": null,
+      "companySystemListId": 2,
       "systemListOptionId": null,
       "customSqlOptionId": null,
       "processStepRequirementType": "Custom Field",
@@ -153,7 +171,6 @@
       "processStepName": null,
       "secondaryRequirementValue": null,
       "customFieldSqlKey": null,
-      "hasListValues": true,
       "listOfValueIds": [
         null
       ],
@@ -192,19 +209,7 @@
           "createdById": null,
           "modifiedById": null,
           "displayOrder": null,
-          "name": "Phillip J. Fry",
-          "code": null,
-          "archived": false,
-          "dateCreated": null,
-          "dateModified": null
-        },
-        {
-          "id": 2403270,
-          "parentId": null,
-          "createdById": null,
-          "modifiedById": null,
-          "displayOrder": null,
-          "name": "Rick Sanchez",
+          "name": "Philip J. Fry",
           "code": null,
           "archived": false,
           "dateCreated": null,
@@ -224,7 +229,92 @@
       "fulfilled": null,
       "secondaryRequirement": null,
       "customValue": false,
-      "immutable": true
+      "immutable": true,
+      "booleanValue": null,
+      "hasListValues": false,
+      "timestampValue": null,
+      "dateValue": null,
+      "textValue": null,
+      "numericValue": null,
+      "intValue": null,
+      "projectId": 203346,
+      "intArrayValue": [],
+      "companyFunctionParams": null
     }]
-  ]]></processStepRequirement.scheduleWithSystemList>
+  ]]></projectProcessStepRequirement.scheduleWithSystemList>
+
+  <projectProcessStepRequirement.date><![CDATA[
+    [{
+      "id": 23,
+      "processStepRequirementTypeId": 1,
+      "operatorTypeId": 2,
+      "customFieldGroupAssignmentId": 139,
+      "companyFunctionId": null,
+      "requirementNbr": 16,
+      "processStepId": 5,
+      "parentId": 5,
+      "dataTypeId": 1,
+      "dataTypeRequirementId": 4,
+      "listOfValueId": null,
+      "returnDataTypeId": null,
+      "customFieldSqlKeyId": null,
+      "companySystemListId": null,
+      "systemListOptionId": null,
+      "customSqlOptionId": null,
+      "processStepRequirementType": "Custom Field",
+      "requirementValue": null,
+      "operatorType": "Not Equal To",
+      "parentName": "Schedule Closer Appointment",
+      "fieldName": "Date data type",
+      "companyFunctionName": null,
+      "functionName": null,
+      "processStepName": null,
+      "secondaryRequirementValue": null,
+      "customFieldSqlKey": null,
+      "listOfValueIds": [
+        null
+      ],
+      "systemListOptionIds": [
+        null
+      ],
+      "listOfValue": {
+        "id": null,
+        "parentId": null,
+        "createdById": null,
+        "modifiedById": null,
+        "displayOrder": null,
+        "name": null,
+        "code": null,
+        "archived": false,
+        "dateCreated": null,
+        "dateModified": null
+      },
+      "listOfValues": [],
+      "availableListOfValues": [],
+      "dataTypeRequirement": {
+        "id": 4,
+        "dataTypeId": null,
+        "dataTypeValue": "null",
+        "dataType": null,
+        "secondaryRequirement": false,
+        "archived": null
+      },
+      "requirementParamDynamicValues": [],
+      "archived": false,
+      "fulfilled": null,
+      "secondaryRequirement": null,
+      "customValue": false,
+      "immutable": true,
+      "booleanValue": null,
+      "hasListValues": false,
+      "timestampValue": null,
+      "dateValue": null,
+      "textValue": null,
+      "numericValue": null,
+      "intValue": null,
+      "projectId": 203346,
+      "intArrayValue": [],
+      "companyFunctionParams": null
+    }]
+  ]]></projectProcessStepRequirement.date>
 </json>
