@@ -253,6 +253,7 @@
         and ps.archived is not true
         and pps.project_id = :projectId
         and cfg.event_type_id = :eventTypeId
+        and case when :processStepStatusTypeId::int is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::int end
   ]]></schedule.getProject>
 
   <schedule.searchProjectsByName><![CDATA[

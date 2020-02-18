@@ -37,7 +37,7 @@ BEGIN
                                                                        from flow.company c
                                                                        where c.id = p_company_id) )
               and ARRAY[upv.org_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
-              and upv.user_status_type_id = 1
+              and upv.has_access is true
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
             order by name;
@@ -62,7 +62,7 @@ BEGIN
             where ( upv.company_id = p_company_id OR upv.company_id = (select parent_company_id
                                                                      from flow.company c
                                                                      where c.id = p_company_id) )
-              and upv.user_status_type_id = 1
+              and upv.has_access is true
               and ARRAY[upv.position_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
@@ -97,7 +97,7 @@ BEGIN
                              upv.first_name || ' ' || upv.last_name::text as name
              from flow.user_positions_vw upv
              where upv.company_id = p_company_id
-               and upv.user_status_type_id = 1
+               and upv.has_access is true
                and (upv.start_date <= now() and
                     (upv.end_date IS NULL OR upv.end_date > now()))
              order by name;

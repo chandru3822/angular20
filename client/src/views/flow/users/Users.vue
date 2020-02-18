@@ -289,7 +289,7 @@
           email: '',
           phone: '',
           orgs: {},
-          statuses: [1],
+          statuses: [],
           positions: []
         }
       }

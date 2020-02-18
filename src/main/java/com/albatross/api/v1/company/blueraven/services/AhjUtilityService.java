@@ -96,12 +96,12 @@ public class AhjUtilityService {
 
     Long id;
 
-    if(null != utility.getId()){
-        id = utility.getId();
-        params.put("id", utility.getId());
-        sqlCache.update("ahj.utility.update", params);
+    if (null != utility.getId()) {
+      id = utility.getId();
+      params.put("id", utility.getId());
+      sqlCache.update("ahj.utility.update", params);
     } else {
-        id = sqlCache.updateReturningId("ahj.utility.insert", params, "id").longValue();
+      id = sqlCache.updateReturningId("ahj.utility.insert", params, "id").longValue();
     }
 
     blueravenCustomFieldGroupService.handleSavingCustomFieldValues(utility.getCustomFieldGroups(), id);
@@ -110,12 +110,60 @@ public class AhjUtilityService {
   }
 
   // CONTACTS
-  public void saveUtilityContact(Long utilityId, Long contactId) {
+  public Optional<AhjContact> getUtilityContactById(Long contactId) {
     HashMap<String, Object> params = new HashMap<>();
+    params.put("id", contactId);
 
+    return sqlCache.get("ahj.utility.contact.findById", params, AhjContact.class);
+  }
+
+  public Optional<AhjContact> addUtilityContact(Long utilityId, AhjContact utilityContact) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUser", currentUser.getId());
+    params.put("name", utilityContact.getName());
+    params.put("title", utilityContact.getTitle());
+    params.put("email", utilityContact.getEmail());
+    params.put("phoneNumber", utilityContact.getPhoneNumber());
+    params.put("address", utilityContact.getAddress());
+    params.put("notes", utilityContact.getNotes());
+    params.put("hours", utilityContact.getHours());
+    params.put("contactTypeId", utilityContact.getContactTypeId());
     params.put("ahjUtilityId", utilityId);
-    params.put("ahjContactId", contactId);
-    sqlCache.update("ahj.utility.contact.create", params);
+
+    Long contactId = sqlCache.updateReturningId("ahj.utility.contact.add", params, "id").longValue();
+
+    return getUtilityContactById(contactId);
+  }
+
+  public Optional<AhjContact> updateUtilityContact(Long contactId, AhjContact contact) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUser", currentUser.getId());
+    params.put("name", contact.getName());
+    params.put("title", contact.getTitle());
+    params.put("email", contact.getEmail());
+    params.put("phoneNumber", contact.getPhoneNumber());
+    params.put("address", contact.getAddress());
+    params.put("notes", contact.getNotes());
+    params.put("hours", contact.getHours());
+    params.put("contactTypeId", contact.getContactTypeId());
+    params.put("contactId", contactId);
+
+    sqlCache.update("ahj.utility.contact.update", params);
+    return getUtilityContactById(contactId);
+  }
+
+  public void deleteUtilityContact(Long contactId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+    params.put("currentUser", currentUser.getId());
+
+    sqlCache.update("ahj.utility.contact.delete", params);
   }
 
   // REQUIREMENTS

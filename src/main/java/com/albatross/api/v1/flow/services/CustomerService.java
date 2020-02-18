@@ -2,9 +2,9 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
-import com.albatross.api.v1.flow.enums.UserStatusType;
 import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Collections2;
+import com.mapbox.geojson.Point;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -30,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.ObjLongConsumer;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -38,6 +40,9 @@ public class CustomerService {
 
   @Autowired
   SqlCache sqlCache;
+
+  @Autowired
+  LocationUtils locationUtils;
 
   @Autowired
   SecurityService securityService;
@@ -161,9 +166,29 @@ public class CustomerService {
       id = sqlCache.updateReturningId("customer.insertCustomer", params, "id").longValue();
     }
 
+    if(null == customer.getId() || customer.getReloadCoordinates()) {
+      // if new customer or address changed, reload the coordinates
+      getCustomerCoordinates(customer, id);
+    }
+
     handleSavingCustomFieldValues(customer.getCustomFieldGroups(), id);
 
     return getCustomer(id);
+  }
+
+  public void getCustomerCoordinates(Customer customer, Long id) {
+    //when the customer is new or the address changes, need to reload/save their lat/long from mapbox
+    String customerAddress = getCustomerAddress(customer);
+    locationUtils.getGeocode(customerAddress, id, new CustomGeoFunction());
+  }
+
+  public String getCustomerAddress(Customer customer) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(customer.getStreet1());
+    sj.add(customer.getCity());
+    sj.add(customer.getState() + ( null == customer.getPostalCode() ? "" : " " + customer.getPostalCode() ));
+
+    return sj.toString();
   }
 
   public void updateOwner(Long id, Owner owner) {
@@ -181,10 +206,7 @@ public class CustomerService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Long> statusIds = new ArrayList<>();
-    statusIds.add(UserStatusType.ACTIVE.id);
 
-    params.put("statusIds", statusIds);
     List<Owner> results = sqlCache.query("customer.getOwners", params, Owner.class);
     return results;
   }
@@ -275,4 +297,29 @@ public class CustomerService {
     }
   }
 
+  private class CustomGeoFunction implements ObjLongConsumer {
+
+    @Override
+    public void accept(Object geoResult, long id) {
+      // note: the coordinates in the returned object are reversed: Long, Lat
+
+      //get the lat and long from point
+      Point point = (Point)geoResult;
+      Double latitude, longitude;
+      List<Double> coordinates = point.coordinates();
+      latitude = coordinates.get(1);
+      longitude = coordinates.get(0);
+
+      if(null != latitude && null != longitude) {
+        //if lat and long then update customer's location
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("latitude", latitude);
+        params.put("longitude", longitude);
+        params.put("id", id);
+
+        sqlCache.update("customer.updateGeoLocation", params);
+      }
+
+    }
+  }
 }

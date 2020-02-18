@@ -270,11 +270,11 @@ public class UserService {
     return user.orElse(null);
   }
 
-  public List<UserStatusType> getUserStatuses() {
+  public List<CompanyUserStatusType> getCompanyUserStatuses() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<UserStatusType> results = sqlCache.query("user.getUserStatuses", params, UserStatusType.class);
+    List<CompanyUserStatusType> results = sqlCache.query("user.getCompanyUserStatuses", params, CompanyUserStatusType.class);
     return results;
   }
 

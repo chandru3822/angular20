@@ -8,6 +8,7 @@
                     :items="orgs"
                     label="Organizations"
                     multiple
+                    :loading="orgsLoading"
                     hide-details
                     return-object
                     item-text="orgName"
@@ -44,11 +45,12 @@
           </v-select>
         </v-col>
         <v-col class="py-0" cols="12" md="6">
-          <v-select v-model="selectedUsers"
+          <v-autocomplete v-model="selectedUsers"
                     :items="users"
                     label="Users"
                     multiple
                     hide-details
+                    :loading="usersLoading"
                     return-object
                     item-text="fullName"
                     item-value="id"
@@ -81,7 +83,7 @@
                 slot="prepend-item"
                 class="mt-2"
             ></v-divider>
-          </v-select>
+          </v-autocomplete>
         </v-col>
       </v-row>
     </div>
@@ -211,6 +213,8 @@
         events: [],
         orgs: [],
         selectedOrgs: [],
+        orgsLoading: true,
+        usersLoading: true,
         users: [],
         selectedUsers: [],
         resources: [],
@@ -320,6 +324,7 @@
             d.id = `${1}${d.id}`
           })
           this.orgs = data
+          this.orgsLoading = false
           this.selectedOrgs = this.selectedOrgs.filter(so => {
             return this.orgs.some(o => o.id === so.id)
           })
@@ -344,6 +349,7 @@
             d.id = `${2}${d.id}`
           })
           this.users = data
+          this.usersLoading = false
           this.selectedUsers = this.selectedUsers.filter(su => {
             return this.users.some(u => u.id === su.id)
           })
