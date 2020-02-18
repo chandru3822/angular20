@@ -4,7 +4,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.exceptions.EmailInUseException;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserSearch;
-import com.albatross.api.v1.flow.model.UserStatusType;
+import com.albatross.api.v1.flow.model.CompanyUserStatusType;
 import com.albatross.api.v1.flow.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +56,8 @@ public class UserController {
     }
 
     @GetMapping(value = "/statuses", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<UserStatusType> getUserStatuses() {
-        return userService.getUserStatuses();
+    public List<CompanyUserStatusType> getCompanyUserStatuses() {
+        return userService.getCompanyUserStatuses();
     }
 
     @PostMapping(value = "/changeContext/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
