@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.ObjLongConsumer;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -166,7 +167,7 @@ public class CustomerService {
 
     if(null == customer.getId() || customer.getReloadCoordinates()) {
       // if new customer or address changed, reload the coordinates
-      getCustomerCoordinates(customer);
+      getCustomerCoordinates(customer, id);
     }
 
     handleSavingCustomFieldValues(customer.getCustomFieldGroups(), id);
@@ -174,10 +175,11 @@ public class CustomerService {
     return getCustomer(id);
   }
 
-  public void getCustomerCoordinates(Customer customer) {
+  public void getCustomerCoordinates(Customer customer, Long id) {
     //todo: when the customer is new or the address changes, need to reload/save their lat/long from mapbox
     String customerAddress = getCustomerAddress(customer);
-    locationUtils.getGeocode(customerAddress);
+    locationUtils.getGeocode(customerAddress, id, new CustomGeoFunction());
+    log.info("after geocode call");
   }
 
   public String getCustomerAddress(Customer customer) {
@@ -295,4 +297,11 @@ public class CustomerService {
     }
   }
 
+  private class CustomGeoFunction implements ObjLongConsumer {
+
+    @Override
+    public void accept(Object geoResult, long id) {
+      log.info(Long.valueOf(id).toString());
+    }
+  }
 }
