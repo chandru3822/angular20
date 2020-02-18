@@ -17,7 +17,7 @@ public class User {
     // highestCompanyId = highest company a user has access to (regardless of context and hierarchies) <- mostly used to determine if user is system admin/has access to albatross
     private String email, phoneNumber, username, password, firstName, lastName, fullName,
         userStatusType, timezone, awsBucket, companyName, companyAbbreviation, position, title; //title used for scheduling tool resource name
-    private Long userStatusTypeId;
+    private Long customerUserStatusTypeId;
     private List<Company> companies;
     private List<FeatureAccessControl> featureAccess;
     private Boolean hasAccess;

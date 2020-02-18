@@ -5,7 +5,6 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.CustomerType;
-import com.albatross.api.v1.flow.enums.UserStatusType;
 import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -205,10 +204,7 @@ public class CustomerService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Long> statusIds = new ArrayList<>();
-    statusIds.add(UserStatusType.ACTIVE.id);
 
-    params.put("statusIds", statusIds);
     List<Owner> results = sqlCache.query("customer.getOwners", params, Owner.class);
     return results;
   }
