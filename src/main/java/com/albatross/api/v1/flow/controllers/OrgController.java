@@ -58,11 +58,6 @@ public class OrgController {
     return orgService.exportOrgs(query);
   }
 
-  @GetMapping(value = "/owning", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Org> getOwningOrgsForCompany() {
-    return orgService.getOwningOrgsForCompany();
-  }
-
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Org saveOrg(@RequestBody Org org) {
     return orgService.saveOrg(org);

@@ -131,14 +131,6 @@ public class OrgService {
     return result.orElse(null);
   }
 
-  public List<Org> getOwningOrgsForCompany() {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    List<Org> results = sqlCache.query("org.getOwningOrgsForCompany", params, Org.class);
-    return results;
-  }
-
   public Org saveOrg(Org org) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

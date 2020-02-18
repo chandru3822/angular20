@@ -23,7 +23,7 @@
             </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="getAvailableProcessSteps(); getOwningOrgs()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+            <v-btn text @click="getAvailableProcessSteps(); getPositions()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
               {{addNew ? 'Cancel' : 'Add Process Step'}}
             </v-btn>
           </v-toolbar-items>
@@ -36,12 +36,14 @@
                     item-text="processStepName"
                     item-value="id"
           ></v-select>
-          <v-select v-model="newProcessStep.orgId"
-                    :items="owningOrgs"
-                    no-data-text="No Orgs Available"
-                    label="Select an Owning Org"
-                    item-text="orgName"
+          <v-select v-model="newProcessStep.owningPositions"
+                    :items="owningPositions"
+                    no-data-text="No Positions Available"
+                    label="Select Owning Positions"
+                    item-text="position"
                     item-value="id"
+                    multiple
+                    return-object
           ></v-select>
 <!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
           <!--  per scott: temporarily removing requirement for orgId        -->
@@ -102,7 +104,9 @@
                 </v-btn>
               </td>
               <td class="text-left">{{ item.processStepName }}</td>
-              <td class="text-left">{{ item.orgName }}</td>
+              <td class="text-left">
+                <span v-for="(op,idx) in item.owningPositions" :key="idx">{{op.position}},</span>
+              </td>
               <td class="text-left">{{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date') }}</td>
               <td class="text-center">
                 <input type="checkbox" v-model="item.initialStep"
@@ -187,7 +191,7 @@ export default {
       newProcessStep: {},
       availableProcessSteps: [],
       processStepStatusTypes: [],
-      owningOrgs: [],
+      owningPositions: [],
       processId: this.$route.params.id,
       companyId: this.$store.state.user.details.companyId,
       changesMade: false,
@@ -205,7 +209,7 @@ export default {
       headers: [
         { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
         { text: 'Name', value: 'processStepName', sortable: false},
-        { text: 'Owning Org', value: 'orgName', sortable: false},
+        { text: 'Owning Positions', value: 'positionName', sortable: false},
         { text: 'Last Modified', value: 'dateModified', sortable: false},
         { text: 'Initial', value: 'initial', sortable: false},
         { text: 'Status Type', value: 'statusType', sortable: false},
@@ -293,15 +297,14 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getOwningOrgs () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    async getPositions() {
       try {
-        const {data} = await getRequest(`/org/owning`)
-        this.owningOrgs = data
+        const {data} = await getRequest(`/position`)
+        this.owningPositions = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
