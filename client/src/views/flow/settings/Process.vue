@@ -105,7 +105,7 @@
               </td>
               <td class="text-left">{{ item.processStepName }}</td>
               <td class="text-left">
-                <span v-for="(op,idx) in item.owningPositions" :key="idx">{{op.position}},</span>
+                <span v-for="(op,idx) in item.owningPositions" :key="idx">{{op.position}}<br/></span>
               </td>
               <td class="text-left">{{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date') }}</td>
               <td class="text-center">
