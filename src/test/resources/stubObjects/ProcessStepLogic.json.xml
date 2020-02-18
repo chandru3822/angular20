@@ -1,5 +1,21 @@
 <json>
   <processStepLogic.true><![CDATA[
+  [{
+    "id": 43,
+    "processStepRequirementId": 23,
+    "operationTypeId": null,
+    "createdById": 2403504,
+    "modifiedById": null,
+    "sqlOrder": 0,
+    "requirementNbr": 16,
+    "operationType": null,
+    "operationCode": null,
+    "archived": false,
+    "processStepRequirementImmutable": true
+  }]
+  ]]></processStepLogic.true>
+
+  <processStepLogic.trueAndTrueAndTrue><![CDATA[
     [{
       "id": 36,
       "processStepRequirementId": 20,
@@ -65,5 +81,5 @@
       "archived": false,
       "processStepRequirementImmutable": true
     }]
-  ]]></processStepLogic.true>
+  ]]></processStepLogic.trueAndTrueAndTrue>
 </json>
