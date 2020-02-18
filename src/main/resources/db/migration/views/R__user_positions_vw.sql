@@ -20,11 +20,12 @@ select u.id                                      as user_id,
        u.email,
        u.phone_number,
        p.available_to_children,
-       (select  ust.id
+       (select  cust.id
         from flow.user_status_type ust
-                 inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id
+          inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id
         where cust.company_id = p.company_id
-          and ust.user_id = u.id) as user_status
+          and ust.user_id = u.id
+          and ust.archived is not true) as company_user_status_type_id
 from flow."user" u
          left join flow.user_position up on up.user_id = u.id
          left join flow.position p on p.id = up.position_id

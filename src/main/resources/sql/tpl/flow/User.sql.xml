@@ -6,7 +6,6 @@
                 upv.company_id,
                 upv.first_name || ' ' || upv.last_name as full_name,
                 upv.email,
-                upv.user_status_type,
                 upv.primary_flag,
                 upv.start_date,
                 upv.end_date,
@@ -14,16 +13,19 @@
                 upv.position_id,
                 upv.user_position_id,
                 upv.phone_number,
-                upv.user_status_type_id,
-                upv.hierarchy
+                upv.company_user_status_type_id,
+                uphv.hierarchy
       from flow.user_positions_vw upv
+            inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
+                                                     and uphv.position_id = upv.position_id
+                                                     and uphv.org_id = upv.org_id
       where upv.company_id = :companyId
         and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'
         and coalesce(upv.email, '') ILIKE '%' || :email || '%'
         and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-        and upv.user_status_type_id in (:statuses)
+        and upv.company_user_status_type_id in (:statuses)
         and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
         and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
@@ -31,12 +33,13 @@
       select u.id,u.first_name,u.last_name,uc.company_id,
              u.first_name || ' ' || u.last_name as full_name,
              u.email,
-             ust.user_status_type,null,null,
+             null,null,
              null,null,null,
-             null,null,null,null
+             null,null,ust.company_user_status_type_id,null
       from flow."user" u
                inner join flow.user_company uc on u.id = uc.user_id
-               inner join flow.user_status_type ust on ust.id = u.user_status_type_id
+               inner join flow.company_user_status_type cust on cust.company_id = uc.company_id
+               inner join flow.user_status_type ust on ust.company_user_status_type_id = cust.id and ust.user_id = u.id
       where uc.company_id = :companyId
           and not exists (select up2.id from flow.user_position up2
                     inner join flow.position p on p.id = up2.position_id
@@ -49,7 +52,7 @@
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then false else 1=1 end
         and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then false else 1=1 end
         and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-          and u.user_status_type_id in (:statuses)
+          and ust.company_user_status_type_id in (:statuses)
       order by last_name, first_name, start_date desc
       limit :limit
       offset :offset;
@@ -58,8 +61,11 @@
 
   <user.searchUserCount><![CDATA[
      with t1 as (
-        select distinct user_id as id
+        select distinct upv.user_id as id
         from flow.user_positions_vw upv
+            inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
+                                                     and uphv.position_id = upv.position_id
+                                                     and uphv.org_id = upv.org_id
         where upv.company_id = :companyId
           and upv.position_level = 0
           and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
@@ -67,7 +73,7 @@
           and upv.last_name ILIKE '%' || :lastName || '%'
           and coalesce(upv.email, '') ILIKE '%' || :email || '%'
           and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-          and upv.user_status_type_id in (:statuses)
+          and upv.company_user_status_type_id in (:statuses)
           and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
           and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
           and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
@@ -75,7 +81,8 @@
          select u.id
           from flow."user" u
                    inner join flow.user_company uc on u.id = uc.user_id
-                   inner join flow.user_status_type ust on ust.id = u.user_status_type_id
+                   inner join flow.company_user_status_type cust on cust.company_id = uc.company_id
+                   inner join flow.user_status_type ust on ust.company_user_status_type_id = cust.id and ust.user_id = u.id
           where uc.company_id = :companyId
               and not exists (select up2.id from flow.user_position up2
                         inner join flow.position p on p.id = up2.position_id
@@ -88,7 +95,7 @@
             and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then false else 1=1 end
             and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then false else 1=1 end
             and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-              and u.user_status_type_id in (:statuses)
+              and ust.company_user_status_type_id in (:statuses)
       )
      select count(*)
       from t1
@@ -257,11 +264,17 @@
       and uc.is_default is true
   ]]></user.findUserById>
 
-  <user.getUserStatuses><![CDATA[
+  <user.getCompanyUserStatuses><![CDATA[
       select id,
-             user_status_type
-      from flow.user_status_type
-  ]]></user.getUserStatuses>
+             user_status_type,
+             company_id,
+             has_access,
+             archived
+      from flow.company_user_status_type
+        where company_id = :companyId
+         and archived is not true
+      order by user_status_type
+  ]]></user.getCompanyUserStatuses>
 
   <user.updateDefault><![CDATA[
       update flow.user_company
