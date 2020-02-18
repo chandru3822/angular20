@@ -86,7 +86,6 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            {{this.addressChanged}}
             <v-form ref="address">
               <v-text-field text
                             label="Address"

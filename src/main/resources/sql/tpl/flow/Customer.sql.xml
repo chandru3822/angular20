@@ -234,4 +234,11 @@
            date_modified = now()
     where id = :customerId
   ]]></customer.convertToCustomer>
+
+  <customer.updateGeoLocation><![CDATA[
+    update flow.customer set
+           latitude = :latitude,
+           longitude = :longitude
+    where id = :id
+  ]]></customer.updateGeoLocation>
 </sql>

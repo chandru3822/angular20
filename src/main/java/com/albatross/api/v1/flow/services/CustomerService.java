@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Collections2;
+import com.mapbox.geojson.Point;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -176,17 +177,16 @@ public class CustomerService {
   }
 
   public void getCustomerCoordinates(Customer customer, Long id) {
-    //todo: when the customer is new or the address changes, need to reload/save their lat/long from mapbox
+    //when the customer is new or the address changes, need to reload/save their lat/long from mapbox
     String customerAddress = getCustomerAddress(customer);
     locationUtils.getGeocode(customerAddress, id, new CustomGeoFunction());
-    log.info("after geocode call");
   }
 
   public String getCustomerAddress(Customer customer) {
     StringJoiner sj = new StringJoiner(", ");
     sj.add(customer.getStreet1());
     sj.add(customer.getCity());
-    sj.add(customer.getState() + ( customer.getPostalCode().isEmpty() ? "" : " " + customer.getPostalCode() ));
+    sj.add(customer.getState() + ( null == customer.getPostalCode() ? "" : " " + customer.getPostalCode() ));
 
     return sj.toString();
   }
@@ -301,7 +301,25 @@ public class CustomerService {
 
     @Override
     public void accept(Object geoResult, long id) {
-      log.info(Long.valueOf(id).toString());
+      // note: the coordinates in the returned object are reversed: Long, Lat
+
+      //get the lat and long from point
+      Point point = (Point)geoResult;
+      Double latitude, longitude;
+      List<Double> coordinates = point.coordinates();
+      latitude = coordinates.get(1);
+      longitude = coordinates.get(0);
+
+      if(null != latitude && null != longitude) {
+        //if lat and long then update customer's location
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("latitude", latitude);
+        params.put("longitude", longitude);
+        params.put("id", id);
+
+        sqlCache.update("customer.updateGeoLocation", params);
+      }
+
     }
   }
 }
