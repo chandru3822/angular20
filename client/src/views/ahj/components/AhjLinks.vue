@@ -54,15 +54,22 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No links found
     </div>
+
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-card>
 </template>
 
 <script>
-  import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
   import cloneDeep from 'lodash.clonedeep'
+  import Snackbar from '@/components/Snackbar'
+  import { AppMutations } from '@/stores/AppStore'
+  import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjLinks",
+    components: {
+      Snackbar
+    },
     props: {
       title: {
         type: String
@@ -90,6 +97,7 @@
     },
     data () {
       return {
+        snackbar: {},
         link: {
           id: null,
           linkTypeId: this.type,
@@ -135,27 +143,65 @@
         this.link = Object.assign({}, link)
       },
       async saveLink() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.link.linkTypeId = this.linkTypeId
 
         if (this.addMode) {
-          const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
-          this.linksCopy.push(cloneDeep(data))
+          try {
+            let res = null
+            if (this.itemType === 'utility') {
+              res = await postRequest(`/ahjUtility/${this.itemId}/links`, this.link, 'blueraven')
+            } else {
+              res = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
+            }
+            this.linksCopy.push(cloneDeep(res.data))
+            this.snackbar = getSnackbar('SUCCESS', 'Link added')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error adding link')
+          }
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
-          let updatedLinkIndex = this.linksCopy.findIndex(i => i.id === data.id)
-          this.linksCopy[updatedLinkIndex].name = data.name
-          this.linksCopy[updatedLinkIndex].link = data.link
-          this.linksCopy[updatedLinkIndex].username = data.username
-          this.linksCopy[updatedLinkIndex].password = data.password
-          this.linksCopy[updatedLinkIndex].notes = data.notes
+          try {
+            let res = null
+            if (this.itemType === 'utility') {
+              res = await putRequest(`/ahjUtility/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
+            } else {
+              res = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
+            }
+            let updatedLinkIndex = this.linksCopy.findIndex(i => i.id === res.data.id)
+            this.linksCopy[updatedLinkIndex].name = res.data.name
+            this.linksCopy[updatedLinkIndex].link = res.data.link
+            this.linksCopy[updatedLinkIndex].username = res.data.username
+            this.linksCopy[updatedLinkIndex].password = res.data.password
+            this.linksCopy[updatedLinkIndex].notes = res.data.notes
+            this.snackbar = getSnackbar('SUCCESS', 'Link updated')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error adding link')
+          }
           this.editMode = false
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteLink() {
-        let deletedLinkIndex = await deleteRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, 'blueraven')
-        this.linksCopy.splice([deletedLinkIndex], 1)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          if (this.itemType === 'utility') {
+            await putRequest(`/ahjUtility/links/${this.link.id}/archive`, null, 'blueraven')
+          } else {
+            await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}/archive`, null, 'blueraven')
+          }
+          let deletedLinkIndex = this.linksCopy.findIndex(i => i.id === this.link.id)
+          this.linksCopy.splice(deletedLinkIndex, 1)
+          this.snackbar = getSnackbar('SUCCESS', 'Link deleted')
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error deleting link')
+        }
         this.editMode = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
   }

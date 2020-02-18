@@ -56,18 +56,23 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       This checklist doesn't have any items
     </div>
+
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-card>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
   import draggable from 'vuedraggable'
+  import Snackbar from '@/components/Snackbar'
+  import { AppMutations } from '@/stores/AppStore'
+  import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjChecklist",
     components: {
-      draggable
+      draggable,
+      Snackbar
     },
     props: {
       title: {
@@ -96,6 +101,7 @@
     },
     data () {
       return {
+        snackbar: {},
         checklistItem: {
           id: null,
           checklistTypeId: this.checklistTypeId,
@@ -131,25 +137,63 @@
         this.checklistItem = Object.assign({}, item)
       },
       async saveItem() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.checklistItem.checklistTypeId = this.checklistTypeId
 
         if (this.addMode) {
           this.checklistItem.displayOrder = this.checklistItemsCopy.length
-          const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist`, this.checklistItem, 'blueraven')
-          this.checklistItemsCopy.push(cloneDeep(data))
+
+          try {
+            let res = null
+            if (this.itemType === 'utility') {
+              res = await postRequest(`/ahjUtility/${this.itemId}/checklist`, this.checklistItem, 'blueraven')
+            } else {
+              res = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist`, this.checklistItem, 'blueraven')
+            }
+            this.checklistItemsCopy.push(cloneDeep(res.data))
+            this.snackbar = getSnackbar('SUCCESS', 'Checklist item added')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error adding checklist item')
+          }
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist/${this.checklistItem.id}`, this.checklistItem, 'blueraven')
-          let updatedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === data.id)
-          this.checklistItemsCopy[updatedItemIndex].description = data.description
+          try {
+            let res = null
+            if (this.itemType === 'utility') {
+              res = await putRequest(`/ahjUtility/${this.itemId}/checklist/${this.checklistItem.id}`, this.checklistItem, 'blueraven')
+            } else {
+              res = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist/${this.checklistItem.id}`, this.checklistItem, 'blueraven')
+            }
+            let updatedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === res.data.id)
+            this.checklistItemsCopy[updatedItemIndex].description = res.data.description
+            this.snackbar = getSnackbar('SUCCESS', 'Checklist item updated')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error updating checklist item')
+          }
           this.editMode = false
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteItem() {
-        await deleteRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist/${this.checklistItem.id}`, 'blueraven')
-        let deletedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === this.checklistItem.id)
-        this.checklistItemsCopy.splice([deletedItemIndex], 1)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          if (this.itemType === 'utility') {
+            await putRequest(`/ahjUtility/checklist/${this.checklistItem.id}/archive`, null, 'blueraven')
+          } else {
+            await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/checklist/${this.checklistItem.id}/archive`, null, 'blueraven')
+          }
+          let deletedItemIndex = this.checklistItemsCopy.findIndex(i => i.id === this.checklistItem.id)
+          this.checklistItemsCopy.splice(deletedItemIndex, 1)
+          this.snackbar = getSnackbar('SUCCESS', 'Checklist item deleted')
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error deleting checklist item')
+        }
         this.editMode = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
   }
@@ -178,6 +222,7 @@
   }
   .v-list-item__title {
     font-size: 0.95em !important;
+    text-align: left;
     max-width: 525px;
   }
   .checklist-btns {
