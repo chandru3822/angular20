@@ -74,15 +74,22 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       {{ contactTypeId === 7 ? 'No locations found' : 'No contacts found' }}
     </div>
+
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-card>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import Snackbar from '@/components/Snackbar'
+  import { AppMutations } from '@/stores/AppStore'
+  import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjContact",
+    components: {
+      Snackbar
+    },
     props: {
       title: {
         type: String
@@ -110,6 +117,7 @@
     },
     data () {
       return {
+        snackbar: {},
         contact: {
           id: null,
           address: null,
@@ -142,30 +150,67 @@
         this.contact = Object.assign({}, contact)
       },
       async saveContact() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.contact.contactTypeId = this.contactTypeId
 
         if (this.addMode) {
-          const {data} = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts`, this.contact, 'blueraven')
-          this.contactsCopy.push(cloneDeep(data))
+          try {
+            let res = null
+            if (this.itemType === 'utility') {
+              res = await postRequest(`/ahjUtility/${this.itemId}/contacts`, this.contact, 'blueraven')
+            } else {
+              res = await postRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts`, this.contact, 'blueraven')
+            }
+            this.contactsCopy.push(cloneDeep(res.data))
+            this.snackbar = getSnackbar('SUCCESS', 'Contact added')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error adding contact')
+          }
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
-          let updatedContactIndex = this.contactsCopy.findIndex(i => i.id === data.id)
-          this.contactsCopy[updatedContactIndex].name = data.name
-          this.contactsCopy[updatedContactIndex].title = data.title
-          this.contactsCopy[updatedContactIndex].phoneNumber = data.phoneNumber
-          this.contactsCopy[updatedContactIndex].email = data.email
-          this.contactsCopy[updatedContactIndex].hours = data.hours
-          this.contactsCopy[updatedContactIndex].address = data.address
-          this.contactsCopy[updatedContactIndex].notes = data.notes
+          try {
+            let res = null
+            if (this.itemType === 'utility') {
+              res = await putRequest(`/ahjUtility/contacts/${this.contact.id}`, this.contact, 'blueraven')
+            } else {
+              res = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
+            }
+            let updatedContactIndex = this.contactsCopy.findIndex(i => i.id === res.data.id)
+            this.contactsCopy[updatedContactIndex].name = res.data.name
+            this.contactsCopy[updatedContactIndex].title = res.data.title
+            this.contactsCopy[updatedContactIndex].phoneNumber = res.data.phoneNumber
+            this.contactsCopy[updatedContactIndex].email = res.data.email
+            this.contactsCopy[updatedContactIndex].hours = res.data.hours
+            this.contactsCopy[updatedContactIndex].address = res.data.address
+            this.contactsCopy[updatedContactIndex].notes = res.data.notes
+            this.snackbar = getSnackbar('SUCCESS', 'Contact updated')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error adding contact')
+          }
           this.editMode = false
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteContact() {
-        await deleteRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, 'blueraven')
-        let deletedContactIndex = this.contactsCopy.findIndex(i => i.id === this.contact.id)
-        this.contactsCopy.splice([deletedContactIndex], 1)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          if (this.itemType === 'utility') {
+            await putRequest(`/ahjUtility/contacts/${this.contact.id}/archive`, null, 'blueraven')
+          } else {
+            await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, null, 'blueraven')
+          }
+          let deletedContactIndex = this.contactsCopy.findIndex(i => i.id === this.contact.id)
+          this.contactsCopy.splice([deletedContactIndex], 1)
+          this.snackbar = getSnackbar('SUCCESS', 'Contact deleted')
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error deleting contact')
+        }
         this.editMode = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
   }
@@ -220,6 +265,7 @@
   }
   .horizontal-dl dd {
     width: 65%;
+    text-align: left !important;
   }
   /*End definition list styles*/
 </style>

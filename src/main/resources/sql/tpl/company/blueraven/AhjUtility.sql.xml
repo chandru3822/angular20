@@ -260,6 +260,53 @@
     ]]>
   </ahj.utility.detailById>
 
+  <!-- CONTACTS STUFF -->
+  <ahj.utility.contact.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_contact WHERE id = :id
+    ]]>
+  </ahj.utility.contact.findById>
+
+  <ahj.utility.contact.add>
+    <![CDATA[
+      WITH auc AS (
+        insert into brs.ahj_contact (name, title, email, phone_number, address, notes, hours, date_created, created_by_id, date_modified, modified_by_id, contact_type_id)
+        values (:name, :title, :email, :phoneNumber, :address, :notes, :hours, now(), :currentUser, now(), :currentUser, :contactTypeId)
+        returning id
+      )
+      INSERT INTO brs.ahj_utility_contact (ahj_utility_id, ahj_contact_id)
+      SELECT :ahjUtilityId, auc.id
+      FROM auc
+      RETURNING ahj_contact_id;
+    ]]>
+  </ahj.utility.contact.add>
+
+  <ahj.utility.contact.update>
+    <![CDATA[
+      UPDATE brs.ahj_contact
+      SET name = :name,
+          title = :title,
+          email = :email,
+          phone_number = :phoneNumber,
+          address = :address,
+          notes = :notes,
+          hours = :hours,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :contactId
+    ]]>
+  </ahj.utility.contact.update>
+
+  <ahj.utility.contact.delete>
+    <![CDATA[
+      UPDATE brs.ahj_contact
+      SET archived = TRUE,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :contactId
+    ]]>
+  </ahj.utility.contact.delete>
+
   <!-- REQUIREMENTS STUFF -->
   <ahj.utility.requirement.history>
     <![CDATA[

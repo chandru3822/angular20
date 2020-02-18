@@ -1,7 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjUtility;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjUtilityDetail;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.company.blueraven.services.AhjUtilityService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,4 +42,26 @@ public class AhjUtilityController {
     public Optional<AhjUtilityDetail> editUtility(@RequestBody AhjUtility utility) {
         return ahjUtilityService.updateUtility(utility);
     }
+
+    // CONTACTS
+    @PostMapping(value = "/{id}/contacts")
+    public Optional<AhjContact> addUtilityContact(@PathVariable Long id, @RequestBody AhjContact utilityContact) {
+        return ahjUtilityService.addUtilityContact(id, utilityContact);
+    }
+
+    @PutMapping(value = "/contacts/{contactId}")
+    public Optional<AhjContact> updateUtilityContact(@PathVariable Long contactId, @RequestBody AhjContact utilityContact) {
+        return ahjUtilityService.updateUtilityContact(contactId, utilityContact);
+    }
+
+    @PutMapping(value = "/contacts/{contactId}/archive")
+    public void deleteUtilityContact(@PathVariable Long contactId) {
+        ahjUtilityService.deleteUtilityContact(contactId);
+    }
+
+    // CHECKLISTS
+
+
+    // LINKS
+
 }
