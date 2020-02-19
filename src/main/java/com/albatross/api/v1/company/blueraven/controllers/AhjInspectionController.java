@@ -106,14 +106,14 @@ public class AhjInspectionController {
     }
 
     // NOTE TEMPLATES
-    @RequestMapping(value = "/{inspectionId}/noteTemplates", method = RequestMethod.POST)
+    @PostMapping(value = "/{inspectionId}/noteTemplates")
     public Optional<AhjNoteTemplate> addNoteTemplate(@PathVariable Long ahjId,
                                                      @PathVariable Long inspectionId,
                                                      @RequestBody AhjNoteTemplate noteTemplate) {
       return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, null, noteTemplate);
     }
 
-    @RequestMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}")
     public Optional<AhjNoteTemplate> updateNoteTemplate(@PathVariable Long ahjId,
                                                         @PathVariable Long inspectionId,
                                                         @PathVariable Long noteTemplateId,
@@ -121,7 +121,7 @@ public class AhjInspectionController {
       return ahjInspectionService.saveNoteTemplate(ahjId, inspectionId, noteTemplateId, noteTemplate);
     }
 
-    @RequestMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}", method = RequestMethod.DELETE)
+    @PutMapping(value = "/{inspectionId}/noteTemplates/{noteTemplateId}/archive")
     public void deleteNoteTemplate(@PathVariable Long ahjId,
                                    @PathVariable Long inspectionId,
                                    @PathVariable Long noteTemplateId) {

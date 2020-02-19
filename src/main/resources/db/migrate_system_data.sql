@@ -227,6 +227,7 @@ insert into flow.owner_type(owner_type) values('CUSTOMER');
 insert into flow.owner_type(owner_type) values('PROJECT');
 
 insert into flow.owner_position_id(company_id,position_ids,owner_type_id)values((select id from flow.company where company_name = 'Blue Raven Solar'),'{4}',1);
+insert into flow.owner_position_id(company_id,position_ids,owner_type_id)values((select id from flow.company where company_name = 'Blue Raven Solar'),'{4}',2);
 
 INSERT INTO flow.data_type(data_type)
 VALUES ('date');

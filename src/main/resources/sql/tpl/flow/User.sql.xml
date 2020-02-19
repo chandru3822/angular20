@@ -203,7 +203,6 @@
        u.last_name,
        u.email,
        u.username,
-       u.password,
        cust.has_access,
        coalesce(u.default_company_id, uc.company_id) as company_id,
        ( select parent_company_id
