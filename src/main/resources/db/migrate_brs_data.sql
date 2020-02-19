@@ -3981,19 +3981,58 @@ VALUES ((select id from flow.company where company_name = 'Blue Raven Solar'),
         (select id from flow.process where process_name = 'Generic Blueraven Process'),
         (select id from flow.status_type where status_type.status_type = 'Active'));
 
+-- add the company project status types
+insert into flow.project_status_type (project_status_type)
+values ('Active'), ('Cancelled'), ('On Hold');
+
+insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'Active', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'Cancelled', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'On Hold', 2350555);
+
+insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'B+C Electric'), 'Active', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'B+C Electric'), 'Cancelled', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'B+C Electric'), 'On Hold', 2350555);
+
+insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Eco Lux Solar'), 'Active', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Eco Lux Solar'), 'Cancelled', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Eco Lux Solar'), 'On Hold', 2350555);
+
+insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Salient Solar'), 'Active', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Salient Solar'), 'Cancelled', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Salient Solar'), 'On Hold', 2350555);
+
+insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Solenrgi'), 'Active', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Solenrgi'), 'Cancelled', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Solenrgi'), 'On Hold', 2350555);
+
+insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Sun Run'), 'Active', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Sun Run'), 'Cancelled', 2350555),
+       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Sun Run'), 'On Hold', 2350555);
+
 -- copy over the common deal/project fields
 INSERT INTO flow.project (id,
                           customer_id,
                           project_name,
                           created_by_id,
                           company_process_id,
-                          date_created)
+                          date_created,
+                          company_project_status_type_id)
     (SELECT id,
             customer_id,
             customer_name,
             2350555,
             (SELECT cp.id FROM flow.company_process cp INNER JOIN flow.process p ON p.id = cp.process_id WHERE cp.company_id in (select id from flow.company where company_name = 'Blue Raven Solar')),
-            now()
+            now(),
+            case when current_stage_id in (2,3) then (select id from flow.company_project_status_type where project_status_type = 'Cancelled' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
+                 when current_stage_id not in (2,3) and on_hold_date is not null then (select id from flow.company_project_status_type where project_status_type = 'On Hold' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar'))
+                 else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) end
+
      FROM blueraven.deal where deal.customer_id IS NOT NULL
         and originator_id != 5);  -- TODO remove where clause; we want all deals migrated
 -- ask Judson how to resolve these deals
