@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
 
-// TODO: come back to this after the migration of custom fields has taken place
 /**
  * Bridges the gap between the SQL query results obtained in
  * {@link AhjPermitService#getPermitCycleTimeStats(Long, java.time.LocalDate, java.time.LocalDate)}

@@ -326,70 +326,69 @@
           </v-card-text>
         </v-card>
 
-        <!-- TODO: come back to this after the migration of custom fields has taken place -->
         <!-- PERMITTING CYCLE TIMES -->
-<!--        <v-card style="overflow-x: auto">-->
-<!--          <v-card-title class="primaryCustom white&#45;&#45;text font-weight-bold">-->
-<!--            Permitting Cycle Times-->
-<!--          </v-card-title>-->
-<!--          <v-card-text class="mt-4">-->
-<!--            <v-select v-model="permittingCycleTimes.timePeriod"-->
-<!--                      :items="timePeriods"-->
-<!--                      @change="setTimePeriodDates"-->
-<!--                      label="Viewing Data For:"-->
-<!--                      filled-->
-<!--            ></v-select>-->
-<!--            <p style="margin: -15px 0">{{permittingCycleTimes.startDate}} to {{permittingCycleTimes.endDate}}</p>-->
-<!--          </v-card-text>-->
-<!--          <table class="pa-3" style="width: 100%">-->
-<!--            <thead>-->
-<!--              <tr>-->
-<!--                <th>{{ permittingCycleTimes.headers.approvedHeaders[0] }}</th>-->
-<!--                <th class="pr-1 centered">{{ permittingCycleTimes.headers.approvedHeaders[1] }}</th>-->
-<!--                <th class="centered">{{ permittingCycleTimes.headers.approvedHeaders[2] }}</th>-->
-<!--              </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--              <tr>-->
-<!--                <td>{{ permittingCycleTimes.headers.approvedSubheaders[0] }}</td>-->
-<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.avgTime }}</td>-->
-<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.avgTime }}</td>-->
-<!--              </tr>-->
-<!--              <tr>-->
-<!--                <td>{{ permittingCycleTimes.headers.approvedSubheaders[1] }}</td>-->
-<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.medianTime }}</td>-->
-<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.medianTime }}</td>-->
-<!--              </tr>-->
-<!--              <tr>-->
-<!--                <td>{{ permittingCycleTimes.headers.approvedSubheaders[2] }}</td>-->
-<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.approvals }}</td>-->
-<!--                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.approvals }}</td>-->
-<!--              </tr>-->
-<!--            </tbody>-->
-<!--            <thead>-->
-<!--              <tr>-->
-<!--                <th>{{ permittingCycleTimes.headers.pendingHeaders[0] }}</th>-->
-<!--              </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--              <tr>-->
-<!--                <td>{{ permittingCycleTimes.headers.pendingSubheaders[0] }}</td>-->
-<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.avgAge }}</td>-->
-<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.avgAge }}</td>-->
-<!--              </tr>-->
-<!--              <tr>-->
-<!--                <td>{{ permittingCycleTimes.headers.pendingSubheaders[1] }}</td>-->
-<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.medianAge }}</td>-->
-<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.medianAge }}</td>-->
-<!--              </tr>-->
-<!--              <tr>-->
-<!--                <td>{{ permittingCycleTimes.headers.pendingSubheaders[2] }}</td>-->
-<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.maxAge }}</td>-->
-<!--                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.maxAge }}</td>-->
-<!--              </tr>-->
-<!--            </tbody>-->
-<!--          </table>-->
-<!--        </v-card>-->
+        <v-card style="overflow-x: auto">
+          <v-card-title class="primaryCustom white--text font-weight-bold">
+            Permitting Cycle Times
+          </v-card-title>
+          <v-card-text class="mt-4">
+            <v-select v-model="permittingCycleTimes.timePeriod"
+                      :items="timePeriods"
+                      @change="getPermitCycleTimes"
+                      label="Viewing Data For:"
+                      filled
+            ></v-select>
+            <p style="margin: -15px 0">{{ permittingCycleTimes.startDate }} to {{ permittingCycleTimes.endDate }}</p>
+          </v-card-text>
+          <table class="pa-3" style="width: 100%">
+            <thead>
+              <tr>
+                <th>{{ permittingCycleTimes.headers.approvedHeaders[0] }}</th>
+                <th class="pr-1 centered">{{ permittingCycleTimes.headers.approvedHeaders[1] }}</th>
+                <th class="centered">{{ permittingCycleTimes.headers.approvedHeaders[2] }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ permittingCycleTimes.headers.approvedSubheaders[0] }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.avgTime }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.avgTime }}</td>
+              </tr>
+              <tr>
+                <td>{{ permittingCycleTimes.headers.approvedSubheaders[1] }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.medianTime }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.medianTime }}</td>
+              </tr>
+              <tr>
+                <td>{{ permittingCycleTimes.headers.approvedSubheaders[2] }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.permits.approvals }}</td>
+                <td class="centered">{{ permittingCycleTimes.data.approvedPermits.asBuilts.approvals }}</td>
+              </tr>
+            </tbody>
+            <thead>
+              <tr>
+                <th>{{ permittingCycleTimes.headers.pendingHeaders[0] }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ permittingCycleTimes.headers.pendingSubheaders[0] }}</td>
+                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.avgAge }}</td>
+                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.avgAge }}</td>
+              </tr>
+              <tr>
+                <td>{{ permittingCycleTimes.headers.pendingSubheaders[1] }}</td>
+                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.medianAge }}</td>
+                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.medianAge }}</td>
+              </tr>
+              <tr>
+                <td>{{ permittingCycleTimes.headers.pendingSubheaders[2] }}</td>
+                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.permits.maxAge }}</td>
+                <td style="text-align: center">{{ permittingCycleTimes.data.pendingPermits.asBuilts.maxAge }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </v-card>
       </v-col>
     </v-row>
 
@@ -490,52 +489,54 @@
       customFieldGroupAssignments: [],
       approvalRequiredOptions: [{ id: null, name: '' }],
       submittalMethods: [{ id: null, name: '' }],
-      // timePeriods: [
-      //   'This Week',
-      //   'This Period',
-      //   'This Year',
-      //   'Last Week',
-      //   'Last Period',
-      //   'Last Year',
-      //   'Last Six Weeks'
-      // ],
-      // permittingCycleTimes: {
-      //   timePeriod: 'Last Six Weeks',
-      //   startDate: moment().subtract(6, 'w').format('MM/DD/YYYY'),
-      //   endDate: moment().format('MM/DD/YYYY'),
-      //   headers: {
-      //     approvedHeaders: ['Approved Permits', 'Permits', 'As-Builts'],
-      //     approvedSubheaders: ['Average Cycle Time', 'Median Cycle Time', '# of Approvals'],
-      //     pendingHeaders: ['Permits Pending Approval'],
-      //     pendingSubheaders: ['Average Age', 'Median Age', 'Max Age']
-      //   },
-      //   data: {
-      //     approvedPermits: {
-      //       permits: {
-      //         avgTime: 0,
-      //         medianTime: 0,
-      //         approvals: 0
-      //       },
-      //       asBuilts: {
-      //         avgTime: 0,
-      //         medianTime: 0,
-      //         approvals: 0
-      //       }
-      //     },
-      //     pendingPermits: {
-      //       permits: {
-      //         avgAge: 0,
-      //         medianAge: 0,
-      //         maxAge: 0
-      //       },
-      //       asBuilts: {
-      //         avgAge: 0,
-      //         medianAge: 0,
-      //         maxAge: 0
-      //       }
-      //     }
-      //   }
-      // },
+      weeksInPeriod: 4,
+      periodsInYear: 13,
+      timePeriods: [
+        'This Week',
+        'This Period',
+        'This Year',
+        'Last Week',
+        'Last Period',
+        'Last Year',
+        'Last Six Weeks'
+      ],
+      permittingCycleTimes: {
+        timePeriod: 'Last Six Weeks',
+        startDate: moment().subtract(6, 'w').format('MM/DD/YYYY'),
+        endDate: moment().format('MM/DD/YYYY'),
+        headers: {
+          approvedHeaders: ['Approved Permits', 'Permits', 'As-Builts'],
+          approvedSubheaders: ['Average Cycle Time', 'Median Cycle Time', '# of Approvals'],
+          pendingHeaders: ['Permits Pending Approval'],
+          pendingSubheaders: ['Average Age', 'Median Age', 'Max Age']
+        },
+        data: {
+          approvedPermits: {
+            permits: {
+              avgTime: 0,
+              medianTime: 0,
+              approvals: 0
+            },
+            asBuilts: {
+              avgTime: 0,
+              medianTime: 0,
+              approvals: 0
+            }
+          },
+          pendingPermits: {
+            permits: {
+              avgAge: 0,
+              medianAge: 0,
+              maxAge: 0
+            },
+            asBuilts: {
+              avgAge: 0,
+              medianAge: 0,
+              maxAge: 0
+            }
+          }
+        }
+      },
       businessLicenseMenu: false,
       contractorLicenseMenu: false,
       otherLicenseMenu: false,
@@ -552,43 +553,75 @@
       },
       documents: []
     }),
+    computed: {
+      currentPeriodNum() {
+        return Math.ceil(moment().isoWeek() / this.weeksInPeriod) - 1
+      }
+    },
     methods: {
-      // setTimePeriodDates() {
-      //   switch (this.permittingCycleTimes.timePeriod) {
-      //     case 'This Week':
-      //       this.permittingCycleTimes.startDate = moment().startOf('w').format('MM/DD/YYYY')
-      //       this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
-      //       break
-      //     case 'This Period':
-      //       this.permittingCycleTimes.startDate = moment().startOf('W').format('MM/DD/YYYY')
-      //       this.permittingCycleTimes.endDate = moment().startOf('w').add(4, 'w').format('MM/DD/YYYY')
-      //       break
-      //     case 'This Year':
-      //       this.permittingCycleTimes.startDate = moment().startOf('y').format('MM/DD/YYYY')
-      //       this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
-      //       break
-      //     case 'Last Week':
-      //       this.permittingCycleTimes.startDate = moment().startOf('w').subtract(1, 'w').format('MM/DD/YYYY')
-      //       this.permittingCycleTimes.endDate = moment().endOf('W').subtract(1, 'w').format('MM/DD/YYYY')
-      //       break
-      //     case 'Last Period':
-      //       this.permittingCycleTimes.startDate = moment().startOf('W').subtract(4, 'w').format('MM/DD/YYYY')
-      //       this.permittingCycleTimes.endDate = moment().startOf('w').format('MM/DD/YYYY')
-      //       break
-      //     case 'Last Year':
-      //       this.permittingCycleTimes.startDate = moment().startOf('y').subtract(1, 'y').format('MM/DD/YYYY')
-      //       this.permittingCycleTimes.endDate = moment().endOf('y').subtract(1, 'y').format('MM/DD/YYYY')
-      //       break
-      //     case 'Last Six Weeks':
-      //       this.permittingCycleTimes.startDate = moment().subtract(6, 'w').format('MM/DD/YYYY')
-      //       this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
-      //       break
-      //     default:
-      //       this.permittingCycleTimes.startDate = moment().subtract(6, 'w').format('MM/DD/YYYY')
-      //       this.permittingCycleTimes.endDate = moment().format('MM/DD/YYYY')
-      //       break
-      //   }
-      // },
+      startOfPeriod(periodNum) {
+        periodNum = periodNum % this.periodsInYear
+        return moment().startOf('isoWeek').isoWeek(periodNum * this.weeksInPeriod + 1)
+      },
+      endOfPeriod(periodNum) {
+        periodNum = periodNum % this.periodsInYear
+        return this.startOfPeriod(periodNum).endOf('isoWeek').add(this.weeksInPeriod - 1, 'weeks')
+      },
+      setTimePeriodDates() {
+        let dateFormat = 'MM/DD/YYYY'
+
+        switch (this.permittingCycleTimes.timePeriod) {
+          case 'This Week':
+            this.permittingCycleTimes.startDate = moment().startOf('w').format(dateFormat)
+            this.permittingCycleTimes.endDate = moment().format(dateFormat)
+            break
+          case 'This Period':
+            this.permittingCycleTimes.startDate = this.startOfPeriod(this.currentPeriodNum).format(dateFormat)
+            this.permittingCycleTimes.endDate = this.endOfPeriod(this.currentPeriodNum).format(dateFormat)
+            break
+          case 'This Year':
+            this.permittingCycleTimes.startDate = moment().startOf('y').format(dateFormat)
+            this.permittingCycleTimes.endDate = moment().format(dateFormat)
+            break
+          case 'Last Week':
+            this.permittingCycleTimes.startDate = moment().startOf('w').subtract(1, 'w').format(dateFormat)
+            this.permittingCycleTimes.endDate = moment().endOf('W').subtract(1, 'w').format(dateFormat)
+            break
+          case 'Last Period':
+            this.permittingCycleTimes.startDate = this.startOfPeriod(this.currentPeriodNum - 1).format(dateFormat)
+            this.permittingCycleTimes.endDate = this.endOfPeriod(this.currentPeriodNum - 1).format(dateFormat)
+            break
+          case 'Last Year':
+            this.permittingCycleTimes.startDate = moment().startOf('y').subtract(1, 'y').format(dateFormat)
+            this.permittingCycleTimes.endDate = moment().startOf('y').format(dateFormat)
+            break
+          case 'Last Six Weeks':
+            this.permittingCycleTimes.startDate = moment().subtract(6, 'w').format(dateFormat)
+            this.permittingCycleTimes.endDate = moment().format(dateFormat)
+            break
+          default:
+            this.permittingCycleTimes.startDate = moment().subtract(6, 'w').format(dateFormat)
+            this.permittingCycleTimes.endDate = moment().format(dateFormat)
+        }
+      },
+      async getPermitCycleTimes() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.setTimePeriodDates()
+
+        try {
+          let params = { start: this.permittingCycleTimes.startDate, end: this.permittingCycleTimes.endDate }
+          const {data} = await getRequestWithParams(`/ahj/${this.ahjId}/permitCycleTimes`, {params}, 'blueraven')
+
+          if (data) {
+            this.permittingCycleTimes.data = cloneDeep(data)
+            console.log("this.permittingCycleTimes:", this.permittingCycleTimes)
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving permit cycle times')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
       reformatDates() {
         // Reformat dates to remove timestamps
         this.ahjPermit.businessLicenseExpirationDate = this.ahjPermit.businessLicenseExpirationDate ? moment(this.ahjPermit.businessLicenseExpirationDate).format('YYYY-MM-DD') : null
@@ -671,10 +704,11 @@
       this.ahjId = parseInt(this.$route.params.ahjId)
       this.getAhjPermit().then(() => {
         this.reformatDates()
+        this.getPermitCycleTimes()
         this.getCustomFieldGroupAssignmentsForScreen()
-        this.dataReady = true
         // turned off for now.
         // this.getDocuments().then(() => this.dataReady = true)
+        this.dataReady = true
       })
     }
   }
