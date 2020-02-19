@@ -175,10 +175,10 @@
     },
     methods: {
       async getRequirementHistory() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.historyDialog = true
 
         try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
           const {data} = await getRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.originalRequirementId}/history`, 'blueraven')
 
           if (data.length > 0) {
@@ -201,12 +201,12 @@
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async submitChallenge() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.requirementHistory[0].description = this.challenge.details
         this.requirementHistory[0].archived = false
         this.requirementHistory[0].statusId = 3
 
         try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
           await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Challenge submitted')
           this.originalRequirement.hasOpenChallenge = true
@@ -214,8 +214,8 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
         this.closeHistoryDialog()
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async updateChallengeStatus() {
         /* if the user selects "Open" as the status, then the dialog window just closes,                 *
@@ -226,11 +226,11 @@
           return
         }
 
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.requirementHistory[0].archived = false
         this.requirementHistory[0].statusId = this.selectedRequirementStatusId
 
         try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
           await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirementHistory[0].id}`, this.requirementHistory[0], 'blueraven')
           this.originalRequirement.hasOpenChallenge = false
           this.originalRequirement.statusId = this.selectedRequirementStatusId
