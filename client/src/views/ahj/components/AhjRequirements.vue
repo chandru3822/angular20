@@ -265,6 +265,8 @@
           }
         }
 
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
         if (!requirement) {
           this.requirement.requirementTypeId = this.requirementTypeId
           this.requirement.complete = this.requirement.complete ? this.requirement.complete : false
@@ -279,7 +281,6 @@
           this.requirement.archived = false
 
           try {
-            this.$store.commit(AppMutations.SET_LOADING, true)
             const {data} = await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
             let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data.originalRequirementId)
 
@@ -288,35 +289,29 @@
             }
 
             this.snackbar = getSnackbar('SUCCESS', 'Requirement completion status updated')
-            this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating requirement completion status')
-            this.$store.commit(AppMutations.SET_LOADING, false)
           }
 
         // runs when user clicks Add button
         } else if (this.addMode) {
           try {
-            this.$store.commit(AppMutations.SET_LOADING, true)
             const {data} = await postRequest(`/ahj/${this.itemId}/${this.itemType}/requirement`, this.requirement, 'blueraven')
             this.requirementsCopy.push(cloneDeep(data))
             let addedRequirementIndex = this.requirementsCopy.findIndex(i => i.id === data.id)
             this.requirementsCopy[addedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
 
-            this.addMode = false
             this.snackbar = getSnackbar('SUCCESS', 'Requirement added')
-            this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error adding requirement')
-            this.$store.commit(AppMutations.SET_LOADING, false)
           }
+          this.addMode = false
 
         // runs when user clicks Update button
         } else {
           try {
-            this.$store.commit(AppMutations.SET_LOADING, true)
             this.requirement.archived = false
             const {data} = await putRequest(`/ahj/${this.itemId}/${this.itemType}/requirement/${this.requirement.id}`, this.requirement, 'blueraven')
             let updatedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === data.originalRequirementId)
@@ -329,33 +324,34 @@
               this.requirementsCopy[updatedRequirementIndex].formattedDateCreated = moment(data.dateCreated).format('MM/DD/YY h:mm A')
             }
 
-            this.editMode = false
             this.snackbar = getSnackbar('SUCCESS', 'Requirement updated')
-            this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
-            this.$store.commit(AppMutations.SET_LOADING, false)
           }
+          this.editMode = false
         }
+
         this.requirementsCopy = orderBy(this.requirementsCopy, requirement => requirement.position)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async archiveRequirement(originalRequirementId) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
         try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
           await putRequest(`/ahj/${this.itemType}/requirement/${originalRequirementId}/archive`, null, 'blueraven')
           let archivedRequirementIndex = this.requirementsCopy.findIndex(i => i.originalRequirementId === originalRequirementId)
           this.requirementsCopy.splice(archivedRequirementIndex, 1)
 
-          this.editMode = false
           this.snackbar = getSnackbar('SUCCESS', 'Requirement archived')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error archiving requirement')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
+
+        this.editMode = false
         this.deleteConfirm = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     created() {
