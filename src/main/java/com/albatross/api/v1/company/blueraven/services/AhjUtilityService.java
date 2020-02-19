@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -117,30 +118,11 @@ public class AhjUtilityService {
     return sqlCache.get("ahj.utility.contact.findById", params, AhjContact.class);
   }
 
-  public Optional<AhjContact> addUtilityContact(Long utilityId, AhjContact utilityContact) {
+  public Optional<AhjContact> saveUtilityContact(Long utilityId, Long contactId, AhjContact contact) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUser", currentUser.getId());
-    params.put("name", utilityContact.getName());
-    params.put("title", utilityContact.getTitle());
-    params.put("email", utilityContact.getEmail());
-    params.put("phoneNumber", utilityContact.getPhoneNumber());
-    params.put("address", utilityContact.getAddress());
-    params.put("notes", utilityContact.getNotes());
-    params.put("hours", utilityContact.getHours());
-    params.put("contactTypeId", utilityContact.getContactTypeId());
     params.put("ahjUtilityId", utilityId);
-
-    Long contactId = sqlCache.updateReturningId("ahj.utility.contact.add", params, "id").longValue();
-
-    return getUtilityContactById(contactId);
-  }
-
-  public Optional<AhjContact> updateUtilityContact(Long contactId, AhjContact contact) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
     params.put("currentUser", currentUser.getId());
     params.put("name", contact.getName());
     params.put("title", contact.getTitle());
@@ -150,9 +132,14 @@ public class AhjUtilityService {
     params.put("notes", contact.getNotes());
     params.put("hours", contact.getHours());
     params.put("contactTypeId", contact.getContactTypeId());
-    params.put("contactId", contactId);
 
-    sqlCache.update("ahj.utility.contact.update", params);
+    if (contactId == null) {
+      contactId = sqlCache.updateReturningId("ahj.utility.contact.add", params, "id").longValue();
+    } else {
+      params.put("contactId", contactId);
+      sqlCache.update("ahj.utility.contact.update", params);
+    }
+
     return getUtilityContactById(contactId);
   }
 
@@ -164,6 +151,83 @@ public class AhjUtilityService {
     params.put("currentUser", currentUser.getId());
 
     sqlCache.update("ahj.utility.contact.delete", params);
+  }
+
+  // CHECKLISTS
+  public Optional<AhjChecklistItem> getChecklistItemById(Long id) {
+    HashMap<String, Object> idMap = new HashMap<>();
+    idMap.put("id", id);
+
+    return sqlCache.get("ahj.checklist.findById", idMap, AhjChecklistItem.class);
+  }
+
+  public Optional<AhjChecklistItem> saveChecklistItem(Long utilityId, Long itemId, AhjChecklistItem item) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjUtilityId", utilityId);
+    params.put("description", item.getDescription());
+    params.put("displayOrder", item.getDisplayOrder());
+    params.put("checklistTypeId", item.getChecklistTypeId());
+    params.put("currentUser", currentUser.getId());
+    params.put("failedInspectionResourceId", item.getFailedInspectionResourceId());
+    params.put("failedInspectionDate", item.getFailedInspectionDate());
+    params.put("failedInspectionProject", item.getFailedInspectionProject());
+
+    if (itemId == null) {
+      itemId = sqlCache.updateReturningId("ahj.utility.checklist.add", params, "id").longValue();
+    } else {
+      params.put("id", itemId);
+      sqlCache.update("ahj.utility.checklist.update", params);
+    }
+
+    return getChecklistItemById(itemId);
+  }
+
+  public void deleteChecklistItem(Long itemId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", itemId);
+    params.put("currentUser", currentUser.getId());
+
+    sqlCache.update("ahj.utility.checklist.delete", params);
+  }
+
+  // LINKS
+  public Optional<AhjLink> saveUtilityLink(Long utilityId, Long linkId, AhjLink link) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjUtilityId", utilityId);
+    params.put("name", link.getName());
+    params.put("link", link.getLink());
+    params.put("username", link.getUsername());
+    params.put("password", link.getPassword());
+    params.put("notes", link.getNotes());
+    params.put("currentUser", currentUser.getId());
+    params.put("linkTypeId", link.getLinkTypeId());
+
+    if (linkId == null) {
+      linkId = sqlCache.updateReturningId("ahj.utility.link.add", params, "id").longValue();
+    } else {
+      params.put("id", linkId);
+      sqlCache.update("ahj.utility.link.update", params);
+    }
+
+    HashMap<String, Object> idParam = new HashMap<>();
+    idParam.put("id", linkId);
+    return sqlCache.get("ahj.utility.link.findById", idParam, AhjLink.class);
+  }
+
+  public void deleteUtilityLink(Long linkId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", linkId);
+    params.put("currentUser", currentUser.getId());
+
+    sqlCache.update("ahj.utility.link.delete", params);
   }
 
   // REQUIREMENTS

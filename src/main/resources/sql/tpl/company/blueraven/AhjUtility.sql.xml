@@ -307,6 +307,92 @@
     ]]>
   </ahj.utility.contact.delete>
 
+  <!-- CHECKLISTS STUFF -->
+  <ahj.utility.checklist.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_checklist WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.findById>
+
+  <ahj.utility.checklist.add>
+    <![CDATA[
+      WITH auc AS (
+        insert into brs.ahj_checklist (description, display_order, date_created, created_by_id, date_modified, modified_by_id, checklist_type_id, failed_inspection_resource_id, failed_inspection_date, failed_inspection_project)
+        values (:description, :displayOrder, now(), :currentUser, now(), :currentUser, :checklistTypeId, :failedInspectionResourceId, :failedInspectionDate, :failedInspectionProject)
+        returning id
+      )
+      INSERT INTO brs.ahj_utility_checklist (ahj_utility_id, ahj_checklist_id)
+      SELECT :ahjUtilityId, auc.id
+      FROM auc
+      RETURNING ahj_checklist_id;
+    ]]>
+  </ahj.utility.checklist.add>
+
+  <ahj.utility.checklist.update>
+    <![CDATA[
+      UPDATE brs.ahj_checklist
+      SET description = :description,
+          display_order = :displayOrder,
+          modified_by_id = :currentUser,
+          date_modified = now(),
+          checklist_type_id = :checklistTypeId,
+          failed_inspection_resource_id = :failedInspectionResourceId,
+          failed_inspection_date = :failedInspectionDate,
+          failed_inspection_project = :failedInspectionProject
+      WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.update>
+
+  <ahj.utility.checklist.delete>
+    <![CDATA[
+      UPDATE brs.ahj_checklist
+      SET archived = TRUE,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.delete>
+
+  <!-- LINKS STUFF -->
+  <ahj.utility.link.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_utility_link WHERE id = :id
+    ]]>
+  </ahj.utility.link.findById>
+
+  <ahj.utility.link.add>
+    <![CDATA[
+      INSERT INTO brs.ahj_utility_link (ahj_utility_id, name, link, username, password, notes, date_created, created_by_id, date_modified, modified_by_id, link_type_id)
+      VALUES (:ahjUtilityId, :name, :link, :username, :password, :notes, now(), :currentUser, now(), :currentUser, :linkTypeId)
+      RETURNING id;
+    ]]>
+  </ahj.utility.link.add>
+
+  <ahj.utility.link.update>
+    <![CDATA[
+      UPDATE brs.ahj_utility_link
+      SET ahj_utility_id = :ahjUtilityId,
+          name = :name,
+          link = :link,
+          username = :username,
+          password = :password,
+          notes = :notes,
+          date_modified = now(),
+          modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.utility.link.update>
+
+  <ahj.utility.link.delete>
+    <![CDATA[
+      UPDATE brs.ahj_utility_link
+      SET archived = true,
+          date_modified = now(),
+          modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.utility.link.delete>
+
   <!-- REQUIREMENTS STUFF -->
   <ahj.utility.requirement.history>
     <![CDATA[

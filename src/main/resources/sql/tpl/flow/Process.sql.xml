@@ -33,17 +33,28 @@
                               psp.initial_step as "initialStep",
                               psp.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
                               cpsst.process_step_status_type as "processStepStatusType",
-                              psp.org_id as "orgId",
-                              o.org_name as "orgName",
                               psp.date_created as "dateCreated",
                               psp.created_by_id as "createdById",
                               psp.date_modified as "dateModified",
                               psp.modified_by_id as "modifiedById",
                               psp.archived,
-                              ps.process_step_name as "processStepName"
+                              ps.process_step_name as "processStepName",
+                              coalesce((
+                                SELECT array_to_json(array_agg(row_to_json(owningPositions)))
+                                FROM (
+                                         SELECT pspop.id,
+                                                pspop.id as "processStepProcessOwningPositionId",
+                                                pspop.process_step_process_id as "processStepProcessId",
+                                                pspop.position_id as "positionId",
+                                                pspop.archived,
+                                                p.position
+                                         FROM flow.process_step_process_owning_position pspop
+                                            inner join flow.position p on p.id = pspop.position_id
+                                         WHERE pspop.process_step_process_id = psp.id
+                                            and pspop.archived is not true
+                                         order by p.position) owningPositions), '[]') AS "owningPositions"
                        from flow.process_step_process psp
                             inner join flow.process_step ps on ps.id = psp.process_step_id
-                            left join flow.org o on o.id = psp.org_id
                             left join flow.company_process_step_status_type cpsst on cpsst.id = psp.company_process_step_status_type_id
                        where psp.process_id = p.id and psp.archived is not true
                        order by psp.display_order, ps.process_step_name) processSteps), '[]') AS "processStepProcesses"
@@ -118,19 +129,23 @@
   </process.availableProcessSteps>
   <process.insertProcessStepProcess>
     <![CDATA[
-      insert into flow.process_step_process (process_id, process_step_id, org_id, created_by_id, date_created, display_order)
-      values (:processId, :processStepId, :orgId, :createdById, now(), 0)
+      insert into flow.process_step_process (process_id, process_step_id, created_by_id, date_created, display_order)
+      values (:processId, :processStepId, :createdById, now(), 0)
     ]]>
   </process.insertProcessStepProcess>
+
   <process.updateProcessStepProcess>
     <![CDATA[
       update flow.process_step_process
         set display_order = :displayOrder,
+            initial_step = :initialStep,
             modified_by_id = :modifiedById,
-            date_modified = now()
-      where id = :id
+            date_modified = now(),
+            company_process_step_status_type_id = :companyProcessStepStatusTypeId
+      where id = :processStepProcessId
     ]]>
   </process.updateProcessStepProcess>
+
   <process.getInitialProcessStepProcesses>
     <![CDATA[
       select psp.id,
@@ -141,8 +156,6 @@
              psp.initial_step as "initialStep",
              psp.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
              cpsst.process_step_status_type as "processStepStatusType",
-             psp.org_id as "orgId",
-             o.org_name as "orgName",
              psp.date_created as "dateCreated",
              psp.created_by_id as "createdById",
              psp.date_modified as "dateModified",
@@ -151,7 +164,6 @@
              ps.process_step_name as "processStepName"
       from flow.process_step_process psp
                inner join flow.process_step ps on ps.id = psp.process_step_id
-               left join flow.org o on o.id = psp.org_id
                left join flow.company_process_step_status_type cpsst on cpsst.id = psp.company_process_step_status_type_id
       where psp.process_id = :processId
         and psp.archived is not true
@@ -159,24 +171,26 @@
       order by psp.display_order, ps.process_step_name
     ]]>
   </process.getInitialProcessStepProcesses>
-  <process.setInitialProcessStep>
-    <![CDATA[
-      update flow.process_step_process
-        set initial_step = :initialStep,
-            company_process_step_status_type_id = :companyProcessStepStatusTypeId,
-            modified_by_id = :modifiedById,
-            date_modified = now()
-      where id = :processStepProcessId;
-    ]]>
-  </process.setInitialProcessStep>
+
+  <process.insertOwningPosition><![CDATA[
+    insert into flow.process_step_process_owning_position (position_id, process_step_process_id, created_by_id)
+    values (:positionId, :processStepProcessId, :createdById)
+  ]]></process.insertOwningPosition>
+
+  <process.deleteOldOwningPositions><![CDATA[
+    update flow.process_step_process_owning_position
+        set archived = true
+    where process_step_process_id = :processStepProcessId
+        and position_id not in (:usedPositionIds)
+        and archived is false
+  ]]></process.deleteOldOwningPositions>
+
   <process.getOneProcessStepProcess>
     <![CDATA[
       select psp.id,
        psp.process_id as "processId",
        psp.process_step_id as "processStepId",
        ps.company_id as "companyId",
-       psp.org_id as "orgId",
-       o.org_name as "orgName",
        psp.date_created as "dateCreated",
        psp.created_by_id as "createdById",
        psp.date_modified as "dateModified",
@@ -186,10 +200,23 @@
        psp.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
        cpsst.process_step_status_type as "processStepStatusType",
        psp.archived,
-       ps.process_step_name as "processStepName"
+       ps.process_step_name as "processStepName",
+             coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(owningPositions)))
+                    FROM (
+                             SELECT pspop.id,
+                                    pspop.id as "processStepProcessOwningPositionId",
+                                    pspop.process_step_process_id as "processStepProcessId",
+                                    pspop.position_id as "positionId",
+                                    pspop.archived,
+                                    p.position
+                             FROM flow.process_step_process_owning_position pspop
+                                  inner join flow.position p on p.id = pspop.position_id
+                             WHERE pspop.process_step_process_id = psp.id
+                                and pspop.archived is not true
+                              order by p.position) owningPositions), '[]') AS "owningPositions"
       from flow.process_step_process psp
              inner join flow.process_step ps on ps.id = psp.process_step_id
-             left join flow.org o on o.id = psp.org_id
              left join flow.company_process_step_status_type cpsst on cpsst.id = psp.company_process_step_status_type_id
       where psp.id = :id
     ]]>

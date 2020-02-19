@@ -74,15 +74,21 @@ public class ProcessController {
         return processService.insertProcessStepProcess(processId, processStepProcess);
     }
 
-    @PutMapping(value = "/{processId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{processId}/processStepProcesses", produces = MediaType.APPLICATION_JSON_VALUE)
     public void updateProcessStepProcesses(@PathVariable Long processId,
-                                                                 @RequestBody List<ProcessStepProcess> processStepProcesses) {
+                                           @RequestBody List<ProcessStepProcess> processStepProcesses) {
         processService.updateProcessStepProcesses(processId, processStepProcesses);
     }
 
-    @PutMapping(value = "/{processId}/initialProcessStepProcess", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Optional<ProcessStepProcess> setInitialProcessStep(@PathVariable Long processId,
-                                      @RequestBody ProcessStepProcess processStepProcess) {
-        return processService.setInitialProcessStep(processId, processStepProcess);
+    @PutMapping(value = "/{processId}/processStepProcess", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Optional<ProcessStepProcess> updateProcessStepProcess(@PathVariable Long processId,
+                                         @RequestBody ProcessStepProcess processStepProcess) {
+        return processService.updateProcessStepProcess(processId, processStepProcess);
     }
+
+//    @PutMapping(value = "/{processId}/initialProcessStepProcess", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Optional<ProcessStepProcess> updateProcessStepProcess(@PathVariable Long processId,
+//                                      @RequestBody ProcessStepProcess processStepProcess) {
+//        return processService.setInitialProcessStep(processId, processStepProcess);
+//    }
 }

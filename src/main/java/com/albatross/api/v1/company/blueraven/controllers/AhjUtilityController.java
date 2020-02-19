@@ -44,14 +44,17 @@ public class AhjUtilityController {
     }
 
     // CONTACTS
-    @PostMapping(value = "/{id}/contacts")
-    public Optional<AhjContact> addUtilityContact(@PathVariable Long id, @RequestBody AhjContact utilityContact) {
-        return ahjUtilityService.addUtilityContact(id, utilityContact);
+    @PostMapping(value = "/{utilityId}/contacts")
+    public Optional<AhjContact> addUtilityContact(@PathVariable Long utilityId,
+                                                  @RequestBody AhjContact utilityContact) {
+        return ahjUtilityService.saveUtilityContact(utilityId, null, utilityContact);
     }
 
-    @PutMapping(value = "/contacts/{contactId}")
-    public Optional<AhjContact> updateUtilityContact(@PathVariable Long contactId, @RequestBody AhjContact utilityContact) {
-        return ahjUtilityService.updateUtilityContact(contactId, utilityContact);
+    @PutMapping(value = "/{utilityId}/contacts/{contactId}")
+    public Optional<AhjContact> updateUtilityContact(@PathVariable Long utilityId,
+                                                     @PathVariable Long contactId,
+                                                     @RequestBody AhjContact utilityContact) {
+        return ahjUtilityService.saveUtilityContact(utilityId, contactId, utilityContact);
     }
 
     @PutMapping(value = "/contacts/{contactId}/archive")
@@ -60,8 +63,40 @@ public class AhjUtilityController {
     }
 
     // CHECKLISTS
+    @PostMapping(value = "/{utilityId}/checklist")
+    public Optional<AhjChecklistItem> addUtilityChecklistItem(@PathVariable Long utilityId,
+                                                              @RequestBody AhjChecklistItem item) {
+        return ahjUtilityService.saveChecklistItem(utilityId, null, item);
+    }
 
+    @PutMapping(value = "/{utilityId}/checklist/{checklistId}")
+    public Optional<AhjChecklistItem> updateUtilityChecklistItem(@PathVariable Long utilityId,
+                                                                 @PathVariable Long checklistId,
+                                                                 @RequestBody AhjChecklistItem item) {
+        return ahjUtilityService.saveChecklistItem(utilityId, checklistId, item);
+    }
+
+    @PutMapping(value = "/checklist/{itemId}/archive")
+    public void deleteUtilityChecklistItem(@PathVariable Long itemId) {
+        ahjUtilityService.deleteChecklistItem(itemId);
+    }
 
     // LINKS
+    @PostMapping(value = "/{utilityId}/links")
+    public Optional<AhjLink> addUtilityLink(@PathVariable Long utilityId,
+                                            @RequestBody AhjLink link) {
+        return ahjUtilityService.saveUtilityLink(utilityId, null, link);
+    }
 
+    @PutMapping(value = "/{utilityId}/links/{linkId}")
+    public Optional<AhjLink> updateUtilityLink(@PathVariable Long utilityId,
+                                               @PathVariable Long linkId,
+                                               @RequestBody AhjLink link) {
+        return ahjUtilityService.saveUtilityLink(utilityId, linkId, link);
+    }
+
+    @PutMapping(value = "/links/{linkId}/archive")
+    public void deleteUtilityLink(@PathVariable Long linkId) {
+        ahjUtilityService.deleteUtilityLink(linkId);
+    }
 }

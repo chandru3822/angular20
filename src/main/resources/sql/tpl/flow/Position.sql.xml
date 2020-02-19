@@ -2,6 +2,7 @@
   <position.getAllForCompany><![CDATA[
     select p.id,
            p.position,
+           p.id as position_id,
            p.org_type_id,
            ot.org_type,
            p.archived,

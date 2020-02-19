@@ -39,7 +39,8 @@
             :key="noteTemplate.id">
       <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
         {{ noteTemplate.title }}
-        <v-icon class="white--text" @click="copyText(index)">file_copy</v-icon>
+        <v-icon class="white--text" title="Copy text to clipboard"
+                @click="copyText(index)">file_copy</v-icon>
       </v-card-title>
       <v-card-text class="mt-4 note-text">
         <v-icon small @click="editNoteTemplate(noteTemplate)">edit</v-icon>

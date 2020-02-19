@@ -4,10 +4,8 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.StatusType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.Process;
-import com.albatross.api.v1.flow.model.ProcessStep;
-import com.albatross.api.v1.flow.model.ProcessStepProcess;
-import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -83,23 +82,6 @@ public class ProcessService {
         return getProcess(process.getCompanyId(), id);
     }
 
-    public static class ProcessMapper<T> extends BeanPropertyRowMapper<T> {
-        private final ObjectMapper objectMapper;
-
-        public ProcessMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-            super(mappedClass);
-            this.objectMapper = objectMapper;
-        }
-
-        @Override
-        protected void initBeanWrapper(BeanWrapper bw) {
-            TypeReference<List<ProcessStepProcess>> processStepProcessRef = new TypeReference<List<ProcessStepProcess>>() {};
-
-            bw.registerCustomEditor(List.class, "processStepProcesses",
-                new JsonCollectionDeserializer(processStepProcessRef, objectMapper));
-        }
-    }
-
     // process step process stuff, put in other service??
     public void deleteProcessStepFromProcess(Long processStepProcessId) {
         User currentUser = securityService.getCurrentUser();
@@ -121,7 +103,7 @@ public class ProcessService {
 
     public Optional<ProcessStepProcess> getOneProcessStepProcess(Long id) {
         Optional<ProcessStepProcess> result = sqlCache.get("process.getOneProcessStepProcess",
-            ImmutableMap.of("id", id), ProcessStepProcess.class);
+            ImmutableMap.of("id", id), new ProcessStepProcessMapper<>(ProcessStepProcess.class, om));
 
         return result;
     }
@@ -131,31 +113,57 @@ public class ProcessService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("processId", processId);
         params.put("createdById", currentUser.getId());
-        params.put("orgId", processStepProcess.getOrgId());
         params.put("processStepId", processStepProcess.getProcessStepId());
 
-        // temporarily allowing null
         Long id = sqlCache.updateReturningId("process.insertProcessStepProcess", params, "id").longValue();
 
+        for(OwningPosition p : processStepProcess.getOwningPositions()) {
+            params.put("processStepProcessId", id);
+            params.put("positionId", p.getPositionId());
 
-//        Long id = sqlCache.updateReturningId("process.insertProcessStepProcess",
-//            ImmutableMap.of("processId", processId,
-//                            "createdById", currentUser.getId(),
-//                            "orgId", processStepProcess.getOrgId(),
-//                            "processStepId", processStepProcess.getProcessStepId()), "id").longValue();
+            sqlCache.update("process.insertOwningPosition", params);
+        }
 
         return getOneProcessStepProcess(id);
     }
 
     public void updateProcessStepProcesses(Long processId, List<ProcessStepProcess> processStepProcesses) {
-        User currentUser = securityService.getCurrentUser();
 
         for(ProcessStepProcess psp : processStepProcesses){
-            sqlCache.update("process.updateProcessStepProcess",
-                ImmutableMap.of("id", psp.getId(),
-                    "modifiedById", currentUser.getId(),
-                    "displayOrder", psp.getDisplayOrder()));
+            updateProcessStepProcess(processId, psp);
         }
+    }
+
+    public Optional<ProcessStepProcess> updateProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {
+        User currentUser = securityService.getCurrentUser();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("processId", processId);
+        params.put("modifiedById", currentUser.getId());
+        params.put("initialStep", processStepProcess.isInitialStep());
+        params.put("displayOrder", processStepProcess.getDisplayOrder());
+        params.put("companyProcessStepStatusTypeId", processStepProcess.getCompanyProcessStepStatusTypeId());
+        params.put("processStepProcessId", processStepProcess.getId());
+
+        sqlCache.update("process.updateProcessStepProcess", params);
+
+        List<Long> usedPositionIds = processStepProcess.getOwningPositions().stream().map(OwningPosition::getPositionId).collect(Collectors.toList());
+        //delete any existing rows that are not in the above list
+        params.put("usedPositionIds", usedPositionIds);
+        if(!usedPositionIds.isEmpty()) {
+            sqlCache.update("process.deleteOldOwningPositions", params);
+        }
+
+        for(OwningPosition p : processStepProcess.getOwningPositions()) {
+            //if there is an id, do nothing it has already been saved. otherwise insert a row
+            if(null == p.getProcessStepProcessOwningPositionId()){
+                params.put("positionId", p.getPositionId());
+                params.put("createdById", currentUser.getId());
+                sqlCache.update("process.insertOwningPosition", params);
+            }
+        }
+
+        return getOneProcessStepProcess(processStepProcess.getId());
     }
 
     public List<ProcessStepProcess> getInitialProcessStepProcesses(Long processId) {
@@ -167,18 +175,56 @@ public class ProcessService {
         return results;
     }
 
-    public Optional<ProcessStepProcess> setInitialProcessStep(Long processId, ProcessStepProcess processStepProcess) {
-        User currentUser = securityService.getCurrentUser();
+//    public Optional<ProcessStepProcess> setInitialProcessStep(Long processId, ProcessStepProcess processStepProcess) {
+//        User currentUser = securityService.getCurrentUser();
+//
+//        HashMap<String, Object> params = new HashMap<>();
+//        params.put("processId", processId);
+//        params.put("modifiedById", currentUser.getId());
+//        params.put("initialStep", processStepProcess.isInitialStep());
+//        params.put("companyProcessStepStatusTypeId", processStepProcess.getCompanyProcessStepStatusTypeId());
+//        params.put("processStepProcessId", processStepProcess.getId());
+//
+//        sqlCache.update("process.setInitialProcessStep", params);
+//
+//        return getOneProcessStepProcess(processStepProcess.getId());
+//    }
 
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("processId", processId);
-        params.put("modifiedById", currentUser.getId());
-        params.put("initialStep", processStepProcess.isInitialStep());
-        params.put("companyProcessStepStatusTypeId", processStepProcess.getCompanyProcessStepStatusTypeId());
-        params.put("processStepProcessId", processStepProcess.getId());
+    public static class ProcessMapper<T> extends BeanPropertyRowMapper<T> {
+        private final ObjectMapper objectMapper;
 
-        sqlCache.update("process.setInitialProcessStep", params);
+        public ProcessMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+            super(mappedClass);
+            this.objectMapper = objectMapper;
+        }
 
-        return getOneProcessStepProcess(processStepProcess.getId());
+        @Override
+        protected void initBeanWrapper(BeanWrapper bw) {
+            TypeReference<List<ProcessStepProcess>> processStepProcessRef = new TypeReference<>() {};
+            TypeReference<List<OwningPosition>> owningPositionsRef = new TypeReference<>() {};
+
+            bw.registerCustomEditor(List.class, "processStepProcesses",
+                new JsonCollectionDeserializer(processStepProcessRef, objectMapper));
+
+            bw.registerCustomEditor(List.class, "owningPositions",
+                new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
+        }
+    }
+
+    public static class ProcessStepProcessMapper<T> extends BeanPropertyRowMapper<T> {
+        private final ObjectMapper objectMapper;
+
+        public ProcessStepProcessMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+            super(mappedClass);
+            this.objectMapper = objectMapper;
+        }
+
+        @Override
+        protected void initBeanWrapper(BeanWrapper bw) {
+            TypeReference<List<OwningPosition>> owningPositionsRef = new TypeReference<>() {};
+
+            bw.registerCustomEditor(List.class, "owningPositions",
+                new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
+        }
     }
 }
