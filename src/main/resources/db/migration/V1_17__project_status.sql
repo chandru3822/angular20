@@ -41,13 +41,3 @@ CREATE TABLE if not exists flow.company_project_status_type
 
 alter table flow.project
     add column if not exists company_project_status_type_id integer references flow.company_project_status_type(id);
-
-select d.id, current_stage_id, s.stage_name
-from blueraven.deal d
-inner join blueraven.stage s on s.id = d.current_stage_id
-
-;
-
-select id, stage_name
-from blueraven.stage
-order by id
