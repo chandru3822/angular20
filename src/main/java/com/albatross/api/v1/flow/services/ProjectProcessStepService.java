@@ -886,16 +886,16 @@ public class ProjectProcessStepService {
 
     switch (operatorTypeId.intValue()) {
       case 1:
-        passed = (compareDate == null) ? date == null : date.isEqual(compareDate);
+        passed = Objects.equals(date, compareDate);
         break;
       case 2:
-        passed = (compareDate == null) ? date != null : !date.isEqual(compareDate);
+        passed = !Objects.equals(date, compareDate);
         break;
       case 3:
-        passed = date.isAfter(compareDate);
+        passed = date != null && date.isAfter(compareDate);
         break;
       case 4:
-        passed = date.isBefore(compareDate);
+        passed = date != null && date.isBefore(compareDate);
         break;
       default:
         throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
