@@ -752,19 +752,40 @@ public class ProjectProcessStepService {
   public boolean calculateBooleanRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Boolean fieldValue = r.getBooleanValue();
-    Boolean reqValue = Boolean.parseBoolean(r.getRequirementValue());
 
     boolean passed = false;
 
-    switch (r.getOperatorTypeId().intValue()) {
-      case 1:
-        passed = fieldValue == reqValue;
+    switch (r.getDataTypeRequirementId().intValue()) {
+      case 14:
+        switch (r.getOperatorTypeId().intValue()) {
+          case 1:
+            passed = fieldValue != null && fieldValue;
+            break;
+          case 2:
+            passed = fieldValue == null || !fieldValue;
+          case 3:
+          case 4:
+            break;
+          default:
+            throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+        }
         break;
-      case 2:
-        passed = fieldValue != reqValue;
+      case 15:
+        switch (r.getOperatorTypeId().intValue()) {
+          case 1:
+            passed = fieldValue != null && !fieldValue;
+            break;
+          case 2:
+            passed = fieldValue == null || fieldValue;
+          case 3:
+          case 4:
+            break;
+          default:
+            throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+        }
         break;
       default:
-        throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+        throw new Exception(String.format("Unable to parse data type of Boolean with data type requirement of ID: %s", r.getDataTypeRequirementId()));
     }
 
     return passed;

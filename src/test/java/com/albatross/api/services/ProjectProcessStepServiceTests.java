@@ -178,6 +178,7 @@ public class ProjectProcessStepServiceTests {
   public void calculateDateRequirementTest() throws Exception {
     LocalDate today = LocalDate.now();
     ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.date"), new TypeReference<ProjectProcessStepRequirement>(){});
+    r.setDataTypeId(1L);
     r.setSecondaryRequirementValue("1");
 
     // Check date value of today
@@ -421,6 +422,7 @@ public class ProjectProcessStepServiceTests {
   public void calculateTimestampRequirementTest() throws Exception {
     LocalDateTime today = LocalDateTime.now();
     ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.timestamp"), new TypeReference<ProjectProcessStepRequirement>(){});
+    r.setDataTypeId(2L);
     r.setSecondaryRequirementValue("1");
 
     // Check timestamp value of today
@@ -756,6 +758,81 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
     r.setOperatorTypeId(4L);
     assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+  }
+
+  @Test
+  public void calculateBooleanRequirementTest() throws Exception {
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.boolean"), new TypeReference<ProjectProcessStepRequirement>(){});
+    r.setDataTypeId(3L);
+
+    // Check true boolean value
+
+    r.setBooleanValue(true);
+    r.setDataTypeRequirementId(14L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(15L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+
+    // Check false boolean value
+
+    r.setBooleanValue(false);
+    r.setDataTypeRequirementId(14L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(15L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+
+    // Check null boolean value
+
+    r.setBooleanValue(null);
+    r.setDataTypeRequirementId(14L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(15L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
   }
 
   // Possibly use this in the future
