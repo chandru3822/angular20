@@ -55,7 +55,7 @@ public class AhjInspectionController {
       return ahjService.saveChecklistItem(ahjId, inspectionId, itemId, item, AhjType.INSPECTION);
     }
 
-    @DeleteMapping(value = "/{inspectionId}/checklist/{itemId}")
+    @PutMapping(value = "/{inspectionId}/checklist/{itemId}/archive")
     public void deleteInspectionChecklistItem(@PathVariable Long ahjId,
                                               @PathVariable Long inspectionId,
                                               @PathVariable Long itemId) {
@@ -76,7 +76,7 @@ public class AhjInspectionController {
       return ahjService.saveAhjContact(inspectionId, contactId, ahjContact, AhjType.INSPECTION);
     }
 
-    @DeleteMapping(value = "/{inspectionId}/contacts/{contactId}")
+    @PutMapping(value = "/{inspectionId}/contacts/{contactId}/archive")
     public void removeAhjContact(@PathVariable Long inspectionId,
                                  @PathVariable Long contactId) {
       ahjService.deleteAhjContact(inspectionId, contactId);
@@ -98,7 +98,7 @@ public class AhjInspectionController {
       return ahjInspectionService.saveInspectionLink(ahjId, inspectionId, linkId, link);
     }
 
-    @DeleteMapping(value = "/{inspectionId}/links/{linkId}")
+    @PutMapping(value = "/{inspectionId}/links/{linkId}/archive")
     public void deleteInspectionLink(@PathVariable Long ahjId,
                                      @PathVariable Long inspectionId,
                                      @PathVariable Long linkId) {

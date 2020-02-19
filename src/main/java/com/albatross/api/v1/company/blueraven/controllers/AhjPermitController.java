@@ -56,7 +56,7 @@ public class AhjPermitController {
         return ahjService.saveChecklistItem(ahjId, permitId, itemId, item, AhjType.PERMIT);
     }
 
-    @DeleteMapping(value = "/{permitId}/checklist/{itemId}")
+    @PutMapping(value = "/{permitId}/checklist/{itemId}/archive")
     public void deletePermitChecklistItem(@PathVariable Long ahjId,
                                           @PathVariable Long permitId,
                                           @PathVariable Long itemId) {
@@ -77,8 +77,8 @@ public class AhjPermitController {
         return ahjService.saveAhjContact(permitId, contactId, ahjContact, AhjType.PERMIT);
     }
 
-    @DeleteMapping(value = "/{permitId}/contacts/{contactId}")
-    public void removeAhjContact(@PathVariable Long permitId,
+    @PutMapping(value = "/{permitId}/contacts/{contactId}/archive")
+    public void deleteAhjContact(@PathVariable Long permitId,
                                  @PathVariable Long contactId) {
         ahjService.deleteAhjContact(permitId, contactId);
     }
@@ -99,7 +99,7 @@ public class AhjPermitController {
         return ahjPermitService.savePermitLink(ahjId, permitId, linkId, link);
     }
 
-    @DeleteMapping(value = "/{permitId}/links/{linkId}")
+    @PutMapping(value = "/{permitId}/links/{linkId}/archive")
     public void deletePermitLink(@PathVariable Long ahjId,
                                  @PathVariable Long permitId,
                                  @PathVariable Long linkId) {

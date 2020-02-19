@@ -172,7 +172,7 @@
           try {
             let res = null
             if (this.itemType === 'utility') {
-              res = await putRequest(`/ahjUtility/contacts/${this.contact.id}`, this.contact, 'blueraven')
+              res = await putRequest(`/ahjUtility/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
             } else {
               res = await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
             }
@@ -200,10 +200,10 @@
           if (this.itemType === 'utility') {
             await putRequest(`/ahjUtility/contacts/${this.contact.id}/archive`, null, 'blueraven')
           } else {
-            await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, null, 'blueraven')
+            await putRequest(`/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}/archive`, null, 'blueraven')
           }
           let deletedContactIndex = this.contactsCopy.findIndex(i => i.id === this.contact.id)
-          this.contactsCopy.splice([deletedContactIndex], 1)
+          this.contactsCopy.splice(deletedContactIndex, 1)
           this.snackbar = getSnackbar('SUCCESS', 'Contact deleted')
         } catch (e) {
           console.error('*** ERROR ***', e)
