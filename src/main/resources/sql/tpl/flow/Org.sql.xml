@@ -18,7 +18,6 @@
      o.org_type_id,
      o.active_flag,
      o.email,
-     o.owning_org,
      o.schedulable,
      o.available_to_children,
      o.state_id,
@@ -175,7 +174,6 @@
            org_type_id,
            active_flag,
            email,
-           owning_org,
            ot.org_type,
            ot.org_level_id
     from flow.org o
