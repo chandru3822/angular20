@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -362,6 +363,399 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.calculateDateRequirement(r)).isFalse();
     r.setOperatorTypeId(2L);
     assertThat(projectProcessStepService.calculateDateRequirement(r)).isTrue();
+  }
+
+  @Test
+  public void compareDateTimesTest() throws Exception {
+    LocalDateTime today = LocalDateTime.now();
+    assertThat(projectProcessStepService.compareDateTimes(null, today, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(null, today, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(null, today, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(null, today, 4L)).isFalse();
+
+    assertThat(projectProcessStepService.compareDateTimes(today, today, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(today, today, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(today, today, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(today, today, 4L)).isFalse();
+
+    assertThat(projectProcessStepService.compareDateTimes(today.minusHours(1), today, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(today.minusHours(1), today, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(today.minusHours(1), today, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(today.minusHours(1), today, 4L)).isTrue();
+
+    assertThat(projectProcessStepService.compareDateTimes(today.plusHours(1), today, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareDateTimes(today.plusHours(1), today, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(today.plusHours(1), today, 3L)).isTrue();
+    assertThat(projectProcessStepService.compareDateTimes(today.plusHours(1), today, 4L)).isFalse();
+  }
+
+  @Test
+  public void compareNullDateTimeTest() throws Exception {
+    LocalDateTime today = LocalDateTime.now();
+    assertThat(projectProcessStepService.compareNullDateTime(null, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareNullDateTime(null, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDateTime(null, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDateTime(null, 4L)).isFalse();
+
+    assertThat(projectProcessStepService.compareNullDateTime(today, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDateTime(today, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNullDateTime(today, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNullDateTime(today, 4L)).isFalse();
+  }
+
+  @Test
+  public void compareNonNullDateTimeTest() throws Exception {
+    LocalDateTime today = LocalDateTime.now();
+    assertThat(projectProcessStepService.compareNonNullDateTime(null, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDateTime(null, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNonNullDateTime(null, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDateTime(null, 4L)).isFalse();
+
+    assertThat(projectProcessStepService.compareNonNullDateTime(today, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareNonNullDateTime(today, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDateTime(today, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNonNullDateTime(today, 4L)).isFalse();
+  }
+
+  @Test
+  public void calculateTimestampRequirementTest() throws Exception {
+    LocalDateTime today = LocalDateTime.now();
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.timestamp"), new TypeReference<ProjectProcessStepRequirement>(){});
+    r.setSecondaryRequirementValue("1");
+
+    // Check timestamp value of today
+
+    r.setTimestampValue(Timestamp.valueOf(today));
+    r.setDataTypeRequirementId(6L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(7L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+
+    r.setDataTypeRequirementId(8L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(9L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(10L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+
+    r.setDataTypeRequirementId(11L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(12L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(13L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    // Check past timestamp value
+
+    r.setTimestampValue(Timestamp.valueOf(today.minusDays(3)));
+    r.setDataTypeRequirementId(6L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+
+    r.setDataTypeRequirementId(7L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+
+    r.setDataTypeRequirementId(8L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+
+    r.setTimestampValue(Timestamp.valueOf(today.minusHours(3)));
+    r.setDataTypeRequirementId(9L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+
+    r.setDataTypeRequirementId(10L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+
+    r.setDataTypeRequirementId(11L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+
+    r.setDataTypeRequirementId(12L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(13L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    // Check future timestamp value
+
+    r.setTimestampValue(Timestamp.valueOf(today.plusDays(3)));
+    r.setDataTypeRequirementId(6L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(7L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(8L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setTimestampValue(Timestamp.valueOf(today.plusHours(3)));
+    r.setDataTypeRequirementId(9L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(10L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(11L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(12L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(13L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    // Check null timestamp value
+
+    r.setTimestampValue(null);
+    r.setDataTypeRequirementId(6L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(7L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(8L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(9L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(10L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(11L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(12L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(13L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTimestampRequirement(r)).isFalse();
   }
 
   // Possibly use this in the future
