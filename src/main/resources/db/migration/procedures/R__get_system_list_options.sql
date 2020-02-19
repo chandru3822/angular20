@@ -21,16 +21,23 @@ BEGIN
             select o.id,
                    o.org_name::text as name
             from flow.org o
-            where o.company_id = p_company_id
+            where ( o.company_id = p_company_id OR
+                  ( o.company_id = (select parent_company_id
+                                    from flow.company c
+                                    where c.id = p_company_id) AND o.available_to_children is true) )
+                and o.archived is not true
+                and o.active_flag is true
             order by name;
     when v_system_list_id = 1 and p_sub_options is true then
         RETURN QUERY
             select distinct upv.user_id::integer as id,
                    upv.first_name || ' ' || upv.last_name::text as name
             from flow.user_positions_vw upv
-            where upv.company_id = p_company_id
+            where ( upv.company_id = p_company_id OR upv.company_id = (select parent_company_id
+                                                                       from flow.company c
+                                                                       where c.id = p_company_id) )
               and ARRAY[upv.org_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
-              and upv.user_status_type_id = 1
+              and upv.has_access is true
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
             order by name;
@@ -40,15 +47,22 @@ BEGIN
             select p.id,
                    p.position::text as name
             from flow.position p
-            where p.company_id = p_company_id
+            where ( p.company_id = p_company_id OR
+                    ( p.company_id = (select parent_company_id
+                                      from flow.company c
+                                      where c.id = p_company_id) AND p.available_to_children is true) )
+              and p.archived is not true
+              and p.active is true
             order by name;
     when v_system_list_id = 2 and p_sub_options is true then
         RETURN QUERY
             select distinct upv.user_id::integer as id,
                    upv.first_name || ' ' || upv.last_name::text as name
             from flow.user_positions_vw upv
-            where upv.company_id = p_company_id
-              and upv.user_status_type_id = 1
+            where ( upv.company_id = p_company_id OR upv.company_id = (select parent_company_id
+                                                                     from flow.company c
+                                                                     where c.id = p_company_id) )
+              and upv.has_access is true
               and ARRAY[upv.position_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
@@ -59,7 +73,10 @@ BEGIN
             select ot.id,
                    ot.org_type::text as name
             from flow.org_type ot
-            where ot.company_id = p_company_id
+            where ( ot.company_id = p_company_id OR
+                  ( ot.company_id = (select parent_company_id
+                                    from flow.company c
+                                    where c.id = p_company_id) AND ot.available_to_children is true) )
               and ot.archived is not true
             order by name;
      when v_system_list_id = 3 and p_sub_options is true then
@@ -67,8 +84,11 @@ BEGIN
              select o.id,
                     o.org_name::text as name
              from flow.org o
-             where o.company_id = p_company_id
+             where ( o.company_id = p_company_id OR o.company_id = (select parent_company_id
+                                                                      from flow.company c
+                                                                      where c.id = p_company_id) )
                and ARRAY[o.org_type_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
+               and o.active_flag is true
              order by name;
      -- = All users
      when v_system_list_id = 4 then
@@ -77,7 +97,7 @@ BEGIN
                              upv.first_name || ' ' || upv.last_name::text as name
              from flow.user_positions_vw upv
              where upv.company_id = p_company_id
-               and upv.user_status_type_id = 1
+               and upv.has_access is true
                and (upv.start_date <= now() and
                     (upv.end_date IS NULL OR upv.end_date > now()))
              order by name;

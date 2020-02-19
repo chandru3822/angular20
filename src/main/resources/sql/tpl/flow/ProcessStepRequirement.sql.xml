@@ -96,6 +96,7 @@
                inner join flow.operator_type ot on ot.id = psr.operator_type_id
                inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
       where psr.archived is not true
+        and cfg.archived is not true
         and psr.process_step_id = :processStepId
       order by psr.requirement_nbr
   ]]></processStepRequirement.getRequirementsForStep>
@@ -313,7 +314,8 @@
            left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfga.id
     where
       psr.archived is not true and
-      pps.id = :projectProcessStepId
+      pps.id = :projectProcessStepId and
+      psr.id in (:requirementIds)
     order by psr.requirement_nbr;
   ]]></processStepRequirement.getRequirementsWithValuesByProjectProcessStepId>
 
@@ -324,6 +326,14 @@
             archived = true
         where id = :requirementId
   ]]></processStepRequirement.deleteRequirement>
+
+  <processStepRequirement.requirementsUsingCustomFieldGroup><![CDATA[
+      select psr.id
+      from flow.process_step_requirement psr
+        inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+      where cfga.custom_field_group_id = :customFieldGroupId
+        and psr.archived is not true
+  ]]></processStepRequirement.requirementsUsingCustomFieldGroup>
 
   <processStepRequirement.getRequirementTypes><![CDATA[
     select *
@@ -353,7 +363,8 @@
     (:requirementTypeId, :operatorTypeId, :requirementValue, :customFieldGroupAssignmentId, :companyFunctionId,
      (select coalesce(max(requirement_nbr),0) + 1
       from flow.process_step_requirement
-      where process_step_id = :processStepId), now(), :createdById, :processStepId, :secondaryRequirementValue, :dataTypeRequirementId,
+      where process_step_id = :processStepId
+         and archived is not true), now(), :createdById, :processStepId, :secondaryRequirementValue, :dataTypeRequirementId,
         :listOfValueId, array[ :listOfValueIds ]::integer[], :systemListOptionId, :customSqlOptionId)
   ]]></processStepRequirement.insertRequirement>
 

@@ -59,6 +59,8 @@ public class PositionService {
     params.put("companyId", user.getCompanyId());
     params.put("orgTypeId", p.getOrgTypeId());
     params.put("position", p.getPosition());
+    params.put("schedulable", null != p.getSchedulable() ? p.getSchedulable() : false);
+    params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("createdById", user.getId());
     Long positionId = sqlCache.updateReturningId("position.insert", params, "id").longValue();
 
@@ -83,6 +85,8 @@ public class PositionService {
     params.put("companyId", user.getCompanyId());
     params.put("orgTypeId", p.getOrgTypeId());
     params.put("position", p.getPosition());
+    params.put("schedulable", null != p.getSchedulable() ? p.getSchedulable() : false);
+    params.put("availableToChildren", null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
     params.put("id", p.getId());
     params.put("modifiedById", user.getId());
     sqlCache.update("position.update", params);

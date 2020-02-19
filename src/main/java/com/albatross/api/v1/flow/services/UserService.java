@@ -20,12 +20,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -126,7 +128,6 @@ public class UserService {
     params.put("lastName", user.getLastName());
     params.put("phone", user.getPhoneNumber());
     params.put("email", user.getEmail());
-    params.put("schedulable", user.getSchedulable() != null ? user.getSchedulable() : false);
     params.put("companyId", currentUser.getCompanyId());
 
     Long id;
@@ -136,8 +137,19 @@ public class UserService {
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
+      //todo: handle saving user_companies here as well
+      handleSavingUserCompanies(user.getCompanies(), user.getId());
     } else {
+      //get the default password
+      HashMap<String, Object> p2 = new HashMap<>();
+      p2.put("id", currentUser.getCompanyId());
+      Optional<Company> c = sqlCache.get("company.getById", p2, Company.class);
       params.put("createdById", currentUser.getId());
+      String newPwd = null;
+      if(c.isPresent()) {
+        newPwd = BCrypt.hashpw(c.get().getDefaultPassword(), BCrypt.gensalt(10));
+      }
+      params.put("defaultPassword", newPwd);
       //for now we are inserting new users with the same email and username. maybe we will change that later and let them enter it here
       id = sqlCache.updateReturningId("user.insertUser", params, "id").longValue();
       //insert a row into user_company
@@ -152,13 +164,15 @@ public class UserService {
   }
 
   public ResponseEntity getUser(Long id) {
+    User currentUser = securityService.getCurrentUser();
+    // using currentUser.companyId validates that the user requesting the info can actually access this user...i think
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("companyId", currentUser.getCompanyId());
     Optional<User> result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
 
-    User currentUser = securityService.getCurrentUser();
 
-    if(result.isPresent() && !currentUser.getCompanyId().equals(result.get().getCompanyId())) {
+    if(result.isEmpty()) {
       return ResponseEntity.badRequest().body("Cannot Access User");
     } else {
       return ResponseEntity.ok(result);
@@ -166,11 +180,15 @@ public class UserService {
   }
 
   public List<User> getSchedulingUsers(Long stateId) {
-    User currentUser = securityService.getCurrentUser();
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);
-    params.put("companyId", currentUser.getCompanyId());
+    params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+
     List<User> results = sqlCache.query("user.getSchedulingUsers", params, User.class);
     return results;
   }
@@ -179,6 +197,24 @@ public class UserService {
   public Boolean fieldHasValue (CustomFieldValue cv) {
     return null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
         || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
+  }
+
+  public void handleSavingUserCompanies(List<Company> companies, Long userId){
+    log.info("COMPANIA!!!!!!!!!!! {}", companies);
+    //archive any existing rows that are no longer there
+    List<Long> companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("companyIds", companyIds);
+    sqlCache.update("user.archiveUserCompanies", params);
+
+    for(Company company: companies) {
+      //upsert any new/existing rows
+      HashMap<String, Object> vars = new HashMap<>();
+      vars.put("userId", userId);
+      vars.put("companyId", company.getId());
+      sqlCache.update("user.upsertUserCompany", vars);
+    }
   }
 
   public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long primaryId){
@@ -234,12 +270,17 @@ public class UserService {
     return user.orElse(null);
   }
 
-  public List<UserStatusType> getUserStatuses() {
+  public List<CompanyUserStatusType> getCompanyUserStatuses() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<UserStatusType> results = sqlCache.query("user.getUserStatuses", params, UserStatusType.class);
+    List<CompanyUserStatusType> results = sqlCache.query("user.getCompanyUserStatuses", params, CompanyUserStatusType.class);
     return results;
+  }
+
+  public ResponseEntity changeContext(Long companyId) {
+    User user = securityService.getCurrentUser();
+    return user.getHighestCompanyId() == 1L ? changeContextAdmin(companyId) : changeContextNonAdmin(companyId);
   }
 
   public ResponseEntity changeContextAdmin(Long companyId) {
@@ -254,7 +295,7 @@ public class UserService {
     return ResponseEntity.ok(findByUsernameIgnoreCase(null, user.getId()));
   }
 
-  public ResponseEntity changeContext(Long companyId) {
+  public ResponseEntity changeContextNonAdmin(Long companyId) {
     User user = securityService.getCurrentUser();
     Boolean match = false;
     // get list of companies the user has access to
@@ -281,6 +322,17 @@ public class UserService {
     }
   }
 
+  public ResponseEntity getLoggedInUser() {
+    User user = securityService.getCurrentUser();
+
+    User response = findByUsernameIgnoreCase(null, user.getId());
+
+    List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+    response.setFeatureAccess(results);
+
+    return ResponseEntity.ok(response);
+  }
+
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
@@ -291,9 +343,9 @@ public class UserService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<UserPermission>> userPermissionRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "permissions",
-          new JsonCollectionDeserializer(userPermissionRef, objectMapper));
+      TypeReference<List<FeatureAccessControl>> featureAccessRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "featureAccess",
+          new JsonCollectionDeserializer(featureAccessRef, objectMapper));
 
       TypeReference<List<UserOrgHierarchy>> userOrgHierarchyRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "hierarchy",

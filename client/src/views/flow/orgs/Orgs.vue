@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Organizations</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newOrg" color="primary">
+            <v-btn text to="/newOrg" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('ORGS', 'ADD')">
               <v-icon>add</v-icon>
               <span v-if="!IS_MOBILE">Add Organization</span>
             </v-btn>
@@ -94,7 +94,7 @@
               <td class="text-left">{{item.orgName}}</td>
               <td class="text-left">{{item.orgType}}</td>
               <td class="text-left">{{item.parentOrgName}}</td>
-              <td class="text-left">{{item.active ? 'Yes' : 'No'}}</td>
+              <td class="text-left">{{item.activeFlag ? 'Yes' : 'No'}}</td>
             </tr>
           </template>
         </v-data-table>

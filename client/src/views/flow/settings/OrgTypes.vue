@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Organization Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newType = {}">
+            <v-btn text @click="addType = !addType; newType = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addType ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -29,6 +29,10 @@
                     item-text="orgType"
                     item-value="id"
           ></v-select>
+          <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+            <label>Make available in children:</label>
+            <input type="checkbox" class="ml-3" v-model="newOrgType.availableToChildren">
+          </div>
 
           <v-btn :disabled="!newOrgType.orgType || !newOrgType.orgLevelId"
                  color="primary" class="white--text mr-2"
@@ -74,6 +78,10 @@
                         item-text="orgType"
                         item-value="id"
               ></v-select>
+              <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+                <label>Make available in children:</label>
+                <input type="checkbox" class="ml-3" v-model="item.availableToChildren">
+              </div>
               <v-btn :disabled="!item.orgType || !item.orgLevelId"
                      color="primary" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
             </td>
@@ -85,7 +93,7 @@
               <td class="text-left">{{ item.level || 'n/a' }}</td>
               <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>
               <td>
-                <v-btn small text v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <v-btn small text v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
@@ -105,10 +113,10 @@
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
   import Snackbar from '@/components/Snackbar.vue'
   import orderBy from 'lodash.orderby'
-  import {getOrgTypes} from '@/services/orgService'
+  import {getOrgTypes, getOrgLevels} from '@/services/orgService'
 
   export default {
-    name: 'OrgHierarchy',
+    name: 'OrgTypes',
     components: {
       Snackbar
     },
@@ -120,6 +128,7 @@
         newOrgType: {},
         addType: false,
         levels: [],
+        parentId: this.$store.state.user.details.parentCompanyId,
         headers: [
           { text: 'Org Type', value: 'orgType', show: true },
           { text: 'Level', value: 'level', width: 80, show: true },
@@ -146,7 +155,7 @@
       async getOrgLevels() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/orgType/levels`)
+          const {data} = await getOrgLevels()
           this.levels = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

@@ -1,9 +1,9 @@
 package com.albatross.api.security;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
-import com.albatross.api.v1.flow.model.UserPermission;
 import com.albatross.api.v1.flow.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,9 +39,8 @@ public class SecurityService implements UserDetailsService {
             throw new UsernameNotFoundException("Could not find user " + username);
         }
         // todo: come back and add permissions when the re-write is complete
-//        List<UserPermission> permissions = this.getUserPermissions(user.getId(), user.getCompanyId());
-        List<UserPermission> permissions = new ArrayList<>();
-        return new UserAccountDetails(user, permissions);
+        List<FeatureAccessControl> results = this.getUserFeatureAccess(user.getId(), user.getCompanyId());
+        return new UserAccountDetails(user, results);
     }
 
     public User getUser(String username) {
@@ -54,9 +53,8 @@ public class SecurityService implements UserDetailsService {
         if (!user.isPresent()) {
             return Optional.empty();
         }
-//        List<UserPermission> permissions = getUserPermissions(user.get().getId(), user.get().getCompanyId());
-        List<UserPermission> permissions = new ArrayList<>();
-        return Optional.of(new UserAccountDetails(user.get(), permissions));
+        List<FeatureAccessControl> results = getUserFeatureAccess(user.get().getId(), user.get().getCompanyId());
+        return Optional.of(new UserAccountDetails(user.get(), results));
     }
 
     public boolean isLoggedIn() {
@@ -76,6 +74,8 @@ public class SecurityService implements UserDetailsService {
             } else if (p instanceof UserAccountDetails) {
                 UserAccountDetails details = (UserAccountDetails) p;
                 user = userService.findUserById(details.getId());
+                List<FeatureAccessControl> results = getUserFeatureAccess(details.getId(), user.getCompanyId());
+                user.setFeatureAccess(results);
 
             } else {
 //                    throw new IllegalStateException("Unhandled Security Principal type: " + p);
@@ -155,7 +155,7 @@ public class SecurityService implements UserDetailsService {
 //        Optional<Preferences> preferences = sqlCache.get("preferences.getUserPrefs", params, Preferences.class);
 //
 //        //user.permissions
-//        List<Permission> permissions = permissionsService.getUserPermissions(userId, false);
+//        List<FeatureAccessControl> results = permissionsService.getUserFeatureAccess(userId, false);
 //
 //        EndUser endUser = new EndUser();
 //
@@ -183,57 +183,14 @@ public class SecurityService implements UserDetailsService {
     }
 
     @SuppressWarnings("unchecked")
-    public List<UserPermission> getUserPermissions(Long userId, Long companyId) {
+    public List<FeatureAccessControl> getUserFeatureAccess(Long userId, Long companyId) {
+        //this function gets ALL access for a user (combining user/position access control as needed)
         HashMap<String, Object> params = new HashMap<>();
         params.put("userId", userId);
         params.put("companyId", companyId);
-        List<UserPermission> userPermissions = sqlCache.query("permission.getUserPermissions", params, UserPermission.class);
-        return userPermissions;
+        List<FeatureAccessControl> results = sqlCache.query("feature.getAccessForUser", params, FeatureAccessControl.class);
+        return results;
     }
-
-//    public boolean hasPermission(UserAccountDetails uad, String permissionName) {
-//        if(uad == null ){
-//            return false;
-//        }
-//
-//        List<String> auths = uad.getAuthorities()
-//                                .stream()
-//                                .map(GrantedAuthority::getAuthority)
-//                                .collect(Collectors.toList());
-//
-//        if( auths.contains("HR_ADMIN") ){
-//            return true;
-//        }
-//
-//        return auths.contains(permissionName);
-//    }
-//
-//    public void ensurePermission(UserAccountDetails uad, String permissionName){
-//        if( !hasPermission(uad, permissionName) ){
-//            throw new InsufficientAuthenticationException("Missing permission: " + permissionName);
-//        }
-//    }
-
-//    @SuppressWarnings("unchecked")
-//    public List<UserRoleDO> getUserRoles(Long userId) {
-//        String sql = "select r.id,r.role_name,ur.id as userRoleId " +
-//                "from blueraven.user_role ur " +
-//                "inner join blueraven.role r on r.id = ur.role_id " +
-//                "where ur.user_id = :userId " +
-//                "   and r.archived is not true ";
-//        List<Object[]> results = entityManager.createNativeQuery(sql).setParameter("userId", userId)
-//                .getResultList();
-//
-//        List<UserRoleDO> userRoleDOs = new ArrayList<>();
-//        for (Object[] row : results) {
-//            UserRoleDO userRoleDO = new UserRoleDO();
-//            userRoleDO.setRoleId((Integer) row[0]);
-//            userRoleDO.setRoleName((String) row[1]);
-//            userRoleDO.setId((Integer) row[2]);
-//            userRoleDOs.add(userRoleDO);
-//        }
-//        return userRoleDOs;
-//    }
 
     @SuppressWarnings("unchecked")
     public Boolean validatePassword(String password){

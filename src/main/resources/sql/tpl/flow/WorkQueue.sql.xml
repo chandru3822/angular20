@@ -1,0 +1,70 @@
+<sql>
+  <workQueue.getWorkQueues><![CDATA[
+    select wqt.id as work_queue_type_id,
+       wqt.work_queue_type,
+       wqt.work_queue_category_id,
+       wqc.color,
+        (select count(*)
+            from flow.project p
+             inner join flow.project_process_step pps on pps.project_id = p.id
+             inner join flow.process_step ps on ps.id = pps.process_step_id
+             inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = ps.id
+             inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+             left join flow.user_position up on up.id = pps.user_position_id
+             left join flow.user u on u.id = up.user_id
+            where wqt.id = pswqt.work_queue_type_id
+                and case when :isParent then true else ps.company_id = :companyId end
+                and case when :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
+                and cpsst.process_step_status_type_id = :processStepStatusTypeId
+        ) as work_queue_count
+      from flow.work_queue_type wqt
+      inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
+      where case when :workQueueCategoryId::int is not null then wqt.work_queue_category_id = :workQueueCategoryId else true end
+        and wqt.company_id = :parentCompanyId
+        and wqt.archived is not true
+  ]]></workQueue.getWorkQueues>
+
+  <workQueue.getProcessStepsByTypeId><![CDATA[
+    select
+        ps.id as process_step_id,
+        p.project_name,
+        pps.id as project_process_step_id,
+        wqt.work_queue_type,
+        pps.project_id,
+        ps.process_step_name,
+        p.customer_id,
+        u.first_name || ' ' || u.last_name as owner,
+        coalesce(pps.date_modified, pps.date_created) as last_updated
+    from flow.project p
+             inner join flow.project_process_step pps on pps.project_id = p.id
+             inner join flow.process_step ps on ps.id = pps.process_step_id
+             inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = ps.id
+             inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+             inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+             left join flow.user_position up on up.id = pps.user_position_id
+             left join flow.user u on u.id = up.user_id
+    where pswqt.work_queue_type_id = :workQueueTypeId
+        and case when :isParent then true else ps.company_id = :companyId end
+        and case when :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
+        and cpsst.process_step_status_type_id = :processStepStatusTypeId
+    order by last_updated;
+  ]]></workQueue.getProcessStepsByTypeId>
+
+  <workQueue.getWorkQueueOwners><![CDATA[
+    select distinct pps.user_position_id,
+                up.user_id,
+                u.first_name,
+                u.last_name,
+                u.first_name || ' ' || u.last_name as full_name
+    from flow.project_process_step pps
+        inner join flow.process_step ps on ps.id = pps.process_step_id
+        inner join flow.user_position up on up.id = pps.user_position_id
+        inner join flow."user" u on u.id = up.user_id
+        inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+    where case when :isParent
+          then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+          else ps.company_id = :companyId end
+          and cpsst.process_step_status_type_id = :processStepStatusTypeId
+    order by first_name, last_name
+  ]]></workQueue.getWorkQueueOwners>
+</sql>

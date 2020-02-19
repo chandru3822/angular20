@@ -75,31 +75,6 @@
     ]]>
   </project.getAllForCustomer>
 
-  <project.insertProjectProcessStep><![CDATA[
-    insert into flow.project_process_step(project_id, process_step_id, user_position_id, company_process_step_status_type_id, created_by_id)
-    values (:projectId, :processStepId, :userPositionId, :statusTypeId, :createdById)
-  ]]></project.insertProjectProcessStep>
-
-  <project.getProjectProcessStep><![CDATA[
-    select
-      ps.id as process_step_id,
-      pps.id as project_process_step_id,
-      pps.project_id,
-      pps.process_step_complete_date,
-      pps.user_position_id,
-      u.first_name || ' ' || u.last_name as owner,
-      coalesce(pps.date_modified, pps.date_created) as last_updated,
-      cpsst.process_step_status_type_id,
-      cpsst.process_step_status_type,
-      ps.process_step_name
-    from flow.project_process_step pps
-    inner join flow.process_step ps on ps.id = pps.process_step_id
-    inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-    left join flow.user_position up on up.id = pps.user_position_id
-    left join flow.user u on u.id = up.user_id
-    where pps.id = :stepId;
-  ]]></project.getProjectProcessStep>
-
   <project.getProcessStepsByProjectId><![CDATA[
     select
       ps.id as process_step_id,
@@ -107,10 +82,23 @@
       pps.process_step_complete_date,
       pps.project_id,
       ps.process_step_name,
-      u.first_name || ' ' || u.last_name as owner,
       coalesce(pps.date_modified, pps.date_created) as last_updated,
       cpsst.process_step_status_type,
-      cpsst.process_step_status_type_id
+      cpsst.process_step_status_type_id,
+      (
+        select row_to_json(o) from (
+          select
+            u.id as "userId",
+            u.first_name as "firstName",
+            u.last_name as "lastName",
+            u.first_name || ' ' || u.last_name AS "fullName",
+            p.position
+        from blueraven.user u
+        inner join flow.user_position up on up.user_id = u.id
+        inner join flow.position p on p.id = up.position_id
+        where up.id = pps.user_position_id
+      ) o
+    ) AS owner
     from flow.project p
     inner join flow.project_process_step pps on pps.project_id = p.id
     inner join flow.process_step ps on ps.id = pps.process_step_id
@@ -140,19 +128,4 @@
     insert into flow.project_attachment(attachment_id, project_id, created_by_id)
     values (:attachmentId, :projectId, :createdById)
   ]]></project.addAttachment>
-
-  <project.getProjectProcessStepAttachments><![CDATA[
-    select
-      a.id,
-      a.size,
-      a.date_created,
-      a.date_modified,
-      a.filename,
-      a.attachment_type_id,
-      a.content_type,
-      a.s3_key
-    from flow.project_process_step_attachment ppsa
-           inner join flow.attachment a on a.id = ppsa.attachment_id
-    where ppsa.project_process_step_id = :projectProcessStepId
-  ]]></project.getProjectProcessStepAttachments>
 </sql>

@@ -133,7 +133,7 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
 
   export default {
-    name: 'Works',
+    name: 'WorkQueueCategories',
     mixins: [Vue2Filters.mixin],
     components: {
       Snackbar

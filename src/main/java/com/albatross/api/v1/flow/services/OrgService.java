@@ -51,9 +51,13 @@ public class OrgService {
 
   public List<Org> getSchedulingOrgs(Long stateId) {
     User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("stateId", stateId);
+    params.put("isParent", isParent);
 
     List<Org> results = sqlCache.query("org.getSchedulingOrgs", params, Org.class);
     return results;
@@ -127,14 +131,6 @@ public class OrgService {
     return result.orElse(null);
   }
 
-  public List<Org> getOwningOrgsForCompany() {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    List<Org> results = sqlCache.query("org.getOwningOrgsForCompany", params, Org.class);
-    return results;
-  }
-
   public Org saveOrg(Org org) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -142,7 +138,8 @@ public class OrgService {
     params.put("orgTypeId", org.getOrgTypeId());
     params.put("parentOrgId", org.getParentOrgId());
     params.put("companyId", user.getCompanyId());
-    params.put("schedulable", org.getSchedulable());
+    params.put("schedulable", null != org.getSchedulable() ? org.getSchedulable() : false);
+    params.put("availableToChildren", null != org.getAvailableToChildren() ? org.getAvailableToChildren() : false);
     params.put("stateId", org.getStateId());
     params.put("active", org.getActiveFlag());
 
@@ -213,6 +210,41 @@ public class OrgService {
     }
 
     return results;
+  }
+
+  public OrgFilter getOneOrgFilter(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<OrgFilter> results = sqlCache.get("org.getOneOrgFilter", params, OrgFilter.class);
+
+    return results.orElse(null);
+  }
+
+  public void deleteOrgFilter(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("org.deleteOrgFilter", params);
+    //todo: randa i hate this. talk to keller about adding the 5 columns for tracking/archiving. don't actually delete
+  }
+
+  public OrgFilter saveOrgFilter(OrgFilter filter) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("orgLevelId", filter.getOrgLevelId());
+    params.put("rank", filter.getRank());
+    params.put("showType", null != filter.getShowType() ? filter.getShowType() : false);
+
+    Long id;
+    if (null != filter.getId()) {
+      id = filter.getId();
+      params.put("id", id);
+      sqlCache.update("org.updateOrgFilter", params);
+    } else {
+      id = sqlCache.updateReturningId("org.insertOrgFilter", params, "id").longValue();
+    }
+
+    return getOneOrgFilter(id);
   }
 
   public List<OrgFilter> getHierarchyFilteredOrgsForCompany(List<Integer> selectedOrgs) {

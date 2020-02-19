@@ -1,11 +1,11 @@
 <template>
   <v-container class="pt-0">
-    <v-row class="lead-header elevation-0">
+    <v-row class="customer-header elevation-0">
       <v-col cols="6" class="text-left pb-2">
-        <div class="lead-title">
+        <div class="customer-title">
           {{customer.fullName}}
           <v-menu
-              v-if="customer.customerTypeId === 2"
+              v-if="customer.customerTypeId === 2 && userCanEdit"
               bottom
               offset-y
               :close-on-content-click="false"
@@ -31,12 +31,12 @@
             </v-card>
           </v-menu>
         </div>
-        <div class="lead-subtitle">
+        <div class="customer-subtitle">
           {{customer.street1}} - {{customer.city}}, {{customer.state}}
         </div>
       </v-col>
-      <v-col cols="4" class="lead-owner pb-2">
-        <div v-if="!changeOwner">
+      <v-col cols="4" class="customer-owner pb-2">
+        <div v-if="!changeOwner || !userCanEdit">
           <div v-if="customer.owner">
             <v-avatar
                 :tile="false"
@@ -50,7 +50,7 @@
             {{customer.owner.position}}
           </div>
         </div>
-        <div v-if="changeOwner">
+        <div v-if="changeOwner && userCanEdit">
           <v-autocomplete v-model="customer.owner"
                     :items="owners"
                     label="Select Owner"
@@ -67,9 +67,12 @@
           <span v-else>add owner</span>
         </v-btn>
       </v-col>
-      <v-col cols="2" class="lead-owner pb-2">
+      <v-col cols="2" class="customer-owner pb-2">
         Associated Projects<br/>
-        <router-link v-for="p in customer.projects" :key="p.id" :to="`/project/${p.id}`">{{p.projectName}}</router-link>
+        <div v-for="p in customer.projects" :key="p.id">
+          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}`">{{p.projectName}}</router-link>
+          <span v-else>{{p.projectName}}</span>
+        </div>
       </v-col>
     </v-row>
     <v-row>
@@ -79,21 +82,51 @@
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="saveLead">Save</v-btn>
+              <v-btn text @click="saveCustomer">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
+            <v-form ref="address">
+              <v-text-field text
+                            label="Address"
+                            placeholder=" "
+                            :readonly="!userCanEdit"
+                            @change="addressChanged = true"
+                            v-model="customer.street1"></v-text-field>
+              <v-text-field text
+                            label="City"
+                            placeholder=" "
+                            @change="addressChanged = true"
+                            :readonly="!userCanEdit"
+                            v-model="customer.city"></v-text-field>
+              <v-select v-model="customer.stateId"
+                        :items="states"
+                        label="State"
+                        @change="addressChanged = true"
+                        item-text="state"
+                        item-value="id"
+              ></v-select>
+              <v-text-field text
+                            label="Zip"
+                            placeholder=" "
+                            @change="addressChanged = true"
+                            :readonly="!userCanEdit"
+                            v-model="customer.postalCode"></v-text-field>
+            </v-form>
             <v-text-field text
                           label="Phone"
                           placeholder=" "
+                          :readonly="!userCanEdit"
                           v-model="customer.phone"></v-text-field>
             <v-text-field text
                           label="Mobile"
+                          :readonly="!userCanEdit"
                           placeholder=" "
                           v-model="customer.mobile"></v-text-field>
             <v-text-field text
                           label="E-Mail"
                           placeholder=" "
+                          :readonly="!userCanEdit"
                           v-model="customer.email"></v-text-field>
             <div class="field-label">Created Date</div>
             <datetime
@@ -101,6 +134,7 @@
                 v-model="customer.dateCreated"
                 input-class="one-hunned"
                 :zone="timezone.value"
+                :readonly="!userCanEdit"
                 :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
                 :phrases="{ok: 'Ok', cancel: 'Close'}"
                 :hour-step="1"
@@ -116,11 +150,11 @@
             <v-toolbar-title>{{cfg.groupName}}</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-<!--              <v-btn text @click="saveLead">Save</v-btn>-->
+<!--              <v-btn text @click="saveCustomer">Save</v-btn>-->
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="false" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="!userCanEdit" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
@@ -142,9 +176,10 @@ import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import { Datetime } from 'vue-datetime'
+import {getStates} from '@/services/stateService'
 
 export default {
-  name: 'Lead',
+  name: 'Customer',
   components: {
     Snackbar,
     CustomValueInput,
@@ -154,11 +189,14 @@ export default {
   data () {
     return {
       snackbar: {},
+      states: [],
       customer: {},
+      addressChanged: false,
       customFieldGroups: [],
       notes: [],
       owners: [],
       customerId: this.$route.params.id,
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CUSTOMERS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
       timezone: this.$store.state.user.details.timezone,
       changeOwner: false,
@@ -168,21 +206,24 @@ export default {
   },
   created () {
     this.getCustomer()
+    this.getStates()
     this.getOwners()
     this.getCustomFieldGroups()
     this.getNotes()
   },
   methods: {
-    async saveLead() {
+    async saveCustomer() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.customer.customFieldGroups = this.customFieldGroups
+      this.customer.reloadCoordinates = this.addressChanged
       try {
         const {data} = await postRequest(`/customer`, this.customer)
-        this.$router.push({name: 'lead', params: {id: data.id}})
+        this.addressChanged = false
+        this.$router.push({name: 'customer', params: {id: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Lead')
+        this.snackbar = getSnackbar('ERROR', 'Error Adding Customer')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -277,28 +318,40 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Converting Customer')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    }
+    },
+    async getStates () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getStates()
+        this.states = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  .lead-header {
+  .customer-header {
     border-bottom: solid 1px #EAEAF4
   }
-  .lead-title {
+  .customer-title {
     font-size: 20px;
   }
-  .lead-subtitle {
+  .customer-subtitle {
     font-size: 15px;
   }
-  .lead-status {
+  .customer-status {
     font-size: 15px;
     display: flex;
     align-items: flex-end;
     text-align: left;
   }
-  .lead-owner {
+  .customer-owner {
     font-size: 15px;
     /*display: flex;*/
     /*align-items: flex-end;*/

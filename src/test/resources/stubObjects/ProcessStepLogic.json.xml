@@ -1,0 +1,85 @@
+<json>
+  <processStepLogic.true><![CDATA[
+  [{
+    "id": 43,
+    "processStepRequirementId": 23,
+    "operationTypeId": null,
+    "createdById": 2403504,
+    "modifiedById": null,
+    "sqlOrder": 0,
+    "requirementNbr": 16,
+    "operationType": null,
+    "operationCode": null,
+    "archived": false,
+    "processStepRequirementImmutable": true
+  }]
+  ]]></processStepLogic.true>
+
+  <processStepLogic.trueAndTrueAndTrue><![CDATA[
+    [{
+      "id": 36,
+      "processStepRequirementId": 20,
+      "operationTypeId": null,
+      "createdById": 2350555,
+      "modifiedById": null,
+      "sqlOrder": 0,
+      "requirementNbr": 13,
+      "operationType": null,
+      "operationCode": null,
+      "archived": false,
+      "processStepRequirementImmutable": true
+    },
+    {
+      "id": 37,
+      "processStepRequirementId": null,
+      "operationTypeId": 3,
+      "createdById": 2350555,
+      "modifiedById": null,
+      "sqlOrder": 1,
+      "requirementNbr": null,
+      "operationType": "AND",
+      "operationCode": "AND",
+      "archived": false,
+      "processStepRequirementImmutable": null
+    },
+    {
+      "id": 38,
+      "processStepRequirementId": 21,
+      "operationTypeId": null,
+      "createdById": 2350555,
+      "modifiedById": null,
+      "sqlOrder": 2,
+      "requirementNbr": 14,
+      "operationType": null,
+      "operationCode": null,
+      "archived": false,
+      "processStepRequirementImmutable": true
+    },
+    {
+      "id": 39,
+      "processStepRequirementId": null,
+      "operationTypeId": 3,
+      "createdById": 2350555,
+      "modifiedById": null,
+      "sqlOrder": 3,
+      "requirementNbr": null,
+      "operationType": "AND",
+      "operationCode": "AND",
+      "archived": false,
+      "processStepRequirementImmutable": null
+    },
+    {
+      "id": 40,
+      "processStepRequirementId": 22,
+      "operationTypeId": null,
+      "createdById": 2350555,
+      "modifiedById": null,
+      "sqlOrder": 4,
+      "requirementNbr": 15,
+      "operationType": null,
+      "operationCode": null,
+      "archived": false,
+      "processStepRequirementImmutable": true
+    }]
+  ]]></processStepLogic.trueAndTrueAndTrue>
+</json>

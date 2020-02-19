@@ -11,12 +11,33 @@
     order by s.state
   ]]></state.getAllStates>
 
+  <state.getAllStatesByCompany><![CDATA[
+    select s.id,
+       s.state,
+       s.abbreviation,
+       cs.id as company_state_id,
+       s.time_zone_abbreviation,
+       cs.active,
+       cs.archived,
+       cs.company_id,
+       case when cs.map_latitude is not null then cs.map_latitude else s.map_latitude end as map_latitude,
+       case when cs.map_longitude is not null then cs.map_longitude else s.map_longitude end as map_longitude,
+       case when cs.map_zoom is not null then cs.map_zoom else s.map_zoom end as map_zoom
+    from flow.company_state cs
+        inner join flow.state s on s.id = cs.state_id
+    where cs.company_id = :companyId
+    order by s.state
+  ]]></state.getAllStatesByCompany>
+
   <state.getActiveStatesByCompany><![CDATA[
     select s.id,
        s.state,
        s.abbreviation,
        s.time_zone_abbreviation,
        cs.active,
+       cs.id as company_state_id,
+       cs.archived,
+       cs.company_id,
        case when cs.map_latitude is not null then cs.map_latitude else s.map_latitude end as map_latitude,
        case when cs.map_longitude is not null then cs.map_longitude else s.map_longitude end as map_longitude,
        case when cs.map_zoom is not null then cs.map_zoom else s.map_zoom end as map_zoom
@@ -26,6 +47,59 @@
       and cs.company_id = :companyId
     order by s.state
   ]]></state.getActiveStatesByCompany>
+
+  <state.getOneCompanyState><![CDATA[
+    select s.id,
+       s.state,
+       s.abbreviation,
+       s.time_zone_abbreviation,
+       cs.active,
+       cs.id as company_state_id,
+       cs.archived,
+       cs.company_id,
+       case when cs.map_latitude is not null then cs.map_latitude else s.map_latitude end as map_latitude,
+       case when cs.map_longitude is not null then cs.map_longitude else s.map_longitude end as map_longitude,
+       case when cs.map_zoom is not null then cs.map_zoom else s.map_zoom end as map_zoom
+    from flow.company_state cs
+        inner join flow.state s on s.id = cs.state_id
+    where cs.id = :companyStateId
+  ]]></state.getOneCompanyState>
+
+  <state.getActiveStatesByHierarchy><![CDATA[
+    with companies as (
+    select * from flow.company_hierarchy_filter_down(:companyId::int))
+        select distinct s.id,
+                        s.state,
+                        s.abbreviation,
+                        s.time_zone_abbreviation,
+                        coalesce(cs.map_latitude, s.map_latitude) as map_latitude,
+                        coalesce(cs.map_longitude, s.map_longitude) as map_longitude,
+                        coalesce(cs.map_zoom, s.map_zoom) as map_zoom
+        from companies c
+            inner join flow.company_state cs on cs.company_id = c.id and cs.active is true
+            inner join flow.state s on s.id = cs.state_id
+        ORDER BY state;
+  ]]></state.getActiveStatesByHierarchy>
+
+  <state.insertCompanyState><![CDATA[
+    insert into flow.company_state(state_id, company_id, map_latitude, map_longitude, map_zoom, active)
+    values (:stateId, :companyId, :mapLatitude, :mapLongitude, :mapZoom, :active)
+  ]]></state.insertCompanyState>
+
+  <state.updateCompanyState><![CDATA[
+    update flow.company_state
+        set map_zoom = :mapZoom,
+            map_latitude = :mapLatitude,
+            map_longitude = :mapLongitude,
+            active = :active
+    where id = :companyStateId
+  ]]></state.updateCompanyState>
+
+  <state.deleteCompanyState><![CDATA[
+    update flow.company_state
+        set archived = true
+    where id = :companyStateId
+  ]]></state.deleteCompanyState>
 
 
 </sql>

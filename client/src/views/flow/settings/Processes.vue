@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Processes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newProject = {}">
+            <v-btn text @click="addNew = !addNew; newProject = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -31,6 +31,7 @@
                 </v-btn>
               </v-list-item-action>
               <v-dialog
+                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                   v-model="p.deleteConfirm"
                   width="500">
                 <template v-slot:activator="{ on }">
@@ -97,7 +98,7 @@ export default {
       selectedProcessId: null,
       newProcess: {},
       companyId: this.$store.state.user.details.companyId,
-      parentCompanyId: this.$store.state.user.details.parentCompanyId,
+      parentCompanyId: this.$store.state.user.details.highestParentCompanyId,
       userId: this.$store.state.user.details.id,
       processes: []
     }

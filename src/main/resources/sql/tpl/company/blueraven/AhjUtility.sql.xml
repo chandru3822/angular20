@@ -53,7 +53,8 @@
         submission_instructions = :submissionInstructions,
         timelines = :timelines,
         pto_followup_instructions = :ptoFollowupInstructions,
-        final_completion_instructions = :finalCompletionInstructions
+        final_completion_instructions = :finalCompletionInstructions,
+        financier_id = :financierId
       WHERE id = :id
     ]]>
   </ahj.utility.update>
@@ -69,6 +70,7 @@
     <![CDATA[
       SELECT
         u.*,
+        f.name as "financier",
         ma.metro_area,
         s.id AS "state_id",
         s.abbreviation AS "state",
@@ -233,8 +235,8 @@
             ar.requirement_type_id AS "requirementTypeId",
             aur.original_requirement_id AS "originalRequirementId",
           CASE
-            WHEN oc.original_requirement_id IS NOT NULL THEN TRUE
-            ELSE FALSE
+            WHEN oc.original_requirement_id IS NOT NULL THEN true
+            ELSE false
           END AS "hasOpenChallenge"
           FROM brs.ahj_utility_requirements aur
             LEFT JOIN open_challenge oc ON oc.utility_id = aur.utility_id
@@ -251,9 +253,256 @@
         ), '[]') AS utility_requirements
       FROM brs.ahj_utility u
         LEFT JOIN brs.metro_area ma ON ma.id = u.metro_area_id
+        LEFT JOIN brs.financier f ON f.id = u.financier_id
         LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
         LEFT JOIN flow.state s ON s.id = sa.state_id
       WHERE u.id = :id
     ]]>
   </ahj.utility.detailById>
+
+  <!-- CONTACTS STUFF -->
+  <ahj.utility.contact.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_contact WHERE id = :id
+    ]]>
+  </ahj.utility.contact.findById>
+
+  <ahj.utility.contact.add>
+    <![CDATA[
+      WITH auc AS (
+        insert into brs.ahj_contact (name, title, email, phone_number, address, notes, hours, date_created, created_by_id, date_modified, modified_by_id, contact_type_id)
+        values (:name, :title, :email, :phoneNumber, :address, :notes, :hours, now(), :currentUser, now(), :currentUser, :contactTypeId)
+        returning id
+      )
+      INSERT INTO brs.ahj_utility_contact (ahj_utility_id, ahj_contact_id)
+      SELECT :ahjUtilityId, auc.id
+      FROM auc
+      RETURNING ahj_contact_id;
+    ]]>
+  </ahj.utility.contact.add>
+
+  <ahj.utility.contact.update>
+    <![CDATA[
+      UPDATE brs.ahj_contact
+      SET name = :name,
+          title = :title,
+          email = :email,
+          phone_number = :phoneNumber,
+          address = :address,
+          notes = :notes,
+          hours = :hours,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :contactId
+    ]]>
+  </ahj.utility.contact.update>
+
+  <ahj.utility.contact.delete>
+    <![CDATA[
+      UPDATE brs.ahj_contact
+      SET archived = TRUE,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :contactId
+    ]]>
+  </ahj.utility.contact.delete>
+
+  <!-- CHECKLISTS STUFF -->
+  <ahj.utility.checklist.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_checklist WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.findById>
+
+  <ahj.utility.checklist.add>
+    <![CDATA[
+      WITH auc AS (
+        insert into brs.ahj_checklist (description, display_order, date_created, created_by_id, date_modified, modified_by_id, checklist_type_id, failed_inspection_resource_id, failed_inspection_date, failed_inspection_project)
+        values (:description, :displayOrder, now(), :currentUser, now(), :currentUser, :checklistTypeId, :failedInspectionResourceId, :failedInspectionDate, :failedInspectionProject)
+        returning id
+      )
+      INSERT INTO brs.ahj_utility_checklist (ahj_utility_id, ahj_checklist_id)
+      SELECT :ahjUtilityId, auc.id
+      FROM auc
+      RETURNING ahj_checklist_id;
+    ]]>
+  </ahj.utility.checklist.add>
+
+  <ahj.utility.checklist.update>
+    <![CDATA[
+      UPDATE brs.ahj_checklist
+      SET description = :description,
+          display_order = :displayOrder,
+          modified_by_id = :currentUser,
+          date_modified = now(),
+          checklist_type_id = :checklistTypeId,
+          failed_inspection_resource_id = :failedInspectionResourceId,
+          failed_inspection_date = :failedInspectionDate,
+          failed_inspection_project = :failedInspectionProject
+      WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.update>
+
+  <ahj.utility.checklist.delete>
+    <![CDATA[
+      UPDATE brs.ahj_checklist
+      SET archived = TRUE,
+          modified_by_id = :currentUser,
+          date_modified = now()
+      WHERE id = :id
+    ]]>
+  </ahj.utility.checklist.delete>
+
+  <!-- LINKS STUFF -->
+  <ahj.utility.link.findById>
+    <![CDATA[
+      SELECT * FROM brs.ahj_utility_link WHERE id = :id
+    ]]>
+  </ahj.utility.link.findById>
+
+  <ahj.utility.link.add>
+    <![CDATA[
+      INSERT INTO brs.ahj_utility_link (ahj_utility_id, name, link, username, password, notes, date_created, created_by_id, date_modified, modified_by_id, link_type_id)
+      VALUES (:ahjUtilityId, :name, :link, :username, :password, :notes, now(), :currentUser, now(), :currentUser, :linkTypeId)
+      RETURNING id;
+    ]]>
+  </ahj.utility.link.add>
+
+  <ahj.utility.link.update>
+    <![CDATA[
+      UPDATE brs.ahj_utility_link
+      SET ahj_utility_id = :ahjUtilityId,
+          name = :name,
+          link = :link,
+          username = :username,
+          password = :password,
+          notes = :notes,
+          date_modified = now(),
+          modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.utility.link.update>
+
+  <ahj.utility.link.delete>
+    <![CDATA[
+      UPDATE brs.ahj_utility_link
+      SET archived = true,
+          date_modified = now(),
+          modified_by_id = :currentUser
+      WHERE id = :id
+    ]]>
+  </ahj.utility.link.delete>
+
+  <!-- REQUIREMENTS STUFF -->
+  <ahj.utility.requirement.history>
+    <![CDATA[
+      SELECT ar.requirement_type_id,
+             ars.utility_id,
+             ars.requirement_id id,
+             ars.original_requirement_id,
+             ar.description,
+             ars."position",
+             ars.status_id,
+             arst.name AS status,
+             ars.complete,
+             ars.date_created,
+             ars.created_by_id,
+             u.first_name || ' ' || u.last_name AS created_by,
+             ars.date_modified,
+             u2.first_name || ' ' || u2.last_name AS modified_by,
+             ars.modified_by_id
+      FROM brs.ahj_utility_requirements ars
+        JOIN brs.ahj_requirement ar ON ar.id = ars.requirement_id
+        JOIN brs.ahj_requirement_status arst ON arst.id = ars.status_id
+        INNER JOIN flow."user" u on u.id = ars.created_by_id
+        INNER JOIN flow."user" u2 on u2.id = ars.modified_by_id
+      WHERE ars.original_requirement_id = :originalRequirementId
+        AND ars.utility_id = :utilityId
+      ORDER BY arst.display_order, ars.date_created DESC
+    ]]>
+  </ahj.utility.requirement.history>
+
+  <ahj.utility.requirement.add>
+    <![CDATA[
+      WITH ar AS (
+        INSERT INTO brs.ahj_requirement (requirement_type_id, description, date_created, created_by_id, date_modified, modified_by_id)
+        VALUES (:requirementTypeId, :description, now(), :createdById, now(), :modifiedById)
+        RETURNING id
+      )
+      INSERT INTO brs.ahj_utility_requirements (utility_id, requirement_id, position, status_id, date_created, created_by_id, date_modified, modified_by_id, original_requirement_id)
+      SELECT :utilityId,
+             ar.id,
+             :position,
+             :statusId,
+             now(),
+             :createdById,
+             now(),
+             :modifiedById,
+             ar.id
+      FROM ar
+      RETURNING original_requirement_id;
+    ]]>
+  </ahj.utility.requirement.add>
+
+  <ahj.utility.requirement.active.detail>
+    <![CDATA[
+      WITH open_challenge AS (
+        SELECT utility_id,
+               original_requirement_id,
+               status_id
+        FROM brs.ahj_utility_requirements ar
+        WHERE status_id = 3
+      )
+      SELECT aur.utility_id,
+             aur.position,
+             aur.status_id,
+             ars.name status,
+             aur.complete,
+             aur.date_created,
+             aur.created_by_id,
+             u.first_name || ' ' || u.last_name AS created_by,
+             aur.date_modified,
+             aur.modified_by_id,
+             u.first_name || ' ' || u.last_name AS modified_by,
+             ar.id,
+             ar.description,
+             ar.requirement_type_id,
+             aur.original_requirement_id,
+             CASE
+               WHEN oc.original_requirement_id IS NOT NULL THEN true
+               ELSE false
+             END AS has_open_challenge
+      FROM brs.ahj_utility_requirements aur
+        LEFT JOIN open_challenge oc ON oc.utility_id = aur.utility_id
+          AND oc.original_requirement_id = aur.original_requirement_id
+        INNER JOIN brs.ahj_requirement ar ON ar.id = aur.requirement_id
+        INNER JOIN brs.ahj_requirement_type art ON art.id = ar.requirement_type_id
+        INNER JOIN flow."user" u ON u.id = aur.created_by_id
+        INNER JOIN flow."user" u2 ON u2.id = aur.modified_by_id
+        INNER JOIN brs.ahj_requirement_status ars ON ars.id = aur.status_id
+      WHERE aur.utility_id = :utilityId
+        AND aur.original_requirement_id = :originalRequirementId
+        AND aur.status_id = 1
+        AND aur.archived IS NOT TRUE
+    ]]>
+  </ahj.utility.requirement.active.detail>
+
+  <ahj.utility.requirement.archive>
+    <![CDATA[
+      UPDATE brs.ahj_utility_requirements
+      SET archived = true,
+          status_id = 2,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+      WHERE original_requirement_id = :originalRequirementId;
+
+      UPDATE brs.ahj_requirement
+      SET archived = true,
+          date_modified = now(),
+          modified_by_id = :modifiedById
+      WHERE id IN (select requirement_id
+                   from brs.ahj_utility_requirements
+                   where original_requirement_id = :originalRequirementId);
+    ]]>
+  </ahj.utility.requirement.archive>
 </sql>

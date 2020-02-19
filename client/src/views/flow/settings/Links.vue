@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Links</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newLink = {}">
+            <v-btn text @click="addNew = !addNew; newLink = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -38,11 +38,12 @@
                 </v-text-field>
                 <div v-else>{{a.link}}</div>
               </v-list-item-content>
-              <v-list-item-action class="clickable">
+              <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                 <v-icon v-if="selectedLinkId === a.id" @click="saveLink(a)">save</v-icon>
                 <v-icon v-else @click="selectedLinkId = a.id">edit</v-icon>
               </v-list-item-action>
               <v-dialog
+                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                   v-model="a.deleteConfirm"
                   width="500">
                 <template v-slot:activator="{ on }">

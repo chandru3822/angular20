@@ -225,6 +225,8 @@
              left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where ps.id = :id
       and cfga.ancillary_custom_field_group_assignment_id is null
+      and cfg.archived is not true
+      and cfga.archived is not true
     order by cf.field_name
 
   ]]></customField.getByParentProcessStep>

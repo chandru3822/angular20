@@ -39,15 +39,18 @@
             :key="noteTemplate.id">
       <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
         {{ noteTemplate.title }}
-        <v-icon class="white--text" @click="copyText(index)">file_copy</v-icon>
+        <v-icon class="white--text" title="Copy text to clipboard"
+                @click="copyText(index)">file_copy</v-icon>
       </v-card-title>
       <v-card-text class="mt-4 note-text">
         <v-icon small @click="editNoteTemplate(noteTemplate)">edit</v-icon>
-        <span>{{ noteTemplate.note }}</span>
+        <span :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
+          {{ noteTemplate.note }}
+        </span>
       </v-card-text>
     </v-card>
-    <div class="empty-list"
-         v-show="noteTemplatesCopy.length < 1">
+    <div class="empty-list" v-show="noteTemplatesCopy.length < 1"
+         :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No note templates found
     </div>
   </v-card>
@@ -69,6 +72,10 @@
       noteTemplates: {
         type: Array,
         default: () => []
+      },
+      isNested: {
+        type: Boolean,
+        default: false
       }
     },
     data () {

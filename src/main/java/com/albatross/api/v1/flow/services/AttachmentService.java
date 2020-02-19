@@ -326,6 +326,7 @@ public class AttachmentService {
         params.put("size", file.getSize());
         params.put("createdById", currentUser.getId());
         params.put("attachmentTypeId", attachmentTypeId);
+        params.put("companyId", currentUser.getCompanyId());
 
         Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
 

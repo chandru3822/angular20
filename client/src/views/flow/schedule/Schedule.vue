@@ -5,19 +5,22 @@
         <Map :latitude="state.mapLatitude" :markers="selectedRows" :longitude="state.mapLongitude"
              :zoom="state.mapZoom" :map-resources="mapResources"></Map>
       </v-col>
-      <v-col cols="12" md="7">
+      <v-col cols="12" md="7" class="map-row" style="overflow: auto;">
         <!-- map-resources allows the calendar to send events back to the map -->
-        <Calendar :map-resources="mapResources" :callback="this.resourceMapCallback" :date-callback="this.dateCallback"></Calendar>
+        <Calendar :map-resources="mapResources"
+                  ref="calendar"
+                  :callback="this.resourceMapCallback"
+                  :date-callback="this.dateCallback"></Calendar>
       </v-col>
     </v-row>
-    <v-row class="schedule-row mt-4">
-      <v-col cols="12" md="5">
-        <v-card color="white" class="text-left">
+    <v-row class="schedule-row">
+      <v-col cols="12" md="5" class="py-0">
+        <v-card color="white" class="text-left py-0">
           <v-card-actions v-if="!selectedProject || !selectedProject.projectId">
             <v-btn text @click="showFilters = true" :class="{underline: showFilters}">Filters</v-btn>
             <v-btn text @click="showFilters = false" :class="{underline: !showFilters}">Find Project</v-btn>
           </v-card-actions>
-          <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)">
+          <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)" class="pt-0">
             <v-select v-model="state"
                       :items="states"
                       label="State"
@@ -117,7 +120,15 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id)">Go</v-btn>
+            <v-select v-model="searchProcessStepStatusType"
+                      :items="processStepStatusTypes"
+                      label="Status"
+                      item-text="processStepStatusType"
+                      item-value="id"
+                      return-object
+            >
+            </v-select>
+            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.id)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -176,12 +187,12 @@
                   use12-hour
                   auto
               ></datetime>
-<!--              <div class="map-field-label mt-3">{{selectedProject.resourceFieldName || 'Resource'}}</div>-->
-              <v-select v-model="selectedProject.resourceId"
+              <v-select v-model="selectedProject.resource"
                         :items="selectedProject.resources"
                         :label="selectedProject.resourceFieldName  || 'Resource'"
                         placeholder=" "
                         item-text="name"
+                        return-object
                         item-value="id"
                         class="mt-3"
               />
@@ -194,7 +205,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="7">
+      <v-col cols="12" md="7" class="py-0">
         <div>
           <v-data-table
               :headers="headers"
@@ -238,7 +249,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
-  import {getActiveStates} from '@/services/stateService'
+  import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
   import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
@@ -285,6 +296,7 @@
         selectedProject: {},
         //used for search
         searchEventType: {},
+        searchProcessStepStatusType: {},
         searchProject: {},
         searchProjects: [],
         searchProjectsLoading: false,
@@ -321,7 +333,6 @@
     watch: {
       search(val) {
         if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
-          console.log('randaLogger', this.searchProject.projectName)
           this.getProjectsSearchedFor(val);
         }
       },
@@ -333,10 +344,9 @@
       }
     },
     created() {
-      console.log('MEMEMEMEMEMEEM', this.$route.query)
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
-      this.getActiveStates()
+      this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
       if(this.$route.query && this.$route.query.processStepId && this.$route.query.projectId) {
@@ -346,14 +356,17 @@
     methods: {
       validateSaveEvent () {
         return !this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
-          || !this.selectedProject.resourceId  || (this.selectedProject.start >= this.selectedProject.end)
+          || !this.selectedProject.resource || !this.selectedProject.resource.id  || (this.selectedProject.start >= this.selectedProject.end)
       },
       async scheduleProject() {
         console.log('will save here', this.selectedProject)
+        this.selectedProject.resourceId = this.selectedProject.resource.id
+        this.selectedProject.resourceName = this.selectedProject.resource.name
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
-          // this.states = data
+          // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
+          this.$refs.calendar.getEvents()
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
         } catch (e) {
@@ -376,10 +389,10 @@
         this.startTime = startTime
         this.endTime = endTime
       },
-      async getActiveStates() {
+      async getActiveStatesByHierarchy() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getActiveStates()
+          const {data} = await getActiveStatesByHierarchy()
           this.states = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -394,6 +407,9 @@
           // 'event types' is just schedulable process steps
           const {data} = await getEventTypes()
           this.eventTypes = data
+          this.selectedEventTypes = this.selectedEventTypes.filter(set => {
+            return this.eventTypes.some(et => et.id === set.id)
+          })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -453,13 +469,12 @@
         }
       },
       filterProjects () {
-        let statusIds = this.selectedProcessStepStatusTypes.map(st => st.id)
+        let statusIds = this.selectedProcessStepStatusTypes.map(st => st.processStepStatusTypeId)
         if(statusIds?.length === 0) {
           this.projects = cloneDeep(this.masterProjects)
         } else {
           this.projects = this.masterProjects.filter(p => {
-            console.log('randaLogger',p.companyProcessStepStatusTypeId)
-            return statusIds.includes(p.companyProcessStepStatusTypeId)
+            return statusIds.includes(p.processStepStatusTypeId)
           })
         }
       },
@@ -500,12 +515,13 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventTypeId) {
+      async getSingleProject(projectId, eventTypeId, processStepStatusTypeId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
             projectId,
             eventTypeId,
+            processStepStatusTypeId
             // i dont think we need this for finding specific projects
             // startTime: this.startTime,
             // endTime: this.endTime
@@ -533,8 +549,12 @@
 
 <style lang="scss">
   #schedule-container .v-data-table__wrapper {
-    height: calc(50vh - 95px);
-    min-height: 200px;
+    height: calc(35vh);
+    min-height: 300px;
+  }
+
+  #schedule-container .v-data-table td {
+    height: 30px;
   }
 
   .map-field-input {
@@ -561,7 +581,8 @@
 
   @media (min-width: 769px) {
     .map-row {
-      min-height: calc(50vh - 95px);
+      height: calc(65vh - 95px);
+      min-height: 200px;
     }
   }
 </style>

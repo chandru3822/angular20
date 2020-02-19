@@ -13,5 +13,7 @@ public class ProcessStepProcess extends ProcessStep{
   private Long processStepId, displayOrder, companyProcessStepStatusTypeId, processStepStatusTypeId;
   private String processStepStatusType;
   private boolean initialStep;
+
+
 }
 

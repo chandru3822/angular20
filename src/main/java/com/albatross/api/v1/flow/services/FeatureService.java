@@ -3,9 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CompanyFeature;
-import com.albatross.api.v1.flow.model.FeatureAccessControl;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -32,6 +32,47 @@ public class FeatureService {
   private final ObjectMapper om;
 
   private final SecurityService securityService;
+
+  public List<Feature> getAllFeatures() {
+    User user = securityService.getCurrentUser();
+    List<Feature> results = sqlCache.query("feature.getAll", Collections.EMPTY_MAP, Feature.class);
+    return results;
+  }
+
+  public Feature saveFeature(Feature f) {
+    //this is used for adding/updating features to system
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("featureName", f.getFeatureName());
+    params.put("featureCode", f.getFeatureCode());
+    params.put("isSystem", null != f.getIsSystem() ? f.getIsSystem() : false);
+
+    Long id;
+    if(null != f.getId()) {
+      id = f.getId();
+      params.put("id", id);
+      sqlCache.update("feature.updateFeature", params);
+
+    } else {
+      id = sqlCache.updateReturningId("feature.insertFeature", params, "id").longValue();
+    }
+    return getOneFeature(id);
+  }
+
+  public Feature getOneFeature(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<Feature> f = sqlCache.get("feature.getOneFeature", params, Feature.class);
+    return f.orElse(null);
+  }
+
+  public void deleteFeature(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("feature.deleteFeature", params);
+  }
 
   public List<CompanyFeature> getFeaturesForCompany() {
     User user = securityService.getCurrentUser();
@@ -58,14 +99,14 @@ public class FeatureService {
     return results;
   }
 
-  public void saveCompanyFeatures(Long userId, List<CompanyFeature> features) {
+  public void saveUserCompanyFeatures(Long userId, List<CompanyFeature> features) {
     HashMap<String, Object> params = new HashMap<>();
 
     for(CompanyFeature cf : features) {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
         if(null != ac.getId()) {
           params.put("enabled", ac.isEnabled());
-          params.put("userFeatureAccessControlId", ac.getAccessControlId());
+          params.put("userFeatureAccessControlId", ac.getId());
           sqlCache.update("feature.updateUserFeatureAccessControl", params);
         } else if (ac.isEnabled()) {
           params.put("companyFeatureId", cf.getId());
@@ -75,6 +116,40 @@ public class FeatureService {
         }
       }
     }
+  }
+
+  public CompanyFeature getOneCompanyFeature(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<CompanyFeature> cf = sqlCache.get("feature.getOneCompanyFeature", params, CompanyFeature.class);
+    return cf.orElse(null);
+  }
+
+  public void deleteCompanyFeature(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    sqlCache.update("feature.deleteCompanyFeature", params);
+  }
+
+  public CompanyFeature saveCompanyFeature(CompanyFeature cf) {
+    //this is used for adding/updating company features to company
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("featureName", cf.getFeatureName());
+    params.put("featureId", cf.getFeatureId());
+
+    Long id;
+    if(null != cf.getId()) {
+      id = cf.getId();
+      params.put("id", id);
+      sqlCache.update("feature.updateCompanyFeature", params);
+
+    } else {
+      id = sqlCache.updateReturningId("feature.insertCompanyFeature", params, "id").longValue();
+    }
+    return getOneCompanyFeature(id);
   }
 
   public static class CompanyFeatureMapper<T> extends BeanPropertyRowMapper<T> {

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Users</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newUser" color="primary">
+            <v-btn text to="/newUser" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADD')">
               <v-icon>add</v-icon>
               Add User
             </v-btn>
@@ -223,7 +223,7 @@
               <td class="text-left user-column">{{item.email}}</td>
               <td class="text-left user-column">{{item.phoneNumber}}</td>
               <td class="text-left user-column">{{item.userStatusType}}</td>
-              <td class="text-left user-column">{{item.position}}</td>
+              <td class="text-left user-column">{{item.position || 'N/A'}}</td>
               <td class="text-left user-column" v-for="(f, index) in orgFilters" :key="index">
                 {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
@@ -242,6 +242,7 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
+  import {getOrgFilters} from '@/services/orgService'
   import max from 'lodash.max'
   import { saveAs } from 'file-saver'
 
@@ -288,7 +289,7 @@
           email: '',
           phone: '',
           orgs: {},
-          statuses: [1],
+          statuses: [],
           positions: []
         }
       }
@@ -415,7 +416,7 @@
             })
           } else if(initialLoad) {
             //org filters not used yet and is initial load, get the full list of orgs and use those, also populate master list
-            const {data} = await getRequest(`/org/filters`)
+            const {data} = await getOrgFilters()
             this.masterOrgFilterList = cloneDeep(data)
             this.orgFilters = cloneDeep(this.masterOrgFilterList)
             this.resetHeaderOrgs()

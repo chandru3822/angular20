@@ -11,8 +11,8 @@ import lombok.Setter;
 @Setter
 public class FeatureAccessControl {
 
-  private Long id, accessControlId, companyFeatureId;
-  private String accessLevel, accessCode;
+  private Long id, accessControlId, companyFeatureId, featureId;
+  private String accessLevel, accessCode, featureName, featureCode;
   private boolean archived, enabled;
 
 }

@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newStep = {}">
+            <v-btn text @click="addNew = !addNew; newStep = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -30,6 +30,7 @@
                 </v-btn>
               </v-list-item-action>
               <v-dialog
+                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                   v-model="ps.deleteConfirm"
                   width="500">
                 <template v-slot:activator="{ on }">

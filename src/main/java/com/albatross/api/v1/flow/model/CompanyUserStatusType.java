@@ -5,8 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserStatusType {
+public class CompanyUserStatusType {
 
-    private Long id;
+    private Long id, companyId;
     private String userStatusType;
+    private Boolean hasAccess, archived;
 }

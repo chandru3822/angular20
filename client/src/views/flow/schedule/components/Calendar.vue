@@ -1,80 +1,91 @@
 <template>
   <div id="calendar-container">
-    <div>
-      <v-select v-model="selectedOrgs"
-                :items="orgs"
-                label="Organizations"
-                multiple
-                return-object
-                item-text="orgName"
-                item-value="id"
-                @input="getEvents"
-      >
-        <template
-            slot="selection"
-            slot-scope="{ item, index }"
-        >
-          <div v-if="index === 0 && selectedOrgs.length < 3">
-            <v-chip small v-for="sr in selectedOrgs">
-              <span>{{ sr.orgName }}</span>
-            </v-chip>
-          </div>
-          <span
-              v-if="index === 1 && selectedOrgs.length >= 3"
-              class="primary--text caption"
-          >{{ selectedOrgs.length }} selected</span>
-        </template>
-        <v-list-item
-            slot="prepend-item"
-            ripple
-            @click="toggleSelectAllOrgs()">
-          <v-list-item-action>
-            <v-icon>{{ icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Select All</v-list-item-title>
-        </v-list-item>
-        <v-divider
-            slot="prepend-item"
-            class="mt-2"
-        ></v-divider>
-      </v-select>
-      <v-select v-model="selectedUsers"
-                :items="users"
-                label="Users"
-                multiple
-                return-object
-                item-text="fullName"
-                item-value="id"
-                @input="getEvents"
-      >
-        <template
-            slot="selection"
-            slot-scope="{ item, index }"
-        >
-          <div v-if="index === 0 && selectedUsers.length < 3">
-            <v-chip small v-for="sr in selectedUsers">
-              <span>{{ sr.fullName }}</span>
-            </v-chip>
-          </div>
-          <span
-              v-if="index === 1 && selectedUsers.length >= 3"
-              class="primary--text caption"
-          >{{ selectedUsers.length }} selected</span>
-        </template>
-        <v-list-item
-            slot="prepend-item"
-            ripple
-            @click="toggleSelectAllUsers()">
-          <v-list-item-action>
-            <v-icon>{{ iconUsers }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Select All</v-list-item-title>
-        </v-list-item>
-        <v-divider
-            slot="prepend-item"
-            class="mt-2"
-        ></v-divider>
-      </v-select>
+    <div class="mb-2">
+      <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
+      <v-row class="py-0">
+        <v-col class="py-0" cols="12" md="6">
+          <v-select v-model="selectedOrgs"
+                    :items="orgs"
+                    label="Organizations"
+                    multiple
+                    :loading="orgsLoading"
+                    hide-details
+                    return-object
+                    item-text="orgName"
+                    item-value="id"
+                    @input="getEvents"
+          >
+            <template
+                slot="selection"
+                slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedOrgs.length < 3">
+                <v-chip small v-for="sr in selectedOrgs">
+                  <span>{{ sr.orgName }}</span>
+                </v-chip>
+              </div>
+              <span
+                  v-if="index === 1 && selectedOrgs.length >= 3"
+                  class="primary--text caption"
+              >{{ selectedOrgs.length }} selected</span>
+            </template>
+            <v-list-item
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllOrgs()">
+              <v-list-item-action>
+                <v-icon>{{ icon }}</v-icon>
+              </v-list-item-action>
+              <v-list-item-title>Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+                slot="prepend-item"
+                class="mt-2"
+            ></v-divider>
+          </v-select>
+        </v-col>
+        <v-col class="py-0" cols="12" md="6">
+          <v-autocomplete v-model="selectedUsers"
+                    :items="users"
+                    label="Users"
+                    multiple
+                    hide-details
+                    :loading="usersLoading"
+                    return-object
+                    item-text="fullName"
+                    item-value="id"
+                    @input="getEvents"
+          >
+            <template
+                slot="selection"
+                slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedUsers.length < 3">
+                <v-chip small v-for="sr in selectedUsers">
+                  <span>{{ sr.fullName }}</span>
+                </v-chip>
+              </div>
+              <span
+                  v-if="index === 1 && selectedUsers.length >= 3"
+                  class="primary--text caption"
+              >{{ selectedUsers.length }} selected</span>
+            </template>
+            <v-list-item
+                slot="prepend-item"
+                ripple
+                @click="toggleSelectAllUsers()">
+              <v-list-item-action>
+                <v-icon>{{ iconUsers }}</v-icon>
+              </v-list-item-action>
+              <v-list-item-title>Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+                slot="prepend-item"
+                class="mt-2"
+            ></v-divider>
+          </v-autocomplete>
+        </v-col>
+      </v-row>
     </div>
     <div class="calendar-resize-container">
       <FullCalendar ref="eventCalendar"
@@ -185,10 +196,10 @@
     },
     created() {
       // console.log('randaLogger',moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'))
-      this.getSchedulingOrgs()
-      this.getSchedulingUsers()
       this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
+      this.getSchedulingOrgs()
+      this.getSchedulingUsers()
     },
     data() {
       return {
@@ -202,6 +213,8 @@
         events: [],
         orgs: [],
         selectedOrgs: [],
+        orgsLoading: true,
+        usersLoading: true,
         users: [],
         selectedUsers: [],
         resources: [],
@@ -229,7 +242,6 @@
                 text: 'Today',
                 click: () => {
                   let calendarApi = this.$refs.eventCalendar.getApi()
-                  console.log('randaLogger MOMENT', moment())
                   calendarApi.gotoDate(new Date)
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents()
@@ -276,7 +288,6 @@
             while (hexColorCode.length < 6) {
               hexColorCode += (Math.random()).toString(16).substr(-6).substr(-1)
             }
-            console.log('randaLogger random color', hexColorCode)
             r.color = '#'+hexColorCode
           }
         })
@@ -313,6 +324,10 @@
             d.id = `${1}${d.id}`
           })
           this.orgs = data
+          this.orgsLoading = false
+          this.selectedOrgs = this.selectedOrgs.filter(so => {
+            return this.orgs.some(o => o.id === so.id)
+          })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -334,6 +349,10 @@
             d.id = `${2}${d.id}`
           })
           this.users = data
+          this.usersLoading = false
+          this.selectedUsers = this.selectedUsers.filter(su => {
+            return this.users.some(u => u.id === su.id)
+          })
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -349,7 +368,6 @@
         }
         this.calendarInitialRender = false
         // note: this gets called every render of the calendar which makes clicking the 'day' and 'week' buttons work
-        console.log('randaLogger CALLED')
         this.events = []
         if(this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
           this.$store.commit(AppMutations.SET_LOADING, true)
@@ -396,13 +414,10 @@
         this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
       },
       handleEventRender (info) {
-        console.log('event rendered yo', info)
         info.el.querySelector('.fc-title').innerHTML = info.event.title
-        info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px;`
+        info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
       },
       handleResourceRender (renderInfo) {
-        console.log('resource rendered yo', renderInfo)
-
         let checkbox = document.createElement('INPUT');
         checkbox.setAttribute('type', 'checkbox')
         checkbox.setAttribute('class', 'mr-2')
@@ -414,7 +429,6 @@
             let resourceEvents = this.events.filter(e => {
               return e.resourceId === resource.id
             })
-            console.log('randaLogger',resourceEvents)
             resourceEvents.forEach(re => {
               let eventObj = {
                 id: resource.id,
@@ -453,6 +467,17 @@
     -moz-box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
     box-shadow: 2px 3px 5px 0px rgba(145,147,147,1);
   }
+
+  #calendar-container .fc-rows tr,
+  #calendar-container .fc-rows tr .fc-widget-content div{
+    height: 25px !important;
+  }
+
+  #calendar-container .fc-cell-content {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
 </style>
 
 <style lang="scss" scoped>
@@ -462,7 +487,7 @@
   flex-flow: column;
 }
 .calendar-resize-container {
-  /* without this when you resize the scree the calendar goes whackadoodle */
+  /* without this when you resize the screen the calendar goes whackadoodle */
   flex: 1 1 auto;
 }
 </style>

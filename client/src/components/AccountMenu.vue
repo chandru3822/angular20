@@ -21,42 +21,44 @@
         </v-avatar>
       </v-btn>
     </template>
-    <v-list two-line>
-      <v-list-group no-action>
-        <template v-slot:activator>
-          <v-list-item-content>
-            <v-list-item-title>Current Timezone</v-list-item-title>
-            <v-list-item-subtitle>{{timezone.friendlyValue}}</v-list-item-subtitle>
-          </v-list-item-content>
-        </template>
+    <div>
+      <v-list two-line>
+        <v-list-group no-action>
+          <template v-slot:activator>
+            <v-list-item-content>
+              <v-list-item-title>Current Timezone</v-list-item-title>
+              <v-list-item-subtitle>{{timezone.friendlyValue}}</v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
 
-        <v-list-item v-for="(tz, index) in timezones"
-                     :key="index"
-                     @click="changeTimezone(tz)">
-          <v-list-item-content>
-            <v-list-item-title v-text="tz.friendlyValue"></v-list-item-title>
-          </v-list-item-content>
+          <v-list-item v-for="(tz, index) in timezones"
+                       :key="index"
+                       @click="changeTimezone(tz)">
+            <v-list-item-content>
+              <v-list-item-title v-text="tz.friendlyValue"></v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-group>
+      </v-list>
+      <v-divider class="hr-non-transparent"></v-divider>
+      <v-list>
+        <v-list-item v-for="(item, index) in filterBy(menuItems, true, 'show')" :key="index" @click="menuOpen = false" :to="item.path">
+          <v-list-item-title>{{item.title}}</v-list-item-title>
+          <v-list-item-action class="account-menu-icon">
+            <v-icon>{{item.icon}}</v-icon>
+          </v-list-item-action>
         </v-list-item>
-      </v-list-group>
-    </v-list>
-    <v-divider class="hr-non-transparent"></v-divider>
-    <v-list>
-      <v-list-item v-for="(item, index) in menuItems" :key="index" @click="menuOpen = false" :to="item.path">
-        <v-list-item-title>{{item.title}}</v-list-item-title>
-        <v-list-item-action class="account-menu-icon">
-          <v-icon>{{item.icon}}</v-icon>
-        </v-list-item-action>
-      </v-list-item>
-    </v-list>
-    <v-divider class="hr-non-transparent"></v-divider>
-    <v-list>
-      <v-list-item @click="logout()">
-        <v-list-item-title>Logout</v-list-item-title>
-        <v-list-item-action class="account-menu-icon">
-          <v-icon>exit_to_app</v-icon>
-        </v-list-item-action>
-      </v-list-item>
-    </v-list>
+      </v-list>
+      <v-divider class="hr-non-transparent"></v-divider>
+      <v-list>
+        <v-list-item @click="logout()">
+          <v-list-item-title>Logout</v-list-item-title>
+          <v-list-item-action class="account-menu-icon">
+            <v-icon>exit_to_app</v-icon>
+          </v-list-item-action>
+        </v-list-item>
+      </v-list>
+    </div>
   </v-menu>
 </template>
 
@@ -66,9 +68,11 @@
   import { IS_MOBILE } from '@/helpers/helpers'
   import { UserActions } from '@/stores/UserStore'
   import moment from 'moment-timezone'
+  import Vue2Filters from "vue2-filters"
 
   export default {
     name: 'AccountMenu',
+    mixins: [Vue2Filters.mixin],
     props: {
       showImage: Boolean
     },
@@ -89,6 +93,7 @@
         userFirstName: this.getFirstName(),
         menuOpen: false,
         timezone: null,
+        highestCompanyId: this.$store.state.user.details.highestCompanyId,
         timezones: [
           { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
           { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
@@ -98,22 +103,31 @@
           { friendlyValue: 'US/Eastern', value: 'America/New_York'},
           { friendlyValue: 'US/Mountain', value: 'America/Denver'}
         ],
-        menuItems: [
-          // {
-          //   header: 'Custom Components'
-          // },
+      }
+    },
+    computed: {
+      menuItems() {
+        return [
           {
             path: '/settings/userProfile',
             title: 'Settings',
-            icon: 'settings'
+            icon: 'settings',
+            show: true
           }, {
             path: '/users',
             title: 'Users',
-            icon: 'people'
+            icon: 'people',
+            show: this.$store.getters.userHasFeature('USERS')
           }, {
             path: '/orgs',
             title: 'Organizations',
-            icon: 'list'
+            icon: 'list',
+            show: this.$store.getters.userHasFeature('ORGS')
+          }, {
+            path: '/admin',
+            title: 'Admin',
+            icon: 'mdi-cogs',
+            show: this.$store.getters.isSystemAdmin(this.highestCompanyId)
           },
 
         ]
@@ -122,7 +136,6 @@
     created () {
       this.getUserImage()
       if(this.$store.state.user.details.timezone === null) {
-        console.log('ttt', moment.tz.guess())
         this.timezone = {
           friendlyValue: moment.tz.guess(),
           value: moment.tz.guess()

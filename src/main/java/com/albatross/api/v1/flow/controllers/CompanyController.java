@@ -31,8 +31,8 @@ public class CompanyController {
   }
 
   @GetMapping(value = "/availableForUser", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Company>> getAllCompaniesForUser(@RequestParam(required = false) Long userId) {
-    return new ResponseEntity<>(companyService.getCompaniesAvailableForUser(userId), HttpStatus.OK);
+  public ResponseEntity<List<Company>> getCompaniesAvailableForUser() {
+    return new ResponseEntity<>(companyService.getCompaniesAvailableForUser(), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

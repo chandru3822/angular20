@@ -5,15 +5,6 @@
         <v-toolbar flat class="app-toolbar" v-if="!IS_MOBILE">
           <v-toolbar-title class="app-title">Company Settings</v-toolbar-title>
         </v-toolbar>
-<!--        <v-card flat style="background: aliceblue" class="text-center">-->
-<!--          <div class="pt-5">-->
-<!--            Changing the timezone in the account menu should change this value: <br/>-->
-<!--            (this section is just temporary for testing)-->
-<!--          </div>-->
-<!--          <div class="pt-5 font-weight-bold">-->
-<!--            {{ timeValue | formatDate('timestamp', $store.state.user.details.timezone.value) }}-->
-<!--          </div>-->
-<!--        </v-card>-->
       </v-col>
     </v-row>
     <v-form ref="companyForm">
@@ -22,18 +13,20 @@
           <v-text-field v-model="company.companyName"
                         placeholder="Enter a value"
                         required
+                        :readonly="!userCanEdit"
                         label="Company Name">
           </v-text-field>
           <v-text-field v-model="company.defaultPassword"
                         placeholder="Enter a value"
                         required
+                        :readonly="!userCanEdit"
                         label="Default Password">
           </v-text-field>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12" class="text-center">
-          <v-btn :disabled="!company.companyName || !company.defaultPassword" @click="saveCompany">
+          <v-btn :disabled="!company.companyName || !company.defaultPassword" @click="saveCompany" v-if="userCanEdit">
             <v-icon>mdi-content-save</v-icon>
             Save Changes
           </v-btn>
@@ -46,13 +39,15 @@
         <v-toolbar color="white" class="elevation-1">
           <v-toolbar-title class="app-title">Company Logo</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn text v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
-            <v-icon v-if="addImage">remove</v-icon>
-            <v-icon v-else>add</v-icon>
-          </v-btn>
-          <v-btn v-else text class="mr-2" @click="deleteAttachment(companyLogo.id)">
-            <v-icon>delete</v-icon>
-          </v-btn>
+          <div v-if="userCanEdit">
+            <v-btn text v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
+              <v-icon v-if="addImage">remove</v-icon>
+              <v-icon v-else>add</v-icon>
+            </v-btn>
+            <v-btn v-else text class="mr-2" @click="deleteAttachment(companyLogo.id)">
+              <v-icon>delete</v-icon>
+            </v-btn>
+          </div>
         </v-toolbar>
         <div class="text-center">
           <div class="mt-4" v-if="addImage">
@@ -101,6 +96,7 @@ export default {
       addImage: false,
       snackbar: {},
       company: {},
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
       acceptedFileTypes: STANDARD_IMAGES_ONLY,
       savingCompanyLogo: false,

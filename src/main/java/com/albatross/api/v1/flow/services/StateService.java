@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -38,6 +39,60 @@ public class StateService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     List<State> states = sqlCache.query("state.getActiveStatesByCompany", params, State.class);
+    return states;
+  }
+
+  public List<State> getAllStatesByCompany() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<State> states = sqlCache.query("state.getAllStatesByCompany", params, State.class);
+    return states;
+  }
+
+  public State getOneCompanyState(Long companyStateId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyStateId", companyStateId);
+    Optional<State> state = sqlCache.get("state.getOneCompanyState", params, State.class);
+    return state.orElse(null);
+  }
+
+  public void deleteCompanyState(Long companyStateId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyStateId", companyStateId);
+    sqlCache.update("state.deleteCompanyState", params);
+  }
+
+  public State saveCompanyState(State state) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("active", state.getActive() != null ? state.getActive() : true);
+    params.put("mapLatitude", state.getMapLatitude());
+    params.put("mapLongitude", state.getMapLongitude());
+    params.put("mapZoom", state.getMapZoom());
+    params.put("stateId", state.getId());
+
+    Long companyStateId;
+    if(null != state.getCompanyStateId()) {
+      companyStateId = state.getCompanyStateId();
+      params.put("companyStateId", companyStateId);
+      sqlCache.update("state.updateCompanyState", params);
+
+    } else {
+      companyStateId = sqlCache.updateReturningId("state.insertCompanyState", params, "id").longValue();
+    }
+    return getOneCompanyState(companyStateId);
+  }
+
+  public List<State> getActiveStatesByHierarchy() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<State> states = sqlCache.query("state.getActiveStatesByHierarchy", params, State.class);
     return states;
   }
 

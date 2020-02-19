@@ -26,4 +26,5 @@ public class Customer  {
 
   //so far this is only used for saving
   List<CustomFieldGroup> customFieldGroups;
+  private Boolean reloadCoordinates;
 }

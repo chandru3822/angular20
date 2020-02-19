@@ -22,7 +22,7 @@
             </v-toolbar>
           </template>
           <v-list dense class="pa-3">
-            <template v-for="(item, index) in items">
+            <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
 
               <v-list-item
@@ -49,7 +49,7 @@
         </v-menu>
         <v-card class="px-5 py-2" v-else>
           <v-list dense>
-            <template v-for="(item, index) in items">
+            <template v-for="(item, index) in filterBy(items, true, 'show')">
               <h3 v-if="item.header">{{item.header}}</h3>
 
               <v-list-item
@@ -103,82 +103,106 @@ export default {
       menuOpen: false,
       IS_MOBILE,
       title: null,
+      hasSettingsAccess: this.$store.getters.userHasFeature('SETTINGS'),
       companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
-      items: [
-        {
-          header: 'Preferences'
-        }, {
-          path: '/settings/userProfile',
-          title: 'User Profile',
-        }, {
-          path: '/settings/company',
-          title: 'Company',
-        }, {
-          header: 'User Management'
-        }, {
-          path: '/settings/positions',
-          title: 'Positions',
-        }, {
-          // path: '/settings/roles',
-          // title: 'Roles',
-        // }, {
-          header: 'Custom Components'
-        }, {
-          path: '/settings/customFields',
-          title: 'Custom Fields',
-        }, {
-          path: '/settings/attachments',
-          title: 'Attachments',
-        }, {
-          path: '/settings/links',
-          title: 'Links',
-        }, {
-          path: '/settings/orgTypes',
-          title: 'Organization Types',
-        }, {
-          path: '/settings/eventTypes',
-          title: 'Scheduling Tool Event Types',
-        }, {
-          path: '/settings/workQueue/types',
-          title: 'Work Queue',
-        }, {
-          header: 'Processes'
-        }, {
-          path: '/settings/processes',
-          pathMatch: '/settings/processes',
-          title: 'Processes',
-        }, {
-          path: '/settings/processSteps',
-          pathMatch: '/settings/processStep',
-          title: 'Process Steps',
-        }, {
-          path: '/settings/functions',
-          pathMatch: '/settings/function',
-          title: 'Functions',
-        }, {
-          path: '/settings/statuses',
-          title: 'Statuses',
-        }, {
-          header: 'Objects'
-        }
-      ]
+      parentId: this.$store.state.user.details.parentCompanyId,
+
     }
   },
   computed: {
+    items() { return [
+      {
+        header: 'Preferences',
+        show: true
+      }, {
+        path: '/settings/userProfile',
+        title: 'User Profile',
+        show: true
+      }, {
+        path: '/settings/company',
+        title: 'Company',
+        show: this.hasSettingsAccess
+      }, {
+        header: 'User Management',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/positions',
+        title: 'Positions',
+        show: this.hasSettingsAccess
+      }, {
+        // path: '/settings/roles',
+        // title: 'Roles',
+        // }, {
+        header: 'Custom Components',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/customFields',
+        title: 'Custom Fields',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/attachments',
+        title: 'Attachments',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/links',
+        title: 'Links',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/orgTypes',
+        title: 'Organization Types',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/eventTypes',
+        title: 'Scheduling Tool Event Types',
+        show: this.$store.getters.isParent(this.parentId) && this.hasSettingsAccess
+      }, {
+        path: '/settings/workQueue/types',
+        title: 'Work Queue',
+        show: this.$store.getters.isParent(this.parentId) && this.hasSettingsAccess
+      }, {
+        header: 'Processes',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/processes',
+        pathMatch: '/settings/processes',
+        title: 'Processes',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/processSteps',
+        pathMatch: '/settings/processStep',
+        title: 'Process Steps',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/functions',
+        pathMatch: '/settings/function',
+        title: 'Functions',
+        show: this.hasSettingsAccess
+      }, {
+        path: '/settings/statuses',
+        title: 'Statuses',
+        show: this.hasSettingsAccess
+      }, {
+        header: 'Objects',
+        show: this.hasSettingsAccess
+      }
+    ]
+  }
   },
   methods: {
     async getCustomFieldObjectTypes () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
-        this.companyObjectTypes = data
-        this.setTitle()
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if(this.hasSettingsAccess) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
+          this.companyObjectTypes = data
+          this.setTitle()
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     setTitle (title) {
@@ -190,7 +214,7 @@ export default {
       else if( this.$route.path.includes('/settings/customFieldGroup')) {
         if(this.companyObjectTypes.length > 0) {
           const match = this.companyObjectTypes.find(ot => ot.id.toString() === this.$route.params.id)
-          this.title = match.objectType
+          this.title = match?.objectType
         }
       } else {
         this.title = this.items.find(i => i.pathMatch ?? i.path === this.$route.path).title
@@ -204,9 +228,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-testing {
-  background-color: red;
-}
 a {
   text-decoration: none;
 }
