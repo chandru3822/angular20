@@ -17,6 +17,9 @@ public class Position {
   private String position, orgType;
   private Boolean archived, schedulable, availableToChildren;
 
+  //until i figure out how to do a v-select with the list using one key and the value using a different key i need this:
+  private Long positionId;
+
   private Boolean edit = false;
 
   private List<CompanyFeature> companyFeatures;

@@ -24,7 +24,7 @@ public class ProcessStep {
   private List<ProcessStepAttachmentType> attachmentTypes;
   private List<ProcessStepLink> links;
 
-  private List<Position> owningPositions;
+  private List<OwningPosition> owningPositions;
 
   private List<ProcessStepWorkQueueType> workQueueTypes;
 }

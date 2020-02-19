@@ -23,7 +23,7 @@
             </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="getAvailableProcessSteps(); getPositions()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+            <v-btn text @click="getAvailableProcessSteps()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
               {{addNew ? 'Cancel' : 'Add Process Step'}}
             </v-btn>
           </v-toolbar-items>
@@ -41,13 +41,13 @@
                     no-data-text="No Positions Available"
                     label="Select Owning Positions"
                     item-text="position"
-                    item-value="id"
+                    item-value="positionId"
                     multiple
                     return-object
           ></v-select>
 <!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
           <!--  per scott: temporarily removing requirement for orgId        -->
-          <v-btn :disabled="!newProcessStep.processStepId" @click="assignProcessStep">Save</v-btn>
+          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0" @click="assignProcessStep">Save</v-btn>
         </v-container>
         <v-data-table
             :headers="headers"
@@ -81,9 +81,18 @@
                           item-value="id"
                           class="mt-4"
                 ></v-select>
+                <v-select v-model="item.owningPositions"
+                          :items="owningPositions"
+                          no-data-text="No Positions Available"
+                          label="Select Owning Positions"
+                          item-text="position"
+                          item-value="positionId"
+                          multiple
+                          return-object
+                ></v-select>
                 <div class="mt-3 text-center">
-                  <v-btn :disabled="item.initialStep && !item.companyProcessStepStatusTypeId"
-                         @click="updateInitialStep(item)">
+                  <v-btn :disabled="(item.initialStep && !item.companyProcessStepStatusTypeId) || (!item.owningPositions || item.owningPositions.length === 0)"
+                         @click="saveProcessStepProcess(item)">
                     <v-icon>save</v-icon>
                     Save
                   </v-btn>
@@ -237,6 +246,7 @@ export default {
     })
   },
   created () {
+    this.getPositions()
     this.getProcessDetails()
     this.getStatusTypes()
   },
@@ -261,12 +271,29 @@ export default {
     async saveRowChanges (rows) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/processes/${this.processId}/processStep`, rows)
+        await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
         this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveProcessStepProcess (item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        item.companyProcessStepStatusTypeId = item.initialStep ? item.companyProcessStepStatusTypeId : null
+        const {data} = await putRequest(`/processes/${this.processId}/processStepProcess`, item)
+        item.initialStep = data.initialStep
+        item.companyProcessStepStatusTypeId = data.companyProcessStepStatusTypeId
+        item.processStepStatusType = data.processStepStatusType
+        this.expanded = []
+        this.snackbar = getSnackbar('SUCCESS', 'Process Saved')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Process')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -338,23 +365,6 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Assigning Process Step')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async updateInitialStep(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        item.companyProcessStepStatusTypeId = item.initialStep ? item.companyProcessStepStatusTypeId : null
-        const {data} = await putRequest(`/processes/${this.processId}/initialProcessStepProcess`, item)
-        item.initialStep = data.initialStep
-        item.companyProcessStepStatusTypeId = data.companyProcessStepStatusTypeId
-        item.processStepStatusType = data.processStepStatusType
-        this.expanded = []
-        this.snackbar = getSnackbar('SUCCESS', 'Process Step Saved')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Process Step')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
