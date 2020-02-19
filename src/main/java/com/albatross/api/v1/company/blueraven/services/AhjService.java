@@ -24,9 +24,6 @@ public class AhjService {
   private SqlCache sqlCache;
 
   @Autowired
-  private ObjectMapper om;
-
-  @Autowired
   private SecurityService securityService;
 
   @Autowired
@@ -37,9 +34,6 @@ public class AhjService {
 
   @Autowired
   private AhjDesignService ahjDesignService;
-
-  @Autowired
-  private AhjUtilityService ahjUtilityService;
 
   public List<AhjSummary> getAhjList() {
     return sqlCache.query("ahj.list", new HashMap<>(), AhjSummary.class);
@@ -119,8 +113,6 @@ public class AhjService {
 
       if (AhjType.PERMIT.equals(ahjType)) {
         ahjPermitService.createPermitChecklistItem(ahjItemTypeId, itemId);
-      } else if (AhjType.UTILITY.equals(ahjType)){
-//        ahjUtilityService.createUtilityChecklistItem(ahjItemTypeId, itemId);
       } else {
         ahjInspectionService.createInspectionChecklistItem(ahjItemTypeId, itemId);
       }
@@ -172,10 +164,8 @@ public class AhjService {
         ahjPermitService.savePermitContact(id, contactId);
       } else if (AhjType.INSPECTION.equals(ahjType)) {
         ahjInspectionService.saveInspectionContact(id, contactId);
-      } else if (AhjType.DESIGN.equals(ahjType)){
-//        ahjDesignService.saveDesignContact(id, contactId);
       } else {
-//        ahjUtilityService.saveUtilityContact(id, contactId);
+        ahjDesignService.saveDesignContact(id, contactId);
       }
 
     } else {

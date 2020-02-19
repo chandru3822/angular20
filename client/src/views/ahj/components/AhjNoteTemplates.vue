@@ -53,15 +53,22 @@
          :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
       No note templates found
     </div>
+
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-card>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { deleteRequest, putRequest, postRequest } from '@/helpers/helpers'
+  import Snackbar from '@/components/Snackbar'
+  import { AppMutations } from '@/stores/AppStore'
+  import { putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
   export default {
     name: "AhjNoteTemplates",
+    components: {
+      Snackbar
+    },
     props: {
       inspectionId: {
         type: Number
@@ -80,6 +87,7 @@
     },
     data () {
       return {
+        snackbar: {},
         noteTemplate: {
           id: null,
           title: null,
@@ -107,23 +115,47 @@
         this.noteTemplate = Object.assign({}, noteTemplate)
       },
       async saveNoteTemplate() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
         if (this.addMode) {
-          const {data} = await postRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates`, this.noteTemplate, 'blueraven')
-          this.noteTemplatesCopy.push(cloneDeep(data))
+          try {
+            const {data} = await postRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates`, this.noteTemplate, 'blueraven')
+            this.noteTemplatesCopy.push(cloneDeep(data))
+            this.snackbar = getSnackbar('SUCCESS', 'Note template added')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error adding note template')
+          }
           this.addMode = false
         } else {
-          const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates/${this.noteTemplate.id}`, this.noteTemplate, 'blueraven')
-          let updatedNoteTemplateIndex = this.noteTemplatesCopy.findIndex(i => i.id === data.id)
-          this.noteTemplatesCopy[updatedNoteTemplateIndex].title = data.title
-          this.noteTemplatesCopy[updatedNoteTemplateIndex].note = data.note
+          try {
+            const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates/${this.noteTemplate.id}`, this.noteTemplate, 'blueraven')
+            let updatedNoteTemplateIndex = this.noteTemplatesCopy.findIndex(i => i.id === data.id)
+            this.noteTemplatesCopy[updatedNoteTemplateIndex].title = data.title
+            this.noteTemplatesCopy[updatedNoteTemplateIndex].note = data.note
+            this.snackbar = getSnackbar('SUCCESS', 'Note template updated')
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error updating note template')
+          }
           this.editMode = false
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteNoteTemplate() {
-        await deleteRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates/${this.noteTemplate.id}`, 'blueraven')
-        let deletedNoteTemplateIndex = this.noteTemplatesCopy.findIndex(i => i.id === this.noteTemplate.id)
-        this.noteTemplatesCopy.splice([deletedNoteTemplateIndex], 1)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          await putRequest(`/ahj/${this.ahjId}/inspection/${this.inspectionId}/noteTemplates/${this.noteTemplate.id}/archive`, null, 'blueraven')
+          let deletedNoteTemplateIndex = this.noteTemplatesCopy.findIndex(i => i.id === this.noteTemplate.id)
+          this.noteTemplatesCopy.splice(deletedNoteTemplateIndex, 1)
+          this.snackbar = getSnackbar('SUCCESS', 'Note template deleted')
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error deleting note template')
+        }
         this.editMode = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       copyText(index) {
         let notes = document.getElementsByClassName('note-text')
