@@ -48,9 +48,12 @@
          cp.company_id,
          cp.process_id,
          p.customer_id,
-         p.project_name
+         p.project_name,
+         p.company_project_status_type_id,
+         cpst.project_status_type
       from flow.company_process cp
           inner join flow.project p on cp.id = p.company_process_id
+          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       where p.id = :projectId
     ]]>
   </project.get>
@@ -68,9 +71,12 @@
          cp.company_id,
          cp.process_id,
          p.customer_id,
-         p.project_name
+         p.project_name,
+         p.company_project_status_type_id,
+         cpst.project_status_type
       from flow.company_process cp
           inner join flow.project p on cp.id = p.company_process_id and p.id = :projectId
+          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       where p.customer_id = :customerId;
     ]]>
   </project.getAllForCustomer>
