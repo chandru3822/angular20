@@ -25,6 +25,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -833,6 +834,116 @@ public class ProjectProcessStepServiceTests {
     assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
     r.setOperatorTypeId(4L);
     assertThat(projectProcessStepService.calculateBooleanRequirement(r)).isFalse();
+  }
+
+  @Test
+  public void compareNumericTest() throws Exception {
+    Double number = 10d;
+    Double compareNumber = 10d;
+
+    // Compare equal
+
+    assertThat(projectProcessStepService.compareNumeric(number, compareNumber, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareNumeric(number, compareNumber, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(number, compareNumber, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(number, compareNumber, 4L)).isFalse();
+
+    // Compare larger user input
+
+    assertThat(projectProcessStepService.compareNumeric(number + 10, compareNumber, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(number + 10, compareNumber, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNumeric(number + 10, compareNumber, 3L)).isTrue();
+    assertThat(projectProcessStepService.compareNumeric(number + 10, compareNumber, 4L)).isFalse();
+
+    // Compare larger required value
+
+    assertThat(projectProcessStepService.compareNumeric(number, compareNumber + 10, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(number, compareNumber + 10, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNumeric(number, compareNumber + 10, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(number, compareNumber + 10, 4L)).isTrue();
+
+    // Compare user input of null
+
+    assertThat(projectProcessStepService.compareNumeric(null, compareNumber, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(null, compareNumber, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNumeric(null, compareNumber, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(null, compareNumber, 4L)).isFalse();
+
+    // Compare required value of null
+
+    assertThat(projectProcessStepService.compareNumeric(number, null, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(number, null, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareNumeric(number, null, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(number, null, 4L)).isFalse();
+
+    // Compare all null
+
+    assertThat(projectProcessStepService.compareNumeric(null, null, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareNumeric(null, null, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(null, null, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareNumeric(null, null, 4L)).isFalse();
+  }
+
+  @Test
+  public void calculateNumericRequirementTest() throws Exception {
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.numeric"), new TypeReference<ProjectProcessStepRequirement>(){});
+    r.setDataTypeId(4L);
+
+    // Check requirement value gets compared
+
+    r.setNumericValue(BigDecimal.valueOf(10L));
+    r.setRequirementValue("10");
+    r.setDataTypeRequirementId(null);
+    r.setOperatorTypeId(1L);
+
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isTrue();
+    verify(projectProcessStepService).compareNumeric(anyDouble(), anyDouble(), anyLong());
+
+    // Compare regular value
+
+    r.setRequirementValue(null);
+    r.setDataTypeRequirementId(16L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(17L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+
+    // Compare null value
+
+    r.setNumericValue(null);
+    r.setDataTypeRequirementId(16L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(17L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateNumericRequirement(r)).isFalse();
   }
 
   // Possibly use this in the future

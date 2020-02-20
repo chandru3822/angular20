@@ -703,6 +703,9 @@ public class ProjectProcessStepService {
             case 2:
               passed = fieldValue != null;
               break;
+            case 3:
+            case 4:
+              break;
             default:
               throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
           }
@@ -714,6 +717,9 @@ public class ProjectProcessStepService {
               break;
             case 2:
               passed = fieldValue == null;
+              break;
+            case 3:
+            case 4:
               break;
             default:
               throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
