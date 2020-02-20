@@ -577,15 +577,37 @@ public class ProjectProcessStepService {
         throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
       }
     } else {
-      switch (r.getDataTypeRequirementId().intValue()) {
+      switch(r.getDataTypeRequirementId().intValue()) {
         case 20:
-          passed = fieldValue == null;
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue == null;
+              break;
+            case 2:
+              passed = fieldValue != null;
+              break;
+            case 3:
+            case 4:
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+          }
           break;
         case 21:
-          passed = fieldValue != null;
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue != null;
+              break;
+            case 2:
+              passed = fieldValue == null;
+              break;
+            case 3:
+            case 4:
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+          }
           break;
-        default:
-          throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
       }
     }
 
