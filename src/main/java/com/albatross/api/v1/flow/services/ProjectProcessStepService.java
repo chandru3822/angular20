@@ -652,14 +652,18 @@ public class ProjectProcessStepService {
         throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
       }
     } else {
+      // An empty string and null are treated as the same value during text comparison
       switch (r.getDataTypeRequirementId().intValue()) {
         case 18:
           switch (r.getOperatorTypeId().intValue()) {
             case 1:
-              passed = fieldValue == null;
+              passed = fieldValue == null || fieldValue.isEmpty();
               break;
             case 2:
-              passed = fieldValue != null;
+              passed = fieldValue != null && !fieldValue.isEmpty();
+              break;
+            case 3:
+            case 4:
               break;
             default:
               throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
@@ -668,10 +672,13 @@ public class ProjectProcessStepService {
         case 19:
           switch (r.getOperatorTypeId().intValue()) {
             case 1:
-              passed = fieldValue != null;
+              passed = fieldValue != null && !fieldValue.isEmpty();
               break;
             case 2:
-              passed = fieldValue == null;
+              passed = fieldValue == null || fieldValue.isEmpty();
+              break;
+            case 3:
+            case 4:
               break;
             default:
               throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
@@ -685,6 +692,7 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
+    // Treat empty strings and null the same
     text = (text != null) ? text.trim().toLowerCase() : "";
     compareText = (compareText != null) ? compareText.trim().toLowerCase() : "";
 
@@ -694,6 +702,9 @@ public class ProjectProcessStepService {
         break;
       case 2:
         passed = !text.equals(compareText);
+        break;
+      case 3:
+      case 4:
         break;
       default:
         throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", operatorTypeId));

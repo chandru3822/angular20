@@ -947,6 +947,145 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
+  public void compareTextTest() throws Exception {
+    String text = "test";
+    String compareText = "test";
+
+    // Compare equal text
+
+    assertThat(projectProcessStepService.compareText(text, compareText, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareText(text, compareText, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareText(text, compareText, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareText(text, compareText, 4L)).isFalse();
+
+    // Compare unequal text
+
+    text = "tes";
+    assertThat(projectProcessStepService.compareText(text, compareText, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareText(text, compareText, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareText(text, compareText, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareText(text, compareText, 4L)).isFalse();
+
+    // Compare null user input
+    assertThat(projectProcessStepService.compareText(null, compareText, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareText(null, compareText, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareText(null, compareText, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareText(null, compareText, 4L)).isFalse();
+
+    // Compare null requirement value
+    assertThat(projectProcessStepService.compareText(text, null, 1L)).isFalse();
+    assertThat(projectProcessStepService.compareText(text, null, 2L)).isTrue();
+    assertThat(projectProcessStepService.compareText(text, null, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareText(text, null, 4L)).isFalse();
+
+    // Compare all nulls
+    assertThat(projectProcessStepService.compareText(null, null, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareText(null, null, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareText(null, null, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareText(null, null, 4L)).isFalse();
+
+    // Check that nulls and empty strings are treated the same
+    assertThat(projectProcessStepService.compareText("", null, 1L)).isTrue();
+    assertThat(projectProcessStepService.compareText("", null, 2L)).isFalse();
+    assertThat(projectProcessStepService.compareText("", null, 3L)).isFalse();
+    assertThat(projectProcessStepService.compareText("", null, 4L)).isFalse();
+    assertThat(projectProcessStepService.compareText(null, "", 1L)).isTrue();
+    assertThat(projectProcessStepService.compareText(null, "", 2L)).isFalse();
+    assertThat(projectProcessStepService.compareText(null, "", 3L)).isFalse();
+    assertThat(projectProcessStepService.compareText(null, "", 4L)).isFalse();
+    assertThat(projectProcessStepService.compareText("", "", 1L)).isTrue();
+    assertThat(projectProcessStepService.compareText("", "", 2L)).isFalse();
+    assertThat(projectProcessStepService.compareText("", "", 3L)).isFalse();
+    assertThat(projectProcessStepService.compareText("", "", 4L)).isFalse();
+  }
+
+  @Test
+  public void compareTextRequirementTest() throws Exception {
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.text"), new TypeReference<ProjectProcessStepRequirement>(){});
+    r.setDataTypeId(5L);
+
+    // Check requirement value gets compared
+
+    r.setTextValue("test");
+    r.setRequirementValue("test");
+    r.setDataTypeRequirementId(null);
+    r.setOperatorTypeId(1L);
+
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isTrue();
+    verify(projectProcessStepService).compareText(anyString(), anyString(), anyLong());
+
+    r.setRequirementValue(null);
+
+    // Compare normal user input
+
+    r.setDataTypeRequirementId(18L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(19L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+
+    // Compare null user input
+
+    r.setTextValue(null);
+    r.setDataTypeRequirementId(18L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(19L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+
+    // Compare blank (empty text) user input
+
+    r.setTextValue("");
+    r.setDataTypeRequirementId(18L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isTrue();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+
+    r.setDataTypeRequirementId(19L);
+    r.setOperatorTypeId(1L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(2L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isTrue();
+    r.setOperatorTypeId(3L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+    r.setOperatorTypeId(4L);
+    assertThat(projectProcessStepService.calculateTextRequirement(r)).isFalse();
+  }
+
+  @Test
   public void compareIntTest() throws Exception {
     Long number = 10L;
     Long  compareNumber = 10L;
