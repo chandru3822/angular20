@@ -1,0 +1,38 @@
+<sql>
+  <propToolProduct.getAllForCompany><![CDATA[
+    select p.id,
+           p.product_name,
+           p.company_id,
+           p.archived
+    from props.product p
+    where p.company_id = :companyId
+        and p.archived is not true
+    order by p.product_name
+  ]]></propToolProduct.getAllForCompany>
+
+  <propToolProduct.getOne><![CDATA[
+    select *
+    from props.product
+    where id = :id
+  ]]></propToolProduct.getOne>
+
+  <propToolProduct.insert><![CDATA[
+    insert into props.product(product_name, company_id)
+    values (:productName, :companyId)
+  ]]></propToolProduct.insert>
+
+  <propToolProduct.update><![CDATA[
+    update props.product
+        set product_name = :productName
+    where id = :id
+  ]]></propToolProduct.update>
+
+  <propToolProduct.delete><![CDATA[
+    update props.product
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolProduct.delete>
+
+</sql>

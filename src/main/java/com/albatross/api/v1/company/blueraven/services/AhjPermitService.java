@@ -2,8 +2,8 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.models.ahj.*;
-//import com.albatross.api.v1.company.blueraven.models.ahj.cycle_times.AhjPermitCycleTimeStats;
-//import com.albatross.api.v1.company.blueraven.models.ahj.cycle_times.PermitCycleTimeDbProcessor;
+import com.albatross.api.v1.company.blueraven.models.ahj.cycle_times.AhjPermitCycleTimeStats;
+import com.albatross.api.v1.company.blueraven.models.ahj.cycle_times.PermitCycleTimeDbProcessor;
 import com.albatross.api.v1.flow.model.User;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,7 +18,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import com.albatross.api.utils.SqlCache;
 
-//import java.time.LocalDate;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -293,41 +293,38 @@ public class AhjPermitService {
     }
   }
 
-  // TODO: come back to this after the migration of custom fields has taken place
-//  public Optional<AhjPermitCycleTimeStats> getPermitCycleTimeStats(Long ahjId, LocalDate startDate, LocalDate endDate) {
-//    HashMap<String, Object> params = new HashMap<>();
-//    params.put("ahjId", ahjId);
-//    params.put("startDate", startDate);
-//    params.put("endDate", endDate);
-//    log.debug("Retrieving permit cycle time summary statistics using params: {}", params);
-//
-//    PermitCycleTimeDbProcessor resultProcessor = new PermitCycleTimeDbProcessor();
-//    sqlCache.query("ahj.permit.cycle-time.summary-stats", params, resultProcessor);
-//    log.debug("Stats: {}", resultProcessor.getStats());
-//    return resultProcessor.getStats();
-//  }
-//
-//  public String getPermitCycleTimeDetails(Long ahjId, LocalDate startDate, LocalDate endDate, String status) {
-//    HashMap<String, Object> params = new HashMap<>();
-//    params.put("ahjId", ahjId);
-//    params.put("startDate", startDate);
-//    params.put("endDate", endDate);
-//    params.put("status", status);
-//
-//    Optional<String> result = sqlCache.get("ahj.permit.cycle-time.permits", params,
-//      SingleColumnRowMapper.newInstance(String.class));
-//    return result.orElse("");
-//  }
-//
-//  public String getAsBuiltsCycleTimeDetails(Long ahjId, LocalDate startDate, LocalDate endDate, String status) {
-//    HashMap<String, Object> params = new HashMap<>();
-//    params.put("ahjId", ahjId);
-//    params.put("startDate", startDate);
-//    params.put("endDate", endDate);
-//    params.put("status", status);
-//
-//    Optional<String> result = sqlCache.get("ahj.permit.cycle-time.as-builts", params,
-//      SingleColumnRowMapper.newInstance(String.class));
-//    return result.orElse("");
-//  }
+  public Optional<AhjPermitCycleTimeStats> getPermitCycleTimeStats(Long ahjId, LocalDate startDate, LocalDate endDate) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjId", ahjId);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    log.debug("Retrieving permit cycle time summary statistics using params: {}", params);
+
+    PermitCycleTimeDbProcessor resultProcessor = new PermitCycleTimeDbProcessor();
+    sqlCache.query("ahj.permit.cycleTime.summaryStats", params, resultProcessor);
+    log.debug("Stats: {}", resultProcessor.getStats());
+    return resultProcessor.getStats();
+  }
+
+  public String getPermitCycleTimeDetails(Long ahjId, LocalDate startDate, LocalDate endDate, String status) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjId", ahjId);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    params.put("status", status);
+
+    Optional<String> result = sqlCache.get("ahj.permit.cycleTime.permits", params, SingleColumnRowMapper.newInstance(String.class));
+    return result.orElse("");
+  }
+
+  public String getAsBuiltsCycleTimeDetails(Long ahjId, LocalDate startDate, LocalDate endDate, String status) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("ahjId", ahjId);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    params.put("status", status);
+
+    Optional<String> result = sqlCache.get("ahj.permit.cycleTime.asBuilts", params, SingleColumnRowMapper.newInstance(String.class));
+    return result.orElse("");
+  }
 }
