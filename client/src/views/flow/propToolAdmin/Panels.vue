@@ -2,7 +2,7 @@
   <v-container id="panels-container">
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
-        <v-toolbar color="white" class="elevation-1">
+        <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="app-title">Panel</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>

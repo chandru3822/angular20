@@ -517,31 +517,31 @@ export default new Router({
         children: [
           {
             path: 'utilities',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Utilities.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminUtilites" */ './views/flow/propToolAdmin/Utilities.vue'),
           }, {
             path: 'financiers',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Financiers.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminFinanciers" */ './views/flow/propToolAdmin/Financiers.vue'),
           }, {
             path: 'products',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Products.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminProducts" */ './views/flow/propToolAdmin/Products.vue'),
           }, {
             path: 'pricing',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Pricing.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminPricing" */ './views/flow/propToolAdmin/Pricing.vue'),
           }, {
             path: 'panels',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Panels.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminPanels" */ './views/flow/propToolAdmin/Panels.vue'),
           }, {
             path: 'inverters',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Inverters.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminInverters" */ './views/flow/propToolAdmin/Inverters.vue'),
           }, {
             path: 'adders',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Adders.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminAdders" */ './views/flow/propToolAdmin/Adders.vue'),
           }, {
             path: 'incentives',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Incentives.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminIncentives" */ './views/flow/propToolAdmin/Incentives.vue'),
           }, {
             path: 'zipCodes',
-            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/ZipCodes.vue'),
+            component: () => import (/* webpackChunkName: "propToolAdminZipCodes" */ './views/flow/propToolAdmin/ZipCodes.vue'),
           },
 
         ]

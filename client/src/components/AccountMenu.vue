@@ -6,7 +6,7 @@
           :close-on-content-click="false">
     <template v-slot:activator="{ on }">
       <v-btn class="account-menu-button"
-             color="primaryCustom"
+             :color="headerColor"
              dark
              v-on="on"
       >
@@ -70,6 +70,8 @@
   import moment from 'moment-timezone'
   import Vue2Filters from "vue2-filters"
 
+  const { VUE_APP_ENV } = process.env
+
   export default {
     name: 'AccountMenu',
     mixins: [Vue2Filters.mixin],
@@ -91,6 +93,7 @@
         attachmentTypeId: 9,
         userId: this.$store.state.user.details.id,
         userFirstName: this.getFirstName(),
+        headerColor: VUE_APP_ENV === 'local' ? 'pink' : VUE_APP_ENV === 'uat' || VUE_APP_ENV === 'dev' ? 'orange' : 'primaryCustom',
         menuOpen: false,
         timezone: null,
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
