@@ -1,0 +1,38 @@
+<sql>
+  <propToolIncentive.getAllForCompany><![CDATA[
+    select i.id,
+           i.incentive,
+           i.company_id,
+           i.archived
+    from props.incentive i
+    where i.company_id = :companyId
+        and i.archived is not true
+    order by i.incentive
+  ]]></propToolIncentive.getAllForCompany>
+
+  <propToolIncentive.getOne><![CDATA[
+    select *
+    from props.incentive
+    where id = :id
+  ]]></propToolIncentive.getOne>
+
+  <propToolIncentive.insert><![CDATA[
+    insert into props.incentive(incentive, company_id)
+    values (:incentive, :companyId)
+  ]]></propToolIncentive.insert>
+
+  <propToolIncentive.update><![CDATA[
+    update props.incentive
+        set incentive = :incentive
+    where id = :id
+  ]]></propToolIncentive.update>
+
+  <propToolIncentive.delete><![CDATA[
+    update props.incentive
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolIncentive.delete>
+
+</sql>

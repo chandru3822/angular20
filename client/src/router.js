@@ -503,6 +503,48 @@ export default new Router({
             component: () => import (/* webpackChunkName: "features" */ './views/flow/admin/Features.vue'),
           }
         ]
+      },
+      {
+        path: '/propToolAdmin',
+        name: 'propToolAdmin',
+        component: () => {
+          if(store.getters.userHasFeature('PROP_TOOL')) {
+            return import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/PropToolAdmin.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
+        children: [
+          {
+            path: 'utilities',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Utilities.vue'),
+          }, {
+            path: 'financiers',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Financiers.vue'),
+          }, {
+            path: 'products',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Products.vue'),
+          }, {
+            path: 'pricing',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Pricing.vue'),
+          }, {
+            path: 'panels',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Panels.vue'),
+          }, {
+            path: 'inverters',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Inverters.vue'),
+          }, {
+            path: 'adders',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Adders.vue'),
+          }, {
+            path: 'incentives',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/Incentives.vue'),
+          }, {
+            path: 'zipCodes',
+            component: () => import (/* webpackChunkName: "propToolAdmin" */ './views/flow/propToolAdmin/ZipCodes.vue'),
+          },
+
+        ]
       }
     ],
 

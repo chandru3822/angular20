@@ -1,0 +1,38 @@
+<sql>
+  <propToolZipCode.getAllForCompany><![CDATA[
+    select f.id,
+           f.zip_code,
+           f.company_id,
+           f.archived
+    from props.zip_code f
+    where f.company_id = :companyId
+        and f.archived is not true
+    order by f.zip_code
+  ]]></propToolZipCode.getAllForCompany>
+
+  <propToolZipCode.getOne><![CDATA[
+    select *
+    from props.zip_code
+    where id = :id
+  ]]></propToolZipCode.getOne>
+
+  <propToolZipCode.insert><![CDATA[
+    insert into props.zip_code(zip_code, company_id)
+    values (:zipCode, :companyId)
+  ]]></propToolZipCode.insert>
+
+  <propToolZipCode.update><![CDATA[
+    update props.zip_code
+        set zip_code = :zipCode
+    where id = :id
+  ]]></propToolZipCode.update>
+
+  <propToolZipCode.delete><![CDATA[
+    update props.zip_code
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolZipCode.delete>
+
+</sql>

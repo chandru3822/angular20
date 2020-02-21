@@ -1,0 +1,38 @@
+<sql>
+  <propToolInverter.getAllForCompany><![CDATA[
+    select i.id,
+           i.inverter_name,
+           i.company_id,
+           i.archived
+    from props.inverter i
+    where i.company_id = :companyId
+        and i.archived is not true
+    order by i.inverter_name
+  ]]></propToolInverter.getAllForCompany>
+
+  <propToolInverter.getOne><![CDATA[
+    select *
+    from props.inverter
+    where id = :id
+  ]]></propToolInverter.getOne>
+
+  <propToolInverter.insert><![CDATA[
+    insert into props.inverter(inverter_name, company_id)
+    values (:inverterName, :companyId)
+  ]]></propToolInverter.insert>
+
+  <propToolInverter.update><![CDATA[
+    update props.inverter
+        set inverter_name = :inverterName
+    where id = :id
+  ]]></propToolInverter.update>
+
+  <propToolInverter.delete><![CDATA[
+    update props.inverter
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolInverter.delete>
+
+</sql>
