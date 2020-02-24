@@ -327,12 +327,7 @@ export default {
       }
     },
     handleActionCompleted () {
-      this.$router.push({
-        name: 'project',
-        params: {
-          projectId: this.projectId
-        }
-      })
+      this.$router.push({name: 'projectOverview', params: {projectId: this.projectId}})
     },
     handleOnCompleteError (actionId) {
       logError(`Failed to complete action with actionId: ${actionId}`)
