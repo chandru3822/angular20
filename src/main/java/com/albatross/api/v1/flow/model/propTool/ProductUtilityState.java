@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @Data
 @NoArgsConstructor
-public class Pricing {
+public class ProductUtilityState {
 
   private Long id;
-  private String pricing;
+  private String productId, utilityStateId;
   private Boolean archived;
-
+  private Double fundingCap, targetProductionFactor;
 }

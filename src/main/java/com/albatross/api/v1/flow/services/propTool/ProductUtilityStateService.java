@@ -3,7 +3,7 @@ package com.albatross.api.v1.flow.services.propTool;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.propTool.Pricing;
+import com.albatross.api.v1.flow.model.propTool.ProductUtilityState;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class PricingService {
+public class ProductUtilityStateService {
 
   private final SqlCache sqlCache;
 
@@ -31,48 +31,49 @@ public class PricingService {
   @Autowired
   ObjectMapper om;
 
-  public List<Pricing> getPricingsForCompany() {
+  public List<ProductUtilityState> getProductUtilityStatesForCompany() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Pricing> results = sqlCache.query("propToolPricing.getAllForCompany", params, Pricing.class);
+    List<ProductUtilityState> results = sqlCache.query("propToolProductUtilityState.getAllForCompany", params, ProductUtilityState.class);
     return results;
   }
 
-  public Optional<Pricing> getPricing(Long id) {
+  public Optional<ProductUtilityState> getProductUtilityState(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<Pricing> results = sqlCache.get("propToolPricing.getOne", params, Pricing.class);
+    Optional<ProductUtilityState> results = sqlCache.get("propToolProductUtilityState.getOne", params, ProductUtilityState.class);
     return results;
   }
 
-  public Optional<Pricing> savePricing(Pricing pricing) {
+  public Optional<ProductUtilityState> saveProductUtilityState(ProductUtilityState p) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("pricing", pricing.getPricing());
+    params.put("productId", p.getProductId());
+    params.put("utilityStateId", p.getUtilityStateId());
     Long id;
 
-    if(null != pricing.getId()) {
-      id = pricing.getId();
+    if(null != p.getId()) {
+      id = p.getId();
       params.put("modifiedById", user.getId());
       params.put("id", id);
-      sqlCache.update("propToolPricing.update", params);
+      sqlCache.update("propToolProductUtilityState.update", params);
     } else {
       params.put("createdById", user.getId());
       params.put("companyId", user.getCompanyId());
-      id = sqlCache.updateReturningId("propToolPricing.insert", params, "id").longValue();
+      id = sqlCache.updateReturningId("propToolProductUtilityState.insert", params, "id").longValue();
     }
 
-    return getPricing(id);
+    return getProductUtilityState(id);
   }
 
-  public void deletePricing(Long id) {
+  public void deleteProductUtilityState(Long id) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
     params.put("modifiedById", user.getId());
 
-    sqlCache.update("propToolPricing.delete", params);
+    sqlCache.update("propToolProductUtilityState.delete", params);
   }
 
 }

@@ -171,7 +171,7 @@
     methods: {
       async getPricings() {
         try {
-          const {data} = await getRequest(`/propTool/pricing`)
+          const {data} = await getRequest(`/propTool/productUtilityState`)
           this.pricings = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -183,7 +183,7 @@
       async deletePricing(id) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/propTool/pricing/${id}`)
+          await deleteRequest(`/propTool/productUtilityState/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Pricing Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -213,7 +213,7 @@
       async savePricing(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await putRequest(`/propTool/pricing`, item)
+          const {data} = await putRequest(`/propTool/productUtilityState`, item)
           // add it to the records already on the screen
           if(!item.id) {
             this.pricings.push(data)
