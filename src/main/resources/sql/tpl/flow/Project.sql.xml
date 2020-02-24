@@ -44,16 +44,31 @@
 
   <project.get>
     <![CDATA[
-      select p.id,
-         cp.company_id,
-         cp.process_id,
-         p.customer_id,
-         p.project_name,
-         p.company_project_status_type_id,
-         cpst.project_status_type
+      select
+        p.id,
+        cp.company_id,
+        cp.process_id,
+        p.customer_id,
+        p.project_name,
+        p.company_project_status_type_id,
+        cpst.project_status_type,
+        (
+        select row_to_json(o) from (
+          select
+            u.id as "userId",
+            u.first_name as "firstName",
+            u.last_name as "lastName",
+            u.first_name || ' ' || u.last_name AS "fullName",
+            po.position
+          from blueraven.user u
+          inner join flow.user_position up on up.user_id = u.id
+          inner join flow.position po on po.id = up.position_id
+          where up.id = p.user_position_id
+          ) o
+        ) AS owner
       from flow.company_process cp
-          inner join flow.project p on cp.id = p.company_process_id
-          inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
+      inner join flow.project p on cp.id = p.company_process_id
+      inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       where p.id = :projectId
     ]]>
   </project.get>
