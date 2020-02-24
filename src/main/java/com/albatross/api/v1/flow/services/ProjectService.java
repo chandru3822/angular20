@@ -75,11 +75,16 @@ public class ProjectService {
   public Optional<Project> insertProject(Long customerId, Long processId, String projectName) {
     User user = securityService.getCurrentUser();
 
+    // Get active company project status type so new projects can have an active status
+    CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(user.getCompanyId());
+    Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
+
     Long id = sqlCache.updateReturningId("project.insert",
         ImmutableMap.of("customerId", customerId,
                         "createdById", user.getId(),
                         "projectName", projectName,
-                        "processId", processId), "id").longValue();
+                        "processId", processId,
+                        "companyProjectStatusTypeId", companyStatusTypeId), "id").longValue();
 
     return getProject(id);
   }
@@ -146,6 +151,10 @@ public class ProjectService {
     params.put("projectId", projectId);
     params.put("userId", securityService.getCurrentUser().getId());
     sqlCache.update("project.updateOwner", params);
+  }
+
+  private CompanyProjectStatusType getActiveCompanyProjectStatusType(Long companyId) {
+    return sqlCache.get("project.getActiveProjectStatusTypeByCompanyId", Map.of("companyId", companyId), CompanyProjectStatusType.class).orElse(null);
   }
 
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {

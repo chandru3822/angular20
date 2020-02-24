@@ -75,8 +75,8 @@
 
   <project.insert>
     <![CDATA[
-      insert into flow.project (customer_id, company_process_id, project_name, created_by_id)
-      values (:customerId, :processId, :projectName, :createdById)
+      insert into flow.project (customer_id, company_process_id, project_name, created_by_id, company_project_status_type_id)
+      values (:customerId, :processId, :projectName, :createdById, :companyProjectStatusTypeId)
     ]]>
   </project.insert>
 
@@ -158,4 +158,21 @@
       date_modified = now()
     where id = :projectId
   ]]></project.updateOwner>
+
+  <project.getActiveProjectStatusTypeByCompanyId><![CDATA[
+    select
+      id,
+      project_status_type_id,
+      project_status_type,
+      archived,
+      date_created,
+      date_modified,
+      created_by_id,
+      modified_by_id,
+      company_id
+    from flow.company_project_status_type cpst
+    where
+      company_id = :companyId and
+      project_status_type_id = 1
+  ]]></project.getActiveProjectStatusTypeByCompanyId>
 </sql>
