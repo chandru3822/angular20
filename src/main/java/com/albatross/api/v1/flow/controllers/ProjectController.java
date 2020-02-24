@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.Project;
 import com.albatross.api.v1.flow.model.ProjectProcessStep;
 import com.albatross.api.v1.flow.services.ProjectService;
@@ -56,5 +57,11 @@ public class ProjectController {
                                                    @RequestParam Long attachmentTypeId,
                                                    @RequestParam("file") MultipartFile file) throws IOException {
     return new ResponseEntity<>(projectService.addAttachment(file, projectId, attachmentTypeId), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{projectId}/owner")
+  public ResponseEntity<Void> updateProjectProcessStepOwner(@PathVariable Long projectId, @RequestBody Owner owner) {
+    projectService.updateOwner(projectId, owner);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }

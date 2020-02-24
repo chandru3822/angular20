@@ -140,6 +140,14 @@ public class ProjectService {
     return sqlCache.query("project.getAllForCustomer", ImmutableMap.of("companyId", user.getCompanyId(), "customerId", customerId), Project.class);
   }
 
+  public void updateOwner(Long projectId, Owner owner) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userPositionId", (owner == null) ? null : owner.getUserPositionId());
+    params.put("projectId", projectId);
+    params.put("userId", securityService.getCurrentUser().getId());
+    sqlCache.update("project.updateOwner", params);
+  }
+
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId) {
     return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }

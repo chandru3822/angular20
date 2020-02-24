@@ -149,4 +149,13 @@
     insert into flow.project_attachment(attachment_id, project_id, created_by_id)
     values (:attachmentId, :projectId, :createdById)
   ]]></project.addAttachment>
+
+  <project.updateOwner><![CDATA[
+    update flow.project
+    set
+      user_position_id = :userPositionId,
+      modified_by_id = :userId,
+      date_modified = now()
+    where id = :projectId
+  ]]></project.updateOwner>
 </sql>
