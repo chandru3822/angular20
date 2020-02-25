@@ -1,0 +1,38 @@
+<sql>
+  <propToolFinancier.getAllForCompany><![CDATA[
+    select f.id,
+           f.financier,
+           f.company_id,
+           f.archived
+    from props.financier f
+    where f.company_id = :companyId
+        and f.archived is not true
+    order by f.financier
+  ]]></propToolFinancier.getAllForCompany>
+
+  <propToolFinancier.getOne><![CDATA[
+    select *
+    from props.financier
+    where id = :id
+  ]]></propToolFinancier.getOne>
+
+  <propToolFinancier.insert><![CDATA[
+    insert into props.financier(financier, company_id)
+    values (:financier, :companyId)
+  ]]></propToolFinancier.insert>
+
+  <propToolFinancier.update><![CDATA[
+    update props.financier
+        set financier = :financier
+    where id = :id
+  ]]></propToolFinancier.update>
+
+  <propToolFinancier.delete><![CDATA[
+    update props.financier
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolFinancier.delete>
+
+</sql>

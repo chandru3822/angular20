@@ -13,4 +13,6 @@ public class Project {
   private String projectName, processName, projectStatusType;
 
   private LocalDate dateCreated;
+
+  private Owner owner;
 }

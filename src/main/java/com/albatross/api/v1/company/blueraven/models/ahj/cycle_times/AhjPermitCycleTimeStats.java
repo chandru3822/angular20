@@ -3,7 +3,6 @@ package com.albatross.api.v1.company.blueraven.models.ahj.cycle_times;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-// TODO: come back to this after the migration of custom fields has taken place
 @Data
 @NoArgsConstructor
 public class AhjPermitCycleTimeStats {

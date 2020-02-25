@@ -1,0 +1,38 @@
+<sql>
+  <propToolPanel.getAllForCompany><![CDATA[
+    select p.id,
+           p.panel_name,
+           p.company_id,
+           p.archived
+    from props.panel p
+    where p.company_id = :companyId
+        and p.archived is not true
+    order by p.panel_name
+  ]]></propToolPanel.getAllForCompany>
+
+  <propToolPanel.getOne><![CDATA[
+    select *
+    from props.panel
+    where id = :id
+  ]]></propToolPanel.getOne>
+
+  <propToolPanel.insert><![CDATA[
+    insert into props.panel(panel_name, company_id)
+    values (:panelName, :companyId)
+  ]]></propToolPanel.insert>
+
+  <propToolPanel.update><![CDATA[
+    update props.panel
+        set panel_name = :panelName
+    where id = :id
+  ]]></propToolPanel.update>
+
+  <propToolPanel.delete><![CDATA[
+    update props.panel
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolPanel.delete>
+
+</sql>

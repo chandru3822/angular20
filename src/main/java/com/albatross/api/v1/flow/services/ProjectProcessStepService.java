@@ -577,15 +577,37 @@ public class ProjectProcessStepService {
         throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
       }
     } else {
-      switch (r.getDataTypeRequirementId().intValue()) {
+      switch(r.getDataTypeRequirementId().intValue()) {
         case 20:
-          passed = fieldValue == null;
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue == null;
+              break;
+            case 2:
+              passed = fieldValue != null;
+              break;
+            case 3:
+            case 4:
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+          }
           break;
         case 21:
-          passed = fieldValue != null;
+          switch (r.getOperatorTypeId().intValue()) {
+            case 1:
+              passed = fieldValue != null;
+              break;
+            case 2:
+              passed = fieldValue == null;
+              break;
+            case 3:
+            case 4:
+              break;
+            default:
+              throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+          }
           break;
-        default:
-          throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
       }
     }
 
@@ -630,14 +652,18 @@ public class ProjectProcessStepService {
         throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
       }
     } else {
+      // An empty string and null are treated as the same value during text comparison
       switch (r.getDataTypeRequirementId().intValue()) {
         case 18:
           switch (r.getOperatorTypeId().intValue()) {
             case 1:
-              passed = fieldValue == null;
+              passed = fieldValue == null || fieldValue.isEmpty();
               break;
             case 2:
-              passed = fieldValue != null;
+              passed = fieldValue != null && !fieldValue.isEmpty();
+              break;
+            case 3:
+            case 4:
               break;
             default:
               throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
@@ -646,10 +672,13 @@ public class ProjectProcessStepService {
         case 19:
           switch (r.getOperatorTypeId().intValue()) {
             case 1:
-              passed = fieldValue != null;
+              passed = fieldValue != null && !fieldValue.isEmpty();
               break;
             case 2:
-              passed = fieldValue == null;
+              passed = fieldValue == null || fieldValue.isEmpty();
+              break;
+            case 3:
+            case 4:
               break;
             default:
               throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
@@ -663,6 +692,7 @@ public class ProjectProcessStepService {
 
     boolean passed = false;
 
+    // Treat empty strings and null the same
     text = (text != null) ? text.trim().toLowerCase() : "";
     compareText = (compareText != null) ? compareText.trim().toLowerCase() : "";
 
@@ -672,6 +702,9 @@ public class ProjectProcessStepService {
         break;
       case 2:
         passed = !text.equals(compareText);
+        break;
+      case 3:
+      case 4:
         break;
       default:
         throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", operatorTypeId));
@@ -703,6 +736,9 @@ public class ProjectProcessStepService {
             case 2:
               passed = fieldValue != null;
               break;
+            case 3:
+            case 4:
+              break;
             default:
               throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
           }
@@ -714,6 +750,9 @@ public class ProjectProcessStepService {
               break;
             case 2:
               passed = fieldValue == null;
+              break;
+            case 3:
+            case 4:
               break;
             default:
               throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
@@ -752,19 +791,40 @@ public class ProjectProcessStepService {
   public boolean calculateBooleanRequirement(ProjectProcessStepRequirement r) throws Exception {
 
     Boolean fieldValue = r.getBooleanValue();
-    Boolean reqValue = Boolean.parseBoolean(r.getRequirementValue());
 
     boolean passed = false;
 
-    switch (r.getOperatorTypeId().intValue()) {
-      case 1:
-        passed = fieldValue == reqValue;
+    switch (r.getDataTypeRequirementId().intValue()) {
+      case 14:
+        switch (r.getOperatorTypeId().intValue()) {
+          case 1:
+            passed = fieldValue != null && fieldValue;
+            break;
+          case 2:
+            passed = fieldValue == null || !fieldValue;
+          case 3:
+          case 4:
+            break;
+          default:
+            throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+        }
         break;
-      case 2:
-        passed = fieldValue != reqValue;
+      case 15:
+        switch (r.getOperatorTypeId().intValue()) {
+          case 1:
+            passed = fieldValue != null && !fieldValue;
+            break;
+          case 2:
+            passed = fieldValue == null || fieldValue;
+          case 3:
+          case 4:
+            break;
+          default:
+            throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+        }
         break;
       default:
-        throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+        throw new Exception(String.format("Unable to parse data type of Boolean with data type requirement of ID: %s", r.getDataTypeRequirementId()));
     }
 
     return passed;
@@ -790,7 +850,7 @@ public class ProjectProcessStepService {
         case 6:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates(fieldValue.toLocalDate(), now.minusDays(Long.parseLong(secondaryValue)).toLocalDate(), r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? fieldValue.toLocalDate() : null, now.minusDays(Long.parseLong(secondaryValue)).toLocalDate(), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
@@ -798,13 +858,13 @@ public class ProjectProcessStepService {
         case 7:
           try {
             Assert.notNull(secondaryValue, "Unable to determine secondary value");
-            passed = compareDates(fieldValue.toLocalDate(), now.plusDays(Long.parseLong(secondaryValue)).toLocalDate(), r.getOperatorTypeId());
+            passed = compareDates((fieldValue != null) ? fieldValue.toLocalDate() : null, now.plusDays(Long.parseLong(secondaryValue)).toLocalDate(), r.getOperatorTypeId());
           } catch (NumberFormatException e) {
             //@TODO: something
           }
           break;
         case 8:
-          passed = compareDates(fieldValue.toLocalDate(), now.toLocalDate(), r.getOperatorTypeId());
+          passed = compareDates((fieldValue != null) ? fieldValue.toLocalDate() : null, now.toLocalDate(), r.getOperatorTypeId());
           break;
         case 9:
           try {
@@ -855,6 +915,9 @@ public class ProjectProcessStepService {
       case 2:
         passed = date != null;
         break;
+      case 3:
+      case 4:
+        break;
       default:
         throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
     }
@@ -873,6 +936,9 @@ public class ProjectProcessStepService {
       case 2:
         passed = date == null;
         break;
+      case 3:
+      case 4:
+        break;
       default:
         throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));
     }
@@ -886,16 +952,16 @@ public class ProjectProcessStepService {
 
     switch (operatorTypeId.intValue()) {
       case 1:
-        passed = (compareDate == null) ? date == null : date.isEqual(compareDate);
+        passed = Objects.equals(date, compareDate);
         break;
       case 2:
-        passed = (compareDate == null) ? date != null : !date.isEqual(compareDate);
+        passed = !Objects.equals(date, compareDate);
         break;
       case 3:
-        passed = date.isAfter(compareDate);
+        passed = date != null && date.isAfter(compareDate);
         break;
       case 4:
-        passed = date.isBefore(compareDate);
+        passed = date != null && date.isBefore(compareDate);
         break;
       default:
         throw new Exception(String.format("Unable to parse data type of Timestamp with operator of ID: %s", operatorTypeId));

@@ -1,0 +1,41 @@
+<sql>
+  <propToolProductUtilityState.getAllForCompany><![CDATA[
+    select p.id,
+           p.product_id,
+           p.utility_state_id,
+           p.funding_cap,
+           p.target_production_factor,
+           p.archived
+    from props.product_utility_state p
+    where  p.archived is not true
+  ]]></propToolProductUtilityState.getAllForCompany>
+
+  <propToolProductUtilityState.getOne><![CDATA[
+    select *
+    from props.product_utility_state
+    where id = :id
+  ]]></propToolProductUtilityState.getOne>
+
+  <propToolProductUtilityState.insert><![CDATA[
+    insert into props.product_utility_state(product_id, utility_state_id, funding_cap, target_production_factor)
+    values (:productId, :utilityStateId, :fundingCap, :targetProductionFactor)
+  ]]></propToolProductUtilityState.insert>
+
+  <propToolProductUtilityState.update><![CDATA[
+    update props.product_utility_state
+        set product_id = :productId,
+            utility_state_id = :utilityStateId,
+            funding_cap = :fundingCap,
+            target_production_factor = :targetProductionFactor
+    where id = :id
+  ]]></propToolProductUtilityState.update>
+
+  <propToolProductUtilityState.delete><![CDATA[
+    update props.product_utility_state
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolProductUtilityState.delete>
+
+</sql>

@@ -14,7 +14,8 @@
              left join flow.user u on u.id = up.user_id
             where wqt.id = pswqt.work_queue_type_id
                 and case when :isParent then true else ps.company_id = :companyId end
-                and case when :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
+                and case when :unassigned is true then pps.user_position_id is null
+                    when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
                 and cpsst.process_step_status_type_id = :processStepStatusTypeId
         ) as work_queue_count
       from flow.work_queue_type wqt
@@ -45,7 +46,8 @@
              left join flow.user u on u.id = up.user_id
     where pswqt.work_queue_type_id = :workQueueTypeId
         and case when :isParent then true else ps.company_id = :companyId end
-        and case when :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
+        and case when :unassigned is true then pps.user_position_id is null
+                 when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
         and cpsst.process_step_status_type_id = :processStepStatusTypeId
     order by last_updated;
   ]]></workQueue.getProcessStepsByTypeId>

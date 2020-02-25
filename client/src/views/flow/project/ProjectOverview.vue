@@ -2,13 +2,46 @@
 <v-row id="project-container">
   <v-col cols="12">
     <v-row class="project-header">
-      <v-col cols="4" class="text-left pl-5">
+      <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
           <router-link :to="`/customer/${customer.id}`">{{ customer.fullName}}</router-link>
         </div>
         <div class="project-subtitle">
           {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
         </div>
+      </v-col>
+
+      <v-col cols="4" class="lead-owner pb-2 text-right">
+        <div v-if="!displayChangeOwner">
+          <div v-if="project.owner && project.owner.userId">
+            <v-avatar
+              :tile="false"
+              :size="25"
+              color="grey lighten-4"
+              class="account-img mr-2"
+            >
+              <img name="accountImg" src="../../../assets/user_img_placeholder.png">
+            </v-avatar>
+            {{project.owner.fullName}}<br/>
+            {{project.owner.position}}
+          </div>
+        </div>
+        <div v-if="displayChangeOwner">
+          <v-autocomplete v-model="project.owner"
+                          :items="availableOwners"
+                          label="Select Owner"
+                          item-text="fullName"
+                          return-object
+                          autocomplete="off"
+                          @change="updateOwner"
+          >
+          </v-autocomplete>
+        </div>
+        <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
+          <span v-if="displayChangeOwner">cancel</span>
+          <span v-else-if="customer.owner && customer.owner.userId">change</span>
+          <span v-else>add owner</span>
+        </v-btn>
       </v-col>
     </v-row>
   </v-col>
@@ -173,13 +206,18 @@ export default {
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
       customer: {},
+      displayChangeOwner: false,
+      availableOwners: [],
+      project: {}
     }
   },
   created () {
+    this.getProject()
     this.getFieldGroups()
     this.getProcessSteps()
     this.getNotes()
     this.getCustomer()
+    this.getAvailableOwners()
   },
   computed: {
     processStepsByName () {
@@ -194,6 +232,14 @@ export default {
     }
   },
   methods: {
+    getProject: async function () {
+      try {
+        const {data} = await getRequest(`/project/${this.projectId}`)
+        this.project = data
+      } catch (e) {
+        logError(e)
+      }
+    },
     getProcessSteps: async function () {
       try {
        const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
@@ -212,6 +258,20 @@ export default {
         logError(e)
       } finally {
         this.isFieldsLoading = false
+      }
+    },
+    async getAvailableOwners () {
+      // this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        //@TODO: @randa, pretty sure the customer list will work for process steps and projects but double checking
+        const {data} = await getRequest(`/customer/owners`)
+        this.availableOwners = data
+
+        // this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     updateFieldGroups: async function () {
@@ -244,6 +304,18 @@ export default {
         this.customer = data
       } catch (e) {
         console.error('*** ERROR ***', e)
+      }
+    },
+    updateOwner: async function () {
+      this.displayChangeOwner = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await postRequest(`/project/${this.projectId}/owner`, this.project.owner)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
   }

@@ -1,0 +1,38 @@
+<sql>
+  <propToolAdder.getAllForCompany><![CDATA[
+    select a.id,
+           a.adder_name,
+           a.company_id,
+           a.archived
+    from props.adder a
+    where a.company_id = :companyId
+        and a.archived is not true
+    order by a.adder_name
+  ]]></propToolAdder.getAllForCompany>
+
+  <propToolAdder.getOne><![CDATA[
+    select *
+    from props.adder
+    where id = :id
+  ]]></propToolAdder.getOne>
+
+  <propToolAdder.insert><![CDATA[
+    insert into props.adder(adder_name, company_id)
+    values (:adderName, :companyId)
+  ]]></propToolAdder.insert>
+
+  <propToolAdder.update><![CDATA[
+    update props.adder
+        set adder_name = :adderName
+    where id = :id
+  ]]></propToolAdder.update>
+
+  <propToolAdder.delete><![CDATA[
+    update props.adder
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolAdder.delete>
+
+</sql>

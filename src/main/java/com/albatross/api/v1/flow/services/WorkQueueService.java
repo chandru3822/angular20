@@ -30,7 +30,7 @@ public class WorkQueueService {
   @Autowired
   SecurityService securityService;
 
-  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userPositionId) {
+  public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userPositionId, Boolean unassigned) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
@@ -38,13 +38,14 @@ public class WorkQueueService {
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
     params.put("userPositionId", userPositionId);
+    params.put("unassigned", null == unassigned ? false : unassigned);
     params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
 
     List<WorkQueue> results = sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
     return results;
   }
 
-  public List<WorkQueueDetail> getWorkQueueDetails(Long workQueueTypeId, Long userPositionId) {
+  public List<WorkQueueDetail> getWorkQueueDetails(Long workQueueTypeId, Long userPositionId, Boolean unassigned) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
@@ -52,7 +53,19 @@ public class WorkQueueService {
     params.put("isParent", user.getHighestParentCompanyId().equals(user.getCompanyId()));
     params.put("companyId", user.getCompanyId());
     params.put("userPositionId", userPositionId);
+    params.put("unassigned", null == unassigned ? false : unassigned);
     params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
+    //todo: comeback and fix the owningPositions after humes makes his change to make project_process_step.process_step_id actually point to project_process_step.process_step_process_id
+//    coalesce((
+//            SELECT array_to_json(array_agg(row_to_json(owningPositions)))
+//        FROM (
+//            SELECT pspop.id,
+//            pspop.process_step_process_id,
+//            pspop.position_id,
+//            pspop.archived
+//            FROM flow.process_step_process_owning_position pspop
+//            WHERE pspop.process_step_process_id = pps.process_step_id
+//            and pspop.archived is not true) owningPositions), '[]') AS "owningPositions"
 
     List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, WorkQueueDetail.class);
     return results;

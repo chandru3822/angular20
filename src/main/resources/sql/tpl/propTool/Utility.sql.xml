@@ -1,0 +1,46 @@
+<sql>
+  <propToolUtility.getAllForCompany><![CDATA[
+    select u.id,
+           u.utility_company,
+           u.company_id,
+           u.archived,
+           coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(utilityStates)))
+                 FROM (
+                          SELECT ust.id,
+                                 ust.utility_id as "utilityId"
+                          FROM props.utility_state ust
+                          WHERE ust.utility_id = u.id
+                            and ust.archived is not true) utilityStates), '[]') AS "utilityStates"
+    from props.utility u
+    where u.company_id = :companyId
+        and u.archived is not true
+    order by u.utility_company
+  ]]></propToolUtility.getAllForCompany>
+
+  <propToolUtility.getOne><![CDATA[
+    select *
+    from props.utility
+    where id = :id
+  ]]></propToolUtility.getOne>
+
+  <propToolUtility.insert><![CDATA[
+    insert into props.utility(utility_company, company_id)
+    values (:utilityCompany, :companyId)
+  ]]></propToolUtility.insert>
+
+  <propToolUtility.update><![CDATA[
+    update props.utility
+        set utility_company = :utilityCompany
+    where id = :id
+  ]]></propToolUtility.update>
+
+  <propToolUtility.delete><![CDATA[
+    update props.utility
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolUtility.delete>
+
+</sql>

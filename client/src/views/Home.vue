@@ -16,7 +16,7 @@
 <!--            </v-tab>-->
 <!--          </v-tabs>-->
 <!--        </v-app-bar>-->
-        <v-app-bar dense id="header" color="primaryCustom" tabs dark>
+        <v-app-bar dense id="header" :color="headerColor" tabs dark>
           <v-menu data-app left
                   offset-y
                   v-model="menuOpen"
@@ -36,7 +36,7 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-tabs :optional="true" color="secondaryCustom" background-color="primaryCustom" v-model="model" dark slider-color="secondaryCustom">
+          <v-tabs :optional="true" color="secondaryCustom" :background-color="headerColor" v-model="model" dark slider-color="secondaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
             </v-tab>
@@ -65,6 +65,7 @@ import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
 import Snackbar from '@/components/Snackbar.vue'
 
+const { VUE_APP_ENV } = process.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
 
 export default {
@@ -85,6 +86,7 @@ export default {
       menuOpen: false,
       companies: [],
       model: '',
+      headerColor: VUE_APP_ENV === 'local' ? 'pink' : VUE_APP_ENV === 'uat' || VUE_APP_ENV === 'dev' ? 'orange' : 'primaryCustom',
       tabs: [ {
         label: 'Customers',
         path: '/customers',

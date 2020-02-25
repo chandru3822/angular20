@@ -48,6 +48,7 @@
         IS_MOBILE,
         workQueueTypeId: this.$route.params.id,
         userPositionId: this.$route.query.upId,
+        unassigned: this.$route.query.unassigned,
         results: [],
         headers: [
           { text: 'Project', value: 'projectName', show: true },
@@ -65,7 +66,8 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`, { params: {
-              userPositionId: this.userPositionId
+              userPositionId: this.userPositionId,
+              unassigned: this.unassigned
             }})
           this.results = data
           this.$store.commit(AppMutations.SET_LOADING, false)
