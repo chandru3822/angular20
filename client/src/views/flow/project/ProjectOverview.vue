@@ -264,7 +264,7 @@ export default {
       // this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         //@TODO: @randa, pretty sure the customer list will work for process steps and projects but double checking
-        const {data} = await getRequest(`/customer/owners`)
+        const {data} = await getRequest(`/project/owners`)
         this.availableOwners = data
 
         // this.$store.commit(AppMutations.SET_LOADING, false)
