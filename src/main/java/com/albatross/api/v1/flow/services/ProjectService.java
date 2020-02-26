@@ -161,6 +161,10 @@ public class ProjectService {
     return sqlCache.query("project.getProcessStepsByProjectId", ImmutableMap.of("projectId", projectId), new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
+  public List<Owner> getOwners() {
+    return sqlCache.query("project.getOwners", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), Owner.class);
+  }
+
   private static class ProjectMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
 
