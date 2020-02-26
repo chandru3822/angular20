@@ -23,6 +23,18 @@
             No available results
           </template>
 
+          <template #item="{ item, index }">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left underline" @click="clickRow(item)">{{item.projectName}}</td>
+              <td class="text-left">{{item.processStepName}}</td>
+              <td class="text-left">
+                <div v-if="item.owner">{{item.owner}}</div>
+                <v-btn v-else-if="userCanOwnProcessStep(item)">
+                  <a @click="assignToUser(item)">Assign to me</a>
+                </v-btn>
+              </td>
+            </tr>
+          </template>
         </v-data-table>
 
       </v-col>
@@ -50,6 +62,7 @@
         userPositionId: this.$route.query.upId,
         unassigned: this.$route.query.unassigned,
         results: [],
+        userPositions: this.$store.state.user.details.positions,
         headers: [
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
@@ -76,6 +89,19 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Results')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      async assignToUser(item) {
+        console.log('randaLogger', item)
+        //todo: call whatever function humes adds for his screen that does this same thing
+        this.snackbar = getSnackbar('WARNING', 'I havent finished this feature yet. waiting to make sure my code is the same as humes')
+      },
+      userCanOwnProcessStep(item) {
+        let canAssign = false
+        item?.owningPositions?.forEach(op => {
+          let positionMatch = this.userPositions.find(up => up.id === op.positionId)
+          canAssign = positionMatch !== null && positionMatch !== undefined
+        })
+        return canAssign
       },
       clickRow(row) {
         this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&customerId=${row.customerId}`})
