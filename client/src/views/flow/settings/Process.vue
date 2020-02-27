@@ -326,7 +326,7 @@ export default {
     },
     async getPositions() {
       try {
-        const {data} = await getRequest(`/position`)
+        const {data} = await getRequest(`/position/withParent`)
         this.owningPositions = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
