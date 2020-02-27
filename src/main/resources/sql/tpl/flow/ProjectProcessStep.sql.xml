@@ -27,10 +27,14 @@
         inner join flow.position p on p.id = up.position_id
         where up.id = pps.user_position_id
         ) o
-      ) AS owner
+      ) AS owner,
+      psp.id as process_step_process_id
     from flow.project_process_step pps
     inner join flow.process_step ps on ps.id = pps.process_step_id
     inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+    inner join flow.project p on p.id = pps.project_id
+    inner join flow.company_process cp on cp.id = p.company_process_id
+    inner join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.process_id = cp.process_id
     where pps.id = :stepId
   ]]></projectProcessStep.getProjectProcessStep>
 
@@ -64,6 +68,34 @@
             case when :processStepStatusTypeId = 2 then now() end)
       where id = :projectProcessStepId;
   ]]></projectProcessStep.setStatus>
+
+  <projectProcessStep.getOwners><![CDATA[
+    with positions as (
+      select array(
+        select pspop.position_id
+        from flow.process_step_process_owning_position pspop
+        where pspop.process_step_process_id = :processStepProcessId
+      ) as position_ids
+    )
+    select
+      u.id as user_id,
+      u.first_name,
+      u.last_name,
+      u.first_name || ' ' || u.last_name as full_name,
+      up.id as user_position_id,
+      p.position
+    from positions
+    inner join flow.user_position up on array[up.position_id] <@ positions.position_ids
+    inner join flow.user u on u.id = up.user_id
+    inner join flow.position p on p.id = up.position_id
+    inner join flow.company_user_status_type cust on cust.company_id = p.company_id
+    inner join flow.user_status_type ust on ust.company_user_status_type_id = cust.id and ust.user_id = u.id
+    where
+      cust.has_access is true and
+      up.start_date <= now() and
+      (up.end_date is null or up.end_date >= now())
+    order by u.last_name, u.first_name;
+  ]]></projectProcessStep.getOwners>
 
   <projectProcessStep.updateOwner><![CDATA[
     update flow.project_process_step

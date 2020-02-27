@@ -206,11 +206,12 @@ export default {
     }
   },
   async created () {
-    this.getProcessStep()
+
     this.getProjectFieldGroups()
     this.getCustomFieldGroups()
     this.getNotes()
     this.getCustomer()
+    await this.getProcessStep()
     this.getAvailableOwners()
   },
   methods: {
@@ -278,8 +279,7 @@ export default {
     async getAvailableOwners () {
       // this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        //@TODO: @randa, pretty sure the customer list will work for process steps and projects but double checking
-        const {data} = await getRequest(`/customer/owners`)
+        const {data} = await getRequest(`/projectProcessStep/owners/${this.processStep.processStepProcessId}`)
         this.availableOwners = data
 
         // this.$store.commit(AppMutations.SET_LOADING, false)
