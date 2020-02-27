@@ -58,38 +58,6 @@
 
   <v-col cols="12" lg="6" class="text-left">
 
-    <v-col v-if="isProjectFieldsLoading" class="text-center">
-      <SpinnerInline :size="20" color="primary"/>
-    </v-col>
-
-<!--    project field groups -->
-    <v-col
-      v-else
-      class="mt-4"
-      v-for="(group, index) in projectFieldGroups"
-      :key="group.id"
-    >
-      <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn
-            v-if="index === 0"
-            text
-            @click="updateProjectFieldGroups">Save Project Fields</v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <v-card class="pa-4 text-left">
-        <CustomValueInput
-          v-for="(field, idx) in group.customFieldValues"
-          :key="idx"
-          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
-          :showFieldName="false"
-          :field="field"
-        />
-      </v-card>
-    </v-col>
-
 <!--    process field groups-->
     <v-col
       class="mt-4"
@@ -176,7 +144,6 @@ import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
-import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: 'ProjectProcessStep',
@@ -185,8 +152,7 @@ export default {
     Snackbar,
     Attachments,
     NotesAndActivity,
-    CustomValueInput,
-    SpinnerInline
+    CustomValueInput
   },
   data () {
     return {
@@ -195,10 +161,8 @@ export default {
       projectProcessStepId: this.$route.params.processStepId,
       processStepId: this.$route.query.processStepId,
       processStep: {},
-      projectFieldGroups: [],
       customFieldGroups: [],
       isProcessStepLoading: true,
-      isProjectFieldsLoading: false,
       notes: [],
       customer: {},
       displayChangeOwner: false,
@@ -206,8 +170,6 @@ export default {
     }
   },
   async created () {
-
-    this.getProjectFieldGroups()
     this.getCustomFieldGroups()
     this.getNotes()
     this.getCustomer()
@@ -223,17 +185,6 @@ export default {
         logError(e)
       } finally {
         this.isProcessStepLoading = false
-      }
-    },
-    async getProjectFieldGroups() {
-      try {
-        this.isProjectFieldsLoading = true
-        const {data} = await getRequest(`/customFieldValues/project/${this.projectId}`)
-        this.projectFieldGroups = data
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.isProjectFieldsLoading = false
       }
     },
     async getCustomFieldGroups() {
