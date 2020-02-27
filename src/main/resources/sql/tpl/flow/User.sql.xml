@@ -223,7 +223,17 @@
           and uc.archived is not true
          order by level
          limit 1
-       ) as highest_company_id
+       ) as highest_company_id,
+       coalesce((
+                SELECT array_to_json(array_agg(row_to_json(positions)))
+                FROM (
+                         SELECT p.id,
+                                p.position
+                         FROM flow.user_position up
+                            inner join flow.position p on p.id = up.position_id
+                         WHERE up.user_id = u.id
+                           and up.archived is not true
+                           and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "positions"
     from flow.user u
          inner join flow.user_company uc on uc.user_id = u.id
          left join flow.company_user_status_type cust on cust.company_id = uc.company_id

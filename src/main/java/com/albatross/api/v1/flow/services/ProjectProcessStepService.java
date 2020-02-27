@@ -220,6 +220,10 @@ public class ProjectProcessStepService {
     }
   }
 
+  public List<Owner> getOwners(Long processStepProcessId) {
+    return sqlCache.query("projectProcessStep.getOwners", Map.of("processStepProcessId", processStepProcessId), Owner.class);
+  }
+
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
   @Transactional

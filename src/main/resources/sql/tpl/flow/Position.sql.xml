@@ -14,6 +14,21 @@
     order by p.position
   ]]></position.getAllForCompany>
 
+  <position.getAllForCompanyWithParent><![CDATA[
+    select p.id,
+           p.position,
+           p.id as position_id,
+           p.org_type_id,
+           ot.org_type,
+           p.archived,
+           p.schedulable,
+           p.available_to_children
+    from flow.position p
+        inner join flow.org_type ot on ot.id = p.org_type_id
+    where (ot.company_id = :companyId OR (ot.company_id = :parentCompanyId AND p.available_to_children is true))
+    order by p.position
+  ]]></position.getAllForCompanyWithParent>
+
   <position.getOne><![CDATA[
     select p.id,
            p.position,

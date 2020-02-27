@@ -1,14 +1,16 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.WorkQueue;
-import com.albatross.api.v1.flow.model.WorkQueueDetail;
-import com.albatross.api.v1.flow.model.WorkQueueOwner;
+import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -29,6 +31,9 @@ public class WorkQueueService {
 
   @Autowired
   SecurityService securityService;
+
+  @Autowired
+  ObjectMapper om;
 
   public List<WorkQueue> getWorkQueues(Long workQueueCategoryId, Long userPositionId, Boolean unassigned) {
     User user = securityService.getCurrentUser();
@@ -55,19 +60,8 @@ public class WorkQueueService {
     params.put("userPositionId", userPositionId);
     params.put("unassigned", null == unassigned ? false : unassigned);
     params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
-    //todo: comeback and fix the owningPositions after humes makes his change to make project_process_step.process_step_id actually point to project_process_step.process_step_process_id
-//    coalesce((
-//            SELECT array_to_json(array_agg(row_to_json(owningPositions)))
-//        FROM (
-//            SELECT pspop.id,
-//            pspop.process_step_process_id,
-//            pspop.position_id,
-//            pspop.archived
-//            FROM flow.process_step_process_owning_position pspop
-//            WHERE pspop.process_step_process_id = pps.process_step_id
-//            and pspop.archived is not true) owningPositions), '[]') AS "owningPositions"
 
-    List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, WorkQueueDetail.class);
+    List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, new WorkQueueDetailMapper<>(WorkQueueDetail.class, om));
     return results;
   }
 
@@ -83,4 +77,20 @@ public class WorkQueueService {
     return results;
   }
 
+  public static class WorkQueueDetailMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public WorkQueueDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<OwningPosition>> owningPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "owningPositions",
+          new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
+
+    }
+  }
 }

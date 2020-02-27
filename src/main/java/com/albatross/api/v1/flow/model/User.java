@@ -20,6 +20,7 @@ public class User {
     private Long customerUserStatusTypeId;
     private List<Company> companies;
     private List<FeatureAccessControl> featureAccess;
+    private List<Position> positions;
     private Boolean hasAccess;
 
     private List<UserOrgHierarchy> hierarchy;
@@ -32,7 +33,6 @@ public class User {
 
     @JsonIgnore
     public boolean isUnlocked(){
-        // to make this work for all companies, "ACTIVE" is now the only status when users can log in
         return this.getHighestCompanyId() == 1L || (null == this.getHasAccess() ? false : this.getHasAccess());
     }
 }

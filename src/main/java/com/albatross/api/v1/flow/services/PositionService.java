@@ -43,6 +43,15 @@ public class PositionService {
     return results;
   }
 
+  public List<Position> getPositionsForCompanyWithParent() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    List<Position> results = sqlCache.query("position.getAllForCompanyWithParent", params, Position.class);
+    return results;
+  }
+
   public Position getPosition(Long id) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
