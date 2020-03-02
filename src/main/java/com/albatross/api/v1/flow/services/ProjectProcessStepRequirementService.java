@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -26,7 +27,7 @@ public class ProjectProcessStepRequirementService {
   public List<ProjectProcessStepRequirement> getByProjectProcessStepId(Long projectProcessStepId, List<Long> requirementIds) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
-    params.put("requirementIds", requirementIds);
+    params.put("requirementIds", "{" + requirementIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + "}");
 
     List<ProjectProcessStepRequirement> requirements = sqlCache.query("processStepRequirement.getRequirementsWithValuesByProjectProcessStepId", params, new ProjectProcessStepRequirementMapper<>(ProjectProcessStepRequirement.class, om));
 
