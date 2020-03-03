@@ -51,3 +51,9 @@ CREATE INDEX upv_position_id_idx
 
 CREATE INDEX upv_company_id_idx
     ON flow.user_positions_vw (company_id);
+
+CREATE INDEX upv_start_date_idx
+    ON flow.user_positions_vw (start_date);
+
+CREATE INDEX upv_end_date_idx
+    ON flow.user_positions_vw (end_date);
