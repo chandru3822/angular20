@@ -1,11 +1,12 @@
-insert into flow.company(company_name,aws_bucket, abbreviation)values('Albatross','albatross', 'alb');
-insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Blue Raven Corporate','blueravenc', 'brsc',(select id from flow.company where company_name = 'Albatross'));
-insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Blue Raven Solar','blueraven', 'brs',(select id from flow.company where company_name = 'Blue Raven Corporate'));
-insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('B+C Electric','bcelectric', 'bce',(select id from flow.company where company_name = 'Blue Raven Corporate'));
-insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Eco Lux Solar','ecolux', 'els',(select id from flow.company where company_name = 'Blue Raven Corporate'));
-insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Salient Solar','salient', 'ss',(select id from flow.company where company_name = 'Blue Raven Corporate'));
-insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Solenrgi','Solenrgi', 'sol',(select id from flow.company where company_name = 'Blue Raven Corporate'));
-insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id)values('Sun Run','sunrun', 'sunrun',(select id from flow.company where company_name = 'Blue Raven Corporate'));
+insert into flow.company(company_name,aws_bucket, abbreviation, level)values('Albatross','albatross', 'alb', 1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)values('Blue Raven Corporate','blueravenc', 'brsc',(select id from flow.company where company_name = 'Albatross'),(select id from flow.company where company_name = 'Albatross') + 1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)values('Blue Raven Solar','blueraven', 'brs',(select id from flow.company where company_name = 'Blue Raven Corporate'),(select level from flow.company where company_name = 'Blue Raven Corporate') + 1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)values('B+C Electric','bcelectric', 'bce',(select id from flow.company where company_name = 'Blue Raven Corporate'),(select level from flow.company where company_name = 'Blue Raven Corporate') + 1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)values('Eco Lux Solar','ecolux', 'els',(select id from flow.company where company_name = 'Blue Raven Corporate'),(select level from flow.company where company_name = 'Blue Raven Corporate') + 1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)values('Salient Solar','salient', 'ss',(select id from flow.company where company_name = 'Blue Raven Corporate'),(select level from flow.company where company_name = 'Blue Raven Corporate') + 1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)values('Solenrgi','Solenrgi', 'sol',(select id from flow.company where company_name = 'Blue Raven Corporate'),(select level from flow.company where company_name = 'Blue Raven Corporate') + 1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)values('Sun Run','sunrun', 'sunrun',(select id from flow.company where company_name = 'Blue Raven Corporate'),(select level from flow.company where company_name = 'Blue Raven Corporate') + 1);
+insert into flow.company(company_name,aws_bucket, abbreviation,parent_company_id, level)values('New Markets','newmarkets', 'newmarkets',(select id from flow.company where company_name = 'Blue Raven Corporate'),(select level from flow.company where company_name = 'Blue Raven Corporate') + 1);
 
 INSERT INTO flow."user" (
                          id,
@@ -48,6 +49,8 @@ insert into flow.user_company(company_id,user_id)
     (select (select id from flow.company where company_name = 'Solenrgi'),2350555);
 insert into flow.user_company(company_id,user_id)
     (select (select id from flow.company where company_name = 'Sun Run'),2350555);
+insert into flow.user_company(company_id,user_id)
+  (select (select id from flow.company where company_name = 'New Markets'),2350555);
 
 INSERT INTO flow."user" (
                          id,
@@ -139,6 +142,13 @@ values('Complete',2,(select id from flow.company where company_name = 'Sun Run')
 insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)
 values('Cancelled',3,(select id from flow.company where company_name = 'Sun Run'),false,now(),2350555);
 
+insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)
+values('Active',1,(select id from flow.company where company_name = 'New Markets'),false,now(),2350555);
+insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)
+values('Complete',2,(select id from flow.company where company_name = 'New Markets'),false,now(),2350555);
+insert into flow.company_process_step_status_type(process_step_status_type, process_step_status_type_id,company_id, archived, date_created, created_by_id)
+values('Cancelled',3,(select id from flow.company where company_name = 'New Markets'),false,now(),2350555);
+
 -- todo: make these work for uat where they already exist
 insert into flow.system_list_type (system_list_type, archived)
 select 'orgs', false  where not exists (select id from flow.system_list_type where system_list_type = 'orgs');
@@ -207,6 +217,15 @@ insert into flow.company_system_list (system_list_id, company_id, schedulable)
 select 3, (select id from flow.company where company_name = 'Sun Run'), true;
 insert into flow.company_system_list (system_list_id, company_id, schedulable)
 select 4, (select id from flow.company where company_name = 'Sun Run'), true ;
+
+insert into flow.company_system_list (system_list_id, company_id, schedulable)
+select 1, (select id from flow.company where company_name = 'New Markets'), true;
+insert into flow.company_system_list (system_list_id, company_id, schedulable)
+select 2, (select id from flow.company where company_name = 'New Markets'), true;
+insert into flow.company_system_list (system_list_id, company_id, schedulable)
+select 3, (select id from flow.company where company_name = 'New Markets'), true;
+insert into flow.company_system_list (system_list_id, company_id, schedulable)
+select 4, (select id from flow.company where company_name = 'New Markets'), true;
 
 
 
@@ -456,6 +475,21 @@ select 4, (select id from flow.company where company_name = 'Sun Run') ;
 insert into flow.company_object_type (object_type_id, company_id)
 select 5, (select id from flow.company where company_name = 'Sun Run') ;
 
+insert into flow.company_object_type (object_type_id, company_id)
+select 1, (select id from flow.company where company_name = 'New Markets') ;
+
+insert into flow.company_object_type (object_type_id, company_id)
+select 2, (select id from flow.company where company_name = 'New Markets') ;
+
+insert into flow.company_object_type (object_type_id, company_id)
+select 3, (select id from flow.company where company_name = 'New Markets') ;
+
+insert into flow.company_object_type (object_type_id, company_id)
+select 4, (select id from flow.company where company_name = 'New Markets') ;
+
+insert into flow.company_object_type (object_type_id, company_id)
+select 5, (select id from flow.company where company_name = 'New Markets') ;
+
 
 insert into flow.company_data_type(company_id, company_data_type, data_type_id)
 values((select id from flow.company where company_name = 'Blue Raven Solar'),'Text',5);
@@ -586,6 +620,27 @@ insert into flow.company_data_type(company_id, company_data_type, data_type_id,h
 values((select id from flow.company where company_name = 'Sun Run'),'System',8,false);
 insert into flow.company_data_type(company_id, company_data_type, data_type_id)
 select (select id from flow.company where company_name = 'Sun Run'), 'System List', 9 ;
+
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+values((select id from flow.company where company_name = 'New Markets'),'Text',5);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+values((select id from flow.company where company_name = 'New Markets'),'Date',1);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+values((select id from flow.company where company_name = 'New Markets'),'Timestamp',2);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+values((select id from flow.company where company_name = 'New Markets'),'Boolean',3);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+values((select id from flow.company where company_name = 'New Markets'),'Integer',6);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+values((select id from flow.company where company_name = 'New Markets'),'Decimal Number',4);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id,has_list_values)
+values((select id from flow.company where company_name = 'New Markets'),'Dropdown',6,true);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id,has_list_values,allow_multiple)
+values((select id from flow.company where company_name = 'New Markets'),'Multi-Select',7,true,true);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id,has_list_values)
+values((select id from flow.company where company_name = 'New Markets'),'System',8,false);
+insert into flow.company_data_type(company_id, company_data_type, data_type_id)
+select (select id from flow.company where company_name = 'New Markets'), 'System List', 9 ;
 
 
 INSERT INTO flow.data_type_requirement(data_type_id, data_type_value, secondary_requirement, date_created)
