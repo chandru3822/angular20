@@ -47,7 +47,7 @@ public class UtilityService {
   public Optional<Utility> getUtility(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<Utility> results = sqlCache.get("propToolUtility.getOne", params, Utility.class);
+    Optional<Utility> results = sqlCache.get("propToolUtility.getOne", params, new UtilityMapper<>(Utility.class, om));
     return results;
   }
 
@@ -55,17 +55,31 @@ public class UtilityService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("utilityCompany", utility.getUtilityCompany());
+    params.put("modifiedById", user.getId());
+    params.put("createdById", user.getId());
+    params.put("active", utility.getActive());
+    params.put("companyId", user.getCompanyId());
     Long id;
 
     if(null != utility.getId()) {
       id = utility.getId();
-      params.put("modifiedById", user.getId());
       params.put("id", id);
       sqlCache.update("propToolUtility.update", params);
     } else {
-      params.put("createdById", user.getId());
-      params.put("companyId", user.getCompanyId());
       id = sqlCache.updateReturningId("propToolUtility.insert", params, "id").longValue();
+    }
+
+    for(UtilityState utilityState : utility.getUtilityStates()) {
+      params.put("costPerKwh", utilityState.getCostPerKwh());
+      params.put("escalator", utilityState.getEscalator());
+      params.put("utilityId", id);
+      params.put("companyStateId", utilityState.getCompanyStateId());
+      if(null != utilityState.getId()) {
+        params.put("utilityStateId", utilityState.getId());
+        sqlCache.update("propToolUtility.updateUtilityState", params);
+      } else {
+        sqlCache.update("propToolUtility.insertUtilityState", params);
+      }
     }
 
     return getUtility(id);

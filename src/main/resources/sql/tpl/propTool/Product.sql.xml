@@ -3,7 +3,11 @@
     select p.id,
            p.product_name,
            p.company_id,
-           p.archived
+           p.archived,
+           p.interest_rate,
+           p.term_length,
+           p.dealer_fee,
+           p.active
     from props.product p
     where p.company_id = :companyId
         and p.archived is not true
@@ -17,13 +21,19 @@
   ]]></propToolProduct.getOne>
 
   <propToolProduct.insert><![CDATA[
-    insert into props.product(product_name, company_id)
-    values (:productName, :companyId)
+    insert into props.product(product_name, company_id, term_length, interest_rate, dealer_fee, active, created_by_id)
+    values (:productName, :companyId, :termLength, :interestRate, :dealerFee, :active, :createdById)
   ]]></propToolProduct.insert>
 
   <propToolProduct.update><![CDATA[
     update props.product
-        set product_name = :productName
+        set product_name = :productName,
+            term_length = :termLength,
+            interest_rate = :interestRate,
+            dealer_fee = :dealerFee,
+            active = :active,
+            modified_by_id = :modifiedById,
+            date_modified = now()
     where id = :id
   ]]></propToolProduct.update>
 
