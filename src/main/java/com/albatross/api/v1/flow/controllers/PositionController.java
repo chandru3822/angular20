@@ -27,6 +27,11 @@ public class PositionController {
     return positionService.getPositionsForCompany();
   }
 
+  @GetMapping(value = "/withParent", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Position> getPositionsForCompanyWithParent() {
+    return positionService.getPositionsForCompanyWithParent();
+  }
+
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Position getPosition(@PathVariable Long id) {
     return positionService.getPosition(id);

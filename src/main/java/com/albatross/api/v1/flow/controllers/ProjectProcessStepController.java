@@ -72,6 +72,11 @@ public class ProjectProcessStepController {
     return new ResponseEntity<>(projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/owners/{processStepProcessId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Owner>> getAvailableProjectProcessStepOwners(@PathVariable Long processStepProcessId) {
+    return new ResponseEntity<>(projectProcessStepService.getOwners(processStepProcessId), HttpStatus.OK);
+  }
+
   @PostMapping(value = "/{projectProcessStepId}/owner")
   public ResponseEntity<Void> updateProjectProcessStepOwner(@PathVariable Long projectProcessStepId, @RequestBody Owner owner) {
     projectProcessStepService.updateOwner(projectProcessStepId, owner);

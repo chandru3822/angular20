@@ -11,6 +11,9 @@ import lombok.Setter;
 @Setter
 public class UtilityState {
 
-  private Long id, utilityId;
+  private Long id, utilityId, companyStateId;
+  private String state;
+  private Double costPerKwh, escalator;
+  private Boolean archived;
 }
 

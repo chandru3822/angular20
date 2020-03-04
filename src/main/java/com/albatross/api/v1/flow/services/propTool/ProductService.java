@@ -50,6 +50,10 @@ public class ProductService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("productName", product.getProductName());
+    params.put("termLength", product.getTermLength());
+    params.put("interestRate", product.getInterestRate());
+    params.put("dealerFee", product.getDealerFee());
+    params.put("active", product.getActive());
     Long id;
 
     if(null != product.getId()) {

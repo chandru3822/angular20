@@ -9,6 +9,15 @@ export async function getStates() {
   }
 }
 
+export async function getCompanyStates() {
+  try {
+    const {data, status} = await getRequest(`/state/allForCompany`)
+    return {data, status}
+  } catch (e) {
+    throw e
+  }
+}
+
 export async function getActiveStates() {
   try {
     const {data, status} = await getRequest(`/state/active`)

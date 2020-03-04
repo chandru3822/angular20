@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Utilities</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newUtility = {}" color="primary">
+            <v-btn text @click="addNew = !addNew; newUtility = { utilityStates: [] }" color="primary">
               <v-icon v-if="!addNew">add</v-icon>
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
@@ -16,20 +16,30 @@
           <v-text-field v-model="newUtility.utilityCompany"
                         label="Utility Name">
           </v-text-field>
-          <v-select v-model="newUtility.states"
-                    :items="states"
-                    no-data-text="No States Available"
-                    label="State(s)"
-                    item-text="state"
-                    item-value="id"
-                    multiple
-                    return-object
-          ></v-select>
+          <v-btn class="mb-1" @click="newUtility.utilityStates.push({})">Add State</v-btn>
+          <v-card class="px-4" flat v-for="(us, index) in newUtility.utilityStates" :key="index">
+            <v-row>
+              <v-select v-model="us.companyStateId"
+                        class="mr-4"
+                        :items="states"
+                        no-data-text="No States Available"
+                        label="State"
+                        item-text="state"
+                        item-value="companyStateId"
+              ></v-select>
+              <v-text-field type="number" v-model="us.costPerKwh" class="mr-4"
+                            label="Cost Per KwH">
+              </v-text-field>
+              <v-text-field type="number" v-model="us.escalator" class="mr-4"
+                            label="Escalator">
+              </v-text-field>
+            </v-row>
+          </v-card>
           <v-radio-group v-model="newUtility.active" column>
             <v-radio label="Active" value="true"></v-radio>
             <v-radio label="Inactive" value="false"></v-radio>
           </v-radio-group>
-          <v-btn :disabled="!newUtility.utilityCompany || (!newUtility.states || newUtility.states.length === 0) || newUtility.active == null" @click="saveUtility(newUtility)">Save</v-btn>
+          <v-btn :disabled="!newUtility.utilityCompany || (!newUtility.utilityStates || newUtility.utilityStates.length === 0) || newUtility.active == null" @click="saveUtility(newUtility)">Save</v-btn>
         </v-card>
         <v-divider v-if="addNew"></v-divider>
         <v-data-table
@@ -55,16 +65,68 @@
               <v-text-field v-model="item.utilityCompany"
                             label="Utility Name">
               </v-text-field>
-              <v-select v-model="item.states"
-                        :items="states"
-                        no-data-text="No States Available"
-                        label="State(s)"
-                        item-text="state"
-                        item-value="id"
-                        multiple
-                        return-object
-              ></v-select>
-              <v-btn :disabled="!item.utilityCompany || (!item.states || item.state.length === 0)" @click="saveUtility(item)">Save</v-btn>
+              <div>
+                <v-btn class="mb-1" @click="item.utilityStates.push({ archived: false })">
+                  <v-icon>add</v-icon>
+                  Add State
+                </v-btn>
+              </div>
+              <v-card class="px-4" flat color="transparent" v-for="(us, index) in filterBy(item.utilityStates, false, 'archived')" :key="index">
+                <v-row>
+                  <v-select v-model="us.companyStateId"
+                            :items="states"
+                            class="mr-4"
+                            no-data-text="No States Available"
+                            label="State"
+                            item-text="state"
+                            item-value="companyStateId"
+                  ></v-select>
+                  <v-text-field type="number" v-model="us.costPerKwh" class="mr-4"
+                                label="Cost Per KwH">
+                  </v-text-field>
+                  <v-text-field type="number" v-model="us.escalator" class="mr-4"
+                                label="Escalator">
+                  </v-text-field>
+                  <v-dialog
+                      v-model="us.deleteConfirm"
+                      width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-btn text v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                      >
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Are you sure you want to delete this state?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            @click="us.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="us.archived = true; deleteUtilityState(us.id)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </v-row>
+              </v-card>
+              <v-btn :disabled="!item.utilityCompany || (!item.utilityStates || item.utilityStates.length === 0)" @click="saveUtility(item)">Save</v-btn>
             </td>
           </template>
 
@@ -72,9 +134,9 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.utilityCompany}}</td>
               <td class="text-left">
-                <span v-for="(s, index) in item.states" :key="index">{{s.state}}</span>
+                <span v-for="(s, index) in item.utilityStates" :key="index">{{s.state}}</span>
               </td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
                   <v-btn small text @click="expanded = [item]; selectedIndex = index"
@@ -135,12 +197,14 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getStates} from '@/services/stateService'
+  import {getCompanyStates} from '@/services/stateService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
-  import orderBy from "lodash.orderby";
+  import orderBy from "lodash.orderby"
+  import Vue2Filters from 'vue2-filters'
 
   export default {
     name: 'Utilities',
+    mixins: [Vue2Filters.mixin],
     components: {
       Snackbar
     },
@@ -154,7 +218,9 @@
         expanded: [],
         dataLoading: true,
         selectedIndex: null,
-        newUtility: {},
+        newUtility: {
+          utilityStates: []
+        },
         addNew: false,
         headers: [
           {text: 'Utility', value: 'utility', show: true},
@@ -186,10 +252,22 @@
           await deleteRequest(`/propTool/utility/${id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Utility Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Utility')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteUtilityState(id) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          console.log('will delete utilityity state', id)
+          //await deleteRequest(`/propTool/utility/${id}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Utility State Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Utility State')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -201,7 +279,7 @@
       async getStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
+          const {data} = await getCompanyStates()
           this.states = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
