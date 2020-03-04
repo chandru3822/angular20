@@ -7,7 +7,6 @@ import { getRequest } from '@/helpers/helpers'
 
 Vue.use(Router)
 
-
 export default new Router({
   mode: 'history',
   base: process.env.BASE_URL,

@@ -8,6 +8,7 @@
     "chrome-debug": "open -a \"Google Chrome\" --args --profile-directory=Default --remote-debugging-port=9222",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:dev": "vue-cli-service build --mode development",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
