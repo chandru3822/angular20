@@ -81,11 +81,12 @@
      select feature_id, cf.feature_name, f.feature_code, ac.access_code, uac.enabled
          from flow.user_feature_access_control uac
                   inner join flow.company_feature cf on cf.id = uac.company_feature_id
+                  inner join flow.company c on c.id = :companyId
                   inner join flow.feature f on f.id = cf.feature_id
                   inner join flow.access_control ac on ac.id = uac.access_control_id
          where user_id = :userId
            and enabled is true
-           and cf.company_id = :companyId
+           and (cf.company_id = :companyId or cf.company_id = c.parent_company_id)
      )
     SELECT *
     FROM T
@@ -93,11 +94,12 @@
     select feature_id, cf.feature_name, f.feature_code, ac.access_code, pac.enabled
     from flow.position_feature_access_control pac
         inner join flow.company_feature cf on cf.id = pac.company_feature_id
+        inner join flow.company c on c.id = :companyId
         inner join flow.user_position up on up.position_id = pac.position_id and up.end_date is null and up.user_id = :userId
         inner join flow.feature f on f.id = cf.feature_id
         inner join flow.access_control ac on ac.id = pac.access_control_id
     WHERE pac.enabled is true
-      and cf.company_id = :companyId
+      and (cf.company_id = :companyId or cf.company_id = c.parent_company_id)
       and NOT EXISTS (SELECT 1 FROM t);
   ]]></feature.getAccessForUser>
 
