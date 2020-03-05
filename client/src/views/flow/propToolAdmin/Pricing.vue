@@ -13,23 +13,39 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="pa-4 mt-1" v-if="addNew">
-          <v-text-field v-model="newPricing.pricing"
-                        label="Pricing">
-          </v-text-field>
-          <v-select v-model="newPricing.states"
+          <v-select v-model="newPricing.companyStateId"
                     :items="states"
                     no-data-text="No States Available"
-                    label="State(s)"
+                    label="State"
                     item-text="state"
-                    item-value="id"
-                    multiple
-                    return-object
+                    item-value="companyStateId"
+                    @input="getUtilityStates(newPricing.companyStateId); newPricing.utilityStateId = null"
           ></v-select>
+          <v-select v-model="newPricing.utilityStateId"
+                    :items="utilityStates"
+                    no-data-text="No Utilities Available"
+                    label="Utility"
+                    item-text="utilityCompany"
+                    item-value="id"
+          ></v-select>
+          <v-select v-model="newPricing.productId"
+                    :items="products"
+                    no-data-text="No Products Available"
+                    label="Product"
+                    item-text="productName"
+                    item-value="id"
+          ></v-select>
+          <v-text-field type="number" v-model="newPricing.targetProductionFactor"
+                        label="Target Production Factor">
+          </v-text-field>
+          <v-text-field type="number" v-model="newPricing.fundingCap"
+                        label="Funding Cap">
+          </v-text-field>
           <v-radio-group v-model="newPricing.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
-          <v-btn :disabled="!newPricing.pricing || (!newPricing.states || newPricing.states.length === 0) || newPricing.active == null" @click="savePricing(newPricing)">Save</v-btn>
+          <v-btn :disabled="!newPricing.utilityStateId || !newPricing.productId || !newPricing.targetProductionFactor || !newPricing.fundingCap || newPricing.active == null" @click="savePricing(newPricing)">Save</v-btn>
         </v-card>
         <v-divider v-if="addNew"></v-divider>
         <v-data-table
@@ -52,32 +68,51 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedIndex % 2}">
-              <v-text-field v-model="item.pricing"
-                            label="Pricing">
-              </v-text-field>
-              <v-select v-model="item.states"
+              <v-select v-model="item.companyStateId"
                         :items="states"
                         no-data-text="No States Available"
-                        label="State(s)"
+                        label="State"
                         item-text="state"
-                        item-value="id"
-                        multiple
-                        return-object
+                        item-value="companyStateId"
+                        @input="getUtilityStates(item.companyStateId); item.utilityStateId = null"
               ></v-select>
-              <v-btn :disabled="!item.pricing || (!item.states || item.state.length === 0)" @click="savePricing(item)">Save</v-btn>
+              <v-select v-model="item.utilityStateId"
+                        :items="utilityStates"
+                        no-data-text="No Utilities Available"
+                        label="Utility"
+                        item-text="utilityCompany"
+                        item-value="id"
+              ></v-select>
+              <v-select v-model="item.productId"
+                        :items="products"
+                        no-data-text="No Products Available"
+                        label="Product"
+                        item-text="productName"
+                        item-value="id"
+              ></v-select>
+              <v-text-field type="number" v-model="item.targetProductionFactor"
+                            label="Target Production Factor">
+              </v-text-field>
+              <v-text-field type="number" v-model="item.fundingCap"
+                            label="Funding Cap">
+              </v-text-field>
+              <v-radio-group v-model="item.active" column>
+                <v-radio label="Active" :value="true"></v-radio>
+                <v-radio label="Inactive" :value="false"></v-radio>
+              </v-radio-group>
+              <v-btn :disabled="!item.utilityStateId || !item.productId || !item.targetProductionFactor || !item.fundingCap || item.active == null" @click="savePricing(item)">Save</v-btn>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.pricing}}</td>
-              <td class="text-left">
-                <span v-for="(s, index) in item.states" :key="index">{{s.state}}</span>
-              </td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.state}}</td>
+              <td class="text-left">{{item.utilityCompany}}</td>
+              <td class="text-left">{{item.productName}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
-                  <v-btn small text @click="expanded = [item]; selectedIndex = index"
+                  <v-btn small text @click="expanded = [item]; selectedIndex = index; getUtilityStates(item.companyStateId)"
                          v-if="!expanded.includes(item)">
                     <v-icon v-if="item.immutable">expand_more</v-icon>
                     <v-icon v-else>edit</v-icon>
@@ -135,7 +170,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getStates} from '@/services/stateService'
+  import {getCompanyStates} from '@/services/stateService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
@@ -151,24 +186,39 @@
         snackbar: {},
         pricings: [],
         states: [],
+        utilityStates: [],
+        products: [],
         expanded: [],
         dataLoading: true,
         selectedIndex: null,
         newPricing: {},
         addNew: false,
         headers: [
-          {text: 'Pricing', value: 'pricing', show: true},
-          {text: 'States', value: 'states', show: true},
-          {text: 'Status', value: 'status', show: true},
+          {text: 'State', value: 'state', show: true},
+          {text: 'Utility', value: 'utilityCompany', show: true},
+          {text: 'Product', value: 'productName', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }
     },
     created() {
       this.getPricings()
+      this.getProducts()
       this.getStates()
     },
     methods: {
+      async getProducts() {
+        try {
+          const {data} = await getRequest(`/propTool/product`)
+          this.products = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Products')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getPricings() {
         try {
           const {data} = await getRequest(`/propTool/productUtilityState`)
@@ -201,8 +251,20 @@
       async getStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
+          const {data} = await getCompanyStates()
           this.states = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getUtilityStates (companyStateId) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/propTool/utility/state/${companyStateId}`)
+          this.utilityStates = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -218,7 +280,6 @@
           if(!item.id) {
             this.pricings.push(data)
           }
-          this.pricings = orderBy(this.pricings, [p => p.pricing.toLowerCase()])
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Pricing Saved' : 'Pricing Added')
 

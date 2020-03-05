@@ -16,9 +16,25 @@
           <v-text-field v-model="newProduct.productName"
                         label="Product Name">
           </v-text-field>
+          <v-select v-model="newProduct.financierId"
+                    :items="financiers"
+                    no-data-text="No Financiers Available"
+                    label="Financier"
+                    item-text="name"
+                    item-value="id"
+          ></v-select>
+          <v-text-field type="number" v-model="newProduct.termLength"
+                        label="Loan Term in Years">
+          </v-text-field>
+          <v-text-field type="number" v-model="newProduct.interestRate"
+                        label="Interest Rate">
+          </v-text-field>
+          <v-text-field type="number" v-model="newProduct.dealerFee"
+                        label="Dealer Fee">
+          </v-text-field>
           <v-radio-group v-model="newProduct.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
           <v-btn :disabled="!newProduct.productName || newProduct.active == null" @click="saveProduct(newProduct)">Save</v-btn>
         </v-card>
@@ -46,6 +62,26 @@
               <v-text-field v-model="item.productName"
                             label="Product">
               </v-text-field>
+              <v-select v-model="item.financierId"
+                        :items="financiers"
+                        no-data-text="No Financiers Available"
+                        label="Financier"
+                        item-text="name"
+                        item-value="id"
+              ></v-select>
+              <v-text-field type="number" v-model="item.termLength"
+                            label="Loan Term in Years">
+              </v-text-field>
+              <v-text-field type="number" v-model="item.interestRate"
+                            label="Interest Rate">
+              </v-text-field>
+              <v-text-field type="number" v-model="item.dealerFee"
+                            label="Dealer Fee">
+              </v-text-field>
+              <v-radio-group v-model="item.active" column>
+                <v-radio label="Active" :value="true"></v-radio>
+                <v-radio label="Inactive" :value="false"></v-radio>
+              </v-radio-group>
               <v-btn :disabled="!item.productName" @click="saveProduct(item)">Save</v-btn>
             </td>
           </template>
@@ -53,7 +89,7 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.productName}}</td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
                   <v-btn small text @click="expanded = [item]; selectedIndex = index"
@@ -128,6 +164,7 @@
         dialog: false,
         snackbar: {},
         products: [],
+        financiers: [],
         expanded: [],
         dataLoading: true,
         selectedIndex: null,
@@ -135,15 +172,27 @@
         addNew: false,
         headers: [
           {text: 'Product', value: 'product', show: true},
-          {text: 'Status', value: 'status', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }
     },
     created() {
       this.getProducts()
+      this.getFinanciers()
     },
     methods: {
+      async getFinanciers() {
+        try {
+          const {data} = await getRequest(`/propTool/financier`)
+          this.financiers = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Financiers')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async getProducts() {
         try {
           const {data} = await getRequest(`/propTool/product`)

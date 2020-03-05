@@ -94,6 +94,13 @@ public class UtilityService {
     sqlCache.update("propToolUtility.delete", params);
   }
 
+  public List<UtilityState> getUtilityStates(Long companyStateId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyStateId", companyStateId);
+    List<UtilityState> results = sqlCache.query("propToolUtility.getUtilityStates", params, UtilityState.class);
+    return results;
+  }
+
   public static class UtilityMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 

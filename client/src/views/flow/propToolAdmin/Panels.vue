@@ -26,8 +26,8 @@
                     return-object
           ></v-select>
           <v-radio-group v-model="newPanel.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
           <v-btn :disabled="!newPanel.panelName || (!newPanel.states || newPanel.states.length === 0) || newPanel.active == null" @click="savePanel(newPanel)">Save</v-btn>
         </v-card>

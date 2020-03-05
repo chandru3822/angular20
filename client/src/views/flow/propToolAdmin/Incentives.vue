@@ -17,8 +17,8 @@
                         label="Incentive Name">
           </v-text-field>
           <v-radio-group v-model="newIncentive.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
           <v-btn :disabled="!newIncentive.incentive || newIncentive.active == null" @click="saveIncentive(newIncentive)">Save</v-btn>
         </v-card>

@@ -26,8 +26,8 @@
                     return-object
           ></v-select>
           <v-radio-group v-model="newInverter.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
           <v-btn :disabled="!newInverter.inverterName || (!newInverter.states || newInverter.states.length === 0) || newInverter.active == null" @click="saveInverter(newInverter)">Save</v-btn>
         </v-card>

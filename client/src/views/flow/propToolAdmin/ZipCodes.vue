@@ -17,8 +17,8 @@
                         label="Zip Code">
           </v-text-field>
           <v-radio-group v-model="newZipCode.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
           <v-btn :disabled="!newZipCode.zipCode || newZipCode.active == null" @click="saveZipCode(newZipCode)">Save</v-btn>
         </v-card>

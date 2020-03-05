@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class PropFinancier {
 
   private Long id;
-  private String financier;
+  private String name;
   private Boolean archived, active;
 
 }

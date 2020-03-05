@@ -1,13 +1,14 @@
 <sql>
   <propToolFinancier.getAllForCompany><![CDATA[
     select f.id,
-           f.financier,
+           f.name,
            f.company_id,
-           f.archived
+           f.archived,
+           f.active
     from props.financier f
     where f.company_id = :companyId
         and f.archived is not true
-    order by f.financier
+    order by f.name
   ]]></propToolFinancier.getAllForCompany>
 
   <propToolFinancier.getOne><![CDATA[
@@ -17,13 +18,14 @@
   ]]></propToolFinancier.getOne>
 
   <propToolFinancier.insert><![CDATA[
-    insert into props.financier(financier, company_id)
-    values (:financier, :companyId)
+    insert into props.financier(name, company_id, active)
+    values (:name, :companyId, :active)
   ]]></propToolFinancier.insert>
 
   <propToolFinancier.update><![CDATA[
     update props.financier
-        set financier = :financier
+        set name = :name,
+            active = :active
     where id = :id
   ]]></propToolFinancier.update>
 

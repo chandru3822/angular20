@@ -49,7 +49,8 @@ public class PropFinancierService {
   public Optional<PropFinancier> saveFinancier(PropFinancier financier) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("financier", financier.getFinancier());
+    params.put("name", financier.getName());
+    params.put("active", financier.getActive());
     Long id;
 
     if(null != financier.getId()) {
