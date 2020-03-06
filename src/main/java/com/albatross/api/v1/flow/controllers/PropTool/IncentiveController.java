@@ -1,6 +1,9 @@
 package com.albatross.api.v1.flow.controllers.PropTool;
 
 import com.albatross.api.v1.flow.model.propTool.Incentive;
+import com.albatross.api.v1.flow.model.propTool.IncentiveCategory;
+import com.albatross.api.v1.flow.model.propTool.IncentiveEntity;
+import com.albatross.api.v1.flow.model.propTool.IncentiveType;
 import com.albatross.api.v1.flow.services.propTool.IncentiveService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +31,23 @@ public class IncentiveController {
     return incentiveService.getIncentivesForCompany();
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteIncentive(@PathVariable Long id) {
-    incentiveService.deleteIncentive(id);
+  @GetMapping(value = "/categories", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<IncentiveCategory> getIncentivesCategories() {
+    return incentiveService.getIncentivesCategories();
+  }
+
+  @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<IncentiveType> getIncentivesTypes() {
+    return incentiveService.getIncentivesTypes();
+  }
+
+  @GetMapping(value = "/entities/{categoryId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<IncentiveEntity> getIncentiveEntities(@PathVariable Long categoryId) {
+    return incentiveService.getIncentiveEntities(categoryId);
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Incentive> saveIncentive(@RequestBody Incentive incentive) {
     return incentiveService.saveIncentive(incentive);
   }
-
 }

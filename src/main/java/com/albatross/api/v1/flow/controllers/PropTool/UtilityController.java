@@ -40,8 +40,8 @@ public class UtilityController {
   }
 
   @GetMapping(value = "/state/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<UtilityState> getUtilityStates(@PathVariable Long id) {
-    return utilityService.getUtilityStates(id);
+  public List<UtilityState> getUtilityStatesByCompanyStateId(@PathVariable("id") Long companyStateId) {
+    return utilityService.getUtilityStatesByCompanyStateId(companyStateId);
   }
 
 }

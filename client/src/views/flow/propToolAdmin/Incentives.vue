@@ -13,14 +13,38 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="pa-4 mt-1" v-if="addNew">
-          <v-text-field v-model="newIncentive.incentive"
-                        label="Incentive Name">
+          <v-select v-model="newIncentive.incentiveCategoryId"
+                    :items="incentiveCategories"
+                    no-data-text="No Categories Available"
+                    label="Incentive Category"
+                    item-text="incentiveCategory"
+                    item-value="id"
+                    @input="getIncentiveEntities(newIncentive.incentiveCategoryId)"
+          ></v-select>
+          <v-select v-model="newIncentive.incentiveEntityId"
+                    :items="incentiveEntities"
+                    no-data-text="No Entities Available"
+                    label="Entity"
+                    item-text="name"
+                    item-value="id"
+          ></v-select>
+          <v-select v-model="newIncentive.incentiveTypeId"
+                    :items="incentiveTypes"
+                    no-data-text="No Types Available"
+                    label="Incentive Type"
+                    item-text="incentiveType"
+                    item-value="id"
+          ></v-select>
+          <v-text-field type="number" v-model="newIncentive.amount"
+                        prepend-icon="mdi-currency-usd"
+                        label="Amount">
           </v-text-field>
           <v-radio-group v-model="newIncentive.active" column>
             <v-radio label="Active" :value="true"></v-radio>
             <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
-          <v-btn :disabled="!newIncentive.incentive || newIncentive.active == null" @click="saveIncentive(newIncentive)">Save</v-btn>
+          <v-btn :disabled="!newIncentive.incentiveCategoryId || !newIncentive.incentiveEntityId || !newIncentive.incentiveTypeId
+                            || !newIncentive.amount || newIncentive.active == null" @click="saveIncentive(newIncentive)">Save</v-btn>
         </v-card>
         <v-divider v-if="addNew"></v-divider>
         <v-data-table
@@ -52,8 +76,10 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.incentive}}</td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.incentiveCategory}}</td>
+              <td class="text-left">{{item.incentiveEntityName}}</td>
+              <td class="text-left">{{item.incentiveType}}</td>
+              <td class="text-left">{{item.amount || 0 | currency('$', 2)}}</td>
               <td>
                 <div style="display: flex;">
                   <v-btn small text @click="expanded = [item]; selectedIndex = index"
@@ -128,20 +154,27 @@
         dialog: false,
         snackbar: {},
         incentives: [],
+        incentiveCategories: [],
+        incentiveTypes: [],
+        incentiveEntities: [],
         expanded: [],
         dataLoading: true,
         selectedIndex: null,
         newIncentive: {},
         addNew: false,
         headers: [
-          {text: 'Incentive', value: 'incentive', show: true},
-          {text: 'Status', value: 'status', show: true},
+          {text: 'Category', value: 'incentiveCategory', show: true},
+          {text: 'Entity', value: 'incentiveEntityName', show: true},
+          {text: 'Type', value: 'incentiveType', show: true},
+          {text: 'Amount', value: 'amount', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }
     },
     created() {
       this.getIncentives()
+      this.getIncentiveCategories()
+      this.getIncentiveTypes()
     },
     methods: {
       async getIncentives() {
@@ -152,6 +185,39 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Incentives')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getIncentiveCategories() {
+        try {
+          const {data} = await getRequest(`/propTool/incentive/categories`)
+          this.incentiveCategories = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Incentive Categories')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getIncentiveTypes() {
+        try {
+          const {data} = await getRequest(`/propTool/incentive/types`)
+          this.incentiveTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Incentive Types')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getIncentiveEntities(categoryId) {
+        try {
+          const {data} = await getRequest(`/propTool/incentive/entities/${categoryId}`)
+          this.incentiveEntities = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Entities')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -181,7 +247,6 @@
           if(!item.id) {
             this.incentives.push(data)
           }
-          this.incentives = orderBy(this.incentives, [f => f.incentive.toLowerCase()])
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Incentive Saved' : 'Incentive Added')
 

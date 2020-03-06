@@ -94,10 +94,10 @@ public class UtilityService {
     sqlCache.update("propToolUtility.delete", params);
   }
 
-  public List<UtilityState> getUtilityStates(Long companyStateId) {
+  public List<UtilityState> getUtilityStatesByCompanyStateId(Long companyStateId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyStateId", companyStateId);
-    List<UtilityState> results = sqlCache.query("propToolUtility.getUtilityStates", params, UtilityState.class);
+    List<UtilityState> results = sqlCache.query("propToolUtility.getUtilityStatesByCompanyStateId", params, UtilityState.class);
     return results;
   }
 
