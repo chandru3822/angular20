@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Incentives</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newIncentive = {}" color="primary">
+            <v-btn text @click="addNew = !addNew; newIncentive = {}; incentiveEntities = []" color="primary">
               <v-icon>add</v-icon>
               Add New
             </v-btn>
@@ -53,6 +53,7 @@
             :items-per-page="-1"
             :mobile-breakpoint="0"
             single-expand
+            item-key="uuid"
             :expanded.sync="expanded"
             hide-default-footer
             class="elevation-1 fix-column-width-bug incentives-table"
@@ -67,10 +68,38 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedIndex % 2}">
-              <v-text-field v-model="item.incentive"
-                            label="Incentive">
+              <v-select v-model="item.incentiveCategoryId"
+                        :items="incentiveCategories"
+                        no-data-text="No Categories Available"
+                        label="Incentive Category"
+                        item-text="incentiveCategory"
+                        item-value="id"
+                        @input="getIncentiveEntities(item.incentiveCategoryId)"
+              ></v-select>
+              <v-select v-model="item.incentiveEntityId"
+                        :items="incentiveEntities"
+                        no-data-text="No Entities Available"
+                        label="Entity"
+                        item-text="name"
+                        item-value="id"
+              ></v-select>
+              <v-select v-model="item.incentiveTypeId"
+                        :items="incentiveTypes"
+                        no-data-text="No Types Available"
+                        label="Incentive Type"
+                        item-text="incentiveType"
+                        item-value="id"
+              ></v-select>
+              <v-text-field type="number" v-model="item.amount"
+                            prepend-icon="mdi-currency-usd"
+                            label="Amount">
               </v-text-field>
-              <v-btn :disabled="!item.incentive" @click="saveIncentive(item)">Save</v-btn>
+              <v-radio-group v-model="item.active" column>
+                <v-radio label="Active" :value="true"></v-radio>
+                <v-radio label="Inactive" :value="false"></v-radio>
+              </v-radio-group>
+              <v-btn :disabled="!item.incentiveCategoryId || !item.incentiveEntityId || !item.incentiveTypeId
+                            || !item.amount || item.active == null" @click="saveIncentive(item)">Save</v-btn>
             </td>
           </template>
 
@@ -82,12 +111,11 @@
               <td class="text-left">{{item.amount || 0 | currency('$', 2)}}</td>
               <td>
                 <div style="display: flex;">
-                  <v-btn small text @click="expanded = [item]; selectedIndex = index"
-                         v-if="!expanded.includes(item)">
+                  <v-btn small text @click="expanded = [item]; selectedIndex = index; getIncentiveEntities(item.incentiveCategoryId)" v-if="!expanded.includes(item)">
                     <v-icon v-if="item.immutable">expand_more</v-icon>
                     <v-icon v-else>edit</v-icon>
                   </v-btn>
-                  <v-btn small text @click="expanded = []; selectedIndex = index"
+                  <v-btn small text @click="expanded = []; selectedIndex = index; incentiveEntities = []"
                          v-if="expanded.includes(item)">cancel
                   </v-btn>
                   <v-dialog
@@ -141,6 +169,8 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { v4 as uuidv4 } from 'uuid'
+
   import orderBy from "lodash.orderby";
 
   export default {
@@ -181,6 +211,11 @@
         try {
           const {data} = await getRequest(`/propTool/incentive`)
           this.incentives = data
+          // populate uuid field
+          this.incentives.forEach(i => {
+            i.uuid = uuidv4()
+          })
+
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
