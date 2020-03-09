@@ -408,7 +408,17 @@ export default new Router({
             name: 'projectProcessStep',
             path: ':projectId/processStep/:processStepId',
             component: () => import (/*webpackChunkName: "projectProcessStep" */ './views/flow/project/ProjectProcessStep.vue')
-          }
+          }, {
+            name: 'projectAdmin',
+            path: ':projectId/admin',
+            component: () => {
+              if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+                return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+        }
         ]
       }, {
         path: '/customers',
