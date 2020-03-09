@@ -26,8 +26,8 @@
                     return-object
           ></v-select>
           <v-radio-group v-model="newAdder.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
           <v-btn :disabled="!newAdder.adderName || (!newAdder.states || newAdder.states.length === 0) || newAdder.active == null" @click="saveAdder(newAdder)">Save</v-btn>
         </v-card>

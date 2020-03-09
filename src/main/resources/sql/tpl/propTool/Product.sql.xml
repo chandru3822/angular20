@@ -4,25 +4,30 @@
            p.product_name,
            p.company_id,
            p.archived,
+           p.financier_id,
+           f.name as financier,
            p.interest_rate,
            p.term_length,
            p.dealer_fee,
            p.active
     from props.product p
+        inner join props.financier f on f.id = p.financier_id
     where p.company_id = :companyId
         and p.archived is not true
     order by p.product_name
   ]]></propToolProduct.getAllForCompany>
 
   <propToolProduct.getOne><![CDATA[
-    select *
-    from props.product
-    where id = :id
+    select p.*,
+           f.name as financier
+    from props.product p
+        inner join props.financier f on f.id = p.financier_id
+    where p.id = :id
   ]]></propToolProduct.getOne>
 
   <propToolProduct.insert><![CDATA[
-    insert into props.product(product_name, company_id, term_length, interest_rate, dealer_fee, active, created_by_id)
-    values (:productName, :companyId, :termLength, :interestRate, :dealerFee, :active, :createdById)
+    insert into props.product(product_name, company_id, financier_id, term_length, interest_rate, dealer_fee, active, created_by_id)
+    values (:productName, :companyId, :financierId, :termLength, :interestRate, :dealerFee, :active, :createdById)
   ]]></propToolProduct.insert>
 
   <propToolProduct.update><![CDATA[
@@ -30,6 +35,7 @@
         set product_name = :productName,
             term_length = :termLength,
             interest_rate = :interestRate,
+            financier_id = :financierId,
             dealer_fee = :dealerFee,
             active = :active,
             modified_by_id = :modifiedById,

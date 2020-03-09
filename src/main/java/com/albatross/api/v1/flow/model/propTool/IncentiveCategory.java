@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @Data
 @NoArgsConstructor
-public class PropFinancier {
+public class IncentiveCategory {
 
   private Long id;
-  private String name;
-  private Boolean archived, active;
+  private String incentiveCategory;
+  private Boolean archived;
 
 }

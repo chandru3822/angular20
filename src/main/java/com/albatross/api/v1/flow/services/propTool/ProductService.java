@@ -51,6 +51,7 @@ public class ProductService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("productName", product.getProductName());
     params.put("termLength", product.getTermLength());
+    params.put("financierId", product.getFinancierId());
     params.put("interestRate", product.getInterestRate());
     params.put("dealerFee", product.getDealerFee());
     params.put("active", product.getActive());

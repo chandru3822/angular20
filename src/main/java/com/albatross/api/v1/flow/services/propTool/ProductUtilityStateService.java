@@ -50,6 +50,9 @@ public class ProductUtilityStateService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("productId", p.getProductId());
+    params.put("active", p.getActive());
+    params.put("fundingCap", p.getFundingCap());
+    params.put("targetProductionFactor", p.getTargetProductionFactor());
     params.put("utilityStateId", p.getUtilityStateId());
     Long id;
 

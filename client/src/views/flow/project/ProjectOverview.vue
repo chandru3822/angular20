@@ -48,6 +48,16 @@
 
   <v-col cols="12" lg="6">
 
+    <v-col class="text-left">
+      <v-btn
+        v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
+        class="manage-btn warning"
+        @click="$router.push({name: 'projectAdmin', params: {projectId}})"
+      >
+        Manage
+      </v-btn>
+    </v-col>
+
     <v-col v-if="isFieldsLoading">
       <SpinnerInline :size="20" color="primary"/>
     </v-col>
@@ -56,7 +66,7 @@
       v-else
       class="mt-4"
       v-for="(group, index) in customFieldGroups"
-      :key="index"
+      :key="uuidv4()"
     >
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
@@ -70,8 +80,8 @@
       </v-toolbar>
       <v-card class="pa-4 text-left">
         <CustomValueInput
-          v-for="(field, idx) in group.customFieldValues"
-          :key="idx"
+          v-for="field in group.customFieldValues"
+          :key="uuidv4()"
           :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
           :showFieldName="false"
           :field="field"
@@ -139,6 +149,7 @@
             <template v-for="step in processStepsByName">
               <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
               <ProjectProcessStepSnippet
+                :key="uuidv4()"
                 :steps="step.processSteps"
                 :projectId="projectId"
                 :customerId="customer.id"/>
@@ -182,6 +193,7 @@ import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import { v4 as uuidv4 } from 'uuid'
 
 export default {
   name: 'ProjectOverview',
@@ -208,7 +220,8 @@ export default {
       customer: {},
       displayChangeOwner: false,
       availableOwners: [],
-      project: {}
+      project: {},
+      uuidv4
     }
   },
   created () {
@@ -340,14 +353,15 @@ export default {
   font-size: 15px;
 }
 
-.user-card {
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
 .work-type-header {
   &:not(:first-child) {
     padding-top: 48px;
   }
+}
+</style>
+
+<style lang="scss">
+.manage-btn > .v-btn__content {
+  color: white !important;
 }
 </style>
