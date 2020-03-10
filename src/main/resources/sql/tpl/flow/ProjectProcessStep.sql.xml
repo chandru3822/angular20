@@ -13,6 +13,7 @@
       coalesce(pps.date_modified, pps.date_created) as last_updated,
       cpsst.process_step_status_type_id,
       cpsst.process_step_status_type,
+      cpsst.id as company_process_step_status_type_id,
       ps.process_step_name,
       (
         select row_to_json(o) from (

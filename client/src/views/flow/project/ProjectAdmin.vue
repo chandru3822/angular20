@@ -48,14 +48,52 @@
     </v-row>
   </v-col>
 
-  <v-col cols="6">
+  <v-col cols="12">
 
     <v-col cols="12" class="text-left">
-      <v-btn
-        class="new-btn primary"
+      <v-menu
+        bottom
+        offset-y
+        :close-on-content-click="false"
       >
-        Add Process Step
-      </v-btn>
+
+        <template #activator="{on}">
+          <v-btn class="project-admin-btn primary" v-on="on">
+            Add Process Step
+          </v-btn>
+        </template>
+
+        <v-card class="pa-5">
+          Select a process step
+          <v-select
+            v-model="selectedNewProjectProcessStep"
+            :items="process.processStepProcesses"
+            item-text="processStepName"
+            item-value="id"
+            label="Process Steps"
+            placeholder="Select one..."
+            return-object
+          />
+
+          Select a status
+          <v-select
+            v-model="selectedNewStatus"
+            :items="availableProcessStepStatuses"
+            item-text="processStepStatusType"
+            item-value="companyProcessStepStatusTypeId"
+            label="Status"
+            placeholder="Select one..."
+            return-object
+          />
+
+          <v-btn
+            class="project-admin-btn primary"
+            @click="createNewProjectProcessStep"
+          >
+            Create
+          </v-btn>
+        </v-card>
+      </v-menu>
     </v-col>
 
     <v-col cols="12">
@@ -67,25 +105,36 @@
        fixed-header
        disable-sort
        hide-default-footer
+       dense
        :loading="isProjectProcessStepsLoading"
+       disable-pagination
       >
+
+        <template #no-data>
+          No available process steps
+        </template>
+
+        <template #no-results>
+          No available process steps
+        </template>
 
         <template #item="{item: projectProcessStep}">
           <tr>
-            <td>{{projectProcessStep.projectProcessStepId}}</td>
-            <td>{{projectProcessStep.processStepName}}</td>
-            <td>{{getOwnerName(projectProcessStep)}}</td>
-            <td>{{projectProcessStep.lastUpdated}}</td>
-            <td>
+            <td class="text-left">{{projectProcessStep.projectProcessStepId}}</td>
+            <td class="text-left">{{projectProcessStep.processStepName}}</td>
+            <td class="text-left">{{getOwnerName(projectProcessStep)}}</td>
+            <td class="text-left">{{projectProcessStep.lastUpdated}}</td>
+            <td class="text-left">
               <v-select
                 v-model="projectProcessStep.selectedProcessStepStatusType"
                 :items="availableProcessStepStatuses"
                 item-text="processStepStatusType"
-                item-value="processStepStatusTypeId"
+                item-value="companyProcessStepStatusTypeId"
                 @change="updateStatus(projectProcessStep.projectProcessStepId)"
                 return-object
                 solo
                 flat
+                hide-details
               />
             </td>
           </tr>
@@ -122,6 +171,8 @@ export default {
       availableOwners: [],
       availableProcessStepStatuses: [],
       isProjectProcessStepsLoading: false,
+      selectedNewProjectProcessStep: null,
+      selectedNewStatus: null,
       headers: [
         {text: 'ID', value: 'projectProcessStepId', show: true},
         {text: 'Type', value: 'processStepName', show: true},
@@ -158,10 +209,9 @@ export default {
         this.isProjectProcessStepsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
         this.projectProcessSteps = data.map(step => {
-          step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === step.processStepStatusTypeId)
+          step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.id === step.companyProcessStepStatusTypeId)
           return step
         })
-        // this.projectProcessSteps.forEach(step => step.selectedProcessStepStatusType = Object.assign(, {}))
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
@@ -227,14 +277,34 @@ export default {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating process step status')
 
-        const previousStatus = this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId ===  selectedStep.processStepStatusTypeId)
+        const previousStatus = this.availableProcessStepStatuses.find(status => status.id ===  selectedStep.companyProcessStepStatusTypeId)
 
         this.projectProcessSteps = this.projectProcessSteps.map(step => {
-          if (step.processStepStatusTypeId === selectedStep.processStepStatusTypeId) {
+          if (step.companyProcessStepStatusTypeId === selectedStep.companyProcessStepStatusTypeId) {
             step.selectedProcessStepStatusType = previousStatus
           }
           return step
         })
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    createNewProjectProcessStep: async function () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/projectProcessStep/`, {
+          projectId: this.projectId,
+          processStepId: this.selectedNewProjectProcessStep.processStepId,
+          companyProcessStepStatusTypeId: this.selectedNewStatus.id
+        })
+
+        const newShit = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
+        this.projectProcessSteps.push(newShit)
+
+        // this.projectProcessSteps = [...this.projectProcessSteps, {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}]
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -244,6 +314,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+
+@import "@/styles/main.scss";
+
 #project-admin-container {
   margin-top: -15px;
   padding-left: 0;
@@ -260,10 +333,30 @@ export default {
 .project-subtitle {
   font-size: 15px;
 }
+
+tr:nth-of-type(even) {
+  @extend .shaded-row;
+
+  .v-input__slot {
+    background-color: green !important;
+  }
+}
 </style>
 
 <style lang="scss">
-.new-btn > .v-btn__content {
+
+#project-admin-container .v-data-table__wrapper {
+  height: calc(100vh - 290px);
+  min-height: 300px;
+}
+
+.project-admin-btn > .v-btn__content {
   color: white !important;
+}
+
+tr:nth-of-type(even) {
+  .v-input__slot {
+    background-color: var(--v-rowShadeCustom-base) !important;
+  }
 }
 </style>
