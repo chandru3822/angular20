@@ -86,6 +86,7 @@ public class IncentiveService {
     params.put("incentiveCategoryId", incentive.getIncentiveCategoryId());
     params.put("incentiveTypeId", incentive.getIncentiveTypeId());
     params.put("amount", incentive.getAmount());
+    params.put("active", incentive.getActive());
     params.put("incentiveEntityId", incentive.getIncentiveEntityId());
 
     String sqlKey = null;

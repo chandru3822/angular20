@@ -74,7 +74,8 @@
                         label="Incentive Category"
                         item-text="incentiveCategory"
                         item-value="id"
-                        @input="getIncentiveEntities(item.incentiveCategoryId)"
+                        readonly
+                        disabled
               ></v-select>
               <v-select v-model="item.incentiveEntityId"
                         :items="incentiveEntities"
@@ -109,6 +110,7 @@
               <td class="text-left">{{item.incentiveEntityName}}</td>
               <td class="text-left">{{item.incentiveType}}</td>
               <td class="text-left">{{item.amount || 0 | currency('$', 2)}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
                   <v-btn small text @click="expanded = [item]; selectedIndex = index; getIncentiveEntities(item.incentiveCategoryId)" v-if="!expanded.includes(item)">
@@ -281,6 +283,9 @@
           // add it to the records already on the screen
           if(!item.id) {
             this.incentives.push(data)
+          } else {
+            item.incentiveEntityName = data.incentiveEntityName
+            item.incentiveType = data.incentiveType
           }
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Incentive Saved' : 'Incentive Added')
@@ -288,6 +293,7 @@
           // reset the new fields
           this.addNew = false
           this.newIncentive = {}
+          this.expanded = []
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
