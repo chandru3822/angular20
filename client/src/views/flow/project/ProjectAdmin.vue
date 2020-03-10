@@ -50,22 +50,54 @@
 
   <v-col cols="6">
 
-    <v-btn
-      class="primary"
-    >
-      Add Process Step
-    </v-btn>
+    <v-col cols="12" class="text-left">
+      <v-btn
+        class="new-btn primary"
+      >
+        Add Process Step
+      </v-btn>
+    </v-col>
 
     <v-col cols="12">
-      <template v-for="step in projectProcessStepsByName">
-        <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
-        <ProjectProcessStepSnippet
-          :steps="step.projectProcessSteps"
-          :projectId="projectId"
-          :customerId="customer.id"/>
-      </template>
+
+      <v-data-table
+       class="elevation-1"
+       :headers="headers"
+       :items="projectProcessSteps"
+       fixed-header
+       disable-sort
+       hide-default-footer
+       :loading="isProjectProcessStepsLoading"
+      >
+
+        <template #item="{item: projectProcessStep}">
+          <tr>
+            <td>{{projectProcessStep.projectProcessStepId}}</td>
+            <td>{{projectProcessStep.processStepName}}</td>
+            <td>{{getOwnerName(projectProcessStep)}}</td>
+            <td>{{projectProcessStep.lastUpdated}}</td>
+            <td>
+              <v-select
+                v-model="projectProcessStep.selectedProcessStepStatusType"
+                :items="availableProcessStepStatuses"
+                item-text="processStepStatusType"
+                item-value="processStepStatusTypeId"
+                @change="updateStatus(projectProcessStep.projectProcessStepId)"
+                return-object
+                solo
+                flat
+              />
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
     </v-col>
   </v-col>
+
+  <v-col cols="6">
+    <router-view></router-view>
+  </v-col>
+
   <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
@@ -74,7 +106,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
-import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
+import { v4 as uuid } from 'uuid'
 
 export default {
   name: 'ProjectAdmin.vue',
@@ -83,33 +115,33 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       project: {},
       projectProcessSteps: [],
+      process: {},
       customer: {},
       snackbar: {},
       displayChangeOwner: false,
-      availableOwners: []
+      availableOwners: [],
+      availableProcessStepStatuses: [],
+      isProjectProcessStepsLoading: false,
+      headers: [
+        {text: 'ID', value: 'projectProcessStepId', show: true},
+        {text: 'Type', value: 'processStepName', show: true},
+        {text: 'Owner', value: 'owner.fullName', show: true},
+        {text: 'Last Activity', value: 'lastUpdated', show: true},
+        {text: 'Status', value: 'processStepStatusType', show: true}
+      ],
+      uuid
     }
   },
   components: {
-    Snackbar,
-    ProjectProcessStepSnippet
+    Snackbar
   },
-  created () {
+  async created () {
     this.getCustomer()
-    this.getProject()
-    this.getProjectProcessSteps()
     this.getAvailableOwners()
-  },
-  computed: {
-    projectProcessStepsByName () {
-      const names = [...new Set(this.projectProcessSteps.map(step => step.processStepName))]
-
-      return names.map(processStepName => {
-        return {
-          processStepName,
-          projectProcessSteps: this.projectProcessSteps.filter(step => step.processStepName === processStepName)
-        }
-      })
-    }
+    await this.getProject()
+    this.getProcess()
+    await this.getAvailableStatuses()
+    this.getProjectProcessSteps()
   },
   methods: {
     getProject: async function () {
@@ -123,11 +155,27 @@ export default {
     },
     getProjectProcessSteps: async function () {
       try {
+        this.isProjectProcessStepsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
-        this.projectProcessSteps = data
+        this.projectProcessSteps = data.map(step => {
+          step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId === step.processStepStatusTypeId)
+          return step
+        })
+        // this.projectProcessSteps.forEach(step => step.selectedProcessStepStatusType = Object.assign(, {}))
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
+      } finally {
+        this.isProjectProcessStepsLoading = false
+      }
+    },
+    getProcess: async function () {
+      try {
+        const {data} = await getRequest(`/processes/${this.project.processId}`)
+        this.process = data
+      } catch (e) {
+        this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')
+        logError(e)
       }
     },
     getCustomer: async function () {
@@ -148,6 +196,16 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
       }
     },
+    async getAvailableStatuses () {
+      try {
+        const {data} = await getRequest(`/processStep/status`)
+        this.availableProcessStepStatuses = data
+      } catch (e) {
+        this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+        logError(e)
+      }
+    },
+    getOwnerName: projectProcessStep => projectProcessStep.owner?.fullName ?? '',
     updateOwner: async function () {
       this.displayChangeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -156,6 +214,27 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    updateStatus: async function (projectProcessStepId) {
+      const selectedStep = this.projectProcessSteps.find(step => step.projectProcessStepId === projectProcessStepId)
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, selectedStep.selectedProcessStepStatusType)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error updating process step status')
+
+        const previousStatus = this.availableProcessStepStatuses.find(status => status.processStepStatusTypeId ===  selectedStep.processStepStatusTypeId)
+
+        this.projectProcessSteps = this.projectProcessSteps.map(step => {
+          if (step.processStepStatusTypeId === selectedStep.processStepStatusTypeId) {
+            step.selectedProcessStepStatusType = previousStatus
+          }
+          return step
+        })
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -180,5 +259,11 @@ export default {
 }
 .project-subtitle {
   font-size: 15px;
+}
+</style>
+
+<style lang="scss">
+.new-btn > .v-btn__content {
+  color: white !important;
 }
 </style>

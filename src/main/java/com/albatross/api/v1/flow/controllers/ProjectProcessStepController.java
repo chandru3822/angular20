@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.ProjectProcessStep;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
@@ -80,6 +81,12 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/owner")
   public ResponseEntity<Void> updateProjectProcessStepOwner(@PathVariable Long projectProcessStepId, @RequestBody Owner owner) {
     projectProcessStepService.updateOwner(projectProcessStepId, owner);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PostMapping(value = "{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
+    projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }
