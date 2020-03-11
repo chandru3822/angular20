@@ -1,11 +1,12 @@
 <template>
-  <v-container>
+  <v-container class="pa-0" id="commission-closers-container">
     <v-row>
       <v-col>
         <v-data-table
             :headers="headers"
             :items="closers"
             :fixed-header="true"
+            :items-per-page="100"
             disable-sort
             :loading="dataLoading"
             hide-default-footer
@@ -21,7 +22,31 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.closerName}}</td>
+              <td class="text-left">{{item.name}}</td>
+              <td class="text-left">
+                <v-btn text v-if="item.commissionPlan !== null" @click="goToDetails(item, false)">
+                  {{item.commissionPlan}}:<br/>
+                  {{item.commissionDescription}}
+                </v-btn>
+                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 1)">Add to Commission</v-btn>
+              </td>
+              <td class="text-left">
+                <v-btn text v-if="item.overridePlan !== null" @click="goToDetails(item, true)">
+                  {{item.overridePlan}}:<br/>
+                  {{item.overrideDescription}}
+                </v-btn>
+                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 2)">Assign to Override</v-btn>
+              </td>
+              <td class="text-left">
+                <span v-if="item.receivingPlans && item.receivingPlans.length > 0">
+                  <v-btn v-for="rp in item.receivingPlans" text @click="goToDetails(rp, true)">
+                    {{rp.receivingPlan}}:<br/>
+                    {{rp.receivingDescription}}
+                  </v-btn>
+                </span>
+                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 3)">Clone/Create New Plan</v-btn>
+              </td>
+              <td class="text-left">{{item.hasCommissionPlanGap ? 'Yes' : 'No'}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -50,7 +75,7 @@
         snackbar: {},
         dataLoading: true,
         headers: [
-          {text: 'Closer Name', value: 'closerName', show: true},
+          {text: 'Closer Name', value: 'name', show: true},
           {text: 'Commissions Assigned To', value: 'assignedTo', show: true},
           {text: 'Overrides Assigned To', value: 'overridesAssignedTo', show: true},
           {text: 'Receiving Overrides From', value: 'receivingOverridesFrom', show: true},
@@ -65,25 +90,33 @@
         try {
           const {data} = await getRequest(`/commissionManagement/closers`, 'blueraven')
           this.closers = data
+          this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Closers')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      selectPlan(item) {
+        console.log('HANDLE SELECTING A PLAN: ', item)
+      },
+      goToDetails(item, isOverride) {
+        console.log('HANDLE GOING TO DETAILS: ', item)
+        console.log('is override', false)
       }
     }
   }
 </script>
 
 <style lang="scss">
+#commission-closers-container .v-data-table__wrapper {
+  height: calc(100vh - 350px);
+  min-height: 300px;
+}
 </style>
 
 <style lang="scss" scoped>
-/* v-data-table is doing some weird spacing */
-.container {
-  padding: 0 !important;
-}
 .v-data-table {
   border-radius: 0;
 }

@@ -122,12 +122,6 @@ public class CommissionManagementController {
         return commissionManagementService.getSources();
     }
 
-
-    @PostMapping(value = "/payrollSearch")
-    public String payrollSearch(@RequestBody PayrollSearch searchQuery) {
-        return commissionManagementService.payrollSearch(searchQuery);
-    }
-
     @PostMapping(value = "/notes/{planType}/{planId}/{userId}")
     public void editNote(@PathVariable Long planType,
                          @PathVariable Long planId,

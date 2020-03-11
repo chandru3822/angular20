@@ -9,33 +9,6 @@
         where active is true
     ]]></commissionManagement.findActiveMilestones>
 
-    <commissionManagement.payrollSearch><![CDATA[
-        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-        FROM (SELECT p.period_end,
-                     p.id,
-                     p.description,
-                     (SELECT sum(dcs1.current_pay)
-                      FROM brs.deal_commission_snapshot dcs1
-                      WHERE dcs1.payroll_id = p.id) AS current_pay
-              FROM brs.payroll p
-                     INNER JOIN brs.deal_commission_snapshot dcs ON p.id = dcs.payroll_id
-                     INNER JOIN brs.deal d ON dcs.deal_id = d.id
-                     LEFT JOIN brs.deal_override_commission_snapshot docs ON docs.deal_commission_snapshot_id = dcs.id
-              WHERE CASE WHEN :startDate:: DATE IS NOT NULL
-                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
-                AND CASE WHEN :customerName:: TEXT IS NOT NULL
-                              THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
-                         ELSE 1 = 1 END
-                AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
-                              THEN d.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
-                         ELSE 1 = 1 END
-                AND CASE WHEN :dealId:: INTEGER IS NOT NULL
-                              THEN d.deal_base_oid = :dealId:: INTEGER ELSE 1 = 1 END
-
-              GROUP BY p.id, p.period_end
-              ORDER BY p.period_end desc) AS sub_rows
-    ]]></commissionManagement.payrollSearch>
-
     <commissionManagement.getPayrollSearchDetail><![CDATA[
         SELECT array_to_json(array_agg(row_to_json(sub_rows)))
         FROM (
@@ -314,47 +287,48 @@
 
     <commissionManagement.getClosers><![CDATA[
        SELECT u.id                                      AS id,
-           u.id                                         AS userId,
-           u.first_name || ' ' || u.last_name           AS name,
-           u.hire_date                                  AS hireDate,
-           u.user_status_type_id                        AS userStatusTypeId,
-           cp.name                                      AS commissionPlan,
-           cp.description                               AS commissionDescription,
-           cp.id                                        AS commissionPlanId,
-           op.name                                      AS overridePlan,
-           op.description                               AS overrideDescription,
-           op.id                                        AS overridePlanId,
-           coalesce((
-                select case when up2.id is null then null else true end as closer_active
-                from flow.user_position up2
-                where up2.user_id = u.id
-                  and up2.primary_flag IS TRUE
-                  AND up2.end_date IS NULL
-                  AND up2.archived IS NOT TRUE
-                  AND u.hire_date IS NOT NULL
-                  AND cust.has_access is true),false) AS "is_active_closer",
-           (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-            FROM (SELECT op2.name AS "receivingPlan", op2.description AS "receivingDescription", op2.id AS "receivingPlanId"
+            u.id                                         AS userId,
+            u.first_name || ' ' || u.last_name           AS name,
+            u.hire_date                                  AS hireDate,
+            cust.id                        AS userStatusTypeId,
+            cp.name                                      AS commissionPlan,
+            cp.description                               AS commissionDescription,
+            cp.id                                        AS commissionPlanId,
+            op.name                                      AS overridePlan,
+            op.description                               AS overrideDescription,
+            op.id                                        AS overridePlanId,
+            coalesce((
+                         select case when up2.id is null then null else true end as closer_active
+                         from flow.user_position up2
+                         where up2.user_id = u.id
+                           and up2.primary_flag IS TRUE
+                           AND up2.end_date IS NULL
+                           AND up2.archived IS NOT TRUE
+                           AND u.hire_date IS NOT NULL
+                           AND cust.has_access is true),false) AS "is_active_closer",
+            (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+             FROM (SELECT op2.name AS "receivingPlan", op2.description AS "receivingDescription", op2.id AS "receivingPlanId"
 
-                  FROM brs.override_plan_receiving_user opru
-                         INNER JOIN brs.override_plan op2 ON opru.override_plan_id = op2.id
-                  WHERE opru.user_id = u.id
-                    AND op2.status_id = 2) AS sub_rows) AS "receivingPlans"
-    FROM flow.user u
-           INNER JOIN flow.user_position up ON up.user_id = u.id AND
-                                                    ((up.primary_flag IS TRUE AND up.end_date IS NULL AND active IS TRUE) OR 1 = 1)
-                                                      AND position_id IN (1, 2, 3, 133)
-            INNER JOIN flow.user_status_type ust ON ust.user_id = u.id
-            INNER JOIN flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.has_access is true
-           LEFT JOIN brs.commission_plan_user cpu ON cpu.user_id = u.id AND (cpu.start_date <= CURRENT_TIMESTAMP AND
+                   FROM brs.override_plan_receiving_user opru
+                            INNER JOIN brs.override_plan op2 ON opru.override_plan_id = op2.id
+                   WHERE opru.user_id = u.id
+                     AND op2.status_id = 2) AS sub_rows) AS "receivingPlans"
+        FROM flow.user u
+                 INNER JOIN flow.user_position up ON up.user_id = u.id AND
+                                                    ((up.primary_flag IS TRUE AND up.end_date IS NULL AND up.archived IS NOT TRUE) OR
+                                                     1 = 1)
+                                                    AND position_id IN (1, 2, 3, 133)
+                 INNER JOIN flow.user_status_type ust ON ust.user_id = u.id
+                 inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.has_access is true and cust.company_id = 3
+                 LEFT JOIN brs.commission_plan_user cpu ON cpu.user_id = u.id AND (cpu.start_date <= CURRENT_TIMESTAMP AND
                                                                                    (cpu.end_date >= current_timestamp OR cpu.end_date IS NULL))
-           LEFT JOIN brs.commission_plan cp ON cp.id = cpu.commission_plan_id
-           LEFT JOIN brs.override_plan_assigned_user opau ON opau.user_id = u.id AND
+                 LEFT JOIN brs.commission_plan cp ON cp.id = cpu.commission_plan_id
+                 LEFT JOIN brs.override_plan_assigned_user opau ON opau.user_id = u.id AND
                                                                    (opau.start_date <= CURRENT_TIMESTAMP AND
                                                                     (opau.end_date >= current_timestamp OR opau.end_date IS NULL))
-           LEFT JOIN brs.override_plan op ON opau.override_plan_id = op.id
+                 LEFT JOIN brs.override_plan op ON opau.override_plan_id = op.id
 
-    GROUP BY u.id, u.first_name, u.last_name, u.hire_date, cp.name, cp.description, cp.id, op.name, op.description, op.id
+        GROUP BY u.id, u.first_name, u.last_name, u.hire_date, cust.id, cp.name, cp.description, cp.id, op.name, op.description, op.id
     ]]></commissionManagement.getClosers>
 
     <commissionManagement.getCloserDetails><![CDATA[
@@ -979,17 +953,16 @@
                 FROM (
                        SELECT
                          opu.user_id as "userId",
-                         opu.allocation,
                          u.first_name || ' ' || u.last_name AS name,
                          u.employee_id                      AS "employeeId",
                          p.position,
                          p.id                               AS "positionId"
                        FROM brs.override_plan_receiving_user opu
-                         INNER JOIN brs."user" u ON opu.user_id = u.id
-                         INNER JOIN brs.user_position up ON u.id = up.user_id
-                         INNER JOIN brs.position p ON up.position_id = p.id
+                         INNER JOIN flow."user" u ON opu.user_id = u.id
+                         INNER JOIN flow.user_position up ON u.id = up.user_id
+                         INNER JOIN flow.position p ON up.position_id = p.id
                        WHERE override_plan_id = op.id
-                             AND up.active IS TRUE AND up.primary_flag IS TRUE
+                             AND up.archived IS NOT TRUE AND up.primary_flag IS TRUE
                      ) u), '[]') AS "receivingUsers",
           coalesce((
                     SELECT array_to_json(array_agg(row_to_json(u)))
@@ -1004,11 +977,11 @@
                              opa.start_date                     AS "startDate",
                              opa.end_date                       AS "endDate"
                            FROM brs.override_plan_assigned_user opa
-                             INNER JOIN brs."user" u ON opa.user_id = u.id
-                             INNER JOIN brs.user_position up ON u.id = up.user_id
-                             INNER JOIN brs.position p ON up.position_id = p.id
+                             INNER JOIN flow."user" u ON opa.user_id = u.id
+                             INNER JOIN flow.user_position up ON u.id = up.user_id
+                             INNER JOIN flow.position p ON up.position_id = p.id
                            WHERE opa.override_plan_id = op.id
-                                 AND up.active IS TRUE AND up.primary_flag IS TRUE
+                                 AND up.archived IS NOT TRUE AND up.primary_flag IS TRUE
 
                          ) u
                      ), '[]')           AS "assignedUsers"
@@ -1304,19 +1277,19 @@
                  AND d.id = :dealId),0) as deal_total_value;
       ]]>
     </commissions.getAdjustmentData>
-    <commissions.getUserDatesAsCloser>
-      <![CDATA[
-          select user_id, start_date::date, end_date::date
-          from brs.user_position
-          where position_id in (1,2,3,133)
-            and user_id in (:userIds);
-      ]]>
-    </commissions.getUserDatesAsCloser>
-    <commissions.getUserDatesOnCommissionPlans>
-      <![CDATA[
+
+    <commissions.getUserDatesAsCloser><![CDATA[
+          select up.user_id, up.start_date::date, up.end_date::date
+          from flow.user_position up
+            inner join flow.position p on p.id = up.position_id
+          where up.position_id in (1,2,3,133)
+            and p.company_id = 3
+            and up.user_id in (:userIds);
+    ]]></commissions.getUserDatesAsCloser>
+
+    <commissions.getUserDatesOnCommissionPlans><![CDATA[
           select user_id, start_date::date, end_date::date
           from brs.commission_plan_user
           where user_id in (:userIds);
-      ]]>
-    </commissions.getUserDatesOnCommissionPlans>
+    ]]></commissions.getUserDatesOnCommissionPlans>
 </sql>

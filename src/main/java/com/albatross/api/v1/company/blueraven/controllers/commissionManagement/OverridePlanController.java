@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v1/company/blueraven/commissionManagemnt/overrides")
+@RequestMapping(value = "/api/v1/company/blueraven/commissionManagement/overrides")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class OverridePlanController {
 

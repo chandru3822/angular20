@@ -30,6 +30,33 @@
           WHERE p.id = :payrollId) payroll
     ]]></payroll.getById>
 
+    <payroll.search><![CDATA[
+        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+        FROM (SELECT p.period_end,
+                     p.id,
+                     p.description,
+                     (SELECT sum(dcs1.current_pay)
+                      FROM brs.deal_commission_snapshot dcs1
+                      WHERE dcs1.payroll_id = p.id) AS current_pay
+              FROM brs.payroll p
+                     INNER JOIN brs.deal_commission_snapshot dcs ON p.id = dcs.payroll_id
+                     INNER JOIN brs.deal d ON dcs.deal_id = d.id
+                     LEFT JOIN brs.deal_override_commission_snapshot docs ON docs.deal_commission_snapshot_id = dcs.id
+              WHERE CASE WHEN :startDate:: DATE IS NOT NULL
+                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+                AND CASE WHEN :customerName:: TEXT IS NOT NULL
+                              THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                         ELSE 1 = 1 END
+                AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
+                              THEN d.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
+                         ELSE 1 = 1 END
+                AND CASE WHEN :dealId:: INTEGER IS NOT NULL
+                              THEN d.deal_base_oid = :dealId:: INTEGER ELSE 1 = 1 END
+
+              GROUP BY p.id, p.period_end
+              ORDER BY p.period_end desc) AS sub_rows
+    ]]></payroll.search>
+
     <payroll.getApprovedPayrolls>
       <![CDATA[
         SELECT DISTINCT p.id, p.period_end

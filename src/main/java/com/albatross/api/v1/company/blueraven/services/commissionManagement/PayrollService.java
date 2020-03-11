@@ -7,6 +7,7 @@ import com.albatross.api.v1.company.blueraven.enums.commissionManagement.Payroll
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.PayrollStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.AccountSearchRequest;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.PayrollSearch;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,17 @@ public class PayrollService {
         }
 
         return payrollIds.get(0);
+    }
+
+    public String payrollSearch(PayrollSearch searchQuery) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("startDate", searchQuery.getStartDate());
+        params.put("endDate", searchQuery.getEndDate());
+        params.put("customerName", searchQuery.getCustomerName());
+        params.put("salesRepId", searchQuery.getSalesRepId());
+        params.put("dealId", searchQuery.getDealId());
+        Optional<String> results = sqlCache.get("payroll.search", params, new SingleColumnRowMapper<>(String.class));
+        return results.orElse("[]");
     }
 
     public Optional<String> getPayrollById(Long id) {

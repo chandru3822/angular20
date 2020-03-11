@@ -1,5 +1,42 @@
 <template>
-  <v-container>
+  <v-container class="pa-0">
+    <v-form ref="customerForm">
+      <v-container>
+        <v-row>
+          <v-col cols="12" sm="6">
+            <DatetimePickerInput
+                v-model="payrollSearch.startDate"
+                :timezone="this.timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Start Date"
+            />
+            <v-text-field text
+                          label="Customer"
+                          v-model="payrollSearch.customerName"></v-text-field>
+            <v-text-field text
+                          label="Deal ID"
+                          v-model="payrollSearch.dealId"></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="6">
+            <DatetimePickerInput
+                v-model="payrollSearch.endDate"
+                :timezone="this.timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="End Date"
+            />
+            <v-text-field text
+                          label="Sales Rep"
+                          v-model="payrollSearch.salesRep"></v-text-field>
+            <div class="text-left">
+              <v-btn color="primaryCustom" dark @click="getPayrollData">Search</v-btn>
+              <v-btn class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
+            </div>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-form>
     <v-row>
       <v-col>
         <v-data-table
@@ -42,20 +79,21 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Payroll',
     components: {
-      Snackbar
-    },
-    created() {
-      this.getPayrollData()
+      Snackbar,
+      DatetimePickerInput
     },
     data() {
       return {
         snackbar: {},
+        payrollSearch: {},
         dataLoading: true,
+        timezone: this.$store.state.user.details.timezone.value,
         headers: [
           {text: 'ID', value: 'id', show: true},
           {text: 'Period End', value: 'periodEndDate', show: true},
@@ -68,25 +106,18 @@
     },
     methods: {
       async getPayrollData () {
-        this.payrollData = [
-          {
-            id: 1,
-            periodEndDate: '2020-03-31',
-            description: 'this is here',
-            currentPay: 1234.12,
-          }
-        ]
-        // this.$store.commit(AppMutations.SET_LOADING, true)
-        // try {
-        //   const {data} = await getRequest(`/commissionManagement/closers`, 'blueraven')
-        //   this.payrollData = data
-        //   this.dataLoading = false
-        //   this.$store.commit(AppMutations.SET_LOADING, false)
-        // } catch (e) {
-        //   console.error('*** ERROR ***', e)
-        //   this.snackbar = getSnackbar('ERROR', 'Error Loading Payroll Data')
-        //   this.$store.commit(AppMutations.SET_LOADING, false)
-        // }
+        console.log('getPayrollData', this.payrollSearch)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/commissionManagement/closers`, 'blueraven')
+          this.payrollData = data
+          this.dataLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Payroll Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async viewDetails (item) {
         console.log('randaLogger', item)
@@ -99,6 +130,8 @@
 </style>
 
 <style lang="scss" scoped>
-
+.v-data-table {
+  border-radius: 0;
+}
 </style>
 

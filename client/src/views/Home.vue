@@ -101,7 +101,7 @@ export default {
         display: this.$store.getters.userHasFeature('AHJ_DATABASE')
       }, {
         label: 'Commissions',
-        path: '/commissions',
+        path: '/commissionManagement/closers',
         display: this.$store.getters.userHasFeature('COMMISSIONS')
       }, {
         label: 'Schedule',

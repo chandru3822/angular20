@@ -17,7 +17,7 @@ public class ClosersPlan {
     private String name;
     private String commissionPlan, commissionDescription, overridePlan, overrideDescription;
 
-    private List<Object> receivingPlans;
+    private List<ReceivingPlan> receivingPlans;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date hireDate;

@@ -1,16 +1,23 @@
 package com.albatross.api.v1.company.blueraven.services.commissionManagement;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.Source;
+import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +38,7 @@ public class CommissionManagementService {
     private final DataSource dataSource;
     private final SecurityService securityService;
     private final PayrollService payroll;
+    private final ObjectMapper om;
 
     @Data
     public static class MilestoneType {
@@ -63,7 +71,7 @@ public class CommissionManagementService {
     }
 
     public List<MilestoneType> findActiveMilestones() {
-        return sqlCache.query("commissionManagement.findActiveMilestones", new HashMap<>(), MilestoneType.class);
+        return sqlCache.query("commissionManagement.findActiveMilestones", Collections.emptyMap(), MilestoneType.class);
     }
 
     public String findMilestoneQueryConditions(Long queryConditionType) {
@@ -75,11 +83,11 @@ public class CommissionManagementService {
     }
 
     public List<CommissionPlan> getCommissionPlans() {
-        return sqlCache.query("commissionManagement.getCommissionPlans", new HashMap<>(), CommissionPlan.class);
+        return sqlCache.query("commissionManagement.getCommissionPlans", Collections.emptyMap(), CommissionPlan.class);
     }
 
     public List<GetSource> getSources() {
-        return sqlCache.query("commissionManagement.getSources", new HashMap<>(), GetSource.class);
+        return sqlCache.query("commission_management.getSources", Collections.emptyMap(), GetSource.class);
     }
 
     public String findUserForCommissions(String search, String positions) {
@@ -118,16 +126,16 @@ public class CommissionManagementService {
     }
 
     public String getMilestones() {
-        Optional<String> results = sqlCache.get("commissionManagement.getMilestones", new HashMap<>(), new SingleColumnRowMapper<>(String.class));
+        Optional<String> results = sqlCache.get("commissionManagement.getMilestones", Collections.emptyMap(), new SingleColumnRowMapper<>(String.class));
         return results.orElse("");
     }
 
     public List<GetQueryCondition> getQueryConditions() {
-        return sqlCache.query("commissionManagement.getQueryConditions", new HashMap<>(), GetQueryCondition.class);
+        return sqlCache.query("commissionManagement.getQueryConditions", Collections.emptyMap(), GetQueryCondition.class);
     }
 
     public List<ClosersPlan> getClosers() {
-        List<ClosersPlan> closers = sqlCache.query("commissionManagement.getClosers", new HashMap<>(), ClosersPlan.class);
+        List<ClosersPlan> closers = sqlCache.query("commissionManagement.getClosers", Collections.emptyMap(), new ClosersPlanMapper<>(ClosersPlan.class, om));
         List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).collect(Collectors.toList());
         Set<Long> usersWithPlanGaps = getUsersWithPlanGaps(userIds);
         for (ClosersPlan closer : closers) {
@@ -135,17 +143,6 @@ public class CommissionManagementService {
             closer.setHasCommissionPlanGap(hasCommissionPlanGap);
         }
         return closers;
-    }
-
-    public String payrollSearch(PayrollSearch searchQuery) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("startDate", searchQuery.getStartDate());
-        params.put("endDate", searchQuery.getEndDate());
-        params.put("customerName", searchQuery.getCustomerName());
-        params.put("salesRepId", searchQuery.getSalesRepId());
-        params.put("dealId", searchQuery.getDealId());
-        Optional<String> results = sqlCache.get("commissionManagement.payrollSearch", params, new SingleColumnRowMapper<>(String.class));
-        return results.orElse("[]");
     }
 
     public List<Payroll> getUserPayrolls(Long userId) {
@@ -198,7 +195,7 @@ public class CommissionManagementService {
     }
 
     public List<CloserDetails> getCloserDetails() {
-        return sqlCache.query("commissionManagement.getCloserDetails", new HashMap<>(), CloserDetails.class);
+        return sqlCache.query("commissionManagement.getCloserDetails", Collections.emptyMap(), CloserDetails.class);
     }
 
     public Optional<Long> clonePlan(Long id, CommissionPlan commissionPlan)
@@ -591,6 +588,7 @@ public class CommissionManagementService {
         }
     }
 
+    @EqualsAndHashCode(callSuper = true)
     @Data
     public static class PlanStartDateBeforeHireDate extends Exception {
         private final Date startDate;
@@ -600,6 +598,22 @@ public class CommissionManagementService {
             super("Some users' plan start dates are before their hire dates");
             this.startDate = startDate;
             this.problematicUsers = problematicUsers;
+        }
+    }
+
+    public static class ClosersPlanMapper<T> extends BeanPropertyRowMapper<T> {
+        private final ObjectMapper objectMapper;
+
+        public ClosersPlanMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+            super(mappedClass);
+            this.objectMapper = objectMapper;
+        }
+
+        @Override
+        protected void initBeanWrapper(BeanWrapper bw) {
+            TypeReference<List<ReceivingPlan>> receivingPlanRef = new TypeReference<>() {};
+            bw.registerCustomEditor(List.class, "receivingPlans",
+                new JsonCollectionDeserializer(receivingPlanRef, objectMapper));
         }
     }
 }

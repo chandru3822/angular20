@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.PayrollSearch;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.PayrollService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,11 @@ public class PayrollController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(current.get());
+    }
+
+    @PostMapping(value = "/search")
+    public String payrollSearch(@RequestBody PayrollSearch searchQuery) {
+        return payrollService.payrollSearch(searchQuery);
     }
 
     @PostMapping(value = "/{payrollId}")
