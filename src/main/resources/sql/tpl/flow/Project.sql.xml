@@ -127,7 +127,9 @@
     inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
     left join flow.user_position up on up.id = pps.user_position_id
     left join flow.user u on u.id = up.user_id
-    where p.id = :projectId
+    where
+      p.id = :projectId and
+      pps.archived is not true
     order by last_updated;
   ]]></project.getProcessStepsByProjectId>
 

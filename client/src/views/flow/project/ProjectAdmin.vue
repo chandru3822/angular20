@@ -88,7 +88,7 @@
 
           <v-btn
             class="project-admin-btn primary"
-            @click="createNewProjectProcessStep"
+            @click="createProjectProcessStep"
           >
             Create
           </v-btn>
@@ -137,14 +137,13 @@
                 hide-details
               />
             </td>
+            <td class="text-right">
+              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>
+            </td>
           </tr>
         </template>
       </v-data-table>
     </v-col>
-  </v-col>
-
-  <v-col cols="6">
-    <router-view></router-view>
   </v-col>
 
   <Snackbar :snackbar="snackbar"/>
@@ -153,7 +152,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {getRequest, postRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
 import { v4 as uuid } from 'uuid'
 
@@ -174,11 +173,12 @@ export default {
       selectedNewProjectProcessStep: null,
       selectedNewStatus: null,
       headers: [
-        {text: 'ID', value: 'projectProcessStepId', show: true},
-        {text: 'Type', value: 'processStepName', show: true},
-        {text: 'Owner', value: 'owner.fullName', show: true},
-        {text: 'Last Activity', value: 'lastUpdated', show: true},
-        {text: 'Status', value: 'processStepStatusType', show: true}
+        {text: 'ID', value: 'projectProcessStepId'},
+        {text: 'Type', value: 'processStepName'},
+        {text: 'Owner', value: 'owner.fullName'},
+        {text: 'Last Activity', value: 'lastUpdated'},
+        {text: 'Status', value: 'processStepStatusType'},
+        {text: '', value: 'delete', sortable: false}
       ],
       uuid
     }
@@ -289,7 +289,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    createNewProjectProcessStep: async function () {
+    createProjectProcessStep: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/projectProcessStep/`, {
@@ -305,6 +305,18 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    deleteProjectProcessStep: async function (projectProcessStepId) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/projectProcessStep/${projectProcessStepId}`)
+        this.projectProcessSteps = this.projectProcessSteps.filter(step => step.projectProcessStepId !== projectProcessStepId)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error deleting process step')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
