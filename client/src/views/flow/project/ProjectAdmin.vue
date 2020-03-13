@@ -108,7 +108,8 @@
        :headers="headers"
        :items="projectProcessSteps"
        fixed-header
-       disable-sort
+       sort-by="lastUpdated"
+       :sort-desc="true"
        hide-default-footer
        dense
        :loading="isProjectProcessStepsLoading"
@@ -362,18 +363,30 @@ tr:nth-of-type(even) {
 
 <style lang="scss">
 
-#project-admin-container .v-data-table__wrapper {
-  height: calc(100vh - 290px);
-  min-height: 300px;
-}
+#project-admin-container {
 
-.project-admin-btn > .v-btn__content {
-  color: white !important;
-}
+  .v-data-table__wrapper {
+    height: calc(100vh - 320px);
+    min-height: 300px;
+  }
 
-tr:nth-of-type(even) {
-  .v-input__slot {
-    background-color: var(--v-rowShadeCustom-base) !important;
+  .project-admin-btn > .v-btn__content {
+    color: white !important;
+  }
+
+  tr:nth-of-type(even) {
+    .v-input__slot {
+      background-color: var(--v-rowShadeCustom-base) !important;
+    }
+  }
+
+  tr .v-input__slot {
+    transition: none !important;
+    -webkit-transition: none !important;
+  }
+
+  tr:hover .v-input__slot {
+    background-color: #eeeeee;
   }
 }
 </style>
