@@ -51,6 +51,10 @@
   <v-col cols="12">
 
     <v-col cols="12" class="text-left">
+      <router-link :to="`/project/${projectId}`">Back</router-link>
+    </v-col>
+
+    <v-col cols="12" class="text-left">
       <v-menu
         bottom
         offset-y
@@ -88,6 +92,7 @@
 
           <v-btn
             class="project-admin-btn primary"
+            :disabled="selectedNewProjectProcessStep === null || selectedNewStatus === null"
             @click="createProjectProcessStep"
           >
             Create
@@ -298,10 +303,10 @@ export default {
           companyProcessStepStatusTypeId: this.selectedNewStatus.id
         })
 
-        const newShit = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
-        this.projectProcessSteps.push(newShit)
-
-        // this.projectProcessSteps = [...this.projectProcessSteps, {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}]
+        const newStep = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
+        this.projectProcessSteps.push(newStep)
+        this.selectedNewProjectProcessStep = null
+        this.selectedNewStatus = null
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
