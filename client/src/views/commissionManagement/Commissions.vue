@@ -69,7 +69,7 @@
       async getCommissions () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/commissionPlans`, 'blueraven')
+          const {data} = await getRequest(`/commissionManagement/plans`, 'blueraven')
           this.commissions = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -80,7 +80,7 @@
         }
       },
       goToDetails (item) {
-        console.log('handle going to item', item)
+        this.$router.push({name: 'commission', params: {id: item.id}})
       }
     }
   }

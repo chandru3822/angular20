@@ -332,24 +332,24 @@
     ]]></commissionManagement.getClosers>
 
     <commissionManagement.getCloserDetails><![CDATA[
-    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-    FROM (SELECT upv.user_id                                        AS "userId",
+   SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+FROM (SELECT upv.user_id                                        AS "userId",
              upv.first_name || ' ' || upv.last_name                 AS name,
              upv.start_date as "positionStartDate",
-             upv.hire_date                                          AS "hireDate",
-             upv.position_name                                      AS "positionName",
-             (SELECT array_to_json(array_agg(row_to_json(plans)))
-              FROM (SELECT cpu.id as "userPlanId",
-                            cpu.start_date AS "startDate",
+
+             coalesce((SELECT array_to_json(array_agg(row_to_json(plans)))
+              FROM ( SELECT cpu.id as "userPlanId",
+                           cpu.start_date AS "startDate",
                            cpu.end_date   AS "endDate",
                            cpu.note,
                            cp.name        ,
                            cp.id          ,
                            cp.description
                     FROM brs.commission_plan_user cpu
-                           INNER JOIN brs.commission_plan cp ON cp.id = cpu.commission_plan_id
-                    WHERE cpu.user_id = upv.user_id) AS plans)      AS plans,
-             (SELECT array_to_json(array_agg(row_to_json(overrides)))
+                             INNER JOIN brs.commission_plan cp ON cp.id = cpu.commission_plan_id
+                    WHERE cpu.user_id = upv.user_id
+                  order by cpu.start_date desc) plans), '[]')      AS plans,
+             coalesce((SELECT array_to_json(array_agg(row_to_json(overrides)))
               FROM (SELECT opau.id,
                            opau.user_id    AS "userId",
                            opau.start_date AS "startDate",
@@ -359,84 +359,69 @@
                            op.name         as "planName",
                            op.description  AS "planDescription"
                     FROM brs.override_plan_assigned_user opau
-                           INNER JOIN brs.override_plan op ON op.id = opau.override_plan_id
-                    WHERE opau.user_id = upv.user_id) AS overrides) AS overrides,
-             (SELECT array_to_json(array_agg(row_to_json(receiving)))
+                             INNER JOIN brs.override_plan op ON op.id = opau.override_plan_id
+                    WHERE opau.user_id = upv.user_id
+                  order by opau.start_date desc) overrides), '[]') AS overrides,
+             coalesce((SELECT array_to_json(array_agg(row_to_json(receiving)))
               FROM (SELECT op.name, opru.note, op.id, op.description
                     FROM brs.override_plan_receiving_user opru
-                           INNER JOIN brs.override_plan op ON op.id = opru.override_plan_id
+                             INNER JOIN brs.override_plan op ON op.id = opru.override_plan_id
                     WHERE opru.user_id = upv.user_id
                       AND op.name IS NOT NULL
-                      AND op.name != '') AS receiving)              AS receiving
-      FROM brs.user_positions_vw upv
-      WHERE upv.user_id = :userId) AS sub_rows
+                      AND op.name != '') receiving), '[]')              AS receiving
+      FROM flow.user_positions_vw upv
+      WHERE upv.user_id = :userId and upv.company_id = 3 limit 1) AS sub_rows
     ]]></commissionManagement.getCloserDetails>
 
     <commissionManagement.getCommissionPlanDetails><![CDATA[
-    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-    FROM (SELECT cp.id,
-             cps.status_type,
+   SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+FROM (SELECT cp.id,
+             cps.status_type as "statusType",
              cp.name,
              cp.total,
              cp.description,
-             cp.status_id,
-             cu.first_name || ' ' || cu.last_name                        AS created_name,
-             au.first_name || ' ' || au.last_name                        AS approved_name,
-             cp.created_by,
-             cp.position_id,
-             cp.approved                                                 AS approved_date,
+             cp.status_id as "statusId",
+             cu.first_name || ' ' || cu.last_name                        AS "createdName",
+             au.first_name || ' ' || au.last_name                        AS "approvedName",
+             cp.created_by as "createdBy",
+             cp.position_id as "positionId",
+             cp.approved                                                 AS "approvedDate",
              (SELECT array_to_json(array_agg(row_to_json(source)))
               FROM (SELECT cpsa.id,
-                           s.source_name,
-                           mt.milestone_type,
-                           ft.fee_type,
-                           cpsa.fee_amount,
-                           cpsa.source_id,
-                           cpsa.milestone_id,
-                           fee_type_id
+                           mt.milestone_type as "milestoneType",
+                           ft.fee_type as "feeType",
+                           cpsa.fee_amount as "feeAmount",
+                           cpsa.source_id as "sourceId",
+                           cpsa.milestone_id as "milestoneId",
+                           fee_type_id as "feeTypeId"
                     FROM brs.commission_plan_source_allocation cpsa
-                           INNER JOIN brs.milestone_type mt ON mt.id = cpsa.milestone_id
-                           INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
-                           INNER JOIN brs.source s ON s.id = cpsa.source_id
+                             INNER JOIN brs.milestone_type mt ON mt.id = cpsa.milestone_id
+                             INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
                     WHERE cpsa.commission_plan_id = cp.id) AS source)    AS source,
              (SELECT array_to_json(array_agg(row_to_json(users)))
               FROM (SELECT cpu.id,
                            u.first_name || ' ' || u.last_name AS name,
                            string_agg(DISTINCT p.position, ', ') FILTER (WHERE
-                             CASE WHEN cp.position_id = 1
-                               THEN up.position_id IN (1,2,3,133)
-                             WHEN cp.position_id = 4
-                               THEN up.position_id IN (4,5,6)
-                             END
-                           )                                  AS position,
+                               CASE WHEN cp.position_id = 1
+                                        THEN up.position_id IN (1,2,3,133)
+                                    WHEN cp.position_id = 4
+                                        THEN up.position_id IN (4,5,6)
+                                   END
+                               )                                  AS position,
                            u.id                               AS "userId",
                            cpu.start_date                     AS "startDate",
                            cpu.end_date                       AS "endDate",
                            u.hire_date                        AS "hireDate"
                     FROM brs.commission_plan_user cpu
-                           INNER JOIN brs.user u ON cpu.user_id = u.id
-                           INNER JOIN brs.user_position up ON up.user_id = u.id
-                           INNER JOIN brs.position p ON p.id = up.position_id
+                             INNER JOIN flow.user u ON cpu.user_id = u.id
+                             INNER JOIN flow.user_position up ON up.user_id = u.id
+                             INNER JOIN flow.position p ON p.id = up.position_id
                     WHERE cpu.commission_plan_id = cp.id
-                    GROUP BY cpu.id, u.id) AS users)                     AS users,
-             (SELECT array_to_json(array_agg(row_to_json(milestones)))
-              FROM (SELECT cpa.milestone_query_condition_id AS "queryConditionId",
-                           cpa.allocation,
-                           qc.query_condition               AS "queryCondition",
-                           qc.description                    AS "description",
-                           mt.id                            AS "milestoneId",
-                           mt.milestone_type                AS "milestone",
-                           mt.display_order                 AS "displayOrder"
-                    FROM brs.commission_plan_allocation cpa
-                           INNER JOIN brs.milestone_query_condition mqc
-                             ON mqc.id = cpa.milestone_query_condition_id
-                           INNER JOIN brs.query_condition qc ON qc.id = query_condition_id
-                           INNER JOIN brs.milestone_type mt ON mt.id = milestone_id
-                    WHERE cpa.commission_plan_id = cp.id) AS milestones) AS milestones
+                    GROUP BY cpu.id, u.id) AS users)                     AS users
       FROM brs.commission_plan cp
-             INNER JOIN brs.commission_plan_status cps ON cp.status_id = cps.id
-             LEFT JOIN brs.user cu ON cp.created_by = cu.id
-             LEFT JOIN brs.user au ON cp.approved_by = au.id
+               INNER JOIN brs.commission_plan_status cps ON cp.status_id = cps.id
+               LEFT JOIN flow.user cu ON cp.created_by = cu.id
+               LEFT JOIN flow.user au ON cp.approved_by = au.id
       WHERE cp.id = :planId) AS sub_rows;
     ]]></commissionManagement.getCommissionPlanDetails>
 
@@ -996,43 +981,42 @@
 
     <overridePlan.findById><![CDATA[
     SELECT row_to_json(t)
-    FROM (SELECT op.id,
+FROM (SELECT op.id,
              op.name,
              op.description,
              op.total,
-             ops.status_type                                                            AS status,
+             ops.status_type                                                           AS status,
              op.position_id                                                             AS "positionId",
              (SELECT row_to_json(u)
               FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
-                    FROM brs."user" u
+                    FROM flow."user" u
                     WHERE u.id = op.created_by) u)                                      AS "createdBy",
              op.created,
              (SELECT row_to_json(u)
               FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
-                    FROM brs."user" u
+                    FROM flow."user" u
                     WHERE u.id = op.updated_by) u)                                      AS "updatedBy",
              op.updated,
              (SELECT row_to_json(u)
               FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
-                    FROM brs."user" u
+                    FROM flow."user" u
                     WHERE u.id = op.approved_by) u)                                     AS "approvedBy",
              op.approved,
              coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
                        FROM (SELECT opu.user_id                        AS "userId",
-                                    opu.allocation,
                                     u.first_name || ' ' || u.last_name AS name,
                                     u.employee_id                      AS "employeeId",
                                     (select
-                                    string_agg(DISTINCT p.position, ', ')
-                                    from brs.user_position up
-                                    inner join brs.position p on p.id = up.position_id
-                                    where up.user_id = u.id
+                                         string_agg(DISTINCT p.position, ', ')
+                                     from flow.user_position up
+                                              inner join flow.position p on p.id = up.position_id
+                                     where up.user_id = u.id
 
                                     )                                  AS position
                              FROM brs.override_plan_receiving_user opu
-                                    INNER JOIN brs."user" u ON opu.user_id = u.id
+                                      INNER JOIN flow."user" u ON opu.user_id = u.id
                              WHERE override_plan_id = op.id
-                             GROUP BY 1, 2, 3, 4, 5) u), '[]')                          AS "receivingUsers",
+                             GROUP BY 1, 2, 3, 4) u), '[]')                          AS "receivingUsers",
              coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
                        FROM (SELECT opa.id,
                                     opa.user_id                        AS "userId",
@@ -1042,27 +1026,13 @@
                                     opa.start_date                     AS "startDate",
                                     opa.end_date                       AS "endDate"
                              FROM brs.override_plan_assigned_user opa
-                                    INNER JOIN brs."user" u ON opa.user_id = u.id
-                                    INNER JOIN brs.user_position up ON u.id = up.user_id
-                                    INNER JOIN brs.position p ON up.position_id = p.id
+                                      INNER JOIN flow."user" u ON opa.user_id = u.id
+                                      INNER JOIN flow.user_position up ON u.id = up.user_id
+                                      INNER JOIN flow.position p ON up.position_id = p.id
                              WHERE opa.override_plan_id = op.id
-                             GROUP BY 1, 2, 3, 4, 5, 6, 7) u), '[]')                    AS "assignedUsers",
-             coalesce((SELECT array_to_json(array_agg(row_to_json(milestones)))
-                       FROM (SELECT opma.milestone_query_condition_id AS "queryConditionId",
-                                    opma.allocation,
-                                    qc.query_condition                AS "queryCondition",
-                                    qc.description                     AS "description",
-                                    mt.id                             AS "milestoneId",
-                                    mt.milestone_type                 AS "milestone",
-                                    mt.display_order                  AS "displayOrder"
-                             FROM brs.override_plan_milestone_allocation opma
-                                    INNER JOIN brs.milestone_query_condition mqc
-                                      ON mqc.id = opma.milestone_query_condition_id
-                                    INNER JOIN brs.query_condition qc ON qc.id = query_condition_id
-                                    INNER JOIN brs.milestone_type mt ON mt.id = milestone_id
-                             WHERE opma.override_plan_id = op.id) AS milestones), '[]') AS milestones
+                             GROUP BY 1, 2, 3, 4, 5, 6, 7) u), '[]')                    AS "assignedUsers"
       FROM brs.override_plan op
-             INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
+               INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
       WHERE op.id = :id) t;
     ]]></overridePlan.findById>
 

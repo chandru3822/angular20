@@ -1,6 +1,6 @@
 <template>
   <v-container class="pa-0">
-    <v-form ref="customerForm">
+    <v-form ref="payrollForm">
       <v-container>
         <v-row>
           <v-col cols="12" sm="6">
@@ -109,7 +109,7 @@
         console.log('getPayrollData', this.payrollSearch)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/closers`, 'blueraven')
+          const {data} = await getRequest(`/payroll/search`, 'blueraven')
           this.payrollData = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

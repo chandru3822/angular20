@@ -1,11 +1,11 @@
 <xml>
     <payroll.snapshotByPayrollId><![CDATA[
-    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-    FROM
-         (
-           SELECT *
-           FROM brs.deal_commission_snapshot
-           WHERE payroll_id = :payrollId ) AS sub_rows
+        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+        FROM
+             (
+               SELECT *
+               FROM brs.deal_commission_snapshot
+               WHERE payroll_id = :payrollId ) AS sub_rows
     ]]></payroll.snapshotByPayrollId>
 
     <payroll.getById><![CDATA[

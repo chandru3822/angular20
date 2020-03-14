@@ -102,17 +102,17 @@ public class CommissionManagementController {
         return commissionManagementService.findActiveMilestones();
     }
 
-    @GetMapping(value = "/commissionPlans")
+    @GetMapping(value = "/plans")
     public List<CommissionPlan> getCommissionPlans() {
         return commissionManagementService.getCommissionPlans();
     }
 
-    @GetMapping(value = "/commissionPlans/{planId}")
+    @GetMapping(value = "/plan/{planId}")
     public String getCommissionPlanDetail(@PathVariable Long planId) {
         return commissionManagementService.getCommissionPlanDetails(planId);
     }
 
-    @GetMapping(value = "/commissionPlans/{planId}/users")
+    @GetMapping(value = "/plan/{planId}/users")
     public String getCommissionPlanUsers(@PathVariable Long planId) {
         return commissionManagementService.getCommissionPlanUsers(planId);
     }

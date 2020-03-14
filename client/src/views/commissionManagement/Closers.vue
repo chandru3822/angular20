@@ -22,7 +22,11 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.name}}</td>
+              <td class="text-left">
+                <v-btn text :to="{ name: 'closer', params: {id: item.id} }">
+                  {{item.name}}
+                </v-btn>
+              </td>
               <td class="text-left">
                 <v-btn text v-if="item.commissionPlan !== null" @click="goToDetails(item, false)">
                   {{item.commissionPlan}}:<br/>
@@ -102,8 +106,9 @@
         console.log('HANDLE SELECTING A PLAN: ', item)
       },
       goToDetails(item, isOverride) {
-        console.log('HANDLE GOING TO DETAILS: ', item)
-        console.log('is override', false)
+        let name = isOverride ? 'override' : 'commission'
+        let id = item.commissionPlanId ?? item.receivingPlanId
+        this.$router.push({name, params: {id}})
       }
     }
   }

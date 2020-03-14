@@ -21,7 +21,11 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.name}}</td>
+              <td class="text-left">
+                <v-btn text @click="goToDetails(item)">
+                  {{item.name}}
+                </v-btn>
+              </td>
               <td class="text-left">{{item.description}}</td>
               <td class="text-left">{{item.status}}</td>
               <td class="text-left">{{item.total}}</td>
@@ -75,6 +79,9 @@
           this.snackbar = getSnackbar('ERROR', 'Error Loading Override Plans')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      goToDetails (item) {
+        this.$router.push({name: 'override', params: {id: item.id}})
       }
     }
   }
