@@ -28,8 +28,13 @@ public class ProjectProcessStepController {
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
-
     return new ResponseEntity<>(projectProcessStepService.getProjectProcessStep(projectProcessStepId), HttpStatus.OK);
+  }
+
+  @DeleteMapping(value = "/{projectProcessStepId}")
+  public ResponseEntity<Void> deleteProjectProcessStep(@PathVariable Long projectProcessStepId) {
+    projectProcessStepService.deleteProjectProcessStep(projectProcessStepId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping(value = "/{projectProcessStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)

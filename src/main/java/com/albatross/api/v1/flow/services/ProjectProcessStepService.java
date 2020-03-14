@@ -205,6 +205,11 @@ public class ProjectProcessStepService {
       || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
   }
 
+  @Transactional
+  public void deleteProjectProcessStep(Long projectProcessStepId) {
+    sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
+  }
+
   public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
 

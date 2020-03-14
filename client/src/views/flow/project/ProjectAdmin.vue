@@ -51,6 +51,10 @@
   <v-col cols="12">
 
     <v-col cols="12" class="text-left">
+      <router-link :to="`/project/${projectId}`">Back</router-link>
+    </v-col>
+
+    <v-col cols="12" class="text-left">
       <v-menu
         bottom
         offset-y
@@ -88,7 +92,8 @@
 
           <v-btn
             class="project-admin-btn primary"
-            @click="createNewProjectProcessStep"
+            :disabled="selectedNewProjectProcessStep === null || selectedNewStatus === null"
+            @click="createProjectProcessStep"
           >
             Create
           </v-btn>
@@ -103,7 +108,8 @@
        :headers="headers"
        :items="projectProcessSteps"
        fixed-header
-       disable-sort
+       sort-by="lastUpdated"
+       :sort-desc="true"
        hide-default-footer
        dense
        :loading="isProjectProcessStepsLoading"
@@ -137,14 +143,13 @@
                 hide-details
               />
             </td>
+            <td class="text-right">
+              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>
+            </td>
           </tr>
         </template>
       </v-data-table>
     </v-col>
-  </v-col>
-
-  <v-col cols="6">
-    <router-view></router-view>
   </v-col>
 
   <Snackbar :snackbar="snackbar"/>
@@ -153,7 +158,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {getRequest, postRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
 import { v4 as uuid } from 'uuid'
 
@@ -174,11 +179,12 @@ export default {
       selectedNewProjectProcessStep: null,
       selectedNewStatus: null,
       headers: [
-        {text: 'ID', value: 'projectProcessStepId', show: true},
-        {text: 'Type', value: 'processStepName', show: true},
-        {text: 'Owner', value: 'owner.fullName', show: true},
-        {text: 'Last Activity', value: 'lastUpdated', show: true},
-        {text: 'Status', value: 'processStepStatusType', show: true}
+        {text: 'ID', value: 'projectProcessStepId'},
+        {text: 'Type', value: 'processStepName'},
+        {text: 'Owner', value: 'owner.fullName'},
+        {text: 'Last Activity', value: 'lastUpdated'},
+        {text: 'Status', value: 'processStepStatusType'},
+        {text: '', value: 'delete', sortable: false}
       ],
       uuid
     }
@@ -289,7 +295,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    createNewProjectProcessStep: async function () {
+    createProjectProcessStep: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/projectProcessStep/`, {
@@ -298,13 +304,25 @@ export default {
           companyProcessStepStatusTypeId: this.selectedNewStatus.id
         })
 
-        const newShit = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
-        this.projectProcessSteps.push(newShit)
-
-        // this.projectProcessSteps = [...this.projectProcessSteps, {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}]
+        const newStep = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
+        this.projectProcessSteps.push(newStep)
+        this.selectedNewProjectProcessStep = null
+        this.selectedNewStatus = null
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    deleteProjectProcessStep: async function (projectProcessStepId) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/projectProcessStep/${projectProcessStepId}`)
+        this.projectProcessSteps = this.projectProcessSteps.filter(step => step.projectProcessStepId !== projectProcessStepId)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error deleting process step')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -345,18 +363,30 @@ tr:nth-of-type(even) {
 
 <style lang="scss">
 
-#project-admin-container .v-data-table__wrapper {
-  height: calc(100vh - 290px);
-  min-height: 300px;
-}
+#project-admin-container {
 
-.project-admin-btn > .v-btn__content {
-  color: white !important;
-}
+  .v-data-table__wrapper {
+    height: calc(100vh - 320px);
+    min-height: 300px;
+  }
 
-tr:nth-of-type(even) {
-  .v-input__slot {
-    background-color: var(--v-rowShadeCustom-base) !important;
+  .project-admin-btn > .v-btn__content {
+    color: white !important;
+  }
+
+  tr:nth-of-type(even) {
+    .v-input__slot {
+      background-color: var(--v-rowShadeCustom-base) !important;
+    }
+  }
+
+  tr .v-input__slot {
+    transition: none !important;
+    -webkit-transition: none !important;
+  }
+
+  tr:hover .v-input__slot {
+    background-color: #eeeeee;
   }
 }
 </style>
