@@ -71,18 +71,19 @@
   ]]></propToolIncentive.getUtilityStateIncentiveById>
 
   <propToolIncentive.getAllIncentivesForCompany><![CDATA[
-    select i.id as utility_state_incentive_id,
-       null::int as state_incentive_id,
-       null::int as country_incentive_id,
-       i.utility_state_id as incentive_entity_id,
-       u.utility_company || ' - ' || s.abbreviation as incentive_entity_name,
-       i.incentive_type_id,
-       it.incentive_type,
-       i.incentive_category_id,
-       ic.incentive_category,
-       i.amount,
-       i.archived,
-       i.active
+    select i.id,
+           i.id as utility_state_incentive_id,
+           null::int as state_incentive_id,
+           null::int as country_incentive_id,
+           i.utility_state_id as incentive_entity_id,
+           u.utility_company || ' - ' || s.abbreviation as incentive_entity_name,
+           i.incentive_type_id,
+           it.incentive_type,
+           i.incentive_category_id,
+           ic.incentive_category,
+           i.amount,
+           i.archived,
+           i.active
     from props.utility_state_incentive i
         inner join props.incentive_type it on it.id = i.incentive_type_id
         inner join props.incentive_category ic on ic.id = i.incentive_category_id
@@ -93,7 +94,8 @@
     where i.archived is not true
         and cs.company_id = :companyId
     union all
-    select null::int as utility_state_incentive_id,
+    select i.id,
+           null::int as utility_state_incentive_id,
            i.id as state_incentive_id,
            null::int as country_incentive_id,
            i.company_state_id as incentive_entity_id,
@@ -113,7 +115,8 @@
     where i.archived is not true
       and cs.company_id = :companyId
     union all
-    select null::int as utility_state_incentive_id,
+    select i.id,
+           null::int as utility_state_incentive_id,
            null::int as state_incentive_id,
            i.id as country_incentive_id,
            i.company_country_id as incentive_entity_id,
@@ -170,7 +173,10 @@
     update props.country_incentive
         set amount = :amount,
             modified_by_id = :modifiedById,
-            date_modified = now()
+            date_modified = now(),
+            active = :active,
+            company_country_id = :incentiveEntityId,
+            incentive_type_id = :incentiveTypeId
     where id = :id
   ]]></propToolIncentive.updateCountryIncentive>
 
@@ -178,7 +184,10 @@
     update props.state_incentive
         set amount = :amount,
             modified_by_id = :modifiedById,
-            date_modified = now()
+            date_modified = now(),
+            active = :active,
+            company_state_id = :incentiveEntityId,
+            incentive_type_id = :incentiveTypeId
     where id = :id
   ]]></propToolIncentive.updateStateIncentive>
 
@@ -186,7 +195,10 @@
     update props.utility_state_incentive
         set amount = :amount,
             modified_by_id = :modifiedById,
-            date_modified = now()
+            date_modified = now(),
+            active = :active,
+            utility_state_id = :incentiveEntityId,
+            incentive_type_id = :incentiveTypeId
     where id = :id
   ]]></propToolIncentive.updateUtilityStateIncentive>
 

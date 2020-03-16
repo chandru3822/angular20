@@ -48,33 +48,119 @@
     </v-row>
   </v-col>
 
-  <v-col cols="6">
+  <v-col cols="12">
 
-    <v-btn
-      class="primary"
-    >
-      Add Process Step
-    </v-btn>
+    <v-col cols="12" class="text-left">
+      <router-link :to="`/project/${projectId}`">Back</router-link>
+    </v-col>
+
+    <v-col cols="12" class="text-left">
+      <v-menu
+        bottom
+        offset-y
+        :close-on-content-click="false"
+      >
+
+        <template #activator="{on}">
+          <v-btn class="project-admin-btn primary" v-on="on">
+            Add Process Step
+          </v-btn>
+        </template>
+
+        <v-card class="pa-5">
+          Select a process step
+          <v-select
+            v-model="selectedNewProjectProcessStep"
+            :items="process.processStepProcesses"
+            item-text="processStepName"
+            item-value="id"
+            label="Process Steps"
+            placeholder="Select one..."
+            return-object
+          />
+
+          Select a status
+          <v-select
+            v-model="selectedNewStatus"
+            :items="availableProcessStepStatuses"
+            item-text="processStepStatusType"
+            item-value="companyProcessStepStatusTypeId"
+            label="Status"
+            placeholder="Select one..."
+            return-object
+          />
+
+          <v-btn
+            class="project-admin-btn primary"
+            :disabled="selectedNewProjectProcessStep === null || selectedNewStatus === null"
+            @click="createProjectProcessStep"
+          >
+            Create
+          </v-btn>
+        </v-card>
+      </v-menu>
+    </v-col>
 
     <v-col cols="12">
-      <template v-for="step in projectProcessStepsByName">
-        <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
-        <ProjectProcessStepSnippet
-          :steps="step.projectProcessSteps"
-          :projectId="projectId"
-          :customerId="customer.id"/>
-      </template>
+
+      <v-data-table
+       class="elevation-1"
+       :headers="headers"
+       :items="projectProcessSteps"
+       fixed-header
+       sort-by="lastUpdated"
+       :sort-desc="true"
+       hide-default-footer
+       dense
+       :loading="isProjectProcessStepsLoading"
+       disable-pagination
+      >
+
+        <template #no-data>
+          No available process steps
+        </template>
+
+        <template #no-results>
+          No available process steps
+        </template>
+
+        <template #item="{item: projectProcessStep}">
+          <tr>
+            <td class="text-left">{{projectProcessStep.projectProcessStepId}}</td>
+            <td class="text-left">{{projectProcessStep.processStepName}}</td>
+            <td class="text-left">{{getOwnerName(projectProcessStep)}}</td>
+            <td class="text-left">{{projectProcessStep.lastUpdated}}</td>
+            <td class="text-left">
+              <v-select
+                v-model="projectProcessStep.selectedProcessStepStatusType"
+                :items="availableProcessStepStatuses"
+                item-text="processStepStatusType"
+                item-value="companyProcessStepStatusTypeId"
+                @change="updateStatus(projectProcessStep.projectProcessStepId)"
+                return-object
+                solo
+                flat
+                hide-details
+              />
+            </td>
+            <td class="text-right">
+              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
     </v-col>
   </v-col>
+
   <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {getRequest, postRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
-import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
+import { v4 as uuid } from 'uuid'
 
 export default {
   name: 'ProjectAdmin.vue',
@@ -83,33 +169,36 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       project: {},
       projectProcessSteps: [],
+      process: {},
       customer: {},
       snackbar: {},
       displayChangeOwner: false,
-      availableOwners: []
+      availableOwners: [],
+      availableProcessStepStatuses: [],
+      isProjectProcessStepsLoading: false,
+      selectedNewProjectProcessStep: null,
+      selectedNewStatus: null,
+      headers: [
+        {text: 'ID', value: 'projectProcessStepId'},
+        {text: 'Type', value: 'processStepName'},
+        {text: 'Owner', value: 'owner.fullName'},
+        {text: 'Last Activity', value: 'lastUpdated'},
+        {text: 'Status', value: 'processStepStatusType'},
+        {text: '', value: 'delete', sortable: false}
+      ],
+      uuid
     }
   },
   components: {
-    Snackbar,
-    ProjectProcessStepSnippet
+    Snackbar
   },
-  created () {
+  async created () {
     this.getCustomer()
-    this.getProject()
-    this.getProjectProcessSteps()
     this.getAvailableOwners()
-  },
-  computed: {
-    projectProcessStepsByName () {
-      const names = [...new Set(this.projectProcessSteps.map(step => step.processStepName))]
-
-      return names.map(processStepName => {
-        return {
-          processStepName,
-          projectProcessSteps: this.projectProcessSteps.filter(step => step.processStepName === processStepName)
-        }
-      })
-    }
+    await this.getProject()
+    this.getProcess()
+    await this.getAvailableStatuses()
+    this.getProjectProcessSteps()
   },
   methods: {
     getProject: async function () {
@@ -123,11 +212,26 @@ export default {
     },
     getProjectProcessSteps: async function () {
       try {
+        this.isProjectProcessStepsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
-        this.projectProcessSteps = data
+        this.projectProcessSteps = data.map(step => {
+          step.selectedProcessStepStatusType = this.availableProcessStepStatuses.find(status => status.id === step.companyProcessStepStatusTypeId)
+          return step
+        })
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
+      } finally {
+        this.isProjectProcessStepsLoading = false
+      }
+    },
+    getProcess: async function () {
+      try {
+        const {data} = await getRequest(`/processes/${this.project.processId}`)
+        this.process = data
+      } catch (e) {
+        this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')
+        logError(e)
       }
     },
     getCustomer: async function () {
@@ -148,6 +252,16 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving List of Owners')
       }
     },
+    async getAvailableStatuses () {
+      try {
+        const {data} = await getRequest(`/processStep/status`)
+        this.availableProcessStepStatuses = data
+      } catch (e) {
+        this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+        logError(e)
+      }
+    },
+    getOwnerName: projectProcessStep => projectProcessStep.owner?.fullName ?? '',
     updateOwner: async function () {
       this.displayChangeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -159,12 +273,68 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    updateStatus: async function (projectProcessStepId) {
+      const selectedStep = this.projectProcessSteps.find(step => step.projectProcessStepId === projectProcessStepId)
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, selectedStep.selectedProcessStepStatusType)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error updating process step status')
+
+        const previousStatus = this.availableProcessStepStatuses.find(status => status.id ===  selectedStep.companyProcessStepStatusTypeId)
+
+        this.projectProcessSteps = this.projectProcessSteps.map(step => {
+          if (step.companyProcessStepStatusTypeId === selectedStep.companyProcessStepStatusTypeId) {
+            step.selectedProcessStepStatusType = previousStatus
+          }
+          return step
+        })
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    createProjectProcessStep: async function () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/projectProcessStep/`, {
+          projectId: this.projectId,
+          processStepId: this.selectedNewProjectProcessStep.processStepId,
+          companyProcessStepStatusTypeId: this.selectedNewStatus.id
+        })
+
+        const newStep = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
+        this.projectProcessSteps.push(newStep)
+        this.selectedNewProjectProcessStep = null
+        this.selectedNewStatus = null
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    deleteProjectProcessStep: async function (projectProcessStepId) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/projectProcessStep/${projectProcessStepId}`)
+        this.projectProcessSteps = this.projectProcessSteps.filter(step => step.projectProcessStepId !== projectProcessStepId)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error deleting process step')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
+
+@import "@/styles/main.scss";
+
 #project-admin-container {
   margin-top: -15px;
   padding-left: 0;
@@ -180,5 +350,43 @@ export default {
 }
 .project-subtitle {
   font-size: 15px;
+}
+
+tr:nth-of-type(even) {
+  @extend .shaded-row;
+
+  .v-input__slot {
+    background-color: green !important;
+  }
+}
+</style>
+
+<style lang="scss">
+
+#project-admin-container {
+
+  .v-data-table__wrapper {
+    height: calc(100vh - 320px);
+    min-height: 300px;
+  }
+
+  .project-admin-btn > .v-btn__content {
+    color: white !important;
+  }
+
+  tr:nth-of-type(even) {
+    .v-input__slot {
+      background-color: var(--v-rowShadeCustom-base) !important;
+    }
+  }
+
+  tr .v-input__slot {
+    transition: none !important;
+    -webkit-transition: none !important;
+  }
+
+  tr:hover .v-input__slot {
+    background-color: #eeeeee;
+  }
 }
 </style>

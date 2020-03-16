@@ -66,7 +66,7 @@
       v-else
       class="mt-4"
       v-for="(group, index) in customFieldGroups"
-      :key="uuidv4()"
+      :key="index"
     >
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>{{group.groupName}}</v-toolbar-title>
@@ -81,7 +81,7 @@
       <v-card class="pa-4 text-left">
         <CustomValueInput
           v-for="field in group.customFieldValues"
-          :key="uuidv4()"
+          :key="field.fieldName"
           :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
           :showFieldName="false"
           :field="field"
@@ -149,7 +149,7 @@
             <template v-for="step in processStepsByName">
               <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
               <ProjectProcessStepSnippet
-                :key="uuidv4()"
+                :key="step.processStepName"
                 :steps="step.processSteps"
                 :projectId="projectId"
                 :customerId="customer.id"/>
@@ -193,7 +193,6 @@ import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
-import { v4 as uuidv4 } from 'uuid'
 
 export default {
   name: 'ProjectOverview',
@@ -220,8 +219,7 @@ export default {
       customer: {},
       displayChangeOwner: false,
       availableOwners: [],
-      project: {},
-      uuidv4
+      project: {}
     }
   },
   created () {

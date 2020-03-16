@@ -100,6 +100,10 @@ export default {
         path: '/ahj',
         display: this.$store.getters.userHasFeature('AHJ_DATABASE')
       }, {
+        label: 'Commissions',
+        path: '/commissionManagement/closers',
+        display: this.$store.getters.userHasFeature('COMMISSIONS')
+      }, {
         label: 'Schedule',
         path: '/schedule',
         display: this.$store.getters.userHasFeature('SCHEDULE')

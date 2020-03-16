@@ -1,0 +1,149 @@
+<xml>
+    <payroll.snapshotByPayrollId><![CDATA[
+        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+        FROM
+             (
+               SELECT *
+               FROM brs.deal_commission_snapshot
+               WHERE payroll_id = :payrollId ) AS sub_rows
+    ]]></payroll.snapshotByPayrollId>
+
+    <payroll.getById><![CDATA[
+    SELECT row_to_json(payroll) AS payroll
+    FROM (SELECT p.id,
+                 p.period_end                                              AS "periodEnd",
+                 p.paid_date                                               AS "paidDate",
+                 p.description,
+                 p.selected_deal_ids                                       AS "selectedDealIds",
+                 ps.payroll_status                                         AS "status",
+                 p.current,
+                 coalesce((SELECT ARRAY_TO_JSON(array_agg(row_to_json(history)))
+                           FROM (SELECT pat.action_type                      AS "actionType",
+                                        h.action_date                        AS "actionDate",
+                                        concat(u.first_name,' ',u.last_name) AS "actionUser"
+                                 FROM brs.payroll_action_history h
+                                        INNER JOIN brs.payroll_action_type pat ON H.payroll_action_type_id = pat.id
+                                        INNER JOIN brs."user" u ON h.user_id = u.id
+                                 WHERE h.payroll_id = p.id) history),'[]') AS history
+          FROM brs.payroll p
+                 INNER JOIN brs.payroll_status ps ON p.payroll_status_id = ps.id
+          WHERE p.id = :payrollId) payroll
+    ]]></payroll.getById>
+
+    <payroll.search><![CDATA[
+        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+        FROM (SELECT p.period_end,
+                     p.id,
+                     p.description,
+                     (SELECT sum(dcs1.current_pay)
+                      FROM brs.deal_commission_snapshot dcs1
+                      WHERE dcs1.payroll_id = p.id) AS current_pay
+              FROM brs.payroll p
+                     INNER JOIN brs.deal_commission_snapshot dcs ON p.id = dcs.payroll_id
+                     INNER JOIN brs.deal d ON dcs.deal_id = d.id
+                     LEFT JOIN brs.deal_override_commission_snapshot docs ON docs.deal_commission_snapshot_id = dcs.id
+              WHERE CASE WHEN :startDate:: DATE IS NOT NULL
+                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+                AND CASE WHEN :customerName:: TEXT IS NOT NULL
+                              THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                         ELSE 1 = 1 END
+                AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
+                              THEN d.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
+                         ELSE 1 = 1 END
+                AND CASE WHEN :dealId:: INTEGER IS NOT NULL
+                              THEN d.deal_base_oid = :dealId:: INTEGER ELSE 1 = 1 END
+
+              GROUP BY p.id, p.period_end
+              ORDER BY p.period_end desc) AS sub_rows
+    ]]></payroll.search>
+
+    <payroll.getApprovedPayrolls>
+      <![CDATA[
+        SELECT DISTINCT p.id, p.period_end
+        FROM brs.payroll p
+        WHERE  p.payroll_status_id = 3 -- 3 means APPROVED
+        ORDER BY p.period_end DESC, p.id DESC;
+      ]]>
+    </payroll.getApprovedPayrolls>
+    <payroll.addCommissionAdjustment><![CDATA[
+        INSERT INTO brs.payroll_adjustment (payroll_id,
+                                                      deal_id,
+                                                      closer_id,
+                                                      amount,
+                                                      note,
+                                                      payroll_adjustment_type_id,
+                                                      created_by,
+                                                      created)
+        VALUES (:payrollId, :dealId, :closerId, :amount, :note, :adjustmentTypeId, :createdById, now());
+    ]]></payroll.addCommissionAdjustment>
+
+    <payroll.getCommissionAdjustments><![CDATA[
+      SELECT array_to_json(array_agg(row_to_json(history)))
+      FROM (SELECT
+             pa.closer_id as "closerId",
+             pa.amount,
+             pa.note,
+             pat.adjustment_type as "adjustmentType",
+             pa.created,
+             concat(u.first_name, ' ', u.last_name) AS "createdBy"
+      FROM brs.payroll_adjustment pa
+             INNER JOIN brs.payroll_adjustment_type pat ON pa.payroll_adjustment_type_id = pat.id
+             INNER JOIN brs."user" u ON pa.created_by = u.id
+      WHERE payroll_id = :payrollId
+        AND deal_id = :dealId) history
+    ]]></payroll.getCommissionAdjustments>
+
+    <payroll.setStatus><![CDATA[
+    UPDATE brs.payroll SET payroll_status_id = :payrollStatusId WHERE id = :payrollId
+    ]]></payroll.setStatus>
+
+    <payroll.status><![CDATA[
+    SELECT p.payroll_status_id
+    FROM brs.payroll p
+    WHERE p.id = :payrollId
+    ]]></payroll.status>
+
+    <payroll.addActionHistory><![CDATA[
+    INSERT INTO brs.payroll_action_history (payroll_id, payroll_action_type_id, action_date, note, user_id)
+    VALUES (:payrollId, :actionTypeId, now(), :note, :currentUserId)
+    ]]></payroll.addActionHistory>
+
+    <payroll.updatePayroll><![CDATA[
+        UPDATE brs . payroll
+        SET period_end        = :periodEndDate::date,
+          description       = :description,
+          updated_by        = :currentUserId,
+          selected_deal_ids = :dealIds::BIGINT[],
+          updated           = now()
+        WHERE id = :payrollId
+    ]]></payroll.updatePayroll>
+
+    <payroll.checkSummaryPreparationStatus><![CDATA[
+       SELECT state FROM pg_stat_activity
+       WHERE query = 'select * from brs.refresh_summary_view() as result'
+         AND state = 'active'
+    ]]></payroll.checkSummaryPreparationStatus>
+
+    <payroll.getSummary><![CDATA[
+    SELECT CASE WHEN p.payroll_status_id = 3
+        THEN brs.get_commission_summary_from_snapshot(p.id)
+        ELSE brs.get_commission_summary(p.id) END
+    FROM brs.payroll p
+    WHERE id = :payrollId
+    ]]></payroll.getSummary>
+
+    <payroll.getAccountReview><![CDATA[
+     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+FROM (SELECT *
+      FROM brs.get_commission_account_details(:payrollId::int, :periodEndDate::date, :locked::bool, :dealId::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
+    ]]></payroll.getAccountReview>
+
+    <payroll.getOverrideDetailsByUser><![CDATA[
+    SELECT CASE WHEN p.payroll_status_id = 3
+                     THEN brs.get_overrides_earned_by_user_snapshot(p.id, :userId::int)
+                ELSE brs.get_overrides_earned_by_user(p.id, :userId::int)
+               END
+    FROM brs.payroll p
+    WHERE p.id = :payrollId
+    ]]></payroll.getOverrideDetailsByUser>
+</xml>

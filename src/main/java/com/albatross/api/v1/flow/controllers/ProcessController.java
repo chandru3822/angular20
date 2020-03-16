@@ -64,7 +64,7 @@ public class ProcessController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping(value = "/availableProcessSteps/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{processId}/availableProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ProcessStep> availableProcessStepsForProcess(@PathVariable Long processId) {
         return processService.availableProcessSteps(processId);
     }

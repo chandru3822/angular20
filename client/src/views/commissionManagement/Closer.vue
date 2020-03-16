@@ -1,0 +1,388 @@
+<template>
+  <v-container class="pa-0" id="closer-container">
+    <v-toolbar flat color="transparent" :min-height="150">
+      <v-toolbar-title>
+        {{closer.name}}
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-card flat color="transparent" class="text-right mt-3">
+          <strong>User ID: </strong>{{closer.userId}}<br/>
+          <strong>Vendor Pay ID: </strong>{{closer.vendorPayId}}<br/>
+          <strong>Position: </strong>{{closer.position}}<br/>
+          <strong>Hire Date: </strong>{{closer.hireDate}}<br/>
+          <strong>Position Effective Date: </strong>{{closer.positionStartDate | formatDate('date')}}
+        </v-card>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-divider></v-divider>
+    <v-row>
+      <v-col>
+        <v-toolbar flat>
+          <v-toolbar-title>
+            Commission Plans
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="addNewCommissionPlan = !addNewCommissionPlan; newCommissionPlan = {}; getCommissionPlans()">
+              <v-icon v-if="addNewCommissionPlan">remove</v-icon>
+              <v-icon v-else>add</v-icon>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-divider></v-divider>
+        <v-card v-if="addNewCommissionPlan" class="square-card text-left pa-5">
+          <v-autocomplete v-model="newCommissionPlan.id"
+                          :items="commissionPlans"
+                          label="Select a Plan to Add This User"
+                          item-text="name"
+                          item-value="id"
+                          autocomplete="off"
+          />
+          <DatetimePickerInput
+              v-model="newCommissionPlan.startDate"
+              :timezone="this.timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="Start Date"
+          />
+          <DatetimePickerInput
+              v-model="newCommissionPlan.endDate"
+              :timezone="this.timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="End Date"
+          />
+        </v-card>
+        <v-divider v-if="addNewCommissionPlan"></v-divider>
+        <v-data-table
+            :headers="planHeaders"
+            :items="closer.plans"
+            :fixed-header="true"
+            :items-per-page="-1"
+            disable-sort
+            single-expand
+            :expanded.sync="expanded"
+            :loading="dataLoading"
+            hide-default-footer
+            class="elevation-1"
+        >
+          <template #no-data>
+            No available plans
+          </template>
+
+          <template #no-results>
+            No available plans
+          </template>
+
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
+              <DatetimePickerInput
+                  v-model="item.endDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="New End Date"
+              />
+              <label>Note:</label>
+              <v-textarea filled class="mt-4"
+                          v-model="item.note">
+              </v-textarea>
+              <v-btn :disabled="!item.endDate && !item.note" @click="savePlan(item)">Save</v-btn>
+            </td>
+          </template>
+
+          <template #item="{ item, index }">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.name}}</td>
+              <td class="text-left">{{item.description}}</td>
+              <td class="text-left">{{item.startDate | formatDate('date')}}</td>
+              <td class="text-left">{{item.endDate | formatDate('date')}}</td>
+              <td class="text-left">{{item.note}}</td>
+              <td>
+                <v-btn small text @click="expanded = [item]; selectedIndex = index"
+                       v-if="!expanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text @click="expanded = []; selectedIndex = index"
+                       v-if="expanded.includes(item)">cancel
+                </v-btn>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <v-toolbar flat>
+          <v-toolbar-title>
+            Override Plans Assigned To
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text @click="addNewOverridePlan = !addNewOverridePlan; newOverridePlan = {}; getOverridePlans()">
+              <v-icon v-if="addNewOverridePlan">remove</v-icon>
+              <v-icon v-else>add</v-icon>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-divider></v-divider>
+        <v-card v-if="addNewOverridePlan" class="square-card text-left pa-5">
+          <v-autocomplete v-model="newOverridePlan.id"
+                          :items="overridePlans"
+                          label="Select a Plan to Add This User"
+                          item-text="name"
+                          item-value="id"
+                          autocomplete="off"
+          />
+        </v-card>
+        <v-divider v-if="addNewOverridePlan"></v-divider>
+        <v-data-table
+            :headers="overrideHeaders"
+            :items="closer.overrides"
+            :fixed-header="true"
+            :items-per-page="-1"
+            disable-sort
+            :expanded.sync="overrideExpanded"
+            single-expand
+            :loading="dataLoading"
+            hide-default-footer
+            class="elevation-1"
+        >
+          <template #no-data>
+            No available overrides
+          </template>
+
+          <template #no-results>
+            No available overrides
+          </template>
+
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
+              <DatetimePickerInput
+                  v-model="item.endDate"
+                  :timezone="timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="New End Date"
+                  :callback="validateDates"
+              />
+              <label>Note:</label>
+              <v-textarea filled class="mt-4"
+                          v-model="item.note">
+              </v-textarea>
+              <v-btn :disabled="!item.endDate && !item.note" @click="savePlan(item)">Save</v-btn>
+            </td>
+          </template>
+
+          <template #item="{ item, index }">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.planName}}</td>
+              <td class="text-left">{{item.planDescription}}</td>
+              <td class="text-left">{{item.startDate | formatDate('date')}}</td>
+              <td class="text-left">{{item.endDate | formatDate('date')}}</td>
+              <td class="text-left">{{item.note}}</td>
+              <td>
+                <v-btn small text @click="overrideExpanded = [item]; overrideSelectedIndex = index"
+                       v-if="!overrideExpanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text @click="overrideExpanded = []; overrideSelectedIndex = index"
+                       v-if="overrideExpanded.includes(item)">cancel
+                </v-btn>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <v-toolbar flat>
+          <v-toolbar-title>
+            Receiving Override Plans
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text>
+              <v-icon>add</v-icon>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-divider></v-divider>
+        <v-data-table
+            :headers="receivingHeaders"
+            :items="closer.receiving"
+            :fixed-header="true"
+            :items-per-page="-1"
+            disable-sort
+            :expanded.sync="receivingExpanded"
+            single-expand
+            :loading="dataLoading"
+            hide-default-footer
+            class="elevation-1"
+        >
+          <template #no-data>
+            No available plans
+          </template>
+
+          <template #no-results>
+            No available plans
+          </template>
+
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': receivingSelectedIndex % 2}">
+              <label>Note:</label>
+              <v-textarea filled class="mt-4"
+                          v-model="item.note">
+              </v-textarea>
+              <v-btn :disabled="!item.endDate && !item.note" @click="savePlan(item)">Save</v-btn>
+            </td>
+          </template>
+
+          <template #item="{ item, index }">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.name}}</td>
+              <td class="text-left">{{item.note}}</td>
+              <td>
+                <v-btn small text @click="receivingExpanded = [item]; receivingSelectedIndex = index"
+                       v-if="!receivingExpanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text @click="receivingExpanded = []; receivingSelectedIndex = index"
+                       v-if="receivingExpanded.includes(item)">cancel
+                </v-btn>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+    <Snackbar :snackbar="snackbar"></Snackbar>
+  </v-container>
+</template>
+
+<script>
+  import {AppMutations} from '@/stores/AppStore'
+  import Snackbar from '@/components/Snackbar.vue'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+
+  export default {
+    name: 'Commission',
+    components: {
+      Snackbar,
+      DatetimePickerInput
+    },
+    created() {
+      this.getCloserDetails()
+    },
+    data() {
+      return {
+        snackbar: {},
+        dataLoading: true,
+        overrideSelectedIndex: null,
+        selectedIndex: null,
+        receivingSelectedIndex: null,
+        commissionPlans: [],
+        timezone: this.$store.state.user.details.timezone.value,
+        overridePlans: [],
+        newCommissionPlan: {},
+        newOverridePlan: {},
+        addNewCommissionPlan: false,
+        addNewOverridePlan: false,
+        addNewReceivingPlan: false,
+        userId: this.$route.params.id,
+        expanded: [],
+        overrideExpanded: [],
+        receivingExpanded: [],
+        overrideHeaders: [
+          {text: 'Plan Name', value: 'name', show: true},
+          {text: 'Description', value: 'Position', show: true},
+          {text: 'Start Date', value: 'startDate', show: true},
+          {text: 'End Date', value: 'endDate', show: true},
+          {text: 'Notes', value: 'note', show: true},
+          {text: '', value: 'icons', show: true},
+        ],
+        planHeaders: [
+          {text: 'Plan Name', value: 'name', show: true},
+          {text: 'Description', value: 'description', show: true},
+          {text: 'Start Date', value: 'startDate', show: true},
+          {text: 'End Date', value: 'endDate', show: true},
+          {text: 'Notes', value: 'note', show: true},
+          {text: '', value: 'icons', show: true},
+        ],
+        receivingHeaders: [
+          {text: 'Plan Name', value: 'name', show: true},
+          {text: 'Notes', value: 'note', show: true},
+          {text: '', value: 'icons', show: true},
+        ],
+        closer: {}
+      }
+    },
+    methods: {
+      async getCloserDetails () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/commissionManagement/closerDetails/${this.userId}`, 'blueraven')
+          this.closer = data ? data[0] : []
+          this.dataLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading User Details')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCommissionPlans () {
+        if(this.addNewCommissionPlan) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/commissionManagement/plans`, 'blueraven')
+            this.commissionPlans = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Commission Plans')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async getOverridePlans () {
+        if(this.addNewOverridePlan) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequest(`/commissionManagement/overrides`, 'blueraven')
+            this.overridePlans = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Override Plans')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
+      async savePlan (item) {
+        console.log('SAVE PLAN', item)
+      },
+      async validateDates (newValue) {
+        console.log('validate date', newValue)
+      },
+    }
+  }
+</script>
+
+<style lang="scss">
+</style>
+
+<style lang="scss" scoped>
+.v-data-table {
+  border-radius: 0;
+}
+.button-container {
+  display: flex;
+  align-items: center;
+}
+</style>
+

@@ -1,0 +1,619 @@
+package com.albatross.api.v1.company.blueraven.services.commissionManagement;
+
+import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.Source;
+import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.stereotype.Service;
+
+import javax.sql.DataSource;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class CommissionManagementService {
+
+    private final SqlCache sqlCache;
+    private final DataSource dataSource;
+    private final SecurityService securityService;
+    private final PayrollService payroll;
+    private final ObjectMapper om;
+
+    @Data
+    public static class MilestoneType {
+        private Long id, displayOrder;
+        private String milestoneType;
+    }
+
+    public String updateCommissionPlan(Long id, CommissionPlan commissionPlan) {
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("name", commissionPlan.getName());
+        params.put("description", commissionPlan.getDescription());
+        params.put("total", commissionPlan.getTotal());
+
+        User currentUser = securityService.getCurrentUser();
+        String key = "commissionPlan.create";
+
+        if (id == null) {
+            params.put("createdBy", currentUser.getId());
+
+        } else {
+            key = "commissionPlan.update";
+            params.put("updatedBy", currentUser.getId());
+            params.put("id", id);
+        }
+
+        long planId = sqlCache.updateReturningId(key, params, "id").longValue();
+
+        return getCommissionPlanDetails(planId);
+    }
+
+    public List<MilestoneType> findActiveMilestones() {
+        return sqlCache.query("commissionManagement.findActiveMilestones", Collections.emptyMap(), MilestoneType.class);
+    }
+
+    public String findMilestoneQueryConditions(Long queryConditionType) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("queryConditionTypeId", queryConditionType);
+
+        List<String> query = sqlCache.query("commissionManagement.findMilestoneConditions", params, new SingleColumnRowMapper<>(String.class));
+        return query.isEmpty() ? "[]" : query.get(0);
+    }
+
+    public List<CommissionPlan> getCommissionPlans() {
+        return sqlCache.query("commissionManagement.getCommissionPlans", Collections.emptyMap(), CommissionPlan.class);
+    }
+
+    public List<GetSource> getSources() {
+        return sqlCache.query("commission_management.getSources", Collections.emptyMap(), GetSource.class);
+    }
+
+    public String findUserForCommissions(String search, String positions) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("search", search + "%");
+        params.put("positions", positions);
+
+        List<String> query = sqlCache.query("commissionManagement.findUsers", params, new SingleColumnRowMapper<>(String.class));
+        return query.isEmpty() ? "[]" : query.get(0);
+    }
+
+    public List<GetSource> getAvailableSources(List sourceIds) {
+        HashMap<String, Object> params = new HashMap<>();
+        try (Connection connection = dataSource.getConnection()) {
+            Array sourceIdsArray = connection.createArrayOf("int", sourceIds.toArray());
+            params.put("sourceIds", sourceIdsArray);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return sqlCache.query("commissionManagement.getAvailableSources", params, GetSource.class);
+    }
+
+    public List<GetMilestone> getAvailableMilestones(List milestoneIds) {
+        HashMap<String, Object> params = new HashMap<>();
+        try (Connection connection = dataSource.getConnection()) {
+            Array milestoneIdsArray = connection.createArrayOf("int", milestoneIds.toArray());
+            params.put("milestoneIds", milestoneIdsArray);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return sqlCache.query("commissionManagement.getAvailableMilestones", params, GetMilestone.class);
+    }
+
+    public String getMilestones() {
+        Optional<String> results = sqlCache.get("commissionManagement.getMilestones", Collections.emptyMap(), new SingleColumnRowMapper<>(String.class));
+        return results.orElse("");
+    }
+
+    public List<GetQueryCondition> getQueryConditions() {
+        return sqlCache.query("commissionManagement.getQueryConditions", Collections.emptyMap(), GetQueryCondition.class);
+    }
+
+    public List<ClosersPlan> getClosers() {
+        List<ClosersPlan> closers = sqlCache.query("commissionManagement.getClosers", Collections.emptyMap(), new ClosersPlanMapper<>(ClosersPlan.class, om));
+        List<Long> userIds = closers.stream().map(ClosersPlan::getUserId).collect(Collectors.toList());
+        Set<Long> usersWithPlanGaps = getUsersWithPlanGaps(userIds);
+        for (ClosersPlan closer : closers) {
+            boolean hasCommissionPlanGap = usersWithPlanGaps.contains(closer.getUserId());
+            closer.setHasCommissionPlanGap(hasCommissionPlanGap);
+        }
+        return closers;
+    }
+
+    public List<Payroll> getUserPayrolls(Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        return sqlCache.query("commissionManagement.getUserPayrolls", params, Payroll.class);
+    }
+
+    public String getUserCommissions(Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        Optional<String> results = sqlCache.get("commissionManagement.getUserCommissions", params, new SingleColumnRowMapper<>(String.class));
+        return results.orElse("");
+    }
+
+    public String getUserOverrides(Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        Optional<String> results = sqlCache.get("commissionManagement.getUserOverrides", params, new SingleColumnRowMapper<>(String.class));
+        return results.orElse("");
+    }
+
+    public Long getPayrollOverridePlans(Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        return sqlCache.get("commissionManagement.getPayrollOverridePlans", params, new SingleColumnRowMapper<>(Long.class)).get();
+    }
+
+    public List<Payroll> customerSearch(Long userId, String query) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("searchQuery", query);
+        return sqlCache.query("commissionManagement.customerSearch", params, Payroll.class);
+    }
+
+    public String getUserPayrollDetailsCommissions(Long userId, Long payrollId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("payrollId", payrollId);
+        Optional<String> results = sqlCache.get("commissionManagement.getUserPayrollDetailsCommissions", params, new SingleColumnRowMapper<>(String.class));
+        return results.orElse("");
+    }
+
+    public String getPayrollDetailsOverrides(Long userId, Long payrollId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("payrollId", payrollId);
+        Optional<String> results = sqlCache.get("commissionManagement.getPayrollDetailsOverrides", params, new SingleColumnRowMapper<>(String.class));
+        return results.orElse("");
+    }
+
+    public List<CloserDetails> getCloserDetails() {
+        return sqlCache.query("commissionManagement.getCloserDetails", Collections.emptyMap(), CloserDetails.class);
+    }
+
+    public Optional<Long> clonePlan(Long id, CommissionPlan commissionPlan)
+            throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException,
+                   PlanStartDateBeforeHireDate {
+        boolean isBackdatedPlan = validateBackdatedPlan(commissionPlan.getStartDate(), commissionPlan.getBackdateApprovalCreds());
+        validateUserStartDates(commissionPlan);
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", id);
+        params.put("startDate", commissionPlan.getStartDate());
+        params.put("createdBy", securityService.getCurrentUser().getId());
+
+        try (Connection connection = dataSource.getConnection()) {
+
+            List<Long> users = commissionPlan.getUsers();
+            if (users != null && !users.isEmpty()) {
+                Array usersArray = connection.createArrayOf("int", users.toArray());
+                params.put("users", usersArray);
+            } else {
+                params.put("users", null);
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        Optional<Long> clonedId = sqlCache.get("commissionPlan.clone", params, new SingleColumnRowMapper<>(Long.class));
+        if (isBackdatedPlan && clonedId.isPresent()) {
+            params.put("planId", clonedId.get());
+            params.put("note", String.format("Backdated start date approved by %s",
+                    commissionPlan.getBackdateApprovalCreds().getUsername()));
+            sqlCache.update("commissionPlan.appendNoteToPlan", params);
+        }
+        return clonedId;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void validateUserStartDates(CommissionPlan commissionPlan) throws PlanStartDateBeforeHireDate {
+        Date startDate = commissionPlan.getStartDate();
+
+        // if no start date is provided, then it doesn't make sense to check user hire dates
+        if (startDate == null)
+            return;
+
+        List<Integer> userIds = commissionPlan.getUsers();
+        Set<Integer> unrecognizedUserIds = new HashSet<>();
+        List<User> backdatedUsers = new ArrayList<>();
+
+        for (Integer userId : userIds) {
+            Optional<User> user = securityService.findUserById(userId.longValue());
+            if (user.isPresent()) {
+                //todo figure out hire date stuff
+//                long hireDateMillis = user.get().getHireDate().getTime();
+//                Date hireDate = new Date(hireDateMillis);
+//                if (startDate.before(hireDate)) {
+//                    backdatedUsers.add(user.get());
+//                }
+            } else {
+                unrecognizedUserIds.add(userId);
+            }
+        }
+
+        if (!unrecognizedUserIds.isEmpty()) {
+            throw new IllegalArgumentException("Unrecognized userIds: " + unrecognizedUserIds);
+        }
+        if (!backdatedUsers.isEmpty()) {
+            throw new PlanStartDateBeforeHireDate(startDate, backdatedUsers);
+        }
+    }
+
+    public String getCommissionPlanDetails(Long planId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+
+        List<String> query = sqlCache.query("commissionManagement.getCommissionPlanDetails", params, new SingleColumnRowMapper<>(String.class));
+        return query.isEmpty() ? null : query.get(0);
+    }
+
+    public String getCommissionPlanUsers(Long id) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", id);
+
+        Optional<String> users = sqlCache.get("commissionManagement.getCommisionPlanUsers", params, new SingleColumnRowMapper<>(String.class));
+        return users.orElse("[]");
+    }
+
+    public String getCommissionPlanUserHistory(Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        List<String> query = sqlCache.query("commissionPlan.getCommissionPlanUserHistory", params, new SingleColumnRowMapper<>(String.class));
+        return query.isEmpty() ? "[]" : query.get(0);
+    }
+
+    public void approvePlan(Long planId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("approvedBy", securityService.getCurrentUser().getId());
+        params.put("statusId", CommissionPlanStatus.ACTIVE.getId());
+
+        sqlCache.update("commissionPlan.approve", params);
+    }
+
+    public void editNote(Long planType, Long planId, String note, Long userId) {
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("note", note);
+        params.put("planId", planId);
+        params.put("userId", userId);
+
+        if (planType == 1) {
+            sqlCache.update("commissionPlan.editNote", params);
+        }
+
+        if (planType == 2) {
+            sqlCache.update("overridePlan.editAssignedNote", params);
+        }
+
+        if (planType == 3) {
+            sqlCache.update("overridePlan.editReceivingNote", params);
+        }
+    }
+
+    public void inactivatePlan(Long planId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("statusId", CommissionPlanStatus.INACTIVE.getId());
+
+        sqlCache.update("commissionPlan.inactivate", params);
+    }
+
+    public String getCloserDetails(Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+
+        List<String> query = sqlCache.query("commissionManagement.getCloserDetails", params, new SingleColumnRowMapper<>(String.class));
+        return query.isEmpty() ? null : query.get(0);
+    }
+
+    public void saveMilestone(Long planId, Milestone milestone) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("allocation", milestone.getAllocation());
+        params.put("milestoneQueryConditionId", milestone.getMilestoneQueryConditionId());
+
+        sqlCache.update("commissionManagement.saveMilestone", params);
+    }
+
+    public void updateMilestone(Long planId, Milestone milestone) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("allocation", milestone.getAllocation());
+        params.put("milestoneQueryConditionId", milestone.getMilestoneQueryConditionId());
+
+        sqlCache.update("commissionManagement.updateMilestone", params);
+    }
+
+    public void saveSource(Long planId, Source source) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("sourceId", source.getSourceId());
+        params.put("sourceName", source.getSourceName());
+        params.put("milestoneTypeId", source.getMilestoneTypeId());
+        params.put("feeAmount", source.getFeeAmount());
+        params.put("feeTypeId", source.getFeeTypeId());
+        params.put("milestoneId", source.getMilestoneId());
+
+        sqlCache.update("commissionManagement.saveSource", params);
+    }
+
+    public boolean validateBackdatedPlan(PlanUser user)
+            throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+        Date startDate = user.getStartDate();
+        BackdatedPlanApprovalCredentials approvalCreds = user.getApprovalCreds();
+        return validateBackdatedPlan(startDate, approvalCreds);
+    }
+
+    public boolean validateBackdatedPlan(Date startDate, BackdatedPlanApprovalCredentials credentials)
+            throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+        // if no start date is provided, then it doesn't make sense to say the clone is backdated
+        if (startDate == null)
+            return false;
+
+        final boolean IS_BACKDATED_PLAN = true;
+
+        List<Payroll> approvedPayrolls = payroll.getApprovedPayrolls();
+        Payroll mostRecent = approvedPayrolls.get(0);
+        if (startDate.before(mostRecent.getPeriodEnd())) { // "if this change is a backdated change..."
+            if (credentials == null) // throw exception if not credentials are provided
+                throw new BackdatedPlanApprovalRequiredException(startDate,
+                        mostRecent.getId(),
+                        mostRecent.getPeriodEnd());
+            if (!areValidBackdatedPlanApprovalCredentials(credentials)) // throw exception if credentials are inadequate
+                throw new BackdatedPlanApprovalBadCredentialsException();
+            // if we get here, we're all good! backdated change included appropriate approval credentials
+            return IS_BACKDATED_PLAN;
+        }
+        // not a backdated change, so nothing to validate
+        return !IS_BACKDATED_PLAN;
+    }
+
+    private boolean areValidBackdatedPlanApprovalCredentials(BackdatedPlanApprovalCredentials creds) {
+        Boolean isApproved = false;
+        try {
+            String username = creds.getUsername(),
+                   password = creds.getPassword();
+            User approvingUser = securityService.getUser(username);
+            isApproved = userExists(approvingUser)
+                    && validCreds(approvingUser, password)
+                    && isExecutive(approvingUser);
+
+        } catch (Exception e) {
+            isApproved = false;
+        }
+
+        return isApproved;
+    }
+
+    private boolean userExists(User user) {
+        return user != null;
+    }
+
+    private boolean validCreds(User user, String password) {
+        try {
+            return securityService.validatePassword(user, password);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isExecutive(User user) {
+        //todo figure out user roles
+//        List<UserRoleDO> roles = securityService.getUserRoles(user.getId());
+//        if (roles == null)
+//            return false;
+//        return roles.stream()
+//                .map(UserRoleDO::getRoleName)
+//                .anyMatch("Executive"::equalsIgnoreCase);
+        return false;
+    }
+
+    public void insertUser(Long planId, PlanUser user)
+            throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+        final BackdatedPlanApprovalCredentials approvalCreds = user.getApprovalCreds();
+        final Date newStartDate = user.getStartDate();
+        boolean isBackdatedPlan = newStartDate != null
+                                  && startDateChanged(user)
+                                  && validateBackdatedPlan(newStartDate, approvalCreds);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("userId", user.getUserId());
+        params.put("startDate", newStartDate);
+        params.put("endDate", user.getEndDate());
+
+        if (user.getId() != null) {
+            params.put("id", user.getId());
+            sqlCache.update("commissionManagement.updateUser", params);
+        } else {
+
+            sqlCache.update("commissionManagement.insertEndDate", params);
+            sqlCache.update("commissionManagement.insertUser", params);
+        }
+
+        if (isBackdatedPlan) {
+            params.put("note", "backdated plan entry approved by "
+                    + user.getApprovalCreds().getUsername());
+            sqlCache.update("commissionPlan.appendNote", params);
+        }
+    }
+
+    private boolean startDateChanged(PlanUser user) {
+        if (user.getId() == null)
+            return true;  // no existing entry in database? then start is new
+
+        final Optional<UserDateRange> existingDateRange = sqlCache.get("commissionPlan.getUserDateRange",
+                ImmutableMap.of("rowId", user.getId(),
+                                "userId", user.getUserId()),
+                UserDateRange.class);
+        final LocalDate newStartDate = user.getStartDate()
+                                           .toInstant()
+                                           .atZone(ZoneOffset.UTC)
+                                           .toLocalDate();
+        final Optional<LocalDate> existingStartDate = existingDateRange.map(UserDateRange::getStartDate);
+        return existingDateRange.isPresent()
+                && !newStartDate.equals(existingStartDate);
+    }
+
+    public void updateSource(Long planId, Source source) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("sourceId", source.getSourceId());
+        params.put("sourceName", source.getSourceName());
+        params.put("milestoneTypeId", source.getMilestoneTypeId());
+        params.put("feeAmount", source.getFeeAmount());
+        params.put("feeTypeId", source.getFeeTypeId());
+        params.put("milestoneId", source.getMilestoneId());
+
+        sqlCache.update("commissionManagement.updateSource", params);
+    }
+
+    public void removeSource(Long planId, Source source) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("sourceId", source.getSourceId());
+        sqlCache.update("commissionManagement.removeSource", params);
+    }
+
+    public void deletePlan(Long id) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("planId", id);
+        sqlCache.update("commissionManagement.deletePlan", params);
+    }
+
+    public void removeMilestone(Long planId, Long id) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        params.put("planId", planId);
+        sqlCache.update("commissionManagement.removeMilestone", params);
+    }
+
+    public void deleteUser(Long planId, Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("userId", userId);
+        sqlCache.update("commissionPlan.deleteUser", params);
+    }
+
+    public List<GetMilestone> getAdminMilestones() {
+        return sqlCache.query("commissionAdmin.getMilestoneList", new HashMap<>(), GetMilestone.class);
+    }
+
+    public void adminSave(Long id, String condition) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        params.put("condition", condition);
+        sqlCache.update("commissionAdmin.save", params);
+    }
+
+    public Set<Long> getUsersWithPlanGaps(List<Long> userIds) {
+        Map<String, Object> params = ImmutableMap.of("userIds", userIds);
+        List<UserDateRange> closerDates = sqlCache.query("commissions.getUserDatesAsCloser",
+                params, UserDateRange.class);
+
+        // Make sets of all days the users have been closers...
+        Map<Long, Set<LocalDate>> allUsersDatesNotCoveredByPlan = new HashMap<>();
+        for (UserDateRange closer : closerDates)
+            if (closer.getNumDaysInRange() > 0)
+                allUsersDatesNotCoveredByPlan.merge(closer.getUserId(), closer.getDateRange(), Sets::union);
+
+        // Now remove from those sets the days covered by plans
+        List<UserDateRange> commissionPlanDates = sqlCache.query("commissions.getUserDatesOnCommissionPlans",
+                params, UserDateRange.class);
+
+        for (UserDateRange plan : commissionPlanDates) {
+            if (allUsersDatesNotCoveredByPlan.containsKey(plan.getUserId())) {
+                Set<LocalDate> datesAsCloser = allUsersDatesNotCoveredByPlan.get(plan.getUserId()),
+                               datesNotCoveredByPlan = Sets.difference(datesAsCloser, plan.getDateRange());
+                if (datesNotCoveredByPlan.isEmpty())
+                    allUsersDatesNotCoveredByPlan.remove(plan.getUserId());
+                else
+                    allUsersDatesNotCoveredByPlan.put(plan.getUserId(), datesNotCoveredByPlan);
+            }
+        }
+
+        return allUsersDatesNotCoveredByPlan.keySet();
+    }
+
+    @Getter
+    public static class BackdatedPlanApprovalRequiredException extends Exception {
+        private final Date userStartDate;
+        private final Long payrollId;
+        private final Date payrollEndDate;
+
+        public BackdatedPlanApprovalRequiredException(Date userStartDate, Long payrollId, Date payrollEndDate) {
+            super(String.format("Provided user start date (%s) is before most"
+                    + " recent payroll's end date (payroll id %d; end date %s);"
+                    + " executive approval required", userStartDate, payrollId, payrollEndDate));
+            this.userStartDate = userStartDate;
+            this.payrollId = payrollId;
+            this.payrollEndDate = payrollEndDate;
+        }
+    }
+
+    public static class BackdatedPlanApprovalBadCredentialsException extends Exception {
+        public BackdatedPlanApprovalBadCredentialsException () {
+            super("Invalid credentials supplied to approve backdated plan.");
+        }
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    public static class PlanStartDateBeforeHireDate extends Exception {
+        private final Date startDate;
+        private final List<User> problematicUsers;
+
+        public PlanStartDateBeforeHireDate(Date startDate, List<User> problematicUsers) {
+            super("Some users' plan start dates are before their hire dates");
+            this.startDate = startDate;
+            this.problematicUsers = problematicUsers;
+        }
+    }
+
+    public static class ClosersPlanMapper<T> extends BeanPropertyRowMapper<T> {
+        private final ObjectMapper objectMapper;
+
+        public ClosersPlanMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+            super(mappedClass);
+            this.objectMapper = objectMapper;
+        }
+
+        @Override
+        protected void initBeanWrapper(BeanWrapper bw) {
+            TypeReference<List<ReceivingPlan>> receivingPlanRef = new TypeReference<>() {};
+            bw.registerCustomEditor(List.class, "receivingPlans",
+                new JsonCollectionDeserializer(receivingPlanRef, objectMapper));
+        }
+    }
+}
