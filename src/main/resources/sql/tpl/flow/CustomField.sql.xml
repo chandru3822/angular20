@@ -71,7 +71,7 @@
                                 cfot.archived
                          from flow.company_object_type cot
                               inner join flow.object_type ot on ot.id = cot.object_type_id
-                                left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id
+                                left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id and cfot.archived is not true
                          where cot.company_id = :companyId
                        ) rows), '[]') AS custom_field_object_types,
        coalesce((
