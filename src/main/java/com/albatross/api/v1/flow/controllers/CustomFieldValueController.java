@@ -21,9 +21,9 @@ public class CustomFieldValueController {
 
   private final CustomFieldValueService customFieldValueService;
 
-  @GetMapping(value = "/customer", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/contact", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomFieldGroup> getCustomFieldValues(@RequestParam Long primaryId) {
-    return customFieldValueService.getCustomerCustomValues(primaryId);
+    return customFieldValueService.getContactCustomValues(primaryId);
   }
 
   @GetMapping(value = "/org", produces = MediaType.APPLICATION_JSON_VALUE)

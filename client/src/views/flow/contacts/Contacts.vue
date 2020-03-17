@@ -1,14 +1,14 @@
 <template>
-  <v-container id="customers-container">
+  <v-container id="contacts-container">
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">Customers</v-toolbar-title>
+          <v-toolbar-title class="app-title">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/newCustomer" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('CUSTOMERS', 'ADD')">
+            <v-btn text to="/newContact" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD')">
               <v-icon>add</v-icon>
-              <span v-if="!IS_MOBILE">Add Customer</span>
+              <span v-if="!IS_MOBILE">Add Contact</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -17,13 +17,13 @@
               class="mt-5"
               prepend-inner-icon="search"
               text
-              label="Search customers..."
+              label="Search contacts..."
               v-model="search"
-              @input="debounceGetCustomers"
+              @input="debounceGetContacts"
           ></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="totalCustomers <= 100000" @click="exportCustomers">Export</v-btn>
+            <v-btn text v-if="totalContacts <= 100000" @click="exportContacts">Export</v-btn>
             <v-dialog
                 v-model="dialog"
                 width="500"
@@ -41,7 +41,7 @@
                 </v-card-title>
 
                 <v-card-text>
-                  You are attempting to export {{totalCustomers | currency('', 0)}} results.
+                  You are attempting to export {{totalContacts | currency('', 0)}} results.
                   This can take 1-2 minutes.
                   We recommend that you cancel and filter the result set before exporting.
                 </v-card-text>
@@ -60,7 +60,7 @@
                   <v-btn
                       color="primary"
                       text
-                      @click="exportCustomers"
+                      @click="exportContacts"
                   >
                     Continue Anyway
                   </v-btn>
@@ -71,22 +71,22 @@
         </v-toolbar>
         <v-data-table
             :headers="headers"
-            :items="customers"
+            :items="contacts"
             :fixed-header="true"
             :options.sync="options"
             disable-sort
             :mobile-breakpoint="0"
             :footer-props="footerProps"
             :loading="dataLoading"
-            :server-items-length="totalCustomers"
-            class="elevation-1 fix-column-width-bug customer-table"
+            :server-items-length="totalContacts"
+            class="elevation-1 fix-column-width-bug contact-table"
         >
           <template #no-data>
-            No available customers
+            No available contacts
           </template>
 
           <template #no-results>
-            No available customers
+            No available contacts
           </template>
 
           <template #item="{ item, index }">
@@ -113,7 +113,7 @@ import debounce from 'lodash.debounce'
 import { saveAs } from 'file-saver'
 
 export default {
-  name: 'Customers',
+  name: 'Contacts',
   components: {
     Snackbar
   },
@@ -123,7 +123,7 @@ export default {
       IS_MOBILE,
       dialog: false,
       snackbar: {},
-      customers: [],
+      contacts: [],
       descending: true,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 1000],
@@ -132,10 +132,10 @@ export default {
       options: {
         itemsPerPage: 100
       },
-      totalCustomers: 0,
+      totalContacts: 0,
       dataLoading: true,
       headers: [
-        { text: 'Customer Name', value: 'fullName', show: true },
+        { text: 'Contact Name', value: 'fullName', show: true },
         { text: 'Owner', value: 'ownerFullName', show: true },
         { text: 'State', value: 'state', show: true },
         { text: 'Date Created', value: 'dateCreated', show: true },
@@ -146,52 +146,52 @@ export default {
   watch: {
     options: {
       handler () {
-        this.getCustomers()
+        this.getContacts()
       },
       deep: true,
     },
   },
   methods: {
     clickRow(id){
-      this.$router.push({name: 'customer', params: {id}})
+      this.$router.push({name: 'contact', params: {id}})
     },
-    debounceGetCustomers: debounce( function () {
+    debounceGetContacts: debounce( function () {
       this.dataLoading = true
-      this.getCustomers()
+      this.getContacts()
     }, 500),
-    async getCustomers () {
+    async getContacts () {
       const { sortBy, sortDesc, page, itemsPerPage } = this.options
       try {
-        const {data} = await getRequestWithParams(`/customer/search`, { params: {
+        const {data} = await getRequestWithParams(`/contact/search`, { params: {
             query: this.search,
             page: page - 1,
             size: itemsPerPage
         }})
-        this.customers = data.content
-        this.totalCustomers = data.totalElements
+        this.contacts = data.content
+        this.totalContacts = data.totalElements
         this.dataLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Customers')
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contacts')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async exportCustomers () {
+    async exportContacts () {
       this.dialog = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/customer/exportCustomers`, { params: {
+        const {data} = await getRequestWithParams(`/contact/exportContacts`, { params: {
             query: this.search
         }})
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         });
-        saveAs(blob, "customers.csv");
+        saveAs(blob, "contacts.csv");
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Exporting Customers')
+        this.snackbar = getSnackbar('ERROR', 'Error Exporting Contacts')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
@@ -200,7 +200,7 @@ export default {
 </script>
 
 <style lang="scss">
-  #customers-container .v-data-table__wrapper {
+  #contacts-container .v-data-table__wrapper {
     height: calc(100vh - 290px);
     min-height: 300px;
   }
@@ -211,13 +211,13 @@ export default {
 </style>
 
 <style lang="scss" scoped>
-  #customers-container {
+  #contacts-container {
     margin-top: -15px;
     padding-left: 0;
     padding-right: 0;
     padding-top: 0;
   }
-  .customer-table {
+  .contact-table {
     margin-top: 2px;
   }
 

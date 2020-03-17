@@ -15,7 +15,7 @@ BEGIN
                 values (p_primary_id, p_note_id);
             return true;
     when p_object_type_id = 2 then
-            insert into flow.customer_note(customer_id, note_id)
+            insert into flow.contact_note(contact_id, note_id)
             values (p_primary_id, p_note_id);
             return true;
     when p_object_type_id = 3 then

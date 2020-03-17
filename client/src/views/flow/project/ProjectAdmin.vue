@@ -4,10 +4,10 @@
     <v-row class="project-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/customer/${customer.id}`">{{ customer.fullName}}</router-link>
+          <router-link :to="`/contact/${contact.id}`">{{ contact.fullName}}</router-link>
         </div>
         <div class="project-subtitle">
-          {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
+          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
         </div>
       </v-col>
 
@@ -41,7 +41,7 @@
         </div>
         <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
           <span v-if="displayChangeOwner">cancel</span>
-          <span v-else-if="customer.owner && customer.owner.userId">change</span>
+          <span v-else-if="contact.owner && contact.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
       </v-col>
@@ -170,7 +170,7 @@ export default {
       project: {},
       projectProcessSteps: [],
       process: {},
-      customer: {},
+      contact: {},
       snackbar: {},
       displayChangeOwner: false,
       availableOwners: [],
@@ -193,7 +193,7 @@ export default {
     Snackbar
   },
   async created () {
-    this.getCustomer()
+    this.getContact()
     this.getAvailableOwners()
     await this.getProject()
     this.getProcess()
@@ -234,17 +234,17 @@ export default {
         logError(e)
       }
     },
-    getCustomer: async function () {
+    getContact: async function () {
       try {
-        const{data} = await getRequest(`/customer/project/${this.projectId}`)
-        this.customer = data
+        const{data} = await getRequest(`/contact/project/${this.projectId}`)
+        this.contact = data
       } catch (e) {
         console.error('*** ERROR ***', e)
       }
     },
     async getAvailableOwners () {
       try {
-        //@TODO: @randa, pretty sure the customer list will work for process steps and projects but double checking
+        //@TODO: @randa, pretty sure the contact list will work for process steps and projects but double checking
         const {data} = await getRequest(`/project/owners`)
         this.availableOwners = data
       } catch (e) {

@@ -58,7 +58,7 @@ import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
 
-// @TODO: need to generisize this so it can be used for any object type (project, process step, customer, user, org)
+// @TODO: need to generisize this so it can be used for any object type (project, process step, contact, user, org)
 
 export default {
   name: "Attachments",

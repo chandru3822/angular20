@@ -4,7 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.LocationUtils;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.enums.CustomerType;
+import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -36,7 +36,7 @@ import java.util.function.ObjLongConsumer;
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
-public class CustomerService {
+public class ContactService {
 
   @Autowired
   SqlCache sqlCache;
@@ -59,7 +59,7 @@ public class CustomerService {
   @Autowired
   ObjectMapper om;
 
-  public Page<Customer> searchCustomers(String query, Pageable pageable) {
+  public Page<Contact> searchContacts(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
@@ -77,35 +77,35 @@ public class CustomerService {
     --     when :orderBy = 'first_name' then nullif(c.first_name) else c.date_created::text end desc nulls last
      */
 
-    List<Customer> results = sqlCache.query("customer.searchCustomers", params, new CustomerMapper<>(Customer.class, om));
-    Integer count = sqlCache.queryForObject("customer.searchCustomerCount", params, Integer.class);
+    List<Contact> results = sqlCache.query("contact.searchContacts", params, new ContactMapper<>(Contact.class, om));
+    Integer count = sqlCache.queryForObject("contact.searchContactCount", params, Integer.class);
 
-    Page<Customer> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    Page<Contact> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
     return page;
   }
 
 
-  public ResponseEntity exportCustomers(String query) {
+  public ResponseEntity exportContacts(String query) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
 
-    List<Customer> results = sqlCache.query("customer.exportCustomers", params, new CustomerMapper<>(Customer.class, om));
+    List<Contact> results = sqlCache.query("contact.exportContacts", params, new ContactMapper<>(Contact.class, om));
 
     // set up CSV writing
     CsvMapper mapper = new CsvMapper();
-    CsvSchema schema = mapper.typedSchemaFor(CustomerExportTemplate.class).withHeader();
+    CsvSchema schema = mapper.typedSchemaFor(ContactExportTemplate.class).withHeader();
     ObjectWriter writer = mapper.writer(schema);
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-    // get customer deets and write to CSV
+    // get contact deets and write to CSV
     try (SequenceWriter outToBuffer = writer.writeValues(buffer)) {
       // first, get deets
-      Collection<CustomerExportTemplate> details = Collections2.transform(
+      Collection<ContactExportTemplate> details = Collections2.transform(
           results,
-          CustomerExportTemplate::from);
+          ContactExportTemplate::from);
 
       // next, write them to a buffer so we can identify errors before writing across the network
       outToBuffer.writeAll(details);
@@ -114,79 +114,79 @@ public class CustomerService {
       // finally, write to network because no errors were encountered
       return ResponseEntity.ok(buffer.toString(StandardCharsets.UTF_8));
     } catch (IOException e) {
-      log.error("Encountered error while writing customer export to CSV", e);
+      log.error("Encountered error while writing contact export to CSV", e);
       return ResponseEntity.status(500)
-          .body("Encountered error while writing customer export to CSV");
+          .body("Encountered error while writing contact export to CSV");
     }
   }
 
-  public Customer getCustomer(Long customerId) {
+  public Contact getContact(Long contactId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("customerId", customerId);
-    Optional<Customer> result = sqlCache.get("customer.getById", params, new CustomerMapper<>(Customer.class, om));
+    params.put("contactId", contactId);
+    Optional<Contact> result = sqlCache.get("contact.getById", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }
 
-  public Customer getCustomerByProjectId(Long projectId) {
+  public Contact getContactByProjectId(Long projectId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
-    Optional<Customer> result = sqlCache.get("customer.getByProjectId", params, new CustomerMapper<>(Customer.class, om));
+    Optional<Contact> result = sqlCache.get("contact.getByProjectId", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }
 
-  public Customer updateCustomer(Customer customer) {
+  public Contact updateContact(Contact contact) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("firstName", customer.getFirstName());
-    params.put("lastName", customer.getLastName());
-    params.put("street1", customer.getStreet1());
-    params.put("city", customer.getCity());
-    params.put("stateId", customer.getStateId());
-    params.put("postalCode", customer.getPostalCode());
-    params.put("countryId", customer.getCountryId());
-    params.put("phone", customer.getPhone());
-    params.put("email", customer.getEmail());
-    params.put("mobile", customer.getMobile());
+    params.put("firstName", contact.getFirstName());
+    params.put("lastName", contact.getLastName());
+    params.put("street1", contact.getStreet1());
+    params.put("city", contact.getCity());
+    params.put("stateId", contact.getStateId());
+    params.put("postalCode", contact.getPostalCode());
+    params.put("countryId", contact.getCountryId());
+    params.put("phone", contact.getPhone());
+    params.put("email", contact.getEmail());
+    params.put("mobile", contact.getMobile());
     params.put("companyId", currentUser.getCompanyId());
-    params.put("ownerUserPositionId", customer.getOwner() != null ? customer.getOwner().getUserPositionId() : null);
+    params.put("ownerUserPositionId", contact.getOwner() != null ? contact.getOwner().getUserPositionId() : null);
 
     Long id;
 
-    if(null != customer.getId()) {
-      id = customer.getId();
-      params.put("customerTypeId", customer.getCustomerTypeId());
+    if(null != contact.getId()) {
+      id = contact.getId();
+      params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
       //add update when we add that to the UI
-       sqlCache.update("customer.updateCustomer", params);
+       sqlCache.update("contact.updateContact", params);
     } else {
-      params.put("customerTypeId", CustomerType.LEAD.id);
+      params.put("contactTypeId", ContactType.LEAD.id);
       params.put("createdById", currentUser.getId());
-      id = sqlCache.updateReturningId("customer.insertCustomer", params, "id").longValue();
+      id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
     }
 
-    if(null == customer.getId() || customer.getReloadCoordinates()) {
-      // if new customer or address changed, reload the coordinates
-      getCustomerCoordinates(customer, id);
+    if(null == contact.getId() || contact.getReloadCoordinates()) {
+      // if new contact or address changed, reload the coordinates
+      getContactCoordinates(contact, id);
     }
 
-    handleSavingCustomFieldValues(customer.getCustomFieldGroups(), id);
+    handleSavingCustomFieldValues(contact.getCustomFieldGroups(), id);
 
-    return getCustomer(id);
+    return getContact(id);
   }
 
-  public void getCustomerCoordinates(Customer customer, Long id) {
-    //when the customer is new or the address changes, need to reload/save their lat/long from mapbox
-    String customerAddress = getCustomerAddress(customer);
-    locationUtils.getGeocode(customerAddress, id, new CustomGeoFunction());
+  public void getContactCoordinates(Contact contact, Long id) {
+    //when the contact is new or the address changes, need to reload/save their lat/long from mapbox
+    String contactAddress = getContactAddress(contact);
+    locationUtils.getGeocode(contactAddress, id, new CustomGeoFunction());
   }
 
-  public String getCustomerAddress(Customer customer) {
+  public String getContactAddress(Contact contact) {
     StringJoiner sj = new StringJoiner(", ");
-    sj.add(customer.getStreet1());
-    sj.add(customer.getCity());
-    sj.add(customer.getState() + ( null == customer.getPostalCode() ? "" : " " + customer.getPostalCode() ));
+    sj.add(contact.getStreet1());
+    sj.add(contact.getCity());
+    sj.add(contact.getState() + ( null == contact.getPostalCode() ? "" : " " + contact.getPostalCode() ));
 
     return sj.toString();
   }
@@ -199,33 +199,33 @@ public class CustomerService {
     params.put("id", id);
     params.put("modifiedById", currentUser.getId());
 
-    sqlCache.update("customer.updateOwner", params);
+    sqlCache.update("contact.updateOwner", params);
   }
 
-  public List<Owner> getOwnersForCustomer() {
+  public List<Owner> getOwnersForContact() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
 
-    List<Owner> results = sqlCache.query("customer.getOwners", params, Owner.class);
+    List<Owner> results = sqlCache.query("contact.getOwners", params, Owner.class);
     return results;
   }
 
-  public Project convertToCustomer(Long customerId, Process process) {
+  public Project convertToContact(Long contactId, Process process) {
     User currentUser = securityService.getCurrentUser();
 
-    //save customer_type_id
+    //save contact_type_id
     HashMap<String, Object> params = new HashMap<>();
-    params.put("customerId", customerId);
-    params.put("customerTypeId", CustomerType.CUSTOMER.id);
+    params.put("contactId", contactId);
+    params.put("contactTypeId", ContactType.CUSTOMER.id);
     params.put("modifiedById", currentUser.getId());
-    sqlCache.update("customer.convertToCustomer", params);
+    sqlCache.update("contact.convertToContact", params);
 
-    //get customer to get their full name for the project
-    Customer customer = getCustomer(customerId);
+    //get contact to get their full name for the project
+    Contact contact = getContact(contactId);
 
-    //create project (use customer_full_name as project_name)
-    Optional<Project> project = projectService.insertProject(customerId, process.getId(), customer.getFullName());
+    //create project (use contact_full_name as project_name)
+    Optional<Project> project = projectService.insertProject(contactId, process.getId(), contact.getFullName());
 
     //get initial process steps including the initial status
     List<ProcessStepProcess> initialProcessSteps = processService.getInitialProcessStepProcesses(process.getId());
@@ -260,26 +260,26 @@ public class CustomerService {
           params.put("numericValue", cfv.getNumericValue());
           params.put("intValue", cfv.getIntValue());
           params.put("intArrayValue", cfv.getIntArrayValue());
-          params.put("customerId", primaryId);
+          params.put("contactId", primaryId);
           params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
 
           if(null != cfv.getId()){
             params.put("id", cfv.getId());
             params.put("modifiedById", currentUser.getId());
-            sqlCache.update("customFieldValues.updateCustomerCustomFieldValue", params);
+            sqlCache.update("customFieldValues.updateContactCustomFieldValue", params);
           } else {
             params.put("createdById", currentUser.getId());
-            sqlCache.update("customFieldValues.insertCustomerCustomFieldValue", params);
+            sqlCache.update("customFieldValues.insertContactCustomFieldValue", params);
           }
         }
       }
     }
   }
 
-  public static class CustomerMapper<T> extends BeanPropertyRowMapper<T> {
+  public static class ContactMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
-    public CustomerMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+    public ContactMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
       super(mappedClass);
       this.objectMapper = objectMapper;
     }
@@ -311,13 +311,13 @@ public class CustomerService {
       longitude = coordinates.get(0);
 
       if(null != latitude && null != longitude) {
-        //if lat and long then update customer's location
+        //if lat and long then update contact's location
         HashMap<String, Object> params = new HashMap<>();
         params.put("latitude", latitude);
         params.put("longitude", longitude);
         params.put("id", id);
 
-        sqlCache.update("customer.updateGeoLocation", params);
+        sqlCache.update("contact.updateGeoLocation", params);
       }
 
     }

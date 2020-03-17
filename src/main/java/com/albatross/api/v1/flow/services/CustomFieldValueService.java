@@ -35,16 +35,16 @@ public class CustomFieldValueService {
   @Autowired
   ObjectMapper om;
 
-  public List<CustomFieldGroup> getCustomerCustomValues(Long primaryId) {
+  public List<CustomFieldGroup> getContactCustomValues(Long primaryId) {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("primaryId", primaryId);
-    params.put("objectTypeId", ObjectType.CUSTOMER.id);
+    params.put("objectTypeId", ObjectType.CONTACT.id);
 
-    Long companyId = sqlCache.queryForObject("customer.getCustomerCompanyId", params, Long.class);
+    Long companyId = sqlCache.queryForObject("contact.getContactCompanyId", params, Long.class);
 
     params.put("companyId", companyId);
-    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getCustomerFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getContactFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
     handleCustomListOfValue(results);
     return results;
