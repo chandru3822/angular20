@@ -204,7 +204,12 @@
        u.password,
        u.email,
        u.username,
-       cust.has_access,
+       (select has_access
+           from flow.user_status_type ust
+           inner join flow.company_user_status_type cust on ust.company_user_status_type_id = cust.id
+           where user_id = u.id
+           and cust.company_id = uc.company_id
+           ) as has_access,
        coalesce(u.default_company_id, uc.company_id) as company_id,
        ( select parent_company_id
           from flow.company c
@@ -236,8 +241,6 @@
                            and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "positions"
     from flow.user u
          inner join flow.user_company uc on uc.user_id = u.id
-         left join flow.company_user_status_type cust on cust.company_id = uc.company_id
-         left join flow.user_status_type ust on ust.user_id = u.id and ust.company_user_status_type_id = cust.id
     where case when :username::text is not null then lower(username) = lower(:username::text)
                else u.id = :userId::integer end
       and uc.is_default = true
@@ -251,7 +254,12 @@
            u.first_name || ' ' || u.last_name as full_name,
            coalesce(u.default_company_id, uc.company_id) as company_id,
            c.aws_bucket,
-           cust.has_access,
+           (select has_access
+             from flow.user_status_type ust
+             inner join flow.company_user_status_type cust on ust.company_user_status_type_id = cust.id
+             where user_id = u.id
+             and cust.company_id = uc.company_id
+           ) as has_access,
            ( select parent_company_id
                 from flow.company c
              where c.id = coalesce(u.default_company_id, uc.company_id) ) as parent_company_id,
@@ -270,8 +278,6 @@
            ) as highest_company_id
     from flow.user u
       inner join flow.user_company uc on uc.user_id = u.id
-      left join flow.company_user_status_type cust on cust.company_id = uc.company_id
-      left join flow.user_status_type ust on ust.user_id = u.id and ust.company_user_status_type_id = cust.id
       inner join flow.company c on c.id = uc.company_id
     where u.id = :id
       and uc.is_default is true
