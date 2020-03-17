@@ -128,7 +128,7 @@
       loadDrilldown(wq) {
         if(wq.workQueueCount > 0) {
           this.$router.push({name: 'workQueueDrilldown', params: {id: wq.workQueueTypeId}, query: { upId: this.selectedUserPosition.userPositionId, unassigned: this.selectedUserPosition.unassigned}})
-          // this.$router.push({name: 'customer', params: {id: data.id}})
+          // this.$router.push({name: 'contact', params: {id: data.id}})
         }
       }
     },

@@ -34,8 +34,8 @@
         st.timestamp_value as start,
         et.timestamp_value as end,
         r.int_value as resource_id,
-        c.first_name as customer_first_name,
-        c.last_name as customer_last_name,
+        c.first_name as contact_first_name,
+        c.last_name as contact_last_name,
         c.latitude,
         c.longitude,
         case when sl.system_list_type_id = 1 then o.org_name else u.first_name || ' ' || u.last_name end as resource_name,
@@ -50,7 +50,7 @@
              inner join flow.project p on p.id = pps.project_id
              inner join flow.process_step ps on ps.id = pps.process_step_id
              inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-             inner join flow.customer c on c.id = p.customer_id
+             inner join flow.contact c on c.id = p.contact_id
              inner join flow.state s on s.id = c.state_id
              left join flow.custom_field_group_assignment cfga1 on cfga1.custom_field_group_id = cfg.id and cfga1.schedule_field_type_id = 1
              left join flow.custom_field_group_assignment cfga2 on cfga2.custom_field_group_id = cfg.id and cfga2.schedule_field_type_id = 2
@@ -121,8 +121,8 @@
         cf3.field_name as resource_field_name,
         r.id as resource_custom_field_value_id,
         cfga3.id as resource_custom_field_group_assignment_id,
-        c.first_name as customer_first_name,
-        c.last_name as customer_last_name,
+        c.first_name as contact_first_name,
+        c.last_name as contact_last_name,
         c.latitude,
         c.longitude,
         case when sl.system_list_type_id = 1 then o.org_name else u.first_name || ' ' || u.last_name end as resource_name,
@@ -142,7 +142,7 @@
     from flow.project_process_step pps
              inner join flow.project p on p.id = pps.project_id
              inner join flow.process_step ps on ps.id = pps.process_step_id
-             inner join flow.customer c on c.id = p.customer_id
+             inner join flow.contact c on c.id = p.contact_id
              inner join flow.state s on s.id = c.state_id
              inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
              inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
@@ -210,8 +210,8 @@
           cf2.field_name as end_field_name,
           r.int_value as resource_id,
           cf3.field_name as resource_field_name,
-          c.first_name as customer_first_name,
-          c.last_name as customer_last_name,
+          c.first_name as contact_first_name,
+          c.last_name as contact_last_name,
           c.latitude,
           c.longitude,
           case when sl.system_list_type_id = 1 then o.org_name else u.first_name || ' ' || u.last_name end as resource_name,
@@ -230,7 +230,7 @@
       from flow.project_process_step pps
                inner join flow.project p on p.id = pps.project_id
                inner join flow.process_step ps on ps.id = pps.process_step_id
-               inner join flow.customer c on c.id = p.customer_id
+               inner join flow.contact c on c.id = p.contact_id
                inner join flow.state s on s.id = c.state_id
                inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
                inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
@@ -257,13 +257,13 @@
   ]]></schedule.getProject>
 
   <schedule.searchProjectsByName><![CDATA[
-        select c.first_name as customer_first_name,
-               c.last_name as customer_last_name,
-               c.first_name || ' ' || c.last_name as customer_full_name,
+        select c.first_name as contact_first_name,
+               c.last_name as contact_last_name,
+               c.first_name || ' ' || c.last_name as contact_full_name,
                p.project_name,
                p.id as project_id
         from flow.project p
-            inner join flow.customer c on c.id = p.customer_id
+            inner join flow.contact c on c.id = p.contact_id
         where c.archived is not true
           and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))

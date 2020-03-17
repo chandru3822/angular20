@@ -18,7 +18,7 @@
           class="py-2"
         >
           <v-col cols="1" >
-            <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}?processStepId=${step.processStepId}&customerId=${customerId}`">{{ step.projectProcessStepId }}</router-link>
+            <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}?processStepId=${step.processStepId}&contactId=${contactId}`">{{ step.projectProcessStepId }}</router-link>
           </v-col>
           <v-col>{{step.processStepName}}</v-col>
           <v-col cols="3">{{ step.owner && step.owner.fullName }}</v-col>
@@ -37,7 +37,7 @@ export default {
   props: {
     projectId: Number,
     steps: Array,
-    customerId: Number
+    contactId: Number
   }
 }
 </script>

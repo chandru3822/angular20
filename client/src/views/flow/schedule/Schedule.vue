@@ -133,7 +133,7 @@
           <v-card-text v-else>
             <v-toolbar color="white" flat>
               <v-toolbar-title class="app-title">
-                {{selectedProject.customerFirstName}} {{selectedProject.customerLastName}}
+                {{selectedProject.contactFirstName}} {{selectedProject.contactLastName}}
                 <div class="toolbar-subtitle">{{selectedProject.processStepName}}</div>
               </v-toolbar-title>
               <v-spacer></v-spacer>
