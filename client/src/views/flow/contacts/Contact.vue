@@ -26,7 +26,7 @@
                         class="mt-2"
               ></v-select>
               <v-btn text :disabled="!selectedProcess" @click="convertToCustomer">
-                Convert
+                Add Project
               </v-btn>
             </v-card>
           </v-menu>
