@@ -63,9 +63,10 @@
             }
           } catch (e) {
             this.loginLoading = false
+            let msg = e && e.data && e.data.includes('account is locked') ? 'Account Locked' : 'Invalid Username/Password.'
             this.$store.commit(
               UserMutations.LOGIN_ERROR,
-              'Invalid Username/Password.'
+              msg
             )
           }
         } else {
