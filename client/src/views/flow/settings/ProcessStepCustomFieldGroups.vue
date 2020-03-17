@@ -81,7 +81,17 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left">
-                    {{item.groupName}}
+                    <v-text-field text
+                                  v-if="item.edit"
+                                  v-model="item.groupName">
+                      <template slot="append-outer">
+                        <v-icon @click="saveGroupName(item); item.edit = false">save</v-icon>
+                        <v-icon @click="item.edit = false">clear</v-icon>
+                      </template>
+                    </v-text-field>
+                    <a style="text-decoration: underline;" v-else @click="item.edit = true">
+                      {{item.groupName}}
+                    </a>
                   </td>
                   <td><div class="item-icons">
                     <v-btn v-if="!item.eventTypeId" small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
@@ -348,6 +358,18 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Group From Step')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveGroupName (group) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/customFieldGroup/updateCustomFieldGroup`, group)
+          this.snackbar = getSnackbar('SUCCESS', 'Group Name Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Change')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
