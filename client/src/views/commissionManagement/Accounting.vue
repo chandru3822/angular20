@@ -17,7 +17,7 @@
           <v-col cols="12" sm="6">
             <v-text-field text readonly label="Payroll ID #" v-model="currentPayroll.id"></v-text-field>
             <DatetimePickerInput
-                v-model="accountingSearch.endDate"
+                v-model="currentPayroll.periodEnd"
                 :timezone="this.timezone"
                 :type="'date'"
                 :format="'MMMM DD, YYYY'"
@@ -25,7 +25,7 @@
             />
             <v-text-field text
                           label="Description"
-                          v-model="accountingSearch.description"></v-text-field>
+                          v-model="currentPayroll.description"></v-text-field>
           </v-col>
           <v-col cols="12" sm="6">
             <v-text-field text
@@ -117,7 +117,9 @@
         // currentPayroll: {},
         currentPayroll: {
           status: 'pending',
-          id: 47
+          id: 47,
+          periodEnd: '2020-03-16',
+          description: 'period ending 2020.03.15'
         },
         accountingSearch: {}
       }
@@ -139,7 +141,12 @@
       async getAccountingData () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/commissionManagement/accountReview/search`, 'blueraven')
+          let params = {
+            refresh: true,
+            payrollId: this.currentPayroll.id,
+            periodEnd: this.currentPayroll.periodEnd
+          }
+          const {data} = await postRequest(`/commissionManagement/accountReview/search`, params, 'blueraven')
           this.accountingData = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

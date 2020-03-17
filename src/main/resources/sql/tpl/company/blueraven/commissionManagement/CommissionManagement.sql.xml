@@ -336,7 +336,7 @@
 FROM (SELECT upv.user_id                                        AS "userId",
              upv.first_name || ' ' || upv.last_name                 AS name,
              upv.start_date as "positionStartDate",
-
+             upv.position,
              coalesce((SELECT array_to_json(array_agg(row_to_json(plans)))
               FROM ( SELECT cpu.id as "userPlanId",
                            cpu.start_date AS "startDate",

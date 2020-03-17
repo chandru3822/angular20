@@ -55,7 +55,6 @@ export default {
       type: Boolean,
       default: false
     },
-    callback: Function
   },
   data: () => ({
     date: null,
@@ -73,11 +72,9 @@ export default {
         DateTime.local()
         this.$emit('input', DateTime.fromFormat(this.date, 'yyyy-MM-dd').toISODate())
         this.menu = false
-        this.callback(DateTime.fromFormat(this.date, 'yyyy-MM-dd').toISODate())
       } else {
         this.showDate = false
         this.showTime = true
-        this.callback(null)
       }
     },
     saveTime () {
@@ -92,17 +89,14 @@ export default {
         this.$emit('input', datetime.toISO())
         this.showDate = true
         this.showTime = false
-        this.callback(datetime.toISO())
       } else {
         this.$emit('input', DateTime.fromISO(this.time, {zone: this.timezone}).toISOTime())
-        this.callback(DateTime.fromISO(this.time, {zone: this.timezone}).toISOTime())
       }
       this.menu = false
     },
     cancel () {
       this.menu = false
       this.init()
-      this.callback(null)
     },
     init () {
       let value = DateTime.fromISO(this.$props.value)
