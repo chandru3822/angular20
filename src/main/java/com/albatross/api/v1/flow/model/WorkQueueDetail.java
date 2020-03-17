@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 public class WorkQueueDetail {
-    private Long processStepId, companyId, projectProcessStepId, projectId, customerId;
+    private Long processStepId, companyId, projectProcessStepId, projectId, contactId;
     private String projectName, workQueueType, processStepName, owner, lastUpdated;
     private List<OwningPosition> owningPositions;
 }

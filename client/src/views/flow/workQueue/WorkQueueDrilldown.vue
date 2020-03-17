@@ -104,7 +104,7 @@
         return canAssign
       },
       clickRow(row) {
-        this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&customerId=${row.customerId}`})
+        this.$router.push({path: `/project/${row.projectId}/processStep/${row.projectProcessStepId}?processStepId=${row.processStepId}&contactId=${row.contactId}`})
       }
     },
 

@@ -6,10 +6,10 @@
     <v-row class="process-step-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/customer/${customer.id}`">{{ customer.fullName}}</router-link>
+          <router-link :to="`/contact/${contact.id}`">{{ contact.fullName}}</router-link>
         </div>
         <div class="project-subtitle">
-          {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
+          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
         </div>
       </v-col>
 
@@ -41,7 +41,7 @@
         </div>
         <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
           <span v-if="displayChangeOwner">cancel</span>
-          <span v-else-if="customer.owner && customer.owner.userId">change</span>
+          <span v-else-if="contact.owner && contact.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
       </v-col>
@@ -164,7 +164,7 @@ export default {
       customFieldGroups: [],
       isProcessStepLoading: true,
       notes: [],
-      customer: {},
+      contact: {},
       displayChangeOwner: false,
       availableOwners: []
     }
@@ -172,7 +172,7 @@ export default {
   async created () {
     this.getCustomFieldGroups()
     this.getNotes()
-    this.getCustomer()
+    this.getContact()
     await this.getProcessStep()
     this.getAvailableOwners()
   },
@@ -215,15 +215,15 @@ export default {
 
       }
     },
-    async getCustomer () {
+    async getContact () {
       // this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customer/${this.$route.query.customerId}`)
-        this.customer = data
+        const {data} = await getRequest(`/contact/${this.$route.query.contactId}`)
+        this.contact = data
         // this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Customer')
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
         // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },

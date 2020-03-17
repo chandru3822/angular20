@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CustomFieldValue {
 
-  private Long id, customerId, customFieldGroupAssignmentId, customFieldGroupId,
+  private Long id, contactId, customFieldGroupAssignmentId, customFieldGroupId,
       customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId,
       customFieldSqlKeyId, companySystemListId, projectProcessStepId, scheduleFieldTypeId, ancillaryCustomFieldGroupAssignmentId;
 

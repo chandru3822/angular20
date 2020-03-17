@@ -1,5 +1,5 @@
 <sql>
-  <customer.getAllByCompany><![CDATA[
+  <contact.getAllByCompany><![CDATA[
     select
       id,
       first_name,
@@ -8,11 +8,11 @@
       email,
       phone,
       company_id
-    from flow.customer
+    from flow.contact
     where company_id = :companyId;
-  ]]></customer.getAllByCompany>
+  ]]></contact.getAllByCompany>
 
-  <customer.searchCustomers><![CDATA[
+  <contact.searchContacts><![CDATA[
       select
           c.id,
           c.first_name,
@@ -21,8 +21,8 @@
           c.email,
           c.phone,
           c.company_id,
-          c.customer_type_id,
-          ct.customer_type,
+          c.contact_type_id,
+          ct.contact_type,
           c.state_id,
           s.state,
           s.abbreviation,
@@ -33,8 +33,8 @@
            'lastName', u.last_name,
            'fullName', u.first_name || ' ' || u.last_name
           )) as owner
-      from flow.customer c
-          inner join flow.customer_type ct on ct.id = c.customer_type_id
+      from flow.contact c
+          inner join flow.contact_type ct on ct.id = c.contact_type_id
           left join flow.state s on s.id = c.state_id
           left join flow.user_position up on up.id = c.owner_user_position_id
           left join flow."user" u on u.id = up.user_id
@@ -48,13 +48,13 @@
       order by c.date_created desc
       limit :limit
       offset :offset ;
-  ]]></customer.searchCustomers>
+  ]]></contact.searchContacts>
 
-  <customer.searchCustomerCount><![CDATA[
+  <contact.searchContactCount><![CDATA[
       select
         count(*)
-      from flow.customer c
-         inner join flow.customer_type ct on ct.id = c.customer_type_id
+      from flow.contact c
+         inner join flow.contact_type ct on ct.id = c.contact_type_id
          left join flow.state s on s.id = c.state_id
          left join flow.user_position up on up.id = c.owner_user_position_id
          left join flow."user" u on u.id = up.user_id
@@ -65,9 +65,9 @@
         OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
         OR s.state ILIKE '%' || :query || '%'
       )
-  ]]></customer.searchCustomerCount>
+  ]]></contact.searchContactCount>
 
-  <customer.exportCustomers><![CDATA[
+  <contact.exportContacts><![CDATA[
       select
           c.first_name,
           c.last_name,
@@ -88,7 +88,7 @@
            'lastName', u.last_name,
            'fullName', u.first_name || ' ' || u.last_name
           )) as owner
-      from flow.customer c
+      from flow.contact c
           left join flow.state s on s.id = c.state_id
           left join flow.user_position up on up.id = c.owner_user_position_id
          left join flow."user" u on u.id = up.user_id
@@ -98,9 +98,9 @@
                 OR s.state ILIKE '%' || :query || '%'
               )
       order by c.date_created desc;
-  ]]></customer.exportCustomers>
+  ]]></contact.exportContacts>
 
-  <customer.getById><![CDATA[
+  <contact.getById><![CDATA[
     select c.id,
        c.first_name,
        c.last_name,
@@ -109,7 +109,7 @@
        c.email,
        c.phone,
        c.mobile,
-       c.customer_type_id,
+       c.contact_type_id,
        c.company_id,
        c.street1,
        c.city,
@@ -125,7 +125,7 @@
                          p.id,
                          p.project_name as "projectName"
                      from flow.project p
-                     where p.customer_id = c.id
+                     where p.contact_id = c.id
                  ) projects), '[]') AS "projects",
        (SELECT row_to_json(o)
             FROM (SELECT u.id as "userId",
@@ -137,20 +137,20 @@
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position p on p.id = up.position_id
                   WHERE up.id = c.owner_user_position_id) o) AS owner
-    from flow.customer c
+    from flow.contact c
              left join flow.state s on s.id = c.state_id
              inner join flow.country ct on ct.id = c.country_id
-    where c.id = :customerId
+    where c.id = :contactId
 
-  ]]></customer.getById>
+  ]]></contact.getById>
 
-  <customer.getCustomerCompanyId><![CDATA[
+  <contact.getContactCompanyId><![CDATA[
       select company_id
-      from flow.customer
+      from flow.contact
       where id = :primaryId
-  ]]></customer.getCustomerCompanyId>
+  ]]></contact.getContactCompanyId>
 
-  <customer.getByProjectId><![CDATA[
+  <contact.getByProjectId><![CDATA[
     select
       c.id,
       c.first_name,
@@ -160,7 +160,7 @@
       c.email,
       c.phone,
       c.mobile,
-      c.customer_type_id,
+      c.contact_type_id,
       c.company_id,
       c.street1,
       c.city,
@@ -168,16 +168,16 @@
       s.state,
       c.country_id,
       ct.country
-    from flow.customer c
-      inner join flow.project p on p.customer_id = c.id
+    from flow.contact c
+      inner join flow.project p on p.contact_id = c.id
       left join flow.state s on s.id = c.state_id
       inner join flow.country ct on ct.id = c.country_id
     where p.id = :projectId
-  ]]></customer.getByProjectId>
+  ]]></contact.getByProjectId>
 
-  <customer.updateCustomer><![CDATA[
-    update flow.customer set
-           customer_type_id = :customerTypeId,
+  <contact.updateContact><![CDATA[
+    update flow.contact set
+           contact_type_id = :contactTypeId,
            first_name = :firstName,
            last_name = :lastName,
            street1 = :street1,
@@ -192,14 +192,14 @@
            date_modified = now(),
            owner_user_position_id = :ownerUserPositionId
     where id = :id
-  ]]></customer.updateCustomer>
+  ]]></contact.updateContact>
 
-  <customer.insertCustomer><![CDATA[
-    insert into flow.customer(customer_type_id, first_name, last_name, street1, city, state_id, postal_code, country_id, phone, email, mobile, created_by_id, company_id)
-    values (:customerTypeId, :firstName, :lastName, :street1, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId)
-  ]]></customer.insertCustomer>
+  <contact.insertContact><![CDATA[
+    insert into flow.contact(contact_type_id, first_name, last_name, street1, city, state_id, postal_code, country_id, phone, email, mobile, created_by_id, company_id)
+    values (:contactTypeId, :firstName, :lastName, :street1, :city, :stateId, :postalCode, :countryId, :phone, :email, :mobile, :createdById, :companyId)
+  ]]></contact.insertContact>
 
-  <customer.getOwners><![CDATA[
+  <contact.getOwners><![CDATA[
     select u.id as "userId",
            u.first_name,
            u.last_name,
@@ -218,28 +218,28 @@
       and up.start_date <= now()
       and (up.end_date is null or up.end_date >= now())
     order by u.last_name, u.first_name
-  ]]></customer.getOwners>
+  ]]></contact.getOwners>
 
-  <customer.updateOwner><![CDATA[
-    update flow.customer set
+  <contact.updateOwner><![CDATA[
+    update flow.contact set
            modified_by_id = :modifiedById,
            owner_user_position_id = :ownerUserPositionId,
            date_modified = now()
     where id = :id
-  ]]></customer.updateOwner>
+  ]]></contact.updateOwner>
 
-  <customer.convertToCustomer><![CDATA[
-    update flow.customer set
+  <contact.convertToContact><![CDATA[
+    update flow.contact set
            modified_by_id = :modifiedById,
-           customer_type_id = :customerTypeId,
+           contact_type_id = :contactTypeId,
            date_modified = now()
-    where id = :customerId
-  ]]></customer.convertToCustomer>
+    where id = :contactId
+  ]]></contact.convertToContact>
 
-  <customer.updateGeoLocation><![CDATA[
-    update flow.customer set
+  <contact.updateGeoLocation><![CDATA[
+    update flow.contact set
            latitude = :latitude,
            longitude = :longitude
     where id = :id
-  ]]></customer.updateGeoLocation>
+  ]]></contact.updateGeoLocation>
 </sql>

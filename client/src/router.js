@@ -421,34 +421,34 @@ export default new Router({
         }
         ]
       }, {
-        path: '/customers',
-        name: 'customers',
+        path: '/contacts',
+        name: 'contacts',
         component: () => {
-          if(store.getters.userHasFeature('CUSTOMERS')) {
-            return import (/*webpackChunkName: "customers" */ './views/flow/customers/Customers.vue')
+          if(store.getters.userHasFeature('CONTACTS')) {
+            return import (/*webpackChunkName: "contacts" */ './views/flow/contacts/Contacts.vue')
           } else  {
             return accessDenied()
           }
         },
         children: []
       }, {
-        path: '/customer/:id',
-        name: 'customer',
+        path: '/contact/:id',
+        name: 'contact',
         props: true,
         component: () => {
-          if(store.getters.userHasFeature('CUSTOMERS')) {
-            return import (/*webpackChunkName: "customer" */ './views/flow/customers/Customer.vue')
+          if(store.getters.userHasFeature('CONTACTS')) {
+            return import (/*webpackChunkName: "contact" */ './views/flow/contacts/Contact.vue')
           } else  {
             return accessDenied()
           }
         },
         children: []
       }, {
-        path: '/newCustomer',
-        name: 'newCustomer',
+        path: '/newContact',
+        name: 'newContact',
         component: () => {
-          if(store.getters.userHasFeature('CUSTOMERS')) {
-            return import (/*webpackChunkName: "customer" */ './views/flow/customers/NewCustomer.vue')
+          if(store.getters.userHasFeature('CONTACTS')) {
+            return import (/*webpackChunkName: "contact" */ './views/flow/contacts/NewContact.vue')
           } else  {
             return accessDenied()
           }

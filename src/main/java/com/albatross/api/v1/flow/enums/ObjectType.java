@@ -2,7 +2,7 @@ package com.albatross.api.v1.flow.enums;
 
 public enum ObjectType {
     PROJECT(1L),
-    CUSTOMER(2L),
+    CONTACT(2L),
     USER(3L),
     PROCESS_STEP(4L),
     ORGANIZATION(5L);

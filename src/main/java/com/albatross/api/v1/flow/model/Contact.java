@@ -10,13 +10,13 @@ import java.util.List;
 @EqualsAndHashCode
 @Data
 @NoArgsConstructor
-public class Customer  {
+public class Contact {
 
-  private Long id, contactBaseId, companyId, customerTypeId, stateId, countryId;
+  private Long id, contactBaseId, companyId, contactTypeId, stateId, countryId;
   private String firstName, lastName, fullName, email,
       street1, street2, city, state, postalCode, country,
       mailingStreet1, mailingStreet2, mailingCity, mailingState, mailingPostalCode,
-      phone, mobile, customerType;
+      phone, mobile, contactType;
   private Double latitude, longitude;
   private Date dateCreated;
 

@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.attribute.standard.Media;
 import java.util.List;
 
 /**
@@ -26,9 +25,9 @@ public class NoteController {
   @Autowired
   private NoteService noteService;
 
-  @GetMapping(value = "/getCustomerNotes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Note> getCustomerNotes(@RequestParam Long primaryId) {
-    return noteService.getByPrimaryAndType(ObjectType.CUSTOMER.id, primaryId);
+  @GetMapping(value = "/getContactNotes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Note> getContactNotes(@RequestParam Long primaryId) {
+    return noteService.getByPrimaryAndType(ObjectType.CONTACT.id, primaryId);
   }
 
   @GetMapping(value = "/getUserNotes", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -46,9 +45,9 @@ public class NoteController {
     return noteService.getByPrimaryAndType(ObjectType.PROCESS_STEP.id, primaryId);
   }
 
-  @PostMapping(value = "/saveCustomerNote", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Note saveCustomerNote(@RequestBody Note note) {
-    return noteService.saveNote(ObjectType.CUSTOMER.id, note);
+  @PostMapping(value = "/saveContactNote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Note saveContactNote(@RequestBody Note note) {
+    return noteService.saveNote(ObjectType.CONTACT.id, note);
   }
 
   @PostMapping(value = "/saveUserNote", produces = MediaType.APPLICATION_JSON_VALUE)
