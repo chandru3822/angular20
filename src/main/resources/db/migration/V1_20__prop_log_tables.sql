@@ -94,6 +94,32 @@ CREATE TABLE if NOT EXISTS props.utility
         ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
+CREATE TABLE IF NOT EXISTS props.financier
+(
+    id                serial        not null,
+    company_id        integer       not null,
+    name              varchar(100)  not null,
+    submission_method varchar(255),
+    archived          boolean not null       default false,
+    date_created      timestamp without time zone DEFAULT now(),
+    created_by_id     integer,
+    date_modified     timestamp without time zone,
+    modified_by_id    integer,
+    active boolean not null default false,
+    CONSTRAINT financier_pk PRIMARY KEY (id),
+    CONSTRAINT financier_name_uk UNIQUE (name),
+    CONSTRAINT financier_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow."user" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT financier_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow."user" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT financier_company_id_fk FOREIGN KEY (company_id)
+        REFERENCES flow.company (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+
 CREATE TABLE if NOT EXISTS props.product
 (
     id              serial                NOT NULL,
@@ -447,90 +473,6 @@ CREATE TABLE if NOT EXISTS props.proposal_log_adder
 
 
 
-alter table flow.user drop column if exists  user_status_type_id;
-alter table flow.user drop constraint  if exists u_user_status_type_id_fk;
-alter table flow.user_status_type rename to company_user_status_type;
-
-
-drop sequence if exists flow."user_status_type_id_seq";
-create sequence if not exists flow.company_user_status_type_id_seq as integer;
-
-alter table flow.company_user_status_type
-    alter column id set default nextval('flow.company_user_status_type_id_seq');
-
-
-
-ALTER INDEX if exists ust_company_id_idx RENAME TO cust_company_id_idx;
-
-alter table flow.company_user_status_type drop constraint if exists user_status_type_pk;
-alter table flow.company_user_status_type drop constraint if exists company_user_status_type_pk;
-ALTER TABLE flow.company_user_status_type add CONSTRAINT company_user_status_type_pk PRIMARY KEY (id);
-
-alter table flow.company_user_status_type drop constraint if exists cust_company_id_fk;
-alter table flow.company_user_status_type drop constraint if exists ust_company_id_fk;
-ALTER TABLE flow.company_user_status_type add
-    CONSTRAINT cust_company_id_fk FOREIGN KEY (company_id)
-        REFERENCES flow.company (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION;
-
-alter table flow.company_user_status_type add column if not exists has_access boolean not null default false;
-
-
-CREATE TABLE if NOT EXISTS flow.user_status_type
-(
-    id              serial                NOT NULL,
-    user_id integer not null,
-    company_user_status_type_id integer not null,
-    archived boolean not null default false,
-    date_created      timestamp without time zone DEFAULT now() not null,
-    date_modified      timestamp without time zone,
-    created_by_id     integer,
-    modified_by_id    integer,
-    CONSTRAINT user_status_type_pk PRIMARY KEY (id),
-    CONSTRAINT ust_user_id_fk FOREIGN KEY (user_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT ust_company_user_status_type_id_fk FOREIGN KEY (company_user_status_type_id)
-        REFERENCES flow.company_user_status_type (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT ust_created_by_id_id_fk FOREIGN KEY (created_by_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT ust_modified_by_id_fk FOREIGN KEY (modified_by_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-);
-
-
-CREATE INDEX if not exists ust_user_id_idx ON flow.user_status_type (user_id);
-CREATE INDEX if not exists ust_company_user_status_type_id_idx ON flow.user_status_type (company_user_status_type_id);
-
-CREATE TABLE IF NOT EXISTS props.financier
-(
-    id                serial        not null,
-    company_id        integer       not null,
-    name              varchar(100)  not null,
-    submission_method varchar(255),
-    archived          boolean not null       default false,
-    date_created      timestamp without time zone DEFAULT now(),
-    created_by_id     integer,
-    date_modified     timestamp without time zone,
-    modified_by_id    integer,
-    active boolean not null default false,
-    CONSTRAINT financier_pk PRIMARY KEY (id),
-    CONSTRAINT financier_name_uk UNIQUE (name),
-    CONSTRAINT financier_created_by_id_fk FOREIGN KEY (created_by_id)
-        REFERENCES flow."user" (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT financier_modified_by_id_fk FOREIGN KEY (modified_by_id)
-        REFERENCES flow."user" (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT financier_company_id_fk FOREIGN KEY (company_id)
-        REFERENCES flow.company (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION
-);
-
-
-
 create table if not exists brs.commission_plan_status
 (
     id          integer not null
@@ -588,7 +530,7 @@ create table if not exists brs.commission_plan_user
     note               text
 );
 
-create index commission_plan_user_user_id_daterange_excl
+create index if not exists commission_plan_user_user_id_daterange_excl
     on brs.commission_plan_user (user_id, daterange(start_date, end_date, '[]'::text));
 
 create table if not exists brs.milestone_type
@@ -847,7 +789,7 @@ create table if not exists brs.project_override_commission_snapshot
 create unique index if not exists project_commission_snapshot_id_user_id_milestone_type_id_udx
     on brs.project_override_commission_snapshot (project_commission_snapshot_id, user_id, milestone_type_id);
 
-create table brs.override_plan_status
+create table if not exists brs.override_plan_status
 (
     id          integer not null
         constraint override_plan_status_pk
@@ -906,7 +848,7 @@ create table if not exists brs.override_plan_receiving_user
         unique  (override_plan_id, user_id)
 );
 
-create table brs.override_plan_assigned_user
+create table if not exists brs.override_plan_assigned_user
 (
     id               serial  not null
          constraint override_plan_assigned_user_pk
@@ -923,5 +865,5 @@ create table brs.override_plan_assigned_user
 );
 
 
-create index override_plan_assigned_user_user_id_daterange_excl
+create index if not exists override_plan_assigned_user_user_id_daterange_excl
     on brs.override_plan_assigned_user (user_id, daterange(start_date, end_date, '[]'::text));
