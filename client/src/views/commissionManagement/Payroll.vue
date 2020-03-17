@@ -109,7 +109,8 @@
         console.log('getPayrollData', this.payrollSearch)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/payroll/search`, 'blueraven')
+          let params = this.payrollSearch
+          const {data} = await postRequest(`/payroll/search`, params, 'blueraven')
           this.payrollData = data
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

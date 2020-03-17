@@ -241,6 +241,7 @@
     where case when :username::text is not null then lower(username) = lower(:username::text)
                else u.id = :userId::integer end
       and uc.is_default = true
+    limit 1
   ]]></user.findByUsernameIgnoreCase>
 
   <user.findUserById><![CDATA[

@@ -7,9 +7,69 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="button-container">
-          <v-btn color="red" dark class="mr-2">
-            Inactivate
-          </v-btn>
+          <v-dialog
+              v-model="inactivateConfirm"
+              width="500">
+            <template #activator="{ on }">
+              <v-btn color="red" dark class="mr-2" v-on="on">
+                Inactivate
+              </v-btn>
+            </template>
+            <v-card v-if="!commission.users || commission.users.length === 0">
+              <v-card-title
+                  class="headline grey lighten-2"
+                  primary-title>
+                Confirm
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                Are you sure you want to inactivate this plan?
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                    @click="inactivateConfirm = false">
+                  No
+                </v-btn>
+                <v-btn
+                    color="primary"
+                    text
+                    @click="inactivateConfirm = true; inactivatePlan()">
+                  Yes
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+            <v-card v-else>
+              <v-card-title
+                  class="headline grey lighten-2"
+                  primary-title>
+                Error
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                You cannot set this plan to inactive with active users.
+                <div>
+                  <span v-for="(u, idx) in commission.users" :key="idx">
+                    {{u.name}}: {{u.position}}
+                  </span>
+                </div>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                    @click="inactivateConfirm = false">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
           <v-btn color="primaryCustom" dark>
             Clone
           </v-btn>
@@ -153,6 +213,7 @@
       return {
         snackbar: {},
         dataLoading: true,
+        inactivateConfirm: false,
         planId: this.$route.params.id,
         headers: [
           {text: 'Name', value: 'name', show: true},
@@ -188,6 +249,9 @@
       },
       goToDetails (item) {
         console.log('handle going to item', item)
+      },
+      inactivatePlan () {
+        console.log('INACTIVATE', this.commission)
       }
     }
   }

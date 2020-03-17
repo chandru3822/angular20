@@ -7,15 +7,12 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="button-container">
-          <v-btn color="primaryCustom" dark  @click="cloneOverride()">
-            Clone
-          </v-btn>
           <v-dialog
-              v-model="deleteConfirm"
+              v-model="inactivateConfirm"
               width="500">
             <template #activator="{ on }">
               <v-btn color="red" dark class="mr-2" v-on="on">
-                Delete
+                Inactivate
               </v-btn>
             </template>
             <v-card>
@@ -26,11 +23,7 @@
               </v-card-title>
 
               <v-card-text class="pt-4">
-                <div class="error-text">
-                  {{isCompanyRoot ? 'WARNING: This will delete this feature system-wide!'
-                  : 'WARNING: Feature access control will be completely reset for this feature even if you add the same one back in.'}}
-                </div>
-                Are you sure you want to delete this feature: {{ item.featureName }}?
+                Are you sure you want to inactivate this plan?
               </v-card-text>
 
               <v-divider></v-divider>
@@ -38,18 +31,21 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn
-                    @click="item.deleteConfirm = false">
+                    @click="inactivateConfirm = false">
                   No
                 </v-btn>
                 <v-btn
                     color="primary"
                     text
-                    @click="deleteFeature(item)">
+                    @click="inactivateConfirm = true; inactivatePlan()">
                   Yes
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
+          <v-btn color="primaryCustom" dark  @click="cloneOverride()">
+            Clone
+          </v-btn>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -67,9 +63,14 @@
               <v-text-field text
                             label="Description"
                             v-model="override.description"></v-text-field>
-              <v-text-field text
-                            label="Position"
-                            v-model="override.positionType"></v-text-field>
+              <v-select v-model="override.positionId"
+                        :items="positions"
+                        :disabled="override.assignedUsers.length > 0"
+                        no-data-text="No Users Available"
+                        label="Position Type"
+                        item-text="label"
+                        item-value="id"
+              ></v-select>
               <v-text-field text
                             label="Rate per kW ($)"
                             v-model="override.total"></v-text-field>
@@ -188,7 +189,7 @@
       return {
         snackbar: {},
         dataLoading: true,
-        deleteConfirm: false,
+        inactivateConfirm: false,
         overrideId: this.$route.params.id,
         headers: [
           {text: 'Name', value: 'name', show: true},
@@ -201,7 +202,15 @@
           {text: 'Employee ID', value: 'employeeId', show: true},
           {text: 'Allocation', value: 'allocation', show: true},
         ],
-        override: {}
+        override: {
+          approvedBy: {},
+          createdBy: {},
+          assignedUsers: []
+        },
+        positions: [
+          {id: 1, label: 'Closer'},
+          {id: 4, label: 'Setter'}
+        ]
       }
     },
     methods: {
@@ -221,17 +230,17 @@
       goToDetails (item) {
         console.log('handle going to item', item)
       },
-      async deleteOverride () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Override')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+      // async deleteOverride () {
+      //   this.$store.commit(AppMutations.SET_LOADING, true)
+      //   try {
+      //     const {data} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   } catch (e) {
+      //     console.error('*** ERROR ***', e)
+      //     this.snackbar = getSnackbar('ERROR', 'Error Deleting Override')
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // },
       async cloneOverride () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -243,6 +252,9 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      inactivatePlan () {
+        console.log('INACTIVATE', this.override)
+      }
     }
   }
 </script>
