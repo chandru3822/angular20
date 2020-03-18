@@ -345,9 +345,11 @@ export default {
 .project-header {
   border-bottom: solid 1px #EAEAF4
 }
+
 .project-title {
   font-size: 20px;
 }
+
 .project-subtitle {
   font-size: 15px;
 }
@@ -355,29 +357,19 @@ export default {
 tr:nth-of-type(even) {
   @extend .shaded-row;
 
-  .v-input__slot {
-    background-color: green !important;
+  ::v-deep .v-input__slot {
+    background-color: var(--v-rowShadeCustom-base) !important;
   }
 }
-</style>
 
-<style lang="scss">
-
-#project-admin-container {
-
+::v-deep {
   .v-data-table__wrapper {
     height: calc(100vh - 320px);
     min-height: 300px;
   }
 
-  .project-admin-btn > .v-btn__content {
-    color: white !important;
-  }
-
-  tr:nth-of-type(even) {
-    .v-input__slot {
-      background-color: var(--v-rowShadeCustom-base) !important;
-    }
+  .project-admin-btn .v-btn__content {
+    color: #ffffff !important;
   }
 
   tr .v-input__slot {
@@ -386,7 +378,7 @@ tr:nth-of-type(even) {
   }
 
   tr:hover .v-input__slot {
-    background-color: #eeeeee;
+    background-color: #eeeeee !important;
   }
 }
 </style>
