@@ -108,8 +108,9 @@
        :headers="headers"
        :items="projectProcessSteps"
        fixed-header
-       sort-by="lastUpdated"
-       :sort-desc="true"
+       multi-sort
+       :sort-by="['processStepName', 'lastUpdated']"
+       :sort-desc="[false, true]"
        hide-default-footer
        dense
        :loading="isProjectProcessStepsLoading"
