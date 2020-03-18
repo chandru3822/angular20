@@ -127,7 +127,9 @@
 
         <template #item="{item: projectProcessStep}">
           <tr>
-            <td class="text-left">{{projectProcessStep.projectProcessStepId}}</td>
+            <td class="text-left">
+              <router-link :to="`/project/${projectId}/processStep/${projectProcessStep.projectProcessStepId}?processStepId=${projectProcessStep.processStepId}&contactId=${contact.id}`">{{ projectProcessStep.projectProcessStepId }}</router-link>
+            </td>
             <td class="text-left">{{projectProcessStep.processStepName}}</td>
             <td class="text-left">{{getOwnerName(projectProcessStep)}}</td>
             <td class="text-left">{{projectProcessStep.lastUpdated}}</td>
