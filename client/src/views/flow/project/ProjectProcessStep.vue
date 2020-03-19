@@ -49,7 +49,11 @@
   </v-col>
 
   <v-col class="text-left">
-    <router-link :to="`/project/${projectId}`">Back</router-link>
+    <v-btn
+      class="back-btn"
+      text
+      :ripple="false"
+      @click="$router.go(-1)">Back</v-btn>
   </v-col>
 
   <v-col cols="12" class="text-left">
@@ -289,7 +293,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .process-step-header {
   border-bottom: solid 1px #EAEAF4;
+}
+
+::v-deep {
+  .v-btn.back-btn {
+
+    text-transform: capitalize;
+    text-decoration: underline;
+
+    &:not(.v-btn--round) {
+      padding: 0;
+    }
+
+    &:hover:before {
+      opacity: 0 !important;
+    }
+
+    .v-btn__content {
+      justify-content: start;
+    }
+  }
 }
 </style>
