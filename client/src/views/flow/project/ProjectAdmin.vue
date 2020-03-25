@@ -108,8 +108,9 @@
        :headers="headers"
        :items="projectProcessSteps"
        fixed-header
-       sort-by="lastUpdated"
-       :sort-desc="true"
+       multi-sort
+       :sort-by="['processStepName', 'lastUpdated']"
+       :sort-desc="[false, true]"
        hide-default-footer
        dense
        :loading="isProjectProcessStepsLoading"
@@ -126,7 +127,9 @@
 
         <template #item="{item: projectProcessStep}">
           <tr>
-            <td class="text-left">{{projectProcessStep.projectProcessStepId}}</td>
+            <td class="text-left">
+              <router-link :to="`/project/${projectId}/processStep/${projectProcessStep.projectProcessStepId}?processStepId=${projectProcessStep.processStepId}&contactId=${contact.id}`">{{ projectProcessStep.projectProcessStepId }}</router-link>
+            </td>
             <td class="text-left">{{projectProcessStep.processStepName}}</td>
             <td class="text-left">{{getOwnerName(projectProcessStep)}}</td>
             <td class="text-left">{{projectProcessStep.lastUpdated}}</td>
@@ -345,9 +348,11 @@ export default {
 .project-header {
   border-bottom: solid 1px #EAEAF4
 }
+
 .project-title {
   font-size: 20px;
 }
+
 .project-subtitle {
   font-size: 15px;
 }
@@ -355,29 +360,19 @@ export default {
 tr:nth-of-type(even) {
   @extend .shaded-row;
 
-  .v-input__slot {
-    background-color: green !important;
+  ::v-deep .v-input__slot {
+    background-color: var(--v-rowShadeCustom-base) !important;
   }
 }
-</style>
 
-<style lang="scss">
-
-#project-admin-container {
-
+::v-deep {
   .v-data-table__wrapper {
     height: calc(100vh - 320px);
     min-height: 300px;
   }
 
-  .project-admin-btn > .v-btn__content {
-    color: white !important;
-  }
-
-  tr:nth-of-type(even) {
-    .v-input__slot {
-      background-color: var(--v-rowShadeCustom-base) !important;
-    }
+  .project-admin-btn .v-btn__content {
+    color: #ffffff !important;
   }
 
   tr .v-input__slot {
@@ -386,7 +381,7 @@ tr:nth-of-type(even) {
   }
 
   tr:hover .v-input__slot {
-    background-color: #eeeeee;
+    background-color: #eeeeee !important;
   }
 }
 </style>
