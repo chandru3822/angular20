@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
@@ -202,9 +201,8 @@ public class CommissionManagementController {
                                      @RequestBody PlanUser user) {
         try {
             commissionManagementService.insertUser(planId, user);
-            String s = String.format("/api/v1/plans/%d/users", planId);
-            return ResponseEntity.created(URI.create(s))
-                    .build();
+            String users = commissionManagementService.getCommissionPlanUsers(planId);
+            return ResponseEntity.ok(users);
         } catch (CommissionManagementService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
             Map<String, String> body = ImmutableMap.of("msg", e.getMessage(),

@@ -43,7 +43,7 @@ public class OverridePlanService {
     @Data
     public static class OverrideReceivingUser {
         private Long userId;
-        private Double allocation;
+        private Double m1Allocation, m2Allocation;
     }
 
     @Data
@@ -124,8 +124,7 @@ public class OverridePlanService {
     }
 
     @Transactional
-    public Optional<Long> cloneOverridePlan(Long id, CloneOverridePlan overridePlan, Long userId)
-            throws SQLException, BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+    public Optional<Long> cloneOverridePlan(Long id, CloneOverridePlan overridePlan, Long userId) throws SQLException, BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
         boolean isBackdated = validateBackdatedPlan(overridePlan.getStartDate(), overridePlan.getBackdateApprovalCreds());
 
         HashMap<String, Object> params = new HashMap<>();
@@ -178,7 +177,8 @@ public class OverridePlanService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
         params.put("userId", receivingUser.getUserId());
-        params.put("allocation", receivingUser.getAllocation());
+        params.put("m1Allocation", receivingUser.getM1Allocation());
+        params.put("m2Allocation", receivingUser.getM2Allocation());
         params.put("updatedBy", securityService.getCurrentUser().getId());
 
         sqlCache.update("overridePlan.updateReceivingUser", params);

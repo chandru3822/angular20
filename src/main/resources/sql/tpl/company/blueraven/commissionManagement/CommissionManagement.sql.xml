@@ -386,8 +386,9 @@ FROM (SELECT cp.id,
              cp.created_by as "createdBy",
              cp.position_id as "positionId",
              cp.approved                                                 AS "approvedDate",
-             (SELECT array_to_json(array_agg(row_to_json(source)))
+             coalesce((SELECT array_to_json(array_agg(row_to_json(source)))
               FROM (SELECT cpsa.id,
+                           lov.name as "sourceName",
                            mt.milestone_type as "milestoneType",
                            ft.fee_type as "feeType",
                            cpsa.fee_amount as "feeAmount",
@@ -397,8 +398,9 @@ FROM (SELECT cp.id,
                     FROM brs.commission_plan_source_allocation cpsa
                              INNER JOIN brs.milestone_type mt ON mt.id = cpsa.milestone_id
                              INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
-                    WHERE cpsa.commission_plan_id = cp.id) AS source)    AS source,
-             (SELECT array_to_json(array_agg(row_to_json(users)))
+                             INNER JOIN flow.list_of_value lov on lov.id = cpsa.source_id
+                    WHERE cpsa.commission_plan_id = cp.id) AS source), '[]')    AS source,
+             coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
               FROM (SELECT cpu.id,
                            u.first_name || ' ' || u.last_name AS name,
                            string_agg(DISTINCT p.position, ', ') FILTER (WHERE
@@ -417,7 +419,7 @@ FROM (SELECT cp.id,
                              INNER JOIN flow.user_position up ON up.user_id = u.id
                              INNER JOIN flow.position p ON p.id = up.position_id
                     WHERE cpu.commission_plan_id = cp.id
-                    GROUP BY cpu.id, u.id) AS users)                     AS users
+                    GROUP BY cpu.id, u.id) AS users), '[]')                    AS users
       FROM brs.commission_plan cp
                INNER JOIN brs.commission_plan_status cps ON cp.status_id = cps.id
                LEFT JOIN flow.user cu ON cp.created_by = cu.id
@@ -425,7 +427,7 @@ FROM (SELECT cp.id,
       WHERE cp.id = :planId) AS sub_rows;
     ]]></commissionManagement.getCommissionPlanDetails>
 
-    <commissionManagement.getCommisionPlanUsers><![CDATA[
+    <commissionManagement.getCommissionPlanUsers><![CDATA[
     SELECT coalesce(array_to_json(array_agg(row_to_json(users))), '[]')
     FROM (SELECT cpu.id,
              u.first_name || ' ' || u.last_name AS name,
@@ -442,12 +444,12 @@ FROM (SELECT cp.id,
              )                                  AS position
       FROM brs.commission_plan_user cpu
              INNER JOIN brs.commission_plan cp ON cpu.commission_plan_id = cp.id
-             INNER JOIN brs.user u ON cpu.user_id = u.id
-             INNER JOIN brs.user_position up ON up.user_id = u.id
-             INNER JOIN brs.position p ON p.id = up.position_id
+             INNER JOIN flow.user u ON cpu.user_id = u.id
+             INNER JOIN flow.user_position up ON up.user_id = u.id
+             INNER JOIN flow.position p ON p.id = up.position_id
       WHERE cp.id = :planId
       GROUP BY cpu.id, u.id) AS users
-    ]]></commissionManagement.getCommisionPlanUsers>
+    ]]></commissionManagement.getCommissionPlanUsers>
 
     <commissionManagement.getAvailableSources><![CDATA[
        SELECT
@@ -567,29 +569,29 @@ FROM (SELECT cp.id,
     ]]></commissionManagement.insertUser>
 
     <commissionManagement.updateUser><![CDATA[
-    UPDATE brs.commission_plan_user
-    SET start_date = :startDate,
-      end_date     = :endDate
-    WHERE id = :id
+        UPDATE brs.commission_plan_user
+        SET start_date = :startDate,
+          end_date     = :endDate
+        WHERE id = :id
     ]]></commissionManagement.updateUser>
 
     <commissionManagement.insertEndDate><![CDATA[
-    WITH active_commission_plans AS (SELECT cpu.id,
-                                            cp.id   AS plan_id,
-                                            cp.name AS plan_name,
-                                            cpu.user_id,
-                                            cpu.start_date,
-                                            cpu.end_date
-                                     FROM brs.commission_plan cp
-                                            INNER JOIN brs.commission_plan_user cpu ON cp.id = cpu.commission_plan_id
-                                     WHERE cp.status_id <> 3
-                                       AND cpu.end_date IS NULL
-                                       AND cpu.start_date <= :startDate
-                                       AND cpu.user_id = :userId)
-    UPDATE brs.commission_plan_user cpu
-    SET end_date = :startDate :: DATE - INTERVAL  '1 day'
-    FROM active_commission_plans p
-    WHERE cpu.id = p.id
+        WITH active_commission_plans AS (SELECT cpu.id,
+                                                cp.id   AS plan_id,
+                                                cp.name AS plan_name,
+                                                cpu.user_id,
+                                                cpu.start_date,
+                                                cpu.end_date
+                                         FROM brs.commission_plan cp
+                                                INNER JOIN brs.commission_plan_user cpu ON cp.id = cpu.commission_plan_id
+                                         WHERE cp.status_id <> 3
+                                           AND cpu.end_date IS NULL
+                                           AND cpu.start_date <= :startDate
+                                           AND cpu.user_id = :userId)
+        UPDATE brs.commission_plan_user cpu
+        SET end_date = :startDate :: DATE - INTERVAL  '1 day'
+        FROM active_commission_plans p
+        WHERE cpu.id = p.id
     ]]></commissionManagement.insertEndDate>
 
     <commissionManagement.saveMilestone><![CDATA[
@@ -612,18 +614,18 @@ FROM (SELECT cp.id,
                       u.email,
                       u.hire_date as "hireDate",
                       (SELECT string_agg(distinct p1.position, ', ')
-                       FROM brs.user_position up1
-                              INNER JOIN brs.position p1 ON p1.id = up1.position_id
+                       FROM flow.user_position up1
+                              INNER JOIN flow.position p1 ON p1.id = up1.position_id
                        where up1.user_id = u.id
                          AND CASE WHEN :positions = 'closers'
                                        THEN p1.id IN (1, 2, 3, 133)
                                   WHEN :positions = 'setters'
                                        THEN p1.id IN (4, 5, 6)
                                  END)                    AS position
-      FROM brs."user" u
+      FROM flow."user" u
       WHERE u.id IN (SELECT up.user_id
-                     FROM brs.user_position up
-                            INNER JOIN brs.position p ON p.id = up.position_id
+                     FROM flow.user_position up
+                            INNER JOIN flow.position p ON p.id = up.position_id
                        WHERE (
                                CASE WHEN :positions = 'closers'
                                          THEN p.id IN (1, 2, 3, 133)
@@ -645,20 +647,20 @@ FROM (SELECT cp.id,
     ]]></commissionManagement.removeMilestone>
 
     <commissionManagement.deletePlan><![CDATA[
-    DELETE
-      FROM brs.commission_plan_user
-      WHERE commission_plan_id = :planId;
+        DELETE
+          FROM brs.commission_plan_user
+          WHERE commission_plan_id = :planId;
 
-    DELETE
-      FROM brs.commission_plan_source_allocation
-      WHERE commission_plan_id = :planId;
+        DELETE
+          FROM brs.commission_plan_source_allocation
+          WHERE commission_plan_id = :planId;
 
-    DELETE
-      FROM brs.commission_plan_allocation
-      WHERE commission_plan_id = :planId;
+        DELETE
+          FROM brs.commission_plan_allocation
+          WHERE commission_plan_id = :planId;
 
-     DELETE
-      FROM brs.commission_plan
+         DELETE
+          FROM brs.commission_plan
        WHERE id = :planId;
     ]]></commissionManagement.deletePlan>
 
@@ -745,446 +747,7 @@ FROM (SELECT cp.id,
     WHERE id = :planId
     ]]></commissionPlan.inactivate>
 
-    <overridePlan.create><![CDATA[
-    INSERT INTO brs.override_plan
-    (name, description, position_id, total, created_by, created, updated_by, updated)
-    VALUES (:name, :description, :positionId, :total, :createdBy, now(), :createdBy, now())
-    RETURNING id
-    ]]></overridePlan.create>
 
-    <overridePlan.deletePlan><![CDATA[
-    DELETE
-      FROM brs.override_plan_assigned_user
-      WHERE override_plan_id = :planId;
-
-    DELETE
-      FROM brs.override_plan_receiving_user
-      WHERE override_plan_id = :planId;
-
-    DELETE
-      FROM brs.override_plan_milestone_allocation
-      WHERE override_plan_id = :planId;
-
-     DELETE
-      FROM brs.override_plan
-       WHERE id = :planId;
-    ]]></overridePlan.deletePlan>
-
-    <overridePlan.update><![CDATA[
-    UPDATE brs.override_plan
-    SET name      = :name,
-    description = :description,
-    position_id = :positionId,
-    total       = :total,
-    updated_by  = :updatedBy,
-    updated     = now()
-    WHERE id = :id
-    RETURNING id
-    ]]></overridePlan.update>
-
-    <overridePlan.clone><![CDATA[
-    SELECT clone_override_plan AS id
-    FROM brs.clone_override_plan(
-    :planId::int, :startDate:: DATE, :assignedUsers::int[], :receivingUsers::int[], :createdBy::int, :userId::int)
-    ]]></overridePlan.clone>
-
-    <overridePlan.getPlanStatus><![CDATA[
-      SELECT status_type
-        FROM brs.override_plan op
-               INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
-        WHERE op.id = :id
-    ]]></overridePlan.getPlanStatus>
-
-    <overridePlan.updateReceivingUser><![CDATA[
-    WITH new_user AS (
-      INSERT INTO brs.override_plan_receiving_user
-      (override_plan_id, user_id, allocation)
-      VALUES (:planId, :userId, :allocation)
-      ON CONFLICT (override_plan_id, user_id)
-        DO UPDATE
-          SET allocation = EXCLUDED.allocation
-      RETURNING override_plan_id)
-    UPDATE brs.override_plan
-    SET updated  = now(),
-      updated_by = :updatedBy
-    WHERE id = :planId
-    ]]></overridePlan.updateReceivingUser>
-
-    <overridePlan.deleteReceivingUser><![CDATA[
-    WITH delete_user AS (
-      DELETE FROM brs.override_plan_receiving_user
-      WHERE override_plan_id = :planId AND user_id = :userId
-    )
-    UPDATE brs.override_plan
-    SET updated  = now(),
-      updated_by = :updatedBy
-    WHERE id = :planId
-    ]]></overridePlan.deleteReceivingUser>
-
-    <overridePlan.setEndDateAssignedUser><![CDATA[
-    WITH active_user_plans AS (SELECT opau.id,
-                                      op.id   AS plan_id,
-                                      op.name AS plan_name,
-                                      ops.status_type,
-                                      opau.user_id,
-                                      opau.start_date,
-                                      opau.end_date
-                               FROM brs.override_plan op
-                                      INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
-                                      INNER JOIN brs.override_plan_assigned_user opau
-                                        ON op.id = opau.override_plan_id AND opau.user_id = :userId
-                               WHERE op.status_id <> 3
-                                 AND opau.end_date IS NULL
-                                 AND opau.start_date <= :startDate)
-    UPDATE brs.override_plan_assigned_user u
-    SET end_date = :startDate :: DATE - INTERVAL '1 day'
-    FROM active_user_plans p
-    where u.id = p.id
-    ]]></overridePlan.setEndDateAssignedUser>
-
-    <overridePlan.insertAssignedUser><![CDATA[
-    WITH new_user AS (
-      INSERT INTO brs.override_plan_assigned_user
-             (override_plan_id, user_id, start_date, end_date)
-      VALUES (:planId, :userId, :startDate, :endDate)
-      RETURNING override_plan_id
-    )
-    UPDATE brs.override_plan
-    SET updated  = now(),
-      updated_by = :updatedBy
-    WHERE id = :planId
-    ]]></overridePlan.insertAssignedUser>
-
-    <overridePlan.updateAssignedUser><![CDATA[
-    WITH update_assigned_user AS (UPDATE brs.override_plan_assigned_user
-    SET start_date = :startDate,
-      end_date     = :endDate
-    WHERE id = :id)
-    UPDATE brs.override_plan
-    SET updated    = now(),
-        updated_by = :updatedBy
-    WHERE id = :planId;
-    ]]></overridePlan.updateAssignedUser>
-
-    <overridePlan.deleteAssignedUser><![CDATA[
-    WITH delete_user AS (
-      DELETE FROM brs.override_plan_assigned_user
-      WHERE override_plan_id = :planId AND id = :userId
-    )
-    UPDATE brs.override_plan
-    SET updated  = now(),
-      updated_by = :updatedBy
-    WHERE id = :planId
-    ]]></overridePlan.deleteAssignedUser>
-
-    <overridePlan.updateMilestone><![CDATA[
-      WITH new_milestone_alloc AS (
-      INSERT INTO brs.override_plan_milestone_allocation
-      (override_plan_id, milestone_query_condition_id, allocation)
-      VALUES (:planId, :queryConditionId, :allocation)
-      ON CONFLICT (override_plan_id, milestone_query_condition_id)
-        DO UPDATE
-          SET
-            allocation = EXCLUDED.allocation
-      RETURNING override_plan_id)
-    UPDATE brs.override_plan
-    SET updated  = now(),
-      updated_by = :updatedBy
-    WHERE id = :planId
-    ]]></overridePlan.updateMilestone>
-
-    <overridePlan.deleteMilestone><![CDATA[
-        WITH delete_milestone_alloc AS (
-          DELETE FROM brs.override_plan_milestone_allocation
-          WHERE override_plan_id = :planId AND milestone_query_condition_id = :queryConditionId)
-        UPDATE brs.override_plan
-        SET updated  = now(),
-          updated_by = :updatedBy
-        WHERE id = :planId;
-    ]]></overridePlan.deleteMilestone>
-
-    <overridePlan.approve><![CDATA[
-    UPDATE brs.override_plan
-    SET approved  = now(),
-      approved_by = :approvedBy,
-      updated     = now(),
-      updated_by  = :approvedBy,
-      status_id   = :statusId
-    WHERE id = :planId
-    ]]></overridePlan.approve>
-
-    <overridePlan.inactivate><![CDATA[
-    UPDATE brs.override_plan
-    SET updated     = now(),
-      updated_by  = :updatedBy,
-      status_id   = :statusId
-    WHERE id = :planId
-    ]]></overridePlan.inactivate>
-
-    <overridePlan.listAll><![CDATA[
-    SELECT array_to_json(array_agg(row_to_json(t)))
-    FROM (
-        SELECT
-          op.id,
-          op.name,
-          op.description,
-          op.total,
-          ops.status_type AS status,
-          count(au.*)
-            FILTER (WHERE au.start_date <= now() AND (end_date IS NULL OR au.end_date > now()))
-             as "activeAssignedUsers",
-          coalesce((
-                SELECT array_to_json(array_agg(row_to_json(u)))
-                FROM (
-                       SELECT
-                         opu.user_id as "userId",
-                         u.first_name || ' ' || u.last_name AS name,
-                         u.employee_id                      AS "employeeId",
-                         p.position,
-                         p.id                               AS "positionId"
-                       FROM brs.override_plan_receiving_user opu
-                         INNER JOIN flow."user" u ON opu.user_id = u.id
-                         INNER JOIN flow.user_position up ON u.id = up.user_id
-                         INNER JOIN flow.position p ON up.position_id = p.id
-                       WHERE override_plan_id = op.id
-                             AND up.archived IS NOT TRUE AND up.primary_flag IS TRUE
-                     ) u), '[]') AS "receivingUsers",
-          coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(u)))
-                    FROM (
-                           SELECT
-                             opa.id,
-                             opa.user_id as "userId",
-                             u.first_name || ' ' || u.last_name AS name,
-                             u.employee_id                      AS "employeeId",
-                             p.position,
-                             p.id                               AS "positionId",
-                             opa.start_date                     AS "startDate",
-                             opa.end_date                       AS "endDate"
-                           FROM brs.override_plan_assigned_user opa
-                             INNER JOIN flow."user" u ON opa.user_id = u.id
-                             INNER JOIN flow.user_position up ON u.id = up.user_id
-                             INNER JOIN flow.position p ON up.position_id = p.id
-                           WHERE opa.override_plan_id = op.id
-                                 AND up.archived IS NOT TRUE AND up.primary_flag IS TRUE
-
-                         ) u
-                     ), '[]')           AS "assignedUsers"
-
-        FROM brs.override_plan op
-          INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
-          LEFT JOIN brs.override_plan_assigned_user au ON op.id = au.override_plan_id
-        GROUP BY op.id, op.name, op.description, op.total, ops.status_type
-        ORDER BY op.name
-     ) t
-    ]]></overridePlan.listAll>
-
-    <overridePlan.findById><![CDATA[
-    SELECT row_to_json(t)
-FROM (SELECT op.id,
-             op.name,
-             op.description,
-             op.total,
-             ops.status_type                                                           AS status,
-             op.position_id                                                             AS "positionId",
-             (SELECT row_to_json(u)
-              FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
-                    FROM flow."user" u
-                    WHERE u.id = op.created_by) u)                                      AS "createdBy",
-             op.created,
-             (SELECT row_to_json(u)
-              FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
-                    FROM flow."user" u
-                    WHERE u.id = op.updated_by) u)                                      AS "updatedBy",
-             op.updated,
-             (SELECT row_to_json(u)
-              FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
-                    FROM flow."user" u
-                    WHERE u.id = op.approved_by) u)                                     AS "approvedBy",
-             op.approved,
-             coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
-                       FROM (SELECT opu.user_id                        AS "userId",
-                                    u.first_name || ' ' || u.last_name AS name,
-                                    u.employee_id                      AS "employeeId",
-                                    (select
-                                         string_agg(DISTINCT p.position, ', ')
-                                     from flow.user_position up
-                                              inner join flow.position p on p.id = up.position_id
-                                     where up.user_id = u.id
-
-                                    )                                  AS position
-                             FROM brs.override_plan_receiving_user opu
-                                      INNER JOIN flow."user" u ON opu.user_id = u.id
-                             WHERE override_plan_id = op.id
-                             GROUP BY 1, 2, 3, 4) u), '[]')                          AS "receivingUsers",
-             coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
-                       FROM (SELECT opa.id,
-                                    opa.user_id                        AS "userId",
-                                    u.first_name || ' ' || u.last_name AS name,
-                                    u.employee_id                      AS "employeeId",
-                                    u.hire_date                        AS "hireDate",
-                                    opa.start_date                     AS "startDate",
-                                    opa.end_date                       AS "endDate"
-                             FROM brs.override_plan_assigned_user opa
-                                      INNER JOIN flow."user" u ON opa.user_id = u.id
-                                      INNER JOIN flow.user_position up ON u.id = up.user_id
-                                      INNER JOIN flow.position p ON up.position_id = p.id
-                             WHERE opa.override_plan_id = op.id
-                             GROUP BY 1, 2, 3, 4, 5, 6, 7) u), '[]')                    AS "assignedUsers"
-      FROM brs.override_plan op
-               INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
-      WHERE op.id = :id) t;
-    ]]></overridePlan.findById>
-
-    <overridePlan.findUserHistory><![CDATA[
-      SELECT coalesce(array_to_json(array_agg(row_to_json(aup))), '[]')
-      FROM (
-            SELECT opau.id,
-                   op.id           AS "planId",
-                   op.name         AS "planName",
-                   ops.status_type AS status,
-                   opau.start_date AS "startDate",
-                   opau.end_date   AS "endDate"
-            FROM brs.override_plan op
-                   INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
-                   INNER JOIN brs.override_plan_assigned_user opau ON op.id = opau.override_plan_id AND opau.user_id = :userId
-            ORDER BY opau.end_date DESC
-              ) aup
-    ]]></overridePlan.findUserHistory>
-
-    <overridePlan.findUsers><![CDATA[
-      SELECT coalesce(array_to_json(array_agg(row_to_json(results))), '[]')
-      FROM (SELECT u.id                                                             AS "userId",
-             u.first_name || ' ' || u.last_name                               AS name,
-             u.employee_id                                                    AS "employeeId",
-             u.email,
-             u.hire_date as "hireDate",
-             (SELECT string_agg( distinct position, ', ')
-              FROM brs.user_position up1
-                     INNER JOIN brs.position p1 ON p1.id = up1.position_id
-              WHERE up1.user_id = u.id
-                AND CASE WHEN :positions = 1
-                              THEN p1.id IN (1, 2, 3)
-                         WHEN :positions = 4
-                              THEN p1.id IN (4, 5, 6)
-                        END)                                                  AS position,
-             coalesce((SELECT array_to_json(array_agg(row_to_json(aup)))
-                       FROM (SELECT op.id,
-                                    op.name,
-                                    ops.status_type AS status,
-                                    opau.start_date AS "startDate",
-                                    opau.end_date   AS "endDate"
-                             FROM brs.override_plan op
-                                    INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
-                                    INNER JOIN brs.override_plan_assigned_user opau
-                                      ON op.id = opau.override_plan_id AND opau.user_id = u.id
-                             WHERE op.status_id <> 3
-                                     AND opau.end_date IS NULL
-                                OR opau.end_date >= current_date) aup), '[]') AS "assignedUserPlans"
-      FROM brs."user" u
-        WHERE (
-                lower(trim(first_name)) || '' || lower(trim(last_name)) LIKE :search
-                  OR lower(trim(last_name)) LIKE :search
-                  OR lower(trim(u.email)) LIKE :search
-                )
-        AND (CASE WHEN :positions:: INT IS NOT NULL
-                       THEN u.id IN (SELECT up.user_id
-                                     FROM brs.user_position up
-                                            INNER JOIN brs.position p ON p.id = up.position_id
-                                     WHERE  (
-                                               CASE WHEN :positions = 1
-                                                         THEN p.id IN (1, 2, 3)
-                                                    WHEN :positions = 4
-                                                         THEN p.id IN (4, 5, 6) END)) ELSE 1 = 1 END)
-
-      ORDER BY first_name, last_name
-      LIMIT 10) results;
-    ]]></overridePlan.findUsers>
-
-    <overridePlan.getAssignedUsers><![CDATA[
-    SELECT coalesce(array_to_json(array_agg(row_to_json(u))), '[]')
-    FROM (SELECT opa.id,
-                 opa.user_id                        AS "userId",
-                 u.first_name || ' ' || u.last_name AS name,
-                 u.employee_id                      AS "employeeId",
-                 u.hire_date                        AS "hireDate",
-                 opa.start_date                     AS "startDate",
-                 opa.end_date                       AS "endDate",
-                 string_agg(DISTINCT p.position, ', ') FILTER (
-                 WHERE
-                   CASE WHEN op.position_id = 1
-                     THEN up.position_id IN (1,2,3)
-                   WHEN op.position_id = 4
-                     THEN up.position_id IN (4,5,6)
-                   END
-                 )                                  AS position
-          FROM brs.override_plan_assigned_user opa
-                 INNER JOIN brs.override_plan op ON opa.override_plan_id = op.id
-                 INNER JOIN brs."user" u ON opa.user_id = u.id
-                 INNER JOIN brs.user_position up ON u.id = up.user_id
-                 INNER JOIN brs.position p ON up.position_id = p.id
-          WHERE op.id = :planId
-          AND up.active IS TRUE
-          GROUP BY 1, 2, 3, 4, 5, 6, 7) u
-    ]]></overridePlan.getAssignedUsers>
-
-    <overridePlan.getReceivingUsers><![CDATA[
-    SELECT coalesce(array_to_json(array_agg(row_to_json(u))), '[]')
-    FROM (SELECT opu.user_id                        AS "userId",
-             opu.allocation,
-             u.first_name || ' ' || u.last_name AS name,
-             u.employee_id                      AS "employeeId",
-             up.active,
-             string_agg(DISTINCT p.position, ', ') FILTER (
-             WHERE
-               CASE WHEN op.position_id = 1
-                 THEN up.position_id IN (1,2,3)
-               WHEN op.position_id = 4
-                 THEN up.position_id IN (4,5,6)
-               END
-             )                                  AS position
-      FROM brs.override_plan_receiving_user opu
-             INNER JOIN brs.override_plan op ON opu.override_plan_id = op.id
-             INNER JOIN brs."user" u ON opu.user_id = u.id
-             INNER JOIN brs.user_position up ON u.id = up.user_id
-             INNER JOIN brs.position p ON up.position_id = p.id
-      WHERE op.id = :planId
-        AND up.active IS TRUE
-      GROUP BY 1, 2, 3, 4, 5) u;
-    ]]></overridePlan.getReceivingUsers>
-
-    <overridePlan.export><![CDATA[
-        select op.name,
-               u.first_name||' '||u.last_name closer,
-               opau.start_date,
-               opau.end_date,
-               op.total,
-               ops.status_type,
-               (select allocation
-                from brs.override_plan_milestone_allocation opma
-                inner join brs.milestone_query_condition mqc
-                    on opma.milestone_query_condition_id = mqc.id and milestone_id = 1
-                where opma.override_plan_id = op.id) as milestone_1_allocation,
-               (select allocation
-                from brs.override_plan_milestone_allocation opma
-                inner join brs.milestone_query_condition mqc
-                    on opma.milestone_query_condition_id = mqc.id and milestone_id = 2
-                where opma.override_plan_id = op.id) as milestone_2_allocation,
-               json_object_agg(u1.first_name||' '||u1.last_name,
-                               opru.allocation) receiving_users
-        from brs.override_plan op
-         inner join brs.override_plan_assigned_user opau
-            on opau.override_plan_id = op.id
-        inner join brs.user u
-            on u.id = opau.user_id
-        inner join brs.override_plan_status ops
-            on ops.id = op.status_id
-        inner join brs.override_plan_receiving_user opru
-            on opru.override_plan_id = op.id
-        inner join brs.user u1
-            on u1.id = opru.user_id
-        group by op.name, closer, opau.start_date, opau.end_date, total, status_type, milestone_1_allocation, milestone_2_allocation;
-    ]]></overridePlan.export>
 
     <commissionAdmin.getMilestoneList><![CDATA[
     select

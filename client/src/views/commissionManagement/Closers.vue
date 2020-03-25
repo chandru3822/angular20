@@ -32,14 +32,16 @@
                   {{item.commissionPlan}}:<br/>
                   {{item.commissionDescription}}
                 </v-btn>
-                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 1)">Add to Commission</v-btn>
+                <div v-else>--</div>
+<!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 1)">Add to Commission</v-btn>-->
               </td>
               <td class="text-left">
                 <v-btn text v-if="item.overridePlan !== null" @click="goToDetails(item, true)">
                   {{item.overridePlan}}:<br/>
                   {{item.overrideDescription}}
                 </v-btn>
-                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 2)">Assign to Override</v-btn>
+                <div v-else>--</div>
+<!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 2)">Assign to Override</v-btn>-->
               </td>
               <td class="text-left">
                 <span v-if="item.receivingPlans && item.receivingPlans.length > 0">
@@ -48,7 +50,8 @@
                     {{rp.receivingDescription}}
                   </v-btn>
                 </span>
-                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 3)">Clone/Create New Plan</v-btn>
+                <div v-else>--</div>
+<!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 3)">Clone/Create New Plan</v-btn>-->
               </td>
               <td class="text-left">{{item.hasCommissionPlanGap ? 'Yes' : 'No'}}</td>
             </tr>

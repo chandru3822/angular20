@@ -7,7 +7,43 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="button-container">
-          <v-dialog
+          <v-dialog v-if="override.status !== 'ACTIVE'"
+                    v-model="deleteConfirm"
+                    width="500">
+            <template #activator="{ on }">
+              <v-btn color="red" dark class="mr-2" v-on="on">
+                Delete
+              </v-btn>
+            </template>
+            <v-card>
+              <v-card-title
+                class="headline grey lighten-2"
+                primary-title>
+                Confirm
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                Are you sure you want to delete this plan?
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  @click="deleteConfirm = false">
+                  No
+                </v-btn>
+                <v-btn
+                  color="primary"
+                  text
+                  @click="deleteConfirm = true; deleteOverride()">
+                  Yes
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-else
               v-model="inactivateConfirm"
               width="500">
             <template #activator="{ on }">
@@ -37,13 +73,63 @@
                 <v-btn
                     color="primary"
                     text
-                    @click="inactivateConfirm = true; inactivatePlan()">
+                    @click="inactivateConfirm = true; inactivateOverride()">
                   Yes
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-btn color="primaryCustom" dark  @click="cloneOverride()">
+          <v-dialog v-if="override"
+                    v-model="cloneDialog"
+                    width="600"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn color="primaryCustom" dark v-on="on">
+                Clone
+              </v-btn>
+            </template>
+
+            <v-card>
+              <v-card-title
+                class="headline grey lighten-2"
+                primary-title
+              >
+                Clone {{override.name}}
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                <div class="mb-2">
+                  This option allows you to copy an entire plan over. <br/>
+                  By default, no users are copied over.
+                </div>
+                Users to Copy:
+                <div v-for="u in override.receivingUsers">
+                  <input type="checkbox" class="mr-2" v-model="u.selected">
+                  {{ u.name }}
+                </div>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  text
+                  @click="cloneDialog = false; cloneStartDate = null"
+                >
+                  Cancel
+                </v-btn>
+                <v-btn
+                  color="primaryCustom"
+                  class="white--text"
+                  @click="cloneDialog = false; cloneOverride(override.receivingUsers)"
+                >
+                  Clone
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-btn color="primaryCustom" dark v-else @click="cloneOverride()">
             Clone
           </v-btn>
         </div>
@@ -82,6 +168,7 @@
                             label="Status"
                             v-model="override.status"></v-text-field>
               <v-text-field text
+                            v-if="override.createdBy"
                             label="Created By"
                             v-model="override.createdBy.name"></v-text-field>
               <v-text-field text
@@ -89,6 +176,7 @@
                             v-model="override.approved"></v-text-field>
               <v-text-field text
                             label="Approved By"
+                            v-if="override.approvedBy"
                             v-model="override.approvedBy.name"></v-text-field>
             </v-card>
           </v-col>
@@ -125,7 +213,8 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.name}}</td>
               <td class="text-left">{{item.employeeId}}</td>
-              <td class="text-left">{{item.allocation}}</td>
+              <td class="text-left">{{item.m1Allocation}}</td>
+              <td class="text-left">{{item.m2Allocation}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -175,21 +264,40 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
+  import Vue2Filters from 'vue2-filters'
+  import moment from 'moment'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'Override',
+    mixins: [Vue2Filters.mixin],
     components: {
-      Snackbar
+      Snackbar,
+      DatetimePickerInput
     },
     created() {
       this.getOverrideDetails()
+    },
+    watch: {
+      $route(to, from) {
+        // react to route changes...
+        // this.$router.push({name: 'commission', params: {id: to.params.id}})
+        // this.planId = to.params.id
+        this.overrideId = to.params.id
+        this.getOverrideDetails()
+      },
     },
     data() {
       return {
         snackbar: {},
         dataLoading: true,
+        cloneDialog: false,
+        moment,
+        cloneStartDate: null,
+        timezone: this.$store.state.user.details.timezone.value,
         inactivateConfirm: false,
+        deleteConfirm: false,
         overrideId: this.$route.params.id,
         headers: [
           {text: 'Name', value: 'name', show: true},
@@ -200,7 +308,8 @@
         receivingHeaders: [
           {text: 'Name', value: 'name', show: true},
           {text: 'Employee ID', value: 'employeeId', show: true},
-          {text: 'Allocation', value: 'allocation', show: true},
+          {text: 'M1 Allocation', value: 'm1Allocation', show: true},
+          {text: 'M2 Allocation', value: 'm2Allocation', show: true},
         ],
         override: {
           approvedBy: {},
@@ -230,30 +339,49 @@
       goToDetails (item) {
         console.log('handle going to item', item)
       },
-      // async deleteOverride () {
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     const {data} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Deleting Override')
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // },
-      async cloneOverride () {
+      async deleteOverride () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await deleteRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          await deleteRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Override Plan Deleted')
+          this.$router.push({name: 'overrides'})
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Override')
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Override Plan')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      inactivatePlan () {
+      async cloneOverride (users) {
+        console.log('CLONE', this.override)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            receivingUsers: users ? users.filter(u => u.selected).map(u => u.userId) : [],
+            assignedUsers: [],
+            backdateApprovalCreds: null
+          }
+          const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/clone`, params, 'blueraven')
+          console.log('randaLogger cloned Plan', data)
+          this.$router.push({name: 'override', params: {id: data.id}})
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Cloning Override Plan')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async inactivateOverride () {
         console.log('INACTIVATE', this.override)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/commissionManagement/overrides/${this.override}/inactivate`, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Override Plan Inactivated')
+          this.$router.push({name: 'overrides'})
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Inactivating Override Plan')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     }
   }

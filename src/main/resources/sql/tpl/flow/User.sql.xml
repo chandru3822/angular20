@@ -14,12 +14,14 @@
                 upv.user_position_id,
                 upv.phone_number,
                 upv.company_user_status_type_id,
+                cust.user_status_type,
                 upv.has_access,
                 uphv.hierarchy
       from flow.user_positions_vw upv
             inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
                                                      and uphv.position_id = upv.position_id
                                                      and uphv.org_id = upv.org_id
+            inner join flow.company_user_status_type cust on cust.id = upv.company_user_status_type_id
       where upv.company_id = :companyId
         and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
@@ -36,7 +38,8 @@
              u.email,
              null,null,
              null,null,null,
-             null,null,ust.company_user_status_type_id,cust.has_access,null
+             null,null,ust.company_user_status_type_id,
+             cust.user_status_type, cust.has_access,null
       from flow."user" u
                inner join flow.user_company uc on u.id = uc.user_id
                inner join flow.company_user_status_type cust on cust.company_id = uc.company_id
@@ -67,6 +70,7 @@
             inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
                                                      and uphv.position_id = upv.position_id
                                                      and uphv.org_id = upv.org_id
+            inner join flow.company_user_status_type cust on cust.id = upv.company_user_status_type_id
         where upv.company_id = :companyId
           and upv.position_level = 0
           and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'

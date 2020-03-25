@@ -320,6 +320,7 @@
       },
     },
     created () {
+      // getStatuses calls getUsers because we have to know company statuses before we can filter the list
       this.getStatuses()
       this.getPositions()
       this.getOrgFilters(true)
@@ -360,6 +361,7 @@
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
+          this.dataLoading = false
           this.users = []
         }
       },
@@ -457,7 +459,9 @@
         try {
           const {data} = await getRequest(`/user/statuses`)
           this.statuses = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
+          this.getUsers()
+          // this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
