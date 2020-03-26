@@ -5,6 +5,7 @@ import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.company.blueraven.services.AhjPermitService;
 import com.albatross.api.v1.company.blueraven.services.AhjService;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.Optional;
  * Created by Joseph Canto on 2019-07-18.
  */
 @RestController
+@Hidden
 @RequestMapping(value = "/api/v1/company/blueraven/ahj/{ahjId}/permit")
 public class AhjPermitController {
     @Autowired

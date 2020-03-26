@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@Hidden
 @RequestMapping(value = "/api/v1/company/blueraven/customFieldGroup")
 public class BlueravenCustomFieldGroupController {
 

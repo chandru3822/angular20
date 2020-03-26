@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers;
 import com.albatross.api.v1.company.blueraven.models.ahj.cycle_times.AhjPermitCycleTimeStats;
 import com.albatross.api.v1.company.blueraven.services.AhjPermitService;
 import com.albatross.api.utils.ServiceDateUtils;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
+@Hidden
 @RequestMapping(value = "/api/v1/company/blueraven/ahj/{ahjId}/permitCycleTimes")
 public class AhjPermitCycleTimesController {
     @Autowired
