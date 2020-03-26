@@ -600,6 +600,11 @@ export default new Router({
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Accounting.vue'),
             }, {
               path: 'payroll',
+              name: 'payrolls',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payrolls.vue'),
+            }, {
+              path: 'payroll/:id',
+              name: 'payroll',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payroll.vue'),
             }, {
               path: 'admin',

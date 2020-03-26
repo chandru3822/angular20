@@ -65,6 +65,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers("/auth/login").permitAll()
         // todo: don't permit all api requests
         .antMatchers("/api/v1/**").permitAll()
+        .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
         .anyRequest().authenticated()
         .and()
         .exceptionHandling()
