@@ -280,7 +280,7 @@ public class CommissionManagementService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", id);
 
-        Optional<String> users = sqlCache.get("commissionManagement.getCommisionPlanUsers", params, new SingleColumnRowMapper<>(String.class));
+        Optional<String> users = sqlCache.get("commissionManagement.getCommissionPlanUsers", params, new SingleColumnRowMapper<>(String.class));
         return users.orElse("[]");
     }
 
@@ -439,8 +439,7 @@ public class CommissionManagementService {
         return false;
     }
 
-    public void insertUser(Long planId, PlanUser user)
-            throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
+    public void insertUser(Long planId, PlanUser user) throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
         final BackdatedPlanApprovalCredentials approvalCreds = user.getApprovalCreds();
         final Date newStartDate = user.getStartDate();
         boolean isBackdatedPlan = newStartDate != null

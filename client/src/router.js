@@ -34,10 +34,16 @@ export default new Router({
           next('/users')
         } else {
           if(from.name !== 'login') {
-            const {data} = await getUser()
-            store.commit(UserMutations.SET_DETAILS, data)
+            try {
+              const {data} = await getUser()
+              store.commit(UserMutations.SET_DETAILS, data)
+              next()
+            } catch (e) {
+              next('/login')
+            }
+          } else {
+            next()
           }
-          next()
         }
       },
       children: [{
@@ -583,6 +589,7 @@ export default new Router({
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commission.vue'),
             }, {
               path: 'overrides',
+              name: 'overrides',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Overrides.vue'),
             }, {
               path: 'overrides/:id',
