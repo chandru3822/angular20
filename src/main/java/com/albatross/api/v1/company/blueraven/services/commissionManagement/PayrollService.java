@@ -186,7 +186,7 @@ public class PayrollService {
     public String getPayrollSearchDetail(Long payrollId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("payrollId", payrollId);
-        Optional<String> bySql = sqlCache.get("plan.getPayrollSearchDetail", params, new SingleColumnRowMapper<>(String.class));
+        Optional<String> bySql = sqlCache.get("payroll.getPayrollSearchDetail", params, new SingleColumnRowMapper<>(String.class));
         return bySql.orElse("[]");
     }
 

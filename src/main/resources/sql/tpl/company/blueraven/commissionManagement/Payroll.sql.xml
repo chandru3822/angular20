@@ -14,7 +14,7 @@
                  p.period_end                                              AS "periodEnd",
                  p.paid_date                                               AS "paidDate",
                  p.description,
-                 p.selected_deal_ids                                       AS "selectedDealIds",
+                 p.selected_project_ids                                       AS "selectedProjectIds",
                  ps.payroll_status                                         AS "status",
                  p.current,
                  coalesce((SELECT ARRAY_TO_JSON(array_agg(row_to_json(history)))
@@ -22,36 +22,38 @@
                                         h.action_date                        AS "actionDate",
                                         concat(u.first_name,' ',u.last_name) AS "actionUser"
                                  FROM brs.payroll_action_history h
-                                        INNER JOIN brs.payroll_action_type pat ON H.payroll_action_type_id = pat.id
-                                        INNER JOIN brs."user" u ON h.user_id = u.id
+                                          INNER JOIN brs.payroll_action_type pat ON H.payroll_action_type_id = pat.id
+                                          INNER JOIN flow."user" u ON h.user_id = u.id
                                  WHERE h.payroll_id = p.id) history),'[]') AS history
           FROM brs.payroll p
-                 INNER JOIN brs.payroll_status ps ON p.payroll_status_id = ps.id
+                   INNER JOIN brs.payroll_status ps ON p.payroll_status_id = ps.id
           WHERE p.id = :payrollId) payroll
     ]]></payroll.getById>
 
     <payroll.search><![CDATA[
         SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-        FROM (SELECT p.period_end,
+        FROM (SELECT p.period_end as "periodEnd",
                      p.id,
                      p.description,
                      (SELECT sum(dcs1.current_pay)
-                      FROM brs.deal_commission_snapshot dcs1
-                      WHERE dcs1.payroll_id = p.id) AS current_pay
+                      FROM brs.project_commission_snapshot dcs1
+                      WHERE dcs1.payroll_id = p.id) AS "currentPay"
               FROM brs.payroll p
-                     INNER JOIN brs.deal_commission_snapshot dcs ON p.id = dcs.payroll_id
-                     INNER JOIN brs.deal d ON dcs.deal_id = d.id
-                     LEFT JOIN brs.deal_override_commission_snapshot docs ON docs.deal_commission_snapshot_id = dcs.id
+                       INNER JOIN brs.project_commission_snapshot dcs ON p.id = dcs.payroll_id
+                       INNER JOIN flow.project prj ON dcs.project_id = prj.id
+                       LEFT JOIN flow.user_project up ON up.project_id = p.id
+                       LEFT join flow.user_position ups on ups.id = up.user_position_id AND ups.position_id = 1
+                       LEFT JOIN brs.project_override_commission_snapshot docs ON docs.project_commission_snapshot_id = dcs.id
               WHERE CASE WHEN :startDate:: DATE IS NOT NULL
-                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+                             THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
                 AND CASE WHEN :customerName:: TEXT IS NOT NULL
-                              THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                             THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
                          ELSE 1 = 1 END
                 AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
-                              THEN d.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
+                             THEN ups.user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
                          ELSE 1 = 1 END
                 AND CASE WHEN :dealId:: INTEGER IS NOT NULL
-                              THEN d.deal_base_oid = :dealId:: INTEGER ELSE 1 = 1 END
+                             THEN p.id = :dealId:: INTEGER ELSE 1 = 1 END
 
               GROUP BY p.id, p.period_end
               ORDER BY p.period_end desc) AS sub_rows
@@ -146,4 +148,49 @@ FROM (SELECT *
     FROM brs.payroll p
     WHERE p.id = :payrollId
     ]]></payroll.getOverrideDetailsByUser>
+
+    <payroll.getPayrollSearchDetail><![CDATA[
+        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+        FROM (
+                 SELECT s.cancelled,
+                        s.commission_adjustment as "commissionAdjustment",
+                        s.commission_paid_to_date as "commissionPaidToDate",
+                        s.commission_plan as "commissionPlan",
+                        s.commission_plan_id as "commissionPlanId",
+                        s.commissions_earned as "commissionsEarned",
+                        s.current_pay as "currentPay",
+                        s.current_pay_commissions as "currentPayCommissions",
+                        s.current_pay_overrides as "currentPayOverrides",
+                        s.customer_name as "customerName",
+                        s.project_id as "projectId",
+                        s.deal_total_value as "dealTotalValue",
+                        s.deposit,
+                        s.final_design_signed as "finalDesignSigned",
+                        s.financial_agreement_sent as "financialAgreementSent",
+                        s.hoi,
+                        s.id,
+                        s.install_agreement_signed as "installAgreementSigned",
+                        s.override_adjustment as "overrideAdjustment",
+                        s.override_earned as "overrideEarned",
+                        s.override_plan as "overridePlan",
+                        s.override_plan_id as "overridePlanId",
+                        s.payroll_id as "payrollId",
+                        s.percent_of_cash_deposit as "percentOfCashDeposit",
+                        s.remaining_value as "remainingValue",
+                        s.remaining_value_commissions as "remainingValueCommissions",
+                        s.remaining_value_overrides as "remainingValueOverrides",
+                        s.sales_rep as "salesRep",
+                        s.sales_rep_id as "salesRepId",
+                        s.sc,
+                        s.source,
+                        s.stage,
+                        s.system_size as "systemSize",
+                        s.total_commissions as "totalCommissions",
+                        s.updated
+                 FROM brs.project_commission_snapshot s
+                          INNER JOIN flow.project p ON s.project_id = p.id
+                 WHERE payroll_id = :payrollId
+             ) AS sub_rows
+
+    ]]></payroll.getPayrollSearchDetail>
 </xml>

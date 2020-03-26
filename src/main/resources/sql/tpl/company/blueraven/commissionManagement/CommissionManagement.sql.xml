@@ -9,52 +9,6 @@
         where active is true
     ]]></commissionManagement.findActiveMilestones>
 
-    <commissionManagement.getPayrollSearchDetail><![CDATA[
-        SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-        FROM (
-            SELECT s.cancelled,
-                   s.commission_adjustment,
-                   s.commission_paid_to_date,
-                   s.commission_plan,
-                   s.commission_plan_id,
-                   s.commissions_earned,
-                   s.current_pay,
-                   s.current_pay_commissions,
-                   s.current_pay_overrides,
-                   s.customer_name,
-                   s.deal_id,
-                   s.deal_total_value,
-                   s.deposit,
-                   s.final_design_signed,
-                   s.financial_agreement_sent,
-                   s.hoi,
-                   s.id,
-                   s.install_agreement_signed,
-                   s.override_adjustment,
-                   s.override_earned,
-                   s.override_plan,
-                   s.override_plan_id,
-                   s.payroll_id,
-                   s.percent_of_cash_deposit,
-                   s.remaining_value,
-                   s.remaining_value_commissions,
-                   s.remaining_value_overrides,
-                   s.sales_rep,
-                   s.sales_rep_id,
-                   s.sc,
-                   s.source,
-                   s.stage,
-                   s.system_size,
-                   s.total_commissions,
-                   s.updated,
-                   d.deal_base_oid,
-                   d.proof_of_howmeowners_insurance_required,
-                   d.utility_bill_verified_date
-              FROM brs.deal_commission_snapshot s
-              INNER JOIN brs.deal d ON s.deal_id = d.id
-              WHERE payroll_id = :payrollId
-        ) AS sub_rows
-    ]]></commissionManagement.getPayrollSearchDetail>
 
     <commissionManagement.getUserPayrolls><![CDATA[
         select p.id,
