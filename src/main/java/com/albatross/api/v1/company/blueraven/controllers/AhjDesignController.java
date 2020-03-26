@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesign;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesignDetail;
 import com.albatross.api.v1.company.blueraven.services.AhjDesignService;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +13,7 @@ import java.util.Optional;
  * Created by Joseph Canto on 2019-07-20.
  */
 @RestController
+@Hidden
 @RequestMapping(value = "/api/v1/company/blueraven/ahj/{ahjId}/design")
 public class AhjDesignController {
     @Autowired

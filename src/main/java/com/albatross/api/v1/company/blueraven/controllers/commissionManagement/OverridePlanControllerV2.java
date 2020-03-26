@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.CloserOverrideAssignment;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.OfficeOverrideAllowances;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.OverridePlanServiceV2;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
+@Hidden
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/commissionManagement/overridesV2")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))

@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.CommissionManagementService;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.OverridePlanService;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
+@Hidden
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/commissionManagement/overrides")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))

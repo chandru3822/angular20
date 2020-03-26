@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PayrollSearch;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.PayrollService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -14,6 +15,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 @Slf4j
+@Hidden
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/payroll")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))

@@ -4,6 +4,7 @@ import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.CommissionManagementService;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
+@Hidden
 @RequestMapping(value = "/api/v1/company/blueraven/commissionManagement")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CommissionManagementController {
