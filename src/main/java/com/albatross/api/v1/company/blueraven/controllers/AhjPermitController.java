@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -106,5 +107,10 @@ public class AhjPermitController {
                                  @PathVariable Long permitId,
                                  @PathVariable Long linkId) {
         ahjPermitService.deletePermitLink(ahjId, permitId, linkId);
+    }
+
+    @GetMapping(value = "/searchAhjsByState/{stateId}")
+    public List<AhjPermit> searchAhjsByState(@PathVariable Long stateId) {
+        return ahjPermitService.searchAhjsByState(stateId);
     }
 }

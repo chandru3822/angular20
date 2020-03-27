@@ -6,10 +6,9 @@
          class="cancel-link"
          style="margin-right: 10px"
       >Cancel</a>
-      <v-btn id="save-btn"
+      <v-btn class="white--text mr-0 save-btn"
              color="primaryButton"
-             class="white--text mr-0"
-             @click="saveAhjPermit"
+             @click="saveDialog = true"
       >Save</v-btn>
     </v-col>
 
@@ -454,6 +453,66 @@
         ></AhjContact>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="saveDialog" max-width="700">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Save Changes</span>
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <v-card-text class="pb-0">
+          <v-radio-group v-model="ahjPermit.updateAllInState">
+            <v-radio label="Save changes to this AHJ only" :value="false"></v-radio>
+            <v-radio :label="`Save changes to all AHJs in ${ahjPermit.stateName}`" :value="true"></v-radio>
+          </v-radio-group>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions class="px-6">
+          <v-spacer></v-spacer>
+          <a @click="saveDialog = false"
+             class="cancel-link mr-2"
+          >Cancel</a>
+          <v-btn v-if="ahjPermit.updateAllInState"
+                 class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="saveConfirmDialog = true"
+          >Save</v-btn>
+          <v-btn v-else
+                 class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="updateAhjPermit"
+          >Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="saveConfirmDialog" max-width="500">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Confirm</span>
+        </v-card-title>
+
+        <v-card-text class="pb-0 py-2">
+          Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
+        </v-card-text>
+
+        <v-card-actions class="px-6">
+          <v-spacer></v-spacer>
+          <a @click="saveConfirmDialog = false"
+             class="cancel-link mr-2"
+          >Cancel</a>
+          <v-btn class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="updateAhjPermit"
+          >Yes</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
@@ -485,6 +544,8 @@
       ahjId: null,
       itemType: 'permit',
       snackbar: {},
+      saveDialog: false,
+      saveConfirmDialog: false,
       dataReady: false,
       customFieldGroupAssignments: [],
       approvalRequiredOptions: [{ id: null, name: '' }],
@@ -640,6 +701,7 @@
           this.ahjPermit.printLocations = orderBy(this.ahjPermit.printLocations, location => location.name.toLowerCase())
           this.ahjPermit.servicingFots = orderBy(this.ahjPermit.servicingFots, fot => fot.hierarchy.orgName.toLowerCase())
           this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
+          this.ahjPermit.updateAllInState = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Permit')
@@ -669,8 +731,8 @@
       async getDocuments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const params = {sourceId: this.ahjPermit.id, attachmentSourceTypeId: 1}
-          const {data} = await getRequestWithParams('/document/getSourceAttachments', {params})
+          const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
+          const {data} = await getRequestWithParams('/attachment', {params})
           this.documents = cloneDeep(data)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -685,18 +747,43 @@
           this.dataReady = true
         })
       },
-      async saveAhjPermit() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      async updateAhjPermit() {
+        this.saveDialog = false
+        this.saveConfirmDialog = false
+        let updateAllInState = this.ahjPermit.updateAllInState
+
         try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+
+          if (updateAllInState) {
+            try {
+              const {data} = await getRequest(`/ahj/${this.ahjId}/permit/searchAhjsByState/${this.ahjPermit.stateId}`, 'blueraven')
+              this.ahjPermit.ahjIds = []
+              this.ahjPermit.permitIds = []
+
+              data.forEach(row => {
+                this.ahjPermit.ahjIds.push(row.ahjId)
+                this.ahjPermit.permitIds.push(row.id)
+              })
+            } catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all permits in ' + this.ahjPermit.stateName)
+            }
+          }
+
           this.ahjPermit.customFieldGroups = this.customFieldGroupAssignments
           const {data} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
           this.ahjPermit = cloneDeep(data)
+          this.ahjPermit.updateAllInState = false
           this.reformatDates()
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ Permit saved')
+          let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : 'Permit updated successfully'
+          this.snackbar = getSnackbar('SUCCESS', successMessage)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Permit')
+          let errorMessage = updateAllInState ? 'An error occurred when attempting to update all permits in ' + this.ahjPermit.stateName : 'Failed to update permit'
+          this.snackbar = getSnackbar('ERROR', errorMessage)
         }
+
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -706,8 +793,7 @@
         this.reformatDates()
         this.getPermitCycleTimes()
         this.getCustomFieldGroupAssignmentsForScreen()
-        // turned off for now.
-        // this.getDocuments().then(() => this.dataReady = true)
+        this.getDocuments()
         this.dataReady = true
       })
     }
@@ -751,7 +837,7 @@
       margin: 0 0 0 7px;
     }
   }
-  #save-btn {
+  .save-btn {
     margin: 10px 5px 10px 0;
     text-transform: capitalize;
   }
