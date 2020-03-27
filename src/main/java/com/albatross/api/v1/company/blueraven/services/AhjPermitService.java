@@ -36,6 +36,9 @@ public class AhjPermitService {
   private ObjectMapper om;
 
   @Autowired
+  private AhjService ahjService;
+
+  @Autowired
   private SecurityService securityService;
 
   @Autowired
@@ -67,7 +70,6 @@ public class AhjPermitService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjId", ahjId);
     params.put("depositAmount", permit.getDepositAmount());
     params.put("averagePermitFee", permit.getAveragePermitFee());
     params.put("engineeringLetterRequired", permit.getEngineeringLetterRequired());
@@ -93,17 +95,24 @@ public class AhjPermitService {
     params.put("asBuiltNote", permit.getAsBuiltNote());
     params.put("deliveryNote", permit.getDeliveryNote());
 
-    Long pId;
-    if (permitId == null) {
-      pId = permitId;
-      sqlCache.updateReturningId("ahj.permit.create", params, "id");
-    } else {
-      pId = permitId;
-      params.put("id", permitId);
-      sqlCache.update("ahj.permit.update", params);
-    }
+    if (!permit.getUpdateAllInState()) {
+      params.put("ahjId", ahjId);
+      Long pId;
 
-    blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), pId);
+      if (permitId == null) {
+        pId = permitId;
+        sqlCache.updateReturningId("ahj.permit.create", params, "id");
+      } else {
+        pId = permitId;
+        params.put("id", permitId);
+        sqlCache.update("ahj.permit.update", params);
+      }
+      blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), pId);
+    } else {
+      params.put("ahjIds", permit.getAhjIds());
+      sqlCache.update("ahj.permit.updateAllAhjPermitsInState", params);
+      blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(permit.getCustomFieldGroups(), permit.getPermitIds());
+    }
 
     return getAhjPermitDetailByAhjId(ahjId);
   }
@@ -160,6 +169,12 @@ public class AhjPermitService {
     params.put("currentUser", currentUser.getId());
 
     sqlCache.update("ahj.permit.link.delete", params);
+  }
+
+  public List<AhjPermit> searchAhjsByState(Long stateId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("stateId", stateId);
+    return sqlCache.query("ahj.permit.searchAhjsByState", params, AhjPermit.class);
   }
 
   @SuppressWarnings({"Duplicates", "unchecked", "WeakerAccess"})

@@ -69,42 +69,41 @@
     },
     data () {
       return {
-        documentsCopy: this.documents,
         snackbar: {}
       }
     },
     methods: {
       async saveDocument() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
         try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
           await this.$store.dispatch(Actions.FILE_UPLOAD, {
             file: this.$refs.fileInput.files[0],
             attachmentTypeId: this.documentTypeId,
             sourceId: this.sourceId,
             deleteFirst: false,
             callback: async (document) => {
-              this.documentsCopy.push(document)
-              this.snackbar = getSnackbar('SUCCESS', 'Successfully Uploaded Document')
-              this.$store.commit(AppMutations.SET_LOADING, false)
+              this.documents.push(document)
+              this.snackbar = getSnackbar('SUCCESS', 'Successfully uploaded document')
             }
           })
         } catch(e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Uploading Document')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.snackbar = getSnackbar('ERROR', 'Error uploading document')
         }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
       async deleteDocument(documentId) {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          await deleteRequest(`/document/${documentId}`)
-          let deletedDocumentIndex = this.documentsCopy.findIndex(i => i.id === documentId)
-          this.documentsCopy.splice([deletedDocumentIndex], 1)
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Document')
+          await deleteRequest(`/attachment/${documentId}`)
+          let deletedDocumentIndex = this.documents.findIndex(i => i.id === documentId)
+          this.documents.splice([deletedDocumentIndex], 1)
+          this.snackbar = getSnackbar('SUCCESS', 'Successfully deleted document')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch(e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Document')
+          this.snackbar = getSnackbar('ERROR', 'Error deleting document')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       }
@@ -119,7 +118,7 @@
     align-items: center;
   }
   .list-document {
-    font-size: 0.85em !important;
+    font-size: 1em !important;
     text-decoration: none;
   }
   .list-document:hover {

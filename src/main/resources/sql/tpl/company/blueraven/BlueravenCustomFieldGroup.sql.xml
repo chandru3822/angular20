@@ -74,4 +74,20 @@
     insert into brs.custom_field_value(source_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
     values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
   ]]></blueravenCustomFieldGroup.insertCustomFieldValue>
+
+  <blueravenCustomFieldGroup.bulkUpdateCustomFieldValues>
+    <![CDATA[
+      update brs.custom_field_value
+      set date_value = :dateValue::date,
+          timestamp_value = :timestampValue::timestamp,
+          boolean_value = :booleanValue,
+          text_value = :textValue,
+          numeric_value = :numericValue,
+          int_value = :intValue,
+          int_array_value = :intArrayValue,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+      where source_id in (:sourceIds)
+    ]]>
+  </blueravenCustomFieldGroup.bulkUpdateCustomFieldValues>
 </sql>

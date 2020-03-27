@@ -11,15 +11,18 @@ import java.util.List;
  */
 @Data
 public class AhjPermit {
-    private Long id;
-
+    private Long id, ahjId, stateId;
     private Double averagePermitFee;
     private String engineeringLetterRequired, printLocation, stampedPlan, businessLicense, contractorLicense,
                    otherLicense, submissionNote, revisionNote, asBuiltNote, deliveryNote, approvalTimeline,
                    documentsAvailable, depositAmount, asBuiltFeeAmount, followUpFeeAmount, deliveryFeeAmount,
-                   revisionFeeAmount;
+                   revisionFeeAmount, stateName;
     private Date businessLicenseExpirationDate, contractorLicenseExpirationDate, otherLicenseExpirationDate;
 
-    //this is only used for saving custom field groups
+    // this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;
+
+    // these are only used when updates are performed for all AHJ's in a specified state
+    private Boolean updateAllInState;
+    private List<Long> ahjIds, permitIds;
 }
