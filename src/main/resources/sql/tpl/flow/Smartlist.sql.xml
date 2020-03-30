@@ -1,0 +1,31 @@
+<sql>
+
+<smartlist.get><![CDATA[
+select
+  *
+from flow.smartlist;
+]]></smartlist.get>
+
+<smartlist.getById><![CDATA[
+select
+  *
+from flow.smartlist
+where id = :id;
+]]></smartlist.getById>
+
+<smartlist.add><![CDATA[
+insert into flow.smartlist (name, company_object_type_id, share, owner_id, created_by_id)
+values (:name, :companyObjectTypeId, false, :ownerId, :createdById)
+returning id;
+]]></smartlist.add>
+
+<smartlist.update><![CDATA[
+update flow.smartlist
+set
+  name = :name,
+  company_object_type_id = :companyObjectTypeId
+where
+  id = :id;
+]]></smartlist.update>
+</sql>
+

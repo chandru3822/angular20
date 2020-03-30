@@ -611,6 +611,37 @@ export default new Router({
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Admin.vue'),
             },
           ]
+        }, {
+          path: '/smartlist',
+          component: () => {
+            if(store.getters.userHasFeature('SMARTLIST')) {
+              return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/SmartlistHome.vue')
+            } else  {
+              return accessDenied()
+            }
+          },
+          children: [{
+              path: '',
+              name: 'smartlist',
+              component: () => {
+                if(store.getters.userHasFeature('SMARTLIST')) {
+                  return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/Smartlists.vue')
+                } else  {
+                  return accessDenied()
+                }
+              }
+            }, {
+              path: ':smartlistId',
+              name: 'smartlistEditor',
+              component: () => {
+                if(store.getters.userHasFeature('SMARTLIST')) {
+                  return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/Smartlist.vue')
+                } else  {
+                  return accessDenied()
+                }
+              }
+            }
+          ]
         }
     ],
 
