@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Smartlist;
+import com.albatross.api.v1.flow.model.SmartlistField;
+import com.albatross.api.v1.flow.model.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.services.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,5 +39,20 @@ public class SmartlistController {
   public ResponseEntity<Void> updateSmartlist(@RequestBody Smartlist smartlist) {
     smartlistService.updateSmartlist(smartlist);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @GetMapping(value = "/{smartlistId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFieldSmartlistFields(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistService.getAssignedFields(smartlistId), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{smartlistId}/field", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SmartlistFieldAssignment> addFieldToSmartlist(@RequestBody SmartlistFieldAssignment assignment) {
+    return new ResponseEntity<>(smartlistService.addField(assignment), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/availableFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistField>> getAvailableSmartlistFields() {
+    return new ResponseEntity<>(smartlistService.getAvailableSmartlistFields(), HttpStatus.OK);
   }
 }

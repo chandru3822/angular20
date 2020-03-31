@@ -1,15 +1,27 @@
 <template>
 <v-container id="smartlist-container">
   <v-row>
+
+    <v-col cols="12" class="text-left">
+      <v-btn
+        text
+        class="btn-back"
+        :ripple="false"
+        @click="$router.go(-1)"
+      >
+        Back
+      </v-btn>
+    </v-col>
+
     <v-col cols="12">
       <v-toolbar color="white" class="elevation-1">
         <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-<!--          @TODO: background opacity isn't right. Make it match smartlists.vue -->
           <v-btn
             text
             color="primary"
+            :disabled="showNewFieldForm"
             @click="smartlist.id ? updateSmartlist() : addSmartlist()"
           >
             <v-icon>save</v-icon>
@@ -49,6 +61,98 @@
         </v-card-text>
       </v-card>
     </v-col>
+
+    <v-col cols="6">
+      <v-toolbar class="elevation-1">
+        <v-toolbar-title>Fields</v-toolbar-title>
+        <v-spacer />
+        <v-toolbar-items>
+          <v-btn
+            v-if="!showNewFieldForm"
+            text
+            color="primary"
+            :disabled="!smartlist.id"
+            @click="showNewFieldForm = true"
+          >
+            <v-icon>add</v-icon>
+            <span v-if="!IS_MOBILE">Add Field</span>
+          </v-btn>
+
+          <v-btn
+            v-if="showNewFieldForm"
+            text
+            color="primary"
+            @click="resetNewFieldForm"
+          >
+            <span>Cancel</span>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+
+      <v-card>
+        <v-col v-if="showNewFieldForm">
+          <v-select
+            v-model="newField.fieldTypeId"
+            label="Field Type"
+            :items="newFieldTypes"
+            item-value="id"
+            item-text="name"
+          />
+
+          <v-select
+            v-model="newField.companyObjectTypeId"
+            v-if="newField.fieldTypeId === 1"
+            label="Object Type"
+            :items="companyObjectTypes"
+            item-value="companyObjectTypeId"
+            item-text="objectType"
+          />
+
+          <v-select
+            v-model="newField.smartlistFieldId"
+            v-if="newField.hasOwnProperty('companyObjectTypeId')"
+            label="Field Name"
+            :items="availableSmartlistFields.filter(field => field.companyObjectTypeId === newField.companyObjectTypeId)"
+            item-value="id"
+            item-text="name"
+          />
+
+          <v-btn
+            text
+            color="primary"
+            class=""
+            :disabled="isNewFieldButtonDisabled"
+            @click="addNewField"
+          >
+            <v-icon>save</v-icon>
+            <span v-if="!IS_MOBILE">Save</span>
+          </v-btn>
+        </v-col>
+      </v-card>
+
+      <v-data-table
+        class="elevation-1"
+        :items="assignedFields"
+        dense
+        hide-default-footer
+      >
+        <template #item="{item: field}">
+          <tr>
+            <td class="px-1" style="width: 0.1%">
+              <v-btn
+                style="cursor: move"
+                icon
+                class="sortHandle"
+              >
+                <v-icon>drag_handle</v-icon>
+              </v-btn>
+            </td>
+            <td>{{field.name}}</td>
+            <td>{{field.objectType}}</td>
+          </tr>
+        </template>
+      </v-data-table>
+    </v-col>
   </v-row>
   <Snackbar :snackbar="snackbar" />
 </v-container>
@@ -56,26 +160,52 @@
 
 <script>
 
+import {AppMutations} from '@/stores/AppStore'
 import {IS_MOBILE, getRequest, putRequest, postRequest, logError, getSnackbar} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar'
+import draggable from 'vuedraggable'
 
 export default {
   name: 'Smartlist',
   components: {
-    Snackbar
+    Snackbar,
+    draggable
   },
   data () {
     return {
       IS_MOBILE,
       snackbar: {},
       smartlist: {},
-      companyObjectTypes: []
+      companyObjectTypes: [],
+      availableSmartlistFields: [],
+      newField: {},
+      showNewFieldForm: false,
+      newFieldTypes: [
+        {id: 1, name: 'Smartlist Field'},
+        {id: 2, name: 'Custom Field'}
+      ],
+      assignedFields: []
     }
   },
   async created () {
-    this.getCompanyObjectTypes()
     if (this.$route.params?.smartlistId !== "null") {
       this.getSmartlist()
+      this.getAssignedFields()
+    }
+
+    this.getCompanyObjectTypes()
+    this.getavailableSmartlistFields()
+  },
+  computed: {
+    isNewFieldButtonDisabled () {
+      if (this.newField?.fieldTypeId === 1) {
+        return !(this.newField?.companyObjectTypeId && this.newField?.smartlistFieldId)
+      }
+      else if (this.newField?.fieldTypeId === 2) {
+        return true
+      } else {
+        return true
+      }
     }
   },
   methods: {
@@ -88,6 +218,15 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error fetching smartlist')
       }
     },
+    async getAssignedFields () {
+      try {
+        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}/field`)
+        this.assignedFields = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching assigned fields')
+      }
+    },
     async getCompanyObjectTypes () {
       try {
         const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
@@ -95,6 +234,15 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
+      }
+    },
+    async getavailableSmartlistFields () {
+      try {
+        const {data} = await getRequest(`/smartlist/availableFields`)
+        this.availableSmartlistFields = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
       }
     },
     async addSmartlist () {
@@ -106,6 +254,23 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
       }
     },
+    async addNewField () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/smartlist/${this.smartlist.id}/field`, {
+          smartlistId: this.smartlist.id,
+          smartlistFieldId: this.newField.smartlistFieldId,
+          displayOrder: this.assignedFields.length + 1
+        })
+        this.assignedFields.push(data)
+        this.resetNewFieldForm()
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error adding field to smartlist')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async updateSmartlist () {
       try {
         await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
@@ -114,10 +279,40 @@ export default {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
       }
+    },
+    resetNewFieldForm () {
+      this.showNewFieldForm = false
+      this.newField = {}
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
+
+@import "@/styles/main.scss";
+
+::v-deep {
+  .btn-back {
+
+    text-transform: capitalize;
+    text-decoration: underline;
+
+    &:not(.v-btn--round) {
+      padding: 0;
+    }
+
+    &:hover:before {
+      opacity: 0 !important;
+    }
+
+    .v-btn__content {
+      justify-content: start;
+    }
+  }
+}
+
+tr:nth-of-type(even) {
+  @extend .shaded-row;
+}
 </style>
