@@ -15,8 +15,8 @@
                           label="Customer"
                           v-model="payrollSearch.customerName"></v-text-field>
             <v-text-field text
-                          label="Deal ID"
-                          v-model="payrollSearch.dealId"></v-text-field>
+                          label="Project ID"
+                          v-model="payrollSearch.projectId"></v-text-field>
           </v-col>
           <v-col cols="12" sm="6">
             <DatetimePickerInput
@@ -87,6 +87,9 @@
     components: {
       Snackbar,
       DatetimePickerInput
+    },
+    created() {
+      this.getPayrollData()
     },
     data() {
       return {

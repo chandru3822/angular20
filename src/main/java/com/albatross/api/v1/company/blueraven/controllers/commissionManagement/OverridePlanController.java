@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.CommissionManagementService;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.OverridePlanService;
 import com.google.common.collect.ImmutableMap;
@@ -80,6 +81,12 @@ public class OverridePlanController {
         return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
     }
 
+    @PostMapping(value = "/{planId}/updateUser")
+    public void updatePlanUser(@PathVariable Long planId,
+                               @RequestBody PlanUser planUser) {
+        overridePlanService.updatePlanUser(planId, planUser);
+    }
+
     @PostMapping(value = "/{id}")
     public ResponseEntity<Object> updateOverridePlanDetails(@PathVariable Long id,
                                                             @RequestBody OverridePlanService.OverridePlan overridePlan) {
@@ -156,6 +163,12 @@ public class OverridePlanController {
     @PostMapping(value = "/{id}/receivingUsers")
     public void addReceivingUser(@PathVariable Long id,
                                  @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
+        overridePlanService.addReceivingUser(id, receivingUser);
+    }
+
+    @PostMapping(value = "/{id}/receivingUser")
+    public void updateReceivingUser(@PathVariable Long id,
+                                    @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
         overridePlanService.updateReceivingUser(id, receivingUser);
     }
 

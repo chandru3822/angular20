@@ -123,13 +123,13 @@ public class CommissionManagementController {
         return commissionManagementService.getSources();
     }
 
-    @PostMapping(value = "/notes/{planType}/{planId}/{userId}")
-    public void editNote(@PathVariable Long planType,
-                         @PathVariable Long planId,
-                         @PathVariable Long userId,
-                         @RequestBody String note) {
-        commissionManagementService.editNote(planType, planId, note, userId);
-    }
+//    @PostMapping(value = "/notes/{planType}/{planId}/{userId}")
+//    public void editNote(@PathVariable Long planType,
+//                         @PathVariable Long planId,
+//                         @PathVariable Long userId,
+//                         @RequestBody String note) {
+//        commissionManagementService.editNote(planType, planId, note, userId);
+//    }
 
     @PostMapping(value = "/availableSources")
     public List<GetSource> getAvailableSources(@RequestBody List<Integer> sourceIds) {
@@ -159,10 +159,10 @@ public class CommissionManagementController {
         return commissionManagementService.getClosers();
     }
 
-    @DeleteMapping(value = "/{id}/commissionUser/{userId}")
+    @DeleteMapping(value = "/{id}/commissionUser/{commissionPlanUserId}")
     public void deleteUser(@PathVariable Long id,
-                           @PathVariable Long userId) {
-        commissionManagementService.deleteUser(id, userId);
+                           @PathVariable Long commissionPlanUserId) {
+        commissionManagementService.deleteUser(id, commissionPlanUserId);
     }
 
     @PostMapping(value = "/{planId}/milestone")
@@ -196,6 +196,12 @@ public class CommissionManagementController {
     @DeleteMapping(value = "/{planId}/source")
     public void removeSource(@PathVariable Long planId, @RequestBody Source source) {
         commissionManagementService.removeSource(planId, source);
+    }
+
+    @PostMapping(value = "/{planId}/updateUser")
+    public void updatePlanUser(@PathVariable Long planId,
+                               @RequestBody PlanUser user) {
+        commissionManagementService.updatePlanUser(planId, user);
     }
 
     @PostMapping(value = "/{planId}/users")

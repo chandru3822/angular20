@@ -300,25 +300,35 @@ public class CommissionManagementService {
         sqlCache.update("commissionPlan.approve", params);
     }
 
-    public void editNote(Long planType, Long planId, String note, Long userId) {
-
+    public void updatePlanUser(Long planId, PlanUser planUser) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("note", note);
         params.put("planId", planId);
-        params.put("userId", userId);
+        params.put("userId", planUser.getUserId());
+        params.put("note", planUser.getNote());
+        params.put("endDate", planUser.getEndDate());
 
-        if (planType == 1) {
-            sqlCache.update("commissionPlan.editNote", params);
-        }
-
-        if (planType == 2) {
-            sqlCache.update("overridePlan.editAssignedNote", params);
-        }
-
-        if (planType == 3) {
-            sqlCache.update("overridePlan.editReceivingNote", params);
-        }
+        sqlCache.update("commissionPlan.updatePlanUser", params);
     }
+
+//    public void editNote(Long planType, Long planId, String note, Long userId) {
+//
+//        HashMap<String, Object> params = new HashMap<>();
+//        params.put("note", note);
+//        params.put("planId", planId);
+//        params.put("userId", userId);
+//
+//        if (planType == 1) {
+//            sqlCache.update("commissionPlan.editNote", params);
+//        }
+//
+//        if (planType == 2) {
+//            sqlCache.update("overridePlan.editAssignedNote", params);
+//        }
+//
+//        if (planType == 3) {
+//            sqlCache.update("overridePlan.editReceivingNote", params);
+//        }
+//    }
 
     public void inactivatePlan(Long planId) {
         HashMap<String, Object> params = new HashMap<>();
@@ -518,10 +528,10 @@ public class CommissionManagementService {
         sqlCache.update("commissionManagement.removeMilestone", params);
     }
 
-    public void deleteUser(Long planId, Long userId) {
+    public void deleteUser(Long planId, Long commissionPlanUserId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
-        params.put("userId", userId);
+        params.put("commissionPlanUserId", commissionPlanUserId);
         sqlCache.update("commissionPlan.deleteUser", params);
     }
 

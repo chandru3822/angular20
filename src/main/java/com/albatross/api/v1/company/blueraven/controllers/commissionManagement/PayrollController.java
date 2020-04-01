@@ -82,8 +82,8 @@ public class PayrollController {
     }
 
     @GetMapping(value = "/{payrollId}/adjustments")
-    public String getPayrollAdjustments(@PathVariable Long payrollId, @RequestParam Long dealId) {
-        return payrollService.getPayrollAdjustments(payrollId, dealId);
+    public String getPayrollAdjustments(@PathVariable Long payrollId, @RequestParam Long projectId) {
+        return payrollService.getPayrollAdjustments(payrollId, projectId);
     }
 
     @PostMapping(value = "/{payrollId}/adjustments")

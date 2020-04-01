@@ -11,32 +11,32 @@ import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class DealCommissionLedger {
+public class ProjectCommissionLedger {
     private final List<Entry> entries;
 
-    public DealCommissionLedger() {
+    public ProjectCommissionLedger() {
         entries = new ArrayList<>();
     }
 
-    public DealCommissionLedger(Instant timestamp, BigDecimal totalDealValue) {
+    public ProjectCommissionLedger(Instant timestamp, BigDecimal totalProjectValue) {
         entries = new ArrayList<>();
-        entries.add(Entry.totalValue(timestamp, totalDealValue));
+        entries.add(Entry.totalValue(timestamp, totalProjectValue));
     }
 
-    public DealCommissionLedger recordAdjustment(Instant timestamp, BigDecimal adjustment) {
+    public ProjectCommissionLedger recordAdjustment(Instant timestamp, BigDecimal adjustment) {
         BigDecimal remainingValue = getRemainingValue();
         checkArgument(adjustment.signum() >= 0,
                 "Adjustment (%s) must be positive or zero.",
                 NumberFormat.getCurrencyInstance().format(adjustment));
         checkArgument(remainingValue.compareTo(adjustment) >= 0,
-                "Adjustment (%s) cannot exceed deal remaining value (%s)",
+                "Adjustment (%s) cannot exceed project remaining value (%s)",
                 NumberFormat.getCurrencyInstance().format(adjustment),
                 NumberFormat.getCurrencyInstance().format(remainingValue));
         entries.add(new Entry(timestamp, adjustment.negate(), BigDecimal.ZERO, adjustment));
         return this;
     }
 
-    public DealCommissionLedger recordCommission(Instant timestamp, BigDecimal commission) {
+    public ProjectCommissionLedger recordCommission(Instant timestamp, BigDecimal commission) {
         BigDecimal remainingValue = getRemainingValue();
         BigDecimal outstandingAdjustments = getOutstandingAdjustments();
 
@@ -45,7 +45,7 @@ public class DealCommissionLedger {
                 NumberFormat.getCurrencyInstance().format(commission));
         checkArgument(remainingValue.add(outstandingAdjustments)
                         .compareTo(commission) >= 0,
-                "Commission (%s) cannot exceed deal remaining value (%s) plus outstanding adjustments (%s)",
+                "Commission (%s) cannot exceed project remaining value (%s) plus outstanding adjustments (%s)",
                 NumberFormat.getCurrencyInstance().format(commission),
                 NumberFormat.getCurrencyInstance().format(remainingValue),
                 NumberFormat.getCurrencyInstance().format(outstandingAdjustments));
@@ -66,7 +66,7 @@ public class DealCommissionLedger {
         return this;
     }
 
-    public DealCommissionLedger recordEntry(Instant timestamp, BigDecimal commission, BigDecimal adjustment) {
+    public ProjectCommissionLedger recordEntry(Instant timestamp, BigDecimal commission, BigDecimal adjustment) {
         BigDecimal remainingValue = getRemainingValue();
         checkArgument(commission.signum() >= 0,
                 "Commission (%s) must be positive or zero.",
@@ -75,7 +75,7 @@ public class DealCommissionLedger {
                 "Adjustment (%s) must be positive or zero.",
                 NumberFormat.getCurrencyInstance().format(adjustment));
         checkArgument(remainingValue.compareTo(adjustment.add(commission)) >= 0,
-                "Commission (%s) plus adjustment (%s) cannot exceed deal remaining value (%s)",
+                "Commission (%s) plus adjustment (%s) cannot exceed project remaining value (%s)",
                 NumberFormat.getCurrencyInstance().format(commission),
                 NumberFormat.getCurrencyInstance().format(adjustment),
                 NumberFormat.getCurrencyInstance().format(remainingValue));
@@ -114,7 +114,7 @@ public class DealCommissionLedger {
 
         private Entry(Instant timestamp, BigDecimal totalValue) {
             checkArgument(totalValue.signum() >= 0,
-                    "Deal total value must be positive or zero.");
+                    "Project total value must be positive or zero.");
 
             this.timestamp = timestamp;
             this.remainingValue = totalValue;

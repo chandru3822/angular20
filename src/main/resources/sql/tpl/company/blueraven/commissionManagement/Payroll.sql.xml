@@ -4,7 +4,7 @@
         FROM
              (
                SELECT *
-               FROM brs.deal_commission_snapshot
+               FROM brs.project_commission_snapshot
                WHERE payroll_id = :payrollId ) AS sub_rows
     ]]></payroll.snapshotByPayrollId>
 
@@ -52,8 +52,8 @@
                 AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
                              THEN ups.user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
                          ELSE 1 = 1 END
-                AND CASE WHEN :dealId:: INTEGER IS NOT NULL
-                             THEN p.id = :dealId:: INTEGER ELSE 1 = 1 END
+                AND CASE WHEN :projectId:: INTEGER IS NOT NULL
+                             THEN p.id = :projectId:: INTEGER ELSE 1 = 1 END
 
               GROUP BY p.id, p.period_end
               ORDER BY p.period_end desc) AS sub_rows
@@ -69,14 +69,14 @@
     </payroll.getApprovedPayrolls>
     <payroll.addCommissionAdjustment><![CDATA[
         INSERT INTO brs.payroll_adjustment (payroll_id,
-                                                      deal_id,
+                                                      project_id,
                                                       closer_id,
                                                       amount,
                                                       note,
                                                       payroll_adjustment_type_id,
                                                       created_by,
                                                       created)
-        VALUES (:payrollId, :dealId, :closerId, :amount, :note, :adjustmentTypeId, :createdById, now());
+        VALUES (:payrollId, :projectId, :closerId, :amount, :note, :adjustmentTypeId, :createdById, now());
     ]]></payroll.addCommissionAdjustment>
 
     <payroll.getCommissionAdjustments><![CDATA[
@@ -90,9 +90,9 @@
              concat(u.first_name, ' ', u.last_name) AS "createdBy"
       FROM brs.payroll_adjustment pa
              INNER JOIN brs.payroll_adjustment_type pat ON pa.payroll_adjustment_type_id = pat.id
-             INNER JOIN brs."user" u ON pa.created_by = u.id
+             INNER JOIN flow."user" u ON pa.created_by = u.id
       WHERE payroll_id = :payrollId
-        AND deal_id = :dealId) history
+        AND project_id = :projectId) history
     ]]></payroll.getCommissionAdjustments>
 
     <payroll.setStatus><![CDATA[
@@ -111,11 +111,11 @@
     ]]></payroll.addActionHistory>
 
     <payroll.updatePayroll><![CDATA[
-        UPDATE brs . payroll
+        UPDATE brs.payroll
         SET period_end        = :periodEndDate::date,
           description       = :description,
           updated_by        = :currentUserId,
-          selected_deal_ids = :dealIds::BIGINT[],
+          selected_project_ids = :projectIds::BIGINT[],
           updated           = now()
         WHERE id = :payrollId
     ]]></payroll.updatePayroll>
@@ -137,7 +137,7 @@
     <payroll.getAccountReview><![CDATA[
      SELECT array_to_json(array_agg(row_to_json(sub_rows)))
 FROM (SELECT *
-      FROM brs.get_commission_account_details(:payrollId::int, :periodEndDate::date, :locked::bool, :dealId::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
+      FROM brs.get_commission_account_details(:payrollId::int, :periodEndDate::date, :locked::bool, :projectId::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
     ]]></payroll.getAccountReview>
 
     <payroll.getOverrideDetailsByUser><![CDATA[
@@ -163,7 +163,7 @@ FROM (SELECT *
                         s.current_pay_overrides as "currentPayOverrides",
                         s.customer_name as "customerName",
                         s.project_id as "projectId",
-                        s.deal_total_value as "dealTotalValue",
+                        s.project_total_value as "projectTotalValue",
                         s.deposit,
                         s.final_design_signed as "finalDesignSigned",
                         s.financial_agreement_sent as "financialAgreementSent",

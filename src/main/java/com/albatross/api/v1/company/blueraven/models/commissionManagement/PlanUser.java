@@ -16,4 +16,5 @@ public class PlanUser {
     private Long id, userId;
     private Date startDate, endDate;
     private BackdatedPlanApprovalCredentials approvalCreds;
+    private String note;
 }

@@ -465,7 +465,7 @@
         WHERE op.id = :id
     ]]></overridePlan.getPlanStatus>
 
-  <overridePlan.updateReceivingUser><![CDATA[
+  <overridePlan.addReceivingUser><![CDATA[
      WITH new_user AS (
           INSERT INTO brs.override_plan_receiving_user
               (override_plan_id, user_id, m1_allocation, m2_allocation)
@@ -479,6 +479,13 @@
       SET updated  = now(),
           updated_by = :updatedBy
       WHERE id = :planId;
+    ]]></overridePlan.addReceivingUser>
+
+  <overridePlan.updateReceivingUser><![CDATA[
+       UPDATE brs.override_plan_receiving_user
+         SET note = :note
+       WHERE override_plan_id = :planId
+        AND user_id = :userId
     ]]></overridePlan.updateReceivingUser>
 
   <overridePlan.deleteReceivingUser><![CDATA[
@@ -610,7 +617,6 @@
                        SELECT
                          opu.user_id as "userId",
                          u.first_name || ' ' || u.last_name AS name,
-                         u.employee_id                      AS "employeeId",
                          p.position,
                          p.id                               AS "positionId"
                        FROM brs.override_plan_receiving_user opu
@@ -627,7 +633,6 @@
                              opa.id,
                              opa.user_id as "userId",
                              u.first_name || ' ' || u.last_name AS name,
-                             u.employee_id                      AS "employeeId",
                              p.position,
                              p.id                               AS "positionId",
                              opa.start_date                     AS "startDate",
@@ -676,7 +681,6 @@ FROM (SELECT op.id,
              coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
                        FROM (SELECT opu.user_id                        AS "userId",
                                     u.first_name || ' ' || u.last_name AS name,
-                                    u.employee_id                      AS "employeeId",
                                     opu.m1_allocation                      AS "m1Allocation",
                                     opu.m2_allocation                      AS "m2Allocation",
                                     (select
@@ -694,7 +698,6 @@ FROM (SELECT op.id,
                        FROM (SELECT opa.id,
                                     opa.user_id                        AS "userId",
                                     u.first_name || ' ' || u.last_name AS name,
-                                    u.employee_id                      AS "employeeId",
                                     u.hire_date                        AS "hireDate",
                                     opa.start_date                     AS "startDate",
                                     opa.end_date                       AS "endDate"
@@ -729,12 +732,11 @@ FROM (SELECT op.id,
       SELECT coalesce(array_to_json(array_agg(row_to_json(results))), '[]')
       FROM (SELECT u.id                                                             AS "userId",
              u.first_name || ' ' || u.last_name                               AS name,
-             u.employee_id                                                    AS "employeeId",
              u.email,
              u.hire_date as "hireDate",
              (SELECT string_agg( distinct position, ', ')
               FROM flow.user_position up1
-                     INNER JOIN brs.position p1 ON p1.id = up1.position_id
+                     INNER JOIN flow.position p1 ON p1.id = up1.position_id
               WHERE up1.user_id = u.id
                 AND CASE WHEN :positions = 1
                               THEN p1.id IN (1, 2, 3)
@@ -756,14 +758,14 @@ FROM (SELECT op.id,
                                 OR opau.end_date >= current_date) aup), '[]') AS "assignedUserPlans"
       FROM flow."user" u
         WHERE (
-                lower(trim(first_name)) || '' || lower(trim(last_name)) LIKE :search
-                  OR lower(trim(last_name)) LIKE :search
-                  OR lower(trim(u.email)) LIKE :search
+                lower(trim(first_name)) || ' ' || lower(trim(last_name)) LIKE lower(:search)
+                  OR lower(trim(last_name)) LIKE lower(:search)
+                  OR lower(trim(u.email)) LIKE lower(:search)
                 )
         AND (CASE WHEN :positions:: INT IS NOT NULL
                        THEN u.id IN (SELECT up.user_id
                                      FROM flow.user_position up
-                                            INNER JOIN brs.position p ON p.id = up.position_id
+                                            INNER JOIN flow.position p ON p.id = up.position_id
                                      WHERE  (
                                                CASE WHEN :positions = 1
                                                          THEN p.id IN (1, 2, 3)
@@ -774,12 +776,19 @@ FROM (SELECT op.id,
       LIMIT 10) results;
     ]]></overridePlan.findUsers>
 
+  <overridePlan.updatePlanUser><![CDATA[
+       UPDATE brs.override_plan_assigned_user
+         SET note = :note,
+         end_date = :endDate
+       WHERE id = :id
+        AND user_id = :userId
+    ]]></overridePlan.updatePlanUser>
+
   <overridePlan.getAssignedUsers><![CDATA[
     SELECT coalesce(array_to_json(array_agg(row_to_json(u))), '[]')
     FROM (SELECT opa.id,
                  opa.user_id                        AS "userId",
                  u.first_name || ' ' || u.last_name AS name,
-                 u.employee_id                      AS "employeeId",
                  u.hire_date                        AS "hireDate",
                  opa.start_date                     AS "startDate",
                  opa.end_date                       AS "endDate",
@@ -806,7 +815,6 @@ FROM (SELECT op.id,
     FROM (SELECT opu.user_id                        AS "userId",
              opu.allocation,
              u.first_name || ' ' || u.last_name AS name,
-             u.employee_id                      AS "employeeId",
              up.active,
              string_agg(DISTINCT p.position, ', ') FILTER (
              WHERE

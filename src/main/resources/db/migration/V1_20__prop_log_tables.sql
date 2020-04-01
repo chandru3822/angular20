@@ -750,7 +750,7 @@ create table if not exists brs.project_commission_snapshot
     overrides_paid_to_date      numeric(10, 2),
     remaining_value             numeric(10, 2),
     current_pay                 numeric(10, 2),
-    deal_total_value            numeric(10, 2),
+    project_total_value            numeric(10, 2),
     updated                     timestamp with time zone,
     override_adjustment         numeric(10, 2),
     total_commissions           numeric(10, 2),

@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.enums.commissionManagement.Overrid
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.BackdatedPlanApprovalCredentials;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.OverridePlanAllocation;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -44,6 +45,7 @@ public class OverridePlanService {
     public static class OverrideReceivingUser {
         private Long userId;
         private Double m1Allocation, m2Allocation;
+        private String note;
     }
 
     @Data
@@ -74,6 +76,16 @@ public class OverridePlanService {
         private Date startDate, endDate;
         private Long userId;
         private BackdatedPlanApprovalCredentials backdateApprovalCreds;
+    }
+
+    public void updatePlanUser(Long planId, PlanUser planUser) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", planId);
+        params.put("userId", planUser.getUserId());
+        params.put("note", planUser.getNote());
+        params.put("endDate", planUser.getEndDate());
+
+        sqlCache.update("overridePlan.updatePlanUser", params);
     }
 
     public String updateOverridePlan(Long id, OverridePlan overridePlan) {
@@ -167,7 +179,7 @@ public class OverridePlanService {
         return users.orElse("[]");
     }
 
-    public void updateReceivingUser(Long planId, OverrideReceivingUser receivingUser) {
+    public void addReceivingUser(Long planId, OverrideReceivingUser receivingUser) {
 
         OverridePlanStatus planStatus = getPlanStatus(planId);
         if (OverridePlanStatus.ACTIVE.equals(planStatus)) {
@@ -180,6 +192,17 @@ public class OverridePlanService {
         params.put("m1Allocation", receivingUser.getM1Allocation());
         params.put("m2Allocation", receivingUser.getM2Allocation());
         params.put("updatedBy", securityService.getCurrentUser().getId());
+
+        sqlCache.update("overridePlan.addReceivingUser", params);
+    }
+
+    public void updateReceivingUser(Long planId, OverrideReceivingUser receivingUser) {
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("userId", receivingUser.getUserId());
+        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("note", receivingUser.getNote());
 
         sqlCache.update("overridePlan.updateReceivingUser", params);
     }

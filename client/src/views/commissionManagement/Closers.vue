@@ -21,39 +21,39 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">
+            <tr class="vertical-top" :class="{'shaded-row': index % 2}">
+              <td class="text-left pt-1">
                 <v-btn text :to="{ name: 'closer', params: {id: item.id} }">
                   {{item.name}}
                 </v-btn>
               </td>
-              <td class="text-left">
+              <td class="text-left pt-1">
                 <v-btn text v-if="item.commissionPlan !== null" @click="goToDetails(item, false)">
                   {{item.commissionPlan}}:<br/>
                   {{item.commissionDescription}}
                 </v-btn>
-                <div v-else>--</div>
+                <div v-else class="pt-2">--</div>
 <!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 1)">Add to Commission</v-btn>-->
               </td>
-              <td class="text-left">
+              <td class="text-left pt-1">
                 <v-btn text v-if="item.overridePlan !== null" @click="goToDetails(item, true)">
                   {{item.overridePlan}}:<br/>
                   {{item.overrideDescription}}
                 </v-btn>
-                <div v-else>--</div>
+                <div v-else class="pt-2">--</div>
 <!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 2)">Assign to Override</v-btn>-->
               </td>
-              <td class="text-left">
+              <td class="text-left pt-1">
                 <span v-if="item.receivingPlans && item.receivingPlans.length > 0">
                   <v-btn v-for="rp in item.receivingPlans" text @click="goToDetails(rp, true)">
                     {{rp.receivingPlan}}:<br/>
                     {{rp.receivingDescription}}
                   </v-btn>
                 </span>
-                <div v-else>--</div>
+                <div v-else  class="pt-2">--</div>
 <!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 3)">Clone/Create New Plan</v-btn>-->
               </td>
-              <td class="text-left">{{item.hasCommissionPlanGap ? 'Yes' : 'No'}}</td>
+              <td class="text-left pt-3">{{item.hasCommissionPlanGap ? 'Yes' : 'No'}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -96,7 +96,9 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/commissionManagement/closers`, 'blueraven')
-          this.closers = data
+          //todo: make it so closers = only active until a filter by closer name is applied
+          this.masterData = data
+          this.closers = data.filter(d => d.isActiveCloser)
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

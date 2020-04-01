@@ -223,6 +223,41 @@
       <v-col>
         <v-card class="square-card">
           <v-card-title>
+            Milestones
+          </v-card-title>
+        </v-card>
+        <v-divider></v-divider>
+        <v-data-table
+          :headers="milestoneHeaders"
+          :items="commission.milestones"
+          :fixed-header="true"
+          :items-per-page="-1"
+          disable-sort
+          :loading="dataLoading"
+          hide-default-footer
+          class="elevation-1"
+        >
+          <template #no-data>
+            No available milestones
+          </template>
+
+          <template #no-results>
+            No available milestones
+          </template>
+
+          <template #item="{ item, index }">
+            <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.milestoneType}}</td>
+              <td class="text-left">{{item.allocation}}</td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <v-card class="square-card">
+          <v-card-title>
             Source Deductions
           </v-card-title>
         </v-card>
@@ -238,15 +273,15 @@
             class="elevation-1"
         >
           <template #no-data>
-            No available users
+            No available sources
           </template>
 
           <template #no-results>
-            No available users
+            No available sources
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
+            <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.sourceName}}</td>
               <td class="text-left">{{item.feeAmount}}</td>
               <td class="text-left">{{item.feeType}}</td>
@@ -306,7 +341,7 @@
         </v-card>
         <v-data-table
             :headers="headers"
-            :items="commission.users"
+            :items="filterCommissionUsers()"
             :fixed-header="true"
             :items-per-page="-1"
             disable-sort
@@ -323,12 +358,17 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
+            <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.name}}</td>
               <td class="text-left">{{item.position}}</td>
               <td class="text-left">{{item.employeeId}}</td>
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
+              <td>
+                <v-btn text @click="deleteUserFromPlan(item)">
+                  <v-icon>delete</v-icon>
+                </v-btn>
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -346,6 +386,7 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getRequestWithParams} from "../../helpers/helpers";
+  import orderBy from "lodash.orderby";
 
   export default {
     name: 'Commission',
@@ -397,12 +438,17 @@
           {text: 'Employee ID', value: 'employeeId', show: true},
           {text: 'Start Date', value: 'startDate', show: true},
           {text: 'End Date', value: 'endDate', show: true},
+          {text: '', value: 'icons', show: true},
         ],
         sourceHeaders: [
           {text: 'Source', value: 'source', show: true},
           {text: 'Fee Amount', value: 'feeAmount', show: true},
           {text: 'Fee Type', value: 'feeType', show: true},
           {text: 'Deduct at Milestone', value: 'deductAtMilestone', show: true},
+        ],
+        milestoneHeaders: [
+          {text: 'Milestone', value: 'milestoneType', show: true},
+          {text: 'Milestone Payment ($)', value: 'allocation', show: true},
         ],
         commission: {
           users: []
@@ -521,7 +567,23 @@
           this.snackbar = getSnackbar('ERROR', 'Error Adding Commission Plan User')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async deleteUserFromPlan(commissionPlanUser) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/commissionManagement/${this.planId}/commissionUser/${commissionPlanUser.id}`, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Commission Plan User Deleted')
+          commissionPlanUser.archived = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Commission Plan User')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      filterCommissionUsers () {
+        return this.commission.users.filter(cu => { return !cu.archived})
+      },
     }
   }
 </script>
