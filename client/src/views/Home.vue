@@ -111,6 +111,10 @@ export default {
         label: 'Work Queue',
         path: '/workQueue',
         display: this.$store.getters.userHasFeature('WORK_QUEUE')
+      }, {
+        label: 'Smartlists',
+        path: '/smartlist',
+        display: this.$store.getters.userHasFeature('SMARTLIST') && false
       }]
     }
   },
