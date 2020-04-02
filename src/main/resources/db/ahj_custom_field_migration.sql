@@ -153,7 +153,8 @@ insert into brs.custom_field_group_assignment(custom_field_group_id, custom_fiel
     (select
          cdf.custom_field_group_id,
          cdf.id, 1, false, now(), 99999999
-     from blueraven.custom_dropdown_field cdf);
+     from blueraven.custom_dropdown_field cdf
+     where cdf.id not in (34,35,33));
 
 
 -- these are the inserts for the custom_dropdown_value columns
