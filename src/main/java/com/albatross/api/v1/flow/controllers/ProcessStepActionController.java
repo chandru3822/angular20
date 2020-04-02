@@ -1,9 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.ProcessStep;
-import com.albatross.api.v1.flow.model.ProcessStepAction;
-import com.albatross.api.v1.flow.model.ProcessStepActionChildProcess;
-import com.albatross.api.v1.flow.model.ProcessStepActionLink;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProcessStepActionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,5 +76,24 @@ public class ProcessStepActionController {
   @DeleteMapping(value = "/{actionId}/deleteLinkFromAction/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteLink(@PathVariable Long id) {
     processStepActionService.deleteLinkFromAction(id);
+  }
+
+  // child functions
+
+  @PostMapping(value = "/{actionId}/addChildFunctionToAction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepActionChildFunction addChildFunctionToAction(@PathVariable Long actionId,
+                                                                 @RequestBody ProcessStepActionChildFunction child) {
+    return processStepActionService.addChildFunctionToAction(actionId, child);
+  }
+
+  @DeleteMapping(value = "/{actionId}/deleteChildFunction/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteChildFunctionFromAction(@PathVariable Long id) {
+    processStepActionService.deleteChildFunctionFromAction(id);
+  }
+
+  @PutMapping(value = "/{actionId}/updateActionChildFunction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateActionChildFunction(@PathVariable Long actionId,
+                                        @RequestBody ProcessStepActionChildFunction child) {
+    processStepActionService.updateActionChildFunction(actionId, child);
   }
 }

@@ -1,27 +1,21 @@
 package com.albatross.api.v1.flow.services;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.CompanyFunction;
-import com.albatross.api.v1.flow.model.CompanyFunctionParam;
-import com.albatross.api.v1.flow.model.RequirementParamDynamicValue;
-import com.albatross.api.v1.flow.model.SystemValue;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -64,9 +58,9 @@ public class CompanyFunctionService {
     return results.orElse(null);
   }
 
-  public List<RequirementParamDynamicValue> getFunctionDynamicParams(Long id) {
+  public List<RequirementParamDynamicValue> getFunctionDynamicParams(Long dbFunctionId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("functionId", id);
+    params.put("dbFunctionId", dbFunctionId);
     // 2 = dynamic value params - maybe we pass this in later if needed
     params.put("parameterTypeId", 2);
     List<RequirementParamDynamicValue> results = sqlCache.query("companyFunction.getFunctionDynamicParams", params, RequirementParamDynamicValue.class);

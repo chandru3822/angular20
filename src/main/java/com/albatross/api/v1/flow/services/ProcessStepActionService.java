@@ -230,6 +230,73 @@ public class ProcessStepActionService {
     sqlCache.update("processStepAction.deleteLinkFromAction", params);
   }
 
+  // CHILD FUNCTIONS
+  public ProcessStepActionChildFunction addChildFunctionToAction(Long actionId, ProcessStepActionChildFunction child) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyFunctionId", child.getCompanyFunctionId());
+    params.put("processStepActionId", actionId);
+    params.put("displayOrder", child.getDisplayOrder());
+    params.put("createdById", currentUser.getId());
+
+    Long id = sqlCache.updateReturningId("processStepAction.addChildFunctionToAction", params, "id").longValue();
+
+    handleDynamicValueParams(child.getActionParamDynamicValues(), id);
+
+    return getActionChildFunction(id);
+  }
+
+  public ProcessStepActionChildFunction getActionChildFunction(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<ProcessStepActionChildFunction> result = sqlCache.get("processStepAction.getActionChildFunction", params, new ProcessStepActionChildFunctionMapper<>(ProcessStepActionChildFunction.class, om));
+    return result.orElse(null);
+  }
+
+  public void deleteChildFunctionFromAction(Long childProcessId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.getId());
+    params.put("id", childProcessId);
+    sqlCache.update("processStepAction.deleteActionChildFunction", params);
+  }
+
+  public void updateActionChildFunction(Long actionId, ProcessStepActionChildFunction child) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.getId());
+    params.put("id", child.getId());
+    params.put("displayOrder", child.getDisplayOrder());
+    sqlCache.update("processStepAction.updateActionChildFunction", params);
+
+    handleDynamicValueParams(child.getActionParamDynamicValues(), child.getId());
+  }
+
+  public void handleDynamicValueParams(List<ActionParamDynamicValue> params, Long processStepActionCompanyFunctionId) {
+    if(!params.isEmpty()) {
+      User currentUser = securityService.getCurrentUser();
+
+      for(ActionParamDynamicValue p : params){
+        HashMap<String, Object> dynamicParams = new HashMap<>();
+        dynamicParams.put("dbFunctionParamId", p.getDbFunctionParamId());
+        dynamicParams.put("processStepActionCompanyFunctionId", processStepActionCompanyFunctionId);
+        dynamicParams.put("dynamicValue", p.getDynamicValue());
+
+        if(null != p.getId()){
+          dynamicParams.put("id", p.getId());
+          dynamicParams.put("modifiedById", currentUser.getId());
+          sqlCache.update("processStepAction.updateActionParamDynamicValue", dynamicParams);
+        }else {
+          dynamicParams.put("createdById", currentUser.getId());
+          sqlCache.update("processStepAction.insertActionParamDynamicValue", dynamicParams);
+        }
+      }
+    }
+  }
+
 
   // MAPPER
   public static class ProcessStepActionMapper<T> extends BeanPropertyRowMapper<T> {
@@ -242,17 +309,37 @@ public class ProcessStepActionService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProcessStepLogic>> processStepLogicTypeRef = new TypeReference<List<ProcessStepLogic>>() {};
+      TypeReference<List<ProcessStepLogic>> processStepLogicTypeRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "processStepLogicList",
           new JsonCollectionDeserializer(processStepLogicTypeRef, objectMapper));
 
-      TypeReference<List<ProcessStepActionChildProcess>> processStepActionChildProcessesRef = new TypeReference<List<ProcessStepActionChildProcess>>() {};
+      TypeReference<List<ProcessStepActionChildProcess>> processStepActionChildProcessesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "processStepActionChildProcesses",
           new JsonCollectionDeserializer(processStepActionChildProcessesRef, objectMapper));
 
-      TypeReference<List<ProcessStepActionLink>> processStepActionLinksRef = new TypeReference<List<ProcessStepActionLink>>() {};
+      TypeReference<List<ProcessStepActionChildFunction>> processStepActionChildFunctionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "processStepActionChildFunctions",
+        new JsonCollectionDeserializer(processStepActionChildFunctionsRef, objectMapper));
+
+      TypeReference<List<ProcessStepActionLink>> processStepActionLinksRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "processStepActionLinks",
           new JsonCollectionDeserializer(processStepActionLinksRef, objectMapper));
+    }
+  }
+
+  public static class ProcessStepActionChildFunctionMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProcessStepActionChildFunctionMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ActionParamDynamicValue>> actionParamDynamicValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "actionParamDynamicValues",
+        new JsonCollectionDeserializer(actionParamDynamicValuesRef, objectMapper));
     }
   }
 
