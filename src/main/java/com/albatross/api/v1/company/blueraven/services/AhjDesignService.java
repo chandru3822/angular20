@@ -1,10 +1,7 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjContact;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesign;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesignDetail;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjRequirement;
+import com.albatross.api.v1.company.blueraven.models.ahj.*;
 import com.albatross.api.v1.flow.model.User;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
@@ -68,7 +65,6 @@ public class AhjDesignService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjId", ahjId);
     params.put("codes", design.getCodes());
     params.put("note", design.getNote());
     params.put("currentUser", currentUser.getId());
@@ -78,19 +74,31 @@ public class AhjDesignService {
     params.put("windSpeed", design.getWindSpeed());
     params.put("roofSnowLoad", design.getRoofSnowLoad());
 
-    if (designId == null) {
-      designId = sqlCache.updateReturningId("ahj.design.create", params, "id").longValue();
-    } else {
-      params.put("id", designId);
-      sqlCache.update("ahj.design.update", params);
-    }
+    if (!design.getUpdateAllInState()) {
+      params.put("ahjId", ahjId);
 
-    blueravenCustomFieldGroupService.handleSavingCustomFieldValues(design.getCustomFieldGroups(), designId);
+      if (designId == null) {
+        designId = sqlCache.updateReturningId("ahj.design.create", params, "id").longValue();
+      } else {
+        params.put("id", designId);
+        sqlCache.update("ahj.design.update", params);
+      }
+      blueravenCustomFieldGroupService.handleSavingCustomFieldValues(design.getCustomFieldGroups(), designId);
+    } else {
+      params.put("ahjIds", design.getAhjIds());
+      sqlCache.update("ahj.design.updateAllAhjDesignsInState", params);
+      blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(design.getCustomFieldGroups(), design.getDesignIds());
+    }
 
     HashMap<String, Object> keyParam = new HashMap<>();
     keyParam.put("id", designId);
-
     return sqlCache.get("ahj.design.findById", keyParam, AhjDesign.class);
+  }
+
+  public List<AhjDesign> searchAhjsByState(Long stateId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("stateId", stateId);
+    return sqlCache.query("ahj.design.searchAhjsByState", params, AhjDesign.class);
   }
 
   // CONTACTS
