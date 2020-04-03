@@ -38,7 +38,7 @@ public class SmartlistService {
   }
 
   public void updateSmartlist(Smartlist smartlist) {
-    Map<String, Object> params = Map.of("id", smartlist.getId(), "name", smartlist.getName(), "companyObjectTypeId", smartlist.getCompanyObjectTypeId());
+    Map<String, Object> params = Map.of("id", smartlist.getId(), "name", smartlist.getName(), "companyObjectTypeId", smartlist.getCompanyObjectTypeId(), "shared", smartlist.isShared());
     sqlCache.update("smartlist.update", params);
   }
 
@@ -65,5 +65,15 @@ public class SmartlistService {
     params.put("createdById", user.getId());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
     return this.getAssignedFieldById(assignmentId);
+  }
+
+  public void deleteFieldAssignment(Long fieldId) {
+    sqlCache.update("smartlist.deleteField", Map.of("id", fieldId, "userId", securityService.getCurrentUser().getId()));
+  }
+
+  public void updateDisplayOrder(List<SmartlistFieldAssignment> fields) {
+    fields.forEach(field -> {
+      sqlCache.update("smartlist.updateDisplayOrder", Map.of("id", field.getId(), "displayOrder", field.getDisplayOrder(), "userId", securityService.getCurrentUser().getId()));
+    });
   }
 }

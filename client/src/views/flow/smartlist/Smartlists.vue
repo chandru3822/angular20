@@ -35,12 +35,10 @@
 
         <template #item="{item: smartlist}">
           <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
-            <td class="class-left">{{smartlist.id}}</td>
-            <td class="class-left">{{smartlist.companyObjectTypeId}}</td>
-            <td class="class-left">{{smartlist.ownerId}}</td>
-            <td class="class-left">
-              <v-checkbox v-model="smartlist.share" />
-            </td>
+            <td class="text-left">{{smartlist.name}}</td>
+            <td class="text-left">{{smartlist.objectType}}</td>
+            <td class="text-left">{{smartlist.ownerId}}</td>
+            <td class="text-left">{{smartlist.shared ? 'Yes' : 'No'}}</td>
           </tr>
         </template>
       </v-data-table>
@@ -67,10 +65,10 @@ export default {
       snackbar: {},
       smartlists: [],
       headers: [
-        {text: 'ID', value: 'id'},
+        {text: 'Name', value: 'name'},
         {text: 'Type', value: 'companyObjectTypeId'},
         {text: 'Owner', value: 'ownerId'},
-        {text: 'Public', value: 'share'}
+        {text: 'Public', value: 'shared'}
       ]
     }
   },

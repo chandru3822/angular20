@@ -51,6 +51,19 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.addField(assignment), HttpStatus.OK);
   }
 
+  @DeleteMapping(value = "/{smartlistId}/field/{fieldId}")
+  public ResponseEntity<Void> deleteFieldFromSmartlist(@PathVariable Long fieldId) {
+    smartlistService.deleteFieldAssignment(fieldId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  // @TODO: Potentially should be in SmartlistFieldController?
+  @PutMapping(value = "/{smartlistId}/order", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateSmartlistFieldOrder(@RequestBody List<SmartlistFieldAssignment> fields) {
+    smartlistService.updateDisplayOrder(fields);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
   @GetMapping(value = "/availableFields", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistField>> getAvailableSmartlistFields() {
     return new ResponseEntity<>(smartlistService.getAvailableSmartlistFields(), HttpStatus.OK);
