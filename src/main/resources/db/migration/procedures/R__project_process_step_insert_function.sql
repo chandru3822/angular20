@@ -19,7 +19,7 @@ END
 $$
     LANGUAGE plpgsql;
 
-drop function if exists insert_project_process_step_trg;
+drop trigger if exists insert_project_process_step_trg on flow.process_step;
 CREATE TRIGGER insert_project_process_step_trg
     after INSERT ON flow.process_step
     FOR EACH ROW EXECUTE PROCEDURE flow.project_process_step_insert_function();
