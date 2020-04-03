@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -39,6 +40,11 @@ public class AhjInspectionController {
                                                        @PathVariable Long id,
                                                        @RequestBody AhjInspection inspection) {
         return ahjInspectionService.saveAhjInspection(ahjId, id, inspection);
+    }
+
+    @GetMapping(value = "/searchAhjsByState/{stateId}")
+    public List<AhjInspection> searchAhjsByState(@PathVariable Long stateId) {
+        return ahjInspectionService.searchAhjsByState(stateId);
     }
 
     // CHECKLISTS

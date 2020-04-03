@@ -97,17 +97,14 @@ public class AhjPermitService {
 
     if (!permit.getUpdateAllInState()) {
       params.put("ahjId", ahjId);
-      Long pId;
 
       if (permitId == null) {
-        pId = permitId;
-        sqlCache.updateReturningId("ahj.permit.create", params, "id");
+        permitId = sqlCache.updateReturningId("ahj.permit.create", params, "id").longValue();
       } else {
-        pId = permitId;
         params.put("id", permitId);
         sqlCache.update("ahj.permit.update", params);
       }
-      blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), pId);
+      blueravenCustomFieldGroupService.handleSavingCustomFieldValues(permit.getCustomFieldGroups(), permitId);
     } else {
       params.put("ahjIds", permit.getAhjIds());
       sqlCache.update("ahj.permit.updateAllAhjPermitsInState", params);
@@ -115,6 +112,12 @@ public class AhjPermitService {
     }
 
     return getAhjPermitDetailByAhjId(ahjId);
+  }
+
+  public List<AhjPermit> searchAhjsByState(Long stateId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("stateId", stateId);
+    return sqlCache.query("ahj.permit.searchAhjsByState", params, AhjPermit.class);
   }
 
   // CHECKLISTS
@@ -169,12 +172,6 @@ public class AhjPermitService {
     params.put("currentUser", currentUser.getId());
 
     sqlCache.update("ahj.permit.link.delete", params);
-  }
-
-  public List<AhjPermit> searchAhjsByState(Long stateId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("stateId", stateId);
-    return sqlCache.query("ahj.permit.searchAhjsByState", params, AhjPermit.class);
   }
 
   @SuppressWarnings({"Duplicates", "unchecked", "WeakerAccess"})

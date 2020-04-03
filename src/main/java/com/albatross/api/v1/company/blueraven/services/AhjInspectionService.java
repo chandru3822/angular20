@@ -64,7 +64,6 @@ public class AhjInspectionService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("ahjId", ahjId);
     params.put("inspectionFee", inspection.getInspectionFee());
     params.put("reInspectionFee", inspection.getReInspectionFee());
     params.put("paymentMethod", inspection.getPaymentMethod());
@@ -86,7 +85,7 @@ public class AhjInspectionService {
     params.put("timeWindowCallTime", inspection.getTimeWindowCallTime());
     params.put("timeWindowPhone", inspection.getTimeWindowPhone());
 
-    // notes
+    // NOTES
     params.put("schedulingNote", inspection.getSchedulingNote());
     params.put("technicianInstructionNote", inspection.getTechnicianInstructionNote());
     params.put("schedulingWithCustomerNote", inspection.getSchedulingWithCustomerNote());
@@ -95,19 +94,31 @@ public class AhjInspectionService {
     params.put("documentationNote", inspection.getDocumentationNote());
     params.put("mpuInspectionNote", inspection.getMpuInspectionNote());
 
-    if (inspectionId == null) {
-      inspectionId = sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
-    } else {
-      params.put("id", inspectionId);
-      sqlCache.update("ahj.inspection.update", params);
-    }
+    if (!inspection.getUpdateAllInState()) {
+      params.put("ahjId", ahjId);
 
-    blueravenCustomFieldGroupService.handleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspectionId);
+      if (inspectionId == null) {
+        inspectionId = sqlCache.updateReturningId("ahj.inspection.create", params, "id").longValue();
+      } else {
+        params.put("id", inspectionId);
+        sqlCache.update("ahj.inspection.update", params);
+      }
+      blueravenCustomFieldGroupService.handleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspectionId);
+    } else {
+      params.put("ahjIds", inspection.getAhjIds());
+      sqlCache.update("ahj.inspection.updateAllAhjInspectionsInState", params);
+      blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(inspection.getCustomFieldGroups(), inspection.getInspectionIds());
+    }
 
     HashMap<String, Object> keyParam = new HashMap<>();
     keyParam.put("id", inspectionId);
-
     return sqlCache.get("ahj.inspection.findById", keyParam, AhjInspection.class);
+  }
+
+  public List<AhjInspection> searchAhjsByState(Long stateId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("stateId", stateId);
+    return sqlCache.query("ahj.inspection.searchAhjsByState", params, AhjInspection.class);
   }
 
   // CHECKLISTS

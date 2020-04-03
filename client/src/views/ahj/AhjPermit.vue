@@ -728,6 +728,13 @@
         let match = list.find(l => l.id === int)
         return match ? match.showOther : false
       },
+      async resetForm() {
+        this.dataReady = false
+        this.getAhjPermit().then(() => {
+          this.reformatDates()
+          this.dataReady = true
+        })
+      },
       async getDocuments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -739,13 +746,6 @@
           this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-      async resetForm() {
-        this.dataReady = false
-        this.getAhjPermit().then(() => {
-          this.reformatDates()
-          this.dataReady = true
-        })
       },
       async updateAhjPermit() {
         this.saveDialog = false

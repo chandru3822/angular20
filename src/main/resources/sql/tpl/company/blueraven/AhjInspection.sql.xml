@@ -3,6 +3,8 @@
     <![CDATA[
       SELECT
         i.*,
+        s.id AS "stateId",
+        s.state AS "stateName",
         coalesce((
           SELECT array_to_json(array_agg(row_to_json(contacts)))
           FROM (
@@ -308,34 +310,41 @@
           ), '[]'
         ) AS noteTemplates
       FROM brs.ahj_inspection i
+        INNER JOIN brs.ahj ahj ON ahj.id = i.ahj_id
+        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
+        INNER JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
+        INNER JOIN flow.state s ON s.id = sa.state_id
       WHERE i.ahj_id = :ahjId
     ]]>
   </ahj.inspection.detailByAhj>
 
   <ahj.inspection.findById>
     <![CDATA[
-      SELECT * FROM brs.ahj_inspection WHERE id = :id
+      SELECT i.*,
+             s.id AS "stateId",
+             s.state AS "stateName"
+      FROM brs.ahj_inspection i
+        INNER JOIN brs.ahj ahj ON ahj.id = i.ahj_id
+        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
+        INNER JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
+        INNER JOIN flow.state s ON s.id = sa.state_id
+      WHERE i.id = :id
     ]]>
   </ahj.inspection.findById>
 
   <ahj.inspection.createBlank>
     INSERT INTO brs.ahj_inspection
-      (ahj_id, inspection_fee, re_inspection_fee, payment_method,
-       inspection_time_window,
-       brs_inspection_rep, portal_url, portal_username, portal_password, obtaining_results_method,
-       approval_document_method, obtaining_results_portal_url, obtaining_results_portal_username,
-       obtaining_results_portal_password, business_license, contractor_license,
-       archived, date_created, created_by_id, date_modified, modified_by_id,
-       call_for_time_window,
+      (ahj_id, inspection_fee, re_inspection_fee, payment_method, inspection_time_window, brs_inspection_rep,
+       portal_url, portal_username, portal_password, obtaining_results_method, approval_document_method,
+       obtaining_results_portal_url, obtaining_results_portal_username, obtaining_results_portal_password,
+       business_license, contractor_license, archived, date_created, created_by_id, date_modified, modified_by_id,
        ladder_required, time_window, time_window_call_time, time_window_phone)
     VALUES
-      (:ahjId, null, null, null, null,
-       null, null, null,
+      (:ahjId, null, null, null, null, null,
        null, null, null, null, null,
        null, null, null,
-       false, now(), :currentUser, null, null,
-       null, null, null,
-       null, null)
+       null, null, false, now(), :currentUser, null, null,
+       null, null, null, null)
     RETURNING id
   </ahj.inspection.createBlank>
 
@@ -383,6 +392,56 @@
         WHERE id = :id
     ]]>
   </ahj.inspection.update>
+
+  <ahj.inspection.updateAllAhjInspectionsInState>
+    <![CDATA[
+      UPDATE brs.ahj_inspection
+      SET inspection_fee = :inspectionFee,
+          re_inspection_fee = :reInspectionFee,
+          payment_method = :paymentMethod,
+
+          scheduling_note = :schedulingNote,
+          technician_instruction_note = :technicianInstructionNote,
+          scheduling_with_customer_note = :schedulingWithCustomerNote,
+          obtaining_results_note = :obtainingResultsNote,
+          reinspection_note = :reinspectionNote,
+          documentation_note = :documentationNote,
+          mpu_inspection_note = :mpuInspectionNote,
+
+          inspection_time_window = :inspectionTimeWindow,
+          brs_inspection_rep = :brsInspectionRep,
+          portal_url = :portalUrl,
+          portal_username = :portalUsername,
+          portal_password = :portalPassword,
+          obtaining_results_method = :obtainingResultsMethod,
+          approval_document_method = :approvalDocumentMethod,
+          obtaining_results_portal_url = :obtainingResultsPortalUrl,
+          obtaining_results_portal_username = :obtainingResultsPortalUsername,
+          obtaining_results_portal_password = :obtainingResultsPortalPassword,
+          business_license = :businessLicense,
+          contractor_license = :contractorLicense,
+          ladder_required = :ladderRequired,
+          time_window =  :timeWindow,
+          time_window_call_time = :timeWindowCallTime,
+          time_window_phone =  :timeWindowPhone,
+          date_modified = now(),
+          modified_by_id = :currentUser
+      WHERE ahj_id IN (:ahjIds)
+    ]]>
+  </ahj.inspection.updateAllAhjInspectionsInState>
+
+  <ahj.inspection.searchAhjsByState>
+    <![CDATA[
+      SELECT i.id, i.ahj_id
+      FROM brs.ahj_inspection i
+        INNER JOIN brs.ahj ahj ON ahj.id = i.ahj_id
+        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
+        INNER JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
+        INNER JOIN flow.state s ON s.id = sa.state_id
+      WHERE s.id = :stateId
+        AND ahj.archived IS FALSE
+    ]]>
+  </ahj.inspection.searchAhjsByState>
 
   <!-- CHECKLIST STUFF -->
   <ahj.inspection.checklist.create>
