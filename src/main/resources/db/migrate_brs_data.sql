@@ -4397,8 +4397,20 @@ insert into brs.override_plan_receiving_user( override_plan_id, user_id, m1_allo
 insert into brs.payroll_status
 (select * from blueraven.payroll_status);
 
-insert into brs.payroll
-(select * from blueraven.payroll);
+
+with updates as (
+    with deals as (
+        select unnest(selected_deal_ids) as deal_base_oid ,id
+        from blueraven.payroll p
+        group by id)
+    select array_agg(d.id) deal_ids,d2.id payroll_id
+    from blueraven.deal d
+             inner join deals d2  on d2.deal_base_oid = d.deal_base_oid
+    group by d2.id)
+insert into brs.payroll(id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current, selected_project_ids)
+(select id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current, u.deal_ids
+from blueraven.payroll p
+    inner join updates u on u.payroll_id = p.id);
 
 
 insert into brs.payroll_adjustment_type
