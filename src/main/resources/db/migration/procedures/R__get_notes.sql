@@ -57,7 +57,7 @@ BEGIN
                    n.created_by_id,
                    creator.first_name || ' ' || creator.last_name as created_by,
                    n.modified_by_id,
-                   cn.customer_id as primary_id,
+                   cn.contact_id as primary_id,
                    coalesce((
                                 SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                 FROM (
@@ -69,20 +69,20 @@ BEGIN
                                                 n2.created_by_id as "createdById",
                                                 creator2.first_name || ' ' || creator2.last_name as "createdBy",
                                                 n2.modified_by_id as "modifiedById",
-                                                cn2.customer_id as primaryId
+                                                cn2.contact_id as primaryId
                                          from flow.note n2
-                                                  inner join flow.customer_note cn2 on cn2.note_id = n2.id
+                                                  inner join flow.contact_note cn2 on cn2.note_id = n2.id
                                                   inner join flow.user creator2 on creator2.id = n2.created_by_id
                                          where n2.archived is not true
                                            and n2.parent_id = n.id
                                          order by n2.date_created
                                      ) childNotes), '[]') AS "child_notes"
             from flow.note n
-                     inner join flow.customer_note cn on cn.note_id = n.id
+                     inner join flow.contact_note cn on cn.note_id = n.id
                      inner join flow.user creator on creator.id = n.created_by_id
             where n.archived is not true
               and n.parent_id is null
-              and cn.customer_id = p_primary_id
+              and cn.contact_id = p_primary_id
             order by n.date_created desc;
       when p_object_type_id = 4 then
         RETURN QUERY
@@ -145,9 +145,9 @@ BEGIN
                                                 n2.created_by_id as "createdById",
                                                 creator2.first_name || ' ' || creator2.last_name as "createdBy",
                                                 n2.modified_by_id as "modifiedById",
-                                                cn2.customer_id as primaryId
+                                                cn2.contact_id as primaryId
                                          from flow.note n2
-                                                  inner join flow.customer_note cn2 on cn2.note_id = n2.id
+                                                  inner join flow.contact_note cn2 on cn2.note_id = n2.id
                                                   inner join flow.user creator2 on creator2.id = n2.created_by_id
                                          where n2.archived is not true
                                            and n2.parent_id = n.id

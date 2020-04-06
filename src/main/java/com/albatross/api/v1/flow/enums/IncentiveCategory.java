@@ -1,18 +1,19 @@
 package com.albatross.api.v1.flow.enums;
 
-public enum CustomerType {
-    CUSTOMER(1L),
-    LEAD(2L);
+public enum IncentiveCategory {
+    COUNTRY(1L),
+    STATE(2L),
+    UTILITY_STATE(3L);
 
     public final Long id;
 
-    CustomerType(Long id) {
+    IncentiveCategory(Long id) {
         this.id = id;
     }
 
-    public static CustomerType get(String name) {
+    public static IncentiveCategory get(String name) {
         name = name.toLowerCase();
-        for (CustomerType s : values()) {
+        for (IncentiveCategory s : values()) {
             if (s.toString().equals(name)) {
                 return s;
             }

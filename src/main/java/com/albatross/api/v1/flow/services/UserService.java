@@ -325,12 +325,15 @@ public class UserService {
   public ResponseEntity getLoggedInUser() {
     User user = securityService.getCurrentUser();
 
-    User response = findByUsernameIgnoreCase(null, user.getId());
+    if(null != user) {
+      User response = findByUsernameIgnoreCase(null, user.getId());
 
-    List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
-    response.setFeatureAccess(results);
-
-    return ResponseEntity.ok(response);
+      List<FeatureAccessControl> results = securityService.getUserFeatureAccess(user.getId(), user.getCompanyId());
+      response.setFeatureAccess(results);
+      return ResponseEntity.ok(response);
+    } else {
+      return ResponseEntity.badRequest().body("No user found");
+    }
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

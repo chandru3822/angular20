@@ -342,7 +342,7 @@ export default {
         this.newProcessStep = {}
         this.addNew = !this.addNew
         if(this.addNew) {
-          const {data} = await getRequest(`/processes/availableProcessSteps/${this.processId}`)
+          const {data} = await getRequest(`/processes/${this.processId}/availableProcessSteps`)
           this.availableProcessSteps = data
         }
         this.$store.commit(AppMutations.SET_LOADING, false)

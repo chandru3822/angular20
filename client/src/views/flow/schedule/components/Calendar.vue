@@ -382,7 +382,7 @@
             const {data} = await postRequest(`/schedule`, params)
             data.forEach(d => {
               d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-              d.title = `<b>${d.customerFirstName} ${d.customerLastName}</b> <br/> ${d.groupName}`
+              d.title = `<b>${d.contactFirstName} ${d.contactLastName}</b> <br/> ${d.groupName}`
               let matchingResource = this.resources.find(r => r.id === d.resourceId)
               d.colorForBorder = matchingResource?.color
             })

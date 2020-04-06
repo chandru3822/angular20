@@ -88,9 +88,9 @@ export default {
       model: '',
       headerColor: VUE_APP_ENV === 'local' ? 'pink' : VUE_APP_ENV === 'uat' || VUE_APP_ENV === 'dev' ? 'orange' : 'primaryCustom',
       tabs: [ {
-        label: 'Customers',
-        path: '/customers',
-          display: this.$store.getters.userHasFeature('CUSTOMERS')
+        label: 'Contacts',
+        path: '/contacts',
+          display: this.$store.getters.userHasFeature('CONTACTS')
       }, {
         label: 'Projects',
         path: '/project/search',
@@ -99,6 +99,10 @@ export default {
         label: 'AHJ Database',
         path: '/ahj',
         display: this.$store.getters.userHasFeature('AHJ_DATABASE')
+      }, {
+        label: 'Commissions',
+        path: '/commissionManagement/closers',
+        display: this.$store.getters.userHasFeature('COMMISSIONS')
       }, {
         label: 'Schedule',
         path: '/schedule',

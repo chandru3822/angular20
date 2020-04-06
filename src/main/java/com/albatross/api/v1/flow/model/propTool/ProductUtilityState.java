@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductUtilityState {
 
-  private Long id;
-  private String productId, utilityStateId;
-  private Boolean archived;
+  private Long id, productId, utilityStateId, companyStateId;
+  private String productName, state, utilityCompany;
+  private Boolean archived, active;
   private Double fundingCap, targetProductionFactor;
 }

@@ -86,4 +86,13 @@
     where id = :utilityStateId
   ]]></propToolUtility.updateUtilityState>
 
+  <propToolUtility.getUtilityStates><![CDATA[
+    select us.*,
+           u.utility_company
+    from props.utility_state us
+        inner join props.utility u on u.id = us.utility_id
+    where us.company_state_id = :companyStateId
+        and us.archived is not true
+  ]]></propToolUtility.getUtilityStates>
+
 </sql>

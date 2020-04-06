@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.ProjectProcessStep;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
@@ -27,8 +28,13 @@ public class ProjectProcessStepController {
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
-
     return new ResponseEntity<>(projectProcessStepService.getProjectProcessStep(projectProcessStepId), HttpStatus.OK);
+  }
+
+  @DeleteMapping(value = "/{projectProcessStepId}")
+  public ResponseEntity<Void> deleteProjectProcessStep(@PathVariable Long projectProcessStepId) {
+    projectProcessStepService.deleteProjectProcessStep(projectProcessStepId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping(value = "/{projectProcessStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -55,7 +61,12 @@ public class ProjectProcessStepController {
     }
   }
 
-  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ProjectProcessStep> createProjectProcessStep(@RequestBody ProjectProcessStep projectProcessStep) {
+    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), projectProcessStep.getCompanyProcessStepStatusTypeId(), null), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ProjectProcessStep saveProjectProcessStep(@RequestBody ProjectProcessStep pps) {
     return projectProcessStepService.saveProjectProcessStep(pps);
   }
@@ -80,6 +91,12 @@ public class ProjectProcessStepController {
   @PostMapping(value = "/{projectProcessStepId}/owner")
   public ResponseEntity<Void> updateProjectProcessStepOwner(@PathVariable Long projectProcessStepId, @RequestBody Owner owner) {
     projectProcessStepService.updateOwner(projectProcessStepId, owner);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PostMapping(value = "{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
+    projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }

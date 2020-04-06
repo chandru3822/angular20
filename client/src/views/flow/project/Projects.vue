@@ -42,7 +42,7 @@
           No available projects
         </template>
 
-        <template #item="{item: project, index}">
+        <template #item="{item: project}">
           <tr class="clickable" @click="$router.push({name: 'projectOverview', params: {projectId: project.id}})">
             <td class="text-left">{{project.id}}</td>
             <td class="text-left">{{project.projectName}}</td>

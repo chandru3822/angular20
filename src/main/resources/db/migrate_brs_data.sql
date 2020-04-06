@@ -161,20 +161,43 @@ insert into flow.company_country(country_id, company_id, archived)
 
 alter table flow.country
     drop column if exists active_flag;
-
+/*
+INSERT INTO flow.org_level (company_id, level,level_name)
+VALUES ((select id from flow.company where company_name = 'Blue Raven Corporate'), 1,'Parent'),
+       ((select id from flow.company where company_name = 'Blue Raven Corporate'), 2,'Organization'),
+       ((select id from flow.company where company_name = 'Blue Raven Corporate'), 3,'Department'),
+       ((select id from flow.company where company_name = 'Blue Raven Corporate'), 4,'Region'),
+       ((select id from flow.company where company_name = 'Blue Raven Corporate'), 5,'Office');
 
 INSERT INTO flow.org_level (company_id, level,level_name)
 VALUES ((select id from flow.company where company_name = 'Blue Raven Solar'), 1,'Parent'),
        ((select id from flow.company where company_name = 'Blue Raven Solar'), 2,'Organization'),
        ((select id from flow.company where company_name = 'Blue Raven Solar'), 3,'Department'),
-       ((select id from flow.company where company_name = 'Blue Raven Solar'), 4,'Region'),
-       ((select id from flow.company where company_name = 'Blue Raven Solar'), 5,'Office');
+       ((select id from flow.company where company_name = 'Blue Raven Solar'), 4,'District'),
+       ((select id from flow.company where company_name = 'Blue Raven Solar'), 5,'Region'),
+       ((select id from flow.company where company_name = 'Blue Raven Solar'), 6,'Office');
 
 INSERT INTO flow.org_filter (org_level_id, rank, show_type)
-VALUES (2, 1, false),
-       (3, 2, false),
-       (4, 3, false),
-       (5, 4, true);
+VALUES ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+    and level = 2), 1, false),
+       ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+                                         and level = 3), 2, false),
+       ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+                                         and level = 4), 3, false),
+       ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+                                         and level = 5), 4, true),
+       ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+                                         and level = 6), 5, true);
+
+INSERT INTO flow.org_filter (org_level_id, rank, show_type)
+VALUES ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+                                         and level = 2), 1, false),
+       ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+                                         and level = 3), 2, false),
+       ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+                                         and level = 4), 3, true),
+       ((select id from flow.org_level where company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+                                         and level = 5), 4, true);
 
 insert into flow.org_type(id,org_type, org_parent_type_id, org_level_id, company_id)
     (  with org_types as (
@@ -187,7 +210,18 @@ insert into flow.org_type(id,org_type, org_parent_type_id, org_level_id, company
         from blueraven.org_hierarchy_filter_up('{215}') a
                  inner join blueraven.org_type ot on ot.id = a.org_type_id
         where org_type_id not in (15,16))
-       select ot2.id, ot2.org_type, ot2.org_parent_type_id, case when ot2.level is null then 1 else ot2.level end, (select id from flow.company where company_name = 'Blue Raven Solar')
+       select ot2.id, ot2.org_type, ot2.org_parent_type_id,
+              case when ot2.level is null then (select id from flow.org_level ol
+                                                where ol.company_id = (select id from flow.company where company_name = 'Blue Raven Solar') and
+                                                        ol.level = 1) else
+                       (select id from flow.org_level ol2
+                        where ol2.company_id = (select id from flow.company where company_name = 'Blue Raven Solar') and
+                            case when ot2.level = 2 then  ol2.level = 2
+                                 when ot2.level = 3 then ol2.level = 3
+                                 when ot2.level = 4 then ol2.level = 4
+                                 when ot2.level in (5,6) then ol2.level = 5
+                                 when ot2.level in (7,8) then ol2.level = 6 end)  end,
+              (select id from flow.company where company_name = 'Blue Raven Solar')
        from blueraven.org_type ot2
                 inner join org_types ot3 on ot3.id = ot2.id);
 
@@ -205,7 +239,14 @@ insert into flow.org_type(org_type, org_parent_type_id, org_level_id, company_id
                  inner join blueraven.org_type ot on ot.id = a.org_type_id
         where org_type_id not in (15,16))
        select ot2.org_type, null,
-              case when ot2.level is null then 1 else ot2.level end, (select id from flow.company where company_name = 'Blue Raven Corporate')
+              case when ot2.level is null then (select id from flow.org_level ol
+                                                where ol.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate') and
+                                                        ol.level = 1) else
+                       (select id from flow.org_level ol2
+                        where ol2.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate') and
+                            case when ot2.level = 2 then  ol2.level = 2
+                                 when ot2.level = 3 then ol2.level = 3
+                                  end)  end, (select id from flow.company where company_name = 'Blue Raven Corporate')
        from blueraven.org_type ot2
                 inner join org_types ot3 on ot3.id = ot2.id);
 
@@ -229,14 +270,17 @@ insert into flow.org_type(id,org_type, org_parent_type_id, org_level_id, company
                                       when ot2.org_parent_type_id = 1 then (select id from flow.org_type where org_type = 'Organization' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
                                       when ot2.org_parent_type_id = 9 then (select id from flow.org_type where org_type = 'Parent' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
                                       else ot2.org_parent_type_id end,
-           case when ot2.level is null then 1 else ot2.level end,
+                    (select id from flow.org_level ol2
+                     where ol2.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate') and
+                         case when ot2.level = 5 then  ol2.level = 4
+                              when ot2.level = 7 then ol2.level = 5 end),
            (select id from flow.company where company_name = 'Blue Raven Corporate')
 from blueraven.org_type ot2
     inner join org_types ot3 on ot3.id = ot2.id);
 
 
 
-SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
+SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);*/
 
 -- custom org field:  sales_area_id,email,sales_metro_area_id
 
@@ -284,7 +328,7 @@ INSERT INTO flow.org(company_id, org_name, parent_org_id, org_type_id
 (select (select id from flow.company where company_name = 'Blue Raven Corporate'), org_name, parent_org_id,
         (select id from flow.org_type where org_type = 'Parent' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),
      active_flag, email,
-    o.has_calendar,
+    false,
         case when o.active_flag is true then false else true end,
         2350555,
         now(),
@@ -332,8 +376,8 @@ update flow.org set parent_org_id = (select id from flow.org where org_name = 'B
 where id in (216,217);
 
 update flow.org set owning_org = true where org_type_id = 10;
-
-INSERT INTO flow."position"(id, company_id, "position", org_type_id, secondary_org_type_id,
+/*
+INSERT INTO flow."position"(id, company_id, "position", org_type_id,
                            active)
     (
         with positions as (
@@ -353,14 +397,13 @@ INSERT INTO flow."position"(id, company_id, "position", org_type_id, secondary_o
             (select id from flow.company where company_name = 'Blue Raven Solar'),
                p."position",
                p.org_type_id,
-               p.secondary_org_type_id,
                p.active
      from blueraven.position p
         inner join all_positions p1 on p1.id = p.id
         where p.id not in (176,175,197,156,149,174,10,23,33,78));
 
 
-INSERT INTO flow."position"(id, company_id, "position", org_type_id, secondary_org_type_id,
+INSERT INTO flow."position"(id, company_id, "position", org_type_id,
                             active)
     (
         with positions as (
@@ -383,13 +426,12 @@ INSERT INTO flow."position"(id, company_id, "position", org_type_id, secondary_o
                     when p.org_type_id = 1 then (select id from flow.org_type where org_type = 'Organization' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
                     when p.org_type_id = 9 then (select id from flow.org_type where org_type = 'Parent' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
                     else p.org_type_id  end,
-               p.secondary_org_type_id,
                p.active
         from blueraven.position p
                  inner join all_positions p1 on p1.id = p.id
         where p.id not in (176,175,197,156,149,174,10,23,33,78));
 
-INSERT INTO flow."position"(id, company_id, "position", org_type_id, secondary_org_type_id,
+INSERT INTO flow."position"(id, company_id, "position", org_type_id,
                             active)
 select p.id,
        (select id from flow.company where company_name = 'Blue Raven Corporate'),
@@ -398,17 +440,18 @@ select p.id,
             when p.org_type_id = 1 then (select id from flow.org_type where org_type = 'Organization' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
             when p.org_type_id = 9 then (select id from flow.org_type where org_type = 'Parent' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
             else p.org_type_id  end,
-       p.secondary_org_type_id,
        p.active
 from blueraven.position p
-where p.org_type_id in (1,9);
+where p.org_type_id in (1,9);*/
 
+/*with companies as (
+    select id from flow.company where id != 1
+)
+insert into flow.company_user_status_type( user_status_type, company_id,has_access)
+    (select user_status_type,c.id,true
+     from blueraven.user_status_type ust
+     cross join companies c );*/
 
-insert into flow.user_status_type(id, user_status_type, company_id)
-    (select id,user_status_type,(select id from flow.company where company_name = 'Blue Raven Solar')
-     from blueraven.user_status_type);
-
-SELECT setval('flow.user_status_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.user_status_type), 1), false);
 
 -- custom field list of value for joe
 INSERT INTO brs.list_of_value (name, parent_id, display_order, show_other, date_created, created_by_id)
@@ -481,7 +524,6 @@ INSERT INTO flow."user" (
                          date_modified,
                          recruited_by_user_id,
                          modified_by_id,
-                         user_status_type_id,
                          username)
     (SELECT
             onboarded_by_user_id,
@@ -501,7 +543,6 @@ INSERT INTO flow."user" (
             modified_dt,
             recruited_by_user_id,
             modified_by,
-            user_status_type_id,
             email
      FROM blueraven."user"
         where id not in (2350555,99999999)
@@ -589,18 +630,18 @@ where user_id not in (select distinct u.id
 and position_id not in (176,175,197,156,149,174,10,23,33,78,31);
 
 
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 1, 'Parent');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 2, 'Region');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 3, 'Office');
-
-
-
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'B+C Electric')),(select id from flow.company where company_name = 'B+C Electric'), false,now(),2350555);
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.company where company_name = 'B+C Electric'), false, now(),2350555);
-INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.company where company_name = 'B+C Electric'), false,now(),2350555);
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 1, 'Parent');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 2, 'Region');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 3, 'Office');
+--
+--
+--
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'B+C Electric')),(select id from flow.company where company_name = 'B+C Electric'), false,now(),2350555);
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.company where company_name = 'B+C Electric'), false, now(),2350555);
+-- INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.company where company_name = 'B+C Electric'), false,now(),2350555);
 
 
 INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
@@ -654,11 +695,11 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
               inner join blueraven.org  p on p.id = o.parent_org_id
      where p.originator_id = 4 and p.org_type_id = 15);
 
-SELECT setval('flow.position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.position), 1), false);
-
-INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
+-- SELECT setval('flow.position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.position), 1), false);
+--
+-- INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
+-- INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'B+C Electric'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), true,now(),2350555);
 
 
 
@@ -680,7 +721,6 @@ INSERT INTO flow."user" (
                          date_modified,
                          recruited_by_user_id,
                          modified_by_id,
-                         user_status_type_id,
                          username)
     (SELECT
             onboarded_by_user_id,
@@ -700,7 +740,6 @@ INSERT INTO flow."user" (
             modified_dt,
             recruited_by_user_id,
             modified_by,
-            user_status_type_id,
             email
      FROM blueraven."user"
      where id in ( select distinct u.id
@@ -754,18 +793,18 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 
 
 
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Eco Lux Solar'), 1, 'Parent');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Eco Lux Solar'), 2, 'Region');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Eco Lux Solar'), 3, 'Office');
-
-
-
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),(select id from flow.company where company_name = 'Eco Lux Solar'), false,now(),2350555);
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.company where company_name = 'Eco Lux Solar'), false, now(),2350555);
-INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.company where company_name = 'Eco Lux Solar'), false,now(),2350555);
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Eco Lux Solar'), 1, 'Parent');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Eco Lux Solar'), 2, 'Region');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Eco Lux Solar'), 3, 'Office');
+--
+--
+--
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),(select id from flow.company where company_name = 'Eco Lux Solar'), false,now(),2350555);
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.company where company_name = 'Eco Lux Solar'), false, now(),2350555);
+-- INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.company where company_name = 'Eco Lux Solar'), false,now(),2350555);
 
 
 INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
@@ -821,9 +860,9 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
      where p.originator_id = 8 and p.org_type_id = 15);
 
 
-INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
+-- INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Eco Lux Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), true,now(),2350555);
 
 
 
@@ -845,7 +884,6 @@ INSERT INTO flow."user" (
                          date_modified,
                          recruited_by_user_id,
                          modified_by_id,
-                         user_status_type_id,
                          username)
     (SELECT
             onboarded_by_user_id,
@@ -865,7 +903,6 @@ INSERT INTO flow."user" (
             modified_dt,
             recruited_by_user_id,
             modified_by,
-            user_status_type_id,
             email
      FROM blueraven."user"
      where id in ( select distinct u.id
@@ -917,18 +954,18 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 
 
 
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Salient Solar'), 1, 'Parent');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Salient Solar'), 2, 'Region');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Salient Solar'), 3, 'Office');
-
-
-
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Salient Solar')),(select id from flow.company where company_name = 'Salient Solar'), false,now(),2350555);
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.company where company_name = 'Salient Solar'), false, now(),2350555);
-INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.company where company_name = 'Salient Solar'), false,now(),2350555);
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Salient Solar'), 1, 'Parent');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Salient Solar'), 2, 'Region');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Salient Solar'), 3, 'Office');
+--
+--
+--
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Salient Solar')),(select id from flow.company where company_name = 'Salient Solar'), false,now(),2350555);
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.company where company_name = 'Salient Solar'), false, now(),2350555);
+-- INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.company where company_name = 'Salient Solar'), false,now(),2350555);
 
 
 INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
@@ -984,9 +1021,9 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
      where p.originator_id = 6 and p.org_type_id = 15);
 
 
-INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
+-- INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Salient Solar'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), true,now(),2350555);
 
 
 
@@ -1008,7 +1045,6 @@ INSERT INTO flow."user" (
                          date_modified,
                          recruited_by_user_id,
                          modified_by_id,
-                         user_status_type_id,
                          username)
     (SELECT
             onboarded_by_user_id,
@@ -1028,7 +1064,6 @@ INSERT INTO flow."user" (
             modified_dt,
             recruited_by_user_id,
             modified_by,
-            user_status_type_id,
             email
      FROM blueraven."user"
      where id in ( select distinct u.id
@@ -1079,18 +1114,18 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 
 
 
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Solenrgi'), 1, 'Parent');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Solenrgi'), 2, 'Region');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Solenrgi'), 3, 'Office');
-
-
-
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Solenrgi')),(select id from flow.company where company_name = 'Solenrgi'), false,now(),2350555);
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.company where company_name = 'Solenrgi'), false, now(),2350555);
-INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.company where company_name = 'Solenrgi'), false,now(),2350555);
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Solenrgi'), 1, 'Parent');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Solenrgi'), 2, 'Region');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Solenrgi'), 3, 'Office');
+--
+--
+--
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Solenrgi')),(select id from flow.company where company_name = 'Solenrgi'), false,now(),2350555);
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.company where company_name = 'Solenrgi'), false, now(),2350555);
+-- INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.company where company_name = 'Solenrgi'), false,now(),2350555);
 
 
 INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,,archived,modified_by_id,date_modified,created_by_id,date_created)
@@ -1146,9 +1181,9 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
      where p.originator_id = 2 and p.org_type_id = 15);
 
 
-INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
+-- INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Solenrgi'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), true,now(),2350555);
 
 
 
@@ -1170,7 +1205,6 @@ INSERT INTO flow."user" (
                          date_modified,
                          recruited_by_user_id,
                          modified_by_id,
-                         user_status_type_id,
                          username)
     (SELECT
             onboarded_by_user_id,
@@ -1190,7 +1224,6 @@ INSERT INTO flow."user" (
             modified_dt,
             recruited_by_user_id,
             modified_by,
-            user_status_type_id,
             email
      FROM blueraven."user"
      where id in ( select distinct u.id
@@ -1243,18 +1276,18 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 
 
 
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Sun Run'), 1, 'Parent');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Sun Run'), 2, 'Region');
-INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Sun Run'), 3, 'Office');
-
-
-
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Sun Run')),(select id from flow.company where company_name = 'Sun Run'), false,now(),2350555);
-INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.company where company_name = 'Sun Run'), false, now(),2350555);
-INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
-('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.company where company_name = 'Sun Run'), false,now(),2350555);
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Sun Run'), 1, 'Parent');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Sun Run'), 2, 'Region');
+-- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'Sun Run'), 3, 'Office');
+--
+--
+--
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Parent', null, (select id from flow.org_level where level_name = 'Parent' and company_id in (select id from flow.company where company_name = 'Sun Run')),(select id from flow.company where company_name = 'Sun Run'), false,now(),2350555);
+-- INSERT INTO flow.org_type (org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Region', (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.org_level where level_name = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.company where company_name = 'Sun Run'), false, now(),2350555);
+-- INSERT INTO flow.org_type ( org_type, org_parent_type_id, org_level_id, company_id, archived, date_created, created_by_id) VALUES
+-- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.company where company_name = 'Sun Run'), false,now(),2350555);
 
 
 INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, owning_org, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
@@ -1310,9 +1343,9 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
      where p.originator_id = 7 and p.org_type_id = 15);
 
 
-INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
-INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
-INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id, position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer', (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
+-- INSERT INTO flow.position ( company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer Office Manager',(select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
+-- INSERT INTO flow.position (company_id,position, org_type_id, active,date_created,created_by_id) VALUES ((select id from flow.company where company_name = 'Sun Run'), 'Closer Regional Manager', (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), true,now(),2350555);
 
 
 
@@ -1334,7 +1367,6 @@ INSERT INTO flow."user" (
                          date_modified,
                          recruited_by_user_id,
                          modified_by_id,
-                         user_status_type_id,
                          username)
     (SELECT
             onboarded_by_user_id,
@@ -1354,7 +1386,6 @@ INSERT INTO flow."user" (
             modified_dt,
             recruited_by_user_id,
             modified_by,
-            user_status_type_id,
             email
      FROM blueraven."user"
      where id in ( select distinct u.id
@@ -1405,7 +1436,17 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 SELECT setval('flow.user_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.user where id != 99999999), 1), false);
 SELECT setval('flow.org_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org), 1), false);
 SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.user_position), 1), false);
+SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
+
+insert into flow.user_status_type(user_id, company_user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+    (select u.id,ust.id,false,now(),now(),2350555,2350555
+     from blueraven.user u
+              inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
+              inner join flow.user_company uc on uc.user_id = u.id
+              inner join flow.company_user_status_type ust  on ust.company_id = uc.company_id
+     where ust2.user_status_type = ust.user_status_type
+        and u.id not in (2350555,99999999));
 
 insert into brs.sales_area_type(id, sales_area_type)
     (select id, sales_area_type
@@ -1585,6 +1626,10 @@ SELECT setval('brs.ahj_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj), 1), 
 
 insert into brs.financier(id, name, submission_method, archived, date_created, created_by_id, date_modified, modified_by_id)
     (select id, name, submission_method, archived, now(), 2350555, null, null
+     from blueraven.financier);
+
+insert into props.financier(id,company_id, name, submission_method, archived, date_created, created_by_id, date_modified, modified_by_id)
+    (select id,(select id from flow.company where company_name = 'Blue Raven Corporate'), name, submission_method, archived, now(), 2350555, null, null
      from blueraven.financier);
 
 SELECT setval('brs.financier_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.financier), 1), false);
@@ -3972,14 +4017,14 @@ INSERT INTO flow.customer_custom_field_value (customer_id, custom_field_group_as
 -- migrate deals to flow.project
 --------------------------------------------------------------------------------
 -- create a generic Blueraven process
-INSERT INTO flow.process (process_name, date_created, created_by_id, parent_company_id)
-VALUES ('Generic Blueraven Process', now(), 2350555, (select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.process (process_name, date_created, created_by_id, parent_company_id)
+-- VALUES ('Generic Blueraven Process', now(), 2350555, (select id from flow.company where company_name = 'Blue Raven Solar'));
 
 -- tie together the process, status type, and BRS company together in flow.company_process
-INSERT INTO flow.company_process (company_id, process_id, status_type_id)
-VALUES ((select id from flow.company where company_name = 'Blue Raven Solar'),
-        (select id from flow.process where process_name = 'Generic Blueraven Process'),
-        (select id from flow.status_type where status_type.status_type = 'Active'));
+-- INSERT INTO flow.company_process (company_id, process_id, status_type_id)
+-- VALUES ((select id from flow.company where company_name = 'Blue Raven Solar'),
+--         (select id from flow.process where process_name = 'Generic Blueraven Process'),
+--         (select id from flow.status_type where status_type.status_type = 'Active'));
 
 -- add the company project status types
 insert into flow.project_status_type (project_status_type)
@@ -4034,7 +4079,7 @@ INSERT INTO flow.project (id,
                  else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) end
 
      FROM blueraven.deal where deal.customer_id IS NOT NULL
-        and originator_id != 5);  -- TODO remove where clause; we want all deals migrated
+        and originator_id = 1);  -- TODO Add all the other companies projects
 -- ask Judson how to resolve these deals
 -- select * from blueraven.deal where customer_id is null;
 
@@ -4045,6 +4090,7 @@ SELECT setval('flow.project_id_seq',
                         FROM flow.project), 1), false);
 
 -- migrate closer and setter to flow.user_project
+--TODO look over this when Judson get's the user position records cleaned in production
 INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created,start_date)
     (SELECT *
      FROM
@@ -4100,37 +4146,37 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
 -- create Complete Final Design process step
 --------------------------------------------------------------------------------
 -- create the step
-INSERT INTO flow.process_step (process_step_name, company_id, created_by_id)
-VALUES ('Complete Final Design', (select id from flow.company where company_name = 'Blue Raven Solar'), 2350555);
+-- INSERT INTO flow.process_step (process_step_name, company_id, created_by_id)
+-- VALUES ('Complete Final Design', (select id from flow.company where company_name = 'Blue Raven Solar'), 2350555);
 
-update flow.custom_field_group
-set process_step_id = (select id from flow.process_step where process_step_name = 'Complete Final Design')
-where group_name =  'Process Step PlaceHolder';
+-- update flow.custom_field_group
+-- set process_step_id = (select id from flow.process_step where process_step_name = 'Complete Final Design')
+-- where group_name =  'Process Step PlaceHolder';
 
 -- associate it with Generic Blueraven Process
-INSERT INTO flow.process_step_process (process_id, process_step_id, org_id, created_by_id, display_order, initial_step)
-VALUES ((select id from flow.process where process_name = 'Generic Blueraven Process'),
-        (select id from flow.process_step where process_step_name = 'Complete Final Design'),
-        (select id from flow.org where org_name = 'Corporate - Blue Raven Solar'),
-        2350555,
-        0,
-        true);
+-- INSERT INTO flow.process_step_process (process_id, process_step_id, org_id, created_by_id, display_order, initial_step)
+-- VALUES ((select id from flow.process where process_name = 'Generic Blueraven Process'),
+--         (select id from flow.process_step where process_step_name = 'Complete Final Design'),
+--         (select id from flow.org where org_name = 'Corporate - Blue Raven Solar'),
+--         2350555,
+--         0,
+--         true);
 
--- create and migrate the necessary project custom fields
+--create and migrate the necessary project custom fields
 INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
 VALUES ('Cancelled Date',
         1,
         now(),
         2350555,
         (select id from flow.company where company_name = 'Blue Raven Solar'));
-
+--
 INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
 VALUES ('On Hold',
         3,
         now(),
         2350555,
         (select id from flow.company where company_name = 'Blue Raven Solar'));
-
+--
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
@@ -4142,7 +4188,7 @@ INSERT INTO flow.custom_field_group_assignment(
     custom_field_id,field_order,archived,created_by_id)
     (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
             (select id from flow.custom_field where field_name = 'On Hold'),1,false, 2350555);
-
+--
 insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,1
      from flow.custom_field cf
@@ -4153,7 +4199,7 @@ insert into flow.custom_field_object_type(custom_field_id, company_object_type_i
      from flow.custom_field cf
      where cf.field_name = 'On Hold'
     );
-
+--
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Cancelled Date') as custom_field_id,
@@ -4169,95 +4215,95 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
             2350555 as created_by_id
      FROM blueraven.deal WHERE on_hold IS NOT NULL
                            and originator_id != 5);
-
-
--- create project process step entries
-INSERT INTO flow.project_process_step (project_id, process_step_id, user_position_id, company_process_step_status_type_id, created_by_id)
-    (SELECT project.id,
-            (SELECT id FROM flow.process_step WHERE process_step_name = 'Complete Final Design') AS process_step_id,
-            7514 AS user_position_id, -- arbitrary user position id; I have no idea what to use here
-            -- TODO how will these projects be assigned to individuals? Should this be optional?
-            (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
-                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
-            2350555 as created_by_id
-     FROM flow.project
-              INNER JOIN blueraven.deal d
-                         ON project.id = d.id -- filter down to deals that were previously migrated to flow.project
-         -- TODO this will be deleted once I remove the WHERE clause on the project migration statement
-              INNER JOIN blueraven.deal_work_queue dwq
-                         ON project.id = dwq.deal_id -- filter down to deals that are currently in Complete Final Design
-                             AND dwq.work_queue_deal_ids && '{5}');
-
--- create and migrate the necessary step custom fields
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
-VALUES ('Site Survey Verified Date',
-        3,
-        now(),
-        2350555,
-        (select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
-VALUES ('Final Design QA Date',
-        3,
-        now(),
-        2350555,
-        (select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Process Step PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Site Survey Verified Date'),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Process Step PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Final Design QA Date'),1,false, 2350555);
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,1
-     from flow.custom_field cf
-     where cf.field_name = 'Site Survey Verified Date'
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,1
-     from flow.custom_field cf
-     where cf.field_name = 'Final Design QA Date'
-    );
-
-
-INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id, custom_field_group_assignment_id, timestamp_value, created_by_id)
-    (SELECT pps.id AS project_process_step_id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Site Survey Verified Date') AS custom_field_id,
-            d.site_survey_verified_date AS timestamp_value,
-            2350555 as created_by_id
-     FROM flow.project p
-              INNER JOIN blueraven.deal d
-                         ON p.id = d.id                       -- filter down to deals that were previously migrated to flow.project
-         -- TODO delete this once I remove the WHERE clause on the project migration
-              LEFT JOIN flow.project_process_step pps
-                        ON pps.project_id = d.id             -- traverse relationship to access project_process_step.id
-              INNER JOIN blueraven.deal_work_queue dwq
-                         ON p.id = dwq.deal_id                -- filter down to deals that are currently in Complete Final Design
-                             AND dwq.work_queue_deal_ids && '{5}'
-     WHERE d.site_survey_verified_date IS NOT NULL);
-
-INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id, custom_field_group_assignment_id, timestamp_value, created_by_id)
-    (SELECT pps.id AS project_process_step_id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Final Design QA Date') AS custom_field_id,
-            d.final_design_qa_date AS timestamp_value,
-            2350555 as created_by_id
-     FROM flow.project p
-              INNER JOIN blueraven.deal d
-                         ON p.id = d.id                       -- filter down to deals that were previously migrated to flow.project
-         -- TODO delete this once I remove the WHERE clause on the project migration
-              LEFT JOIN flow.project_process_step pps
-                        ON pps.project_id = d.id             -- traverse relationship to access project_process_step.id
-              INNER JOIN blueraven.deal_work_queue dwq
-                         ON p.id = dwq.deal_id                -- filter down to deals that are currently in Complete Final Design
-                             AND dwq.work_queue_deal_ids && '{5}'
-     WHERE d.final_design_qa_date IS NOT NULL);
+--
+--
+-- -- create project process step entries
+-- INSERT INTO flow.project_process_step (project_id, process_step_id, user_position_id, company_process_step_status_type_id, created_by_id)
+--     (SELECT project.id,
+--             (SELECT id FROM flow.process_step WHERE process_step_name = 'Complete Final Design') AS process_step_id,
+--             7514 AS user_position_id, -- arbitrary user position id; I have no idea what to use here
+--             -- TODO how will these projects be assigned to individuals? Should this be optional?
+--             (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Active'
+--                 and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
+--             2350555 as created_by_id
+--      FROM flow.project
+--               INNER JOIN blueraven.deal d
+--                          ON project.id = d.id -- filter down to deals that were previously migrated to flow.project
+--          -- TODO this will be deleted once I remove the WHERE clause on the project migration statement
+--               INNER JOIN blueraven.deal_work_queue dwq
+--                          ON project.id = dwq.deal_id -- filter down to deals that are currently in Complete Final Design
+--                              AND dwq.work_queue_deal_ids && '{5}');
+--
+-- -- create and migrate the necessary step custom fields
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
+-- VALUES ('Site Survey Verified Date',
+--         3,
+--         now(),
+--         2350555,
+--         (select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
+-- VALUES ('Final Design QA Date',
+--         3,
+--         now(),
+--         2350555,
+--         (select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Process Step PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Site Survey Verified Date'),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Process Step PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Final Design QA Date'),1,false, 2350555);
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,1
+--      from flow.custom_field cf
+--      where cf.field_name = 'Site Survey Verified Date'
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,1
+--      from flow.custom_field cf
+--      where cf.field_name = 'Final Design QA Date'
+--     );
+--
+--
+-- INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id, custom_field_group_assignment_id, timestamp_value, created_by_id)
+--     (SELECT pps.id AS project_process_step_id,
+--             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Site Survey Verified Date') AS custom_field_id,
+--             d.site_survey_verified_date AS timestamp_value,
+--             2350555 as created_by_id
+--      FROM flow.project p
+--               INNER JOIN blueraven.deal d
+--                          ON p.id = d.id                       -- filter down to deals that were previously migrated to flow.project
+--          -- TODO delete this once I remove the WHERE clause on the project migration
+--               LEFT JOIN flow.project_process_step pps
+--                         ON pps.project_id = d.id             -- traverse relationship to access project_process_step.id
+--               INNER JOIN blueraven.deal_work_queue dwq
+--                          ON p.id = dwq.deal_id                -- filter down to deals that are currently in Complete Final Design
+--                              AND dwq.work_queue_deal_ids && '{5}'
+--      WHERE d.site_survey_verified_date IS NOT NULL);
+--
+-- INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id, custom_field_group_assignment_id, timestamp_value, created_by_id)
+--     (SELECT pps.id AS project_process_step_id,
+--             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Final Design QA Date') AS custom_field_id,
+--             d.final_design_qa_date AS timestamp_value,
+--             2350555 as created_by_id
+--      FROM flow.project p
+--               INNER JOIN blueraven.deal d
+--                          ON p.id = d.id                       -- filter down to deals that were previously migrated to flow.project
+--          -- TODO delete this once I remove the WHERE clause on the project migration
+--               LEFT JOIN flow.project_process_step pps
+--                         ON pps.project_id = d.id             -- traverse relationship to access project_process_step.id
+--               INNER JOIN blueraven.deal_work_queue dwq
+--                          ON p.id = dwq.deal_id                -- filter down to deals that are currently in Complete Final Design
+--                              AND dwq.work_queue_deal_ids && '{5}'
+--      WHERE d.final_design_qa_date IS NOT NULL);
 
 
 insert into brs.ahj_checklist_type(id, name, archived)
@@ -4536,11 +4582,86 @@ INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, c
      from parent p
     );
 
--- had to do this for migration purposes so judson's user could be added and not need a status type
-alter table flow."user"
-ADD CONSTRAINT u_user_status_type_id_fk FOREIGN KEY (user_status_type_id)
-        REFERENCES flow.user_status_type (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT;
+--TODO add project custom records for deal stage source etc  INSERT INTO flow.project_custom_field_value
 
 DELETE FROM brs.list_of_value WHERE id = 160 AND name = 'false';
 DELETE FROM brs.list_of_value WHERE parent_id = 4;
+
+
+
+/*insert into commissions*/
+
+-- insert into flow.query_condition_type(id, query_condition_type)
+-- (select id,query_condition_type.query_condition_type
+--     from blueraven.query_condition_type);
+
+insert into brs.commission_plan_status(id, status_type)
+(select id,status_type
+    from blueraven.commission_plan_status);
+
+insert into brs.commission_plan(id, name, total, status_id, position_id, approved, created, created_by, approved_by, parent_id, description, notes)
+(select id, name, total, status_id, position_id, approved, created, created_by, approved_by, parent_id, description, notes
+    from blueraven.commission_plan);
+
+insert into brs.commission_plan_user(id, commission_plan_id, user_id, start_date, end_date, note)
+(select id, commission_plan_id, user_id, start_date, end_date, note
+    from blueraven.commission_plan_user);
+
+insert into brs.milestone_type(id, milestone_type, active, display_order)
+(select id, milestone_type, active, display_order
+    from blueraven.milestone_type);
+
+insert into brs.fee_type(id, fee_type)
+(select id,fee_type
+    from blueraven.fee_type);
+
+insert into brs.commission_plan_source_allocation(id, commission_plan_id, milestone_id, fee_amount, fee_type_id, source_id)
+(select id, commission_plan_id, milestone_id, fee_amount, fee_type_id, source_id
+    from blueraven.commission_plan_source_allocation);
+--
+-- insert into flow.query_condition(id, query_condition, query_code, query_condition_type_id, description, child_query_condition_id)
+-- (select id, query_condition, query_code, query_condition_type_id, description, child_query_condition_id
+--     from blueraven.query_condition);
+--
+-- insert into flow.milestone_query_condition(id, query_condition_id, milestone_id)
+-- (select id, query_condition_id, milestone_id
+--     from blueraven.milestone_query_condition);
+
+insert into brs.commission_plan_allocation(id, commission_plan_id, milestone_id, allocation)
+(select cpa.id, commission_plan_id, mqc.milestone_id, allocation
+    from blueraven.commission_plan_allocation cpa
+    inner join blueraven.milestone_query_condition mqc on mqc.id = cpa.milestone_query_condition_id);
+
+
+insert into brs.override_plan_status(id, status_type)
+    (select id,status_type
+     from blueraven.override_plan_status);
+
+insert into brs.override_plan(id, name, description, total, status_id, position_id, created_by, created, updated_by, updated, approved_by, approved, parent_id)
+(SELECT id, name, description, total, status_id, position_id, created_by, created, updated_by, updated, approved_by, approved, parent_id
+from blueraven.override_plan);
+
+insert into brs.override_plan_assigned_user(id, override_plan_id, user_id, start_date, end_date, note)
+(select id, override_plan_id, user_id, start_date, end_date, note
+    from blueraven.override_plan_assigned_user);
+
+insert into brs.override_plan_receiving_user( override_plan_id, user_id, m1_allocation, m2_allocation, note)
+(select  override_plan_id, user_id, (select (opru.allocation * (opma.allocation/100)) as m1_allocation
+                                        from blueraven.override_plan_milestone_allocation opma
+                                                 inner join blueraven.milestone_query_condition mqc on mqc.id = opma.milestone_query_condition_id
+                                                 inner join blueraven.milestone_type mt on mt.id = mqc.milestone_id
+                                                 inner join blueraven.override_plan op on op.id = opma.override_plan_id
+                                                 inner join blueraven.override_plan_receiving_user op1 on op1.override_plan_id = op.id
+                                        where opma.override_plan_id = opru.override_plan_id
+                                          and op1.user_id = opru.user_id
+                                          and mt.id = 1),
+        (select (opru.allocation * (opma.allocation/100)) as m2_allocation
+         from blueraven.override_plan_milestone_allocation opma
+                  inner join blueraven.milestone_query_condition mqc on mqc.id = opma.milestone_query_condition_id
+                  inner join blueraven.milestone_type mt on mt.id = mqc.milestone_id
+                  inner join blueraven.override_plan op on op.id = opma.override_plan_id
+                  inner join blueraven.override_plan_receiving_user op1 on op1.override_plan_id = op.id
+         where opma.override_plan_id = opru.override_plan_id
+           and op1.user_id = opru.user_id
+           and mt.id = 2), note
+    from blueraven.override_plan_receiving_user opru);

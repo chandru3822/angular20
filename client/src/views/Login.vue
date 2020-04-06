@@ -63,9 +63,10 @@
             }
           } catch (e) {
             this.loginLoading = false
+            let msg = e && e.data && e.data.includes('account is locked') ? 'Account Locked' : 'Invalid Username/Password.'
             this.$store.commit(
               UserMutations.LOGIN_ERROR,
-              'Invalid Username/Password.'
+              msg
             )
           }
         } else {
@@ -75,7 +76,8 @@
       },
       async loginSuccess (details) {
         await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
-        this.$router.push('/')
+        console.log('we be going')
+        this.$router.push({name: 'home'})
       }
     }
   }

@@ -13,14 +13,14 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="pa-4 mt-1" v-if="addNew">
-          <v-text-field v-model="newFinancier.financier"
+          <v-text-field v-model="newFinancier.name"
                         label="Financier Name">
           </v-text-field>
           <v-radio-group v-model="newFinancier.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
-          <v-btn :disabled="!newFinancier.financier || newFinancier.active == null" @click="saveFinancier(newFinancier)">Save</v-btn>
+          <v-btn :disabled="!newFinancier.name || newFinancier.active == null" @click="saveFinancier(newFinancier)">Save</v-btn>
         </v-card>
         <v-divider v-if="addNew"></v-divider>
         <v-data-table
@@ -43,17 +43,21 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedIndex % 2}">
-              <v-text-field v-model="item.financier"
+              <v-text-field v-model="item.name"
                             label="Financier">
               </v-text-field>
-              <v-btn :disabled="!item.financier" @click="saveFinancier(item)">Save</v-btn>
+              <v-radio-group v-model="item.active" column>
+                <v-radio label="Active" :value="true"></v-radio>
+                <v-radio label="Inactive" :value="false"></v-radio>
+              </v-radio-group>
+              <v-btn :disabled="!item.name" @click="saveFinancier(item)">Save</v-btn>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.financier}}</td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.name}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
                   <v-btn small text @click="expanded = [item]; selectedIndex = index"
@@ -134,8 +138,8 @@
         newFinancier: {},
         addNew: false,
         headers: [
-          {text: 'Financier', value: 'financier', show: true},
-          {text: 'Status', value: 'status', show: true},
+          {text: 'Financier', value: 'name', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }
@@ -181,7 +185,7 @@
           if(!item.id) {
             this.financiers.push(data)
           }
-          this.financiers = orderBy(this.financiers, [f => f.financier.toLowerCase()])
+          this.financiers = orderBy(this.financiers, [f => f.name.toLowerCase()])
 
           this.snackbar = getSnackbar('SUCCESS', item.id ? 'Financier Saved' : 'Financier Added')
 

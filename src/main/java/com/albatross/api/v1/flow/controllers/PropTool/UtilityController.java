@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers.PropTool;
 
 import com.albatross.api.v1.flow.model.propTool.Utility;
+import com.albatross.api.v1.flow.model.propTool.UtilityState;
 import com.albatross.api.v1.flow.services.propTool.UtilityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,11 @@ public class UtilityController {
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Utility> saveUtility(@RequestBody Utility utility) {
     return utilityService.saveUtility(utility);
+  }
+
+  @GetMapping(value = "/state/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<UtilityState> getUtilityStatesByCompanyStateId(@PathVariable("id") Long companyStateId) {
+    return utilityService.getUtilityStatesByCompanyStateId(companyStateId);
   }
 
 }

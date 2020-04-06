@@ -1,10 +1,21 @@
 package com.albatross.api;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
 import org.joda.time.DateTimeZone;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.TimeZone;
+
+@OpenAPIDefinition (info =
+	@Info(
+		title = "Albatross API",
+		version = "1.0",
+		description = "A collection of endpoints for korriej :)"
+	)
+)
+
 
 @SpringBootApplication
 public class ApiApplication {

@@ -72,7 +72,7 @@ public class ProjectService {
     return sqlCache.get("project.get", ImmutableMap.of("projectId", projectId), new ProjectMapper<>(Project.class, om));
   }
 
-  public Optional<Project> insertProject(Long customerId, Long processId, String projectName) {
+  public Optional<Project> insertProject(Long contactId, Long processId, String projectName) {
     User user = securityService.getCurrentUser();
 
     // Get active company project status type so new projects can have an active status
@@ -80,7 +80,7 @@ public class ProjectService {
     Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
     Long id = sqlCache.updateReturningId("project.insert",
-        ImmutableMap.of("customerId", customerId,
+        ImmutableMap.of("contactId", contactId,
                         "createdById", user.getId(),
                         "projectName", projectName,
                         "processId", processId,
@@ -140,9 +140,9 @@ public class ProjectService {
     return attachmentService.findById(storageBucket, attachmentId);
   }
 
-  public List<Project> getProjectsForCustomer(Long customerId) {
+  public List<Project> getProjectsForContact(Long contactId) {
     User user = securityService.getCurrentUser();
-    return sqlCache.query("project.getAllForCustomer", ImmutableMap.of("companyId", user.getCompanyId(), "customerId", customerId), Project.class);
+    return sqlCache.query("project.getAllForContact", ImmutableMap.of("companyId", user.getCompanyId(), "contactId", contactId), Project.class);
   }
 
   public void updateOwner(Long projectId, Owner owner) {

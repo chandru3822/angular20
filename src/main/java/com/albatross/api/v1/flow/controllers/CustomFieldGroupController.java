@@ -97,9 +97,9 @@ public class CustomFieldGroupController {
     customFieldGroupService.updateCustomFieldGroups(customFieldGroups);
   }
 
-  @GetMapping(value = "/getCustomerInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getCustomerInsertFields () {
-    return customFieldGroupService.getInsertFieldsByType(ObjectType.CUSTOMER.id);
+  @GetMapping(value = "/getContactInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getContactInsertFields () {
+    return customFieldGroupService.getInsertFieldsByType(ObjectType.CONTACT.id);
   }
 
   @GetMapping(value = "/getUserInsertFields", produces = MediaType.APPLICATION_JSON_VALUE)

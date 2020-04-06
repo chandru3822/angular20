@@ -3,7 +3,7 @@
     select p.id,
        cp.company_id,
        cp.process_id,
-       p.customer_id,
+       p.contact_id,
        p.project_name
     from flow.company_process cp
     inner join flow.project p on cp.id = p.company_process_id
@@ -15,7 +15,7 @@
     select
       p.id,
       p.project_name,
-      p.customer_id,
+      p.contact_id,
       p.date_created,
       cp.status_type_id,
       st.status_type,
@@ -36,7 +36,7 @@
     select count(*)
     from flow.project p
     inner join flow.company_process cp on cp.id = p.company_process_id
-    inner join flow.customer c on c.id = p.customer_id
+    inner join flow.contact c on c.id = p.contact_id
     where
       cp.company_id = :companyId and
       p.project_name ilike '%' || :query || '%'
@@ -48,7 +48,7 @@
         p.id,
         cp.company_id,
         cp.process_id,
-        p.customer_id,
+        p.contact_id,
         p.project_name,
         p.company_project_status_type_id,
         cpst.project_status_type,
@@ -75,26 +75,26 @@
 
   <project.insert>
     <![CDATA[
-      insert into flow.project (customer_id, company_process_id, project_name, created_by_id, company_project_status_type_id)
-      values (:customerId, :processId, :projectName, :createdById, :companyProjectStatusTypeId)
+      insert into flow.project (contact_id, company_process_id, project_name, created_by_id, company_project_status_type_id)
+      values (:contactId, :processId, :projectName, :createdById, :companyProjectStatusTypeId)
     ]]>
   </project.insert>
 
-  <project.getAllForCustomer>
+  <project.getAllForContact>
     <![CDATA[
       select p.id,
          cp.company_id,
          cp.process_id,
-         p.customer_id,
+         p.contact_id,
          p.project_name,
          p.company_project_status_type_id,
          cpst.project_status_type
       from flow.company_process cp
           inner join flow.project p on cp.id = p.company_process_id and p.id = :projectId
           inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-      where p.customer_id = :customerId;
+      where p.contact_id = :contactId;
     ]]>
-  </project.getAllForCustomer>
+  </project.getAllForContact>
 
   <project.getProcessStepsByProjectId><![CDATA[
     select
@@ -106,6 +106,7 @@
       coalesce(pps.date_modified, pps.date_created) as last_updated,
       cpsst.process_step_status_type,
       cpsst.process_step_status_type_id,
+      cpsst.id as company_process_step_status_type_id,
       (
         select row_to_json(o) from (
           select
@@ -126,7 +127,9 @@
     inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
     left join flow.user_position up on up.id = pps.user_position_id
     left join flow.user u on u.id = up.user_id
-    where p.id = :projectId
+    where
+      p.id = :projectId and
+      pps.archived is not true
     order by last_updated;
   ]]></project.getProcessStepsByProjectId>
 

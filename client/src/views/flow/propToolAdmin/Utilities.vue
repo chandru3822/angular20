@@ -36,8 +36,8 @@
             </v-row>
           </v-card>
           <v-radio-group v-model="newUtility.active" column>
-            <v-radio label="Active" value="true"></v-radio>
-            <v-radio label="Inactive" value="false"></v-radio>
+            <v-radio label="Active" :value="true"></v-radio>
+            <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
           <v-btn :disabled="!newUtility.utilityCompany || (!newUtility.utilityStates || newUtility.utilityStates.length === 0) || newUtility.active == null" @click="saveUtility(newUtility)">Save</v-btn>
         </v-card>

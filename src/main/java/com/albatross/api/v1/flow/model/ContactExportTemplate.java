@@ -10,9 +10,9 @@ import lombok.Data;
 @Builder
 @JsonPropertyOrder({"First Name", "Last Name", "Email", "Address", "City", "State", "Postal Code",
     "Owner"})
-public class CustomerExportTemplate {
-  public static CustomerExportTemplate from(Customer other) {
-    return CustomerExportTemplate.builder()
+public class ContactExportTemplate {
+  public static ContactExportTemplate from(Contact other) {
+    return ContactExportTemplate.builder()
         .firstName(other.getFirstName())
         .lastName(other.getLastName())
         .email(other.getEmail())
@@ -26,7 +26,7 @@ public class CustomerExportTemplate {
 
   /////////////////////////////////////////////////////////////////////////////
   // directly-sourced data — the data supplied by
-  // Customer — starts here
+  // Contact — starts here
   /////////////////////////////////////////////////////////////////////////////
   @JsonProperty("First Name")
   private String firstName;

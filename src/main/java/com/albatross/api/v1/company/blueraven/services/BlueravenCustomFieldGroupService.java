@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -76,6 +77,43 @@ public class BlueravenCustomFieldGroupService {
             } else {
               params.put("createdById", currentUser.getId());
               sqlCache.update("blueravenCustomFieldGroup.insertCustomFieldValue", params);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  public void bulkHandleSavingCustomFieldValues(List<CustomFieldGroup> groups, List<Long> sourceIds) {
+    User currentUser = securityService.getCurrentUser();
+    if (groups != null && groups.size() > 0) {
+      for(CustomFieldGroup group : groups) {
+        for(CustomFieldValue cfv : group.getCustomFieldValues()) {
+          if(fieldHasValue(cfv)) {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("dateValue", cfv.getDateValue());
+            params.put("timestampValue", cfv.getTimestampValue());
+            params.put("booleanValue", cfv.getBooleanValue());
+            params.put("textValue", cfv.getTextValue());
+            params.put("numericValue", cfv.getNumericValue());
+            params.put("intValue", cfv.getIntValue());
+            params.put("intArrayValue", cfv.getIntArrayValue());
+            params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+            params.put("sourceIds", sourceIds);
+
+            if(null != cfv.getId()){
+              params.put("id", cfv.getId());
+              params.put("modifiedById", currentUser.getId());
+              sqlCache.update("blueravenCustomFieldGroup.bulkUpdateCustomFieldValues", params);
+            } else {
+              params.put("createdById", currentUser.getId());
+
+              AtomicInteger count = new AtomicInteger();
+              sourceIds.forEach(sourceId -> {
+                params.put("sourceId", sourceId);
+                sqlCache.update("blueravenCustomFieldGroup.insertCustomFieldValue", params);
+                count.getAndIncrement();
+              });
             }
           }
         }

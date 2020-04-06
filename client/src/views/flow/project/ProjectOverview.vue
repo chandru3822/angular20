@@ -4,10 +4,10 @@
     <v-row class="project-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/customer/${customer.id}`">{{ customer.fullName}}</router-link>
+          <router-link :to="`/contact/${contact.id}`">{{ contact.fullName}}</router-link>
         </div>
         <div class="project-subtitle">
-          {{ customer.street1 }} - {{ customer.city }}, {{ customer.state }}
+          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
         </div>
       </v-col>
 
@@ -39,7 +39,7 @@
         </div>
         <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
           <span v-if="displayChangeOwner">cancel</span>
-          <span v-else-if="customer.owner && customer.owner.userId">change</span>
+          <span v-else-if="contact.owner && contact.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
       </v-col>
@@ -47,6 +47,16 @@
   </v-col>
 
   <v-col cols="12" lg="6">
+
+    <v-col class="text-left">
+      <v-btn
+        v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
+        class="manage-btn warning"
+        @click="$router.push({name: 'projectAdmin', params: {projectId}})"
+      >
+        Manage
+      </v-btn>
+    </v-col>
 
     <v-col v-if="isFieldsLoading">
       <SpinnerInline :size="20" color="primary"/>
@@ -70,8 +80,8 @@
       </v-toolbar>
       <v-card class="pa-4 text-left">
         <CustomValueInput
-          v-for="(field, idx) in group.customFieldValues"
-          :key="idx"
+          v-for="field in group.customFieldValues"
+          :key="field.fieldName"
           :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
           :showFieldName="false"
           :field="field"
@@ -93,7 +103,7 @@
           <ActiveProjectProcessStepSnippet
             :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)"
             :projectId="projectId"
-            :customerId="customer.id"/>
+            :contactId="contact.id"/>
         </v-col>
       </v-row>
     </v-col>
@@ -139,9 +149,10 @@
             <template v-for="step in processStepsByName">
               <h4 class="text-left work-type-header">{{step.processStepName}}</h4>
               <ProjectProcessStepSnippet
+                :key="step.processStepName"
                 :steps="step.processSteps"
                 :projectId="projectId"
-                :customerId="customer.id"/>
+                :contactId="contact.id"/>
             </template>
           </v-col>
 
@@ -205,7 +216,7 @@ export default {
       snackbar: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
-      customer: {},
+      contact: {},
       displayChangeOwner: false,
       availableOwners: [],
       project: {}
@@ -216,7 +227,7 @@ export default {
     this.getFieldGroups()
     this.getProcessSteps()
     this.getNotes()
-    this.getCustomer()
+    this.getContact()
     this.getAvailableOwners()
   },
   computed: {
@@ -263,7 +274,7 @@ export default {
     async getAvailableOwners () {
       // this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        //@TODO: @randa, pretty sure the customer list will work for process steps and projects but double checking
+        //@TODO: @randa, pretty sure the contact list will work for process steps and projects but double checking
         const {data} = await getRequest(`/project/owners`)
         this.availableOwners = data
 
@@ -298,10 +309,10 @@ export default {
         console.log('done gone boom')
       }
     },
-    getCustomer: async function () {
+    getContact: async function () {
       try {
-        const{data} = await getRequest(`/customer/project/${this.projectId}`)
-        this.customer = data
+        const{data} = await getRequest(`/contact/project/${this.projectId}`)
+        this.contact = data
       } catch (e) {
         console.error('*** ERROR ***', e)
       }
@@ -340,14 +351,15 @@ export default {
   font-size: 15px;
 }
 
-.user-card {
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
 .work-type-header {
   &:not(:first-child) {
     padding-top: 48px;
   }
+}
+</style>
+
+<style lang="scss">
+.manage-btn > .v-btn__content {
+  color: white !important;
 }
 </style>

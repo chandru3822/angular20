@@ -34,10 +34,16 @@ export default new Router({
           next('/users')
         } else {
           if(from.name !== 'login') {
-            const {data} = await getUser()
-            store.commit(UserMutations.SET_DETAILS, data)
+            try {
+              const {data} = await getUser()
+              store.commit(UserMutations.SET_DETAILS, data)
+              next()
+            } catch (e) {
+              next('/login')
+            }
+          } else {
+            next()
           }
-          next()
         }
       },
       children: [{
@@ -408,37 +414,47 @@ export default new Router({
             name: 'projectProcessStep',
             path: ':projectId/processStep/:processStepId',
             component: () => import (/*webpackChunkName: "projectProcessStep" */ './views/flow/project/ProjectProcessStep.vue')
-          }
+          }, {
+            name: 'projectAdmin',
+            path: ':projectId/admin',
+            component: () => {
+              if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+                return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+        }
         ]
       }, {
-        path: '/customers',
-        name: 'customers',
+        path: '/contacts',
+        name: 'contacts',
         component: () => {
-          if(store.getters.userHasFeature('CUSTOMERS')) {
-            return import (/*webpackChunkName: "customers" */ './views/flow/customers/Customers.vue')
+          if(store.getters.userHasFeature('CONTACTS')) {
+            return import (/*webpackChunkName: "contacts" */ './views/flow/contacts/Contacts.vue')
           } else  {
             return accessDenied()
           }
         },
         children: []
       }, {
-        path: '/customer/:id',
-        name: 'customer',
+        path: '/contact/:id',
+        name: 'contact',
         props: true,
         component: () => {
-          if(store.getters.userHasFeature('CUSTOMERS')) {
-            return import (/*webpackChunkName: "customer" */ './views/flow/customers/Customer.vue')
+          if(store.getters.userHasFeature('CONTACTS')) {
+            return import (/*webpackChunkName: "contact" */ './views/flow/contacts/Contact.vue')
           } else  {
             return accessDenied()
           }
         },
         children: []
       }, {
-        path: '/newCustomer',
-        name: 'newCustomer',
+        path: '/newContact',
+        name: 'newContact',
         component: () => {
-          if(store.getters.userHasFeature('CUSTOMERS')) {
-            return import (/*webpackChunkName: "customer" */ './views/flow/customers/NewCustomer.vue')
+          if(store.getters.userHasFeature('CONTACTS')) {
+            return import (/*webpackChunkName: "contact" */ './views/flow/contacts/NewContact.vue')
           } else  {
             return accessDenied()
           }
@@ -545,7 +561,57 @@ export default new Router({
           },
 
         ]
-      }
+      }, {
+          path: '/commissionManagement',
+          name: 'commissionManagement',
+          component: () => {
+            if(store.getters.userHasFeature('COMMISSIONS')) {
+              return import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/CommissionManagement.vue')
+            } else  {
+              return accessDenied()
+            }
+          },
+          children: [
+            {
+              path: 'closers',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Closers.vue'),
+            }, {
+              path: 'closers/:id',
+              name: 'closer',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Closer.vue'),
+            }, {
+              path: 'commissions',
+              name: 'commissions',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commissions.vue'),
+            }, {
+              path: 'commissions/:id',
+              name: 'commission',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commission.vue'),
+            }, {
+              path: 'overrides',
+              name: 'overrides',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Overrides.vue'),
+            }, {
+              path: 'overrides/:id',
+              name: 'override',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Override.vue'),
+            }, {
+              path: 'accounting',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Accounting.vue'),
+            }, {
+              path: 'payroll',
+              name: 'payrolls',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payrolls.vue'),
+            }, {
+              path: 'payroll/:id',
+              name: 'payroll',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payroll.vue'),
+            }, {
+              path: 'admin',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Admin.vue'),
+            },
+          ]
+        }
     ],
 
     }

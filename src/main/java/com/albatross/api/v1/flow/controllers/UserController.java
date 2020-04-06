@@ -27,7 +27,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<User>> searchCustomers(@RequestBody UserSearch search, Pageable pageable) {
+    public ResponseEntity<Page<User>> searchUsers(@RequestBody UserSearch search, Pageable pageable) {
         return new ResponseEntity<>(userService.searchUsers(search, pageable), HttpStatus.OK);
     }
 

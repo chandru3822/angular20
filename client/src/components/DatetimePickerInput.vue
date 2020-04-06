@@ -54,7 +54,7 @@ export default {
     readonly: {
       type: Boolean,
       default: false
-    }
+    },
   },
   data: () => ({
     date: null,
