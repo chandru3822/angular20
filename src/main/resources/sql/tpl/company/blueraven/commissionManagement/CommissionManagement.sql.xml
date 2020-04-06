@@ -240,7 +240,6 @@
        SELECT u.id                                      AS id,
             u.id                                         AS userId,
             u.first_name || ' ' || u.last_name           AS name,
-            u.hire_date                                  AS hireDate,
             cust.id                        AS userStatusTypeId,
             cp.name                                      AS commissionPlan,
             cp.description                               AS commissionDescription,
@@ -255,7 +254,6 @@
                            and up2.primary_flag IS TRUE
                            AND up2.end_date IS NULL
                            AND up2.archived IS NOT TRUE
-                           AND u.hire_date IS NOT NULL
                            AND cust.has_access is true),false) AS "is_active_closer",
             (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
              FROM (SELECT op2.name AS "receivingPlan", op2.description AS "receivingDescription", op2.id AS "receivingPlanId"
@@ -279,7 +277,7 @@
                                                                     (opau.end_date >= current_timestamp OR opau.end_date IS NULL))
                  LEFT JOIN brs.override_plan op ON opau.override_plan_id = op.id
 
-        GROUP BY u.id, u.first_name, u.last_name, u.hire_date, cust.id, cp.name, cp.description, cp.id, op.name, op.description, op.id
+        GROUP BY u.id, u.first_name, u.last_name, cust.id, cp.name, cp.description, cp.id, op.name, op.description, op.id
         ORDER BY name
     ]]></commissionManagement.getClosers>
 
@@ -376,7 +374,6 @@ FROM (SELECT cp.id,
                            u.id                               AS "userId",
                            cpu.start_date                     AS "startDate",
                            cpu.end_date                       AS "endDate",
-                           u.hire_date                        AS "hireDate",
                            false                              as "archived"
                     FROM brs.commission_plan_user cpu
                              INNER JOIN flow.user u ON cpu.user_id = u.id
@@ -398,7 +395,6 @@ FROM (SELECT cp.id,
              u.id                               AS "userId",
              cpu.start_date                     AS "startDate",
              cpu.end_date                       AS "endDate",
-             u.hire_date                        AS "hireDate",
              string_agg(DISTINCT p.position, ', ') FILTER (WHERE
                CASE WHEN cp.position_id = 1
                  THEN up.position_id IN (1,2,3,133)
@@ -583,7 +579,6 @@ FROM (SELECT cp.id,
     FROM (SELECT DISTINCT u.id                               AS "userId",
                       u.first_name || ' ' || u.last_name AS name,
                       u.email,
-                      u.hire_date as "hireDate",
                       (SELECT string_agg(distinct p1.position, ', ')
                        FROM flow.user_position up1
                               INNER JOIN flow.position p1 ON p1.id = up1.position_id
