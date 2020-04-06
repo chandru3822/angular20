@@ -22,6 +22,7 @@
           <v-card-text class="mt-4">
             <div class="flex-display" v-for="item in getCustomFieldsForGroup(12)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -51,6 +52,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(13)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -76,6 +78,7 @@
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(14)" :key="item.id">
                 <v-select v-model="item.intValue"
+                          @change="item.valueWasChanged = true"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -114,6 +117,7 @@
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(15)" :key="item.id">
                 <v-select v-model="item.intValue"
+                          @change="item.valueWasChanged = true"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -153,6 +157,7 @@
               <div class="flex-display custom-field mx-2"
                    v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
                 <v-select v-model="item.intValue"
+                          @change="item.valueWasChanged = true"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -335,6 +340,11 @@
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
         return match ? match.customFieldValues : []
       },
+      resetCustomFieldValueWasChangedFlags() {
+        this.customFieldGroupAssignments.forEach(group => {
+          group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+        })
+      },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataReady = false
@@ -370,6 +380,7 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
           this.ahjDesign = cloneDeep(data)
           this.ahjDesign.updateAllInState = false
+          this.resetCustomFieldValueWasChangedFlags()
           let successMessage = updateAllInState ? 'All designs in ' + this.ahjDesign.stateName + ' have been updated successfully' : 'Design updated successfully'
           this.snackbar = getSnackbar('SUCCESS', successMessage)
         } catch (e) {

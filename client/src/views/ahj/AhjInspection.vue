@@ -27,6 +27,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(17)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -35,6 +36,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -72,6 +74,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(18)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -80,6 +83,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -118,6 +122,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(19)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -162,6 +167,7 @@
             ></v-text-field>
             <div v-for="item in getCustomFieldsForGroup(20)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -170,6 +176,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -203,6 +210,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(21)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -211,6 +219,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -257,6 +266,7 @@
           <v-card-text class="mt-4 pb-1">
             <div v-for="item in getCustomFieldsForGroup(22)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -550,6 +560,11 @@
         let match = list.find(l => l.id === int)
         return match ? match.showOther : false
       },
+      resetCustomFieldValueWasChangedFlags() {
+        this.customFieldGroupAssignments.forEach(group => {
+          group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+        })
+      },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataReady = false
@@ -585,6 +600,7 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
           this.ahjInspection = cloneDeep(data)
           this.ahjInspection.updateAllInState = false
+          this.resetCustomFieldValueWasChangedFlags()
           let successMessage = updateAllInState ? 'All inspections in ' + this.ahjInspection.stateName + ' have been updated successfully' : 'Inspection updated successfully'
           this.snackbar = getSnackbar('SUCCESS', successMessage)
         } catch (e) {

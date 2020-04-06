@@ -81,6 +81,7 @@
                   <v-col cols="6" class="pl-4">
                     <div v-for="item in getCustomFieldsForGroup(7)" :key="item.id">
                       <v-select v-model="item.intValue"
+                                @change="item.valueWasChanged = true"
                                 :items="item.listOfValues"
                                 item-text="name"
                                 item-value="id"
@@ -89,6 +90,7 @@
                       ></v-select>
                       <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                     v-model="item.textValue"
+                                    @change="item.valueWasChanged = true"
                                     label="Other Value"
                                     filled
                                     class="other-field"
@@ -136,6 +138,7 @@
                   <div class="flex-display custom-field"
                        v-for="item in getCustomFieldsForGroup(9)" :key="item.id">
                     <v-select v-model="item.intValue"
+                              @change="item.valueWasChanged = true"
                               :items="item.listOfValues"
                               item-text="name"
                               item-value="id"
@@ -220,6 +223,7 @@
               <v-card-text class="mt-4">
                 <div v-for="item in getCustomFieldsForGroup(8)" :key="item.id">
                   <v-select v-model="item.intValue"
+                            @change="item.valueWasChanged = true"
                             :items="item.listOfValues"
                             item-text="name"
                             item-value="id"
@@ -228,6 +232,7 @@
                   ></v-select>
                   <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                 v-model="item.textValue"
+                                @change="item.valueWasChanged = true"
                                 label="Other Value"
                                 filled
                                 class="other-field"
@@ -264,6 +269,7 @@
                 <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id">
                   <v-select v-if="item.customFieldId === 56"
                             v-model="item.intValue"
+                            @change="item.valueWasChanged = true"
                             :items="item.listOfValues"
                             item-text="name"
                             item-value="id"
@@ -272,6 +278,7 @@
                   ></v-select>
                   <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 56"
                                 v-model="item.textValue"
+                                @change="item.valueWasChanged = true"
                                 label="Other Value"
                                 filled
                                 class="other-field"
@@ -307,6 +314,7 @@
                        :class="[{'mr-4': item.customFieldId === 55}, {'ml-4': item.customFieldId === 61}]">
                     <v-select v-if="[55,61].indexOf(item.customFieldId) !== -1"
                               v-model="item.intValue"
+                              @change="item.valueWasChanged = true"
                               :items="item.listOfValues"
                               item-text="name"
                               item-value="id"
@@ -315,6 +323,7 @@
                     ></v-select>
                     <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [55,61].indexOf(item.customFieldId) !== -1"
                                   v-model="item.textValue"
+                                  @change="item.valueWasChanged = true"
                                   label="Other Value"
                                   filled
                                   class="other-field"
@@ -365,6 +374,7 @@
                   <v-card-text>
                     <div v-for="item in getCustomFieldsForGroup(23)" :key="item.id" class="mt-4">
                       <v-select v-model="item.intValue"
+                                @change="item.valueWasChanged = true"
                                 :items="item.listOfValues"
                                 item-text="name"
                                 item-value="id"
@@ -373,6 +383,7 @@
                       ></v-select>
                       <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                     v-model="item.textValue"
+                                    @change="item.valueWasChanged = true"
                                     label="Other Value"
                                     filled
                                     class="other-field"
@@ -399,6 +410,7 @@
                        :class="[{'mr-4': item.customFieldId === 54}, {'ml-4': item.customFieldId === 53}]">
                     <v-select v-if="[54,53].indexOf(item.customFieldId) !== -1"
                               v-model="item.intValue"
+                              @change="item.valueWasChanged = true"
                               :items="item.listOfValues"
                               item-text="name"
                               item-value="id"
@@ -407,6 +419,7 @@
                     ></v-select>
                     <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [54,53].indexOf(item.customFieldId) !== -1"
                                   v-model="item.textValue"
+                                  @change="item.valueWasChanged = true"
                                   label="Other Value"
                                   filled
                                   class="other-field"
@@ -434,6 +447,7 @@
                 <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
                   <v-select v-if="item.customFieldId === 60"
                             v-model="item.intValue"
+                            @change="item.valueWasChanged = true"
                             :items="item.listOfValues"
                             item-text="name"
                             item-value="id"
@@ -442,6 +456,7 @@
                   ></v-select>
                   <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 60"
                                 v-model="item.textValue"
+                                @change="item.valueWasChanged = true"
                                 label="Other Value"
                                 filled
                                 class="other-field"
@@ -464,6 +479,7 @@
                     <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
                       <v-select v-if="item.customFieldId === 40"
                                 v-model="item.intValue"
+                                @change="item.valueWasChanged = true"
                                 :items="item.listOfValues"
                                 item-text="name"
                                 item-value="id"
@@ -472,6 +488,7 @@
                       ></v-select>
                       <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 40"
                                     v-model="item.textValue"
+                                    @change="item.valueWasChanged = true"
                                     label="Other Value"
                                     filled
                                     class="other-field"
@@ -627,10 +644,18 @@
         let match = list.find(l => l.id === int)
         return match ? match.showOther : false
       },
+      resetCustomFieldValueWasChangedFlags() {
+        this.customFieldGroupAssignments.forEach(group => {
+          group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+        })
+      },
       async resetForm() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.ahjUtility.financierId = (this.selectedFinancier && this.selectedFinancier.id) ? this.selectedFinancier.id : null
         this.dataReady = false
-        this.getAhjUtility().then(() => this.dataReady = true)
+        this.getAhjUtility().then(() => {
+          this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
+        })
       },
       async saveAhjUtility() {
         this.$store.commit(AppMutations.SET_LOADING, true)
