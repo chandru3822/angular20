@@ -58,6 +58,15 @@
               />
             </v-col>
           </v-row>
+
+          <v-row>
+            <v-col cols="12">
+              <v-checkbox
+                v-model="smartlist.shared"
+                label="Public"
+              />
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-card>
     </v-col>
@@ -130,28 +139,28 @@
         </v-col>
       </v-card>
 
-      <v-data-table
-        class="elevation-1"
-        :items="assignedFields"
-        dense
-        hide-default-footer
-      >
-        <template #item="{item: field}">
-          <tr>
-            <td class="px-1" style="width: 0.1%">
-              <v-btn
-                style="cursor: move"
-                icon
-                class="sortHandle"
-              >
+        <v-list dense>
+          <draggable v-model="assignedFields" @change="reorderFields" group="assignedFields">
+            <v-list-item class="grab" v-for="(field, index) in assignedFields" :key="field.id">
+
+              <v-list-item-action>
                 <v-icon>drag_handle</v-icon>
-              </v-btn>
-            </td>
-            <td>{{field.name}}</td>
-            <td>{{field.objectType}}</td>
-          </tr>
-        </template>
-      </v-data-table>
+              </v-list-item-action>
+
+              <v-list-item-content>
+                <v-row>
+                  <v-col cols="1" class="text-left">{{field.displayOrder}}</v-col>
+                  <v-col class="text-left">{{field.name}}</v-col>
+                  <v-col class="text-left">{{field.objectType}}</v-col>
+                </v-row>
+              </v-list-item-content>
+
+              <v-list-item-action class="clickable">
+                <v-icon @click="deleteField(index)">delete</v-icon>
+              </v-list-item-action>
+            </v-list-item>
+          </draggable>
+        </v-list>
     </v-col>
   </v-row>
   <Snackbar :snackbar="snackbar" />
@@ -161,7 +170,7 @@
 <script>
 
 import {AppMutations} from '@/stores/AppStore'
-import {IS_MOBILE, getRequest, putRequest, postRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar'
 import draggable from 'vuedraggable'
 
@@ -283,6 +292,39 @@ export default {
     resetNewFieldForm () {
       this.showNewFieldForm = false
       this.newField = {}
+    },
+    async deleteField (fieldIndex) {
+
+      try {
+        const fieldToDelete = this.assignedFields[fieldIndex]
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/smartlist/${this.$route.params.smartlistId}/field/${fieldToDelete.id}`)
+        this.assignedFields.splice(fieldIndex, 1)
+        this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error removing field from smartlist')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async reorderFields ({moved}) {
+
+      // If a drag happened but order wasn't changed
+      if (moved.newIndex === moved.oldIndex) {
+        return
+      }
+      this.assignedFields.forEach((field, index) => field.displayOrder = index + 1)
+
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await putRequest(`/smartlist/${this.$route.params.smartlistId}/order`, this.assignedFields)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error updating field order')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     }
   }
 }
@@ -312,7 +354,11 @@ export default {
   }
 }
 
-tr:nth-of-type(even) {
+.v-list {
+  padding: 0 !important;
+}
+
+.v-list-item:nth-of-type(even) {
   @extend .shaded-row;
 }
 </style>

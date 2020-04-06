@@ -12,7 +12,8 @@ import java.util.List;
 public class CustomFieldValue {
 
   private Long id, sourceId, customFieldGroupAssignmentId, customFieldGroupId,
-      customFieldId, fieldOrder, listOfValueId, dataTypeId;
+               customFieldId, fieldOrder, listOfValueId, dataTypeId;
+  private Boolean valueWasChanged;
 
   // not sure on these types
   private String dateValue, timestampValue, fieldName, fieldValue, textValue;

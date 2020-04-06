@@ -22,7 +22,7 @@ public class AhjPermit {
     // this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;
 
-    // these are only used when updates are performed for all AHJ's in a specified state
+    // these are only used when updates are performed for all AHJ Permits in a specified state
     private Boolean updateAllInState;
     private List<Long> ahjIds, permitIds;
 }
