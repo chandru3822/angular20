@@ -9,6 +9,7 @@
                           FROM (
                                    select ccv.id,
                                           ccv.source_id as "sourceId",
+                                          false as "valueWasChanged",
                                           ccv.date_value as "dateValue",
                                           ccv.timestamp_value as "timestampValue",
                                           ccv.boolean_value as "booleanValue",

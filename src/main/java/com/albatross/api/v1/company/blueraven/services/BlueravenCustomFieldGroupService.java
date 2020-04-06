@@ -60,8 +60,7 @@ public class BlueravenCustomFieldGroupService {
     if (groups != null && groups.size() > 0) {
       for(CustomFieldGroup group : groups) {
         for(CustomFieldValue cfv : group.getCustomFieldValues()) {
-          //todo: only save if something changed
-          if(fieldHasValue(cfv)) {
+          if(fieldHasValue(cfv) && cfv.getValueWasChanged()) {
             HashMap<String, Object> params = new HashMap<>();
             params.put("dateValue", cfv.getDateValue());
             params.put("timestampValue", cfv.getTimestampValue());
@@ -92,8 +91,7 @@ public class BlueravenCustomFieldGroupService {
     if (groups != null && groups.size() > 0) {
       for(CustomFieldGroup group : groups) {
         for(CustomFieldValue cfv : group.getCustomFieldValues()) {
-          //todo: only save if something changed
-          if(fieldHasValue(cfv)) {
+          if(fieldHasValue(cfv) && cfv.getValueWasChanged()) {
             HashMap<String, Object> params = new HashMap<>();
             params.put("dateValue", cfv.getDateValue());
             params.put("timestampValue", cfv.getTimestampValue());
