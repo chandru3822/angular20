@@ -11,7 +11,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -30,7 +29,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -379,29 +377,29 @@ public class ProjectProcessStepService {
     switch (r.getDataTypeId().intValue()) {
       case 1:
         // @TODO: Duped from the button logic, potentially combine
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate dateFunctionResult = (functionResult !=  null) ? LocalDate.parse(functionResult.toString(), formatter) : null;
-        LocalDate now = LocalDate.now();
-        String secondaryValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate dateFunctionResult = (functionResult !=  null) ? LocalDate.parse(functionResult.toString(), dateFormatter) : null;
+        LocalDate nowForDate = LocalDate.now();
+        String secondaryDateValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
         switch (r.getDataTypeRequirementId().intValue()) {
           case 1:
             try {
-              Assert.notNull(secondaryValue, "Unable to determine secondary value");
-              passed = compareDates(dateFunctionResult, now.minusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+              Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
+              passed = compareDates(dateFunctionResult, nowForDate.minusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something
             }
             break;
           case 2:
             try {
-              Assert.notNull(secondaryValue, "Unable to determine secondary value");
-              passed = compareDates(dateFunctionResult, now.plusDays(Long.parseLong(secondaryValue)), r.getOperatorTypeId());
+              Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
+              passed = compareDates(dateFunctionResult, nowForDate.plusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
             } catch (NumberFormatException e) {
               //@TODO: something?
             }
             break;
           case 3:
-            passed = compareDates(dateFunctionResult, now, r.getOperatorTypeId());
+            passed = compareDates(dateFunctionResult, nowForDate, r.getOperatorTypeId());
             break;
           case 4:
             try {
@@ -420,6 +418,64 @@ public class ProjectProcessStepService {
         }
         break;
       case 2:
+        // @TODO: Duped from the button logic, potentially combine
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
+        LocalDateTime timestampFunctionResult = (functionResult !=  null) ? LocalDateTime.parse(functionResult.toString(), dateTimeFormatter).withMinute(0).withSecond(0).withNano(0) : null;
+        LocalDateTime nowForTimestamp =  LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+        String secondaryTimestampValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 6:
+            try {
+              Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
+              passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.minusDays(Long.parseLong(secondaryTimestampValue)).toLocalDate(), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 7:
+            try {
+              Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
+              passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.plusDays(Long.parseLong(secondaryTimestampValue)).toLocalDate(), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 8:
+            passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.toLocalDate(), r.getOperatorTypeId());
+            break;
+          case 9:
+            try {
+              Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
+              passed = compareDateTimes(timestampFunctionResult, nowForTimestamp.minusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 10:
+            try {
+              Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
+              passed = compareDateTimes(timestampFunctionResult, nowForTimestamp.plusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 11:
+            passed = compareDateTimes(timestampFunctionResult, nowForTimestamp, r.getOperatorTypeId());
+            break;
+          case 12:
+            try {
+              passed = compareNullDateTime(timestampFunctionResult, r.getOperatorTypeId());
+            } catch (IllegalArgumentException e) {
+              //@TODO: something?
+            }
+            break;
+          case 13:
+            try {
+              passed = compareNonNullDateTime(timestampFunctionResult, r.getOperatorTypeId());
+            } catch (IllegalArgumentException e) {
+              //@TODO: something?
+            }
+        }
         break;
       case 3:
         // @TODO: Duped from the button logic, potentially combine
@@ -458,14 +514,112 @@ public class ProjectProcessStepService {
         }
         break;
       case 4:
-        Double resultValue = new BigDecimal(functionResult.toString()).setScale(2, RoundingMode.DOWN).doubleValue();
-        Double fieldNumericValue = (r.getNumericValue() == null) ? null : r.getNumericValue().setScale(2, RoundingMode.DOWN).doubleValue();
-        passed = compareNumeric(fieldNumericValue, resultValue, r.getOperatorTypeId());
+        // @TODO: Duped from the button logic, potentially combine
+        Double numericFunctionResult = (functionResult == null) ? null : new BigDecimal(functionResult.toString()).setScale(2, RoundingMode.DOWN).doubleValue();
+        switch(r.getDataTypeRequirementId().intValue()) {
+          case 16:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = numericFunctionResult == null;
+                break;
+              case 2:
+                passed = numericFunctionResult != null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 17:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = numericFunctionResult != null;
+                break;
+              case 2:
+                passed = numericFunctionResult == null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+        }
         break;
       case 5:
+        // @TODO: Duped from the button logic, potentially combine
+        String stringFunctionResult = (functionResult != null) ? functionResult.toString() : null;
+        // An empty string and null are treated as the same value during text comparison
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 18:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
+                break;
+              case 2:
+                passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 19:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
+                break;
+              case 2:
+                passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+            }
+        }
         break;
       case 6:
       case 9:
+        Long intFunctionResult = (functionResult != null) ? Long.valueOf(functionResult.toString()) : null;
+        switch(r.getDataTypeRequirementId().intValue()) {
+          case 20:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = intFunctionResult == null;
+                break;
+              case 2:
+                passed = intFunctionResult != null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 21:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = intFunctionResult != null;
+                break;
+              case 2:
+                passed = intFunctionResult == null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+        }
         break;
       case 7:
         break;
