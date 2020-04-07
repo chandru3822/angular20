@@ -144,7 +144,10 @@ label[for="adminOriginatorSelect"] {
 .underline .v-btn__content{
   text-decoration: underline;
 }
-
+.commission-button-container {
+  display: flex;
+  align-items: center;
+}
 .underline {
   text-decoration: underline;
 }

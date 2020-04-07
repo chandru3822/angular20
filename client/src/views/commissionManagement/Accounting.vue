@@ -1,5 +1,21 @@
 <template>
   <v-container class="pa-0">
+    <v-toolbar flat color="transparent">
+      <v-toolbar-title>
+        Current Payroll
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <div class="commission-button-container">
+          <v-btn color="primaryCustom" class="mr-3 white--text" @click="saveChanges()">
+            Save
+          </v-btn>
+          <v-btn @click="viewSummary()">
+            View Summary
+          </v-btn>
+        </div>
+      </v-toolbar-items>
+    </v-toolbar>
     <v-toolbar v-if="!payrollLoading && !additionalPayrollDataNeeded" :color="payrollStatus.color" class="mt-2">
       <v-toolbar-title class="app-title" :style="{'color': payrollStatus.textColor}">
         {{payrollStatus.message}}
@@ -220,6 +236,7 @@
         payDate: null,
         additionalPayrollDataNeeded: false,
         payrollLoading: true,
+        payrollSummary: [],
         timezone: this.$store.state.user.details.timezone.value,
         headers: [
           // {text: 'Select For Pay', value: 'select', show: true},
@@ -260,6 +277,33 @@
             this.snackbar = getSnackbar('ERROR', 'Error Updating')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
+        }
+      },
+      async saveChanges() {
+        console.log('save changes')
+        // this.$store.commit(AppMutations.SET_LOADING, true)
+        // try {
+        //   const {data} = await getRequest(`/payroll/${this.currentPayroll.id}/summary`, 'blueraven')
+        //   this.payrollSummary = data
+        //   console.log('randaLogger',data)
+        //   this.$store.commit(AppMutations.SET_LOADING, false)
+        // } catch (e) {
+        //   console.error('*** ERROR ***', e)
+        //   this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')
+        //   this.$store.commit(AppMutations.SET_LOADING, false)
+        // }
+      },
+      async viewSummary() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/payroll/${this.currentPayroll.id}/summary`, 'blueraven')
+          this.payrollSummary = data
+          console.log('randaLogger',data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async saveChangesToPayroll () {

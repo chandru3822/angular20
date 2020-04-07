@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
@@ -40,8 +39,8 @@ public class OverridePlanController {
 
     @GetMapping(value = "/_search")
     public String findOverridePlanUsers(@RequestParam String query,
-                                        @RequestParam(required = false) Long positions) {
-        String userForOverrides = overridePlanService.findUserForOverrides(query, positions);
+                                        @RequestParam(required = false) Long positionId) {
+        String userForOverrides = overridePlanService.findUserForOverrides(query, positionId);
         return userForOverrides;
     }
 
@@ -151,19 +150,19 @@ public class OverridePlanController {
     }
 
     @PostMapping(value = "/{id}/milestone")
-    public void addMilestone(@PathVariable Long id, @RequestBody OverridePlanService.OverrideMilestone overrideMilestone) {
-        overridePlanService.updateMilestone(id, overrideMilestone);
+    public String addMilestone(@PathVariable Long id, @RequestBody OverridePlanService.OverrideMilestone overrideMilestone) {
+        return overridePlanService.updateMilestone(id, overrideMilestone);
     }
 
-    @DeleteMapping(value = "/{id}/milestone/{milestoneQueryId}")
-    public void deleteMilestone(@PathVariable Long id, @PathVariable Long milestoneQueryId) {
-        overridePlanService.deleteMilestone(id, milestoneQueryId);
+    @DeleteMapping(value = "/{id}/milestone/{overridePlanAllocationId}")
+    public void deleteMilestone(@PathVariable Long id, @PathVariable Long overridePlanAllocationId) {
+        overridePlanService.deleteMilestone(id, overridePlanAllocationId);
     }
 
     @PostMapping(value = "/{id}/receivingUsers")
-    public void addReceivingUser(@PathVariable Long id,
+    public String addReceivingUser(@PathVariable Long id,
                                  @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
-        overridePlanService.addReceivingUser(id, receivingUser);
+        return overridePlanService.addReceivingUser(id, receivingUser);
     }
 
     @PostMapping(value = "/{id}/receivingUser")
@@ -193,10 +192,8 @@ public class OverridePlanController {
     public ResponseEntity addAssignedUser(@PathVariable Long id,
                                           @RequestBody OverridePlanService.OverrideAssignedUser assignedUser) {
         try {
-            overridePlanService.updateAssignedUser(id, assignedUser);
-            String s = String.format("/api/v1/plans/overrides/%d/assignedUsers", id);
-            return ResponseEntity.created(URI.create(s))
-                    .build();
+            String result = overridePlanService.updateAssignedUser(id, assignedUser);
+            return ResponseEntity.ok(result);
         } catch (OverridePlanService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
             Map<String, String> body = ImmutableMap.of("msg", e.getMessage(),

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="pa-0">
     <v-row>
       <v-col>
         <v-toolbar flat color="transparent">
@@ -8,9 +8,9 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <div class="button-container">
-              <v-btn>
-                Prepare Summary
+            <div class="commission-button-container">
+              <v-btn @click="viewSummary()">
+                View Summary
               </v-btn>
             </div>
           </v-toolbar-items>
@@ -21,7 +21,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <div class="button-container">
+            <div class="commission-button-container">
 
             </div>
           </v-toolbar-items>
@@ -93,6 +93,7 @@
         payroll: {},
         dataLoading: false,
         payrollSnapshot: [],
+        payrollSummary: [],
         payrollStatus: {},
         payrollId: this.$route.params.id,
         headers: [
@@ -153,6 +154,19 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Snapshot')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async viewSummary() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/payroll/${this.payrollId}/summary`, 'blueraven')
+          this.payrollSummary = data
+          console.log('randaLogger',data)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

@@ -592,7 +592,7 @@ export default new Router({
               name: 'overrides',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Overrides.vue'),
             }, {
-              path: 'overrides/:id',
+              path: 'override/:id?',
               name: 'override',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Override.vue'),
             }, {

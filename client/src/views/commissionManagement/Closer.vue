@@ -525,9 +525,5 @@
 .v-data-table {
   border-radius: 0;
 }
-.button-container {
-  display: flex;
-  align-items: center;
-}
 </style>
 

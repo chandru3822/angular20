@@ -129,7 +129,7 @@
     <payroll.getSummary><![CDATA[
     SELECT CASE WHEN p.payroll_status_id = 3
         THEN brs.get_commission_summary_from_snapshot(p.id)
-        ELSE brs.get_commission_summary(p.id) END
+        ELSE brs.get_commission_summary() END
     FROM brs.payroll p
     WHERE id = :payrollId
     ]]></payroll.getSummary>

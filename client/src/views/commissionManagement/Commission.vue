@@ -6,7 +6,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <div class="button-container">
+        <div class="commission-button-container">
           <v-dialog v-if="!commission.approved"
                     v-model="deleteConfirm"
                     width="500">
@@ -594,10 +594,6 @@
 <style lang="scss" scoped>
 .v-data-table {
   border-radius: 0;
-}
-.button-container {
-  display: flex;
-  align-items: center;
 }
 </style>
 
