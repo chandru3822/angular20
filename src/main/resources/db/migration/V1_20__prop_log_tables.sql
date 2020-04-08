@@ -750,7 +750,7 @@ create table if not exists brs.project_commission_snapshot
     overrides_paid_to_date      numeric(10, 2),
     remaining_value             numeric(10, 2),
     current_pay                 numeric(10, 2),
-    deal_total_value            numeric(10, 2),
+    project_total_value            numeric(10, 2),
     updated                     timestamp with time zone,
     override_adjustment         numeric(10, 2),
     total_commissions           numeric(10, 2),
@@ -867,3 +867,135 @@ create table if not exists brs.override_plan_assigned_user
 
 create index if not exists override_plan_assigned_user_user_id_daterange_excl
     on brs.override_plan_assigned_user (user_id, daterange(start_date, end_date, '[]'::text));
+
+
+
+
+create table if not exists brs.project_commission
+(
+    id               serial  not null
+        constraint project_commission_pk
+            primary key,
+    project_id integer not null,
+    commission_plan_id integer not null,
+        CONSTRAINT pc_project_id_fk FOREIGN KEY (project_id)
+        REFERENCES flow.project (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+            CONSTRAINT pc_commission_plan_id_fk FOREIGN KEY (commission_plan_id)
+            REFERENCES brs.commission_plan (id) MATCH SIMPLE
+            ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT pc_comp_uk unique  (commission_plan_id,project_id)
+);
+
+
+create table if not exists brs.project_override
+(
+    id               serial  not null
+        constraint project_override_pk
+            primary key,
+    project_id integer not null,
+    override_plan_id integer not null,
+        CONSTRAINT po_project_id_fk FOREIGN KEY (project_id)
+        REFERENCES flow.project (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT po_override_plan_id_fk FOREIGN KEY (override_plan_id)
+        REFERENCES brs.override_plan (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT po_comp_uk unique  (override_plan_id,project_id)
+);
+
+
+create table if not exists brs.exclude_commission
+(
+    id               serial  not null
+        constraint exclude_commission_pk
+            primary key,
+    project_id integer not null,
+    CONSTRAINT ec_project_id_fk FOREIGN KEY (project_id)
+        REFERENCES flow.project (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT po_project_id_uk unique  (project_id)
+);
+
+--TODO migrate this data
+alter table flow."user" drop column if exists employee_id;
+alter table flow."user" drop column if exists start_date;
+alter table flow."user" drop column if exists end_date;
+alter table flow."user" drop column if exists notes;
+alter table flow."user" drop column if exists employment_type_id;
+alter table flow."user" drop column if exists compensation_type_id;
+alter table flow."user" drop column if exists personal_email;
+alter table flow."user" drop column if exists recruited_by_user_id;
+alter table flow."user" drop column if exists recruited_by;
+alter table flow."user" drop column if exists referred_by_user_id;
+alter table flow."user" drop column if exists onboarded_by_user_id;
+alter table flow."user" drop column if exists hire_date;
+alter table flow."user" drop column if exists image_id;
+
+
+
+CREATE TABLE if not exists flow.process_step_action_company_function
+(
+    id                     serial  not null,
+    process_step_action_id        integer not null,
+    company_function_id    integer not null,
+    trigger_automatically  boolean not null default false,
+    date_created           timestamp without time zone DEFAULT now(),
+    date_modified           timestamp without time zone,
+    created_by_id          integer not null,
+    modified_by_id         integer,
+    archived boolean not null default false,
+    display_order         integer not null,
+    CONSTRAINT process_step_action_company_function_pk PRIMARY KEY (id),
+    CONSTRAINT psacf_process_step_action_id_fk FOREIGN KEY (process_step_action_id)
+        REFERENCES flow.process_step (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT psacf_company_function_id_fk FOREIGN KEY (company_function_id)
+        REFERENCES flow.company_function (id) MATCH SIMPLE
+        ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT psacf_action_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT psacf_action_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE INDEX if not exists psacf_process_step_id_idx ON flow.process_step_action_company_function (process_step_action_id);
+CREATE INDEX if not exists psacf_company_function_id_idx ON flow.process_step_action_company_function (company_function_id);
+
+
+
+CREATE TABLE if NOT EXISTS flow.action_param_dynamic_value
+(
+    id        serial                NOT NULL,
+    db_function_param_id integer NOT NULL,
+    process_step_action_company_function_id integer not null,
+    dynamic_value character varying(50),
+    archived boolean not null default false,
+    created_by_id                         integer,
+    date_created                         timestamp   without time zone DEFAULT now(),
+    modified_by_id                        integer,
+    date_modified                        timestamp      without time zone,
+    CONSTRAINT action_param_dynamic_value_pk PRIMARY KEY (id),
+    CONSTRAINT apdv_db_function_param_id_fk FOREIGN KEY (db_function_param_id)
+        REFERENCES flow.db_function_param (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT apdv_process_step_action_company_function_id_fk FOREIGN KEY (process_step_action_company_function_id)
+        REFERENCES flow.process_step_action_company_function (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT apdv_created_by_id_fk FOREIGN KEY (created_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT apdv_modified_by_id_fk FOREIGN KEY (modified_by_id)
+        REFERENCES flow.user (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+
+CREATE INDEX if not exists apdv_db_function_param_id_idx ON flow.action_param_dynamic_value (db_function_param_id);
+CREATE INDEX if not exists apdv_process_step_requirement_id_idx ON flow.action_param_dynamic_value (process_step_action_company_function_id);
+
+
+alter table flow.project_process_step alter column process_step_complete_date type timestamp without time zone;
+
+alter table flow.process_step_action_company_function drop column if exists trigger_automatically;

@@ -125,6 +125,9 @@ label[for="adminOriginatorSelect"] {
   vertical-align: middle;
   margin-left: 10px;
 }
+.vertical-top {
+  vertical-align: top;
+}
 .flex-display {
   display: flex !important;
 }
@@ -141,7 +144,10 @@ label[for="adminOriginatorSelect"] {
 .underline .v-btn__content{
   text-decoration: underline;
 }
-
+.commission-button-container {
+  display: flex;
+  align-items: center;
+}
 .underline {
   text-decoration: underline;
 }
@@ -152,6 +158,12 @@ label[for="adminOriginatorSelect"] {
 
 .fix-column-width-bug table {
   table-layout: fixed;
+}
+
+// this is for input fields in column headers
+.filter-input .v-input__slot {
+  height: 35px !important;
+  min-height: 35px !important;
 }
 
 .shaded-row{

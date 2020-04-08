@@ -13,7 +13,7 @@ import org.springframework.data.annotation.Id;
 public class Milestone {
 
     @Id
-    private Long allocationId;
-    private Long allocation, milestoneQueryConditionId, planId;
+    private Long commissionPlanAllocationId;
+    private Long allocation, milestoneTypeId, planId;
 
 }

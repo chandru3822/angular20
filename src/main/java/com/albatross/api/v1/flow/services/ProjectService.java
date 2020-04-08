@@ -33,8 +33,6 @@ import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@Getter
-@Setter
 @Service
 public class ProjectService {
 

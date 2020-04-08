@@ -82,8 +82,8 @@ public class PayrollController {
     }
 
     @GetMapping(value = "/{payrollId}/adjustments")
-    public String getPayrollAdjustments(@PathVariable Long payrollId, @RequestParam Long dealId) {
-        return payrollService.getPayrollAdjustments(payrollId, dealId);
+    public String getPayrollAdjustments(@PathVariable Long payrollId, @RequestParam Long projectId) {
+        return payrollService.getPayrollAdjustments(payrollId, projectId);
     }
 
     @PostMapping(value = "/{payrollId}/adjustments")
@@ -101,6 +101,17 @@ public class PayrollController {
         String status = payrollService.checkSummaryPreparationStatus();
         JSONObject response = new JSONObject("{\"response\": " + status + "}");
         return response.toString();
+    }
+
+    @GetMapping(value = "/current/summary")
+    public ResponseEntity<String> getCurrentPayrollSummary() {
+        try {
+            String summary = payrollService.getAccountSummaryForCurrentPayroll();
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping(value = "/{payrollId}/summary")

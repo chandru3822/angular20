@@ -193,15 +193,13 @@
   <ahj.permit.createBlank>
     <![CDATA[
       INSERT INTO brs.ahj_permit
-        (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required,
-         print_location, stamped_plan, archived, date_created, created_by_id,
-         business_license_expiration_date, contractor_license_expiration_date,
-         business_license, contractor_license)
+        (ahj_id, deposit_amount, average_permit_fee, engineering_letter_required, print_location, stamped_plan,
+         archived, date_created, created_by_id, business_license_expiration_date,
+         contractor_license_expiration_date, business_license, contractor_license)
       VALUES
-        (:ahjId, null, null, null,
-         null, null, false, now(), :currentUser,
-         null, null,
-         null, null)
+        (:ahjId, null, null, null, null, null,
+         false, now(), :currentUser, null,
+         null, null, null)
       RETURNING id
     ]]>
   </ahj.permit.createBlank>
@@ -222,32 +220,31 @@
   <ahj.permit.update>
     <![CDATA[
       UPDATE brs.ahj_permit
-      SET
-        ahj_id = :ahjId,
-        deposit_amount = :depositAmount,
-        average_permit_fee = :averagePermitFee,
-        engineering_letter_required = :engineeringLetterRequired,
-        print_location = :printLocation,
-        stamped_plan = :stampedPlan,
-        date_modified = now(),
-        modified_by_id = :currentUser,
-        business_license = :businessLicense,
-        contractor_license = :contractorLicense,
-        business_license_expiration_date = :businessLicenseExpirationDate,
-        contractor_license_expiration_date = :contractorLicenseExpirationDate,
-        other_license = :otherLicense,
-        other_license_expiration_date = :otherLicenseExpirationDate,
-        revision_fee_amount = :revisionFeeAmount,
-        as_built_fee_amount = :asBuiltFeeAmount,
-        follow_up_fee_amount = :followUpFeeAmount,
-        delivery_fee_amount = :deliveryFeeAmount,
-        approval_timeline = :approvalTimeline,
-        documents_available = :documentsAvailable,
+      SET ahj_id = :ahjId,
+          deposit_amount = :depositAmount,
+          average_permit_fee = :averagePermitFee,
+          engineering_letter_required = :engineeringLetterRequired,
+          print_location = :printLocation,
+          stamped_plan = :stampedPlan,
+          date_modified = now(),
+          modified_by_id = :currentUser,
+          business_license = :businessLicense,
+          contractor_license = :contractorLicense,
+          business_license_expiration_date = :businessLicenseExpirationDate,
+          contractor_license_expiration_date = :contractorLicenseExpirationDate,
+          other_license = :otherLicense,
+          other_license_expiration_date = :otherLicenseExpirationDate,
+          revision_fee_amount = :revisionFeeAmount,
+          as_built_fee_amount = :asBuiltFeeAmount,
+          follow_up_fee_amount = :followUpFeeAmount,
+          delivery_fee_amount = :deliveryFeeAmount,
+          approval_timeline = :approvalTimeline,
+          documents_available = :documentsAvailable,
 
-        submission_note = :submissionNote,
-        revision_note = :revisionNote,
-        as_built_note = :asBuiltNote,
-        delivery_note = :deliveryNote
+          submission_note = :submissionNote,
+          revision_note = :revisionNote,
+          as_built_note = :asBuiltNote,
+          delivery_note = :deliveryNote
       WHERE id = :id
     ]]>
   </ahj.permit.update>
@@ -282,6 +279,19 @@
       WHERE ahj_id IN (:ahjIds)
     ]]>
   </ahj.permit.updateAllAhjPermitsInState>
+
+  <ahj.permit.searchAhjsByState>
+    <![CDATA[
+      SELECT p.id, p.ahj_id
+      FROM brs.ahj_permit p
+        INNER JOIN brs.ahj ahj ON ahj.id = p.ahj_id
+        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
+        INNER JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
+        INNER JOIN flow.state s ON s.id = sa.state_id
+      WHERE s.id = :stateId
+        AND ahj.archived IS FALSE
+    ]]>
+  </ahj.permit.searchAhjsByState>
 
   <!-- CHECKLIST STUFF -->
   <ahj.permit.checklist.create>
@@ -341,18 +351,6 @@
       WHERE id = :id
     ]]>
   </ahj.permit.link.delete>
-
-  <ahj.permit.searchAhjsByState>
-    <![CDATA[
-      SELECT p.id, p.ahj_id
-      FROM brs.ahj_permit p
-        INNER JOIN brs.ahj ahj ON ahj.id = p.ahj_id
-        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
-        INNER JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
-        INNER JOIN flow.state s ON s.id = sa.state_id
-      WHERE s.id = :stateId
-    ]]>
-  </ahj.permit.searchAhjsByState>
 
   <!-- PERMIT CYCLE TIMES STUFF -->
 <!--  <ahj.permit.cycleTime.summaryStats>-->

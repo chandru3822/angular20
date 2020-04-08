@@ -26,6 +26,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(1)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -34,6 +35,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -160,6 +162,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(2)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -168,6 +171,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -207,6 +211,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(3)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -215,6 +220,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -263,6 +269,7 @@
             ></v-text-field>
             <div v-for="item in getCustomFieldsForGroup(4)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -271,6 +278,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -291,6 +299,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(5)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -299,6 +308,7 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="item.valueWasChanged = true"
                             label="Other Value"
                             filled
                             class="other-field"
@@ -728,6 +738,20 @@
         let match = list.find(l => l.id === int)
         return match ? match.showOther : false
       },
+      resetCustomFieldValueWasChangedFlags() {
+        this.customFieldGroupAssignments.forEach(group => {
+          group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+        })
+      },
+      async resetForm() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.dataReady = false
+        this.getAhjPermit().then(() => {
+          this.getCustomFieldGroupAssignmentsForScreen()
+          this.reformatDates()
+          this.dataReady = true
+        })
+      },
       async getDocuments() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -739,13 +763,6 @@
           this.snackbar = getSnackbar('ERROR', 'Error retrieving documents')
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
-      },
-      async resetForm() {
-        this.dataReady = false
-        this.getAhjPermit().then(() => {
-          this.reformatDates()
-          this.dataReady = true
-        })
       },
       async updateAhjPermit() {
         this.saveDialog = false
@@ -775,6 +792,7 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
           this.ahjPermit = cloneDeep(data)
           this.ahjPermit.updateAllInState = false
+          this.resetCustomFieldValueWasChangedFlags()
           this.reformatDates()
           let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : 'Permit updated successfully'
           this.snackbar = getSnackbar('SUCCESS', successMessage)

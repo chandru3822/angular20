@@ -2,11 +2,13 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesign;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesignDetail;
+import com.albatross.api.v1.company.blueraven.models.ahj.AhjInspection;
 import com.albatross.api.v1.company.blueraven.services.AhjDesignService;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -35,5 +37,10 @@ public class AhjDesignController {
                                                      @PathVariable Long id,
                                                      @RequestBody AhjDesign design) {
         return ahjDesignService.saveAhjDesign(ahjId, id, design);
+    }
+
+    @GetMapping(value = "/searchAhjsByState/{stateId}")
+    public List<AhjDesign> searchAhjsByState(@PathVariable Long stateId) {
+        return ahjDesignService.searchAhjsByState(stateId);
     }
 }

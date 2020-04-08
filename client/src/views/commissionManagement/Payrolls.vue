@@ -15,8 +15,8 @@
                           label="Customer"
                           v-model="payrollSearch.customerName"></v-text-field>
             <v-text-field text
-                          label="Deal ID"
-                          v-model="payrollSearch.dealId"></v-text-field>
+                          label="Project ID"
+                          v-model="payrollSearch.projectId"></v-text-field>
           </v-col>
           <v-col cols="12" sm="6">
             <DatetimePickerInput
@@ -88,6 +88,9 @@
       Snackbar,
       DatetimePickerInput
     },
+    created() {
+      this.getPayrollData()
+    },
     data() {
       return {
         snackbar: {},
@@ -123,7 +126,7 @@
       },
       async viewDetails (item) {
         console.log('randaLogger', item)
-        this.$router.push({name: 'payroll', params: { id: item.id }})
+        this.$router.push({name: 'payrollReview', params: { id: item.id }})
       }
     }
   }

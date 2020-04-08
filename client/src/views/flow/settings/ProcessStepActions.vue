@@ -55,7 +55,7 @@
                 label="Function"
                 item-text="companyFunctionName"
                 returnObject
-                @input="loadFunctionParams(); loadOperatorTypes(selectedFunction.returnDataTypeId); loadDataTypeRequirements(selectedFunction.returnDataTypeId)"
+                @input="loadFunctionParams(selectedFunction.dbFunctionId, true); loadOperatorTypes(selectedFunction.returnDataTypeId); loadDataTypeRequirements(selectedFunction.returnDataTypeId)"
             ></v-select>
             <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
@@ -176,7 +176,6 @@
                             placeholder="Enter an integer"
                             type="number"
                             step="1"
-                            v-mask="intMask"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                         <v-text-field
@@ -367,7 +366,7 @@
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <v-card flat v-if="addNewAction">
+          <v-card flat class="mb-3" v-if="addNewAction">
             <v-text-field v-model="newAction.actionName"
                           placeholder="Enter a name"
                           label="Action Name">
@@ -412,7 +411,7 @@
 
               <template #expanded-item="{ headers, item }">
                 <td :colspan="actionHeaders.length" class="pb-4" :class="{'shaded-row': selectedActionIndex % 2}">
-                  <v-card flat class="text-left" color="transparent">
+                  <v-card flat class="text-left pt-3" color="transparent">
                     <v-text-field v-model="item.actionName"
                                   placeholder="Enter a name"
                                   label="Action Name">
@@ -430,45 +429,24 @@
                               item-text="processStepStatusType"
                               item-value="id"
                     ></v-select>
-                    <!-- BUTTON -->
-                    <div v-if="item.actionTypeId === 2">
-                      <v-btn v-if="!addChildProcess"
-                             @click="addChildProcess = true; loadChildProcessSteps(item.id)">
-                        <v-icon>add</v-icon>
-                        Add Child Process
-                      </v-btn>
-                      <v-card class="pa-3" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
-                        <h3>Add Child Process</h3>
-                        <v-select v-model="selectedProcessStep"
-                                  :items="childProcessSteps"
-                                  label="Process Step"
-                                  item-text="processStepName"
-                                  return-object
-                        ></v-select>
-                        <input type="checkbox" v-model="selectedProcessStep.triggerAutomatically">
-                        Trigger Automatically
-                        <div class="mt-3">
-                          <v-btn :disabled="!selectedProcessStep.id"
-                                 @click="saveProcessStepToAction(item)">
-                            <v-icon>save</v-icon>
-                            Save
-                          </v-btn>
-                          <v-btn class="ml-3" @click="addChildProcess = false">
-                            <v-icon>remove</v-icon>
-                            Cancel
-                          </v-btn>
-                        </div>
-                      </v-card>
-                    </div>
+
                     <!-- LINK -->
                     <div v-if="item.actionTypeId === 1">
-                      <v-btn v-if="!addChildLink"
-                             @click="addChildLink = true; loadLinks(item.id)">
-                        <v-icon>add</v-icon>
-                        Add Link
-                      </v-btn>
-                      <v-card class="pa-3" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildLink">
-                        <h3>Add Link</h3>
+                      <v-divider></v-divider>
+                      <v-toolbar flat color="transparent">
+                        <v-toolbar-title class="app-title">
+                          Child Links
+                        </v-toolbar-title>
+                        <v-spacer></v-spacer>
+                        <v-toolbar-items>
+                          <v-btn v-if="!addChildLink"
+                                 @click="addChildLink = true; loadLinks(item.id)">
+                            <v-icon>add</v-icon>
+                          </v-btn>
+                        </v-toolbar-items>
+                      </v-toolbar>
+                      <v-card class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildLink">
+                        <h3>Add Child Link</h3>
                         <v-select v-model="selectedLink"
                                   :items="availableLinks"
                                   label="Available Links"
@@ -488,11 +466,10 @@
                   <v-row justify="center" class="pl-3 pr-3"
                           v-if="item.actionTypeId === 1 && item.processStepActionLinks && item.processStepActionLinks.length > 0">
                     <v-col cols="12">
-                      <h3 class="text-left">Child Links</h3>
                       <v-list v-for="(al, index) in filterBy(item.processStepActionLinks, false, 'archived')"
                               :key="index"
                               :class="{ 'shaded-row': index % 2 }">
-                        <v-list-item class="grab">
+                        <v-list-item>
                           <v-list-item-content class="text-left">
                             {{al.link}}
                           </v-list-item-content>
@@ -538,14 +515,51 @@
                       </v-list>
                     </v-col>
                   </v-row>
+                  <!-- BUTTON -->
+                  <div v-if="item.actionTypeId === 2">
+                  <v-divider></v-divider>
+                  <v-toolbar flat color="transparent">
+                    <v-toolbar-title class="app-title">
+                      Child Processes
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items>
+                      <v-btn text v-if="!addChildProcess"
+                             @click="addChildProcess = true; loadChildProcessSteps(item.id)">
+                        <v-icon>add</v-icon>
+                      </v-btn>
+                    </v-toolbar-items>
+                  </v-toolbar>
+                  <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
+                    <h3>Add Child Process</h3>
+                    <v-select v-model="selectedProcessStep"
+                              :items="childProcessSteps"
+                              label="Process Step"
+                              item-text="processStepName"
+                              return-object
+                    ></v-select>
+                    <input type="checkbox" v-model="selectedProcessStep.triggerAutomatically">
+                    Trigger Automatically
+                    <div class="mt-3">
+                      <v-btn :disabled="!selectedProcessStep.id"
+                             @click="saveProcessStepToAction(item)">
+                        <v-icon>save</v-icon>
+                        Save
+                      </v-btn>
+                      <v-btn class="ml-3" @click="addChildProcess = false">
+                        <v-icon>remove</v-icon>
+                        Cancel
+                      </v-btn>
+                    </div>
+                  </v-card>
+                </div>
                   <v-row justify="center" class="pl-3 pr-3"
-                          v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
-                    <v-col cols="12">
-                      <h3 class="text-left">Child Process Steps</h3>
+                         v-if="item.actionTypeId === 2 && item.processStepActionChildProcesses && item.processStepActionChildProcesses.length > 0">
+                    <v-col cols="12" class="pt-0">
                       <v-list v-for="(cp, index) in filterBy(item.processStepActionChildProcesses, false, 'archived')"
                               :key="index"
                               :class="{ 'shaded-row': index % 2 }">
-                        <v-list-item class="grab">
+                        <v-list-item>
                           <v-list-item-content class="text-left">
                             <v-list-item-title>{{cp.processStepName}}</v-list-item-title>
                             <v-list-item-subtitle>
@@ -555,8 +569,8 @@
                             </v-list-item-subtitle>
                           </v-list-item-content>
                           <v-dialog
-                              v-model="cp.deleteConfirm"
-                              width="500">
+                            v-model="cp.deleteConfirm"
+                            width="500">
                             <template v-slot:activator="{ on }">
                               <v-list-item-action class="clickable" v-on="on">
                                 <v-icon>delete</v-icon>
@@ -564,8 +578,8 @@
                             </template>
                             <v-card>
                               <v-card-title
-                                  class="headline grey lighten-2"
-                                  primary-title
+                                class="headline grey lighten-2"
+                                primary-title
                               >
                                 Confirm
                               </v-card-title>
@@ -580,13 +594,170 @@
                               <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                    @click="cp.deleteConfirm = false">
+                                  @click="cp.deleteConfirm = false">
                                   No
                                 </v-btn>
                                 <v-btn
-                                    color="primary"
-                                    text
-                                    @click="cp.archived = true; deleteChildProcessFromAction(item.id, cp.id)">
+                                  color="primary"
+                                  text
+                                  @click="cp.archived = true; deleteChildProcessFromAction(item.id, cp.id)">
+                                  Yes
+                                </v-btn>
+                              </v-card-actions>
+                            </v-card>
+                          </v-dialog>
+                        </v-list-item>
+                      </v-list>
+                    </v-col>
+                  </v-row>
+                  <!-- FUNCTIONS CAN ONLY BE ADDED TO BUTTONS -->
+                  <div v-if="item.actionTypeId === 2">
+                    <v-divider></v-divider>
+                    <v-toolbar flat color="transparent">
+                      <v-toolbar-title class="app-title">
+                        Child Functions
+                      </v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-toolbar-items>
+                        <v-btn text v-if="!addChildFunction"
+                               @click="addChildFunction = true; loadChildFunctions(item.id)">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </v-toolbar-items>
+                    </v-toolbar>
+                    <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildFunction">
+                      <h3>Add Child Function</h3>
+                      <v-select v-model="selectedChildFunction"
+                                :items="childFunctions"
+                                label="Function"
+                                item-text="companyFunctionName"
+                                return-object
+                                @input="loadFunctionParams(selectedChildFunction.dbFunctionId, false)"
+                      ></v-select>
+                      <div v-if="selectedChildFunction.id && selectedChildRequirementParamDynamicValues.length > 0">
+                        <h5 class="text-left">Dynamic Function Parameters</h5>
+                        <v-card flat color="transparent">
+                          <v-text-field
+                            v-for="(fp, index) in selectedChildRequirementParamDynamicValues"
+                            :key="index"
+                            placeholder="Enter a dynamic value"
+                            v-model="fp.dynamicValue"
+                            :label="fp.parameterName"></v-text-field>
+                        </v-card>
+                      </div>
+                      <div class="mt-3">
+                        <v-btn :disabled="!selectedChildFunction.id"
+                               @click="saveFunctionToAction(item)">
+                          <v-icon>save</v-icon>
+                          Save
+                        </v-btn>
+                        <v-btn class="ml-3" @click="addChildFunction = false">
+                          <v-icon>remove</v-icon>
+                          Cancel
+                        </v-btn>
+                      </div>
+                    </v-card>
+                  </div>
+                  <v-row justify="center" class="pl-3 pr-3"
+                         v-if="item.actionTypeId === 2 && item.processStepActionChildFunctions && item.processStepActionChildFunctions.length > 0">
+                    <v-col cols="12" class="pt-0">
+                      <v-list v-for="(cp, index) in filterBy(item.processStepActionChildFunctions, false, 'archived')"
+                              :key="index"
+                              :class="{ 'shaded-row': index % 2 }">
+                        <v-list-item>
+                          <v-list-item-content class="text-left">
+                            <v-list-item-title>{{cp.companyFunctionName}}</v-list-item-title>
+                            <div class="mt-2" v-if="cp.actionParamDynamicValues && cp.actionParamDynamicValues.length > 0">
+                              <h5 class="text-left">Dynamic Function Parameters</h5>
+                              <v-card flat color="transparent">
+                                <div v-for="(fp, index) in cp.actionParamDynamicValues" :key="index">
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 1"
+                                    placeholder="Enter a date"
+                                    type="date"
+                                    :readonly="!cp.edit"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 2"
+                                    placeholder="Enter a timestamp"
+                                    :readonly="!cp.edit"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 3"
+                                    :readonly="!cp.edit"
+                                    placeholder="Enter a boolean"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 4"
+                                    :readonly="!cp.edit"
+                                    placeholder="Enter a number"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-if="fp.dataTypeId === 6"
+                                    :readonly="!cp.edit"
+                                    placeholder="Enter an integer"
+                                    type="number"
+                                    step="1"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                  <v-text-field
+                                    v-else
+                                    :readonly="!cp.edit"
+                                    placeholder="Enter a dynamic value"
+                                    v-model="fp.dynamicValue"
+                                    :label="fp.parameterName"></v-text-field>
+                                </div>
+                              </v-card>
+                            </div>
+                            <v-list-item-subtitle>
+                              <v-btn color="primaryCustom" class="white--text" v-if="cp.edit"
+                                     @click="updateChildFunction(item.id, cp)">
+                                Save
+                              </v-btn>
+                            </v-list-item-subtitle>
+                          </v-list-item-content>
+                          <v-btn text color="primaryCustom" class="white--text"
+                                 @click="cp.edit = !cp.edit">
+                            <v-icon v-if="cp.edit">remove</v-icon>
+                            <v-icon v-else>edit</v-icon>
+                          </v-btn>
+                          <v-dialog
+                            v-model="cp.deleteConfirm"
+                            width="500">
+                            <template v-slot:activator="{ on }">
+                              <v-list-item-action class="clickable" v-on="on">
+                                <v-icon>delete</v-icon>
+                              </v-list-item-action>
+                            </template>
+                            <v-card>
+                              <v-card-title
+                                class="headline grey lighten-2"
+                                primary-title
+                              >
+                                Confirm
+                              </v-card-title>
+
+                              <v-card-text>
+                                Are you sure you want to delete <strong>{{ cp.functionName }}</strong> from <strong>{{
+                                item.actionName }}</strong>?
+                              </v-card-text>
+
+                              <v-divider></v-divider>
+
+                              <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn
+                                  @click="cp.deleteConfirm = false">
+                                  No
+                                </v-btn>
+                                <v-btn
+                                  color="primary"
+                                  text
+                                  @click="cp.archived = true; deleteChildFunctionFromAction(item.id, cp.id)">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -714,6 +885,7 @@
 <script>
   import Vue2Filters from 'vue2-filters'
   import {AppMutations} from '@/stores/AppStore'
+  import cloneDeep from 'lodash.clonedeep'
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
@@ -727,7 +899,6 @@
     data() {
       return {
         snackbar: {},
-        intMask: '############',
         headers: [
           {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
           {text: 'Type', value: 'processStepRequirementType', show: true},
@@ -781,9 +952,13 @@
           {id: 2, actionType: 'Button'}
         ],
         addChildProcess: false,
+        addChildFunction: false,
         selectedProcessStep: {},
+        selectedChildFunction: {},
+        selectedChildRequirementParamDynamicValues: [],
 
         childProcessSteps: [],
+        childFunctions: [],
         addChildLink: false,
         selectedLink: {},
         availableLinks: []
@@ -847,6 +1022,18 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async loadChildFunctions() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/function`)
+          this.childFunctions = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Functions')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async loadParentObjects() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -873,11 +1060,15 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async loadFunctionParams() {
+      async loadFunctionParams(dbFunctionId, isRequirement) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/function/${this.selectedFunction.id}/dynamicParams`)
-          this.newRequirement.requirementParamDynamicValues = data
+          const {data} = await getRequest(`/function/${dbFunctionId}/dynamicParams`)
+          if(isRequirement) {
+            this.newRequirement.requirementParamDynamicValues = data
+          } else {
+            this.selectedChildRequirementParamDynamicValues = data
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1217,6 +1408,53 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
+          this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveFunctionToAction(action) {
+        console.log('save new child function')
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildFunctionToAction`, {
+            companyFunctionId: this.selectedChildFunction.id,
+            displayOrder: 0,
+            actionParamDynamicValues: this.selectedChildRequirementParamDynamicValues
+          })
+          action.processStepActionChildFunctions.push(data)
+          this.selectedChildFunction = {}
+          this.selectedChildRequirementParamDynamicValues = []
+          this.addChildFunction = false
+          this.snackbar = getSnackbar('SUCCESS', 'Child Function Added To Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Child Function Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteChildFunctionFromAction(actionId, id) {
+        console.log('delete child function')
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Child Function Deleted From Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Child Function From Action')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async updateChildFunction(actionId, childFunction) {
+        console.log('update child function')
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildFunction`, childFunction)
           this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

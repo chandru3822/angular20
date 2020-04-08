@@ -584,7 +584,7 @@ export default new Router({
               name: 'commissions',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commissions.vue'),
             }, {
-              path: 'commissions/:id',
+              path: 'commission/:id?',
               name: 'commission',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commission.vue'),
             }, {
@@ -592,12 +592,21 @@ export default new Router({
               name: 'overrides',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Overrides.vue'),
             }, {
-              path: 'overrides/:id',
+              path: 'override/:id?',
               name: 'override',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Override.vue'),
             }, {
               path: 'accounting',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Accounting.vue'),
+              children: [
+                {
+                  path: 'current',
+                  component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/CurrentPayroll.vue'),
+                }, {
+                  path: 'summary',
+                  component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Summary.vue'),
+                }
+              ]
             }, {
               path: 'payroll',
               name: 'payrolls',
@@ -606,10 +615,52 @@ export default new Router({
               path: 'payroll/:id',
               name: 'payroll',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payroll.vue'),
+              children: [
+                {
+                  path: 'review',
+                  name: 'payrollReview',
+                  component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollReview.vue'),
+                }, {
+                  path: 'summary',
+                  name: 'payrollSummary',
+                  component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollSummary.vue'),
+                }
+              ]
             }, {
               path: 'admin',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Admin.vue'),
             },
+          ]
+        }, {
+          path: '/smartlist',
+          component: () => {
+            if(store.getters.userHasFeature('SMARTLIST')) {
+              return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/SmartlistHome.vue')
+            } else  {
+              return accessDenied()
+            }
+          },
+          children: [{
+              path: '',
+              name: 'smartlist',
+              component: () => {
+                if(store.getters.userHasFeature('SMARTLIST')) {
+                  return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/Smartlists.vue')
+                } else  {
+                  return accessDenied()
+                }
+              }
+            }, {
+              path: ':smartlistId',
+              name: 'smartlistEditor',
+              component: () => {
+                if(store.getters.userHasFeature('SMARTLIST')) {
+                  return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/Smartlist.vue')
+                } else  {
+                  return accessDenied()
+                }
+              }
+            }
           ]
         }
     ],

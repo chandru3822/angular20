@@ -52,7 +52,7 @@
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Accounting Review',
-          path: '/commissionManagement/accounting',
+          path: '/commissionManagement/accounting/current',
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Payroll Search',

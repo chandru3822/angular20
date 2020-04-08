@@ -21,11 +21,12 @@
             :headers="headers"
             :items="filterCustomFields()"
             :fixed-header="true"
-            :items-per-page="-1"
+            :items-per-page="25"
             single-expand
-            :expanded.sync="expanded"
-            hide-default-footer
+            :search="search"
             hide-default-header
+            :footer-props="footerProps"
+            :expanded.sync="expanded"
             class="elevation-1 mt-1"
         >
           <template #no-data>
@@ -34,6 +35,22 @@
 
           <template #no-results>
             No available fields
+          </template>
+
+          <template #header="{ props: { headers } }">
+            <thead class="v-data-table-header">
+              <tr>
+                <th v-for="header in headers" :key="header.text" class="py-2">
+                  {{ header.text }}
+                  <v-text-field v-if="header.showFilter"
+                                outlined
+                                hide-details
+                                single-line
+                                class="filter-input"
+                                v-model="search"></v-text-field>
+                </th>
+              </tr>
+            </thead>
           </template>
 
           <template #item="{ item, index }">
@@ -230,8 +247,16 @@
         IS_MOBILE,
         selectedFieldId: null,
         // this is used so the expanded row uses the full width...bug in vuetify
-        headers: Array(2).fill({}),
+        // headers: Array(2).fill({}),
+        headers: [
+          { text: 'Field Name', value: 'fieldName', showFilter: true },
+          { text: '', value: 'icons', showFilter: false },
+        ],
+        footerProps: {
+          'items-per-page-options': [25, 50]
+        },
         addField: false,
+        search: '',
         selectedIndex: null,
         expanded: [],
         customFields: [],

@@ -46,7 +46,7 @@ public class CommissionManagementService {
         private String milestoneType;
     }
 
-    public String updateCommissionPlan(Long id, CommissionPlan commissionPlan) {
+    public String updateCommissionPlan(CommissionPlan commissionPlan) {
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("name", commissionPlan.getName());
@@ -56,13 +56,13 @@ public class CommissionManagementService {
         User currentUser = securityService.getCurrentUser();
         String key = "commissionPlan.create";
 
-        if (id == null) {
+        if (commissionPlan.getId() == null) {
             params.put("createdBy", currentUser.getId());
 
         } else {
             key = "commissionPlan.update";
             params.put("updatedBy", currentUser.getId());
-            params.put("id", id);
+            params.put("id", commissionPlan.getId());
         }
 
         long planId = sqlCache.updateReturningId(key, params, "id").longValue();
@@ -74,20 +74,14 @@ public class CommissionManagementService {
         return sqlCache.query("commissionManagement.findActiveMilestones", Collections.emptyMap(), MilestoneType.class);
     }
 
-    public String findMilestoneQueryConditions(Long queryConditionType) {
+    public List<MilestoneType> findAvailableMilestones(Long planId) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("queryConditionTypeId", queryConditionType);
-
-        List<String> query = sqlCache.query("commissionManagement.findMilestoneConditions", params, new SingleColumnRowMapper<>(String.class));
-        return query.isEmpty() ? "[]" : query.get(0);
+        params.put("planId", planId);
+        return sqlCache.query("commissionManagement.findAvailableMilestones", params, MilestoneType.class);
     }
 
     public List<CommissionPlan> getCommissionPlans() {
         return sqlCache.query("commissionManagement.getCommissionPlans", Collections.emptyMap(), CommissionPlan.class);
-    }
-
-    public List<GetSource> getSources() {
-        return sqlCache.query("commission_management.getSources", Collections.emptyMap(), GetSource.class);
     }
 
     public String findUserForCommissions(String search, String positions) {
@@ -99,39 +93,11 @@ public class CommissionManagementService {
         return query.isEmpty() ? "[]" : query.get(0);
     }
 
-    public List<GetSource> getAvailableSources(List sourceIds) {
+    public List<Source> getAvailableSources(Long planId) {
         HashMap<String, Object> params = new HashMap<>();
-        try (Connection connection = dataSource.getConnection()) {
-            Array sourceIdsArray = connection.createArrayOf("int", sourceIds.toArray());
-            params.put("sourceIds", sourceIdsArray);
+        params.put("planId", planId);
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return sqlCache.query("commissionManagement.getAvailableSources", params, GetSource.class);
-    }
-
-    public List<GetMilestone> getAvailableMilestones(List milestoneIds) {
-        HashMap<String, Object> params = new HashMap<>();
-        try (Connection connection = dataSource.getConnection()) {
-            Array milestoneIdsArray = connection.createArrayOf("int", milestoneIds.toArray());
-            params.put("milestoneIds", milestoneIdsArray);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return sqlCache.query("commissionManagement.getAvailableMilestones", params, GetMilestone.class);
-    }
-
-    public String getMilestones() {
-        Optional<String> results = sqlCache.get("commissionManagement.getMilestones", Collections.emptyMap(), new SingleColumnRowMapper<>(String.class));
-        return results.orElse("");
-    }
-
-    public List<GetQueryCondition> getQueryConditions() {
-        return sqlCache.query("commissionManagement.getQueryConditions", Collections.emptyMap(), GetQueryCondition.class);
+        return sqlCache.query("commissionManagement.getAvailableSources", params, Source.class);
     }
 
     public List<ClosersPlan> getClosers() {
@@ -145,57 +111,11 @@ public class CommissionManagementService {
         return closers;
     }
 
-    public List<Payroll> getUserPayrolls(Long userId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("userId", userId);
-        return sqlCache.query("commissionManagement.getUserPayrolls", params, Payroll.class);
-    }
-
-    public String getUserCommissions(Long userId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("userId", userId);
-        Optional<String> results = sqlCache.get("commissionManagement.getUserCommissions", params, new SingleColumnRowMapper<>(String.class));
-        return results.orElse("");
-    }
-
-    public String getUserOverrides(Long userId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("userId", userId);
-        Optional<String> results = sqlCache.get("commissionManagement.getUserOverrides", params, new SingleColumnRowMapper<>(String.class));
-        return results.orElse("");
-    }
-
-    public Long getPayrollOverridePlans(Long userId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("userId", userId);
-        return sqlCache.get("commissionManagement.getPayrollOverridePlans", params, new SingleColumnRowMapper<>(Long.class)).get();
-    }
-
     public List<Payroll> customerSearch(Long userId, String query) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("userId", userId);
         params.put("searchQuery", query);
         return sqlCache.query("commissionManagement.customerSearch", params, Payroll.class);
-    }
-
-    public String getUserPayrollDetailsCommissions(Long userId, Long payrollId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("userId", userId);
-        params.put("payrollId", payrollId);
-        Optional<String> results = sqlCache.get("commissionManagement.getUserPayrollDetailsCommissions", params, new SingleColumnRowMapper<>(String.class));
-        return results.orElse("");
-    }
-
-    public String getPayrollDetailsOverrides(Long userId, Long payrollId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("userId", userId);
-        params.put("payrollId", payrollId);
-        Optional<String> results = sqlCache.get("commissionManagement.getPayrollDetailsOverrides", params, new SingleColumnRowMapper<>(String.class));
-        return results.orElse("");
-    }
-
-    public List<CloserDetails> getCloserDetails() {
-        return sqlCache.query("commissionManagement.getCloserDetails", Collections.emptyMap(), CloserDetails.class);
     }
 
     public Optional<Long> clonePlan(Long id, CommissionPlan commissionPlan)
@@ -272,8 +192,8 @@ public class CommissionManagementService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
 
-        List<String> query = sqlCache.query("commissionManagement.getCommissionPlanDetails", params, new SingleColumnRowMapper<>(String.class));
-        return query.isEmpty() ? null : query.get(0);
+        Optional<String> result = sqlCache.get("commissionManagement.getCommissionPlanDetails", params, new SingleColumnRowMapper<>(String.class));
+        return result.orElse("{}");
     }
 
     public String getCommissionPlanUsers(Long id) {
@@ -300,24 +220,14 @@ public class CommissionManagementService {
         sqlCache.update("commissionPlan.approve", params);
     }
 
-    public void editNote(Long planType, Long planId, String note, Long userId) {
-
+    public void updatePlanUser(Long planId, PlanUser planUser) {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("note", note);
         params.put("planId", planId);
-        params.put("userId", userId);
+        params.put("userId", planUser.getUserId());
+        params.put("note", planUser.getNote());
+        params.put("endDate", planUser.getEndDate());
 
-        if (planType == 1) {
-            sqlCache.update("commissionPlan.editNote", params);
-        }
-
-        if (planType == 2) {
-            sqlCache.update("overridePlan.editAssignedNote", params);
-        }
-
-        if (planType == 3) {
-            sqlCache.update("overridePlan.editReceivingNote", params);
-        }
+        sqlCache.update("commissionPlan.updatePlanUser", params);
     }
 
     public void inactivatePlan(Long planId) {
@@ -337,35 +247,55 @@ public class CommissionManagementService {
         return query.isEmpty() ? null : query.get(0);
     }
 
-    public void saveMilestone(Long planId, Milestone milestone) {
+    public String getCommissionPlanAllocationMilestone(Long id) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", id);
+
+        Optional<String> result = sqlCache.get("commissionManagement.getCommissionPlanAllocationMilestone", params, new SingleColumnRowMapper<>(String.class));
+        return result.orElse("{}");
+    }
+
+
+    public String saveMilestone(Long planId, Milestone milestone) {
         Map<String, Object> params = new HashMap<>();
         params.put("planId", planId);
         params.put("allocation", milestone.getAllocation());
-        params.put("milestoneQueryConditionId", milestone.getMilestoneQueryConditionId());
+        params.put("milestoneTypeId", milestone.getMilestoneTypeId());
 
-        sqlCache.update("commissionManagement.saveMilestone", params);
+        Long id = sqlCache.updateReturningId("commissionManagement.saveMilestone", params, "id").longValue();
+        return getCommissionPlanAllocationMilestone(id);
     }
 
     public void updateMilestone(Long planId, Milestone milestone) {
         Map<String, Object> params = new HashMap<>();
-        params.put("planId", planId);
         params.put("allocation", milestone.getAllocation());
-        params.put("milestoneQueryConditionId", milestone.getMilestoneQueryConditionId());
+        params.put("id", milestone.getCommissionPlanAllocationId());
 
         sqlCache.update("commissionManagement.updateMilestone", params);
     }
 
-    public void saveSource(Long planId, Source source) {
+    public List<Source> getSources() {
+        return sqlCache.query("commissionManagement.getSources", Collections.emptyMap(), Source.class);
+    }
+
+    public Source getSource(Long id) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", id);
+
+        Optional<Source> result = sqlCache.get("commissionManagement.getSource", params, Source.class);
+        return result.orElse(null);
+    }
+
+    public Source saveSource(Long planId, Source source) {
         Map<String, Object> params = new HashMap<>();
         params.put("planId", planId);
         params.put("sourceId", source.getSourceId());
-        params.put("sourceName", source.getSourceName());
-        params.put("milestoneTypeId", source.getMilestoneTypeId());
+        params.put("milestoneId", source.getMilestoneId());
         params.put("feeAmount", source.getFeeAmount());
         params.put("feeTypeId", source.getFeeTypeId());
-        params.put("milestoneId", source.getMilestoneId());
 
-        sqlCache.update("commissionManagement.saveSource", params);
+        Long id = sqlCache.updateReturningId("commissionManagement.saveSource", params, "id").longValue();
+        return getSource(id);
     }
 
     public boolean validateBackdatedPlan(PlanUser user)
@@ -498,10 +428,9 @@ public class CommissionManagementService {
         sqlCache.update("commissionManagement.updateSource", params);
     }
 
-    public void removeSource(Long planId, Source source) {
+    public void removeSource(Long planId, Long sourceId) {
         Map<String, Object> params = new HashMap<>();
-        params.put("planId", planId);
-        params.put("sourceId", source.getSourceId());
+        params.put("id", sourceId);
         sqlCache.update("commissionManagement.removeSource", params);
     }
 
@@ -514,26 +443,14 @@ public class CommissionManagementService {
     public void removeMilestone(Long planId, Long id) {
         Map<String, Object> params = new HashMap<>();
         params.put("id", id);
-        params.put("planId", planId);
         sqlCache.update("commissionManagement.removeMilestone", params);
     }
 
-    public void deleteUser(Long planId, Long userId) {
+    public void deleteUser(Long planId, Long commissionPlanUserId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
-        params.put("userId", userId);
+        params.put("commissionPlanUserId", commissionPlanUserId);
         sqlCache.update("commissionPlan.deleteUser", params);
-    }
-
-    public List<GetMilestone> getAdminMilestones() {
-        return sqlCache.query("commissionAdmin.getMilestoneList", new HashMap<>(), GetMilestone.class);
-    }
-
-    public void adminSave(Long id, String condition) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("id", id);
-        params.put("condition", condition);
-        sqlCache.update("commissionAdmin.save", params);
     }
 
     public Set<Long> getUsersWithPlanGaps(List<Long> userIds) {

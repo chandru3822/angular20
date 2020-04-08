@@ -1,0 +1,113 @@
+<sql>
+
+<smartlist.get><![CDATA[
+select
+  s.*,
+  ot.object_type
+from flow.smartlist s
+inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+inner join flow.object_type ot on ot.id = cot.object_type_id
+]]></smartlist.get>
+
+<smartlist.getById><![CDATA[
+select
+  s.*,
+  ot.object_type
+from flow.smartlist s
+inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+inner join flow.object_type ot on ot.id = cot.object_type_id
+where s.id = :id;
+]]></smartlist.getById>
+
+<smartlist.add><![CDATA[
+insert into flow.smartlist (name, company_object_type_id, shared, owner_id, created_by_id)
+values (:name, :companyObjectTypeId, false, :ownerId, :createdById)
+returning id;
+]]></smartlist.add>
+
+<smartlist.update><![CDATA[
+update flow.smartlist
+set
+  name = :name,
+  company_object_type_id = :companyObjectTypeId,
+  shared = :shared
+where
+  id = :id;
+]]></smartlist.update>
+
+<smartlist.getAvailableFields><![CDATA[
+select
+  sf.*,
+  ot.object_type
+from flow.smartlist_field sf
+inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
+inner join flow.object_type ot on ot.id = cot.object_type_id
+where cot.company_id = :companyId
+order by sf.company_object_type_id, sf.name;
+]]></smartlist.getAvailableFields>
+
+<smartlist.getAssignedFields><![CDATA[
+select
+  sfa.id,
+  sfa.smartlist_id,
+  sfa.smartlist_field_id,
+  sfa.custom_field_id,
+  sfa.archived,
+  sfa.display_order,
+  sf.name,
+  ot.object_type
+from flow.smartlist_field_assignment sfa
+inner join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
+inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
+inner join flow.object_type ot on ot.id = cot.object_type_id
+where
+  sfa.smartlist_id = :id and
+  sfa.archived is not true
+order by sfa.display_order;
+]]></smartlist.getAssignedFields>
+
+<smartlist.getAssignedFieldById><![CDATA[
+select
+  sfa.id,
+  sfa.smartlist_id,
+  sfa.smartlist_field_id,
+  sfa.custom_field_id,
+  sfa.archived,
+  sfa.display_order,
+  sf.name,
+  ot.object_type
+from flow.smartlist_field_assignment sfa
+inner join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
+inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
+inner join flow.object_type ot on ot.id = cot.object_type_id
+where
+  sfa.id = :id and
+  sfa.archived is not true
+order by sfa.display_order;
+]]></smartlist.getAssignedFieldById>
+
+<smartlist.addField><![CDATA[
+insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_id, created_by_id, display_order)
+values (:smartlistId, :smartlistFieldId, :customFieldId, :createdById, :displayOrder)
+returning id;
+]]></smartlist.addField>
+
+<smartlist.deleteField><![CDATA[
+update flow.smartlist_field_assignment
+set
+  archived = true,
+  modified_by_id = :userId,
+  date_modified = now()
+where id = :id;
+]]></smartlist.deleteField>
+
+<smartlist.updateDisplayOrder><![CDATA[
+update flow.smartlist_field_assignment
+set
+  display_order = :displayOrder,
+  modified_by_id = :userId,
+  date_modified = now()
+where id = :id;
+]]></smartlist.updateDisplayOrder>
+</sql>
+

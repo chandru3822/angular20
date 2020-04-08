@@ -5,10 +5,9 @@
          class="cancel-link"
          style="margin-right: 10px"
       >Cancel</a>
-      <v-btn id="save-btn"
+      <v-btn class="white--text mr-0 save-btn"
              color="primaryButton"
-             class="white--text mr-0"
-             @click="saveAhjDesign"
+             @click="saveDialog = true"
       >Save</v-btn>
     </v-col>
 
@@ -23,6 +22,7 @@
           <v-card-text class="mt-4">
             <div class="flex-display" v-for="item in getCustomFieldsForGroup(12)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -52,6 +52,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(13)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="item.valueWasChanged = true"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -77,6 +78,7 @@
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(14)" :key="item.id">
                 <v-select v-model="item.intValue"
+                          @change="item.valueWasChanged = true"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -115,6 +117,7 @@
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(15)" :key="item.id">
                 <v-select v-model="item.intValue"
+                          @change="item.valueWasChanged = true"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -154,6 +157,7 @@
               <div class="flex-display custom-field mx-2"
                    v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
                 <v-select v-model="item.intValue"
+                          @change="item.valueWasChanged = true"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -214,6 +218,66 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="saveDialog" max-width="700">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Save Changes</span>
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <v-card-text class="pb-0">
+          <v-radio-group v-model="ahjDesign.updateAllInState">
+            <v-radio label="Save changes to this AHJ only" :value="false"></v-radio>
+            <v-radio :label="`Save changes to all AHJs in ${ahjDesign.stateName}`" :value="true"></v-radio>
+          </v-radio-group>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions class="px-6">
+          <v-spacer></v-spacer>
+          <a @click="saveDialog = false"
+             class="cancel-link mr-2"
+          >Cancel</a>
+          <v-btn v-if="ahjDesign.updateAllInState"
+                 class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="saveConfirmDialog = true"
+          >Save</v-btn>
+          <v-btn v-else
+                 class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="updateAhjDesign"
+          >Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="saveConfirmDialog" max-width="500">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Confirm</span>
+        </v-card-title>
+
+        <v-card-text class="pb-0 py-2">
+          Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
+        </v-card-text>
+
+        <v-card-actions class="px-6">
+          <v-spacer></v-spacer>
+          <a @click="saveConfirmDialog = false"
+             class="cancel-link mr-2"
+          >Cancel</a>
+          <v-btn class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="updateAhjDesign"
+          >Yes</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
@@ -237,6 +301,8 @@
       ahjId: null,
       itemType: 'design',
       snackbar: {},
+      saveDialog: false,
+      saveConfirmDialog: false,
       dataReady: false,
       customFieldGroupAssignments: [],
       ahjDesign: {
@@ -263,6 +329,7 @@
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/design`, 'blueraven')
           this.ahjDesign = cloneDeep(data)
+          this.ahjDesign.updateAllInState = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Design')
@@ -273,6 +340,11 @@
         let match = this.customFieldGroupAssignments.find(cfga => cfga.id === groupId)
         return match ? match.customFieldValues : []
       },
+      resetCustomFieldValueWasChangedFlags() {
+        this.customFieldGroupAssignments.forEach(group => {
+          group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+        })
+      },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataReady = false
@@ -280,17 +352,43 @@
           this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
         })
       },
-      async saveAhjDesign() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      async updateAhjDesign() {
+        this.saveDialog = false
+        this.saveConfirmDialog = false
+        let updateAllInState = this.ahjDesign.updateAllInState
+
         try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+
+          if (updateAllInState) {
+            try {
+              const {data} = await getRequest(`/ahj/${this.ahjId}/design/searchAhjsByState/${this.ahjDesign.stateId}`, 'blueraven')
+              this.ahjDesign.ahjIds = []
+              this.ahjDesign.designIds = []
+
+              data.forEach(row => {
+                this.ahjDesign.ahjIds.push(row.ahjId)
+                this.ahjDesign.designIds.push(row.id)
+              })
+            } catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all designs in ' + this.ahjDesign.stateName)
+            }
+          }
+
           this.ahjDesign.customFieldGroups = this.customFieldGroupAssignments
           const {data} = await putRequest(`/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
           this.ahjDesign = cloneDeep(data)
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ Design saved')
+          this.ahjDesign.updateAllInState = false
+          this.resetCustomFieldValueWasChangedFlags()
+          let successMessage = updateAllInState ? 'All designs in ' + this.ahjDesign.stateName + ' have been updated successfully' : 'Design updated successfully'
+          this.snackbar = getSnackbar('SUCCESS', successMessage)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Design')
+          let errorMessage = updateAllInState ? 'An error occurred when attempting to update all designs in ' + this.ahjDesign.stateName : 'Failed to update design'
+          this.snackbar = getSnackbar('ERROR', errorMessage)
         }
+
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -319,7 +417,7 @@
   .cancel-link:hover {
     text-decoration: underline;
   }
-  #save-btn {
+  .save-btn {
     margin: 10px 5px 10px 0;
     text-transform: capitalize;
   }

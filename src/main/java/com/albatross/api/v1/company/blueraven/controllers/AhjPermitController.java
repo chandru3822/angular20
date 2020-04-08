@@ -43,6 +43,11 @@ public class AhjPermitController {
         return ahjPermitService.saveAhjPermit(ahjId, permitId, permit);
     }
 
+    @GetMapping(value = "/searchAhjsByState/{stateId}")
+    public List<AhjPermit> searchAhjsByState(@PathVariable Long stateId) {
+        return ahjPermitService.searchAhjsByState(stateId);
+    }
+
     // CHECKLISTS
     @PostMapping(value = "/{permitId}/checklist")
     public Optional<AhjChecklistItem> addPermitChecklistItem(@PathVariable Long ahjId,
@@ -107,10 +112,5 @@ public class AhjPermitController {
                                  @PathVariable Long permitId,
                                  @PathVariable Long linkId) {
         ahjPermitService.deletePermitLink(ahjId, permitId, linkId);
-    }
-
-    @GetMapping(value = "/searchAhjsByState/{stateId}")
-    public List<AhjPermit> searchAhjsByState(@PathVariable Long stateId) {
-        return ahjPermitService.searchAhjsByState(stateId);
     }
 }

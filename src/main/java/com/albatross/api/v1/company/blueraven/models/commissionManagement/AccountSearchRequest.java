@@ -9,7 +9,7 @@ import lombok.Data;
 public class AccountSearchRequest {
     private Integer payrollId;
     private Boolean locked;
-    private Long dealId;
+    private Long projectId;
     private Long customerId;
     private Long salesRepId;
     private String periodEnd;
@@ -17,5 +17,4 @@ public class AccountSearchRequest {
     private String cancelEndDate;
     private Long overridePlanId;
     private Long commissionPlanId;
-    private boolean refresh = false;
 }

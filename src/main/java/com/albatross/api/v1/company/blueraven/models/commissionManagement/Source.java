@@ -14,6 +14,6 @@ public class Source {
 
     @Id
     private Long id, milestoneTypeId, sourceId, feeAmount, feeTypeId, milestoneId;
-    private String sourceName;
+    private String sourceName, feeType, milestoneType;
 
 }

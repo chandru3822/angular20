@@ -34,7 +34,7 @@
         <v-card v-if="addNewCommissionPlan" class="square-card text-left pa-5">
           <v-autocomplete v-model="newCommissionPlan.id"
                           :items="commissionPlans"
-                          label="Select a Plan to Add This User"
+                          label="Select a Plan to Add"
                           item-text="name"
                           item-value="id"
                           autocomplete="off"
@@ -54,7 +54,7 @@
               label="End Date"
           />
           <div>
-            <v-btn color="primaryCustom" class="mr-3 white--text" @click="savePlan(newCommissionPlan, false)"
+            <v-btn color="primaryCustom" class="mr-3 white--text" @click="savePlan(newCommissionPlan, 2, true)"
                    :disabled="!newCommissionPlan.id || !newCommissionPlan.startDate">
               Save
             </v-btn>
@@ -97,7 +97,8 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <v-btn :disabled="!item.endDate && !item.note" @click="savePlan(item, false)">Save</v-btn>
+              <v-btn :disabled="!item.endDate && !item.note"
+                     @click="expanded = []; savePlan(item, 2)">Save</v-btn>
             </td>
           </template>
 
@@ -159,7 +160,8 @@
             :format="'MMMM DD, YYYY'"
             label="End Date"
           />
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="savePlan(newOverridePlan, true)"
+          <v-btn color="primaryCustom" class="mr-3 white--text"
+                 @click="addNewOverridePlan = false; savePlan(newOverridePlan, 1, true)"
                  :disabled="!newOverridePlan.id || !newOverridePlan.startDate">
             Save
           </v-btn>
@@ -202,7 +204,8 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <v-btn :disabled="!item.endDate && !item.note" @click="savePlan(item, true)">Save</v-btn>
+              <v-btn :disabled="!item.endDate && !item.note"
+                     @click="overrideExpanded = []; savePlan(item, 1)">Save</v-btn>
             </td>
           </template>
 
@@ -299,7 +302,7 @@
               <v-textarea filled class="mt-4"
                           v-model="item.note">
               </v-textarea>
-              <v-btn :disabled="!item.endDate && !item.note" @click="savePlan(item)">Save</v-btn>
+              <v-btn :disabled="!item.endDate && !item.note" @click="savePlan(item, 3)">Save</v-btn>
             </td>
           </template>
 
@@ -426,20 +429,39 @@
           }
         }
       },
-      async savePlan (item, isOverride) {
+      async savePlan (item, type, isNew) {
         console.log('SAVE PLAN', item)
         let params = {
           userId: this.userId,
           startDate: item.startDate,
           endDate: item.endDate,
+          note: item.note,
         }
-        let url = isOverride ? `/commissionManagement/overrides/${item.id}/assignedUsers` : `/commissionManagement/${item.id}/users`
+        let url = ''
+        //override == 1, commission = 2, receiving === 3
+        if(type === 1) {
+          if(isNew) {
+            url = `/commissionManagement/overrides/${item.id}/assignedUsers`
+          } else {
+            url = `/commissionManagement/overrides/${item.id}/updateUser`
+          }
+        } else if(type === 2) {
+          if(isNew) {
+            url = `/commissionManagement/${item.id}/users`
+          } else {
+            url = `/commissionManagement/${item.id}/updateUser`
+          }
+        } else {
+            url = `/commissionManagement/overrides/${item.id}/receivingUser`
+        }
         try {
           await postRequest(url, params, 'blueraven')
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.newOverridePlan = {}
+          this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Plan to User')
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Plan')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -502,10 +524,6 @@
 <style lang="scss" scoped>
 .v-data-table {
   border-radius: 0;
-}
-.button-container {
-  display: flex;
-  align-items: center;
 }
 </style>
 

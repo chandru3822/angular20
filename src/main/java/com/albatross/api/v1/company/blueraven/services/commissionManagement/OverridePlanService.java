@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.enums.commissionManagement.Overrid
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.BackdatedPlanApprovalCredentials;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.OverridePlanAllocation;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.Payroll;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -44,6 +45,7 @@ public class OverridePlanService {
     public static class OverrideReceivingUser {
         private Long userId;
         private Double m1Allocation, m2Allocation;
+        private String note;
     }
 
     @Data
@@ -65,7 +67,7 @@ public class OverridePlanService {
 
     @Data
     public static class OverrideMilestone {
-        private Long milestoneQueryId;
+        private Long overridePlanAllocationId, milestoneTypeId;
         private Double allocation;
     }
 
@@ -76,7 +78,17 @@ public class OverridePlanService {
         private BackdatedPlanApprovalCredentials backdateApprovalCreds;
     }
 
-    public String updateOverridePlan(Long id, OverridePlan overridePlan) {
+    public void updatePlanUser(Long planId, PlanUser planUser) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("id", planId);
+        params.put("userId", planUser.getUserId());
+        params.put("note", planUser.getNote());
+        params.put("endDate", planUser.getEndDate());
+
+        sqlCache.update("overridePlan.updatePlanUser", params);
+    }
+
+    public String updateOverridePlan(OverridePlan overridePlan) {
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("name", overridePlan.getName());
@@ -87,13 +99,12 @@ public class OverridePlanService {
         User currentUser = securityService.getCurrentUser();
         String key = "overridePlan.create";
 
-        if (id == null) {
+        if (overridePlan.getId() == null) {
             params.put("createdBy", currentUser.getId());
-
         } else {
             key = "overridePlan.update";
             params.put("updatedBy", currentUser.getId());
-            params.put("id", id);
+            params.put("id", overridePlan.getId());
         }
 
         long planId = sqlCache.updateReturningId(key, params, "id").longValue();
@@ -114,10 +125,10 @@ public class OverridePlanService {
         return query.isEmpty() ? null : query.get(0);
     }
 
-    public String findUserForOverrides(String search, Long positions) {
+    public String findUserForOverrides(String search, Long positionId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("search", search + "%");
-        params.put("positions", positions);
+        params.put("positionId", positionId);
 
         List<String> query = sqlCache.query("overridePlan.findUsers", params, new SingleColumnRowMapper<>(String.class));
         return query.isEmpty() ? "[]" : query.get(0);
@@ -167,11 +178,20 @@ public class OverridePlanService {
         return users.orElse("[]");
     }
 
-    public void updateReceivingUser(Long planId, OverrideReceivingUser receivingUser) {
+    public String getReceivingUser(Long planId, Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("userId", userId);
+
+        Optional<String> result = sqlCache.get("overridePlan.getReceivingUser", params, new SingleColumnRowMapper<>(String.class));
+        return result.orElse("[]");
+    }
+
+    public String addReceivingUser(Long planId, OverrideReceivingUser receivingUser) {
 
         OverridePlanStatus planStatus = getPlanStatus(planId);
         if (OverridePlanStatus.ACTIVE.equals(planStatus)) {
-            return;
+            return null;
         }
 
         HashMap<String, Object> params = new HashMap<>();
@@ -180,6 +200,19 @@ public class OverridePlanService {
         params.put("m1Allocation", receivingUser.getM1Allocation());
         params.put("m2Allocation", receivingUser.getM2Allocation());
         params.put("updatedBy", securityService.getCurrentUser().getId());
+
+        sqlCache.updateReturningId("overridePlan.addReceivingUser", params, "id").longValue();
+
+        return getReceivingUser(planId, receivingUser.getUserId());
+    }
+
+    public void updateReceivingUser(Long planId, OverrideReceivingUser receivingUser) {
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("userId", receivingUser.getUserId());
+        params.put("updatedBy", securityService.getCurrentUser().getId());
+        params.put("note", receivingUser.getNote());
 
         sqlCache.update("overridePlan.updateReceivingUser", params);
     }
@@ -207,8 +240,17 @@ public class OverridePlanService {
         return query.isEmpty() ? null : query.get(0);
     }
 
+    public String getAssignedUser(Long planId, Long userId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("planId", planId);
+        params.put("userId", userId);
+
+        Optional<String> result = sqlCache.get("overridePlan.getAssignedUser", params, new SingleColumnRowMapper<>(String.class));
+        return result.orElse("[]");
+    }
+
     @Transactional
-    public void updateAssignedUser(Long planId, OverrideAssignedUser assignedUser)
+    public String updateAssignedUser(Long planId, OverrideAssignedUser assignedUser)
             throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException {
         boolean isBackdatedPlan = validateBackdatedPlan(assignedUser);
 
@@ -225,7 +267,7 @@ public class OverridePlanService {
             sqlCache.update("overridePlan.updateAssignedUser", params);
         } else {
             sqlCache.update("overridePlan.setEndDateAssignedUser", params);
-            sqlCache.update("overridePlan.insertAssignedUser", params);
+            sqlCache.update("overridePlan.insertAssignedUser", params, "id");
         }
 
         if (isBackdatedPlan) {
@@ -234,6 +276,7 @@ public class OverridePlanService {
             sqlCache.update("overridePlan.appendAssignedNote", params);
         }
 
+        return getAssignedUser(planId, assignedUser.getUserId());
     }
 
     public String getPlanAssignedUsers(Long id){
@@ -276,25 +319,6 @@ public class OverridePlanService {
         Map<String, Object> params = new HashMap<>();
         params.put("planId", id);
         sqlCache.update("overridePlan.deletePlan", params);
-    }
-
-    public void updateMilestone(Long planId, OverrideMilestone milestone) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("planId", planId);
-        params.put("queryConditionId", milestone.getMilestoneQueryId());
-        params.put("allocation", milestone.getAllocation());
-        params.put("updatedBy", securityService.getCurrentUser().getId());
-
-        sqlCache.update("overridePlan.updateMilestone", params);
-    }
-
-    public void deleteMilestone(Long planId, Long milestoneQueryConditionId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("planId", planId);
-        params.put("queryConditionId", milestoneQueryConditionId);
-        params.put("updatedBy", securityService.getCurrentUser().getId());
-
-        sqlCache.update("overridePlan.deleteMilestone", params);
     }
 
     public Collection<OverridePlanAllocation> getAllocationDetails() {

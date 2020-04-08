@@ -1,11 +1,25 @@
 <template>
   <v-container class="pa-0" id="commission-overrides-container">
+    <v-divider></v-divider>
+    <v-toolbar flat color="white">
+      <v-toolbar-title>
+        Override Plans
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-btn text @click="goToDetails({})">
+          <v-icon>add</v-icon>
+        </v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-divider></v-divider>
     <v-row>
-      <v-col>
+      <v-col class="pt-0">
         <v-data-table
             :headers="headers"
             :items="overridePlans"
             :fixed-header="true"
+            :items-per-page="-1"
             disable-sort
             :loading="dataLoading"
             hide-default-footer

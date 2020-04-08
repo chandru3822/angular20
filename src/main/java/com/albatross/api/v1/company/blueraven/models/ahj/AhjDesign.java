@@ -10,10 +10,14 @@ import java.util.List;
  */
 @Data
 public class AhjDesign {
-    private Long id;
-    private String codes, note, referenceStandards, groundSnowLoad, windSpeed, roofSnowLoad;
+    private Long id, ahjId, stateId;
+    private String codes, note, referenceStandards, groundSnowLoad, windSpeed, roofSnowLoad, stateName;
     private Long utilityId;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;
+
+    // these are only used when updates are performed for all AHJ Designs in a specified state
+    private Boolean updateAllInState;
+    private List<Long> ahjIds, designIds;
 }
