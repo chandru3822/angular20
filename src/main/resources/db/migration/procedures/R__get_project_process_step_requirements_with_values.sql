@@ -6,8 +6,8 @@ CREATE OR REPLACE FUNCTION flow.get_project_process_step_requirements_with_value
                  process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key_id int, custom_field_sql_key varchar,
                  company_system_list_id int, system_list_option_id int, custom_sql_option_id int, project_custom_field_value_id int, project_process_step_id int, text_value text,
                  date_value date, timestamp_value timestamp, boolean_value boolean, numeric__value numeric, int_value int, int_array_value json, system_list_option_ids json,
-                 data_type_requirement json, list_of_value json, list_of_values json, data_type_id int, has_list_values boolean, company_function_name varchar, requirement_param_dynamic_values json,
-                 available_list_of_values json) AS
+                 data_type_requirement json, list_of_value json, list_of_values json, data_type_id int, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
+                 company_function_params json, available_list_of_values json) AS
 
 $BODY$
 BEGIN
@@ -73,6 +73,7 @@ BEGIN
       coalesce(cdt.data_type_id, df.return_data_type_id) as data_type_id,
       cdt.has_list_values,
       cfn.company_function_name,
+      df.function_name,
       coalesce((
                  SELECT array_to_json(array_agg(row_to_json(params)))
                  FROM (
@@ -90,6 +91,28 @@ BEGIN
                           and dfp.parameter_type_id = 2
                           and rpdv.archived is not true
                       ) params), '[]') AS requirement_param_dynamic_values,
+      coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(params)))
+                 FROM (
+                        select dfp.data_type_id as "dataTypeId",
+                               dfp.parameter_type_id as "parameterTypeId",
+                               dfp.display_order as "displayOrder",
+                               ppscfv.text_value as "textValue",
+                               ppscfv.date_value as "dateValue",
+                               ppscfv.timestamp_value as "timestampValue",
+                               ppscfv.boolean_value as "booleanValue",
+                               ppscfv.numeric_value as "numericValue",
+                               ppscfv.int_value as "intValue",
+                               cfp.system_value_id as "systemValueId",
+                               rpdv.dynamic_value as "dynamicValue"
+                        from flow.db_function_param dfp
+                               left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
+                               left join flow.system_value sv on sv.id = cfp.system_value_id
+                               left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id
+                               left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfp.custom_field_group_assignment_id
+                        where dfp.db_function_id = df.id
+                          and dfp.archived is not true
+                        order by dfp.display_order) params), '[]') AS "companyFunctionParams",
       case when cf.list_of_value_id is not null then
              coalesce((
                         SELECT array_to_json(array_agg(row_to_json(lov)))
