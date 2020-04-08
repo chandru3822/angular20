@@ -298,5 +298,42 @@
     where id = :id
   ]]></processStepAction.updateActionParamDynamicValue>
 
-
+<processStepAction.getChildFunctionsByProjectProcessStepId><![CDATA[
+select
+  psacf.id,
+  psacf.archived,
+  psacf.process_step_action_id as "processStepActionId",
+  psacf.company_function_id as "companyFunctionId",
+  psacf.display_order as "displayOrder",
+  psacf.created_by_id as "createdById",
+  psacf.modified_by_id as "modifiedById",
+  cf.company_function_name as "companyFunctionName",
+  coalesce((
+    SELECT array_to_json(array_agg(row_to_json(params)))
+    FROM (
+    select
+      apdv.id,
+      apdv.archived,
+      dfp.db_function_id as "dbFunctionId",
+      dfp.parameter_name as "parameterName",
+      dfp.data_type_id as "dataTypeId",
+      apdv.db_function_param_id as "dbFunctionParamId",
+      apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
+      apdv.dynamic_value as "dynamicValue"
+    from flow.db_function_param dfp
+    left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_action_company_function_id = psacf.id
+    where
+      dfp.db_function_id = cf.db_function_id and
+      dfp.parameter_type_id = 2 and
+      apdv.archived is not true
+  ) params), '[]') AS "actionParamDynamicValues"
+from flow.process_step_action_company_function psacf
+inner join flow.company_function cf on cf.id = psacf.company_function_id
+where
+  psacf.process_step_action_id = psa.id and
+  psacf.archived is not true
+order by
+  psacf.display_order,
+  cf.company_function_name
+]]></processStepAction.getChildFunctionsByProjectProcessStepId>
 </sql>
