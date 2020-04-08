@@ -102,6 +102,7 @@ public class ProjectProcessStepService {
     params.put("size", file.getSize());
     params.put("createdById", user.getId());
     params.put("attachmentTypeId", attachmentTypeId);
+    params.put("companyId", user.getCompanyId());
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
 
