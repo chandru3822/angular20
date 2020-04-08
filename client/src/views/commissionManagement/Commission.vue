@@ -64,10 +64,37 @@
                 Inactivate
               </v-btn>
             </template>
-            <v-card v-if="!commission.users || commission.users.length === 0">
+            <v-card v-if="planHasActiveUsers()">
               <v-card-title
-                  class="headline grey lighten-2"
-                  primary-title>
+                class="headline grey lighten-2"
+                primary-title>
+                Error
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                You cannot set this plan to inactive with active users.
+                <table class="table mt-2">
+                  <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                    <td class="pr-3">{{u.name}}</td>
+                    <td>{{u.position}}</td>
+                  </tr>
+                </table>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  @click="inactivateConfirm = false">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+            <v-card v-else>
+              <v-card-title
+                class="headline grey lighten-2"
+                primary-title>
                 Confirm
               </v-card-title>
 
@@ -80,41 +107,14 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn
-                    @click="inactivateConfirm = false">
+                  @click="inactivateConfirm = false">
                   No
                 </v-btn>
                 <v-btn
-                    color="primary"
-                    text
-                    @click="inactivateConfirm = true; inactivatePlan()">
+                  color="primary"
+                  text
+                  @click="inactivateConfirm = true; inactivatePlan()">
                   Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-            <v-card v-else>
-              <v-card-title
-                  class="headline grey lighten-2"
-                  primary-title>
-                Error
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                You cannot set this plan to inactive with active users.
-                <table class="table mt-2">
-                  <tr v-for="(u, idx) in commission.users" :key="idx">
-                    <td class="pr-3">{{u.name}}</td>
-                    <td>{{u.position}}</td>
-                  </tr>
-                </table>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                    @click="inactivateConfirm = false">
-                  Cancel
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -709,6 +709,20 @@
         if(sum !== this.commission.total) {
           this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')
         }
+      },
+      planHasActiveUsers () {
+        let hasActive = false
+        this.commission?.users?.forEach(u => {
+          if(u.endDate === null || u.endDate > new Date()){
+            hasActive = true
+          }
+        })
+        return hasActive
+      },
+      activeUsers () {
+        return this.commission?.users?.filter(u => {
+          return u.endDate === null || u.endDate > new Date()
+        })
       },
       async savePlan () {
         console.log('SAVE', this.commission)

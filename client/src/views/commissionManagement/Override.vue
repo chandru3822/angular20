@@ -63,10 +63,37 @@
                 Inactivate
               </v-btn>
             </template>
-            <v-card>
+            <v-card v-if="planHasActiveUsers()">
               <v-card-title
                   class="headline grey lighten-2"
                   primary-title>
+                Error
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                You cannot set this plan to inactive with active users.
+                <table class="table mt-2">
+                  <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                    <td class="pr-3">{{u.name}}</td>
+                    <td>{{u.position}}</td>
+                  </tr>
+                </table>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  @click="inactivateConfirm = false">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+            <v-card v-else>
+              <v-card-title
+                class="headline grey lighten-2"
+                primary-title>
                 Confirm
               </v-card-title>
 
@@ -79,13 +106,13 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn
-                    @click="inactivateConfirm = false">
+                  @click="inactivateConfirm = false">
                   No
                 </v-btn>
                 <v-btn
-                    color="primary"
-                    text
-                    @click="inactivateConfirm = true; inactivateOverride()">
+                  color="primary"
+                  text
+                  @click="inactivateConfirm = true; inactivateOverride()">
                   Yes
                 </v-btn>
               </v-card-actions>
@@ -572,6 +599,20 @@
         if(sum !== this.override.total) {
           this.errorMessages.push('The sum of all milestone allocations must equal the Rate per kW. ')
         }
+      },
+      planHasActiveUsers () {
+        let hasActive = false
+        this.override?.assignedUsers?.forEach(u => {
+          if(u.endDate === null || u.endDate > new Date()){
+            hasActive = true
+          }
+        })
+        return hasActive
+      },
+      activeUsers () {
+        return this.override?.assignedUsers?.filter(u => {
+          return u.endDate === null || u.endDate > new Date()
+        })
       },
       goToDetails (item) {
         console.log('handle going to item', item)

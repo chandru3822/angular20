@@ -24,7 +24,9 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNewCommissionPlan = !addNewCommissionPlan; newCommissionPlan = {}; getCommissionPlans()">
+            <v-btn text @click="showNote = false; dateError = false;
+                                addNewCommissionPlan = !addNewCommissionPlan;
+                                newCommissionPlan = {}; getCommissionPlans()">
               <v-icon v-if="addNewCommissionPlan">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -45,6 +47,7 @@
               :type="'date'"
               :format="'MMMM DD, YYYY'"
               label="Start Date"
+              @input="checkDates(newCommissionPlan.startDate, newCommissionPlan.endDate, closer.plans)"
           />
           <DatetimePickerInput
               v-model="newCommissionPlan.endDate"
@@ -52,10 +55,17 @@
               :type="'date'"
               :format="'MMMM DD, YYYY'"
               label="End Date"
+              @input="checkDates(newCommissionPlan.startDate, newCommissionPlan.endDate, closer.plans)"
           />
+          <div v-if="dateError" class="error--text mb-2">
+            * Error: {{dateErrorMsg}}
+          </div>
+          <div class="mb-2" v-if="showNote">
+            {{noteMsg}}
+          </div>
           <div>
             <v-btn color="primaryCustom" class="mr-3 white--text" @click="savePlan(newCommissionPlan, 2, true)"
-                   :disabled="!newCommissionPlan.id || !newCommissionPlan.startDate">
+                   :disabled="dateError || !newCommissionPlan.id || !newCommissionPlan.startDate">
               Save
             </v-btn>
             <v-btn color="secondaryCustom" @click="addNewCommissionPlan = !addNewCommissionPlan">
@@ -332,6 +342,7 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import moment from 'moment'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
@@ -362,6 +373,10 @@
         userId: this.$route.params.id,
         expanded: [],
         overrideExpanded: [],
+        dateError: false,
+        dateErrorMsg: '',
+        showNote: false,
+        noteMsg: '',
         receivingExpanded: [],
         overrideHeaders: [
           {text: 'Plan Name', value: 'name', show: true},
@@ -429,6 +444,53 @@
           }
         }
       },
+      // checkDates(newDate, datesToCheck, isStartDate) {
+      //   console.log('randaLogger', newDate)
+      //   let dateError = false
+      //   datesToCheck.forEach(d => {
+      //     if(isStartDate) {
+      //       if(moment(newDate).isBefore(moment(d.endDate))) {
+      //         dateError = true
+      //       }
+      //     }
+      //   })
+      //
+      //   this.dateError = dateError
+      //   this.dateErrorMsg = dateError ? 'Dates Cannot Overlap' : ''
+      // },
+      checkDates(startDate, endDate, plans) {
+        this.dateError = false
+
+        console.log('start', startDate)
+        console.log('end', endDate)
+        if(startDate > endDate) {
+          this.dateError = true
+          this.dateErrorMsg = 'End Date cannot be before Start Date'
+        } else {
+          let overlap = []
+          let hasActivePlan = false
+          plans.forEach(p => {
+            if(this.dateRangeOverlap(startDate, endDate, p)) {
+              overlap.push(p)
+            }
+            // if any plan doesn't have an end date, then there is an active plan
+            if(!p.endDate) {
+              hasActivePlan = true
+            }
+          })
+          if(overlap.length > 0) {
+            this.dateError = true
+            this.dateErrorMsg = 'Plans Cannot Overlap'
+          } else if(startDate && hasActivePlan) {
+            this.showNote = true
+            this.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
+          }
+        }
+      },
+      dateRangeOverlap(start, end, plan) {
+        //this will not allow them to go back in time to add plans before existing plans which seems to be ok
+        return start <= plan.startDate || start <= plan.endDate
+      },
       async savePlan (item, type, isNew) {
         console.log('SAVE PLAN', item)
         let params = {
@@ -458,6 +520,9 @@
           await postRequest(url, params, 'blueraven')
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.newOverridePlan = {}
+          this.newCommissionPlan = {}
+          this.addNewCommissionPlan = false
+          this.addNewOverridePlan = false
           this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
         } catch (e) {
           console.error('*** ERROR ***', e)
