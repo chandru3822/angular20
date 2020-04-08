@@ -32,11 +32,6 @@ public class OverridePlanController {
         return overridePlanService.findOverridePlans();
     }
 
-    @GetMapping(value = "/milestones")
-    public String getOverrideMilestoneConditions() {
-        return commissionManagementService.findMilestoneQueryConditions(2L);
-    }
-
     @GetMapping(value = "/_search")
     public String findOverridePlanUsers(@RequestParam String query,
                                         @RequestParam(required = false) Long positionId) {
@@ -44,39 +39,9 @@ public class OverridePlanController {
         return userForOverrides;
     }
 
-//    @GetMapping(value = "/export/allocations",
-//                produces = "text/csv")
-//    public ResponseEntity exportAllocationsAsCsv() throws IOException {
-//        // set up CSV writing
-//        CsvMapper mapper = new CsvMapper();
-//        CsvSchema schema = mapper.typedSchemaFor(OverridePlanAllocationCsvTemplate.class)
-//                                 .withHeader();
-//        ObjectWriter writer = mapper.writer(schema);
-//        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-//
-//        // get override deets and write to CSV
-//        try (SequenceWriter outToBuffer = writer.writeValues(buffer)) {
-//            // first, get deets
-//            Collection<OverridePlanAllocationCsvTemplate> details = Collections2.transform(
-//                    overridePlanService.getAllocationDetails(),
-//                    OverridePlanAllocationCsvTemplate::new);
-//
-//            // next, write them to a buffer so we can identify errors before writing across the network
-//            outToBuffer.writeAll(details);
-//            outToBuffer.flush();
-//
-//            // finally, write to network because no errors were encountered
-//            return ResponseEntity.ok(buffer.toString("UTF-8"));
-//        } catch (IOException e) {
-//            log.error("Encountered error while writing override allocation to CSV", e);
-//            return ResponseEntity.status(500)
-//                                 .body("Encountered error while writing override allocation to CSV");
-//        }
-//    }
-
     @PostMapping(value = "")
     public ResponseEntity<Object> createOverridePlanDetails(@RequestBody OverridePlanService.OverridePlan overridePlan) {
-        String detail = overridePlanService.updateOverridePlan(null, overridePlan);
+        String detail = overridePlanService.updateOverridePlan(overridePlan);
         return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
     }
 
@@ -84,13 +49,6 @@ public class OverridePlanController {
     public void updatePlanUser(@PathVariable Long planId,
                                @RequestBody PlanUser planUser) {
         overridePlanService.updatePlanUser(planId, planUser);
-    }
-
-    @PostMapping(value = "/{id}")
-    public ResponseEntity<Object> updateOverridePlanDetails(@PathVariable Long id,
-                                                            @RequestBody OverridePlanService.OverridePlan overridePlan) {
-        String detail = overridePlanService.updateOverridePlan(id, overridePlan);
-        return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
     }
 
     @GetMapping(value = "/{id}")
@@ -147,16 +105,6 @@ public class OverridePlanController {
     @DeleteMapping(value = "/{id}")
     public void deletePlan(@PathVariable Long id) {
         overridePlanService.deletePlan(id);
-    }
-
-    @PostMapping(value = "/{id}/milestone")
-    public String addMilestone(@PathVariable Long id, @RequestBody OverridePlanService.OverrideMilestone overrideMilestone) {
-        return overridePlanService.updateMilestone(id, overrideMilestone);
-    }
-
-    @DeleteMapping(value = "/{id}/milestone/{overridePlanAllocationId}")
-    public void deleteMilestone(@PathVariable Long id, @PathVariable Long overridePlanAllocationId) {
-        overridePlanService.deleteMilestone(id, overridePlanAllocationId);
     }
 
     @PostMapping(value = "/{id}/receivingUsers")

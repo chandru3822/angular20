@@ -160,6 +160,12 @@ label[for="adminOriginatorSelect"] {
   table-layout: fixed;
 }
 
+// this is for input fields in column headers
+.filter-input .v-input__slot {
+  height: 35px !important;
+  min-height: 35px !important;
+}
+
 .shaded-row{
   background-color: var(--v-rowShadeCustom-base) !important;
 }

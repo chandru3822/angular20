@@ -584,7 +584,7 @@ export default new Router({
               name: 'commissions',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commissions.vue'),
             }, {
-              path: 'commissions/:id',
+              path: 'commission/:id?',
               name: 'commission',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Commission.vue'),
             }, {
@@ -598,6 +598,15 @@ export default new Router({
             }, {
               path: 'accounting',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Accounting.vue'),
+              children: [
+                {
+                  path: 'current',
+                  component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/CurrentPayroll.vue'),
+                }, {
+                  path: 'summary',
+                  component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Summary.vue'),
+                }
+              ]
             }, {
               path: 'payroll',
               name: 'payrolls',
@@ -606,6 +615,17 @@ export default new Router({
               path: 'payroll/:id',
               name: 'payroll',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Payroll.vue'),
+              children: [
+                {
+                  path: 'review',
+                  name: 'payrollReview',
+                  component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollReview.vue'),
+                }, {
+                  path: 'summary',
+                  name: 'payrollSummary',
+                  component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollSummary.vue'),
+                }
+              ]
             }, {
               path: 'admin',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Admin.vue'),

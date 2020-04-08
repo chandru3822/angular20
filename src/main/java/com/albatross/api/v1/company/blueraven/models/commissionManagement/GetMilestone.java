@@ -15,6 +15,5 @@ public class GetMilestone {
 
     @Id
     private Long milestoneId;
-    private Long queryConditionId, milestoneQueryConditionId;
-    private String milestoneType, queryCondition, description, queryConditionType;
+    private String milestoneType, description;
 }

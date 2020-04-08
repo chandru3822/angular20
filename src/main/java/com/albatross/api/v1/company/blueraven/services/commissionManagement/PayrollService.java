@@ -192,6 +192,11 @@ public class PayrollService {
         }
     }
 
+    public String getAccountSummaryForCurrentPayroll() {
+        HashMap<String, Object> params = new HashMap<>();
+        return sqlCache.get("payroll.getCurrentSummary", params, new SingleColumnRowMapper<>(String.class)).orElse("[]");
+    }
+
     public String getAccountSummaryByPayrollId(Long payrollId) {
             HashMap<String, Object> params = new HashMap<>();
             params.put("payrollId", payrollId);

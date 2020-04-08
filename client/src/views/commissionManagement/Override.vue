@@ -7,8 +7,19 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <div class="commission-button-container" v-if="overrideId">
-          <v-dialog v-if="override.status !== 'ACTIVE'"
+        <div class="commission-button-container">
+          <v-btn color="primaryCustom" class="white--text mr-2"
+                 :disabled="!override.name"
+                 @click="saveOverride()">
+            Save
+          </v-btn>
+          <v-btn color="green" class="white--text mr-2"
+                 v-if="overrideId && override.status === 'PENDING'"
+                 :disabled="errorMessages.length > 0"
+                 @click="approveOverride()">
+            Approve
+          </v-btn>
+          <v-dialog v-if="overrideId && override.status !== 'ACTIVE'"
                     v-model="deleteConfirm"
                     width="500">
             <template #activator="{ on }">
@@ -44,7 +55,7 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-dialog v-else
+          <v-dialog v-else-if="overrideId"
               v-model="inactivateConfirm"
               width="500">
             <template #activator="{ on }">
@@ -80,7 +91,7 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-dialog v-if="override"
+          <v-dialog v-if="overrideId && override"
                     v-model="cloneDialog"
                     width="600"
           >
@@ -134,16 +145,20 @@
             Clone
           </v-btn>
         </div>
-        <div class="commission-button-container" v-else>
-          <v-btn color="primaryCustom" class="white--text"
-                 :disabled="!override.name"
-                 @click="saveOverride()">
-            Save
-          </v-btn>
-        </div>
       </v-toolbar-items>
     </v-toolbar>
-
+    <v-divider v-if="errorMessages.length > 0"></v-divider>
+    <v-row v-if="errorMessages.length > 0">
+      <v-col cols="12">
+        <v-list v-for="(em, index) in errorMessages" :key="index" class="pa-0" color="transparent">
+          <v-list-item>
+            <v-list-item-content class="text-left error--text">
+              {{em}}
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-col>
+    </v-row>
 
     <v-divider></v-divider>
     <v-form ref="overrideForm">
@@ -159,13 +174,14 @@
                             v-model="override.description"></v-text-field>
               <v-select v-model="override.positionId"
                         :items="positions"
-                        :disabled="override.assignedUsers.length > 0"
+                        :disabled="override.id != null"
                         no-data-text="No Users Available"
                         label="Position Type"
                         item-text="label"
                         item-value="id"
               ></v-select>
               <v-text-field text
+                            :disabled="override.status !== 'PENDING'"
                             label="Rate per kW ($)"
                             v-model="override.total"></v-text-field>
             </v-card>
@@ -174,20 +190,20 @@
             <v-card class="pa-3" v-if="overrideId">
               <v-text-field text
                             label="Status"
-                            readonly
+                            disabled
                             v-model="override.status"></v-text-field>
               <v-text-field text
                             v-if="override.createdBy"
-                            readonly
+                            disabled
                             label="Created By"
                             v-model="override.createdBy.name"></v-text-field>
               <v-text-field text
-                            readonly
+                            disabled
                             v-if="override.approved"
                             label="Approved"
                             v-model="override.approved"></v-text-field>
               <v-text-field text
-                            readonly
+                            disabled
                             label="Approved By"
                             v-if="override.approvedBy"
                             v-model="override.approvedBy.name"></v-text-field>
@@ -196,107 +212,6 @@
         </v-row>
       </v-container>
     </v-form>
-    <v-row v-if="overrideId">
-      <v-col>
-        <v-toolbar flat>
-          <v-toolbar-title>
-            Milestones
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text v-if="override.status === 'PENDING'" @click="addMilestone = !addMilestone; getMilestones()">
-              <v-icon v-if="addMilestone">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-divider></v-divider>
-        <v-card v-if="addMilestone" class="square-card text-left pa-5">
-          <v-select v-model="selectedMilestone.id"
-                          :items="milestones"
-                          label="Select a Milestone..."
-                          item-text="milestoneType"
-                          item-value="id"
-                          autocomplete="off">
-          </v-select>
-          <v-text-field text
-                        type="number"
-                        label="Milestone Payment %"
-                        v-model="selectedMilestone.allocation">
-          </v-text-field>
-          <v-btn color="primaryCustom" class="mr-3 white--text" @click="addMilestoneToOverride()"
-                 :disabled="!selectedMilestone.id || !selectedMilestone.allocation">
-            Add
-          </v-btn>
-        </v-card>
-        <v-divider v-if="addMilestone"></v-divider>
-        <v-data-table
-          :headers="milestoneHeaders"
-          :items="override.milestones"
-          :fixed-header="true"
-          :items-per-page="-1"
-          disable-sort
-          :loading="dataLoading"
-          hide-default-footer
-          class="elevation-1"
-        >
-          <template #no-data>
-            No available milestones
-          </template>
-
-          <template #no-results>
-            No available milestones
-          </template>
-
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.milestoneType}}</td>
-              <td class="text-left">{{item.allocation}}</td>
-              <td>
-                <v-dialog
-                  v-if=""
-                  v-model="item.deleteConfirm"
-                  width="500">
-                  <template v-slot:activator="{ on }">
-                    <v-btn text v-on="on">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title
-                    >
-                      Confirm
-                    </v-card-title>
-
-                    <v-card-text>
-                      Are you sure you want to delete this milestone: <strong>{{ item.milestoneType }}</strong>?
-                    </v-card-text>
-
-                    <v-divider></v-divider>
-
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn
-                        @click="item.deleteConfirm = false">
-                        No
-                      </v-btn>
-                      <v-btn
-                        color="primary"
-                        text
-                        @click="deleteMilestone(item.overridePlanAllocationId)">
-                        Yes
-                      </v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </v-col>
-    </v-row>
     <v-row v-if="overrideId">
       <v-col>
         <v-toolbar flat>
@@ -365,7 +280,7 @@
               <td class="text-left">{{item.m2Allocation}}</td>
               <td>
                 <v-dialog
-                  v-if=""
+                  v-if="override.status === 'PENDING'"
                   v-model="item.deleteConfirm"
                   width="500">
                   <template v-slot:activator="{ on }">
@@ -416,7 +331,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="override.status === 'PENDING'" @click="addAssignedUser = !addAssignedUser">
+            <v-btn text @click="addAssignedUser = !addAssignedUser">
               <v-icon v-if="addAssignedUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -489,7 +404,6 @@
               <td class="text-left">{{item.endDate}}</td>
               <td>
                 <v-dialog
-                  v-if=""
                   v-model="item.deleteConfirm"
                   width="500">
                   <template v-slot:activator="{ on }">
@@ -607,11 +521,6 @@
           {text: 'M2 Allocation', value: 'm2Allocation', show: true},
           {text: '', value: 'icons', show: true},
         ],
-        milestoneHeaders: [
-          {text: 'Milestone', value: 'milestoneType', show: true},
-          {text: 'Milestone Payment %', value: 'allocation', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
         override: {
           approvedBy: {},
           createdBy: {},
@@ -626,9 +535,6 @@
         newAssignedUser: {},
         assignedUsersToAdd: [],
         assignedUserSearch: null,
-        addMilestone: false,
-        selectedMilestone: {},
-        milestones: [],
         addReceivingUser: false,
         receivingUsersLoading: false,
         newReceivingUser: {
@@ -637,6 +543,7 @@
         },
         receivingUsersToAdd: [],
         receivingUserSearch: null,
+        errorMessages: [],
       }
     },
     methods: {
@@ -646,11 +553,24 @@
           const {data} = await getRequest(`/commissionManagement/overrides/${this.overrideId}`, 'blueraven')
           this.override = data
           this.dataLoading = false
+          this.checkErrorMessages()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Override Details')
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      checkErrorMessages () {
+        this.errorMessages = []
+        //sum of all m1 and m2's should equal rate per kw$
+        let sum = 0
+        this.override.receivingUsers.forEach(ru => {
+          sum += ru.m1Allocation + ru.m2Allocation
+        })
+        console.log('randaLogger',sum)
+        if(sum !== this.override.total) {
+          this.errorMessages.push('The sum of all milestone allocations must equal the Rate per kW. ')
         }
       },
       goToDetails (item) {
@@ -695,11 +615,16 @@
             name: this.override.name,
             description: this.override.description,
             positionId: this.override.positionId,
-            total: this.override.total
+            total: this.override.total,
+            id: this.override.id
           }
           const {data} = await postRequest(`/commissionManagement/overrides`, params, 'blueraven')
           console.log('randaLogger added Plan', data)
-          this.$router.push({name: 'override', params: {id: data.id}})
+          if(!this.overrideId) {
+            //need to reload some stuff if this was a new plan
+            this.$router.push({name: 'override', params: {id: data.id}})
+          }
+          this.checkErrorMessages()
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -707,11 +632,25 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async approveOverride () {
+        console.log('approve', this.override)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/approve`, {}, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Override Plan Approved')
+          this.override = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Approving Override Plan')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async inactivateOverride () {
         console.log('INACTIVATE', this.override)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await postRequest(`/commissionManagement/overrides/${this.override}/inactivate`, 'blueraven')
+          const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/inactivate`, {}, 'blueraven')
           this.snackbar = getSnackbar('SUCCESS', 'Override Plan Inactivated')
           this.$router.push({name: 'overrides'})
         } catch (e) {
@@ -839,49 +778,6 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Receiving User')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getMilestones() {
-        if(this.addMilestone) {
-          try {
-            const {data} = await getRequest(`/commissionManagement/milestones`, 'blueraven')
-            this.milestones = data
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Milestones')
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async addMilestoneToOverride() {
-          try {
-            let params = {
-              milestoneTypeId: this.selectedMilestone.id,
-              allocation: this.selectedMilestone.allocation
-            }
-            const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/milestone`, params, 'blueraven')
-            console.log('randaLogger', data)
-            this.selectedMilestone = {}
-            this.addMilestone = false
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Adding Milestone')
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-      },
-      async deleteMilestone (overridePlanAllocationId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await deleteRequest(`/commissionManagement/overrides/${this.overrideId}/milestone/${overridePlanAllocationId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Milestone Deleted')
-          this.override.milestones = this.override.milestones.filter(m => {
-            return m.overridePlanAllocationId !== overridePlanAllocationId
-          })
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Milestone')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

@@ -28,7 +28,7 @@ public class CommissionManagementController {
 
     @PostMapping(value = "")
     public ResponseEntity<Object> updateCommissionPlan(@RequestBody CommissionPlan commissionPlan) {
-        String detail = commissionManagementService.updateCommissionPlan(commissionPlan.getId(), commissionPlan);
+        String detail = commissionManagementService.updateCommissionPlan(commissionPlan);
         return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
     }
 
@@ -103,6 +103,11 @@ public class CommissionManagementController {
         return commissionManagementService.findActiveMilestones();
     }
 
+    @GetMapping(value = "/{id}/availableMilestones")
+    public List<CommissionManagementService.MilestoneType> getAvailableMilestones(@PathVariable Long id) {
+        return commissionManagementService.findAvailableMilestones(id);
+    }
+
     @GetMapping(value = "/plans")
     public List<CommissionPlan> getCommissionPlans() {
         return commissionManagementService.getCommissionPlans();
@@ -118,40 +123,16 @@ public class CommissionManagementController {
         return commissionManagementService.getCommissionPlanUsers(planId);
     }
 
-    @GetMapping(value = "/sources")
-    public List<GetSource> getSources() {
-        return commissionManagementService.getSources();
+    @GetMapping(value = "/{id}/availableSources")
+    public List<Source> getAvailableSources(@PathVariable Long id) {
+        return commissionManagementService.getAvailableSources(id);
     }
-
-//    @PostMapping(value = "/notes/{planType}/{planId}/{userId}")
-//    public void editNote(@PathVariable Long planType,
-//                         @PathVariable Long planId,
-//                         @PathVariable Long userId,
-//                         @RequestBody String note) {
-//        commissionManagementService.editNote(planType, planId, note, userId);
-//    }
-
-    @PostMapping(value = "/availableSources")
-    public List<GetSource> getAvailableSources(@RequestBody List<Integer> sourceIds) {
-        return commissionManagementService.getAvailableSources(sourceIds);
-    }
-
-    @GetMapping(value = "/getMilestones")
-    public String getMilestones() {
-        return commissionManagementService.findMilestoneQueryConditions(1L);
-    }
-
 
     @GetMapping(value = "/_search")
     public String findCommissionPlanUsers(@RequestParam String query,
                                           @RequestParam(required = false) String positions) {
         String userForCommissions = commissionManagementService.findUserForCommissions(query, positions);
         return userForCommissions;
-    }
-
-    @GetMapping(value = "/queryConditions")
-    public List<GetQueryCondition> getQueryConditions() {
-        return commissionManagementService.getQueryConditions();
     }
 
     @GetMapping(value = "/closers")
@@ -166,9 +147,9 @@ public class CommissionManagementController {
     }
 
     @PostMapping(value = "/{planId}/milestone")
-    public void saveMilestone(@PathVariable Long planId,
+    public String saveMilestone(@PathVariable Long planId,
                               @RequestBody Milestone milestone) {
-        commissionManagementService.saveMilestone(planId, milestone);
+        return commissionManagementService.saveMilestone(planId, milestone);
     }
 
     @DeleteMapping(value = "/{planId}/milestone/{id}")
@@ -183,9 +164,14 @@ public class CommissionManagementController {
         commissionManagementService.updateMilestone(planId, milestone);
     }
 
+    @GetMapping(value = "/sources")
+    public List<Source> getSources() {
+        return commissionManagementService.getSources();
+    }
+
     @PostMapping(value = "/{planId}/source")
-    public void saveSource(@PathVariable Long planId, @RequestBody Source source) {
-        commissionManagementService.saveSource(planId, source);
+    public Source saveSource(@PathVariable Long planId, @RequestBody Source source) {
+        return commissionManagementService.saveSource(planId, source);
     }
 
     @PutMapping(value = "/{planId}/source")
@@ -193,9 +179,9 @@ public class CommissionManagementController {
         commissionManagementService.updateSource(planId, source);
     }
 
-    @DeleteMapping(value = "/{planId}/source")
-    public void removeSource(@PathVariable Long planId, @RequestBody Source source) {
-        commissionManagementService.removeSource(planId, source);
+    @DeleteMapping(value = "/{planId}/source/{sourceId}")
+    public void removeSource(@PathVariable Long planId, @PathVariable Long sourceId) {
+        commissionManagementService.removeSource(planId, sourceId);
     }
 
     @PostMapping(value = "/{planId}/updateUser")
@@ -228,42 +214,10 @@ public class CommissionManagementController {
         }
     }
 
-    @GetMapping(value = "/getPayrollOverridePlans/{userId}")
-    public Long getPayrollOverridePlans(@PathVariable Long userId) {
-        return commissionManagementService.getPayrollOverridePlans(userId);
-    }
-
-    @PostMapping(value = "/getUserPayrolls/{userId}")
-    public List<Payroll> getPayrolls(@PathVariable Long userId) {
-        return commissionManagementService.getUserPayrolls(userId);
-    }
-
-    @GetMapping(value = "/getUserCommissions/{userId}")
-    public String getUserCommissions(@PathVariable Long userId) {
-        return commissionManagementService.getUserCommissions(userId);
-    }
-
-    @GetMapping(value = "/getUserOverrides/{userId}")
-    public String getUserOverrides(@PathVariable Long userId) {
-        return commissionManagementService.getUserOverrides(userId);
-    }
-
     @PostMapping(value = "/customerSearch/{userId}")
     public List<Payroll> customerSearch(@PathVariable Long userId,
                                         @RequestBody String query) {
         return commissionManagementService.customerSearch(userId, query);
-    }
-
-    @PostMapping(value = "/getPayrollDetailsCommissions/{userId}/{payrollId}")
-    public String getPayrollDetailsCommissions(@PathVariable Long userId,
-                                               @PathVariable Long payrollId) {
-        return commissionManagementService.getUserPayrollDetailsCommissions(userId, payrollId);
-    }
-
-    @PostMapping(value = "/getPayrollDetailsOverrides/{userId}/{payrollId}")
-    public String getPayrollDetailsOverrides(@PathVariable Long userId,
-                                             @PathVariable Long payrollId) {
-        return commissionManagementService.getPayrollDetailsOverrides(userId, payrollId);
     }
 
     @GetMapping(value = "/commissionUser/{userId}/history")
@@ -274,18 +228,6 @@ public class CommissionManagementController {
     @GetMapping(value = "/closerDetails/{userId}")
     public String getCloserDetails(@PathVariable Long userId) {
         return commissionManagementService.getCloserDetails(userId);
-    }
-
-
-    @GetMapping(value = "/admin/milestoneList")
-    public List<GetMilestone> getAdminMilestones() {
-        return commissionManagementService.getAdminMilestones();
-    }
-
-    @PostMapping(value = "/admin/{id}/save")
-    public void adminSave(@PathVariable Long id,
-                          @RequestBody String condition) {
-        commissionManagementService.adminSave(id, condition);
     }
 }
 

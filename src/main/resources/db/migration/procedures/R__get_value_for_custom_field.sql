@@ -1,7 +1,10 @@
 CREATE OR REPLACE FUNCTION flow.get_value_for_custom_field(p_object_type_id integer,
                                                            p_custom_field_id integer,
                                                            p_id integer,
-                                                           p_process_step_id integer default 0)
+                                                            -- p_id = the primary key for the object type record you are using, so contact_id, project_id, user_id, etc
+                                                           p_process_step_id integer default 0
+                                                            -- if using object_type_id = 4 then p_process_step_id is required
+                                                           )
     RETURNS setof text AS
 $BODY$
 declare

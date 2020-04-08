@@ -1,7 +1,20 @@
 <template>
   <v-container class="pa-0" id="commissions-container">
+    <v-divider></v-divider>
+    <v-toolbar flat color="white">
+      <v-toolbar-title>
+        Commission Plans
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-btn text @click="goToDetails({})">
+          <v-icon>add</v-icon>
+        </v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-divider></v-divider>
     <v-row>
-      <v-col>
+      <v-col class="pt-0">
         <v-data-table
             :headers="headers"
             :items="commissions"

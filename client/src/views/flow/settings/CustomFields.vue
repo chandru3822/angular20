@@ -45,6 +45,7 @@
                   <v-text-field v-if="header.showFilter"
                                 outlined
                                 hide-details
+                                single-line
                                 class="filter-input"
                                 v-model="search"></v-text-field>
                 </th>

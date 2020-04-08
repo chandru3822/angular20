@@ -7,15 +7,14 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <div class="commission-button-container">
-          <v-btn @click="goToDetails({})">
-            <v-icon>add</v-icon>
-          </v-btn>
-        </div>
+        <v-btn text @click="goToDetails({})">
+          <v-icon>add</v-icon>
+        </v-btn>
       </v-toolbar-items>
     </v-toolbar>
+    <v-divider></v-divider>
     <v-row>
-      <v-col>
+      <v-col class="pt-0">
         <v-data-table
             :headers="headers"
             :items="overridePlans"

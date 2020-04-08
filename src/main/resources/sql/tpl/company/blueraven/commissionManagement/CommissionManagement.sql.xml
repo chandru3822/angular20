@@ -9,6 +9,18 @@
         where active is true
     ]]></commissionManagement.findActiveMilestones>
 
+    <commissionManagement.findAvailableMilestones><![CDATA[
+        with t1 as (SELECT
+            id
+        FROM brs.milestone_type
+        where active is true
+        except select milestone_id
+            from brs.commission_plan_allocation
+            where commission_plan_id = :planId)
+        select mt.*
+        from brs.milestone_type mt
+            inner join t1 on t1.id = mt.id
+    ]]></commissionManagement.findAvailableMilestones>
 
     <commissionManagement.getUserPayrolls><![CDATA[
         select p.id,
@@ -183,41 +195,6 @@
     GROUP BY d.id, d.customer_name, d.system_size, source_name, stage_name, opru.allocation, opv.name,closer_name) AS sub_rows
     ]]></commissionManagement.getUserOverrides>
 
-    <commissionManagement.findMilestoneConditions><![CDATA[
-    SELECT coalesce(array_to_json(array_agg(row_to_json(sub_rows))), '[]')
-        FROM (
-               SELECT
-                  mqc.id,
-                  qc.query_condition AS "queryCondition",
-                  qc.description      AS "description",
-                  mt.milestone_type  AS "milestone",
-                  mt.id              AS "milestoneId",
-                  mt.display_order   AS "displayOrder",
-                       qc.id,
-                       qc.child_query_condition_id,
-                  coalesce((
-                             SELECT array_to_json(array_agg(row_to_json(children)))
-                             FROM (
-                                    SELECT
-                                      mqc2.id,
-                                      qc2.query_condition AS "queryCondition",
-                                      qc2.description      AS "description",
-                                      mt2.milestone_type  AS "milestone",
-                                      mt2.id              AS "milestoneId",
-                                      mt2.display_order   AS "displayOrder"
-                                    FROM brs.milestone_query_condition mqc2
-                                           INNER JOIN brs.query_condition qc2 ON mqc2.query_condition_id = qc2.id
-                                           INNER JOIN brs.milestone_type mt2 ON mqc2.milestone_id = mt2.id
-                                      where qc2.id = qc.child_query_condition_id
-                                     ) children), '[]') AS children_milestones
-                FROM brs.milestone_query_condition mqc
-                       INNER JOIN brs.query_condition qc ON mqc.query_condition_id = qc.id
-                       INNER JOIN brs.milestone_type mt ON mqc.milestone_id = mt.id
-                WHERE mt.active IS TRUE
-                  AND qc.query_condition_type_id = :queryConditionTypeId
-             ) sub_rows
-    ]]></commissionManagement.findMilestoneConditions>
-
     <commissionManagement.getCommissionPlans><![CDATA[
         select
           cp.id,
@@ -324,7 +301,7 @@ FROM (SELECT upv.user_id                                        AS "userId",
     ]]></commissionManagement.getCloserDetails>
 
     <commissionManagement.getCommissionPlanDetails><![CDATA[
-   SELECT array_to_json(array_agg(row_to_json(sub_rows)))
+   SELECT row_to_json(sub_rows) sub_rows
 FROM (SELECT cp.id,
              cps.status_type as "statusType",
              cp.name,
@@ -347,7 +324,7 @@ FROM (SELECT cp.id,
                                 where cpa.commission_plan_id = cp.id
                                 order by mt.display_order
                                 ) AS mt), '[]') AS milestones,
-             coalesce((SELECT array_to_json(array_agg(row_to_json(source)))
+             coalesce((SELECT array_to_json(array_agg(row_to_json(sources)))
               FROM (SELECT cpsa.id,
                            lov.name as "sourceName",
                            mt.milestone_type as "milestoneType",
@@ -360,7 +337,8 @@ FROM (SELECT cp.id,
                              INNER JOIN brs.milestone_type mt ON mt.id = cpsa.milestone_id
                              INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
                              INNER JOIN flow.list_of_value lov on lov.id = cpsa.source_id
-                    WHERE cpsa.commission_plan_id = cp.id) AS source), '[]')    AS source,
+                    WHERE cpsa.commission_plan_id = cp.id
+                    order by lov.name ) AS sources), '[]')    AS sources,
              coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
               FROM (SELECT cpu.id,
                            u.first_name || ' ' || u.last_name AS name,
@@ -385,7 +363,7 @@ FROM (SELECT cp.id,
                INNER JOIN brs.commission_plan_status cps ON cp.status_id = cps.id
                LEFT JOIN flow.user cu ON cp.created_by = cu.id
                LEFT JOIN flow.user au ON cp.approved_by = au.id
-      WHERE cp.id = :planId) AS sub_rows;
+      WHERE cp.id = :planId) sub_rows;
     ]]></commissionManagement.getCommissionPlanDetails>
 
     <commissionManagement.getCommissionPlanUsers><![CDATA[
@@ -412,19 +390,21 @@ FROM (SELECT cp.id,
     ]]></commissionManagement.getCommissionPlanUsers>
 
     <commissionManagement.getAvailableSources><![CDATA[
-       SELECT
-       source_name as sourceName,
-       id as sourceId
-       FROM brs.source s
-       WHERE source_type = 'project' AND
-       not (array[s.id] <@ :sourceIds)
+       with t1 as (select lov.id
+            from flow.list_of_value lov
+            where lov.parent_id = 5
+              and lov.archived is not true
+                except select source_id
+            from brs.commission_plan_source_allocation
+            where commission_plan_id = :planId)
+        select lov.id,
+               lov.name as source_name
+        from flow.list_of_value lov
+            inner join t1 on t1.id = lov.id
+        where lov.parent_id = 5
+          and lov.archived is not true
+        order by lov.name
     ]]></commissionManagement.getAvailableSources>
-
-<!--    <commissionPlan.editNote><![CDATA[-->
-<!--       UPDATE brs.commission_plan_user-->
-<!--         SET note = :note-->
-<!--       WHERE commission_plan_id = :planId AND user_id = :userId-->
-<!--    ]]></commissionPlan.editNote>-->
 
     <commissionPlan.updatePlanUser><![CDATA[
        UPDATE brs.commission_plan_user
@@ -473,58 +453,29 @@ FROM (SELECT cp.id,
     ]]></overridePlan.editReceivingNote>
 
     <commissionManagement.getSources><![CDATA[
-       SELECT
-       source_name as sourceName,
-       id as sourceId
-       FROM brs.source s
-       WHERE source_type = 'project'
+       select lov.id,
+           lov.name as source_name
+        from flow.list_of_value lov
+        where lov.parent_id = 5
+          and lov.archived is not true
+        order by lov.name
     ]]></commissionManagement.getSources>
 
-    <commissionManagement.getMilestones><![CDATA[
-       SELECT array_to_json(array_agg(row_to_json(milestones)))
-          FROM (
-            SELECT
-
-              mt.milestone_type as "milestoneType",
-              mt.id as "milestoneId",
-              (SELECT array_to_json(array_agg(row_to_json("queryConditions")))
-               FROM (select
-                       mqc.id,
-                       qc.query_condition as "queryCondition",
-                       qc.description as "description"
-                     from brs.milestone_query_condition mqc
-                       inner join brs.query_condition qc on qc.id = mqc.query_condition_id
-                     WHERE mt.id = mqc.milestone_id AND query_condition_type_id = 1)
-                 AS "queryConditions") as "queryConditions"
-            FROM brs.milestone_type mt
-          ) as milestones;
-    ]]></commissionManagement.getMilestones>
-
-    <commissionManagement.getAvailableMilestones><![CDATA[
-       SELECT array_to_json(array_agg(row_to_json(milestones)))
-          FROM (
-            SELECT
-              mt.milestone_type as "milestoneType",
-              mt.id as "milestoneId",
-              (SELECT array_to_json(array_agg(row_to_json("queryConditions")))
-               FROM (select
-                       mqc.id,
-                       qc.query_condition as "queryCondition"
-                     from brs.milestone_query_condition mqc
-                       inner join brs.query_condition qc on qc.id = mqc.query_condition_id
-                     WHERE mt.id = mqc.milestone_id AND query_condition_type_id = 1 AND
-               not (array[mt.id] <@ :milestoneIds))
-                 AS "queryConditions") as "queryConditions"
-            FROM brs.milestone_type mt
-          ) as milestones;
-    ]]></commissionManagement.getAvailableMilestones>
-
-    <commissionManagement.getQueryConditions><![CDATA[
-       SELECT
-       query_condition as queryCondition,
-       id as queryConditionId
-       FROM brs.query_condition
-    ]]></commissionManagement.getQueryConditions>
+    <commissionManagement.getSource><![CDATA[
+        SELECT cpsa.id,
+               lov.name as "sourceName",
+               mt.milestone_type as "milestoneType",
+               ft.fee_type as "feeType",
+               cpsa.fee_amount as "feeAmount",
+               cpsa.source_id as "sourceId",
+               cpsa.milestone_id as "milestoneId",
+               fee_type_id as "feeTypeId"
+        FROM brs.commission_plan_source_allocation cpsa
+                 INNER JOIN brs.milestone_type mt ON mt.id = cpsa.milestone_id
+                 INNER JOIN brs.fee_type ft ON ft.id = cpsa.fee_type_id
+                 INNER JOIN flow.list_of_value lov on lov.id = cpsa.source_id
+        WHERE cpsa.id = :id
+    ]]></commissionManagement.getSource>
 
     <commissionManagement.saveSource><![CDATA[
       INSERT INTO brs.commission_plan_source_allocation (commission_plan_id, milestone_id, fee_amount, fee_type_id, source_id)
@@ -562,16 +513,27 @@ FROM (SELECT cp.id,
         WHERE cpu.id = p.id
     ]]></commissionManagement.insertEndDate>
 
+    <commissionManagement.getCommissionPlanAllocationMilestone><![CDATA[
+    SELECT row_to_json(milestone) AS milestone
+      FROM (select cpa.id as "commissionPlanAllocationId",
+         cpa.milestone_id as "milestoneId",
+         cpa.allocation,
+         mt.milestone_type as "milestoneType"
+      from brs.commission_plan_allocation cpa
+          inner join brs.milestone_type mt on mt.id = milestone_id
+      where cpa.id = :id
+    ) milestone
+  ]]></commissionManagement.getCommissionPlanAllocationMilestone>
+
     <commissionManagement.saveMilestone><![CDATA[
-      INSERT INTO brs.commission_plan_allocation (allocation, commission_plan_id, milestone_query_condition_id)
-      VALUES (:allocation, :planId, :milestoneQueryConditionId)
+      INSERT INTO brs.commission_plan_allocation (allocation, commission_plan_id, milestone_id)
+      VALUES (:allocation, :planId, :milestoneTypeId)
     ]]></commissionManagement.saveMilestone>
 
     <commissionManagement.updateMilestone><![CDATA[
       UPDATE brs.commission_plan_allocation
-       SET
-       allocation = :allocation
-       WHERE commission_plan_id = :planId AND milestone_query_condition_id = :milestoneQueryConditionId
+       SET allocation = :allocation
+       WHERE id = :commissionPlanAllocationId
     ]]></commissionManagement.updateMilestone>
 
     <commissionManagement.findUsers><![CDATA[
@@ -609,7 +571,7 @@ FROM (SELECT cp.id,
     <commissionManagement.removeMilestone><![CDATA[
      DELETE
       FROM brs.commission_plan_allocation
-       WHERE milestone_query_condition_id = :id AND commission_plan_id = :planId
+       WHERE id = :id
     ]]></commissionManagement.removeMilestone>
 
     <commissionManagement.deletePlan><![CDATA[
@@ -642,7 +604,7 @@ FROM (SELECT cp.id,
     <commissionManagement.removeSource><![CDATA[
      DELETE
       FROM brs.commission_plan_source_allocation
-       WHERE source_id = :sourceId AND commission_plan_id = :planId
+       WHERE id = :id
     ]]></commissionManagement.removeSource>
 
     <commissionPlan.getCommissionPlanUserHistory><![CDATA[
@@ -712,70 +674,6 @@ FROM (SELECT cp.id,
       status_id  = :statusId
     WHERE id = :planId
     ]]></commissionPlan.inactivate>
-
-
-
-    <commissionAdmin.getMilestoneList><![CDATA[
-    select
-      milestone_type,
-      milestone_id,
-      qct.query_condition_type,
-      description,
-      query_condition,
-      query_condition_id,
-      qc.id as "queryConditionId",
-      mqc.id as "milestoneQueryConditionId"
-    FROM brs.milestone_type mt
-    INNER JOIN brs.milestone_query_condition mqc on mt.id = mqc.milestone_id
-    INNER JOIN brs.query_condition qc on mqc.query_condition_id = qc.id
-    inner join brs.query_condition_type qct on qct.id = qc.query_condition_type_id
-    order by query_condition_type, mt.milestone_type
-    ]]></commissionAdmin.getMilestoneList>
-
-    <commissionAdmin.save><![CDATA[
-    UPDATE brs.query_condition
-    SET query_condition = :condition
-    WHERE id = :id
-    ]]></commissionAdmin.save>
-
-    <commissions.getAdjustmentData>
-      <![CDATA[
-         select
-          (select brs.get_commissions_earned(array[ :projectId ], :endDate)) as commissions_earned,
-          (select coalesce(sum(amount), 0) from brs.payroll_adjustment
-           where project_id = :projectId
-             and payroll_adjustment_type_id = 1
-             and created <= :endDate) as adjustments_given,
-          coalesce(
-              (SELECT case when cp.commission_plan_id is null then
-                             case when d.source_id in (4,5,375) then
-                                    coalesce(round(200.00*d.system_size,2),
-                                             0)
-                                  else coalesce(round(100.00*d.system_size,2),
-                                                0) end
-                           else
-                             coalesce(round(cp.allocation*cp.system_size-coalesce(cp.source_cost,0),2),
-                                      0) end  as total
-               FROM flow.project d
-                      inner join brs.source s on s.id = d.source_id
-                      left JOIN brs.commission_plan_vw cp ON cp.project_id = d.id and cp.greatest_date <= now()::date
-                 AND milestone_id = 1
-                 AND query_condition_type_id = 1
-               WHERE
-                   d.id = :projectId),0) + coalesce(
-              (SELECT case when cp.commission_plan_id is null then 0.00 else
-                coalesce(round(cp.allocation*cp.system_size-coalesce(source_cost,0),2),
-                         0) end as total
-               FROM brs.project d
-                      inner join brs.source s on s.id = d.source_id
-                      left JOIN brs.commission_plan_vw cp ON cp.project_id = d.id
-               WHERE (d.substantial_completion_date IS NULL OR d.substantial_completion_date <= now()::date)
-                 AND cp.greatest_date <= now()::date
-                 AND cp.milestone_id = 2
-                 AND cp.query_condition_type_id = 1
-                 AND d.id = :projectId),0) as project_total_value;
-      ]]>
-    </commissions.getAdjustmentData>
 
     <commissions.getUserDatesAsCloser><![CDATA[
           select up.user_id, up.start_date::date, up.end_date::date

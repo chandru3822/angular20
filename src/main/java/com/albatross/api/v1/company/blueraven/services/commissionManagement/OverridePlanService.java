@@ -88,7 +88,7 @@ public class OverridePlanService {
         sqlCache.update("overridePlan.updatePlanUser", params);
     }
 
-    public String updateOverridePlan(Long id, OverridePlan overridePlan) {
+    public String updateOverridePlan(OverridePlan overridePlan) {
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("name", overridePlan.getName());
@@ -99,13 +99,12 @@ public class OverridePlanService {
         User currentUser = securityService.getCurrentUser();
         String key = "overridePlan.create";
 
-        if (id == null) {
+        if (overridePlan.getId() == null) {
             params.put("createdBy", currentUser.getId());
-
         } else {
             key = "overridePlan.update";
             params.put("updatedBy", currentUser.getId());
-            params.put("id", id);
+            params.put("id", overridePlan.getId());
         }
 
         long planId = sqlCache.updateReturningId(key, params, "id").longValue();
@@ -320,42 +319,6 @@ public class OverridePlanService {
         Map<String, Object> params = new HashMap<>();
         params.put("planId", id);
         sqlCache.update("overridePlan.deletePlan", params);
-    }
-
-    public String updateMilestone(Long planId, OverrideMilestone milestone) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("planId", planId);
-        params.put("milestoneTypeId", milestone.getMilestoneTypeId());
-        params.put("allocation", milestone.getAllocation());
-        params.put("updatedBy", securityService.getCurrentUser().getId());
-
-        Long id;
-        if(null != milestone.getOverridePlanAllocationId()) {
-            id = milestone.getOverridePlanAllocationId();
-            params.put("id", id);
-            sqlCache.update("overridePlan.updateMilestone", params);
-        } else {
-            id = sqlCache.updateReturningId("overridePlan.insertMilestone", params, "id").longValue();
-        }
-
-        return getOverridePlanAllocationMilestone(id);
-    }
-
-    public String getOverridePlanAllocationMilestone(Long id) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("id", id);
-
-        Optional<String> result = sqlCache.get("overridePlan.getOverridePlanAllocationMilestone", params, new SingleColumnRowMapper<>(String.class));
-        return result.orElse("{}");
-    }
-
-    public void deleteMilestone(Long planId, Long overridePlanAllocationId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("planId", planId);
-        params.put("overridePlanAllocationId", overridePlanAllocationId);
-        params.put("updatedBy", securityService.getCurrentUser().getId());
-
-        sqlCache.update("overridePlan.deleteMilestone", params);
     }
 
     public Collection<OverridePlanAllocation> getAllocationDetails() {

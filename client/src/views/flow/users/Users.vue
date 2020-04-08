@@ -543,10 +543,6 @@
     height: calc(100vh - 290px);
     min-height: 300px;
   }
-  .filter-input .v-input__slot{
-    height: 35px !important;
-    min-height: 35px !important;
-  }
   .filter-header-non-select {
     padding-bottom: 12px !important;
   }

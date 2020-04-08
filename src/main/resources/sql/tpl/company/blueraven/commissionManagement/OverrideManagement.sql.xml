@@ -574,39 +574,6 @@
     WHERE id = :planId
     ]]></overridePlan.deleteAssignedUser>
 
-  <overridePlan.getOverridePlanAllocationMilestone><![CDATA[
-    SELECT row_to_json(milestone) AS milestone
-      FROM (select opa.id as "overridePlanAllocationId",
-         opa.milestone_id as "milestoneId",
-         opa.allocation,
-         mt.milestone_type as "milestoneType"
-      from brs.override_plan_allocation opa
-          inner join brs.milestone_type mt on mt.id = milestone_id
-      where opa.id = :id
-    ) milestone
-  ]]></overridePlan.getOverridePlanAllocationMilestone>
-
-  <overridePlan.updateMilestone><![CDATA[
-    update brs.override_plan_allocation
-      set allocation = :allocation
-    where id = :id
-  ]]></overridePlan.updateMilestone>
-
-  <overridePlan.insertMilestone><![CDATA[
-    INSERT INTO brs.override_plan_allocation (override_plan_id, milestone_id, allocation)
-        VALUES (:planId, :milestoneTypeId, :allocation)
-  ]]></overridePlan.insertMilestone>
-
-  <overridePlan.deleteMilestone><![CDATA[
-        WITH delete_milestone_alloc AS (
-          DELETE FROM brs.override_plan_allocation
-          WHERE id = :overridePlanAllocationId)
-        UPDATE brs.override_plan
-        SET updated  = now(),
-          updated_by = :updatedBy
-        WHERE id = :planId;
-    ]]></overridePlan.deleteMilestone>
-
   <overridePlan.approve><![CDATA[
     UPDATE brs.override_plan
     SET approved  = now(),
@@ -731,18 +698,7 @@ FROM (SELECT op.id,
                                       INNER JOIN flow.user_position up ON u.id = up.user_id
                                       INNER JOIN flow.position p ON up.position_id = p.id
                              WHERE opa.override_plan_id = op.id
-                             GROUP BY 1, 2, 3, 4, 5) u), '[]')                    AS "assignedUsers",
-                  coalesce((SELECT array_to_json(array_agg(row_to_json(mt)))
-                       FROM (
-                                select opa.id as "overridePlanAllocationId",
-                                       opa.milestone_id as "milestoneId",
-                                       opa.allocation,
-                                       mt.milestone_type as "milestoneType"
-                                from brs.override_plan_allocation opa
-                                    inner join brs.milestone_type mt on mt.id = milestone_id
-                                where opa.override_plan_id = op.id
-                                order by mt.display_order
-                                ) AS mt), '[]') AS milestones
+                             GROUP BY 1, 2, 3, 4, 5) u), '[]')                    AS "assignedUsers"
       FROM brs.override_plan op
                INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
       WHERE op.id = :id) t;
@@ -887,36 +843,4 @@ FROM (SELECT op.id,
       GROUP BY 1, 2, 3, 4, 5) u;
     ]]></overridePlan.getReceivingUsers>
 
-  <overridePlan.export><![CDATA[
-        select op.name,
-               u.first_name||' '||u.last_name closer,
-               opau.start_date,
-               opau.end_date,
-               op.total,
-               ops.status_type,
-               (select allocation
-                from brs.override_plan_milestone_allocation opma
-                inner join brs.milestone_query_condition mqc
-                    on opma.milestone_query_condition_id = mqc.id and milestone_id = 1
-                where opma.override_plan_id = op.id) as milestone_1_allocation,
-               (select allocation
-                from brs.override_plan_milestone_allocation opma
-                inner join brs.milestone_query_condition mqc
-                    on opma.milestone_query_condition_id = mqc.id and milestone_id = 2
-                where opma.override_plan_id = op.id) as milestone_2_allocation,
-               json_object_agg(u1.first_name||' '||u1.last_name,
-                               opru.allocation) receiving_users
-        from brs.override_plan op
-         inner join brs.override_plan_assigned_user opau
-            on opau.override_plan_id = op.id
-        inner join flow.user u
-            on u.id = opau.user_id
-        inner join brs.override_plan_status ops
-            on ops.id = op.status_id
-        inner join brs.override_plan_receiving_user opru
-            on opru.override_plan_id = op.id
-        inner join flow.user u1
-            on u1.id = opru.user_id
-        group by op.name, closer, opau.start_date, opau.end_date, total, status_type, milestone_1_allocation, milestone_2_allocation;
-    ]]></overridePlan.export>
 </sql>
