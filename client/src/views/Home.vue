@@ -36,7 +36,6 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          model is: {{model}}
           <v-tabs :optional="false" color="secondaryCustom" :background-color="headerColor" v-model="model" dark slider-color="secondaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
