@@ -59,6 +59,8 @@ public class ProjectProcessStepService {
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
+  private final AsyncProjectProcessStepService asyncProjectProcessStepService;
+
   private final ObjectMapper om;
 
   @Value("${aws.storageBucket}")
@@ -267,9 +269,7 @@ public class ProjectProcessStepService {
 
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
 
-    action.getProcessStepActionChildFunctions().forEach(childFunction -> {
-
-    });
+    asyncProjectProcessStepService.asyncRunChildFunctions(actionId, projectProcessStepId, securityService.getCurrentUser().getId());
   }
 
   public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
@@ -363,7 +363,7 @@ public class ProjectProcessStepService {
           //@TODO: blow up with error?
       }
     } else if (r.getProcessStepRequirementTypeId() == 2) {
-      String params = String.join(", ", prepareFunctionParams(r));
+      String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId()));
       String query = String.format("select * from flow.%s(%s)", r.getFunctionName(), params);
       //@TODO: Account for function return data types 7 and 9 returning lists
       Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
@@ -630,10 +630,10 @@ public class ProjectProcessStepService {
     return passed;
   }
 
-  public String[] prepareFunctionParams(ProjectProcessStepRequirement r) throws Exception {
+  public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId) throws Exception {
     Map<Long, String> params = new TreeMap<>();
 
-    r.getCompanyFunctionParams().forEach(param -> {
+    functionParams.forEach(param -> {
       switch (param.getParameterTypeId().intValue()) {
         case 1:
           Long systemValue = null;
@@ -642,7 +642,7 @@ public class ProjectProcessStepService {
               systemValue = securityService.getCurrentUser().getId();
               break;
             case 2:
-              systemValue = r.getProjectId();
+              systemValue = projectId;
               break;
             default:
               //@TODO: die a horrible death
@@ -655,7 +655,7 @@ public class ProjectProcessStepService {
         case 3:
           try {
             Object paramValue = getParamValueByDataType(param);
-            params.put(param.getDisplayOrder(), (paramValue != null) ? param.toString() : null);
+            params.put(param.getDisplayOrder(), (paramValue != null) ? paramValue.toString() : null);
           } catch (Exception e) {
             ///@TODO: throw ex
           }

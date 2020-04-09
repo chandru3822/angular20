@@ -63,10 +63,37 @@
                 Inactivate
               </v-btn>
             </template>
-            <v-card>
+            <v-card v-if="planHasActiveUsers()">
               <v-card-title
                   class="headline grey lighten-2"
                   primary-title>
+                Error
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                You cannot set this plan to inactive with active users.
+                <table class="table mt-2">
+                  <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                    <td class="pr-3">{{u.name}}</td>
+                    <td>{{u.position}}</td>
+                  </tr>
+                </table>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  @click="inactivateConfirm = false">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+            <v-card v-else>
+              <v-card-title
+                class="headline grey lighten-2"
+                primary-title>
                 Confirm
               </v-card-title>
 
@@ -79,13 +106,13 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn
-                    @click="inactivateConfirm = false">
+                  @click="inactivateConfirm = false">
                   No
                 </v-btn>
                 <v-btn
-                    color="primary"
-                    text
-                    @click="inactivateConfirm = true; inactivateOverride()">
+                  color="primary"
+                  text
+                  @click="inactivateConfirm = true; inactivateOverride()">
                   Yes
                 </v-btn>
               </v-card-actions>
@@ -261,6 +288,9 @@
             :items-per-page="-1"
             disable-sort
             :loading="dataLoading"
+            single-expand
+            item-key="userId"
+            :expanded.sync="expanded"
             hide-default-footer
             class="elevation-1"
         >
@@ -272,6 +302,23 @@
             No available users
           </template>
 
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left">
+              <v-text-field text
+                            type="number"
+                            label="M1 Allocation"
+                            v-model="item.m1Allocation">
+              </v-text-field>
+              <v-text-field text
+                            type="number"
+                            label="M2 Allocation"
+                            v-model="item.m2Allocation">
+              </v-text-field>
+              <v-btn :disabled="!item.m1Allocation || !item.m2Allocation"
+                     @click="expanded = []; updateReceivingUser(item)">Save</v-btn>
+            </td>
+          </template>
+
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.name}}</td>
@@ -279,6 +326,13 @@
               <td class="text-left">{{item.m1Allocation}}</td>
               <td class="text-left">{{item.m2Allocation}}</td>
               <td>
+                <v-btn small text @click="expanded = [item]"
+                       v-if="override.status === 'PENDING' && !expanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text @click="expanded = []"
+                       v-if="expanded.includes(item)">cancel
+                </v-btn>
                 <v-dialog
                   v-if="override.status === 'PENDING'"
                   v-model="item.deleteConfirm"
@@ -331,48 +385,79 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addAssignedUser = !addAssignedUser">
+            <v-btn text @click="addAssignedUser = !addAssignedUser; newAssignedUser = {}; userHistory = []">
               <v-icon v-if="addAssignedUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
-        <v-card v-if="addAssignedUser" class="square-card text-left pa-5">
+        <v-card v-if="addAssignedUser" class="square-card text-left px-5 pb-5">
           <div v-if="!override.positionId">
             You must selected a Position Type.
           </div>
           <div v-else>
-            <v-autocomplete v-model="newAssignedUser.userId"
-                            :items="assignedUsersToAdd"
-                            :loading="assignedUsersLoading"
-                            prepend-icon="search"
-                            :search-input.sync="assignedUserSearch"
-                            label="Search for a user..."
-                            item-text="name"
-                            item-value="userId"
-                            autocomplete="off"
-            >
-              <template slot='item' slot-scope='{ item }'>
-                {{ item.name }} - {{ item.position }}
-              </template>
-            </v-autocomplete>
-            <DatetimePickerInput
-              v-model="newAssignedUser.startDate"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="Start Date"
-            />
-            <DatetimePickerInput
-              v-model="newAssignedUser.endDate"
-              :timezone="this.timezone"
-              :type="'date'"
-              :format="'MMMM DD, YYYY'"
-              label="End Date"
-            />
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-autocomplete v-model="newAssignedUser.userId"
+                                :items="assignedUsersToAdd"
+                                :loading="assignedUsersLoading"
+                                prepend-icon="search"
+                                :search-input.sync="assignedUserSearch"
+                                label="Search for a user..."
+                                item-text="name"
+                                item-value="userId"
+                                autocomplete="off"
+                                @input="getUserHistory(newAssignedUser.userId)"
+                >
+                  <template slot='item' slot-scope='{ item }'>
+                    {{ item.name }} - {{ item.position }}
+                  </template>
+                </v-autocomplete>
+                <DatetimePickerInput
+                  v-model="newAssignedUser.startDate"
+                  :timezone="this.timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="Start Date"
+                  :readonly="!newAssignedUser.userId || errorLoadingUserHistory"
+                  @input="checkDates(newAssignedUser.startDate, newAssignedUser.endDate, userHistory, newAssignedUser)"
+                />
+                <DatetimePickerInput
+                  v-model="newAssignedUser.endDate"
+                  :timezone="this.timezone"
+                  :type="'date'"
+                  :format="'MMMM DD, YYYY'"
+                  label="End Date"
+                  :readonly="!newAssignedUser.userId || errorLoadingUserHistory"
+                  @input="checkDates(newAssignedUser.startDate, newAssignedUser.endDate, userHistory, newAssignedUser)"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-data-table
+                  :headers="historyHeaders"
+                  :items="userHistory"
+                  :fixed-header="true"
+                  :items-per-page="-1"
+                  disable-sort
+                  hide-default-footer
+                  class="elevation-1"
+                  v-if="userHistory.length > 0"
+                >
+                </v-data-table>
+                <div v-if="errorLoadingUserHistory" class="error--text">
+                  We had a problem loading this user's plan history. Cannot add this user until their history can be checked.
+                </div>
+              </v-col>
+            </v-row>
+            <div v-if="newAssignedUser.dateError" class="error--text mb-2">
+              * Error: {{newAssignedUser.dateErrorMsg}}
+            </div>
+            <div class="mb-2" v-else-if="newAssignedUser.showNote">
+              {{newAssignedUser.noteMsg}}
+            </div>
             <v-btn color="primaryCustom" class="mr-3 white--text" @click="addAssignedUserToOverride()"
-                   :disabled="!newAssignedUser.userId || !newAssignedUser.startDate">
+                   :disabled="newAssignedUser.dateError || !newAssignedUser.userId || !newAssignedUser.startDate || errorLoadingUserHistory">
               Add
             </v-btn>
           </div>
@@ -385,6 +470,8 @@
             :items-per-page="-1"
             disable-sort
             :loading="dataLoading"
+            single-expand
+            :expanded.sync="assignedUserExpanded"
             hide-default-footer
             class="elevation-1"
         >
@@ -396,6 +483,49 @@
             No available users
           </template>
 
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left">
+              <v-row>
+                <v-col cols="12" md="6">
+                  <DatetimePickerInput
+                    v-model="item.endDate"
+                    :timezone="timezone"
+                    :type="'date'"
+                    :format="'MMMM DD, YYYY'"
+                    label="End Date"
+                    :readonly="errorLoadingUserHistory"
+                    @input="checkDates(item.startDate, item.endDate, userHistory, item, override.id)"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-data-table
+                    :headers="historyHeaders"
+                    :items="userHistory"
+                    :fixed-header="true"
+                    :items-per-page="-1"
+                    hide-default-footer
+                    class="elevation-1"
+                    v-if="userHistory.length > 0"
+                  >
+                  </v-data-table>
+                  <div v-if="errorLoadingUserHistory" class="error--text">
+                    We had a problem loading this user's plan history. Cannot add this user until their history can be checked.
+                  </div>
+                </v-col>
+              </v-row>
+              <div v-if="item.dateError" class="error--text mb-2">
+                * Error: {{item.dateErrorMsg}}
+              </div>
+              <div class="mb-2" v-else-if="item.showNote">
+                {{item.noteMsg}}
+              </div>
+              <v-btn color="primaryCustom" class="mr-3 white--text" @click="updateAssignedUser(item)"
+                     :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
+                Save
+              </v-btn>
+            </td>
+          </template>
+
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.name}}</td>
@@ -403,7 +533,15 @@
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
               <td>
+                <v-btn small text @click="assignedUserExpanded = [item]; getUserHistory(item.userId)"
+                       v-if="override.status === 'PENDING' && !assignedUserExpanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text @click="assignedUserExpanded = []"
+                       v-if="assignedUserExpanded.includes(item)">cancel
+                </v-btn>
                 <v-dialog
+                  v-if="override.status === 'PENDING'"
                   v-model="item.deleteConfirm"
                   width="500">
                   <template v-slot:activator="{ on }">
@@ -507,6 +645,8 @@
         inactivateConfirm: false,
         deleteConfirm: false,
         overrideId: this.$route.params.id,
+        expanded: [],
+        assignedUserExpanded: [],
         headers: [
           {text: 'Name', value: 'name', show: true},
           {text: 'Employee ID', value: 'employeeId', show: true},
@@ -541,9 +681,16 @@
           m1Allocation: 0,
           m2Allocation: 0,
         },
+        errorLoadingUserHistory: false,
+        historyHeaders: [
+          {text: 'Name', value: 'planName', show: true},
+          {text: 'Start Date', value: 'startDate', show: true},
+          {text: 'End Date', value: 'endDate', show: true},
+        ],
         receivingUsersToAdd: [],
         receivingUserSearch: null,
         errorMessages: [],
+        userHistory: [],
       }
     },
     methods: {
@@ -568,13 +715,25 @@
         this.override.receivingUsers.forEach(ru => {
           sum += ru.m1Allocation + ru.m2Allocation
         })
-        console.log('randaLogger',sum)
         if(sum !== this.override.total) {
           this.errorMessages.push('The sum of all milestone allocations must equal the Rate per kW. ')
         }
       },
+      planHasActiveUsers () {
+        let hasActive = false
+        this.override?.assignedUsers?.forEach(u => {
+          if(u.endDate === null || u.endDate > new Date()){
+            hasActive = true
+          }
+        })
+        return hasActive
+      },
+      activeUsers () {
+        return this.override?.assignedUsers?.filter(u => {
+          return u.endDate === null || u.endDate > new Date()
+        })
+      },
       goToDetails (item) {
-        console.log('handle going to item', item)
       },
       async deleteOverride () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -589,7 +748,6 @@
         }
       },
       async cloneOverride (users) {
-        console.log('CLONE', this.override)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
@@ -598,7 +756,6 @@
             backdateApprovalCreds: null
           }
           const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/clone`, params, 'blueraven')
-          console.log('randaLogger cloned Plan', data)
           this.$router.push({name: 'override', params: {id: data.id}})
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -607,8 +764,67 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async getUserHistory(userId) {
+        //reset the rest of the new user fields if they change users
+        delete this.newAssignedUser.startDate
+        delete this.newAssignedUser.endDate
+        this.newAssignedUser.dateError = false
+        this.newAssignedUser.dateErrorMsg = ''
+        this.newAssignedUser.showNote = false
+        this.newAssignedUser.noteMsg = ''
+        this.errorLoadingUserHistory = false
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/commissionManagement/overrides/assignedUsers/${userId}/history`, 'blueraven')
+          this.userHistory = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          this.errorLoadingUserHistory = true
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User History')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      checkDates(startDate, endDate, plans, item, existingId) {
+        //item = where to track the error
+        item.dateError = false
+
+        if(startDate > endDate) {
+          item.dateError = true
+          item.dateErrorMsg = 'End Date cannot be before Start Date'
+        } else {
+          let overlap = []
+          let hasActivePlan = false
+          plans.forEach(p => {
+            if(this.dateRangeOverlap(startDate, endDate, p, existingId)) {
+              overlap.push(p)
+            }
+            // if any plan doesn't have an end date, then there is an active plan
+            if(!p.endDate) {
+              hasActivePlan = true
+            }
+          })
+          if(overlap.length > 0) {
+            item.dateError = true
+            item.dateErrorMsg = 'Plans Cannot Overlap'
+          } else if(!existingId && startDate && hasActivePlan) {
+            item.showNote = true
+            item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
+          }
+        }
+      },
+      dateRangeOverlap(start, end, plan, existingId) {
+        let valueToCheck = plan.planId ?? plan.id
+        //this will not allow them to go back in time to add plans before existing plans which seems to be ok
+        if(valueToCheck === existingId) {
+          // ignore overlap check for self on existing record
+          return false
+        } else {
+          //this is used when adding a new plan
+          return start <= plan.startDate || start <= plan.endDate
+        }
+      },
       async saveOverride () {
-        console.log('SAVE', this.override)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
@@ -619,7 +835,6 @@
             id: this.override.id
           }
           const {data} = await postRequest(`/commissionManagement/overrides`, params, 'blueraven')
-          console.log('randaLogger added Plan', data)
           if(!this.overrideId) {
             //need to reload some stuff if this was a new plan
             this.$router.push({name: 'override', params: {id: data.id}})
@@ -633,7 +848,6 @@
         }
       },
       async approveOverride () {
-        console.log('approve', this.override)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/approve`, {}, 'blueraven')
@@ -647,7 +861,6 @@
         }
       },
       async inactivateOverride () {
-        console.log('INACTIVATE', this.override)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/inactivate`, {}, 'blueraven')
@@ -659,6 +872,20 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async updateAssignedUser(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/updateUser`, item, 'blueraven')
+          this.assignedUserExpanded = []
+          this.userHistory = []
+          this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       getAssignedUsersDebounced(val) {
         clearTimeout(this._searchTimerId)
         this._searchTimerId = setTimeout(() => {
@@ -666,13 +893,14 @@
         }, 500) /* 500ms throttle */
       },
       async getAssignedUsers(query) {
-        console.log('ADD A USER', this.newAssignedUser)
         if(this.addAssignedUser) {
           this.assignedUsersLoading = true
           try {
             let params = {
               positionId: this.override.positionId,
-              query
+              query,
+              planId: this.override.id,
+              isReceiving: false
             }
             const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
             this.assignedUsersToAdd = data
@@ -726,12 +954,13 @@
         }, 500) /* 500ms throttle */
       },
       async getReceivingUsers(query) {
-        console.log('ADD A USER', this.newReceivingUser)
         if(this.addReceivingUser) {
           this.receivingUsersLoading = true
           try {
             let params = {
-              query
+              query,
+              planId: this.override.id,
+              isReceiving: true
             }
             const {data} = await getRequestWithParams(`/commissionManagement/overrides/_search`, {params}, 'blueraven')
             this.receivingUsersToAdd = data
@@ -741,6 +970,17 @@
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Receiving Override Users')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
+        }
+      },
+      async updateReceivingUser(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUser`, item, 'blueraven')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Receiving User')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async addReceivingUserToOverride() {

@@ -112,8 +112,10 @@ public class OverridePlanService {
         return findOverridePlanDetail(planId);
     }
 
-    public String findOverridePlans() {
-        List<String> query = sqlCache.query("overridePlan.listAll", new HashMap<>(), new SingleColumnRowMapper<>(String.class));
+    public String findOverridePlans(Boolean excludeInactive) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("excludeInactive", excludeInactive);
+        List<String> query = sqlCache.query("overridePlan.listAll", params, new SingleColumnRowMapper<>(String.class));
         return query.isEmpty() ? "[]" : query.get(0);
     }
 
@@ -125,10 +127,12 @@ public class OverridePlanService {
         return query.isEmpty() ? null : query.get(0);
     }
 
-    public String findUserForOverrides(String search, Long positionId) {
+    public String findUserForOverrides(String search, Long positionId, Long planId, Boolean isReceiving) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("search", search + "%");
         params.put("positionId", positionId);
+        params.put("planId", planId);
+        params.put("isReceiving", isReceiving);
 
         List<String> query = sqlCache.query("overridePlan.findUsers", params, new SingleColumnRowMapper<>(String.class));
         return query.isEmpty() ? "[]" : query.get(0);
@@ -211,6 +215,8 @@ public class OverridePlanService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", planId);
         params.put("userId", receivingUser.getUserId());
+        params.put("m1", receivingUser.getM2Allocation());
+        params.put("m2", receivingUser.getM2Allocation());
         params.put("updatedBy", securityService.getCurrentUser().getId());
         params.put("note", receivingUser.getNote());
 

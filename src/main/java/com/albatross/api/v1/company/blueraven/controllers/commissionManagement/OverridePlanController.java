@@ -29,13 +29,20 @@ public class OverridePlanController {
 
     @GetMapping(value = "")
     public String getOverridePlans() {
-        return overridePlanService.findOverridePlans();
+        return overridePlanService.findOverridePlans(false);
+    }
+
+    @GetMapping(value = "/active")
+    public String getActiveOverridePlans() {
+        return overridePlanService.findOverridePlans(true);
     }
 
     @GetMapping(value = "/_search")
     public String findOverridePlanUsers(@RequestParam String query,
-                                        @RequestParam(required = false) Long positionId) {
-        String userForOverrides = overridePlanService.findUserForOverrides(query, positionId);
+                                        @RequestParam(required = false) Long positionId,
+                                        @RequestParam(required = false) Long planId,
+                                        @RequestParam(required = false) Boolean isReceiving) {
+        String userForOverrides = overridePlanService.findUserForOverrides(query, positionId, planId, isReceiving);
         return userForOverrides;
     }
 

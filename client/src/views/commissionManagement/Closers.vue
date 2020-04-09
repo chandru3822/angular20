@@ -28,30 +28,29 @@
                 </v-btn>
               </td>
               <td class="text-left pt-1">
-                <v-btn text v-if="item.commissionPlan !== null" @click="goToDetails(item, false)">
+                <a v-if="item.commissionPlan !== null" @click="goToDetails(item, 1)">
                   {{item.commissionPlan}}:<br/>
                   {{item.commissionDescription}}
-                </v-btn>
+                </a>
                 <div v-else class="pt-2">--</div>
-<!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 1)">Add to Commission</v-btn>-->
               </td>
               <td class="text-left pt-1">
-                <v-btn text v-if="item.overridePlan !== null" @click="goToDetails(item, true)">
+                <a v-if="item.overridePlan !== null" @click="goToDetails(item, 2)">
                   {{item.overridePlan}}:<br/>
                   {{item.overrideDescription}}
-                </v-btn>
+                </a>
                 <div v-else class="pt-2">--</div>
-<!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 2)">Assign to Override</v-btn>-->
               </td>
               <td class="text-left pt-1">
                 <span v-if="item.receivingPlans && item.receivingPlans.length > 0">
-                  <v-btn v-for="rp in item.receivingPlans" text @click="goToDetails(rp, true)">
-                    {{rp.receivingPlan}}:<br/>
-                    {{rp.receivingDescription}}
-                  </v-btn>
+                  <div v-for="rp in item.receivingPlans">
+                    <a @click="goToDetails(rp, 3)">
+                      {{rp.receivingPlan}}:<br/>
+                      {{rp.receivingDescription}}
+                    </a>
+                  </div>
                 </span>
                 <div v-else  class="pt-2">--</div>
-<!--                <v-btn v-else color="primaryCustom" dark @click="selectPlan(item, 3)">Clone/Create New Plan</v-btn>-->
               </td>
               <td class="text-left pt-3">{{item.hasCommissionPlanGap ? 'Yes' : 'No'}}</td>
             </tr>
@@ -107,12 +106,10 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      selectPlan(item) {
-        console.log('HANDLE SELECTING A PLAN: ', item)
-      },
-      goToDetails(item, isOverride) {
-        let name = isOverride ? 'override' : 'commission'
-        let id = item.commissionPlanId ?? item.receivingPlanId
+      goToDetails(item, planType) {
+        // 1 = commission, 2 = override, 3 = receiving
+        let name = planType === 1 ? 'commission' : 'override'
+        let id = planType === 1 ? item.commissionPlanId : planType === 2 ? item.overridePlanId : item.receivingPlanId
         this.$router.push({name, params: {id}})
       }
     }

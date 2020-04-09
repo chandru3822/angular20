@@ -271,15 +271,6 @@ public class PayrollService {
         return false;
     }
 
-    public String getOverrideDetailsByUser(Long payrollId, Long userId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("payrollId", payrollId);
-        params.put("userId", userId);
-
-        Optional<String> overrideDetails = sqlCache.get("payroll.getOverrideDetailsByUser", params, new SingleColumnRowMapper<>(String.class));
-        return overrideDetails.orElse("[]");
-    }
-
     private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             return connection.createArrayOf(typeName, array.toArray());

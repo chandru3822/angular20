@@ -64,10 +64,37 @@
                 Inactivate
               </v-btn>
             </template>
-            <v-card v-if="!commission.users || commission.users.length === 0">
+            <v-card v-if="planHasActiveUsers()">
               <v-card-title
-                  class="headline grey lighten-2"
-                  primary-title>
+                class="headline grey lighten-2"
+                primary-title>
+                Error
+              </v-card-title>
+
+              <v-card-text class="pt-4">
+                You cannot set this plan to inactive with active users.
+                <table class="table mt-2">
+                  <tr v-for="(u, idx) in activeUsers()" :key="idx">
+                    <td class="pr-3">{{u.name}}</td>
+                    <td>{{u.position}}</td>
+                  </tr>
+                </table>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  @click="inactivateConfirm = false">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+            <v-card v-else>
+              <v-card-title
+                class="headline grey lighten-2"
+                primary-title>
                 Confirm
               </v-card-title>
 
@@ -80,41 +107,14 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn
-                    @click="inactivateConfirm = false">
+                  @click="inactivateConfirm = false">
                   No
                 </v-btn>
                 <v-btn
-                    color="primary"
-                    text
-                    @click="inactivateConfirm = true; inactivatePlan()">
+                  color="primary"
+                  text
+                  @click="inactivateConfirm = true; inactivatePlan()">
                   Yes
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-            <v-card v-else>
-              <v-card-title
-                  class="headline grey lighten-2"
-                  primary-title>
-                Error
-              </v-card-title>
-
-              <v-card-text class="pt-4">
-                You cannot set this plan to inactive with active users.
-                <table class="table mt-2">
-                  <tr v-for="(u, idx) in commission.users" :key="idx">
-                    <td class="pr-3">{{u.name}}</td>
-                    <td>{{u.position}}</td>
-                  </tr>
-                </table>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                    @click="inactivateConfirm = false">
-                  Cancel
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -153,7 +153,7 @@
                   {{cloneStartDate}}
                   <DatetimePickerInput
                     v-model="cloneStartDate"
-                    :timezone="this.timezone"
+                    :timezone="timezone"
                     :type="'date'"
                     :format="'MMMM DD, YYYY'"
                     label="Start Date"
@@ -297,6 +297,8 @@
           :items-per-page="-1"
           disable-sort
           :loading="dataLoading"
+          single-expand
+          :expanded.sync="milestoneExpanded"
           hide-default-footer
           class="elevation-1"
         >
@@ -308,11 +310,30 @@
             No available milestones
           </template>
 
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left">
+              <v-text-field text
+                            type="number"
+                            label="Milestone Payment $"
+                            v-model="item.allocation">
+              </v-text-field>
+              <v-btn :disabled="!item.allocation"
+                     @click="milestoneExpanded = []; updateMilestone(item)">Save</v-btn>
+            </td>
+          </template>
+
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.milestoneType}}</td>
               <td class="text-left">{{item.allocation}}</td>
               <td>
+                <v-btn small text @click="milestoneExpanded = [item]"
+                       v-if="commission.statusType === 'PENDING' && !milestoneExpanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text @click="milestoneExpanded = []"
+                       v-if="milestoneExpanded.includes(item)">cancel
+                </v-btn>
                 <v-dialog
                   v-if="commission.statusType === 'PENDING'"
                   v-model="item.deleteConfirm"
@@ -425,6 +446,8 @@
             :items-per-page="-1"
             disable-sort
             :loading="dataLoading"
+            single-expand
+            :expanded.sync="sourceExpanded"
             hide-default-footer
             class="elevation-1"
         >
@@ -436,6 +459,28 @@
             No available sources
           </template>
 
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left">
+              <v-text-field text
+                            label="Fee Amount"
+                            v-model="item.feeAmount"></v-text-field>
+              <v-select v-model="item.feeTypeId"
+                        :items="feeTypes"
+                        label="Fee Type"
+                        item-text="label"
+                        item-value="id"
+              ></v-select>
+              <v-select v-model="item.milestoneId"
+                        :items="commission.milestones"
+                        label="Deduct at Milestone"
+                        item-text="milestoneType"
+                        item-value="milestoneId"
+              ></v-select>
+              <v-btn :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
+                     @click="sourceExpanded = []; updateSource(item)">Save</v-btn>
+            </td>
+          </template>
+
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.sourceName}}</td>
@@ -443,6 +488,13 @@
               <td class="text-left">{{item.feeType}}</td>
               <td class="text-left">{{item.milestoneType}}</td>
               <td>
+                <v-btn small text @click="sourceExpanded = [item]"
+                       v-if="commission.statusType === 'PENDING' && !sourceExpanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text @click="sourceExpanded = []"
+                       v-if="sourceExpanded.includes(item)">cancel
+                </v-btn>
                 <v-dialog
                   v-if="commission.statusType === 'PENDING'"
                   v-model="item.deleteConfirm"
@@ -495,47 +547,81 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addUser = !addUser">
-              <v-icon>add</v-icon>
+            <v-btn text @click="addUser = !addUser; newUser = {}; userHistory = []">
+              <v-icon v-if="addUser">remove</v-icon>
+              <v-icon v-else>add</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
-        <v-card v-if="addUser" class="square-card text-left pa-5">
-          <v-autocomplete v-model="newUser.userId"
-                          :items="usersToAdd"
-                          :loading="usersLoading"
-                          prepend-icon="search"
-                          cache-items
-                          :search-input.sync="userSearch"
-                          label="Search for a user..."
-                          item-text="name"
-                          item-value="userId"
-                          autocomplete="off"
-          >
-            <template slot='item' slot-scope='{ item }'>
-              {{ item.name }} - {{ item.position }}
-            </template>
-          </v-autocomplete>
-          <DatetimePickerInput
-            v-model="newUser.startDate"
-            :timezone="this.timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
-            label="Start Date"
-          />
-          <DatetimePickerInput
-            v-model="newUser.endDate"
-            :timezone="this.timezone"
-            :type="'date'"
-            :format="'MMMM DD, YYYY'"
-            label="End Date"
-          />
+        <v-card v-if="addUser" class="square-card text-left px-5 pb-5">
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-autocomplete v-model="newUser.userId"
+                              :items="usersToAdd"
+                              :loading="usersLoading"
+                              prepend-icon="search"
+                              cache-items
+                              :search-input.sync="userSearch"
+                              label="Search for a user..."
+                              item-text="name"
+                              item-value="userId"
+                              autocomplete="off"
+                              @input="getUserHistory(newUser.userId)"
+              >
+                <template slot='item' slot-scope='{ item }'>
+                  {{ item.name }} - {{ item.position }}
+                </template>
+              </v-autocomplete>
+              <DatetimePickerInput
+                v-model="newUser.startDate"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="Start Date"
+                :readonly="!newUser.userId || errorLoadingUserHistory"
+                @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
+              />
+              <DatetimePickerInput
+                v-model="newUser.endDate"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MMMM DD, YYYY'"
+                label="End Date"
+                :readonly="!newUser.userId || errorLoadingUserHistory"
+                @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
+              />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-data-table
+                :headers="historyHeaders"
+                :items="userHistory"
+                :fixed-header="true"
+                :items-per-page="-1"
+                disable-sort
+                hide-default-footer
+                class="elevation-1"
+                v-if="userHistory.length > 0"
+              >
+              </v-data-table>
+              <div v-if="errorLoadingUserHistory" class="error--text">
+                We had a problem loading this user's plan history. Cannot add this user until their history can be checked.
+              </div>
+            </v-col>
+          </v-row>
+
+          <div v-if="newUser.dateError" class="error--text mb-2">
+            * Error: {{newUser.dateErrorMsg}}
+          </div>
+          <div class="mb-2" v-else-if="newUser.showNote">
+            {{newUser.noteMsg}}
+          </div>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToPlan()"
-                 :disabled="!newUser.userId || !newUser.startDate">
+                 :disabled="newUser.dateError || !newUser.userId || !newUser.startDate || errorLoadingUserHistory">
             Add
           </v-btn>
         </v-card>
+        <v-divider v-if="addUser"></v-divider>
         <v-data-table
             :headers="headers"
             :items="filterCommissionUsers()"
@@ -543,6 +629,8 @@
             :items-per-page="-1"
             disable-sort
             :loading="dataLoading"
+            single-expand
+            :expanded.sync="assignedUserExpanded"
             hide-default-footer
             class="elevation-1"
         >
@@ -554,6 +642,49 @@
             No available users
           </template>
 
+          <template #expanded-item="{ headers, item }">
+            <td :colspan="headers.length" class="pa-4 text-left">
+              <v-row>
+                <v-col cols="12" md="6">
+                  <DatetimePickerInput
+                    v-model="item.endDate"
+                    :timezone="timezone"
+                    :type="'date'"
+                    :format="'MMMM DD, YYYY'"
+                    label="End Date"
+                    :readonly="errorLoadingUserHistory"
+                    @input="checkDates(item.startDate, item.endDate, userHistory, item, commission.id)"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-data-table
+                    :headers="historyHeaders"
+                    :items="userHistory"
+                    :fixed-header="true"
+                    :items-per-page="-1"
+                    hide-default-footer
+                    class="elevation-1"
+                    v-if="userHistory.length > 0"
+                  >
+                  </v-data-table>
+                  <div v-if="errorLoadingUserHistory" class="error--text">
+                    We had a problem loading this user's plan history. Cannot add this user until their history can be checked.
+                  </div>
+                </v-col>
+              </v-row>
+              <div v-if="item.dateError" class="error--text mb-2">
+                * Error: {{item.dateErrorMsg}}
+              </div>
+              <div class="mb-2" v-else-if="item.showNote">
+                {{item.noteMsg}}
+              </div>
+              <v-btn color="primaryCustom" class="mr-3 white--text" @click="updateAssignedUser(item)"
+                     :disabled="item.dateError || !item.userId || !item.startDate || errorLoadingUserHistory">
+                Save
+              </v-btn>
+            </td>
+          </template>
+
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.name}}</td>
@@ -562,9 +693,52 @@
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
               <td>
-                <v-btn text @click="deleteUserFromPlan(item)">
-                  <v-icon>delete</v-icon>
+
+                <v-btn small text @click="assignedUserExpanded = [item]; getUserHistory(item.userId)"
+                       v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)">
+                  <v-icon>edit</v-icon>
                 </v-btn>
+                <v-btn small text @click="assignedUserExpanded = []"
+                       v-if="assignedUserExpanded.includes(item)">cancel
+                </v-btn>
+                <v-dialog
+                  v-if="commission.statusType === 'PENDING'"
+                  v-model="item.deleteConfirm"
+                  width="500">
+                  <template v-slot:activator="{ on }">
+                    <v-btn text v-on="on">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title
+                    >
+                      Confirm
+                    </v-card-title>
+
+                    <v-card-text>
+                      Are you sure you want to delete <strong>{{ item.name }}</strong>?
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        @click="item.deleteConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        color="primary"
+                        text
+                        @click="deleteUserFromPlan(item)">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
               </td>
             </tr>
           </template>
@@ -602,17 +776,10 @@
     watch: {
       $route(to, from) {
         // react to route changes...
-        console.log('randaLogger', to)
-        console.log('randaLogger', from)
-        // this.$router.push({name: 'commission', params: {id: to.params.id}})
-        // this.planId = to.params.id
         this.planId = to.params.id
         this.getCommissionDetails()
       },
       userSearch (val, test, third) {
-        console.log('VALVAL', val)
-        console.log('TEST', test)
-        console.log('THIRD', third)
         if(!val) {
           return
         }
@@ -628,6 +795,7 @@
         newUser: {},
         usersToAdd: [],
         userSearch: null,
+        userHistory: [],
         usersLoading: false,
         moment,
         cloneStartDate: null,
@@ -636,6 +804,10 @@
         inactivateConfirm: false,
         deleteConfirm: false,
         planId: this.$route.params.id,
+        milestoneExpanded: [],
+        sourceExpanded: [],
+        errorLoadingUserHistory: false,
+        assignedUserExpanded: [],
         headers: [
           {text: 'Name', value: 'name', show: true},
           {text: 'Position', value: 'Position', show: true},
@@ -643,6 +815,11 @@
           {text: 'Start Date', value: 'startDate', show: true},
           {text: 'End Date', value: 'endDate', show: true},
           {text: '', value: 'icons', show: true},
+        ],
+        historyHeaders: [
+          {text: 'Name', value: 'name', show: true},
+          {text: 'Start Date', value: 'startDate', show: true},
+          {text: 'End Date', value: 'endDate', show: true},
         ],
         positions: [
           {id: 1, label: 'Closer'},
@@ -699,6 +876,44 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      checkDates(startDate, endDate, plans, item, existingId) {
+        //item = where to track the error
+        item.dateError = false
+
+        if(startDate > endDate) {
+          item.dateError = true
+          item.dateErrorMsg = 'End Date cannot be before Start Date'
+        } else {
+          let overlap = []
+          let hasActivePlan = false
+          plans.forEach(p => {
+            if(this.dateRangeOverlap(startDate, endDate, p, existingId)) {
+              overlap.push(p)
+            }
+            // if any plan doesn't have an end date, then there is an active plan
+            if(!p.endDate) {
+              hasActivePlan = true
+            }
+          })
+          if(overlap.length > 0) {
+            item.dateError = true
+            item.dateErrorMsg = 'Plans Cannot Overlap'
+          } else if(!existingId && startDate && hasActivePlan) {
+            item.showNote = true
+            item.noteMsg = `The Current plan's end date will be set to ${moment(startDate).subtract(1, 'd').format('MM/DD/YYYY')}.`
+          }
+        }
+      },
+      dateRangeOverlap(start, end, plan, existingId) {
+        //this will not allow them to go back in time to add plans before existing plans which seems to be ok
+        if(plan.id === existingId) {
+          // ignore overlap check for self on existing record
+          return false
+        } else {
+          //this is used when adding a new plan
+          return start <= plan.startDate || start <= plan.endDate
+        }
+      },
       checkErrorMessages () {
         this.errorMessages = []
         if(this.commission.total === 0) {
@@ -710,8 +925,21 @@
           this.errorMessages.push('The sum of all milestone payment amounts must equal the Rate per kW. ')
         }
       },
+      planHasActiveUsers () {
+        let hasActive = false
+        this.commission?.users?.forEach(u => {
+          if(u.endDate === null || u.endDate > new Date()){
+            hasActive = true
+          }
+        })
+        return hasActive
+      },
+      activeUsers () {
+        return this.commission?.users?.filter(u => {
+          return u.endDate === null || u.endDate > new Date()
+        })
+      },
       async savePlan () {
-        console.log('SAVE', this.commission)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
@@ -722,7 +950,6 @@
             total: this.commission.total
           }
           const {data} = await postRequest(`/commissionManagement`, params, 'blueraven')
-          console.log('randaLogger added Plan', data)
           if(!this.planId) {
             //need to reload some stuff if this was a new plan
             this.$router.push({name: 'commission', params: {id: data.id}})
@@ -736,7 +963,6 @@
         }
       },
       async approvePlan () {
-        console.log('APROVE', this.commission)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/commissionManagement/${this.planId}/approve`, {}, 'blueraven')
@@ -750,7 +976,6 @@
         }
       },
       async inactivatePlan () {
-        console.log('INACTIVATE', this.commission)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await postRequest(`/commissionManagement/${this.planId}/inactivate`, {}, 'blueraven')
@@ -783,7 +1008,6 @@
             backdateApprovalCreds: null
           }
           const {data} = await postRequest(`/commissionManagement/${this.planId}/clone`, params, 'blueraven')
-          console.log('randaLogger cloned Plan', data)
           if(data && data[0] !== null ) {
             this.$router.push({name: 'commission', params: {id: data[0].id}})
           }
@@ -795,6 +1019,20 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async updateAssignedUser(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await postRequest(`/commissionManagement/${this.planId}/updateUser`, item, 'blueraven')
+          this.assignedUserExpanded = []
+          this.userHistory = []
+          this.snackbar = getSnackbar('SUCCESS', 'Assigned User Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Updating Assigned User')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       getUsersToAddDebounced(val) {
         clearTimeout(this._searchTimerId)
         this._searchTimerId = setTimeout(() => {
@@ -802,13 +1040,13 @@
         }, 500) /* 500ms throttle */
       },
       async getUsersToAdd(query) {
-        console.log('ADD A USER', this.newUser)
         if(this.addUser) {
           this.usersLoading = true
           try {
             let params = {
               positions: 'closers',
-              query
+              query,
+              planId: this.planId
             }
             const {data} = await getRequestWithParams(`/commissionManagement/_search`, {params}, 'blueraven')
             this.usersToAdd = data
@@ -821,7 +1059,6 @@
         }
       },
       async addUserToPlan() {
-        console.log('ADD A USER', this.newUser)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
@@ -870,6 +1107,17 @@
           }
         }
       },
+      async updateMilestone(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/commissionManagement/${this.planId}/milestone`, item, 'blueraven')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async addMilestoneToPlan() {
         try {
           let params = {
@@ -877,7 +1125,6 @@
             allocation: this.selectedMilestone.allocation
           }
           const {data} = await postRequest(`/commissionManagement/${this.planId}/milestone`, params, 'blueraven')
-          console.log('randaLogger', data)
           this.commission.milestones.push(data)
           this.checkErrorMessages()
           this.selectedMilestone = {}
@@ -905,9 +1152,6 @@
         }
       },
       checkIfMilestoneUsed(milestoneId) {
-        console.log('randaLogger',milestoneId)
-        console.log('randaLogger',this.commission.milestones)
-
         let used = false
         this.commission.sources.forEach(s => {
           if(s.milestoneId === milestoneId) {
@@ -930,6 +1174,41 @@
           }
         }
       },
+      async updateSource(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/commissionManagement/${this.planId}/source`, item, 'blueraven')
+          item.milestoneType = data.milestoneType
+          item.feeType = data.feeType
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Milestone')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getUserHistory(userId) {
+        //reset the rest of the new user fields if they change users
+        delete this.newUser.startDate
+        delete this.newUser.endDate
+        this.newUser.dateError = false
+        this.newUser.dateErrorMsg = ''
+        this.newUser.showNote = false
+        this.newUser.noteMsg = ''
+        this.errorLoadingUserHistory = false
+        console.log('randaLogger', userId)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/commissionManagement/commissionUser/${userId}/history`, 'blueraven')
+          this.userHistory = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          this.errorLoadingUserHistory = true
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User History')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async addSourceToPlan() {
         try {
           let params = {
@@ -939,7 +1218,6 @@
             feeTypeId: this.selectedSource.feeTypeId,
           }
           const {data} = await postRequest(`/commissionManagement/${this.planId}/source`, params, 'blueraven')
-          console.log('randaLogger', data)
           this.commission.sources.push(data)
           this.selectedSource = {}
           this.addSource = false

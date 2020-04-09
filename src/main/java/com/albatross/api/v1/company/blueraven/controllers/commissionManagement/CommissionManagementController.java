@@ -130,8 +130,9 @@ public class CommissionManagementController {
 
     @GetMapping(value = "/_search")
     public String findCommissionPlanUsers(@RequestParam String query,
-                                          @RequestParam(required = false) String positions) {
-        String userForCommissions = commissionManagementService.findUserForCommissions(query, positions);
+                                          @RequestParam(required = false) String positions,
+                                          @RequestParam(required = false) Long planId) {
+        String userForCommissions = commissionManagementService.findUserForCommissions(query, positions, planId);
         return userForCommissions;
     }
 
@@ -175,8 +176,8 @@ public class CommissionManagementController {
     }
 
     @PutMapping(value = "/{planId}/source")
-    public void updateSource(@PathVariable Long planId, @RequestBody Source source) {
-        commissionManagementService.updateSource(planId, source);
+    public Source updateSource(@PathVariable Long planId, @RequestBody Source source) {
+        return commissionManagementService.updateSource(planId, source);
     }
 
     @DeleteMapping(value = "/{planId}/source/{sourceId}")

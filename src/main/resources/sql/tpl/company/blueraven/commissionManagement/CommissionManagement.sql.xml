@@ -290,7 +290,12 @@ FROM (SELECT upv.user_id                                        AS "userId",
                     WHERE opau.user_id = upv.user_id
                   order by opau.start_date desc) overrides), '[]') AS overrides,
              coalesce((SELECT array_to_json(array_agg(row_to_json(receiving)))
-              FROM (SELECT op.name, opru.note, op.id, op.description
+              FROM (SELECT op.name,
+                        opru.note,
+                        op.id,
+                        op.description,
+                        opru.m1_allocation as "m1Allocation",
+                        opru.m2_allocation as "m2Allocation"
                     FROM brs.override_plan_receiving_user opru
                              INNER JOIN brs.override_plan op ON op.id = opru.override_plan_id
                     WHERE opru.user_id = upv.user_id
@@ -533,7 +538,7 @@ FROM (SELECT cp.id,
     <commissionManagement.updateMilestone><![CDATA[
       UPDATE brs.commission_plan_allocation
        SET allocation = :allocation
-       WHERE id = :commissionPlanAllocationId
+       WHERE id = :id
     ]]></commissionManagement.updateMilestone>
 
     <commissionManagement.findUsers><![CDATA[
@@ -560,10 +565,17 @@ FROM (SELECT cp.id,
                                     WHEN :positions = 'setters'
                                          THEN p.id IN (4, 5, 6) END))
         AND (
-                lower(first_name) || '' || lower(last_name) LIKE :search
-                  OR lower(last_name) LIKE :search
-                  OR lower(u.email) LIKE :search
+                lower(first_name) || ' ' || lower(last_name) LIKE lower(:search)
+                  OR lower(last_name) LIKE lower(:search)
+                  OR lower(u.email) LIKE lower(:search)
                 )
+            and ( case when :planId::int is not null
+                       then u.id not in (
+              select user_id
+              from brs.commission_plan_user
+              where commission_plan_id = :planId
+          ) else 1 = 1 end
+          )
       ORDER BY name
       LIMIT 10) results
     ]]></commissionManagement.findUsers>
@@ -598,7 +610,7 @@ FROM (SELECT cp.id,
        milestone_id = :milestoneId,
        fee_amount = :feeAmount,
        fee_type_id =:feeTypeId
-       WHERE source_id = :sourceId AND commission_plan_id = :planId
+       WHERE id = :id
     ]]></commissionManagement.updateSource>
 
     <commissionManagement.removeSource><![CDATA[

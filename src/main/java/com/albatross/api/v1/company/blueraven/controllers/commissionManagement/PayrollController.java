@@ -125,9 +125,5 @@ public class PayrollController {
         }
     }
 
-    @GetMapping(value = "/{payrollId}/overrides/{userId}")
-    public String getOverrideDetailsByUser(@PathVariable Long payrollId, @PathVariable Long userId) {
-        return payrollService.getOverrideDetailsByUser(payrollId, userId);
-    }
 
 }

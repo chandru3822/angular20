@@ -149,7 +149,6 @@
         try {
           const {data} = await getRequest(`/payroll/${this.payrollId}/summary`, 'blueraven')
           this.payrollSummary = data
-          console.log('randaLogger',data)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
