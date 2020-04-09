@@ -13,9 +13,10 @@ import java.util.List;
 @Setter
 public class ProcessStepActionChildFunction {
 
-  private Long id, processStepActionId, companyFunctionId, createdById, modifiedById, displayOrder;
-  private String companyFunctionName;
+  private Long id, processStepActionId, companyFunctionId, createdById, modifiedById, displayOrder, projectId;
+  private String companyFunctionName, functionName;
   private Boolean archived, edit = false;
   private List<ActionParamDynamicValue> actionParamDynamicValues;
+  private List<CompanyFunctionParam> companyFunctionParams;
 }
 

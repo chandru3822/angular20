@@ -308,6 +308,8 @@ select
   psacf.created_by_id as "createdById",
   psacf.modified_by_id as "modifiedById",
   cf.company_function_name as "companyFunctionName",
+  df.function_name as "functionName",
+  p.id as "projectId",
   coalesce((
     SELECT array_to_json(array_agg(row_to_json(params)))
     FROM (
@@ -326,11 +328,36 @@ select
       dfp.db_function_id = cf.db_function_id and
       dfp.parameter_type_id = 2 and
       apdv.archived is not true
-  ) params), '[]') AS "actionParamDynamicValues"
+  ) params), '[]') AS "actionParamDynamicValues",
+  coalesce((
+     SELECT array_to_json(array_agg(row_to_json(params)))
+     FROM (
+            select dfp.data_type_id as "dataTypeId",
+                   dfp.parameter_type_id as "parameterTypeId",
+                   dfp.display_order as "displayOrder",
+                   ppscfv.text_value as "textValue",
+                   ppscfv.date_value as "dateValue",
+                   ppscfv.timestamp_value as "timestampValue",
+                   ppscfv.boolean_value as "booleanValue",
+                   ppscfv.numeric_value as "numericValue",
+                   ppscfv.int_value as "intValue",
+                   cfp.system_value_id as "systemValueId",
+                   apdv.dynamic_value as "dynamicValue"
+            from flow.db_function_param dfp
+                   left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true
+                   left join flow.system_value sv on sv.id = cfp.system_value_id
+                   left join flow.action_param_dynamic_value apdv on apdv.db_function_param_id = dfp.id and apdv.process_step_action_company_function_id = psacf.id
+                   left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfp.custom_field_group_assignment_id
+            where dfp.db_function_id = df.id
+              and dfp.archived is not true
+            order by dfp.display_order) params), '[]') AS "companyFunctionParams"
 from flow.process_step_action_company_function psacf
 inner join flow.company_function cf on cf.id = psacf.company_function_id
+inner join flow.db_function df on df.id = cf.db_function_id
+inner join flow.project_process_step pps on pps.id = :projectProcessStepId
+inner join flow.project p on p.id = pps.project_id
 where
-  psacf.process_step_action_id = psa.id and
+  psacf.process_step_action_id = :id and
   psacf.archived is not true
 order by
   psacf.display_order,
