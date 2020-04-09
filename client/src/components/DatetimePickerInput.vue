@@ -13,6 +13,8 @@
       :label="label"
       prepend-icon="event"
       readonly
+      clear-icon="mdi-close-circle"
+      :clearable="!readonly"
       :disabled="readonly"
       v-on="!readonly && on"
     />

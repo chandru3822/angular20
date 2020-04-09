@@ -1,21 +1,5 @@
 <template>
   <v-container class="pa-0">
-<!--    <v-toolbar flat color="transparent">-->
-<!--      <v-toolbar-title>-->
-<!--        Current Payroll-->
-<!--      </v-toolbar-title>-->
-<!--      <v-spacer></v-spacer>-->
-<!--      <v-toolbar-items>-->
-<!--        <div class="commission-button-container">-->
-<!--          <v-btn color="primaryCustom" class="mr-3 white&#45;&#45;text" @click="saveChanges()">-->
-<!--            Save-->
-<!--          </v-btn>-->
-<!--          <v-btn @click="viewSummary()">-->
-<!--            View Summary-->
-<!--          </v-btn>-->
-<!--        </div>-->
-<!--      </v-toolbar-items>-->
-<!--    </v-toolbar>-->
     <v-toolbar v-if="!payrollLoading && !additionalPayrollDataNeeded" :color="payrollStatus.color" class="mt-2">
       <v-toolbar-title class="app-title" :style="{'color': payrollStatus.textColor}">
         {{payrollStatus.message}}
@@ -79,20 +63,6 @@
         </div>
       </v-toolbar-items>
     </v-toolbar>
-    <v-toolbar v-else-if="!payrollLoading" :color="payrollStatus.color" class="mt-2">
-      <v-toolbar-title class="app-title">
-        This payroll requires an end date and description.
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <div class="flex-display align-center" >
-          <v-btn color="primaryCustom"
-                 class="white--text" @click="saveChangesToPayroll()">
-            Save Changes
-          </v-btn>
-        </div>
-      </v-toolbar-items>
-    </v-toolbar>
     <v-form ref="accountingForm">
       <v-container>
         <v-row>
@@ -109,6 +79,9 @@
               <v-text-field text
                             label="Description"
                             v-model="currentPayroll.description"></v-text-field>
+              <div class="text-left">
+                <v-btn color="primaryCustom" dark @click="saveChangesToPayroll()">Save Changes</v-btn>
+              </div>
             </v-card>
           </v-col>
           <v-col cols="12" sm="6">
@@ -145,42 +118,141 @@
     </v-form>
     <v-row>
       <v-col>
-        <v-data-table
-            :headers="headers"
-            :items="accountingData"
-            :fixed-header="true"
-            disable-sort
-            :show-select="payrollStatus.showSelect"
-            :loading="dataLoading"
-            hide-default-footer
-            class="elevation-1"
-        >
-          <template #no-data>
-            No available accounting data
-          </template>
+        <v-card>
+          <v-card-title class="pt-0">
+            <v-text-field
+              v-model="search"
+              prepend-inner-icon="search"
+              label="Search"
+              single-line
+              hide-details
+            ></v-text-field>
+          </v-card-title>
+          <v-divider></v-divider>
+          <v-data-table
+              :headers="headers"
+              :items="accountingData"
+              :fixed-header="true"
+              :search="search"
+              :show-select="payrollStatus.showSelect"
+              :loading="dataLoading"
+              hide-default-footer
+              class="elevation-1"
+          >
+            <template #no-data>
+              No available accounting data
+            </template>
 
-          <template #no-results>
-            No available accounting data
-          </template>
+            <template #no-results>
+              No available accounting data
+            </template>
 
-          <template v-slot:header.data-table-select="{ on, props }">
-            <v-checkbox color="primaryCustom" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
-          </template>
+            <template v-slot:header.data-table-select="{ on, props }">
+              <v-checkbox color="primaryCustom" v-model="selectAll" @change="toggleSelectAll()"></v-checkbox>
+            </template>
 
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td v-if="payrollStatus.showSelect">
-<!--                <input type="checkbox" class="ml-2" v-model="item.selected">-->
-                <v-checkbox color="primaryCustom" v-model="item.selected"></v-checkbox>
-              </td>
-              <td class="text-left">{{item.project_id}}</td>
-              <td class="text-left">{{item.customer_name }}</td>
-              <td class="text-left">{{item.system_size }}</td>
-              <td class="text-left">{{item.closer }}</td>
-              <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
-            </tr>
-          </template>
-        </v-data-table>
+            <template #item="{ item, index }">
+              <tr :class="{'shaded-row': index % 2, 'red--text': item.closer_is_terminated }">
+                <td v-if="payrollStatus.showSelect">
+                  <v-checkbox color="primaryCustom" v-model="item.selected"></v-checkbox>
+                </td>
+                <td class="text-left">{{item.project_id}}</td>
+                <td class="text-left">{{item.customer_name }}</td>
+                <td class="text-left">{{item.system_size }}</td>
+                <td class="text-left">{{item.closer }}</td>
+                <td class="text-left">{{item.current_pay || 0 | currency('$', 2)}}</td>
+                <td class="text-left">{{item.source_name }}</td>
+                <td class="text-left">{{item.stage_name }}</td>
+                <td class="text-left">{{item.cancelled_date }}</td>
+                <td class="text-left">{{item.installation_agreement_signed_date | formatDate('date') }}</td>
+                <td class="text-left">{{item.final_design_signed_date | formatDate('date') }}</td>
+                <td class="text-left">{{item.agreement_signed_date | formatDate('date') }}</td>
+                <td class="text-left">{{item.utility_bill_verified_date | formatDate('date') }}</td>
+                <td class="text-left"></td>
+                <td class="text-left">{{item.percent_of_cash_deposit }}</td>
+                <td class="text-left">{{item.proof_of_homeowners_insurance_obtained_date | formatDate('date') }}</td>
+                <td class="text-left">{{item.proof_of_howmeowners_insurance_required }}</td>
+                <td class="text-left">{{item.substantial_completion_date | formatDate('date') }}</td>
+                <td class="text-left">{{item.commission_plan }}</td>
+                <td class="text-left">{{item.commission_earned || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
+                <td class="text-left">
+                  {{ item.commission_adjustments || 0 | currency('$', 2) }}
+
+                  <v-dialog
+                    v-model="item.dialog"
+                    width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-btn x-small color="primaryCustom" dark fab class="ml-2" v-on="on"
+                             @click="delete item.adjustment; delete item.adjustmentNote; getAdjustmentHistory(item)" >
+                        <v-icon>add</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title class="headline grey lighten-2" primary-title>
+                        Add Adjustment
+                      </v-card-title>
+                      <v-card-text class="pt-3">
+                        <strong>Type: </strong>Commission
+                        <v-text-field text
+                                      type="number"
+                                      label="Adjustment Amount"
+                                      prepend-icon="mdi-currency-usd"
+                                      persistent-hint
+                                      :hint="`Max allowed: ${$filters.currency(item.remaining_value, '$', 2)}`"
+                                      v-model.number="item.adjustment">
+                        </v-text-field>
+                        <v-textarea
+                          label="Notes"
+                          v-model="item.adjustmentNote"
+                        ></v-textarea>
+                        <v-data-table
+                          :headers="adjustmentHistoryHeaders"
+                          :items="item.adjustmentHistory"
+                          :fixed-header="true"
+                          :items-per-page="-1"
+                          disable-sort
+                          hide-default-footer
+                          class="elevation-1"
+                          v-if="item.adjustmentHistory && item.adjustmentHistory.length > 0"
+                        >
+                          <template #item.amount="{ item }">
+                            {{item.amount | currency('$', 2)}}
+                          </template>
+                          <template #item.created="{ item }">
+                            {{item.created | formatDate('date')}}
+                          </template>
+                        </v-data-table>
+                        <div v-else>
+                          No adjustments have been made for this project.
+                        </div>
+                      </v-card-text>
+                      <v-divider></v-divider>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn @click="item.dialog = false">
+                          Cancel
+                        </v-btn>
+                        <v-btn color="primaryCustom" class="white--text"
+                               :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > item.remaining_value"
+                               @click="addAdjustment(item)">
+                          Add
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                </td>
+                <td class="text-left">{{item.current_pay_commissions || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.remaining_value_commissions || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.override_plan }}</td>
+                <td class="text-left">{{item.override_earned || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.overrides_paid_to_date || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.current_pay_overrides || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.remaining_value_overrides || 0 | currency('$', 2) }}</td>
+              </tr>
+            </template>
+          </v-data-table>
+        </v-card>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -190,13 +262,15 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import cloneDeep from 'lodash.clonedeep'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+  import cloneDeep from 'lodash.clonedeep'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getRequestWithParams} from "../../helpers/helpers";
+  import Vue2Filters from "vue2-filters";
 
   export default {
     name: 'Accounting',
+    mixins: [Vue2Filters.mixin],
     components: {
       Snackbar,
       DatetimePickerInput
@@ -233,18 +307,50 @@
         repSearch: null,
         repsLoading: false,
         approveConfirm: false,
+        search: '',
         payDate: null,
         additionalPayrollDataNeeded: false,
         payrollLoading: true,
         payrollSummary: [],
         timezone: this.$store.state.user.details.timezone.value,
+        adjustmentHistoryHeaders: [
+          {text: 'Adjustment Type', value: 'adjustmentType', show: true},
+          {text: 'Amount', value: 'amount', show: true},
+          {text: 'Note', value: 'note', show: true},
+          {text: 'Created By', value: 'createdBy', show: true},
+          {text: 'Created', value: 'created', show: true},
+        ],
         headers: [
           // {text: 'Select For Pay', value: 'select', show: true},
-          {text: 'Project ID', value: 'projectId', show: true},
-          {text: 'Customer Name', value: 'customerName', show: true},
-          {text: 'System Size (kW)', value: 'systemSize', show: true},
-          {text: 'Sales Rep', value: 'salesRep', show: true},
-          {text: 'Current Pay', value: 'currentPay', show: true},
+          {text: 'Project ID', value: 'project_id', show: true},
+          {text: 'Customer Name', value: 'customer_name', show: true},
+          {text: 'System Size (kW)', value: 'system_size', show: true},
+          {text: 'Sales Rep', value: 'closer', show: true},
+          {text: 'Current Pay', value: 'current_pay', show: true},
+          {text: 'Source', value: 'source_name', show: true},
+          {text: 'Stage', value: 'stage_name', show: true},
+          {text: 'Cancelled', value: 'cancelled_date', show: true},
+          {text: 'IAS', value: 'installation_agreement_signed_date', show: true},
+          {text: 'FDS', value: 'final_design_signed_date', show: true},
+          {text: 'FAS', value: 'agreement_signed_date', show: true},
+          {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
+          // i dont think deposit date is being returned
+          {text: 'Deposit', value: '', show: true},
+          {text: '%/$ Dep', value: 'percent_of_cash_deposit', show: true},
+          {text: 'HOI', value: 'proof_of_homeowners_insurance_obtained_date', show: true},
+          {text: 'HOI-R', value: 'proof_of_howmeowners_insurance_required', show: true},
+          {text: 'SC', value: 'substantial_completion_date', show: true},
+          {text: 'Commission Plan', value: 'commission_plan', show: true},
+          {text: 'Commissions Earned', value: 'commission_earned', show: true},
+          {text: 'Commission Paid to Date', value: 'commission_paid_to_date', show: true},
+          {text: 'Adjustment', value: 'commission_adjustments', width: 150, show: true},
+          {text: 'Commission Pay', value: 'current_pay_commissions', show: true},
+          {text: 'Remaining Value Commissions', value: 'remaining_value_commissions', show: true},
+          {text: 'Override Plan', value: 'override_plan', show: true},
+          {text: 'Override Earned', value: 'override_earned', show: true},
+          {text: 'Overrides Paid to Date', value: 'overrides_paid_to_date', show: true},
+          {text: 'Override Pay', value: 'current_pay_overrides', show: true},
+          {text: 'Remaining Value Overrides', value: 'remaining_value_overrides', show: true},
         ],
         accountingData: [],
         currentPayroll: {},
@@ -279,26 +385,44 @@
           }
         }
       },
-      async saveChanges() {
-        console.log('save changes')
-        // this.$store.commit(AppMutations.SET_LOADING, true)
-        // try {
-        //   const {data} = await getRequest(`/payroll/${this.currentPayroll.id}/summary`, 'blueraven')
-        //   this.payrollSummary = data
-        //   console.log('randaLogger',data)
-        //   this.$store.commit(AppMutations.SET_LOADING, false)
-        // } catch (e) {
-        //   console.error('*** ERROR ***', e)
-        //   this.snackbar = getSnackbar('ERROR', 'Error Retrieving Payroll Summary')
-        //   this.$store.commit(AppMutations.SET_LOADING, false)
-        // }
+      async getAdjustmentHistory (item) {
+        try {
+          let params = {
+            projectId: item.project_id
+          }
+          const {data} = await getRequestWithParams(`/payroll/${this.currentPayroll.id}/adjustments`, {params}, 'blueraven')
+          this.$set(item, 'adjustmentHistory', data)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Adjustment History')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
-
+      async addAdjustment (item) {
+        console.log('randaLogger', item)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            projectId: item.project_id,
+            closerId: item.closer_user_id,
+            adjustmentType: 'COMMISSION',
+            maxAmount: item.remaining_value,
+            amount: item.adjustment,
+            note: item.adjustementNote
+          }
+          await postRequest(`/payroll/${this.currentPayroll.id}/adjustments`, params, 'blueraven')
+          this.snackbar = getSnackbar('SUCCESS', 'Adjustment Added')
+          this.getCurrentPayroll()
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Adjustment')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async saveChangesToPayroll () {
         let params = {
           description: this.currentPayroll.description,
           periodEnd: this.currentPayroll.periodEnd,
-          lockedProjects: [],
           projectIds: []
         }
         this.$store.commit(AppMutations.SET_LOADING, true)

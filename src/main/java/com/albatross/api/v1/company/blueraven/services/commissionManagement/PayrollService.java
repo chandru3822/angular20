@@ -216,22 +216,7 @@ public class PayrollService {
 
         int update = sqlCache.update("payroll.updatePayroll", params);
 
-        if (!updateRequest.getLockedProjects().isEmpty()) {
-            updateRequest.getLockedProjects().forEach(p -> updateLockedProject(p.getId(), p.isLocked()));
-        }
-
         return update != 0;
-    }
-
-    private int updateLockedProject(Long projectId, Boolean isLocked) {
-
-//        HashMap<String, Object> params = new HashMap<>();
-//        params.put("projectId", projectId);
-//        params.put("locked", isLocked);
-//
-//        return sqlCache.updateBySql("UPDATE flow.project SET locked = :locked WHERE id = :projectId", params);
-//        todo handle updating locked project
-        return 1;
     }
 
     public void addPayrollAdjustment(Long payrollId, PayrollAdjustmentRequest adjustmentRequest) {
@@ -287,7 +272,6 @@ public class PayrollService {
     public static class PayrollUpdateRequest {
         private String description, periodEnd;
         private List<Integer> projectIds;
-        private List<ProjectLocked> lockedProjects;
     }
 
     @Data

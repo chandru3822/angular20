@@ -14,7 +14,7 @@
             Save
           </v-btn>
           <v-btn color="green" class="white--text mr-2"
-                 v-if="overrideId && override.status === 'PENDING'"
+                 v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && overrideId && override.status === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approveOverride()">
             Approve
@@ -141,10 +141,32 @@
                   This option allows you to copy an entire plan over. <br/>
                   By default, no users are copied over.
                 </div>
-                Users to Copy:
+                Receiving Users to Copy:
                 <div v-for="u in override.receivingUsers">
                   <input type="checkbox" class="mr-2" v-model="u.selected">
                   {{ u.name }}
+                </div>
+                <div class="mt-3">
+                  Assigned Users to Copy:
+                  <div v-for="u in override.assignedUsers">
+                    <input type="checkbox" class="mr-2" v-model="u.selected">
+                    {{ u.name }}: {{u.startDate | formatDate('date')}}
+                  </div>
+                  <div class="mt-3" v-if="override.assignedUsers && override.assignedUsers.filter(u => u.selected).length > 0">
+                    <DatetimePickerInput
+                      v-model="cloneStartDate"
+                      :timezone="timezone"
+                      :type="'date'"
+                      :format="'MMMM DD, YYYY'"
+                      label="Start Date"
+                    />
+                    <div v-if="cloneStartDate">
+                      * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
+                    </div>
+                    <div v-if="cloneDateError" class="error--text">
+                      You cannot select a start date that is before or equal to any other user's plan start date.
+                    </div>
+                  </div>
                 </div>
               </v-card-text>
 
@@ -161,16 +183,15 @@
                 <v-btn
                   color="primaryCustom"
                   class="white--text"
-                  @click="cloneDialog = false; cloneOverride(override.receivingUsers)"
+                  :disabled="(override.assignedUsers.filter(u => u.selected).length > 0 && !cloneStartDate) ||
+                             (override.assignedUsers.filter(u => u.selected).length === 0 && cloneStartDate != null)"
+                  @click="validateStartDates()"
                 >
                   Clone
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-btn color="primaryCustom" dark v-else @click="cloneOverride()">
-            Clone
-          </v-btn>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -208,7 +229,7 @@
                         item-value="id"
               ></v-select>
               <v-text-field text
-                            :disabled="override.status !== 'PENDING'"
+                            :disabled="override.id && override.status !== 'PENDING'"
                             label="Rate per kW ($)"
                             v-model="override.total"></v-text-field>
             </v-card>
@@ -641,6 +662,7 @@
         cloneDialog: false,
         moment,
         cloneStartDate: null,
+        cloneDateError: false,
         timezone: this.$store.state.user.details.timezone.value,
         inactivateConfirm: false,
         deleteConfirm: false,
@@ -747,12 +769,13 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async cloneOverride (users) {
+      async cloneOverride () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
-            receivingUsers: users ? users.filter(u => u.selected).map(u => u.userId) : [],
-            assignedUsers: [],
+            receivingUsers: this.override?.receivingUsers?.filter(u => u.selected).map(u => u.userId),
+            assignedUsers: this.override?.assignedUsers?.filter(u => u.selected).map(u => u.userId),
+            startDate: this.cloneStartDate,
             backdateApprovalCreds: null
           }
           const {data} = await postRequest(`/commissionManagement/overrides/${this.overrideId}/clone`, params, 'blueraven')
@@ -783,6 +806,21 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User History')
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      validateStartDates() {
+        //this is used when cloning users
+        this.cloneDateError = false
+        this.override?.assignedUsers?.forEach(u => {
+          if(u.selected && u.startDate >= this.cloneStartDate) {
+            this.cloneDateError = true
+          }
+        })
+
+        console.log('randaLogger me me me', this.cloneDateError)
+        if(!this.cloneDateError) {
+          this.cloneOverride()
+          this.cloneDialog = false;
         }
       },
       checkDates(startDate, endDate, plans, item, existingId) {

@@ -123,7 +123,6 @@ public class CommissionManagementService {
             throws BackdatedPlanApprovalRequiredException, BackdatedPlanApprovalBadCredentialsException,
                    PlanStartDateBeforeHireDate {
         boolean isBackdatedPlan = validateBackdatedPlan(commissionPlan.getStartDate(), commissionPlan.getBackdateApprovalCreds());
-        validateUserStartDates(commissionPlan);
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("planId", id);
@@ -153,40 +152,6 @@ public class CommissionManagementService {
             sqlCache.update("commissionPlan.appendNoteToPlan", params);
         }
         return clonedId;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void validateUserStartDates(CommissionPlan commissionPlan) throws PlanStartDateBeforeHireDate {
-        Date startDate = commissionPlan.getStartDate();
-
-        // if no start date is provided, then it doesn't make sense to check user hire dates
-        if (startDate == null)
-            return;
-
-        List<Integer> userIds = commissionPlan.getUsers();
-        Set<Integer> unrecognizedUserIds = new HashSet<>();
-        List<User> backdatedUsers = new ArrayList<>();
-
-        for (Integer userId : userIds) {
-            Optional<User> user = securityService.findUserById(userId.longValue());
-            if (user.isPresent()) {
-                //todo figure out hire date stuff
-//                long hireDateMillis = user.get().getHireDate().getTime();
-//                Date hireDate = new Date(hireDateMillis);
-//                if (startDate.before(hireDate)) {
-//                    backdatedUsers.add(user.get());
-//                }
-            } else {
-                unrecognizedUserIds.add(userId);
-            }
-        }
-
-        if (!unrecognizedUserIds.isEmpty()) {
-            throw new IllegalArgumentException("Unrecognized userIds: " + unrecognizedUserIds);
-        }
-        if (!backdatedUsers.isEmpty()) {
-            throw new PlanStartDateBeforeHireDate(startDate, backdatedUsers);
-        }
     }
 
     public String getCommissionPlanDetails(Long planId) {

@@ -18,9 +18,6 @@ import moment from 'moment-timezone'
 import devtools from '@vue/devtools'
 import VueMapbox from 'vue-mapbox'
 import Mapbox from 'mapbox-gl'
-import Datetime from 'vue-datetime'
-// You need a specific loader for CSS files
-import 'vue-datetime/dist/vue-datetime.css'
 
 
 
@@ -41,8 +38,8 @@ Vue.component('downloadExcel', JsonExcel)
 
 Vue.use(Vue2Filters)
 // Vue.use(VueFlatPickr)
-Vue.use(Datetime)
 Vue.use(VueMapbox, { mapboxgl: Mapbox });
+Vue.prototype.$filters = Vue.options.filters
 
 Vue.filter('formatDate', function (value, type, format) {
   /*
