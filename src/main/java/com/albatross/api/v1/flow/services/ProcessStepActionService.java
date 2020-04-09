@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -297,6 +298,11 @@ public class ProcessStepActionService {
     }
   }
 
+  public List<ProcessStepActionChildFunction> getChildFunctionsWithParamValues(Long actionId, Long projectProcessStepId) {
+    Map<String, Object> params = Map.of("id", actionId, "projectProcessStepId", projectProcessStepId);
+    return sqlCache.query("processStepAction.getChildFunctionsByProjectProcessStepId", params, new ProcessStepActionChildFunctionMapper<>(ProcessStepActionChildFunction.class, om));
+  }
+
 
   // MAPPER
   public static class ProcessStepActionMapper<T> extends BeanPropertyRowMapper<T> {
@@ -340,6 +346,9 @@ public class ProcessStepActionService {
       TypeReference<List<ActionParamDynamicValue>> actionParamDynamicValuesRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "actionParamDynamicValues",
         new JsonCollectionDeserializer(actionParamDynamicValuesRef, objectMapper));
+
+      TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "companyFunctionParams", new JsonCollectionDeserializer<>(companyFunctionParamsRef, objectMapper));
     }
   }
 

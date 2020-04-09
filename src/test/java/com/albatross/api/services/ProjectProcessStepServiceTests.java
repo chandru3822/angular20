@@ -52,6 +52,8 @@ public class ProjectProcessStepServiceTests {
 
   ProjectProcessStepRequirementService projectProcessStepRequirementService = mock(ProjectProcessStepRequirementService.class);
 
+  private AsyncProjectProcessStepService asyncProjectProcessStepService = mock(AsyncProjectProcessStepService.class);
+
   private ProcessStepAction action;
 
   private List<ProcessStepLogic> processStepLogicList;
@@ -61,7 +63,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, null, processStepActionService, projectProcessStepRequirementService, null));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, null, processStepActionService, projectProcessStepRequirementService, asyncProjectProcessStepService, null));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");
