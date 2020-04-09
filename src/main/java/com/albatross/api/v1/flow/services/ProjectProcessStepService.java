@@ -59,6 +59,8 @@ public class ProjectProcessStepService {
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
+  private final AsyncProjectProcessStepService asyncProjectProcessStepService;
+
   private final ObjectMapper om;
 
   @Value("${aws.storageBucket}")
@@ -267,23 +269,7 @@ public class ProjectProcessStepService {
 
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
 
-    try {
-      List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, projectProcessStepId);
-      childFunctions.forEach(childFunction -> {
-        try {
-          String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId()));
-          String query = String.format("select * from flow.%s(%s)", childFunction.getFunctionName(), params);
-          //@TODO: Account for function return data types 7 and 9 returning lists
-          sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
-        } catch (Exception e) {
-          log.error(String.format("Unable to run child functions for action with ID: %s", action.getId()));
-          e.printStackTrace();
-          throw new RuntimeException(e);
-        }
-      });
-    } catch (Exception e) {
-      throw e;
-    }
+    asyncProjectProcessStepService.asyncRunChildFunctions(actionId, projectProcessStepId, securityService.getCurrentUser().getId());
   }
 
   public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
