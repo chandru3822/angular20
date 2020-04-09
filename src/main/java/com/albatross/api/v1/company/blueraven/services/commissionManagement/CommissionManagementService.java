@@ -84,10 +84,11 @@ public class CommissionManagementService {
         return sqlCache.query("commissionManagement.getCommissionPlans", Collections.emptyMap(), CommissionPlan.class);
     }
 
-    public String findUserForCommissions(String search, String positions) {
+    public String findUserForCommissions(String search, String positions, Long planId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("search", search + "%");
         params.put("positions", positions);
+        params.put("planId", planId);
 
         List<String> query = sqlCache.query("commissionManagement.findUsers", params, new SingleColumnRowMapper<>(String.class));
         return query.isEmpty() ? "[]" : query.get(0);
@@ -415,17 +416,15 @@ public class CommissionManagementService {
                 && !newStartDate.equals(existingStartDate);
     }
 
-    public void updateSource(Long planId, Source source) {
+    public Source updateSource(Long planId, Source source) {
         Map<String, Object> params = new HashMap<>();
-        params.put("planId", planId);
-        params.put("sourceId", source.getSourceId());
-        params.put("sourceName", source.getSourceName());
-        params.put("milestoneTypeId", source.getMilestoneTypeId());
+        params.put("id", source.getId());
         params.put("feeAmount", source.getFeeAmount());
         params.put("feeTypeId", source.getFeeTypeId());
         params.put("milestoneId", source.getMilestoneId());
 
         sqlCache.update("commissionManagement.updateSource", params);
+        return getSource(source.getId());
     }
 
     public void removeSource(Long planId, Long sourceId) {

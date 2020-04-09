@@ -70,7 +70,6 @@
           const {data} = await getRequest(`/payroll/${this.$route.params.id}/summary`, 'blueraven')
           this.payrollSummary = data
           this.dataLoading = false
-          console.log('randaLogger',data)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

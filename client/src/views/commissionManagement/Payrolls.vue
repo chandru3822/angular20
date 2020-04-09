@@ -125,7 +125,6 @@
         }
       },
       async viewDetails (item) {
-        console.log('randaLogger', item)
         this.$router.push({name: 'payrollReview', params: { id: item.id }})
       }
     }
