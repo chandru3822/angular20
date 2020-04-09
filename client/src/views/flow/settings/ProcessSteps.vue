@@ -12,63 +12,87 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-text-field v-if="addNew"
-              label="Process Step Name"
-              tabindex=1
-              v-model="newStep.processStepName"
-          ></v-text-field>
-          <v-btn v-if="addNew" :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
-          <v-list v-for="(ps, index) in filterBy(processSteps, false, 'archived')" class="pa-0"
-                  :key="index">
-            <v-list-item :class="{'shaded-row': index % 2}">
-              <v-list-item-content class="text-left clickable" @click="goToProcessStep(ps.id)">
-                {{ps.processStepName}}
-              </v-list-item-content>
-              <v-list-item-action class="clickable">
-                <v-btn @click="goToProcessStep(ps.id)" text>
-                  <v-icon>edit</v-icon>
-                </v-btn>
-              </v-list-item-action>
-              <v-dialog
-                  v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                  v-model="ps.deleteConfirm"
-                  width="500">
-                <template v-slot:activator="{ on }">
-                  <v-list-item-action class="clickable" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-list-item-action>
-                </template>
-                <v-card>
-                  <v-card-title
-                      class="headline grey lighten-2"
-                      primary-title
-                  >
-                    Confirm
-                  </v-card-title>
-
-                  <v-card-text>
-                    Are you sure you want to delete this process step: <strong>{{ ps.processStepName }}</strong>?
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        @click="ps.deleteConfirm = false">
-                      No
+          <v-card color="transparent" flat v-if="addNew">
+            <v-text-field
+                label="Process Step Name"
+                tabindex=1
+                v-model="newStep.processStepName"
+            ></v-text-field>
+            <v-btn :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
+          </v-card>
+          <v-divider v-if="addNew"></v-divider>
+          <v-card>
+            <v-card-title class="pt-0">
+              <v-text-field
+                v-model="search"
+                prepend-inner-icon="search"
+                label="Search"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-card-title>
+            <v-data-table
+              :headers="headers"
+              :items="processSteps"
+              :fixed-header="true"
+              :items-per-page="-1"
+              disable-sort
+              :search="search"
+              hide-default-header
+              hide-default-footer
+              class="elevation-1"
+            >
+              <template #item="{ item, index }">
+                <tr :class="{'shaded-row': index % 2}">
+                  <td class="text-left">{{item.processStepName}}</td>
+                  <td class="text-right">
+                    <v-btn small text @click="goToProcessStep(item.id)">
+                      <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn
-                        color="primary"
-                        text
-                        @click="ps.archived = true; deleteProcessStep(ps.id)">
-                      Yes
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-list-item>
-          </v-list>
+                    <v-dialog
+                      v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      v-model="item.deleteConfirm"
+                      width="500">
+                      <template v-slot:activator="{ on }">
+                        <v-btn small text v-on="on">
+                          <v-icon>delete</v-icon>
+                        </v-btn>
+                      </template>
+                      <v-card>
+                        <v-card-title
+                          class="headline grey lighten-2"
+                          primary-title
+                        >
+                          Confirm
+                        </v-card-title>
+
+                        <v-card-text>
+                          Are you sure you want to delete this process step: <strong>{{ item.processStepName }}</strong>?
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            @click="item.deleteConfirm = false">
+                            No
+                          </v-btn>
+                          <v-btn
+                            color="primary"
+                            text
+                            @click="item.archived = true; deleteProcessStep(item.id)">
+                            Yes
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </td>
+
+                </tr>
+              </template>
+            </v-data-table>
+          </v-card>
         </v-container>
       </v-col>
       <Snackbar :snackbar="snackbar"></Snackbar>
@@ -92,11 +116,16 @@
       return {
         snackbar: {},
         addNew: false,
+        search: '',
         newStep: {},
         selectedProcessStepId: null,
         companyId: this.$store.state.user.details.companyId,
         userId: this.$store.state.user.details.id,
-        processSteps: []
+        processSteps: [],
+        headers: [
+          {text: 'Process Step Name', value: 'processStepName', show: true},
+          {text: '', value: 'icons', show: true},
+        ]
       }
     },
     computed: {
