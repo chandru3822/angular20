@@ -25,11 +25,6 @@ public class AsyncProjectProcessStepService {
 
   @Async
   public void asyncRunChildFunctions(Long actionId, Long projectProcessStepId, Long userId) {
-    try {
-      Thread.sleep(5000);
-    } catch (Exception e) {
-      log.error("this thing sucks");
-    }
     List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, projectProcessStepId);
     childFunctions.forEach(childFunction -> {
       try {
