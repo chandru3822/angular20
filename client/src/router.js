@@ -31,12 +31,20 @@ export default new Router({
         if (!store.state.user.authorized) {
           next('/login')
         } else if (to.path === '/') {
-          next('/users')
+          if(store.getters.userHasFeature('USERS')) {
+            //i hate that /users is the homescreen. all users should have access to our true home screen. PITA
+            next('/users')
+          } else  {
+            next()
+          }
         } else {
           if(from.name !== 'login') {
+
+            console.log('from = login')
             try {
               const {data} = await getUser()
               store.commit(UserMutations.SET_DETAILS, data)
+              console.log('going to next')
               next()
             } catch (e) {
               next('/login')

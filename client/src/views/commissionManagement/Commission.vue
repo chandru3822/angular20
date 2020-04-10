@@ -14,7 +14,7 @@
             Save
           </v-btn>
           <v-btn color="green" class="white--text mr-2"
-                 v-if="planId && commission.statusType === 'PENDING'"
+                 v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN') && planId && commission.statusType === 'PENDING'"
                  :disabled="errorMessages.length > 0"
                  @click="approvePlan()">
             Approve
@@ -126,7 +126,7 @@
             width="600"
           >
             <template v-slot:activator="{ on }">
-              <v-btn color="primaryCustom" dark v-on="on">
+              <v-btn color="primaryCustom" dark v-on="on" class="mr-2">
                 Clone
               </v-btn>
             </template>
@@ -147,10 +147,9 @@
                 Users to Copy:
                 <div v-for="u in filterBy(commission.users, (u) => { return u.endDate == null })">
                   <input type="checkbox" class="mr-2" v-model="u.selected">
-                  {{ u.name }}
+                  {{ u.name }}: {{u.startDate | formatDate('date')}}
                 </div>
                 <div class="mt-3" v-if="commission.users && commission.users.filter(u => u.selected).length > 0">
-                  {{cloneStartDate}}
                   <DatetimePickerInput
                     v-model="cloneStartDate"
                     :timezone="timezone"
@@ -159,7 +158,10 @@
                     label="Start Date"
                   />
                   <div v-if="cloneStartDate">
-                    * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on the existing plan.
+                    * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
+                  </div>
+                  <div v-if="cloneDateError" class="error--text">
+                    You cannot select a start date that is before or equal to any other user's plan start date.
                   </div>
                 </div>
               </v-card-text>
@@ -179,16 +181,12 @@
                   :disabled="(commission.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
                             (commission.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
                   class="white--text"
-                  @click="cloneDialog = false; clonePlan(commission.users, cloneStartDate)"
-                >
+                  @click="validateStartDates()">
                   Clone
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-btn color="primaryCustom" dark v-else @click="clonePlan()">
-            Clone
-          </v-btn>
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -227,7 +225,7 @@
               <v-text-field text
                             label="Rate per kW ($)"
                             type="number"
-                            :disabled="commission.statusType !== 'PENDING'"
+                            :disabled="commission.id && commission.statusType !== 'PENDING'"
                             v-model.number="commission.total"></v-text-field>
             </v-card>
           </v-col>
@@ -848,6 +846,7 @@
         selectedSource: {},
         sources: [],
         errorMessages: [],
+        cloneDateError: false,
         commission: {
           users: [],
           positionId: 1
@@ -874,6 +873,20 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Commission Details')
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      validateStartDates() {
+        //this is used when cloning users
+        this.cloneDateError = false
+        this.commission?.users?.forEach(u => {
+          if(u.selected && u.startDate >= this.cloneStartDate) {
+            this.cloneDateError = true
+          }
+        })
+
+        if(!this.cloneDateError) {
+          this.clonePlan(commission.users, cloneStartDate)
+          this.cloneDialog = false;
         }
       },
       checkDates(startDate, endDate, plans, item, existingId) {
@@ -1008,9 +1021,7 @@
             backdateApprovalCreds: null
           }
           const {data} = await postRequest(`/commissionManagement/${this.planId}/clone`, params, 'blueraven')
-          if(data && data[0] !== null ) {
-            this.$router.push({name: 'commission', params: {id: data[0].id}})
-          }
+          this.$router.push({name: 'commission', params: {id: data.id}})
           // temporarily only allowing closers
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

@@ -2,60 +2,72 @@
   <v-container class="pa-0" id="commission-closers-container">
     <v-row>
       <v-col>
-        <v-data-table
-            :headers="headers"
-            :items="closers"
-            :fixed-header="true"
-            :items-per-page="100"
-            disable-sort
-            :loading="dataLoading"
-            hide-default-footer
-            class="elevation-1"
-        >
-          <template #no-data>
-            No available closers
-          </template>
+        <v-card>
+          <v-card-title class="pt-0">
+            <v-text-field
+              v-model="search"
+              prepend-inner-icon="search"
+              label="Search"
+              single-line
+              hide-details
+            ></v-text-field>
+          </v-card-title>
+          <v-divider></v-divider>
+          <v-data-table
+              :headers="headers"
+              :items="closers"
+              :fixed-header="true"
+              :items-per-page="50"
+              :loading="dataLoading"
+              :search="search"
+              :footer-props="footerProps"
+              class="elevation-1"
+          >
+            <template #no-data>
+              No available closers
+            </template>
 
-          <template #no-results>
-            No available closers
-          </template>
+            <template #no-results>
+              No available closers
+            </template>
 
-          <template #item="{ item, index }">
-            <tr class="vertical-top" :class="{'shaded-row': index % 2}">
-              <td class="text-left pt-1">
-                <v-btn text :to="{ name: 'closer', params: {id: item.id} }">
-                  {{item.name}}
-                </v-btn>
-              </td>
-              <td class="text-left pt-1">
-                <a v-if="item.commissionPlan !== null" @click="goToDetails(item, 1)">
-                  {{item.commissionPlan}}:<br/>
-                  {{item.commissionDescription}}
-                </a>
-                <div v-else class="pt-2">--</div>
-              </td>
-              <td class="text-left pt-1">
-                <a v-if="item.overridePlan !== null" @click="goToDetails(item, 2)">
-                  {{item.overridePlan}}:<br/>
-                  {{item.overrideDescription}}
-                </a>
-                <div v-else class="pt-2">--</div>
-              </td>
-              <td class="text-left pt-1">
-                <span v-if="item.receivingPlans && item.receivingPlans.length > 0">
-                  <div v-for="rp in item.receivingPlans">
-                    <a @click="goToDetails(rp, 3)">
-                      {{rp.receivingPlan}}:<br/>
-                      {{rp.receivingDescription}}
-                    </a>
-                  </div>
-                </span>
-                <div v-else  class="pt-2">--</div>
-              </td>
-              <td class="text-left pt-3">{{item.hasCommissionPlanGap ? 'Yes' : 'No'}}</td>
-            </tr>
-          </template>
-        </v-data-table>
+            <template #item="{ item, index }">
+              <tr class="vertical-top" :class="{'shaded-row': index % 2}">
+                <td class="text-left pt-1">
+                  <v-btn text :to="{ name: 'closer', params: {id: item.id} }">
+                    {{item.name}}
+                  </v-btn>
+                </td>
+                <td class="text-left pt-1">
+                  <a v-if="item.commissionPlan !== null" @click="goToDetails(item, 1)">
+                    {{item.commissionPlan}}:<br/>
+                    {{item.commissionDescription}}
+                  </a>
+                  <div v-else class="pt-2">--</div>
+                </td>
+                <td class="text-left pt-1">
+                  <a v-if="item.overridePlan !== null" @click="goToDetails(item, 2)">
+                    {{item.overridePlan}}:<br/>
+                    {{item.overrideDescription}}
+                  </a>
+                  <div v-else class="pt-2">--</div>
+                </td>
+                <td class="text-left pt-1">
+                  <span v-if="item.receivingPlans && item.receivingPlans.length > 0">
+                    <div v-for="rp in item.receivingPlans">
+                      <a @click="goToDetails(rp, 3)">
+                        {{rp.receivingPlan}}:<br/>
+                        {{rp.receivingDescription}}
+                      </a>
+                    </div>
+                  </span>
+                  <div v-else  class="pt-2">--</div>
+                </td>
+                <td class="text-left pt-3">{{item.hasCommissionPlanGap ? 'Yes' : 'No'}}</td>
+              </tr>
+            </template>
+          </v-data-table>
+        </v-card>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -80,12 +92,16 @@
       return {
         snackbar: {},
         dataLoading: true,
+        search: '',
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 1000]
+        },
         headers: [
           {text: 'Closer Name', value: 'name', show: true},
-          {text: 'Commissions Assigned To', value: 'assignedTo', show: true},
-          {text: 'Overrides Assigned To', value: 'overridesAssignedTo', show: true},
-          {text: 'Receiving Overrides From', value: 'receivingOverridesFrom', show: true},
-          {text: 'Has Commission Plan Gap', value: 'planGap', show: true},
+          {text: 'Commissions Assigned To', value: 'commissionPlan', show: true},
+          {text: 'Overrides Assigned To', value: 'overridePlan', show: true},
+          {text: 'Receiving Overrides From', value: 'receivingPlan', show: true},
+          {text: 'Has Commission Plan Gap', value: 'hasCommissionPlanGap', show: true},
         ],
         closers: []
       }
@@ -95,8 +111,6 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/commissionManagement/closers`, 'blueraven')
-          //todo: make it so closers = only active until a filter by closer name is applied
-          this.masterData = data
           this.closers = data.filter(d => d.isActiveCloser)
           this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

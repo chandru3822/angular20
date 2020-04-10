@@ -15,38 +15,50 @@
     <v-divider></v-divider>
     <v-row>
       <v-col class="pt-0">
-        <v-data-table
-            :headers="headers"
-            :items="overridePlans"
-            :fixed-header="true"
-            :items-per-page="-1"
-            disable-sort
-            :loading="dataLoading"
-            hide-default-footer
-            class="elevation-1"
-        >
-          <template #no-data>
-            No available override plans
-          </template>
+        <v-card>
+          <v-card-title class="pt-0">
+            <v-text-field
+              v-model="search"
+              prepend-inner-icon="search"
+              label="Search"
+              single-line
+              hide-details
+            ></v-text-field>
+          </v-card-title>
+          <v-divider></v-divider>
+          <v-data-table
+              :headers="headers"
+              :items="overridePlans"
+              :fixed-header="true"
+              :items-per-page="-1"
+              :search="search"
+              :loading="dataLoading"
+              hide-default-footer
+              class="elevation-1"
+          >
+            <template #no-data>
+              No available override plans
+            </template>
 
-          <template #no-results>
-            No available override plans
-          </template>
+            <template #no-results>
+              No available override plans
+            </template>
 
-          <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">
-                <v-btn text @click="goToDetails(item)">
-                  {{item.name}}
-                </v-btn>
-              </td>
-              <td class="text-left">{{item.description}}</td>
-              <td class="text-left">{{item.status}}</td>
-              <td class="text-left">{{item.total}}</td>
-              <td class="text-left">{{item.activeAssignedUsers}}</td>
-            </tr>
-          </template>
-        </v-data-table>
+            <template #item="{ item, index }">
+              <tr class="clickable" :class="{'shaded-row': index % 2}">
+                <td class="text-left">
+                  <v-btn text @click="goToDetails(item)">
+                    {{item.name}}
+                  </v-btn>
+                </td>
+                <td class="text-left">{{item.description}}</td>
+                <td class="text-left">{{item.status}}</td>
+                <td class="text-left">{{item.total}}</td>
+                <td class="text-left">{{item.activeAssignedUsers}}</td>
+              </tr>
+            </template>
+          </v-data-table>
+        </v-card>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -70,6 +82,7 @@
       return {
         snackbar: {},
         dataLoading: true,
+        search: '',
         headers: [
           {text: 'Name', value: 'name', show: true},
           {text: 'Description', value: 'description', show: true},
