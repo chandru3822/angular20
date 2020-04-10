@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="getRequirementTypes(); selectedDataTypeRequirement = {}" text>
+            <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text>
               <v-icon v-if="!addNewRequirement">add</v-icon>
               {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}
             </v-btn>
@@ -20,9 +20,9 @@
                       label="Select Requirement Type"
                       item-value="id"
                       item-text="processStepRequirementType"
-                      @input="selectRequirementType(); parent = {}; selectedCustomField = {}; selectedDataTypeRequirement = {};
-                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
-                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
+                      @input="[selectRequirementType(), parent = {}, selectedCustomField = {}, selectedDataTypeRequirement = {},
+                              selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
+                              newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
             <!-- if it is a custom field -->
             <v-select
@@ -32,9 +32,9 @@
                 label="Parent Object"
                 item-text="processStepName"
                 return-object
-                @input="loadFieldsByParent(parent); selectedCustomField = {}; selectedDataTypeRequirement = {};
-                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
-                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
+                @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
+                              selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
+                              newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
             <v-select v-if="parent.id"
                       v-model="selectedCustomField"
@@ -42,10 +42,10 @@
                       label="Custom Field"
                       item-text="fieldName"
                       return-object
-                      @input="loadOperatorTypes(selectedCustomField.dataTypeId); loadDataTypeRequirements(selectedCustomField.dataTypeId);
-                              selectedDataTypeRequirement = {};
-                              selectedFunction = {}; requirementParamDynamicValues = []; newRequirement.operatorTypeId = null;
-                              newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
+                      @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
+                              selectedDataTypeRequirement = {},
+                              selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
+                              newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
             <!-- if it is a function -->
             <v-select
@@ -55,7 +55,7 @@
                 label="Function"
                 item-text="companyFunctionName"
                 returnObject
-                @input="loadFunctionParams(selectedFunction.dbFunctionId, true); loadOperatorTypes(selectedFunction.returnDataTypeId); loadDataTypeRequirements(selectedFunction.returnDataTypeId)"
+                @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId)]"
             ></v-select>
             <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
@@ -73,11 +73,11 @@
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
-                @change="newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null"
+                @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
-            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="newRequirement.requirementValue = null; selectedListValue = {}; selectedDataTypeRequirement = {}; newRequirement.secondaryRequirementValue = null" class="mx-2" label="Custom"></v-switch>
+            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]" class="mx-2" label="Custom"></v-switch>
             <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKeyId === null && selectedCustomField.systemListId === null"
                           v-model="newRequirement.requirementValue"
                           placeholder="Enter a value"
@@ -297,13 +297,13 @@
                   </td>
                   <td>
                     <div style="display: flex;">
-                      <v-btn small text @click="expanded = [item];loadOperatorTypes(item.dataTypeId);
-                                    loadDataTypeRequirements(item.dataTypeId); selectedRequirementIndex = index"
+                      <v-btn small text @click="[expanded = [item], loadOperatorTypes(item.dataTypeId),
+                                    loadDataTypeRequirements(item.dataTypeId), selectedRequirementIndex = index]"
                              v-if="!expanded.includes(item)">
                         <v-icon v-if="item.immutable">expand_more</v-icon>
                         <v-icon v-else>edit</v-icon>
                       </v-btn>
-                      <v-btn small text @click="expanded = []; selectedRequirementIndex = index"
+                      <v-btn small text @click="[expanded = [], selectedRequirementIndex = index]"
                              v-if="expanded.includes(item)">cancel
                       </v-btn>
                       <v-dialog
@@ -339,7 +339,7 @@
                             <v-btn
                                 color="primary"
                                 text
-                                @click="item.archived = true; deleteRequirement(item.id)">
+                                @click="[item.archived = true, deleteRequirement(item.id)]">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -440,7 +440,7 @@
                         <v-spacer></v-spacer>
                         <v-toolbar-items>
                           <v-btn v-if="!addChildLink"
-                                 @click="addChildLink = true; loadLinks(item.id)">
+                                 @click="[addChildLink = true, loadLinks(item.id)]">
                             <v-icon>add</v-icon>
                           </v-btn>
                         </v-toolbar-items>
@@ -505,7 +505,7 @@
                                 <v-btn
                                     color="primary"
                                     text
-                                    @click="al.archived = true; deleteLinkFromAction(item.id, al.id)">
+                                    @click="[al.archived = true, deleteLinkFromAction(item.id, al.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -525,7 +525,7 @@
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
                       <v-btn text v-if="!addChildProcess"
-                             @click="addChildProcess = true; loadChildProcessSteps(item.id)">
+                             @click="[addChildProcess = true, loadChildProcessSteps(item.id)]">
                         <v-icon>add</v-icon>
                       </v-btn>
                     </v-toolbar-items>
@@ -600,7 +600,7 @@
                                 <v-btn
                                   color="primary"
                                   text
-                                  @click="cp.archived = true; deleteChildProcessFromAction(item.id, cp.id)">
+                                  @click="[cp.archived = true, deleteChildProcessFromAction(item.id, cp.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -620,7 +620,7 @@
                       <v-spacer></v-spacer>
                       <v-toolbar-items>
                         <v-btn text v-if="!addChildFunction"
-                               @click="addChildFunction = true; loadChildFunctions(item.id)">
+                               @click="[addChildFunction = true, loadChildFunctions(item.id)]">
                           <v-icon>add</v-icon>
                         </v-btn>
                       </v-toolbar-items>
@@ -757,7 +757,7 @@
                                 <v-btn
                                   color="primary"
                                   text
-                                  @click="cp.archived = true; deleteChildFunctionFromAction(item.id, cp.id)">
+                                  @click="[cp.archived = true, deleteChildFunctionFromAction(item.id, cp.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -772,7 +772,7 @@
                     <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items v-if="(item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled">
-                      <v-btn text @click="item.logicListChanged = true; item.processStepLogicList = []; item.alwaysEnabled = false">
+                      <v-btn text @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = false]">
                         <v-icon>clear</v-icon>
                         Clear All
                       </v-btn>
@@ -781,10 +781,10 @@
                   <v-card flat class="text-left" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1"
                            v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
-                           @click="l.archived = true; item.logicListChanged = true">
+                           @click="[l.archived = true, item.logicListChanged = true]">
                       {{l.processStepRequirementId ? l.requirementNbr : l.operationType}}
                     </v-btn>
-                    <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled" @click="item.logicListChanged = true; item.alwaysEnabled = !item.alwaysEnabled">
+                    <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled" @click="[item.logicListChanged = true, item.alwaysEnabled = !item.alwaysEnabled]">
                       Always Enabled
                     </v-btn>
                   </v-card>
@@ -793,11 +793,11 @@
                   </v-toolbar>
                   <v-card flat class="text-left" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="(ot, index) in operationTypes" :key="index"
-                           @click="item.logicListChanged = true; item.alwaysEnabled = false; item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})">
+                           @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})]">
                       {{ot.operationType}}
                     </v-btn>
                     <v-btn small class="ml-1 mr-1 mt-1"
-                           @click="item.logicListChanged = true; item.processStepLogicList = []; item.alwaysEnabled = true">
+                           @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = true]">
                       Always Enabled
                     </v-btn>
                   </v-card>
@@ -806,7 +806,7 @@
                   </v-toolbar>
                   <v-card flat class="text-left mb-4" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
-                           @click="item.logicListChanged = true; item.alwaysEnabled = false; item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })">
+                           @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })]">
                       {{r.requirementNbr}}
                     </v-btn>
                   </v-card>
@@ -825,11 +825,11 @@
                   <td class="text-left">{{item.processStepStatusType || 'N/A'}}</td>
                   <td>
                     <div style="display: flex; float: right;">
-                      <v-btn small text @click="actionExpanded = [item]; selectedActionIndex = index"
+                      <v-btn small text @click="[actionExpanded = [item], selectedActionIndex = index]"
                              v-if="!actionExpanded.includes(item)">
                         <v-icon>edit</v-icon>
                       </v-btn>
-                      <v-btn small text @click="actionExpanded = []; selectedActionIndex = index"
+                      <v-btn small text @click="[actionExpanded = [], selectedActionIndex = index]"
                              v-if="actionExpanded.includes(item)">cancel
                       </v-btn>
                       <v-dialog
@@ -862,7 +862,7 @@
                             <v-btn
                                 color="primary"
                                 text
-                                @click="item.archived = true; deleteAction(item)">
+                                @click="[item.archived = true, deleteAction(item)]">
                               Yes
                             </v-btn>
                           </v-card-actions>

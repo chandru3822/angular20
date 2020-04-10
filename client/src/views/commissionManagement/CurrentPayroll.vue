@@ -184,7 +184,7 @@
                     width="500">
                     <template v-slot:activator="{ on }">
                       <v-btn x-small color="primaryCustom" dark fab class="ml-2" v-on="on"
-                             @click="delete item.adjustment; delete item.adjustmentNote; getAdjustmentHistory(item)" >
+                             @click="[delete item.adjustment, delete item.adjustmentNote, getAdjustmentHistory(item)]" >
                         <v-icon>add</v-icon>
                       </v-btn>
                     </template>

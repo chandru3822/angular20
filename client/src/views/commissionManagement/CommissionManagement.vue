@@ -4,7 +4,7 @@
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1">
           <v-toolbar-title>Commission Management</v-toolbar-title>
-          <v-tabs :optional="true" color="primaryCustom"
+          <v-tabs :optional="false" color="primaryCustom"
                   slot="extension"
                   background-color="white" v-model="model" slider-color="primaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">

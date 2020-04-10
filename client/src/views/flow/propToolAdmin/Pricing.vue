@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Pricing</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newPricing = {}" color="primary">
+            <v-btn text @click="[addNew = !addNew, newPricing = {}]" color="primary">
               <v-icon v-if="!addNew">add</v-icon>
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
@@ -19,7 +19,7 @@
                     label="State"
                     item-text="state"
                     item-value="companyStateId"
-                    @input="getUtilityStates(newPricing.companyStateId); newPricing.utilityStateId = null"
+                    @input="[getUtilityStates(newPricing.companyStateId), newPricing.utilityStateId = null]"
           ></v-select>
           <v-select v-model="newPricing.utilityStateId"
                     :items="utilityStates"
@@ -74,7 +74,7 @@
                         label="State"
                         item-text="state"
                         item-value="companyStateId"
-                        @input="getUtilityStates(item.companyStateId); item.utilityStateId = null"
+                        @input="[getUtilityStates(item.companyStateId), item.utilityStateId = null]"
               ></v-select>
               <v-select v-model="item.utilityStateId"
                         :items="utilityStates"
@@ -112,12 +112,12 @@
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
-                  <v-btn small text @click="expanded = [item]; selectedIndex = index; getUtilityStates(item.companyStateId)"
+                  <v-btn small text @click="[expanded = [item], selectedIndex = index, getUtilityStates(item.companyStateId)]"
                          v-if="!expanded.includes(item)">
                     <v-icon v-if="item.immutable">expand_more</v-icon>
                     <v-icon v-else>edit</v-icon>
                   </v-btn>
-                  <v-btn small text @click="expanded = []; selectedIndex = index"
+                  <v-btn small text @click="[expanded = [], selectedIndex = index]"
                          v-if="expanded.includes(item)">cancel
                   </v-btn>
                   <v-dialog
@@ -150,7 +150,7 @@
                         <v-btn
                             color="primary"
                             text
-                            @click="item.archived = true; deletePricing(item.id)">
+                            @click="[item.archived = true, deletePricing(item.id)]">
                           Yes
                         </v-btn>
                       </v-card-actions>

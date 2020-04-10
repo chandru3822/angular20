@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Features</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; selectedFeature = {}">
+            <v-btn text @click="[addNew = !addNew, selectedFeature = {}]">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -38,7 +38,7 @@
                  @click="saveFeature(true)">
             Save
           </v-btn>
-          <v-btn @click="addNew = !addNew; selectedFeature = {}">Cancel</v-btn>
+          <v-btn @click="[addNew = !addNew, selectedFeature = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"

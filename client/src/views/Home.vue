@@ -31,7 +31,7 @@
             <v-list v-if="companies.length > 1">
               <v-list-item v-for="(item, index) in companies" :key="index"
                            :class="item.id === $store.state.user.details.companyId ? 'v-list-item--active' : ''"
-                           @click="menuOpen = false; changeContext(item.id)">
+                           @click="[menuOpen = false, changeContext(item.id)]">
                 <v-list-item-title>{{item.companyName}}</v-list-item-title>
               </v-list-item>
             </v-list>

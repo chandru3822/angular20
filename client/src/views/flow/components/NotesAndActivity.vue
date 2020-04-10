@@ -49,7 +49,7 @@
               </div>
             </td>
             <td class="text-right">
-              <v-btn text @click="item.showReply = true; expanded=[item]">
+              <v-btn text @click="[item.showReply = true, expanded=[item]]">
                 <v-icon>reply</v-icon>
               </v-btn>
               <v-btn text v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)" @click="expanded=[item]">
@@ -74,7 +74,7 @@
                   Save
                 </v-btn>
                 <v-btn class="ml-2" v-if="item.reply"
-                       @click="item.reply=null; item.showReply = false">
+                       @click="[item.reply=null, item.showReply = false]">
                   cancel</v-btn>
               </div>
             </div>

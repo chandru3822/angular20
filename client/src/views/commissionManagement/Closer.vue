@@ -24,9 +24,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="planErrorObj = {};
-                                addNewCommissionPlan = !addNewCommissionPlan;
-                                newCommissionPlan = {}; getCommissionPlans()">
+            <v-btn text @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]">
               <v-icon v-if="addNewCommissionPlan">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -108,7 +106,7 @@
                           v-model="item.note">
               </v-textarea>
               <v-btn :disabled="!item.endDate && !item.note"
-                     @click="expanded = []; savePlan(item, 2)">Save</v-btn>
+                     @click="[expanded = [], savePlan(item, 2)]">Save</v-btn>
             </td>
           </template>
 
@@ -120,11 +118,11 @@
               <td class="text-left">{{item.endDate | formatDate('date')}}</td>
               <td class="text-left">{{item.note}}</td>
               <td>
-                <v-btn small text @click="expanded = [item]; selectedIndex = index"
+                <v-btn small text @click="[expanded = [item], selectedIndex = index]"
                        v-if="!expanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="expanded = []; selectedIndex = index"
+                <v-btn small text @click="[expanded = [], selectedIndex = index]"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
               </td>
@@ -141,8 +139,8 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="overrideErrorObj = {}; addNewOverridePlan = !addNewOverridePlan;
-                                newOverridePlan = {}; getOverridePlans()">
+            <v-btn text @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan,
+                                newOverridePlan = {}, getOverridePlans()]">
               <v-icon v-if="addNewOverridePlan">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -180,7 +178,7 @@
             {{overrideErrorObj.noteMsg}}
           </div>
           <v-btn color="primaryCustom" class="mr-3 white--text"
-                 @click="addNewOverridePlan = false; savePlan(newOverridePlan, 1, true)"
+                 @click="[addNewOverridePlan = false, savePlan(newOverridePlan, 1, true)]"
                  :disabled="overrideErrorObj.dateError || !newOverridePlan.id || !newOverridePlan.startDate">
             Save
           </v-btn>
@@ -230,7 +228,7 @@
                 {{item.noteMsg}}
               </div>
               <v-btn :disabled="(!item.endDate && !item.note) || item.dateError "
-                     @click="overrideExpanded = []; savePlan(item, 1)">Save</v-btn>
+                     @click="[overrideExpanded = [], savePlan(item, 1)]">Save</v-btn>
             </td>
           </template>
 
@@ -242,11 +240,11 @@
               <td class="text-left">{{item.endDate | formatDate('date')}}</td>
               <td class="text-left">{{item.note}}</td>
               <td>
-                <v-btn small text @click="overrideExpanded = [item]; overrideSelectedIndex = index"
+                <v-btn small text @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
                        v-if="!overrideExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="overrideExpanded = []; overrideSelectedIndex = index"
+                <v-btn small text @click="[overrideExpanded = [], overrideSelectedIndex = index]"
                        v-if="overrideExpanded.includes(item)">cancel
                 </v-btn>
               </td>
@@ -263,7 +261,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNewReceivingPlan = !addNewReceivingPlan; cloneOverridePlan = {}; getOverridePlans()">
+            <v-btn text @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]">
               <v-icon v-if="addNewReceivingPlan">remove</v-icon>
               <v-icon v-else>mdi-content-copy</v-icon>
             </v-btn>
@@ -336,11 +334,11 @@
               <td class="text-left">{{item.name}}</td>
               <td class="text-left">{{item.note}}</td>
               <td>
-                <v-btn small text @click="receivingExpanded = [item]; receivingSelectedIndex = index"
+                <v-btn small text @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
                        v-if="!receivingExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text @click="receivingExpanded = []; receivingSelectedIndex = index"
+                <v-btn small text @click="[receivingExpanded = [], receivingSelectedIndex = index]"
                        v-if="receivingExpanded.includes(item)">cancel
                 </v-btn>
               </td>

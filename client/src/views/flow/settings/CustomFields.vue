@@ -56,7 +56,7 @@
                   <div class="item-icons">
                     <v-btn class="clickable" small text
                            v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
-                           @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index; getSystemListOptions(item.companySystemListId)">
+                           @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
                       <v-icon v-if="expanded.includes(item)">remove</v-icon>
                       <v-icon v-else-if="item.custom">add</v-icon>
                       <v-icon v-else>edit</v-icon>
@@ -204,7 +204,7 @@
                     <v-btn
                         v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                         :disabled="invalid(item)"
-                        @click="saveChanges(item.custom, item); item.expanded = !item.expanded">
+                        @click="[saveChanges(item.custom, item), item.expanded = !item.expanded]">
                       {{item.custom ? 'Add Field' : 'Save Changes'}}
                     </v-btn>
                   </v-card>

@@ -75,7 +75,7 @@
                         <v-btn
                             color="primary"
                             text
-                            @click="a.archived = true; deleteLinkFromStep(a.id)">
+                            @click="[a.archived = true, deleteLinkFromStep(a.id)]">
                           Yes
                         </v-btn>
                       </v-card-actions>
@@ -145,7 +145,7 @@
                         <v-btn
                             color="primary"
                             text
-                            @click="a.archived = true; deleteTypeFromStep(a.id)">
+                            @click="[a.archived = true, deleteTypeFromStep(a.id)]">
                           Yes
                         </v-btn>
                       </v-card-actions>

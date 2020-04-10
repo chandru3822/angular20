@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newStep = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newStep = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -81,7 +81,7 @@
                           <v-btn
                             color="primary"
                             text
-                            @click="item.archived = true; deleteProcessStep(item.id)">
+                            @click="[item.archived = true, deleteProcessStep(item.id)]">
                             Yes
                           </v-btn>
                         </v-card-actions>
