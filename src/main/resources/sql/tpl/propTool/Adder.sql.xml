@@ -2,23 +2,58 @@
   <propToolAdder.getAllForCompany><![CDATA[
     select a.id,
            a.adder_name,
-           a.company_id,
-           a.archived
+           a.adder_type_id,
+           at.adder_type as "adderTypeLabel",
+           a.active,
+           coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(adderStates)))
+                 FROM (
+                          SELECT ast.id,
+                                 ast.adder_id as "adder_id",
+                                 s.state,
+                                 ast.company_state_id as "companyStateId",
+                                 ast.adder_amount as "adderAmount",
+                                 ast.archived
+                          FROM props.adder_state ast
+                            inner join flow.company_state cs on cs.id = ast.company_state_id
+                            inner join flow.state s on s.id = cs.state_id
+                          WHERE ast.adder_id = a.id
+                            and ast.archived is not true) adderStates), '[]') AS "adderStates"
     from props.adder a
+        inner join props.adder_type at on at.id = a.adder_type_id
     where a.company_id = :companyId
         and a.archived is not true
     order by a.adder_name
   ]]></propToolAdder.getAllForCompany>
 
   <propToolAdder.getOne><![CDATA[
-    select *
-    from props.adder
-    where id = :id
+    select a.id,
+           a.adder_name,
+           a.adder_type_id,
+           at.adder_type as "adderTypeLabel",
+           a.active,
+           coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(adderStates)))
+                 FROM (
+                          SELECT ast.id,
+                                 ast.adder_id as "adder_id",
+                                 s.state,
+                                 ast.company_state_id as "companyStateId",
+                                 ast.adder_amount as "adderAmount",
+                                 ast.archived
+                          FROM props.adder_state ast
+                            inner join flow.company_state cs on cs.id = ast.company_state_id
+                            inner join flow.state s on s.id = cs.state_id
+                          WHERE ast.adder_id = a.id
+                            and ast.archived is not true) adderStates), '[]') AS "adderStates"
+    from props.adder a
+        inner join props.adder_type at on at.id = a.adder_type_id
+    where a.id = :id
   ]]></propToolAdder.getOne>
 
   <propToolAdder.insert><![CDATA[
-    insert into props.adder(adder_name, company_id)
-    values (:adderName, :companyId)
+    insert into props.adder(adder_name, adder_type_id, company_id, active, created_by_id)
+    values (:adderName, :adderTypeId,  :companyId, :active, :createdById)
   ]]></propToolAdder.insert>
 
   <propToolAdder.update><![CDATA[
@@ -34,5 +69,22 @@
         date_modified = now()
     where id = :id
   ]]></propToolAdder.delete>
+
+  <propToolAdder.getAdderTypes><![CDATA[
+    select id, adder_type from props.adder_type where archived is not true
+  ]]></propToolAdder.getAdderTypes>
+
+  <propToolAdder.insertAdderState><![CDATA[
+    insert into props.adder_state(adder_id, company_state_id, adder_amount, created_by_id)
+    values (:adderId, :companyStateId, :adderAmount, :createdById)
+  ]]></propToolAdder.insertAdderState>
+
+  <propToolAdder.updateAdderState><![CDATA[
+    update props.adder_state
+        set adder_amount = :adderAmount,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :adderStateId
+  ]]></propToolAdder.updateAdderState>
 
 </sql>

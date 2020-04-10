@@ -135,6 +135,23 @@ public class IncentiveService {
     return result;
   }
 
+  public void deleteIncentive(Long id, Long categoryTypeId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", user.getId());
+
+    String sqlKey = null;
+    if (categoryTypeId.equals(com.albatross.api.v1.flow.enums.IncentiveCategory.COUNTRY.id)) {
+      sqlKey = "propToolIncentive.deleteCountryIncentive";
+    } else if (categoryTypeId.equals(com.albatross.api.v1.flow.enums.IncentiveCategory.STATE.id)) {
+      sqlKey = "propToolIncentive.deleteStateIncentive";
+    } else if (categoryTypeId.equals(com.albatross.api.v1.flow.enums.IncentiveCategory.UTILITY_STATE.id)) {
+      sqlKey = "propToolIncentive.deleteUtilityStateIncentive";
+    }
+
+    sqlCache.update(sqlKey, params);
+  }
 
 
 }

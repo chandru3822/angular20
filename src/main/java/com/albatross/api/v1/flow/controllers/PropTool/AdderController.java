@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers.PropTool;
 
 import com.albatross.api.v1.flow.model.propTool.Adder;
+import com.albatross.api.v1.flow.model.propTool.AdderType;
 import com.albatross.api.v1.flow.services.propTool.AdderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,11 @@ public class AdderController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Adder> getAddersForCompany() {
     return adderService.getAddersForCompany();
+  }
+
+  @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<AdderType> getAdderTypes() {
+    return adderService.getAdderTypes();
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

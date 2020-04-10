@@ -300,7 +300,7 @@
 
 <style lang="scss">
   #pricings-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 300px);
     min-height: 300px;
   }
 </style>

@@ -7,10 +7,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @Data
 @NoArgsConstructor
-public class ZipCode {
-
+public class AdderType {
   private Long id;
-  private String zipCode;
-  private Boolean active, archived;
+  private String adderType;
+  private Boolean archived;
 
 }

@@ -258,12 +258,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteIncentive(id) {
+      async deleteIncentive(id, type) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/propTool/incentive/${id}`)
+          await deleteRequest(`/propTool/incentive/type/${type}/${id}/`)
           this.snackbar = getSnackbar('SUCCESS', 'Incentive Deleted')
-          this.$store.commit(AppMutations.SET_LOADING, false)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

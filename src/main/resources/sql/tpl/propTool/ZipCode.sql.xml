@@ -3,7 +3,8 @@
     select f.id,
            f.zip_code,
            f.company_id,
-           f.archived
+           f.archived,
+           f.active
     from props.zip_code f
     where f.company_id = :companyId
         and f.archived is not true
@@ -17,13 +18,16 @@
   ]]></propToolZipCode.getOne>
 
   <propToolZipCode.insert><![CDATA[
-    insert into props.zip_code(zip_code, company_id)
-    values (:zipCode, :companyId)
+    insert into props.zip_code(zip_code, company_id, active, created_by_id)
+    values (:zipCode, :companyId, :active, :createdById)
   ]]></propToolZipCode.insert>
 
   <propToolZipCode.update><![CDATA[
     update props.zip_code
-        set zip_code = :zipCode
+        set zip_code = :zipCode,
+            active = :active,
+            modified_by_id = :modifiedById,
+            date_modified = now()
     where id = :id
   ]]></propToolZipCode.update>
 

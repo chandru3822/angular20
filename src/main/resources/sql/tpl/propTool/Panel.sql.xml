@@ -2,8 +2,24 @@
   <propToolPanel.getAllForCompany><![CDATA[
     select p.id,
            p.panel_name,
-           p.company_id,
-           p.archived
+           p.wattage,
+           p.panel_color,
+           p.panel_type,
+           p.active,
+           coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(panelStates)))
+                 FROM (
+                          SELECT pt.id,
+                                 pt.panel_id as "panelId",
+                                 s.state,
+                                 pt.company_state_id as "companyStateId",
+                                 pt.adder_amount as "adderAmount",
+                                 pt.archived
+                          FROM props.panel_state pt
+                            inner join flow.company_state cs on cs.id = pt.company_state_id
+                            inner join flow.state s on s.id = cs.state_id
+                          WHERE pt.panel_id = p.id
+                            and pt.archived is not true) panelStates), '[]') AS "panelStates"
     from props.panel p
     where p.company_id = :companyId
         and p.archived is not true
@@ -11,19 +27,39 @@
   ]]></propToolPanel.getAllForCompany>
 
   <propToolPanel.getOne><![CDATA[
-    select *
-    from props.panel
+    select *,
+    coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(panelStates)))
+                 FROM (
+                          SELECT pt.id,
+                                 pt.panel_id as "panelId",
+                                 s.state,
+                                 pt.company_state_id as "companyStateId",
+                                 pt.adder_amount as "adderAmount",
+                                 pt.archived
+                          FROM props.panel_state pt
+                            inner join flow.company_state cs on cs.id = pt.company_state_id
+                            inner join flow.state s on s.id = cs.state_id
+                          WHERE pt.panel_id = p.id
+                            and pt.archived is not true) panelStates), '[]') AS "panelStates"
+    from props.panel p
     where id = :id
   ]]></propToolPanel.getOne>
 
   <propToolPanel.insert><![CDATA[
-    insert into props.panel(panel_name, company_id)
-    values (:panelName, :companyId)
+    insert into props.panel(panel_name, wattage, panel_type, panel_color, company_id, active, created_by_id)
+    values (:panelName, :wattage, :panelType, :panelColor, :companyId, :active, :createdById)
   ]]></propToolPanel.insert>
 
   <propToolPanel.update><![CDATA[
     update props.panel
-        set panel_name = :panelName
+        set panel_name = :panelName,
+            wattage = :wattage,
+            panel_type = :panelType,
+            panel_color = :panelColor,
+            active = :active,
+            date_modified = now(),
+            modified_by_id = :modifiedById
     where id = :id
   ]]></propToolPanel.update>
 
@@ -35,4 +71,17 @@
     where id = :id
   ]]></propToolPanel.delete>
 
+  <propToolPanel.insertStates><![CDATA[
+    insert into props.panel_state(panel_id, company_state_id, adder_amount, created_by_id)
+    values (:panelId, :companyStateId, :adderAmount, :createdById)
+  ]]></propToolPanel.insertStates>
+
+  <propToolPanel.updateState><![CDATA[
+    update props.panel_state
+        set company_state_id = :companyStateId,
+            adder_amount = :adderAmount,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :panelStateId
+  ]]></propToolPanel.updateState>
 </sql>

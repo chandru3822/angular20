@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Adder</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newAdder = {}" color="primary">
+            <v-btn text @click="[addNew = !addNew, newAdder = { adderStates: [] }]" color="primary">
               <v-icon v-if="!addNew">add</v-icon>
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
@@ -14,22 +14,38 @@
         </v-toolbar>
         <v-card flat class="pa-4 mt-1" v-if="addNew">
           <v-text-field v-model="newAdder.adderName"
-                        label="Adder">
+                        label="Adder Name">
           </v-text-field>
-          <v-select v-model="newAdder.states"
-                    :items="states"
-                    no-data-text="No States Available"
-                    label="State(s)"
-                    item-text="state"
-                    item-value="id"
-                    multiple
-                    return-object
-          ></v-select>
+          <v-select v-model="newAdder.adderTypeId"
+                    :items="adderTypes"
+                    label="Adder Type"
+                    no-data-text="No Adder Types Available"
+                    item-text="adderType"
+                    item-value="id">
+          </v-select>
+
+          <v-btn class="mb-1" @click="newAdder.adderStates.push({})">Add State</v-btn>
+          <v-card class="px-4" flat v-for="(us, index) in newAdder.adderStates" :key="index">
+            <v-row>
+              <v-select v-model="us.companyStateId"
+                        class="mr-4"
+                        :items="adderStates"
+                        no-data-text="No States Available"
+                        label="State(s)"
+                        item-text="state"
+                        item-value="companyStateId"
+              ></v-select>
+              <v-text-field type="number" v-model="us.adderAmount" class="mr-4"
+                            label="Adder Amount">
+              </v-text-field>
+            </v-row>
+          </v-card>
+
           <v-radio-group v-model="newAdder.active" column>
             <v-radio label="Active" :value="true"></v-radio>
             <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
-          <v-btn :disabled="!newAdder.adderName || (!newAdder.states || newAdder.states.length === 0) || newAdder.active == null" @click="saveAdder(newAdder)">Save</v-btn>
+          <v-btn :disabled="!newAdder.adderName || !newAdder.adderTypeId || (!newAdder.adderStates || newAdder.adderStates.length === 0) || newAdder.active == null" @click="saveAdder(newAdder)">Save</v-btn>
         </v-card>
         <v-divider v-if="addNew"></v-divider>
         <v-data-table
@@ -53,28 +69,46 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedIndex % 2}">
               <v-text-field v-model="item.adderName"
-                            label="Adder">
+                            label="Adder Name">
               </v-text-field>
-              <v-select v-model="item.states"
-                        :items="states"
-                        no-data-text="No States Available"
-                        label="State(s)"
-                        item-text="state"
-                        item-value="id"
-                        multiple
-                        return-object
-              ></v-select>
-              <v-btn :disabled="!item.adderName || (!item.states || item.state.length === 0)" @click="saveAdder(item)">Save</v-btn>
+              <v-select v-model="item.adderTypeId"
+                        :items="adderTypes"
+                        label="Adder Type"
+                        no-data-text="No Adder Types Available"
+                        item-text="adderType"
+                        item-value="id">
+              </v-select>
+
+              <v-btn class="mb-1" @click="item.adderStates.push({})">Add State</v-btn>
+              <v-card class="px-4" flat v-for="(us, index) in item.adderStates" :key="index">
+                <v-row>
+                  <v-select v-model="us.companyStateId"
+                            class="mr-4"
+                            :items="adderStates"
+                            no-data-text="No States Available"
+                            label="State(s)"
+                            item-text="state"
+                            item-value="companyStateId"
+                  ></v-select>
+                  <v-text-field type="number" v-model="us.adderAmount" class="mr-4"
+                                label="Adder Amount">
+                  </v-text-field>
+                </v-row>
+              </v-card>
+              <v-btn :disabled="!item.adderName || !item.adderTypeId || (!item.adderStates)" @click="saveAdder(item)">Save</v-btn>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.adderName}}</td>
+              <td class="text-left">{{item.adderTypeLabel}}</td>
               <td class="text-left">
-                <span v-for="(s, index) in item.states" :key="index">{{s.state}}</span>
+                <span v-for="(s, index) in item.adderStates" :key="index">{{s.state}}
+                  <span v-if="index + 1 < item.adderStates.length">, </span>
+                </span>
               </td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
                   <v-btn small text @click="[expanded = [item], selectedIndex = index]"
@@ -135,7 +169,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getStates} from '@/services/stateService'
+  import {getCompanyStates} from '@/services/stateService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
@@ -150,23 +184,26 @@
         dialog: false,
         snackbar: {},
         adders: [],
-        states: [],
+        adderStates: [],
+        adderTypes: [],
         expanded: [],
         dataLoading: true,
         selectedIndex: null,
-        newAdder: {},
+        newAdder: { adderStates: []},
         addNew: false,
         headers: [
-          {text: 'Adder', value: 'adder', show: true},
+          {text: 'Adder Name', value: 'adderName', show: true},
+          {text: 'Adder Type', value: 'adderTypeId', show: true},
           {text: 'States', value: 'states', show: true},
-          {text: 'Status', value: 'status', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }
     },
     created() {
       this.getAdders()
-      this.getStates()
+      this.getAdderTypes()
+      this.getCompanyStates()
     },
     methods: {
       async getAdders() {
@@ -198,11 +235,22 @@
           return !u.archived
         })
       },
-      async getStates () {
+      async getAdderTypes() {
+        try {
+          const {data} = await getRequest(`/propTool/adder/types`)
+          this.adderTypes = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Adders')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
-          this.states = data
+          const {data} = await getCompanyStates()
+          this.adderStates = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

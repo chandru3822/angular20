@@ -134,7 +134,9 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.utilityCompany}}</td>
               <td class="text-left">
-                <span v-for="(s, index) in item.utilityStates" :key="index">{{s.state}}</span>
+                <span v-for="(s, index) in item.utilityStates" :key="index">{{s.state}}
+                  <span v-if="index + 1 < item.utilityStates.length">, </span>
+                </span>
               </td>
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
@@ -317,7 +319,7 @@
 
 <style lang="scss">
   #utilities-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 200px);
     min-height: 300px;
   }
 </style>

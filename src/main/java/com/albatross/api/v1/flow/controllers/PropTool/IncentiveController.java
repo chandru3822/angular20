@@ -46,6 +46,11 @@ public class IncentiveController {
     return incentiveService.getIncentiveEntities(categoryId);
   }
 
+  @DeleteMapping(value = "/type/{type}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteIncentive(@PathVariable Long id, @PathVariable Long type) {
+    incentiveService.deleteIncentive(id, type);
+  }
+
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Incentive> saveIncentive(@RequestBody Incentive incentive) {
     return incentiveService.saveIncentive(incentive);

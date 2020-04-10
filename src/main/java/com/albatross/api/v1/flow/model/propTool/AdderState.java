@@ -11,6 +11,8 @@ import lombok.Setter;
 @Setter
 public class AdderState {
 
-  private Long id, adderId;
+  private Long id, adderId, companyStateId;
+  private Double adderAmount;
+  private String state;
 }
 

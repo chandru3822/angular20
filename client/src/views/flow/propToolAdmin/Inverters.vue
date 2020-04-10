@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Inverter</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newInverter = {}" color="primary">
+            <v-btn text @click="addNew = !addNew; newInverter = { inverterStates: [] }" color="primary">
               <v-icon v-if="!addNew">add</v-icon>
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
@@ -14,33 +14,56 @@
         </v-toolbar>
         <v-card flat class="pa-4 mt-1" v-if="addNew">
           <v-text-field v-model="newInverter.inverterName"
-                        label="Inverter">
+                        label="Name">
           </v-text-field>
-          <v-select v-model="newInverter.states"
-                    :items="states"
-                    no-data-text="No States Available"
-                    label="State(s)"
-                    item-text="state"
-                    item-value="id"
-                    multiple
-                    return-object
+          <v-select v-model="newInverter.brand"
+                    :items="brands"
+                    no-data-text="No Brands Available"
+                    label="Brand"
+                    item-text="brand"
+                    item-value="brand"
           ></v-select>
+          <v-select v-model="newInverter.inverterType"
+                    :items="inverterTypes"
+                    no-data-text="No Types Available"
+                    label="Type"
+                    item-text="inverterType"
+                    item-value="inverterType"
+          ></v-select>
+
+          <v-btn class="mb-1" @click="newInverter.inverterStates.push({})">Add State</v-btn>
+          <v-card class="px-4" flat v-for="(us, index) in newInverter.inverterStates" :key="index">
+            <v-row>
+              <v-select v-model="us.companyStateId"
+                        class="mr-4"
+                        :items="inverterStates"
+                        no-data-text="No States Available"
+                        label="State"
+                        item-text="state"
+                        item-value="companyStateId"
+              ></v-select>
+              <v-text-field type="number" v-model="us.adderAmount" class="mr-4"
+                            label="Adder Amount">
+              </v-text-field>
+            </v-row>
+          </v-card>
+
           <v-radio-group v-model="newInverter.active" column>
             <v-radio label="Active" :value="true"></v-radio>
             <v-radio label="Inactive" :value="false"></v-radio>
           </v-radio-group>
-          <v-btn :disabled="!newInverter.inverterName || (!newInverter.states || newInverter.states.length === 0) || newInverter.active == null" @click="saveInverter(newInverter)">Save</v-btn>
+          <v-btn :disabled="!newInverter.inverterName || !newInverter.brand || !newInverter.inverterType  || (!newInverter.inverterStates || newInverter.inverterStates.length === 0) || newInverter.active == null" @click="saveInverter(newInverter)">Save</v-btn>
         </v-card>
         <v-divider v-if="addNew"></v-divider>
         <v-data-table
-            :headers="headers"
-            :items="filterInverters()"
-            :items-per-page="-1"
-            :mobile-breakpoint="0"
-            single-expand
-            :expanded.sync="expanded"
-            hide-default-footer
-            class="elevation-1 fix-column-width-bug inverters-table"
+          :headers="headers"
+          :items="filterInverters()"
+          :items-per-page="-1"
+          :mobile-breakpoint="0"
+          single-expand
+          :expanded.sync="expanded"
+          hide-default-footer
+          class="elevation-1 fix-column-width-bug inverters-table"
         >
           <template #no-data>
             No available inverters
@@ -53,28 +76,55 @@
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedIndex % 2}">
               <v-text-field v-model="item.inverterName"
-                            label="Inverter">
+                            label="Name">
               </v-text-field>
-              <v-select v-model="item.states"
-                        :items="states"
-                        no-data-text="No States Available"
-                        label="State(s)"
-                        item-text="state"
-                        item-value="id"
-                        multiple
-                        return-object
+
+              <v-select v-model="item.brand"
+                        :items="brands"
+                        no-data-text="No Brands Available"
+                        label="Brand"
+                        item-text="brand"
+                        item-value="brand"
               ></v-select>
-              <v-btn :disabled="!item.inverterName || (!item.states || item.state.length === 0)" @click="saveInverter(item)">Save</v-btn>
+              <v-select v-model="item.inverterType"
+                        :items="inverterTypes"
+                        no-data-text="No Types Available"
+                        label="Type"
+                        item-text="inverterType"
+                        item-value="inverterType"
+              ></v-select>
+
+              <v-btn class="mb-1" @click="item.inverterStates.push({})">Add State</v-btn>
+              <v-card class="px-4" flat v-for="(us, index) in item.inverterStates" :key="index">
+                <v-row>
+                  <v-select v-model="us.companyStateId"
+                            class="mr-4"
+                            :items="inverterStates"
+                            no-data-text="No States Available"
+                            label="State"
+                            item-text="state"
+                            item-value="companyStateId"
+                  ></v-select>
+                  <v-text-field type="number" v-model="us.adderAmount" class="mr-4"
+                                label="Adder Amount">
+                  </v-text-field>
+                </v-row>
+              </v-card>
+              <v-btn :disabled="!item.inverterName || !item.brand || !item.inverterType || (!item.inverterStates || item.inverterStates.length === 0)" @click="saveInverter(item)">Save</v-btn>
             </td>
           </template>
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.inverterName}}</td>
+              <td class="text-left">{{item.brand}}</td>
+              <td class="text-left">{{item.inverterType}}</td>
               <td class="text-left">
-                <span v-for="(s, index) in item.states" :key="index">{{s.state}}</span>
+                <span v-for="(s, index) in item.inverterStates" :key="index">{{s.state}}
+                  <span v-if="index + 1 < item.inverterStates.length">, </span>
+                </span>
               </td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
                   <v-btn small text @click="[expanded = [item], selectedIndex = index]"
@@ -135,7 +185,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getStates} from '@/services/stateService'
+  import {getCompanyStates} from '@/services/stateService'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby";
 
@@ -150,23 +200,27 @@
         dialog: false,
         snackbar: {},
         inverters: [],
-        states: [],
+        brands: ['Enphase', 'SolarEdge'],
+        inverterTypes: ['Microinverters', 'Inverter w/ Power Optimizers'],
+        inverterStates: [],
         expanded: [],
         dataLoading: true,
         selectedIndex: null,
-        newInverter: {},
+        newInverter: {inverterStates: []},
         addNew: false,
         headers: [
-          {text: 'Inverter', value: 'inverter', show: true},
+          {text: 'Inverter', value: 'inverterName', show: true},
+          {text: 'Brand', value: 'brand', show: true},
+          {text: 'Type', value: 'inverterType', show: true},
           {text: 'States', value: 'states', show: true},
-          {text: 'Status', value: 'status', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }
     },
     created() {
       this.getInverters()
-      this.getStates()
+      this.getCompanyStates()
     },
     methods: {
       async getInverters() {
@@ -198,11 +252,11 @@
           return !u.archived
         })
       },
-      async getStates () {
+      async getCompanyStates () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getStates()
-          this.states = data
+          const {data} = await getCompanyStates()
+          this.inverterStates = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

@@ -46,6 +46,10 @@
               <v-text-field v-model="item.zipCode"
                             label="Zip Code">
               </v-text-field>
+              <v-radio-group v-model="item.active" column>
+                <v-radio label="Active" :value="true"></v-radio>
+                <v-radio label="Inactive" :value="false"></v-radio>
+              </v-radio-group>
               <v-btn :disabled="!item.zipCode" @click="saveZipCode(item)">Save</v-btn>
             </td>
           </template>
@@ -53,7 +57,7 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.zipCode}}</td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
                   <v-btn small text @click="[expanded = [item], selectedIndex = index]"
@@ -135,7 +139,7 @@
         addNew: false,
         headers: [
           {text: 'Zip Code', value: 'zipCode', show: true},
-          {text: 'Status', value: 'status', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }

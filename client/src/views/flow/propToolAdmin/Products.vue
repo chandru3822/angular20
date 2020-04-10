@@ -101,8 +101,8 @@
                          v-if="expanded.includes(item)">cancel
                   </v-btn>
                   <v-dialog
-                      v-model="item.deleteConfirm"
-                      width="500">
+                    v-model="item.deleteConfirm"
+                    width="500">
                     <template #activator="{ on }">
                       <v-btn small text v-on="on">
                         <v-icon>delete</v-icon>
@@ -251,7 +251,7 @@
 
 <style lang="scss">
   #products-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 300px);
     min-height: 300px;
   }
 </style>
