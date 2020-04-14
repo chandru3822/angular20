@@ -11,7 +11,7 @@ BEGIN
 
    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                FROM (SELECT id,
-                            employee_id,
+                            --'1234' as employee_id,
                             first_name || ' ' || last_name AS closer_user,
                             total_commissions              AS total_commission,
                             total_overrides                AS total_overrides,
@@ -21,7 +21,7 @@ BEGIN
                      FROM (SELECT u.id,
                                   u.first_name,
                                   u.last_name,
-                                  u.employee_id,
+                                 -- employee_id.employee_id,
                                   (sum(coalesce(commissions_earned, 0)) -
                                    sum(coalesce(commission_paid_to_date, 0))) AS total_commissions,
                                   coalesce((SELECT sum(amount)
@@ -51,12 +51,16 @@ BEGIN
                                   sum(coalesce(dcs.commission_adjustment, 0))    total_adjustments
                            FROM brs.project_commission_snapshot dcs
                                   INNER JOIN flow.user u ON u.id = dcs.sales_rep_id
+--                                   left join lateral (select * from flow.get_value_for_custom_field(4 ,
+--                                                                                                    58,
+--                                                                                                    p.id,
+--                                                                                                    4)as employee_id) as employee_id on true
                            WHERE dcs.payroll_id = p_payroll_id
-                           GROUP BY u.id, u.first_name, u.last_name, u.employee_id
+                           GROUP BY u.id, u.first_name, u.last_name--, employee_id.employee_id
                            ORDER BY first_name) AS foo
                      UNION
                      SELECT id,
-                            employee_id,
+                           -- employee_id,
                             first_name || ' ' || last_name                            AS closer_user,
                             total_commissions,
                             total_overrides,
@@ -65,7 +69,7 @@ BEGIN
                      FROM (SELECT u.id,
                                   u.first_name,
                                   u.last_name,
-                                  u.employee_id,
+                                 -- employee_id.employee_id,
                                   0 AS total_commissions,
                                   coalesce((SELECT sum(amount)
                                             FROM brs.project_commission_ledger
@@ -97,6 +101,10 @@ BEGIN
                                     ON dcs.id = docs.project_commission_snapshot_id
                                   INNER JOIN flow.user u ON u.id = docs.user_id
                                   INNER JOIN brs.project_commission_ledger dcl3 ON dcl3.project_id = dcs.project_id
+--                                   left join lateral (select * from flow.get_value_for_custom_field(4 ,
+--                                                                                                    58,
+--                                                                                                    p.id,
+--                                                                                                    4)as employee_id) as employee_id on true
                            WHERE dcs.payroll_id = p_payroll_id
                              AND docs.user_id NOT IN (SELECT sales_rep_id
                                                       FROM brs.project_commission_snapshot dcs1
@@ -104,10 +112,11 @@ BEGIN
                          --                              AND dcs.deal_id IN (SELECT deal_id
                          --                                                  FROM blueraven.deal_commission_snapshot dcs1
                          --                                                  WHERE dcs1.payroll_id = p_payroll_id)
-                           GROUP BY u.id, u.first_name, u.last_name, u.employee_id) AS poo
+                           GROUP BY u.id, u.first_name, u.last_name--, employee_id.employee_id
+                            ) AS poo
                      UNION
                      SELECT id,
-                            employee_id,
+                            --employee_id,
                             first_name || ' ' || last_name                            AS closer_user,
                             total_commissions,
                             total_overrides,
@@ -116,7 +125,7 @@ BEGIN
                      FROM (SELECT u.id,
                                   u.first_name,
                                   u.last_name,
-                                  u.employee_id,
+                                --  employee_id.employee_id,
                                   0 AS total_commissions,
                                   0 :: NUMERIC
                                     -
@@ -132,9 +141,13 @@ BEGIN
                            FROM brs.project_commission_ledger dcl3
                                   INNER JOIN flow.project d ON d.id = dcl3.project_id
                                   INNER JOIN flow.user u ON u.id = dcl3.closer_id
+--                                   left join lateral (select * from flow.get_value_for_custom_field(4 ,
+--                                                                                                    58,
+--                                                                                                    p.id,
+--                                                                                                    4)as employee_id) as employee_id on true
                            WHERE dcl3.ledger_type_id = 3
                              AND dcl3.payroll_id = 0
-                             AND ARRAY[d.id] <@ (SELECT selected_project_ids
+                             AND ARRAY[d.id] <@ (SELECT selected_project_ids::integer[]
                                                             FROM brs.payroll
                                                             WHERE id = p_payroll_id)
                              AND dcl3.closer_id NOT IN (SELECT dcs1.closer_id
@@ -144,10 +157,12 @@ BEGIN
                              AND u.id NOT IN (SELECT sales_rep_id
                                               FROM brs.project_commission_snapshot dcs1
                                               WHERE dcs1.payroll_id = p_payroll_id)
-                           GROUP BY u.id, u.first_name, u.last_name, u.employee_id, d.id)AS zoo
+                           GROUP BY u.id, u.first_name, u.last_name--, employee_id.employee_id
+                          , d.id
+                            )AS zoo
                      ORDER BY closer_user) AS sub_rows
        into v_json;
-       return v_josn;
+       return v_json;
 END
 $BODY$
 LANGUAGE plpgsql
