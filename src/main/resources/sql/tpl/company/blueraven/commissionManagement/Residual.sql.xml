@@ -1,0 +1,22 @@
+<sql>
+
+    <residual.getAll><![CDATA[
+
+    ]]></residual.getAll>
+
+    <residual.getOne><![CDATA[
+
+    ]]></residual.getOne>
+
+    <residual.insert><![CDATA[
+
+    ]]></residual.insert>
+
+    <residual.update><![CDATA[
+
+    ]]></residual.update>
+
+    <residual.delete><![CDATA[
+
+    ]]></residual.delete>
+</sql>
