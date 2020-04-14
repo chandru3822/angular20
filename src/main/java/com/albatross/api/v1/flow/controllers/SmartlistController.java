@@ -64,7 +64,7 @@ public class SmartlistController {
   }
 
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableSmartlistFieldsByObjectType(@RequestParam Long objectTypeId, @RequestParam(required = false) Long processStepId) {
-    return new ResponseEntity<>(smartlistService.getAvailableSmartlistFields(objectTypeId, processStepId), HttpStatus.OK);
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableSmartlistFieldsByObjectType(@RequestParam Long objectTypeId) {
+    return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeId), HttpStatus.OK);
   }
 }

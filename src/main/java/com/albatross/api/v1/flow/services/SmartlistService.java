@@ -40,17 +40,8 @@ public class SmartlistService {
     sqlCache.update("smartlist.update", params);
   }
 
-  public List<SmartlistFieldAssignment> getAvailableSmartlistFields(Long objectTypeId, Long processStepId) {
-
-    if (objectTypeId == 4) {
-      Assert.notNull(processStepId, "Must provide a process step ID");
-    }
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("companyId", securityService.getCurrentUser().getCompanyId());
-    params.put("objectTypeId", objectTypeId);
-    params.put("processStepId", processStepId);
-    return sqlCache.query("smartlist.getAvailableFields", params, SmartlistFieldAssignment.class);
+  public List<SmartlistFieldAssignment> getAvailableFields(Long objectTypeId) {
+    return sqlCache.query("smartlist.getAvailableFields", Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeId", objectTypeId), SmartlistFieldAssignment.class);
   }
 
   public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
