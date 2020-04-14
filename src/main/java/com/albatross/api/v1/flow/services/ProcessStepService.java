@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -124,6 +125,10 @@ public class ProcessStepService {
 
     List<CombinedStepAndType> results = sqlCache.query("processStep.getParentObjectsIncludingTypes", params, CombinedStepAndType.class);
     return results;
+  }
+
+  public List<ProcessStep> getByCompanyId() {
+    return sqlCache.query("processStep.getProcessStepProcessByCompanyId", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), ProcessStep.class);
   }
 
   public static class ProcessStepMapper<T> extends BeanPropertyRowMapper<T> {

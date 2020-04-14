@@ -2,13 +2,11 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.Smartlist;
-import com.albatross.api.v1.flow.model.SmartlistField;
-import com.albatross.api.v1.flow.model.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +40,17 @@ public class SmartlistService {
     sqlCache.update("smartlist.update", params);
   }
 
-  public List<SmartlistField> getAvailableSmartlistFields() {
-    User user = securityService.getCurrentUser();
-    return sqlCache.query("smartlist.getAvailableFields", Map.of("companyId", user.getCompanyId()), SmartlistField.class);
+  public List<SmartlistFieldAssignment> getAvailableSmartlistFields(Long objectTypeId, Long processStepId) {
+
+    if (objectTypeId == 4) {
+      Assert.notNull(processStepId, "Must provide a process step ID");
+    }
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", securityService.getCurrentUser().getCompanyId());
+    params.put("objectTypeId", objectTypeId);
+    params.put("processStepId", processStepId);
+    return sqlCache.query("smartlist.getAvailableFields", params, SmartlistFieldAssignment.class);
   }
 
   public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
@@ -60,7 +66,7 @@ public class SmartlistService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("smartlistId", assignment.getSmartlistId());
     params.put("smartlistFieldId", assignment.getSmartlistFieldId());
-    params.put("customFieldId", assignment.getCustomFieldId());
+    params.put("customFieldGroupAssignmentId", assignment.getCustomFieldGroupAssignmentId());
     params.put("displayOrder", assignment.getDisplayOrder());
     params.put("createdById", user.getId());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
