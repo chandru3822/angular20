@@ -171,7 +171,7 @@
                 <v-row>
                   <v-col cols="1" class="text-left">{{field.displayOrder}}</v-col>
                   <v-col class="text-left">{{field.name}}</v-col>
-                  <v-col class="text-left">{{field.objectType}}</v-col>
+                  <v-col class="text-left">{{(field.smartlistFieldId) ? field.objectType : field.processStepName}}</v-col>
                 </v-row>
               </v-list-item-content>
 
