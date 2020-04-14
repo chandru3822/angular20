@@ -635,8 +635,8 @@ export default new Router({
                 }
               ]
             }, {
-              path: 'admin',
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Admin.vue'),
+              path: 'residuals',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Residuals.vue'),
             },
           ]
         }, {
