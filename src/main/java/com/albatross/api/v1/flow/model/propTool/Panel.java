@@ -12,8 +12,9 @@ import java.util.List;
 public class Panel {
 
   private Long id;
-  private String panelName;
-  private Boolean archived;
+  private Integer wattage;
+  private String panelName, panelType, panelColor;
+  private Boolean archived, active;
   private List<PanelState> panelStates;
 
 }

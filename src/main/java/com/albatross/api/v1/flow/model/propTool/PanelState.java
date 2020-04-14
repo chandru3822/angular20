@@ -11,6 +11,9 @@ import lombok.Setter;
 @Setter
 public class PanelState {
 
-  private Long id, panelId;
+  private Long id, panelId, companyStateId;
+  private Double adderAmount;
+  private String state;
+  private boolean archived;
 }
 

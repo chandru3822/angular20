@@ -47,7 +47,7 @@ public class PanelService {
   public Optional<Panel> getPanel(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<Panel> results = sqlCache.get("propToolPanel.getOne", params, Panel.class);
+    Optional<Panel> results = sqlCache.get("propToolPanel.getOne", params, new PanelMapper<>(Panel.class, om));
     return results;
   }
 
@@ -55,6 +55,10 @@ public class PanelService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("panelName", panel.getPanelName());
+    params.put("wattage", panel.getWattage());
+    params.put("panelType", panel.getPanelType());
+    params.put("panelColor", panel.getPanelColor());
+    params.put("active", panel.getActive());
     Long id;
 
     if(null != panel.getId()) {
@@ -66,6 +70,27 @@ public class PanelService {
       params.put("createdById", user.getId());
       params.put("companyId", user.getCompanyId());
       id = sqlCache.updateReturningId("propToolPanel.insert", params, "id").longValue();
+    }
+
+    for (PanelState panelState: panel.getPanelStates()) {
+      params.put("panelId", id);
+      params.put("companyStateId", panelState.getCompanyStateId());
+      params.put("adderAmount", panelState.getAdderAmount());
+      params.put("archived", panelState.isArchived());
+
+      if(null != panelState.getId()) {
+        params.put("panelStateId", panelState.getId());
+        sqlCache.update("propToolPanel.updateState", params);
+      } else {
+        if (!panelState.isArchived()) {
+          if (!params.containsKey("createdById")) {
+            params.put("createdById", user.getId());
+          }
+
+          sqlCache.update("propToolPanel.insertStates", params);
+        }
+
+      }
     }
 
     return getPanel(id);

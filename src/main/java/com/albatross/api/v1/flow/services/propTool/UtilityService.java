@@ -73,12 +73,19 @@ public class UtilityService {
       params.put("costPerKwh", utilityState.getCostPerKwh());
       params.put("escalator", utilityState.getEscalator());
       params.put("utilityId", id);
-      params.put("companyStateId", utilityState.getCompanyStateId());
+      params.put("archived", utilityState.isArchived());
+
       if(null != utilityState.getId()) {
         params.put("utilityStateId", utilityState.getId());
         sqlCache.update("propToolUtility.updateUtilityState", params);
       } else {
-        sqlCache.update("propToolUtility.insertUtilityState", params);
+        if (!utilityState.isArchived()) {
+          if (!params.containsKey("createdById")) {
+            params.put("createdById", user.getId());
+          }
+          params.put("companyStateId", utilityState.getCompanyStateId());
+          sqlCache.update("propToolUtility.insertUtilityState", params);
+        }
       }
     }
 

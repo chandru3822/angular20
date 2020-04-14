@@ -89,6 +89,10 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.productName}}</td>
+              <td class="text-left">{{item.financier}}</td>
+              <td class="text-left">{{item.termLength}}</td>
+              <td class="text-left">{{item.interestRate}}%</td>
+              <td class="text-left">{{item.dealerFee}}</td>
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
@@ -101,8 +105,8 @@
                          v-if="expanded.includes(item)">cancel
                   </v-btn>
                   <v-dialog
-                      v-model="item.deleteConfirm"
-                      width="500">
+                    v-model="item.deleteConfirm"
+                    width="500">
                     <template #activator="{ on }">
                       <v-btn small text v-on="on">
                         <v-icon>delete</v-icon>
@@ -172,6 +176,10 @@
         addNew: false,
         headers: [
           {text: 'Product', value: 'product', show: true},
+          {text: 'Financier', value: 'financier', show: true},
+          {text: 'Loan Term', value: 'termLength', show: true},
+          {text: 'Interest Rate', value: 'interestRate', show: true},
+          {text: 'Dealer Fee', value: 'dealerFee', show: true},
           {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
@@ -251,7 +259,7 @@
 
 <style lang="scss">
   #products-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 300px);
     min-height: 300px;
   }
 </style>

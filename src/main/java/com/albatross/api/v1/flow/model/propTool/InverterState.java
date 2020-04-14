@@ -4,14 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Created by randanunn on 2019-05-20.
+ * Created by John on 2020-04-10.
  * !Describe Purpose!
  */
 @Getter
 @Setter
-public class AdderState {
-
-  private Long id, adderId, companyStateId;
+public class InverterState {
+  private Long id, inverterId, companyStateId;
   private Double adderAmount;
   private String state;
   private boolean archived;

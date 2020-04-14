@@ -193,9 +193,9 @@
              upv.first_name || ' ' || upv.last_name as title
       from flow.user_positions_vw upv
       where upv.position_schedulable is true
-        and case when :isParent
+        and case when :isParent and :isSchedulingTool
             then array[upv.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-            else (upv.company_id = :companyId OR (upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
+            else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and case when :stateId::integer is not null then upv.state_id = :stateId::integer and upv.position_schedulable is true else upv.position_schedulable is true end
         and upv.user_archived is not true
       order by full_name

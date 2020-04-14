@@ -35,7 +35,11 @@
                     item-text="incentiveType"
                     item-value="id"
           ></v-select>
-          <v-text-field type="number" v-model="newIncentive.amount"
+          <v-text-field v-if="newIncentive.incentiveTypeId == 1" type="number" v-model="newIncentive.amount"
+                        append-icon="mdi-percent"
+                        label="Amount">
+          </v-text-field>
+          <v-text-field v-show="newIncentive.incentiveTypeId == 2" type="number" v-model="newIncentive.amount"
                         prepend-icon="mdi-currency-usd"
                         label="Amount">
           </v-text-field>
@@ -91,7 +95,11 @@
                         item-text="incentiveType"
                         item-value="id"
               ></v-select>
-              <v-text-field type="number" v-model="item.amount"
+              <v-text-field v-if="item.incentiveTypeId == 1" type="number" v-model="item.amount"
+                            append-icon="mdi-percent"
+                            label="Amount">
+              </v-text-field>
+              <v-text-field v-show="item.incentiveTypeId == 2" type="number" v-model="item.amount"
                             prepend-icon="mdi-currency-usd"
                             label="Amount">
               </v-text-field>
@@ -109,7 +117,7 @@
               <td class="text-left">{{item.incentiveCategory}}</td>
               <td class="text-left">{{item.incentiveEntityName}}</td>
               <td class="text-left">{{item.incentiveType}}</td>
-              <td class="text-left">{{item.amount || 0 | currency('$', 2)}}</td>
+              <td class="text-left">{{item.incentiveType == 'Per Watt' ? '$' + item.amount : item.amount + '%'}}</td>
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
@@ -199,6 +207,7 @@
           {text: 'Entity', value: 'incentiveEntityName', show: true},
           {text: 'Type', value: 'incentiveType', show: true},
           {text: 'Amount', value: 'amount', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }
@@ -258,12 +267,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteIncentive(id) {
+      async deleteIncentive(id, type) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/propTool/incentive/${id}`)
+          await deleteRequest(`/propTool/incentive/type/${type}/${id}/`)
           this.snackbar = getSnackbar('SUCCESS', 'Incentive Deleted')
-          this.$store.commit(AppMutations.SET_LOADING, false)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
