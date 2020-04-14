@@ -175,7 +175,7 @@ export default new Router({
           }
         },
       }, {
-        path: '/settings',
+        path: 'settings',
         name: 'settings',
         component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
         children: [
@@ -340,6 +340,26 @@ export default new Router({
                 return accessDenied()
               }
             },
+          }, {
+            path: 'availability',
+            name: 'availability',
+            redirect: "availability/schedule",
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Availability.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
+            children: [
+              {
+                path: 'schedule',
+                component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Schedule.vue')
+              }, {
+                path: 'appointments',
+                component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Appointments.vue')
+              }
+            ]
           }, {
             path: 'positions',
             component: () => {

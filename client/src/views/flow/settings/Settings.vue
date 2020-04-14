@@ -127,6 +127,10 @@ export default {
         header: 'User Management',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/availability',
+        title: 'Availability',
+        show: true
+      }, {
         path: '/settings/positions',
         title: 'Positions',
         show: this.hasSettingsAccess
