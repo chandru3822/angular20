@@ -87,7 +87,6 @@ public class UtilityService {
           sqlCache.update("propToolUtility.insertUtilityState", params);
         }
       }
-
     }
 
     return getUtility(id);
