@@ -101,30 +101,50 @@
       <v-card>
         <v-col v-if="showNewFieldForm">
           <v-select
-            v-model="newField.fieldTypeId"
-            label="Field Type"
-            :items="newFieldTypes"
-            item-value="id"
-            item-text="name"
-          />
-
-          <v-select
-            v-model="newField.companyObjectTypeId"
-            v-if="newField.fieldTypeId === 1"
+            v-model="newField.objectTypeId"
             label="Object Type"
             :items="companyObjectTypes"
-            item-value="companyObjectTypeId"
+            item-value="objectTypeId"
             item-text="objectType"
+            @input="getSecondFieldList"
           />
 
           <v-select
-            v-model="newField.smartlistFieldId"
-            v-if="newField.hasOwnProperty('companyObjectTypeId')"
-            label="Field Name"
-            :items="availableSmartlistFields.filter(field => field.companyObjectTypeId === newField.companyObjectTypeId)"
+            v-if="newField.objectTypeId !== null && newField.objectTypeId === 4"
+            v-model="newField.processStepId"
+            label="Process Step"
+            :items="availableProcessSteps"
             item-value="id"
-            item-text="name"
+            item-text="processStepName"
+            @input="getProcessStepFields"
           />
+
+          <v-select
+            v-if="newField.processStepId"
+            v-model="newField.selectedField"
+            label="Field"
+            :items="availableSmartlistFields"
+            item-text="name"
+            return-object
+          />
+
+<!--          <v-select-->
+<!--            v-model="newField.companyObjectTypeId"-->
+<!--            v-if="newField.fieldTypeId === 1"-->
+<!--            label="Object Type"-->
+<!--            :items="companyObjectTypes"-->
+<!--            item-value="companyObjectTypeId"-->
+<!--            item-text="objectType"-->
+<!--          />-->
+
+<!--          <v-select-->
+<!--            v-model="newField.smartlistFieldId"-->
+<!--            v-if="newField.hasOwnProperty('companyObjectTypeId')"-->
+<!--            label="Field Name"-->
+<!--            :items="availableSmartlistFields.filter(field => field.companyObjectTypeId === newField.companyObjectTypeId)"-->
+<!--            item-value="id"-->
+<!--            item-text="name"-->
+<!--          />-->
 
           <v-btn
             text
@@ -187,6 +207,7 @@ export default {
       smartlist: {},
       companyObjectTypes: [],
       availableSmartlistFields: [],
+      availableProcessSteps: [],
       newField: {},
       showNewFieldForm: false,
       newFieldTypes: [
@@ -196,25 +217,16 @@ export default {
       assignedFields: []
     }
   },
-  async created () {
+  created () {
     if (this.$route.params?.smartlistId !== "null") {
       this.getSmartlist()
       this.getAssignedFields()
     }
-
     this.getCompanyObjectTypes()
-    this.getavailableSmartlistFields()
   },
   computed: {
     isNewFieldButtonDisabled () {
-      if (this.newField?.fieldTypeId === 1) {
-        return !(this.newField?.companyObjectTypeId && this.newField?.smartlistFieldId)
-      }
-      else if (this.newField?.fieldTypeId === 2) {
-        return true
-      } else {
-        return true
-      }
+      return !this.newField?.selectedField
     }
   },
   methods: {
@@ -245,13 +257,22 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
       }
     },
-    async getavailableSmartlistFields () {
+    async getAvailableProcessSteps () {
       try {
-        const {data} = await getRequest(`/smartlist/availableFields`)
+        const {data} = await getRequest(`/processStep/getByCompany`)
+        this.availableProcessSteps = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
+      }
+    },
+    async getProcessStepFields () {
+      try {
+        const {data} = await getRequest(`/smartlist/availableFieldsByType?objectTypeId=${this.newField.objectTypeId}&processStepId=${this.newField.processStepId}`)
         this.availableSmartlistFields = data
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
+        this.snackbar = getSnackbar('ERROR', 'Error fetching process step fields')
       }
     },
     async addSmartlist () {
@@ -267,8 +288,8 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/smartlist/${this.smartlist.id}/field`, {
+          ...this.newField.selectedField,
           smartlistId: this.smartlist.id,
-          smartlistFieldId: this.newField.smartlistFieldId,
           displayOrder: this.assignedFields.length + 1
         })
         this.assignedFields.push(data)
@@ -287,6 +308,16 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
+      }
+    },
+    async getSecondFieldList () {
+      // const selectedObjectType = this.companyObjectTypes.find(type => type.objectTypeId === this.newField.objectTypeId)?.objectTypeId
+
+      // @TODO: Hardcoded to backend, gross
+      if (this.newField.objectTypeId === 4) {
+        await this.getAvailableProcessSteps()
+      } else {
+        // fetch custom and system fields by company object type
       }
     },
     resetNewFieldForm () {

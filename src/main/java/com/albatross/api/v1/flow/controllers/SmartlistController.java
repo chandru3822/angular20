@@ -1,7 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Smartlist;
-import com.albatross.api.v1.flow.model.SmartlistField;
 import com.albatross.api.v1.flow.model.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.services.SmartlistService;
 import lombok.RequiredArgsConstructor;
@@ -64,8 +63,8 @@ public class SmartlistController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @GetMapping(value = "/availableFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<SmartlistField>> getAvailableSmartlistFields() {
-    return new ResponseEntity<>(smartlistService.getAvailableSmartlistFields(), HttpStatus.OK);
+  @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableSmartlistFieldsByObjectType(@RequestParam Long objectTypeId, @RequestParam(required = false) Long processStepId) {
+    return new ResponseEntity<>(smartlistService.getAvailableSmartlistFields(objectTypeId, processStepId), HttpStatus.OK);
   }
 }
