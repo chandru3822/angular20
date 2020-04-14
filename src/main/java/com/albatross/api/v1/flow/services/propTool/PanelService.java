@@ -76,16 +76,20 @@ public class PanelService {
       params.put("panelId", id);
       params.put("companyStateId", panelState.getCompanyStateId());
       params.put("adderAmount", panelState.getAdderAmount());
+      params.put("archived", panelState.isArchived());
 
       if(null != panelState.getId()) {
         params.put("panelStateId", panelState.getId());
         sqlCache.update("propToolPanel.updateState", params);
       } else {
-        if (!params.containsKey("createdById")) {
-          params.put("createdById", user.getId());
+        if (!panelState.isArchived()) {
+          if (!params.containsKey("createdById")) {
+            params.put("createdById", user.getId());
+          }
+
+          sqlCache.update("propToolPanel.insertStates", params);
         }
 
-        sqlCache.update("propToolPanel.insertStates", params);
       }
     }
 

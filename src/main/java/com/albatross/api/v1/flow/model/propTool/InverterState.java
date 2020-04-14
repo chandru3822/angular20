@@ -13,5 +13,6 @@ public class InverterState {
   private Long id, inverterId, companyStateId;
   private Double adderAmount;
   private String state;
+  private boolean archived;
 }
 

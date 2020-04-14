@@ -96,7 +96,7 @@
 
               <v-btn class="mb-1" @click="item.inverterStates.push({})">Add State</v-btn>
               <v-card class="px-4" flat v-for="(us, index) in item.inverterStates" :key="index">
-                <v-row>
+                <v-row v-show="us.archived != true">
                   <v-select v-model="us.companyStateId"
                             class="mr-4"
                             :items="inverterStates"
@@ -108,6 +108,43 @@
                   <v-text-field type="number" v-model="us.adderAmount" class="mr-4"
                                 label="Adder Amount">
                   </v-text-field>
+                  <v-dialog
+                    v-model="us.deleteConfirm"
+                    width="500">
+                    <template v-slot:activator="{ on }">
+                      <v-btn text v-on="on">
+                        <v-icon>delete</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                        class="headline grey lighten-2"
+                        primary-title
+                      >
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text>
+                        Are you sure you want to delete this state?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="us.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primary"
+                          text
+                          @click="[us.archived = true, us.deleteConfirm = false]">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </v-row>
               </v-card>
               <v-btn :disabled="!item.inverterName || !item.brand || !item.inverterType || (!item.inverterStates || item.inverterStates.length === 0)" @click="saveInverter(item)">Save</v-btn>
@@ -120,8 +157,8 @@
               <td class="text-left">{{item.brand}}</td>
               <td class="text-left">{{item.inverterType}}</td>
               <td class="text-left">
-                <span v-for="(s, index) in item.inverterStates" :key="index">{{s.state}}
-                  <span v-if="index + 1 < item.inverterStates.length">, </span>
+                <span v-for="(s, index) in item.inverterStates" :key="index">
+                  {{s.state}}<span v-if="index + 1 < item.inverterStates.length">,</span>
                 </span>
               </td>
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
@@ -293,7 +330,7 @@
 
 <style lang="scss">
   #inverters-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 200px);
     min-height: 300px;
   }
 </style>

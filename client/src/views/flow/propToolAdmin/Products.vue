@@ -89,6 +89,10 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.productName}}</td>
+              <td class="text-left">{{item.financier}}</td>
+              <td class="text-left">{{item.termLength}}</td>
+              <td class="text-left">{{item.interestRate}}%</td>
+              <td class="text-left">{{item.dealerFee}}</td>
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
@@ -172,6 +176,10 @@
         addNew: false,
         headers: [
           {text: 'Product', value: 'product', show: true},
+          {text: 'Financier', value: 'financier', show: true},
+          {text: 'Loan Term', value: 'termLength', show: true},
+          {text: 'Interest Rate', value: 'interestRate', show: true},
+          {text: 'Dealer Fee', value: 'dealerFee', show: true},
           {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],

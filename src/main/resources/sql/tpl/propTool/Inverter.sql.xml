@@ -78,10 +78,9 @@
 
   <propToolInverter.updateState><![CDATA[
     update props.inverter_state
-        set company_state_id = :companyStateId,
-            adder_amount = :adderAmount,
-            modified_by_id = :modifiedById,
-            date_modified = now()
+        set adder_amount = :adderAmount,
+            date_modified = now(),
+            archived = :archived
     where id = :inverterStateId
   ]]></propToolInverter.updateState>
 

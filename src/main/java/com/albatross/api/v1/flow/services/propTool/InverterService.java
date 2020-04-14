@@ -75,16 +75,19 @@ public class InverterService {
       params.put("inverterId", id);
       params.put("companyStateId", inverterState.getCompanyStateId());
       params.put("adderAmount", inverterState.getAdderAmount());
+      params.put("archived", inverterState.isArchived());
 
       if(null != inverterState.getId()) {
-        params.put("inverterStateId", inverterState.getInverterId());
+        params.put("inverterStateId", inverterState.getId());
         sqlCache.update("propToolInverter.updateState", params);
       } else {
-        if (!params.containsKey("createdById")) {
-          params.put("createdById", user.getId());
-        }
+        if (!inverterState.isArchived()) {
+          if (!params.containsKey("createdById")) {
+            params.put("createdById", user.getId());
+          }
 
-        sqlCache.update("propToolInverter.insertStates", params);
+          sqlCache.update("propToolInverter.insertStates", params);
+        }
       }
     }
 

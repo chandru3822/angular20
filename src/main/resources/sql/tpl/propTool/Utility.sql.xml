@@ -79,11 +79,11 @@
 
   <propToolUtility.updateUtilityState><![CDATA[
     update props.utility_state
-        set company_state_id = :companyStateId,
-            cost_per_kwh = :costPerKwh,
+        set cost_per_kwh = :costPerKwh,
             escalator = :escalator,
             modified_by_id = :modifiedById,
-            date_modified = now()
+            date_modified = now(),
+            archived = :archived
     where id = :utilityStateId
   ]]></propToolUtility.updateUtilityState>
 

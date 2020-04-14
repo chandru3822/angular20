@@ -81,16 +81,20 @@ public class AdderService {
       params.put("adderId", id);
       params.put("companyStateId", adderState.getCompanyStateId());
       params.put("adderAmount", adderState.getAdderAmount());
+      params.put("archived", adderState.isArchived());
 
       if(null != adderState.getId()) {
         params.put("adderStateId", adderState.getId());
         sqlCache.update("propToolAdder.updateAdderState", params);
       } else {
-        if (!params.containsKey("createdById")) {
-          params.put("createdById", user.getId());
-        }
+        // If newly added and archived, don't insert, just skip
+        if (!adderState.isArchived()) {
+          if (!params.containsKey("createdById")) {
+            params.put("createdById", user.getId());
+          }
 
-        sqlCache.update("propToolAdder.insertAdderState", params);
+          sqlCache.update("propToolAdder.insertAdderState", params);
+        }
       }
     }
 

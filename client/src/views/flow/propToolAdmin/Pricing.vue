@@ -109,6 +109,8 @@
               <td class="text-left">{{item.state}}</td>
               <td class="text-left">{{item.utilityCompany}}</td>
               <td class="text-left">{{item.productName}}</td>
+              <td class="text-left">{{item.targetProductionFactor}}</td>
+              <td class="text-left">{{item.fundingCap}}</td>
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
@@ -197,6 +199,8 @@
           {text: 'State', value: 'state', show: true},
           {text: 'Utility', value: 'utilityCompany', show: true},
           {text: 'Product', value: 'productName', show: true},
+          {text: 'Target Production Factor', value: 'targetProductionFactor', show: true},
+          {text: 'Funding Cap', value: 'fundingCap', show: true},
           {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],

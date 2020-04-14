@@ -72,7 +72,7 @@
                 </v-btn>
               </div>
               <v-card class="px-4" flat color="transparent" v-for="(us, index) in filterBy(item.utilityStates, false, 'archived')" :key="index">
-                <v-row>
+                <v-row v-show="us.archived != true">
                   <v-select v-model="us.companyStateId"
                             :items="states"
                             class="mr-4"
@@ -118,7 +118,7 @@
                         <v-btn
                             color="primary"
                             text
-                            @click="[us.archived = true, deleteUtilityState(us.id)]">
+                            @click="[us.archived = true, us.deleteConfirm = false]">
                           Yes
                         </v-btn>
                       </v-card-actions>
@@ -126,6 +126,10 @@
                   </v-dialog>
                 </v-row>
               </v-card>
+              <v-radio-group v-model="item.active" column>
+                <v-radio label="Active" :value="true"></v-radio>
+                <v-radio label="Inactive" :value="false"></v-radio>
+              </v-radio-group>
               <v-btn :disabled="!item.utilityCompany || (!item.utilityStates || item.utilityStates.length === 0)" @click="saveUtility(item)">Save</v-btn>
             </td>
           </template>
@@ -134,8 +138,8 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.utilityCompany}}</td>
               <td class="text-left">
-                <span v-for="(s, index) in item.utilityStates" :key="index">{{s.state}}
-                  <span v-if="index + 1 < item.utilityStates.length">, </span>
+                <span v-for="(s, index) in item.utilityStates" :key="index">
+                  {{s.state}}<span v-if="index + 1 < item.utilityStates.length">,</span>
                 </span>
               </td>
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
@@ -260,19 +264,6 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteUtilityState(id) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          console.log('will delete utilityity state', id)
-          //await deleteRequest(`/propTool/utility/${id}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Utility State Deleted')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Utility State')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       filterUtilities() {
         return this.utilities.filter(u => {
           return !u.archived
@@ -312,8 +303,8 @@
           this.snackbar = getSnackbar('ERROR', item.id ? 'Error Updating Utility' : 'Error Adding Utility')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-    },
+      }
+    }
   }
 </script>
 
