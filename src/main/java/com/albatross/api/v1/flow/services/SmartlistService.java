@@ -35,7 +35,8 @@ public class SmartlistService {
   }
 
   public void updateSmartlist(Smartlist smartlist) {
-    Map<String, Object> params = Map.of("id", smartlist.getId(), "name", smartlist.getName(), "companyObjectTypeId", smartlist.getCompanyObjectTypeId(), "shared", smartlist.isShared());
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = Map.of("id", smartlist.getId(), "name", smartlist.getName(), "companyObjectTypeId", smartlist.getCompanyObjectTypeId(), "shared", smartlist.isShared(), "userId", user.getId());
     sqlCache.update("smartlist.update", params);
   }
 

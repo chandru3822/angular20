@@ -30,7 +30,9 @@ update flow.smartlist
 set
   name = :name,
   company_object_type_id = :companyObjectTypeId,
-  shared = :shared
+  shared = :shared,
+  modified_by_id = :userId,
+  date_modified = now()
 where
   id = :id;
 ]]></smartlist.update>
