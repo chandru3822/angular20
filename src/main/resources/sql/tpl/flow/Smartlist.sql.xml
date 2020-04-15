@@ -77,7 +77,7 @@ select
   sfa.archived,
   sfa.display_order,
   ot.object_type,
-  ps.process_step_name,
+  case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
   case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end as name
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
@@ -87,6 +87,7 @@ left join flow.custom_field_group_assignment cfga on cfga.id = sfa.custom_field_
 left join flow.custom_field cf on cf.id = cfga.custom_field_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
+left join flow.process_step ps1 on ps1.id = sfa.process_step_id
 where
   sfa.smartlist_id = :id and
   sfa.archived is not true
@@ -103,6 +104,7 @@ select
   sfa.display_order,
   ot.object_type,
   ps.process_step_name,
+  case when sfa.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
   case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end as name
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
@@ -112,14 +114,15 @@ left join flow.custom_field_group_assignment cfga on cfga.id = sfa.custom_field_
 left join flow.custom_field cf on cf.id = cfga.custom_field_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
+left join flow.process_step ps1 on ps1.id = sfa.process_step_id
 where
   sfa.id = :id and
   sfa.archived is not true;
 ]]></smartlist.getAssignedFieldById>
 
 <smartlist.addField><![CDATA[
-insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, created_by_id, display_order)
-values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :createdById, :displayOrder)
+insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, created_by_id, display_order, process_step_id)
+values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :createdById, :displayOrder, :processStepId)
 returning id;
 ]]></smartlist.addField>
 

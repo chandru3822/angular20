@@ -6,7 +6,6 @@ import com.albatross.api.v1.flow.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +59,7 @@ public class SmartlistService {
     params.put("customFieldGroupAssignmentId", assignment.getCustomFieldGroupAssignmentId());
     params.put("displayOrder", assignment.getDisplayOrder());
     params.put("createdById", user.getId());
+    params.put("processStepId", assignment.getProcessStepId());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
     return this.getAssignedFieldById(assignmentId);
   }

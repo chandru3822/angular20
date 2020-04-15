@@ -71,8 +71,8 @@
       </v-card>
     </v-col>
 
-    <v-col cols="6">
-      <v-toolbar class="elevation-1">
+    <v-col cols="12">
+      <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>Fields</v-toolbar-title>
         <v-spacer />
         <v-toolbar-items>
@@ -98,7 +98,7 @@
         </v-toolbar-items>
       </v-toolbar>
 
-      <v-card>
+      <v-card class="elevation-1">
         <v-col v-if="showNewFieldForm">
           <v-select
             v-model="newField.objectTypeId"
@@ -143,6 +143,31 @@
 
         <v-list dense>
           <draggable v-model="assignedFields" @change="reorderFields" group="assignedFields">
+
+            <v-list-item class="">
+
+              <v-list-item-action>
+                <v-icon></v-icon>
+              </v-list-item-action>
+
+              <v-list-item-content>
+                <v-row>
+<!--                  @TODO: put inline styles in class -->
+                  <v-col cols="1" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Order</v-col>
+                  <v-col cols="3" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Field Name</v-col>
+                  <v-col cols="4" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Object Type</v-col>
+                  <v-col cols="4" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Process Step Name</v-col>
+                </v-row>
+              </v-list-item-content>
+
+              <v-list-item-action>
+                <v-icon></v-icon>
+              </v-list-item-action>
+            </v-list-item>
+
+            <v-divider />
+            <v-divider />
+
             <v-list-item class="grab" v-for="(field, index) in assignedFields" :key="field.id">
 
               <v-list-item-action>
@@ -152,8 +177,9 @@
               <v-list-item-content>
                 <v-row>
                   <v-col cols="1" class="text-left">{{field.displayOrder}}</v-col>
-                  <v-col class="text-left">{{field.name}}</v-col>
-                  <v-col class="text-left">{{(field.smartlistFieldId) ? field.objectType : field.processStepName}}</v-col>
+                  <v-col cols="3" class="text-left">{{field.name}}</v-col>
+                  <v-col cols="4" class="text-left">{{(field.smartlistFieldId) ? field.objectType : 'Custom'}}</v-col>
+                  <v-col cols="4" class="text-left">{{field.processStepName}}</v-col>
                 </v-row>
               </v-list-item-content>
 
@@ -277,7 +303,8 @@ export default {
         const {data} = await postRequest(`/smartlist/${this.smartlist.id}/field`, {
           ...this.newField.selectedField,
           smartlistId: this.smartlist.id,
-          displayOrder: this.assignedFields.length + 1
+          displayOrder: this.assignedFields.length + 1,
+          processStepId: this.newField.processStepId || null
         })
         this.assignedFields.push(data)
         this.resetNewFieldForm()
@@ -308,7 +335,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await deleteRequest(`/smartlist/${this.$route.params.smartlistId}/field/${fieldToDelete.id}`)
         this.assignedFields.splice(fieldIndex, 1)
-        this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
+        await this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error removing field from smartlist')
