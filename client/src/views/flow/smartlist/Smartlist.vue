@@ -142,31 +142,30 @@
       </v-card>
 
         <v-list dense>
+          <v-list-item>
+            <v-list-item-action>
+              <v-icon></v-icon>
+            </v-list-item-action>
+
+            <v-list-item-content>
+              <v-row>
+                <!--                  @TODO: put inline styles in class -->
+                <v-col cols="1" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Order</v-col>
+                <v-col cols="3" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Field Name</v-col>
+                <v-col cols="4" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Object Type</v-col>
+                <v-col cols="4" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Process Step Name</v-col>
+              </v-row>
+            </v-list-item-content>
+
+            <v-list-item-action>
+              <v-icon></v-icon>
+            </v-list-item-action>
+          </v-list-item>
+
+          <v-divider />
+          <v-divider />
+
           <draggable v-model="assignedFields" @change="reorderFields" group="assignedFields">
-
-            <v-list-item class="">
-
-              <v-list-item-action>
-                <v-icon></v-icon>
-              </v-list-item-action>
-
-              <v-list-item-content>
-                <v-row>
-<!--                  @TODO: put inline styles in class -->
-                  <v-col cols="1" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Order</v-col>
-                  <v-col cols="3" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Field Name</v-col>
-                  <v-col cols="4" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Object Type</v-col>
-                  <v-col cols="4" class="text-left" style="font-size: 12px; color: rgba(0,0,0,0.6); font-weight: 700; line-height: 18px;">Process Step Name</v-col>
-                </v-row>
-              </v-list-item-content>
-
-              <v-list-item-action>
-                <v-icon></v-icon>
-              </v-list-item-action>
-            </v-list-item>
-
-            <v-divider />
-            <v-divider />
 
             <v-list-item class="grab" v-for="(field, index) in assignedFields" :key="field.id">
 
