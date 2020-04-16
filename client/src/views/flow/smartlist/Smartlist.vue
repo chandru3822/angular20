@@ -189,6 +189,8 @@
           </draggable>
         </v-list>
     </v-col>
+
+    <SmartlistRequirement :requirements="requirements" />
   </v-row>
   <Snackbar :snackbar="snackbar" />
 </v-container>
@@ -200,12 +202,14 @@ import {AppMutations} from '@/stores/AppStore'
 import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar'
 import draggable from 'vuedraggable'
+import SmartlistRequirement from './SmartlistRequirement'
 
 export default {
   name: 'Smartlist',
   components: {
     Snackbar,
-    draggable
+    draggable,
+    SmartlistRequirement
   },
   data () {
     return {
@@ -222,13 +226,15 @@ export default {
         {id: 1, name: 'Smartlist Field'},
         {id: 2, name: 'Custom Field'}
       ],
-      assignedFields: []
+      assignedFields: [],
+      requirements: []
     }
   },
   created () {
     if (this.$route.params?.smartlistId !== "null") {
       this.getSmartlist()
       this.getAssignedFields()
+      this.getRequirements()
     }
     this.getCompanyObjectTypes()
   },
@@ -263,6 +269,15 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
+      }
+    },
+    async getRequirements () {
+      try {
+        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}/requirement`)
+        this.requirements = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching requirements')
       }
     },
     async getAvailableFields () {

@@ -1,10 +1,15 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -18,6 +23,8 @@ public class SmartlistService {
   private final SecurityService securityService;
 
   private final SqlCache sqlCache;
+
+  private final ObjectMapper om;
 
   public List<Smartlist> getSmartlists() {
     return sqlCache.query("smartlist.get", null, Smartlist.class);
@@ -73,5 +80,24 @@ public class SmartlistService {
     fields.forEach(field -> {
       sqlCache.update("smartlist.updateDisplayOrder", Map.of("id", field.getId(), "displayOrder", field.getDisplayOrder(), "userId", securityService.getCurrentUser().getId()));
     });
+  }
+
+  public List<SmartlistRequirement> getRequirements(Long smartlistId) {
+    return sqlCache.query("smartlist.getRequirements", Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+  }
+
+  public static class SmartlistRequirementMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper om;
+
+    public SmartlistRequirementMapper(Class<T> mappedClass, ObjectMapper objectMaper) {
+      super(mappedClass);
+      this.om = objectMaper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "dataTypeRequirement", new JsonCollectionDeserializer(dataTypeRequirementRef, om));
+    }
   }
 }
