@@ -364,7 +364,7 @@ public class ProjectProcessStepService {
       }
     } else if (r.getProcessStepRequirementTypeId() == 2) {
       String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId()));
-      String query = String.format("select * from flow.%s(%s)", r.getFunctionName(), params);
+      String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
       //@TODO: Account for function return data types 7 and 9 returning lists
       Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
       //@TODO: compare returnValue to the requirement value
