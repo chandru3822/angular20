@@ -108,6 +108,10 @@ export default {
         path: '/schedule',
         display: this.$store.getters.userHasFeature('SCHEDULE')
       }, {
+        label: 'Proposal',
+        path: '/proposal',
+        display: this.$store.getters.userHasFeature('PROPOSAL')
+      }, {
         label: 'Work Queue',
         path: '/workQueue',
         display: this.$store.getters.userHasFeature('WORK_QUEUE')

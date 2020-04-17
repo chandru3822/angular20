@@ -690,6 +690,40 @@ export default new Router({
               }
             }
           ]
+        },{
+          path: '/proposal',
+          name: 'proposal',
+          component: () => {
+            if(store.getters.userHasFeature('SYSTEM')) {
+              return import (/* webpackChunkName: "admin" */ './views/flow/proposal/Menu.vue')
+            } else  {
+              return accessDenied()
+            }
+          },
+          children: [
+            {
+              path: 'create',
+              name: 'create',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue'),
+            },
+            {
+              path: 'search',
+              name: 'search',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
+            }, {
+              path: 'export',
+              name: 'export',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Export.vue'),
+            }, {
+              path: 'recreate',
+              name: 'recreate',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
+            }, {
+              path: ':proposalId',
+              name: 'modify',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue'),
+            }
+          ]
         }
     ],
 

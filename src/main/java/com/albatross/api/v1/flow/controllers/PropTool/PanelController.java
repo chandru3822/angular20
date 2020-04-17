@@ -28,6 +28,11 @@ public class PanelController {
     return panelService.getPanelsForCompany();
   }
 
+  @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Panel> getPanel(@PathVariable Long id) {
+    return panelService.getPanel(id);
+  }
+
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deletePanel(@PathVariable Long id) {
     panelService.deletePanel(id);
