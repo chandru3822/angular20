@@ -79,27 +79,25 @@
           <v-btn
             v-if="!showNewFieldForm"
             text
-            color="primary"
             :disabled="!smartlist.id"
             @click="showNewFieldForm = true"
           >
             <v-icon>add</v-icon>
-            <span v-if="!IS_MOBILE">Add Field</span>
+            <template v-if="!IS_MOBILE">Add Field</template>
           </v-btn>
 
           <v-btn
             v-if="showNewFieldForm"
             text
-            color="primary"
             @click="resetNewFieldForm"
           >
-            <span>Cancel</span>
+            Cancel
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
 
-      <v-card class="elevation-1">
-        <v-col v-if="showNewFieldForm">
+      <v-card v-if="showNewFieldForm" class="elevation-1">
+        <v-col>
           <v-select
             v-model="newField.objectTypeId"
             label="Object Type"
@@ -131,7 +129,7 @@
           <v-btn
             text
             color="primary"
-            class=""
+            class="text-left"
             :disabled="isNewFieldButtonDisabled"
             @click="addNewField"
           >
@@ -190,7 +188,11 @@
         </v-list>
     </v-col>
 
-    <SmartlistRequirement :requirements="requirements" />
+    <SmartlistRequirement
+      :requirements="requirements"
+      :company-object-types="companyObjectTypes"
+      @input="addNewRequirement"
+    />
   </v-row>
   <Snackbar :snackbar="snackbar" />
 </v-container>
@@ -325,6 +327,27 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding field to smartlist')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async addNewRequirement (requirement) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
+          ...requirement.selectedField,
+          smartlistId: this.smartlist.id,
+          operatorTypeId: requirement.operatorTypeId,
+          dataTypeRequirementId: requirement.dataTypeRequirementId,
+          displayOrder: this.requirements.length + 1,
+        })
+        this.requirements.push(data)
+
+        // @TODO: tell the child component to reset form
+        // this.resetNewFieldForm()
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error adding requirement to smartlist')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

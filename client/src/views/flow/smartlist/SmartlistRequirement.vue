@@ -4,127 +4,85 @@
     <v-toolbar-title>Requirements</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-toolbar-items>
-      <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text>
-            <v-icon>add</v-icon>
-<!--        <v-icon v-if="!addNewRequirement">add</v-icon>-->
-<!--        {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}-->
-        {{ 'Add Requirement'}}
+      <v-btn
+        v-if="!showNewRequirementForm"
+        @click="showNewRequirementForm = true"
+        text
+      >
+        <v-icon>add</v-icon>
+        <template v-if="!IS_MOBILE">Add Requirement</template>
+      </v-btn>
+
+      <v-btn
+        v-if="showNewRequirementForm"
+        text
+        @click="resetRequirementForm"
+      >
+        Cancel
       </v-btn>
     </v-toolbar-items>
   </v-toolbar>
-<!--  <v-row v-if="addNewRequirement">-->
-<!--  <v-row>-->
-<!--    <v-col cols="12">-->
-<!--      &lt;!&ndash;  TODO: need to protect against bad data when they go back and change the requirement type but have already selected other values lower in the form      &ndash;&gt;-->
-<!--      <v-select v-model="newRequirement.processStepRequirementTypeId"-->
-<!--                :items="availableRequirementTypes"-->
-<!--                label="Select Requirement Type"-->
-<!--                item-value="id"-->
-<!--                item-text="processStepRequirementType"-->
-<!--                @input="[selectRequirementType(), parent = {}, selectedCustomField = {}, selectedDataTypeRequirement = {},-->
-<!--                            selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,-->
-<!--                            newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"-->
-<!--      ></v-select>-->
-<!--      &lt;!&ndash; if it is a custom field &ndash;&gt;-->
-<!--      <v-select-->
-<!--          v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"-->
-<!--          v-model="parent"-->
-<!--          :items="parentObjects"-->
-<!--          label="Parent Object"-->
-<!--          item-text="processStepName"-->
-<!--          return-object-->
-<!--          @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},-->
-<!--                            selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,-->
-<!--                            newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"-->
-<!--      ></v-select>-->
-<!--      <v-select v-if="parent.id"-->
-<!--                v-model="selectedCustomField"-->
-<!--                :items="customFields"-->
-<!--                label="Custom Field"-->
-<!--                item-text="fieldName"-->
-<!--                return-object-->
-<!--                @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),-->
-<!--                            selectedDataTypeRequirement = {},-->
-<!--                            selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,-->
-<!--                            newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"-->
-<!--      ></v-select>-->
-<!--      &lt;!&ndash; if it is a function &ndash;&gt;-->
-<!--      <v-select-->
-<!--          v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"-->
-<!--          v-model="selectedFunction"-->
-<!--          :items="availableFunctions"-->
-<!--          label="Function"-->
-<!--          item-text="companyFunctionName"-->
-<!--          returnObject-->
-<!--          @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId)]"-->
-<!--      ></v-select>-->
-<!--      <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">-->
-<!--        <h5 class="text-left">Dynamic Function Parameters</h5>-->
-<!--        <v-card flat>-->
-<!--          <v-text-field-->
-<!--              v-for="(fp, index) in newRequirement.requirementParamDynamicValues"-->
-<!--              :key="index"-->
-<!--              placeholder="Enter a dynamic value"-->
-<!--              v-model="fp.dynamicValue"-->
-<!--              :label="fp.parameterName"></v-text-field>-->
-<!--        </v-card>-->
-<!--      </div>-->
-<!--      <v-select-->
-<!--          v-if="(newRequirement.processStepRequirementTypeId === 1 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"-->
-<!--          v-model="newRequirement.operatorTypeId"-->
-<!--          :items="operatorTypes"-->
-<!--          label="Operator"-->
-<!--          @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"-->
-<!--          item-text="operatorType"-->
-<!--          item-value="id"-->
-<!--      ></v-select>-->
-<!--      <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]" class="mx-2" label="Custom"></v-switch>-->
-<!--      <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKeyId === null && selectedCustomField.systemListId === null"-->
-<!--                    v-model="newRequirement.requirementValue"-->
-<!--                    placeholder="Enter a value"-->
-<!--                    label="Value">-->
-<!--      </v-text-field>-->
-<!--      <v-select-->
-<!--          v-else-if="newRequirement.operatorTypeId-->
-<!--                            && newRequirement.customValue-->
-<!--                            && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKeyId !== null || selectedCustomField.systemListId !== null)-->
-<!--                            && !selectedCustomField.allowMultiple"-->
-<!--          v-model="selectedListValue"-->
-<!--          :items="selectedCustomField.listOfValues"-->
-<!--          label="Available Values"-->
-<!--          item-text="name"-->
-<!--          return-object-->
-<!--      ></v-select>-->
-<!--      &lt;!&ndash; currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists &ndash;&gt;-->
-<!--      <v-select-->
-<!--          v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"-->
-<!--          v-model="selectedListOfValues"-->
-<!--          :items="selectedCustomField.listOfValues"-->
-<!--          label="Available Values"-->
-<!--          multiple-->
-<!--          item-text="name"-->
-<!--          return-object-->
-<!--      ></v-select>-->
-<!--      <v-select-->
-<!--          v-else-if="newRequirement.operatorTypeId && !newRequirement.customValue"-->
-<!--          v-model="selectedDataTypeRequirement"-->
-<!--          :items="dataTypeRequirements"-->
-<!--          label="Available Values"-->
-<!--          item-text="dataTypeValue"-->
-<!--          return-object-->
-<!--      ></v-select>-->
-<!--      <v-text-field v-if="selectedDataTypeRequirement && selectedDataTypeRequirement.secondaryRequirement"-->
-<!--                    v-model="newRequirement.secondaryRequirementValue"-->
-<!--                    placeholder="Enter a value"-->
-<!--                    label="Value">-->
-<!--      </v-text-field>-->
-<!--      <v-btn :disabled="validateRequirementForm()"-->
-<!--             @click="saveNewRequirement">-->
-<!--        <v-icon>save</v-icon>-->
-<!--        Save-->
-<!--      </v-btn>-->
-<!--    </v-col>-->
-<!--  </v-row>-->
+
+  <v-card v-if="showNewRequirementForm" class="elevation-1">
+    <v-col>
+      <v-select
+          v-model="newRequirement.objectTypeId"
+          label="Object Type"
+          :items="companyObjectTypes"
+          item-value="objectTypeId"
+          item-text="objectType"
+          @input="getAvailableFields"
+      />
+
+      <v-select
+          v-if="newRequirement.objectTypeId !== null && newRequirement.objectTypeId === 4"
+          v-model="newRequirement.processStepId"
+          label="Process Step"
+          :items="availableProcessSteps"
+          item-value="processStepId"
+          item-text="processStepName"
+          @input="calculateAvailableFields"
+      />
+
+      <v-select
+          v-if="(newRequirement.objectTypeId === 4 && newRequirement.processStepId) || (newRequirement.objectTypeId !== 4 && newRequirement.objectTypeId != null)"
+          v-model="newRequirement.selectedField"
+          label="Field"
+          :items="availableFields"
+          item-text="name"
+          return-object
+          @input="[getOperators(), getDataTypeRequirements()]"
+      />
+
+      <v-select
+        v-if="newRequirement.selectedField"
+        v-model="newRequirement.operatorTypeId"
+        label="Operator"
+        :items="operators"
+        item-text="operatorType"
+        item-value="id"
+      />
+
+      <v-select
+        v-if="newRequirement.operatorTypeId"
+        v-model="newRequirement.dataTypeRequirementId"
+        label="Available Values"
+        :items="dataTypeRequirements"
+        item-text="dataTypeValue"
+        item-value="id"
+      />
+
+      <v-btn
+        text
+        class="text-left"
+        :disabled="!newRequirement.dataTypeRequirementId"
+        @click="addNewRequirement"
+      >
+        <v-icon>save</v-icon>
+        <template v-if="!IS_MOBILE">Save</template>
+      </v-btn>
+    </v-col>
+  </v-card>
   <v-row>
     <v-col cols="12">
       <v-data-table
@@ -340,20 +298,43 @@
       </v-data-table>
     </v-col>
   </v-row>
+  <Snackbar :snackbar="snackbar" />
 </v-col>
 </template>
 
 <script>
+
+import {AppMutations} from '@/stores/AppStore'
+import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import Snackbar from '@/components/Snackbar'
+
 export default {
   name: "SmartlistRequirement",
+  components: {
+    Snackbar
+  },
   props: {
     requirements: {
+      type: Array,
+      default: () => []
+    },
+    companyObjectTypes: {
       type: Array,
       default: () => []
     }
   },
   data () {
     return {
+      IS_MOBILE,
+      snackbar: {},
+      showNewRequirementForm: false,
+      newRequirement: {},
+      fetchedAvailableFields: [],
+      availableFields: [],
+      availableProcessSteps: [],
+      operations: [],
+      operators: [],
+      dataTypeRequirements: [],
       headers: [
         {text: 'ID', value: 'displayOrder'},
         {text: 'Field Name', value: 'name'},
@@ -363,6 +344,67 @@ export default {
         {text: 'Value', value: 'requirementValue'},
         // {text: null, value: 'icons'}
       ],
+    }
+  },
+  created () {
+    this.getOperations()
+  },
+  methods: {
+    async getAvailableFields () {
+      this.newRequirement = {objectTypeId: this.newRequirement.objectTypeId}
+      try {
+        const {data} = await getRequest(`/smartlist/availableFieldsByType?objectTypeId=${this.newRequirement.objectTypeId}`)
+        this.fetchedAvailableFields = data
+        if (this.newRequirement.objectTypeId === 4) {
+          this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
+          this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
+        } else {
+          this.calculateAvailableFields()
+        }
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
+      }
+    },
+    async getOperations () {
+      try {
+        const {data} = await getRequest(`/operation`)
+        this.operations = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
+      }
+    },
+    async getOperators () {
+      try {
+        const {data} = await getRequest(`/operator/${this.newRequirement.selectedField.dataTypeId}`)
+        this.operators = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching operators for selected field')
+      }
+    },
+    async getDataTypeRequirements () {
+      try {
+        const {data} = await getRequest(`/dataType/getDataTypeRequirements/${this.newRequirement.selectedField.dataTypeId}`)
+        this.dataTypeRequirements = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching data type requirements for selected field')
+      }
+    },
+    addNewRequirement () {
+      this.$emit('input', this.newRequirement)
+    },
+    calculateAvailableFields () {
+      this.availableFields = this.fetchedAvailableFields.sort((a, b) => a.name.localeCompare(b.name))
+      if (this.newRequirement.processStepId) {
+        this.availableFields = this.availableFields.filter(field => field.processStepId === this.newRequirement.processStepId || field.smartlistFieldId !== null)
+      }
+    },
+    resetRequirementForm () {
+      this.showNewRequirementForm = false
+      this.newRequirement = {}
     }
   }
 }

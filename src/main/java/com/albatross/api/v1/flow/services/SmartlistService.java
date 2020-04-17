@@ -59,6 +59,10 @@ public class SmartlistService {
     return sqlCache.get("smartlist.getAssignedFieldById", Map.of("id", assignmentId), SmartlistFieldAssignment.class).orElse(null);
   }
 
+  public SmartlistRequirement getRequirementById(Long requirementId) {
+    return sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+  }
+
   public SmartlistFieldAssignment addField(SmartlistFieldAssignment assignment) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -70,6 +74,14 @@ public class SmartlistService {
     params.put("processStepId", assignment.getProcessStepId());
     Long assignmentId = sqlCache.updateReturningId("smartlist.addField", params, "id").longValue();
     return this.getAssignedFieldById(assignmentId);
+  }
+
+  public SmartlistRequirement addRequirement(Long smartlistId, SmartlistRequirement requirement) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
+    params.put("userId", user.getId());
+    Long requirementId = sqlCache.updateReturningId("smartlist.addRequirement", params, "id").longValue();
+    return this.getRequirementById(requirementId);
   }
 
   public void deleteFieldAssignment(Long fieldId) {
