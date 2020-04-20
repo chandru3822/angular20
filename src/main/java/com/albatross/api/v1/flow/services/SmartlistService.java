@@ -63,6 +63,10 @@ public class SmartlistService {
     return sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
   }
 
+  public List<SmartlistLogic> getLogic(Long smartlistId) {
+    return sqlCache.query("smartlist.getLogic", Map.of("smartlistId", smartlistId), SmartlistLogic.class);
+  }
+
   public SmartlistFieldAssignment addField(SmartlistFieldAssignment assignment) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

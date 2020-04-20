@@ -219,5 +219,27 @@ set archived = true,
     date_modified = now()
 where id = :requirementId
 ]]></smartlist.deleteRequirement>
+
+<smartlist.getLogic><![CDATA[
+select sl.id,
+       sl.smartlist_id,
+       sl.smartlist_requirement_id,
+       sl.operation_type_id,
+       ot.operation_type,
+       ot.operation_code,
+       sl.sql_order,
+       sl.created_by_id,
+       sl.date_created,
+       sl.modified_by_id,
+       sl.date_modified,
+       sl.archived,
+       sr.display_order
+from flow.smartlist_logic sl
+left join flow.operation_type ot on ot.id = sl.operation_type_id
+left join flow.smartlist_requirement sr on sr.id = sl.smartlist_requirement_id
+where sl.smartlist_id = :smartlistId and
+      sl.archived is not true
+order by sl.sql_order;
+]]></smartlist.getLogic>
 </sql>
 

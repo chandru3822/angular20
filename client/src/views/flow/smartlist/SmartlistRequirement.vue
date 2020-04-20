@@ -334,7 +334,6 @@ export default {
       fetchedAvailableFields: [],
       availableFields: [],
       availableProcessSteps: [],
-      operations: [],
       operators: [],
       dataTypeRequirements: [],
       headers: [
@@ -347,9 +346,6 @@ export default {
         {text: null, value: 'actions'}
       ],
     }
-  },
-  created () {
-    this.getOperations()
   },
   updated () {
     if (this.resetForm) {
@@ -371,15 +367,6 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
-      }
-    },
-    async getOperations () {
-      try {
-        const {data} = await getRequest(`/operation`)
-        this.operations = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
       }
     },
     async getOperators () {

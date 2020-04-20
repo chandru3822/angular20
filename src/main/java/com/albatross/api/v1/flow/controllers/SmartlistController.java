@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Smartlist;
 import com.albatross.api.v1.flow.model.SmartlistFieldAssignment;
+import com.albatross.api.v1.flow.model.SmartlistLogic;
 import com.albatross.api.v1.flow.model.SmartlistRequirement;
 import com.albatross.api.v1.flow.services.SmartlistService;
 import lombok.RequiredArgsConstructor;
@@ -78,6 +79,11 @@ public class SmartlistController {
   public ResponseEntity<Void> deleteRequirementFromSmartlist(@PathVariable Long requirementId) {
     smartlistService.deleteRequirement(requirementId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @GetMapping(value = "/{smartlistId}/logic", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistLogic>> getLogicBySmartlistId(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistService.getLogic(smartlistId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -97,7 +97,7 @@
       </v-toolbar>
 
       <v-card v-if="showNewFieldForm" class="elevation-1">
-        <v-col>
+        <v-col class="text-left">
           <v-select
             v-model="newField.objectTypeId"
             label="Object Type"
@@ -196,6 +196,67 @@
       @delete="deleteRequirement"
       @form-reset="resetRequirementForm = false"
     />
+
+    <v-col class="text-left">
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title>Logic</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn v-if="logicUpdated"
+                 text
+                 @click="restoreLogic"
+          >
+            <v-icon>restore</v-icon>
+            Restore
+          </v-btn>
+          <v-btn v-if="logic.length > 0"
+                 text
+                 @click="clearLogic"
+          >
+            <v-icon>clear</v-icon>
+            Clear All
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card flat class="text-left" color="transparent">
+        <v-btn small class="ml-1 mr-1 mt-1"
+               v-for="(l, index) in logic"
+               :key="index"
+               @click="removeLogic(index)">
+          {{l.smartlistRequirementId ? l.displayOrder : l.operationType}}
+        </v-btn>
+      </v-card>
+      <v-toolbar flat dense color="transparent">
+        <v-toolbar-title>Available Operations</v-toolbar-title>
+      </v-toolbar>
+      <v-card flat class="text-left" color="transparent">
+        <v-btn small class="ml-1 mr-1 mt-1"
+               v-for="(o, index) in operations"
+               :key="index"
+               @click="addOperationToLogic(o)">
+          {{o.operationType}}
+        </v-btn>
+      </v-card>
+      <v-toolbar flat dense color="transparent">
+        <v-toolbar-title>Requirements</v-toolbar-title>
+      </v-toolbar>
+      <v-card flat class="text-left mb-4" color="transparent">
+        <v-btn small
+               class="ml-1 mr-1 mt-1"
+               v-for="r in requirements"
+               :key="r.id"
+               @click="addRequirementToLogic(r)">
+          {{r.displayOrder}}
+        </v-btn>
+      </v-card>
+      <v-btn class="mt-4"
+             :disabled="!logicUpdated"
+             @click="updateLogic"
+      >
+        <v-icon class="mr-2">save</v-icon>
+        Save Logic Changes
+      </v-btn>
+    </v-col>
   </v-row>
   <Snackbar :snackbar="snackbar" />
 </v-container>
@@ -208,9 +269,11 @@ import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError,
 import Snackbar from '@/components/Snackbar'
 import draggable from 'vuedraggable'
 import SmartlistRequirement from './SmartlistRequirement'
+import Vue2Filters from "vue2-filters";
 
 export default {
   name: 'Smartlist',
+  mixins: [Vue2Filters.mixin],
   components: {
     Snackbar,
     draggable,
@@ -222,6 +285,7 @@ export default {
       snackbar: {},
       smartlist: {},
       companyObjectTypes: [],
+      operations: [],
       fetchedAvailableFields: [],
       availableFields: [],
       availableProcessSteps: [],
@@ -233,6 +297,9 @@ export default {
       ],
       assignedFields: [],
       requirements: [],
+      fetchedLogic: [],
+      logic: [],
+      logicUpdated: false,
       resetRequirementForm: false
     }
   },
@@ -241,7 +308,9 @@ export default {
       this.getSmartlist()
       this.getAssignedFields()
       this.getRequirements()
+      this.getLogic()
     }
+    this.getOperations()
     this.getCompanyObjectTypes()
   },
   computed: {
@@ -286,6 +355,16 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error fetching requirements')
       }
     },
+    async getLogic () {
+      try {
+        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}/logic`)
+        this.fetchedLogic = [...data]
+        this.logic = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching smartlist logic')
+      }
+    },
     async getAvailableFields () {
       this.newField = {objectTypeId: this.newField.objectTypeId}
       try {
@@ -300,6 +379,15 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
+      }
+    },
+    async getOperations () {
+      try {
+        const {data} = await getRequest(`/operation`)
+        this.operations = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching operations')
       }
     },
     calculateAvailableFields () {
@@ -364,9 +452,8 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
       }
     },
-    resetNewFieldForm () {
-      this.showNewFieldForm = false
-      this.newField = {}
+    async updateLogic() {
+
     },
     async deleteField (fieldIndex) {
 
@@ -416,6 +503,36 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    resetNewFieldForm () {
+      this.showNewFieldForm = false
+      this.newField = {}
+    },
+    clearLogic () {
+      this.logic = []
+      this.logicUpdated = true
+    },
+    restoreLogic () {
+      this.logic = [...this.fetchedLogic]
+      this.logicUpdated = false
+    },
+    removeLogic (index) {
+      this.logic.splice(index, 1)
+      this.logicUpdated = true
+    },
+    addOperationToLogic (operation) {
+      this.logic.push({
+        operationType: operation.operationType,
+        operationTypeId: operation.id
+      })
+      this.logicUpdated = true
+    },
+    addRequirementToLogic (requirement) {
+      this.logic.push({
+        displayOrder: requirement.displayOrder,
+        smartlistRequirementId: requirement.id
+      })
+      this.logicUpdated = true
     }
   }
 }
