@@ -74,6 +74,12 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.addRequirement(smartlistId, requirement), HttpStatus.OK);
   }
 
+  @DeleteMapping(value = "/{smartlistId}/requirement/{requirementId}")
+  public ResponseEntity<Void> deleteRequirementFromSmartlist(@PathVariable Long requirementId) {
+    smartlistService.deleteRequirement(requirementId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableSmartlistFieldsByObjectType(@RequestParam Long objectTypeId) {
     return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeId), HttpStatus.OK);

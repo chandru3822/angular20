@@ -172,7 +172,8 @@ left join flow.custom_field cf on cf.id = cfga.custom_field_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
-where sr.id = :requirementId;
+where sr.id = :requirementId and
+      sr.archived is not true;
 ]]></smartlist.getRequirementById>
 
 <smartlist.getRequirements><![CDATA[
@@ -200,7 +201,8 @@ left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 where sr.smartlist_id = :smartlistId and
-      cot.company_id = :companyId
+      cot.company_id = :companyId and
+      sr.archived is not true
 order by sr.display_order;
 ]]></smartlist.getRequirements>
 
@@ -209,5 +211,13 @@ insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_fi
 values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :userId, :smartlistFieldId)
 returning id;
 ]]></smartlist.addRequirement>
+
+<smartlist.deleteRequirement><![CDATA[
+update flow.smartlist_requirement
+set archived = true,
+    modified_by_id = :userId,
+    date_modified = now()
+where id = :requirementId
+]]></smartlist.deleteRequirement>
 </sql>
 

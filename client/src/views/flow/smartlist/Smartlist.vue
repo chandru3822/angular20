@@ -191,7 +191,10 @@
     <SmartlistRequirement
       :requirements="requirements"
       :company-object-types="companyObjectTypes"
+      :reset-form="resetRequirementForm"
       @input="addNewRequirement"
+      @delete="deleteRequirement"
+      @form-reset="resetRequirementForm = false"
     />
   </v-row>
   <Snackbar :snackbar="snackbar" />
@@ -229,7 +232,8 @@ export default {
         {id: 2, name: 'Custom Field'}
       ],
       assignedFields: [],
-      requirements: []
+      requirements: [],
+      resetRequirementForm: false
     }
   },
   created () {
@@ -333,18 +337,17 @@ export default {
     },
     async addNewRequirement (requirement) {
       try {
+        const maxNumber = this.requirements.map(r => r.displayOrder).reduce((max, cur) => Math.max(max, cur), 0)
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
           ...requirement.selectedField,
           smartlistId: this.smartlist.id,
           operatorTypeId: requirement.operatorTypeId,
           dataTypeRequirementId: requirement.dataTypeRequirementId,
-          displayOrder: this.requirements.length + 1,
+          displayOrder: maxNumber + 1,
         })
         this.requirements.push(data)
-
-        // @TODO: tell the child component to reset form
-        // this.resetNewFieldForm()
+        this.resetRequirementForm = true
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error adding requirement to smartlist')
@@ -394,6 +397,22 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating field order')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async deleteRequirement (requirement) {
+      try {
+        const deleteIndex = this.requirements.findIndex(r => r.id === requirement.id)
+        if (deleteIndex === -1) {
+          throw 'Given requirement not found in requirement list'
+        }
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await deleteRequest(`/smartlist/${this.smartlist.id}/requirement/${requirement.id}`)
+        this.requirements.splice(deleteIndex, 1)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error deleting requirement')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

@@ -84,6 +84,10 @@ public class SmartlistService {
     return this.getRequirementById(requirementId);
   }
 
+  public void deleteRequirement(Long requirementId) {
+    sqlCache.update("smartlist.deleteRequirement", Map.of("requirementId", requirementId, "userId", securityService.getCurrentUser().getId()));
+  }
+
   public void deleteFieldAssignment(Long fieldId) {
     sqlCache.update("smartlist.deleteField", Map.of("id", fieldId, "userId", securityService.getCurrentUser().getId()));
   }

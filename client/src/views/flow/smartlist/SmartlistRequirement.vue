@@ -83,20 +83,18 @@
       </v-btn>
     </v-col>
   </v-card>
-  <v-row>
-    <v-col cols="12">
-      <v-data-table
-          :headers="headers"
-          :items="requirements"
-          hide-default-footer
-      >
-        <template #no-data>
-          No requirements for this process step
-        </template>
+  <v-data-table
+    :headers="headers"
+    :items="requirements"
+    hide-default-footer
+  >
+    <template #no-data>
+      No requirements for this process step
+    </template>
 
-        <template #no-results>
-          No requirements for this process step
-        </template>
+    <template #no-results>
+      No requirements for this process step
+    </template>
 
 <!--        <template #expanded-item="{ headers, item }">-->
 <!--          <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">-->
@@ -241,6 +239,9 @@
 <!--                    {{ item.listOfValues.map(v => ' ' + v.name).toString() }}-->
 <!--                  </span>-->
             </td>
+            <td class="text-right">
+              <v-icon @click="deleteRequirement(requirement)">delete</v-icon>
+            </td>
 <!--            <td>-->
 <!--              <div style="display: flex;">-->
 <!--                <v-btn small text @click="[expanded = [item], loadOperatorTypes(item.dataTypeId),-->
@@ -293,19 +294,16 @@
 <!--                </v-dialog>-->
 <!--              </div>-->
 <!--            </td>-->
-          </tr>
-        </template>
-      </v-data-table>
-    </v-col>
-  </v-row>
+      </tr>
+    </template>
+  </v-data-table>
   <Snackbar :snackbar="snackbar" />
 </v-col>
 </template>
 
 <script>
 
-import {AppMutations} from '@/stores/AppStore'
-import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {IS_MOBILE, getRequest, logError, getSnackbar} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar'
 
 export default {
@@ -321,6 +319,10 @@ export default {
     companyObjectTypes: {
       type: Array,
       default: () => []
+    },
+    resetForm: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -342,12 +344,17 @@ export default {
         {text: 'Process Step Name', value: 'processStepName'},
         {text: 'Operator', value: 'operatorType'},
         {text: 'Value', value: 'requirementValue'},
-        // {text: null, value: 'icons'}
+        {text: null, value: 'actions'}
       ],
     }
   },
   created () {
     this.getOperations()
+  },
+  updated () {
+    if (this.resetForm) {
+      this.resetRequirementForm()
+    }
   },
   methods: {
     async getAvailableFields () {
@@ -396,6 +403,9 @@ export default {
     addNewRequirement () {
       this.$emit('input', this.newRequirement)
     },
+    deleteRequirement (requirement) {
+      this.$emit('delete', requirement)
+    },
     calculateAvailableFields () {
       this.availableFields = this.fetchedAvailableFields.sort((a, b) => a.name.localeCompare(b.name))
       if (this.newRequirement.processStepId) {
@@ -405,6 +415,7 @@ export default {
     resetRequirementForm () {
       this.showNewRequirementForm = false
       this.newRequirement = {}
+      this.$emit('form-reset', true)
     }
   }
 }
@@ -412,4 +423,9 @@ export default {
 
 <style scoped lang="scss">
 
+@import "@/styles/main.scss";
+
+tr:nth-child(even) {
+  @extend .shaded-row;
+}
 </style>
