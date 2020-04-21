@@ -269,11 +269,9 @@ import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError,
 import Snackbar from '@/components/Snackbar'
 import draggable from 'vuedraggable'
 import SmartlistRequirement from './SmartlistRequirement'
-import Vue2Filters from "vue2-filters";
 
 export default {
   name: 'Smartlist',
-  mixins: [Vue2Filters.mixin],
   components: {
     Snackbar,
     draggable,
@@ -453,7 +451,17 @@ export default {
       }
     },
     async updateLogic() {
-
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await putRequest(`/smartlist/${this.smartlist.id}/logic`, this.logic)
+        this.fetchedLogic = [...data]
+        this.logic = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error updating smartlist logic')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async deleteField (fieldIndex) {
 
@@ -523,14 +531,16 @@ export default {
     addOperationToLogic (operation) {
       this.logic.push({
         operationType: operation.operationType,
-        operationTypeId: operation.id
+        operationTypeId: operation.id,
+        smartlistId: this.smartlist.id
       })
       this.logicUpdated = true
     },
     addRequirementToLogic (requirement) {
       this.logic.push({
         displayOrder: requirement.displayOrder,
-        smartlistRequirementId: requirement.id
+        smartlistRequirementId: requirement.id,
+        smartlistId: this.smartlist.id
       })
       this.logicUpdated = true
     }

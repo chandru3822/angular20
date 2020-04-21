@@ -11,6 +11,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +66,25 @@ public class SmartlistService {
 
   public List<SmartlistLogic> getLogic(Long smartlistId) {
     return sqlCache.query("smartlist.getLogic", Map.of("smartlistId", smartlistId), SmartlistLogic.class);
+  }
+
+  @Transactional
+  public List<SmartlistLogic> updateLogic(Long smartlistId, List<SmartlistLogic> logic) {
+    User user = securityService.getCurrentUser();
+    sqlCache.update("smartlist.archiveLogic", Map.of("smartlistId", smartlistId, "userId", user.getId()));
+
+    if (!logic.isEmpty()) {
+      HashMap<String, Object> params = null;
+      int counter = 0;
+      for (SmartlistLogic l : logic) {
+        params = om.convertValue(l, HashMap.class);
+        params.put("userId", user.getId());
+        params.put("sqlOrder", counter++);
+        sqlCache.update("smartlist.updateLogic", params);
+      }
+    }
+
+    return this.getLogic(smartlistId);
   }
 
   public SmartlistFieldAssignment addField(SmartlistFieldAssignment assignment) {

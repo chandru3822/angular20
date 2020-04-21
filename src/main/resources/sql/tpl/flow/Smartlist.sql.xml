@@ -241,5 +241,18 @@ where sl.smartlist_id = :smartlistId and
       sl.archived is not true
 order by sl.sql_order;
 ]]></smartlist.getLogic>
+
+<smartlist.archiveLogic><![CDATA[
+update flow.smartlist_logic
+set archived = true,
+    modified_by_id = :userId,
+    date_modified = now()
+where smartlist_id = :smartlistId;
+]]></smartlist.archiveLogic>
+
+<smartlist.updateLogic><![CDATA[
+insert into flow.smartlist_logic (smartlist_id, smartlist_requirement_id, operation_type_id, sql_order, created_by_id)
+values (:smartlistId, :smartlistRequirementId, :operationTypeId, :sqlOrder, :userId);
+]]></smartlist.updateLogic>
 </sql>
 
