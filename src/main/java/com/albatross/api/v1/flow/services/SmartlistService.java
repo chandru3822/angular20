@@ -108,6 +108,13 @@ public class SmartlistService {
     return this.getRequirementById(requirementId);
   }
 
+  public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
+    HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
+    params.put("userId", securityService.getCurrentUser().getId());
+    sqlCache.update("smartlist.updateRequirement", params);
+    return sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirement.getId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+  }
+
   public void deleteRequirement(Long requirementId) {
     sqlCache.update("smartlist.deleteRequirement", Map.of("requirementId", requirementId, "userId", securityService.getCurrentUser().getId()));
   }

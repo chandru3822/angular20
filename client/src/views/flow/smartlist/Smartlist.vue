@@ -193,6 +193,7 @@
       :company-object-types="companyObjectTypes"
       :reset-form="resetRequirementForm"
       @input="addNewRequirement"
+      @update="updateRequirement"
       @delete="deleteRequirement"
       @form-reset="resetRequirementForm = false"
     />
@@ -450,7 +451,7 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error saving smartlist')
       }
     },
-    async updateLogic() {
+    async updateLogic () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await putRequest(`/smartlist/${this.smartlist.id}/logic`, this.logic)
@@ -459,6 +460,18 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating smartlist logic')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async updateRequirement (requirement) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await putRequest(`/smartlist/${this.smartlist.id}/requirement/${requirement.id}`, requirement)
+        this.requirements.splice(this.requirements.findIndex(r => r.id === requirement.id), 1, data)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error updating requirement')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

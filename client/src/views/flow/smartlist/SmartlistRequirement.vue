@@ -24,7 +24,7 @@
   </v-toolbar>
 
   <v-card v-if="showNewRequirementForm" class="elevation-1">
-    <v-col>
+    <v-col class="text-left">
       <v-select
           v-model="newRequirement.objectTypeId"
           label="Object Type"
@@ -51,7 +51,7 @@
           :items="availableFields"
           item-text="name"
           return-object
-          @input="[getOperators(), getDataTypeRequirements()]"
+          @input="[getOperators(newRequirement.selectedField.dataTypeId), getDataTypeRequirements(newRequirement.selectedField.dataTypeId)]"
       />
 
       <v-select
@@ -87,6 +87,8 @@
     :headers="headers"
     :items="requirements"
     hide-default-footer
+    :expanded.sync="expandedRequirement"
+    single-expand
   >
     <template #no-data>
       No requirements for this process step
@@ -96,140 +98,18 @@
       No requirements for this process step
     </template>
 
-<!--        <template #expanded-item="{ headers, item }">-->
-<!--          <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">-->
-<!--            <div v-if="item.requirementParamDynamicValues && item.requirementParamDynamicValues.length > 0">-->
-<!--              <h5 class="text-left">Dynamic Function Parameters</h5>-->
-<!--              <v-card flat color="transparent">-->
-<!--                <div v-for="(fp, index) in item.requirementParamDynamicValues" :key="index">-->
-<!--                  <v-text-field-->
-<!--                      v-if="fp.dataTypeId === 1"-->
-<!--                      placeholder="Enter a date"-->
-<!--                      type="date"-->
-<!--                      v-model="fp.dynamicValue"-->
-<!--                      :label="fp.parameterName"></v-text-field>-->
-<!--                  <v-text-field-->
-<!--                      v-if="fp.dataTypeId === 2"-->
-<!--                      placeholder="Enter a timestamp"-->
-<!--                      v-model="fp.dynamicValue"-->
-<!--                      :label="fp.parameterName"></v-text-field>-->
-<!--                  <v-text-field-->
-<!--                      v-if="fp.dataTypeId === 3"-->
-<!--                      placeholder="Enter a boolean"-->
-<!--                      v-model="fp.dynamicValue"-->
-<!--                      :label="fp.parameterName"></v-text-field>-->
-<!--                  <v-text-field-->
-<!--                      v-if="fp.dataTypeId === 4"-->
-<!--                      placeholder="Enter a number"-->
-<!--                      v-model="fp.dynamicValue"-->
-<!--                      :label="fp.parameterName"></v-text-field>-->
-<!--                  <v-text-field-->
-<!--                      v-if="fp.dataTypeId === 6"-->
-<!--                      placeholder="Enter an integer"-->
-<!--                      type="number"-->
-<!--                      step="1"-->
-<!--                      v-model="fp.dynamicValue"-->
-<!--                      :label="fp.parameterName"></v-text-field>-->
-<!--                  <v-text-field-->
-<!--                      v-else-->
-<!--                      placeholder="Enter a dynamic value"-->
-<!--                      v-model="fp.dynamicValue"-->
-<!--                      :label="fp.parameterName"></v-text-field>-->
-<!--                </div>-->
-<!--              </v-card>-->
-<!--            </div>-->
-<!--            <v-select v-model="item.operatorTypeId"-->
-<!--                      :items="operatorTypes"-->
-<!--                      class="one-hunned"-->
-<!--                      label="Operator"-->
-<!--                      :disabled="item.immutable"-->
-<!--                      item-text="operatorType"-->
-<!--                      item-value="id"-->
-<!--            ></v-select>-->
-<!--            <v-switch v-model="item.customValue" class="mx-2"-->
-<!--                      :disabled="item.immutable"-->
-<!--                      label="Custom"></v-switch>-->
-<!--            &lt;!&ndash; single text field for non list custom values &ndash;&gt;-->
-<!--            <v-text-field v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKeyId && !item.systemListId "-->
-<!--                          v-model="item.requirementValue"-->
-<!--                          :disabled="item.immutable"-->
-<!--                          placeholder="Enter a value"-->
-<!--                          label="Value">-->
-<!--            </v-text-field>-->
-<!--            &lt;!&ndash; single select for dropdown, custom sql list, or system list &ndash;&gt;-->
-<!--            <v-select-->
-<!--                v-else-if="item.customValue && item.listOfValueId"-->
-<!--                v-model="item.listOfValueId"-->
-<!--                :disabled="item.immutable"-->
-<!--                :items="item.availableListOfValues"-->
-<!--                label="Available Values"-->
-<!--                item-text="name"-->
-<!--                item-value="id"-->
-<!--            ></v-select>-->
-<!--            <v-select-->
-<!--                v-else-if="item.customValue && item.systemListId"-->
-<!--                v-model="item.systemListOptionId"-->
-<!--                :disabled="item.immutable"-->
-<!--                :items="item.availableListOfValues"-->
-<!--                label="Available Values"-->
-<!--                item-text="name"-->
-<!--                item-value="id"-->
-<!--            ></v-select>-->
-<!--            &lt;!&ndash; not sure what to do with this custom sql one yet &ndash;&gt;-->
-<!--            <v-select-->
-<!--                v-else-if="item.customValue && item.customFieldSqlKeyId"-->
-<!--                v-model="item.listOfValueId"-->
-<!--                :disabled="item.immutable"-->
-<!--                :items="item.availableListOfValues"-->
-<!--                label="Available Values"-->
-<!--                item-text="name"-->
-<!--                item-value="id"-->
-<!--            ></v-select>-->
-<!--            &lt;!&ndash; at this point it should only show for multiselects &ndash;&gt;-->
-<!--            <v-select-->
-<!--                v-else-if="item.customValue && item.listOfValues"-->
-<!--                v-model="item.listOfValues"-->
-<!--                :disabled="item.immutable"-->
-<!--                :items="item.availableListOfValues"-->
-<!--                label="Available Values"-->
-<!--                item-text="name"-->
-<!--                multiple-->
-<!--                return-object-->
-<!--            ></v-select>-->
-<!--            <v-select-->
-<!--                v-else-->
-<!--                v-model="item.dataTypeRequirement"-->
-<!--                :items="dataTypeRequirements"-->
-<!--                :disabled="item.immutable"-->
-<!--                label="Available Values"-->
-<!--                item-text="dataTypeValue"-->
-<!--                return-object-->
-<!--            ></v-select>-->
-<!--            <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"-->
-<!--                          v-model="item.secondaryRequirementValue"-->
-<!--                          placeholder="Enter a value"-->
-<!--                          :disabled="item.immutable"-->
-<!--                          label="Value">-->
-<!--            </v-text-field>-->
-<!--            <v-btn @click="updateRequirement(item)">-->
-<!--              <v-icon>save</v-icon>-->
-<!--              Save-->
-<!--            </v-btn>-->
-<!--          </td>-->
-<!--        </template>-->
-
-        <template #item="{item: requirement, index}">
-          <tr>
-            <td class="text-left" style="width: 65px">{{requirement.displayOrder}}</td>
-            <td class="text-left">{{requirement.name}}</td>
-            <td class="text-left">{{(requirement.smartlistFieldId) ? requirement.objectType : 'Custom'}}</td>
-            <td class="text-left">{{requirement.processStepName}}</td>
-            <td class="text-left">{{requirement.operatorType}}</td>
-            <td class="text-left">
-              <template v-if="requirement.requirementValue">{{requirement.requirementValue}}</template>
-              <template v-else-if="requirement.dataTypeRequirementId">
-                {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
-              </template>
+    <template #item="{item: requirement, index}">
+      <tr>
+        <td class="text-left" style="width: 65px">{{requirement.displayOrder}}</td>
+        <td class="text-left">{{requirement.name}}</td>
+        <td class="text-left">{{(requirement.smartlistFieldId) ? requirement.objectType : 'Custom'}}</td>
+        <td class="text-left">{{requirement.processStepName}}</td>
+        <td class="text-left">{{requirement.operatorType}}</td>
+        <td class="text-left">
+          <template v-if="requirement.requirementValue">{{requirement.requirementValue}}</template>
+          <template v-else-if="requirement.dataTypeRequirementId">
+            {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
+          </template>
 <!--              <span v-else-if="item.listOfValueId || item.customFieldSqlKeyId || item.companySystemListId">-->
 <!--&lt;!&ndash;                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}&ndash;&gt;-->
 <!--                    {{ getListValueName(item) }}-->
@@ -238,62 +118,87 @@
 <!--                    &lt;!&ndash; todo: show the selected values here &ndash;&gt;-->
 <!--                    {{ item.listOfValues.map(v => ' ' + v.name).toString() }}-->
 <!--                  </span>-->
-            </td>
-            <td class="text-right">
-              <v-icon @click="deleteRequirement(requirement)">delete</v-icon>
-            </td>
-<!--            <td>-->
-<!--              <div style="display: flex;">-->
-<!--                <v-btn small text @click="[expanded = [item], loadOperatorTypes(item.dataTypeId),-->
-<!--                                  loadDataTypeRequirements(item.dataTypeId), selectedRequirementIndex = index]"-->
-<!--                       v-if="!expanded.includes(item)">-->
-<!--                  <v-icon v-if="item.immutable">expand_more</v-icon>-->
-<!--                  <v-icon v-else>edit</v-icon>-->
-<!--                </v-btn>-->
-<!--                <v-btn small text @click="[expanded = [], selectedRequirementIndex = index]"-->
-<!--                       v-if="expanded.includes(item)">cancel-->
-<!--                </v-btn>-->
-<!--                <v-dialog-->
-<!--                    v-model="item.deleteConfirm"-->
-<!--                    width="500">-->
-<!--                  <template #activator="{ on }">-->
-<!--                    <v-btn small text v-on="on">-->
-<!--                      <v-icon>delete</v-icon>-->
-<!--                    </v-btn>-->
-<!--                  </template>-->
-<!--                  <v-card>-->
-<!--                    <v-card-title-->
-<!--                        class="headline grey lighten-2"-->
-<!--                        primary-title>-->
-<!--                      Confirm-->
-<!--                    </v-card-title>-->
+        </td>
+        <td class="action-cell">
+          <v-icon
+            v-if="!expandedRequirement.includes(requirement)"
+            class="action-icon"
+            @click="editRequirement(requirement)"
+          >
+            edit
+          </v-icon>
 
-<!--                    <v-card-text class="pt-4">-->
-<!--                      <div class="error-text">-->
-<!--                        WARNING: Any actions currently using this requirement will be reset.-->
-<!--                      </div>-->
-<!--                      Are you sure you want to delete this requirement?-->
-<!--                    </v-card-text>-->
+          <v-btn
+            v-if="expandedRequirement.includes(requirement)"
+            small
+            text
+            @click="expandedRequirement = []"
+          >
+            Cancel
+          </v-btn>
 
-<!--                    <v-divider></v-divider>-->
+          <v-icon
+            class="action-icon"
+            @click="deleteRequirement(requirement)"
+          >
+            delete
+          </v-icon>
+        </td>
+      </tr>
+    </template>
 
-<!--                    <v-card-actions>-->
-<!--                      <v-spacer></v-spacer>-->
-<!--                      <v-btn-->
-<!--                          @click="item.deleteConfirm = false">-->
-<!--                        No-->
-<!--                      </v-btn>-->
-<!--                      <v-btn-->
-<!--                          color="primary"-->
-<!--                          text-->
-<!--                          @click="[item.archived = true, deleteRequirement(item.id)]">-->
-<!--                        Yes-->
-<!--                      </v-btn>-->
-<!--                    </v-card-actions>-->
-<!--                  </v-card>-->
-<!--                </v-dialog>-->
-<!--              </div>-->
-<!--            </td>-->
+    <template #expanded-item="{item: requirement, headers}">
+      <tr>
+        <td :colspan="headers.length" class="text-left expanded-row">
+          <v-select
+            v-model="requirement"
+            :items="[requirement]"
+            label="Object Type"
+            item-text="objectType"
+            disabled
+          />
+
+          <v-select
+            v-if="requirement.objectTypeId !== null && requirement.objectTypeId === 4"
+            v-model="requirement"
+            :items="[requirement]"
+            label="Process Step"
+            item-text="processStepName"
+            disabled
+          />
+
+          <v-select
+            v-model="requirement"
+            :items="[requirement]"
+            label="Field"
+            item-text="name"
+            disabled
+          />
+
+          <v-select
+            v-model="requirement.operatorTypeId"
+            label="Operator"
+            :items="operators"
+            item-text="operatorType"
+            item-value="id"
+          />
+
+          <v-select
+            v-model="requirement.dataTypeRequirementId"
+            label="Available Values"
+            :items="dataTypeRequirements"
+            item-text="dataTypeValue"
+            item-value="id"
+          />
+
+          <v-btn
+            text
+            @click="updateRequirement(requirement)"
+          >
+            <v-icon>save</v-icon>
+            <template v-if="!IS_MOBILE">Save</template>
+          </v-btn>
+        </td>
       </tr>
     </template>
   </v-data-table>
@@ -345,6 +250,7 @@ export default {
         {text: 'Value', value: 'requirementValue'},
         {text: null, value: 'actions'}
       ],
+      expandedRequirement: []
     }
   },
   updated () {
@@ -369,18 +275,18 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available fields')
       }
     },
-    async getOperators () {
+    async getOperators (dataTypeId) {
       try {
-        const {data} = await getRequest(`/operator/${this.newRequirement.selectedField.dataTypeId}`)
+        const {data} = await getRequest(`/operator/${dataTypeId}`)
         this.operators = data
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching operators for selected field')
       }
     },
-    async getDataTypeRequirements () {
+    async getDataTypeRequirements (dataTypeId) {
       try {
-        const {data} = await getRequest(`/dataType/getDataTypeRequirements/${this.newRequirement.selectedField.dataTypeId}`)
+        const {data} = await getRequest(`/dataType/getDataTypeRequirements/${dataTypeId}`)
         this.dataTypeRequirements = data
       } catch (e) {
         logError(e)
@@ -389,6 +295,15 @@ export default {
     },
     addNewRequirement () {
       this.$emit('input', this.newRequirement)
+    },
+    updateRequirement (requirement) {
+      this.$emit('update', requirement)
+      this.expandedRequirement = []
+    },
+    editRequirement (requirement) {
+      this.getOperators(requirement.dataTypeId)
+      this.getDataTypeRequirements(requirement.dataTypeId)
+      this.expandedRequirement = [requirement]
     },
     deleteRequirement (requirement) {
       this.$emit('delete', requirement)
@@ -414,5 +329,21 @@ export default {
 
 tr:nth-child(even) {
   @extend .shaded-row;
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.action-icon:not(:first-child) {
+  // 16px is the padding vuetify gives to data tables. I thought it should match. Ideally this would use vuetify's sass variable but I couldn't find which one controlled the data table's padding
+  margin-left: 16px;
+}
+
+.expanded-row {
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 </style>
