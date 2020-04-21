@@ -57,13 +57,14 @@ select null as "smartlistFieldId",
        cf.field_name as "name",
        ps.id as "processStepId",
        ps.process_step_name as "processStepName",
-       null as "dataTypeId"
+       cdt.data_type_id as "dataTypeId"
 from flow.custom_field_group_assignment cfga
 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
 where ot.id = :objectTypeId and
       cot.company_id = :companyId and
       cfga.ancillary_custom_field_group_assignment_id is null and
