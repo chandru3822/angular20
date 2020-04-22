@@ -431,6 +431,7 @@ export default {
           smartlistId: this.smartlist.id,
           operatorTypeId: requirement.operatorTypeId,
           dataTypeRequirementId: requirement.dataTypeRequirementId,
+          secondaryRequirementValue: requirement.secondaryRequirementValue || null,
           displayOrder: maxNumber + 1,
         })
         this.requirements.push(data)

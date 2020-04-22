@@ -31,7 +31,7 @@
           :items="companyObjectTypes"
           item-value="objectTypeId"
           item-text="objectType"
-          @input="getAvailableFields"
+          @input="[resetNewObjectType(), getAvailableFields()]"
       />
 
       <v-select
@@ -41,7 +41,7 @@
           :items="availableProcessSteps"
           item-value="processStepId"
           item-text="processStepName"
-          @input="calculateAvailableFields"
+          @input="[resetNewProcessStep(), calculateAvailableFields()]"
       />
 
       <v-select
@@ -51,7 +51,7 @@
           :items="availableFields"
           item-text="name"
           return-object
-          @input="[getOperators(newRequirement.selectedField.dataTypeId), getDataTypeRequirements(newRequirement.selectedField.dataTypeId)]"
+          @input="[resetNewField(), getOperators(newRequirement.selectedField.dataTypeId), getDataTypeRequirements(newRequirement.selectedField.dataTypeId)]"
       />
 
       <v-select
@@ -61,21 +61,30 @@
         :items="operators"
         item-text="operatorType"
         item-value="id"
+        @input="resetNewOperatorType"
       />
 
       <v-select
-        v-if="newRequirement.operatorTypeId"
+        v-if="newRequirement.operatorTypeId !== null"
         v-model="newRequirement.dataTypeRequirementId"
         label="Available Values"
         :items="dataTypeRequirements"
         item-text="dataTypeValue"
         item-value="id"
+        @input="resetNewDataTypeRequirement"
+      />
+
+      <v-text-field
+        v-if="newRequirement.dataTypeRequirementId && dataTypeRequirements.find(r => r.id === newRequirement.dataTypeRequirementId).secondaryRequirement"
+        v-model="newRequirement.secondaryRequirementValue"
+        label="Value"
+        placeholder="Enter a value"
       />
 
       <v-btn
         text
         class="text-left"
-        :disabled="!newRequirement.dataTypeRequirementId"
+        :disabled="shouldDisableAddRequirementButton"
         @click="addNewRequirement"
       >
         <v-icon>save</v-icon>
@@ -132,7 +141,7 @@
             v-if="expandedRequirement.includes(requirement)"
             small
             text
-            @click="expandedRequirement = []"
+            @click="cancelEditRequirement"
           >
             Cancel
           </v-btn>
@@ -147,36 +156,36 @@
       </tr>
     </template>
 
-    <template #expanded-item="{item: requirement, headers}">
+    <template #expanded-item="{headers}">
       <tr>
         <td :colspan="headers.length" class="text-left expanded-row">
           <v-select
-            v-model="requirement"
-            :items="[requirement]"
+            v-model="expandedRequirement[0]"
+            :items="[expandedRequirement[0]]"
             label="Object Type"
             item-text="objectType"
             disabled
           />
 
           <v-select
-            v-if="requirement.objectTypeId !== null && requirement.objectTypeId === 4"
-            v-model="requirement"
-            :items="[requirement]"
+            v-if="expandedRequirement[0].objectTypeId !== null && expandedRequirement[0].objectTypeId === 4"
+            v-model="expandedRequirement[0]"
+            :items="[expandedRequirement[0]]"
             label="Process Step"
             item-text="processStepName"
             disabled
           />
 
           <v-select
-            v-model="requirement"
-            :items="[requirement]"
+            v-model="expandedRequirement[0]"
+            :items="[expandedRequirement[0]]"
             label="Field"
             item-text="name"
             disabled
           />
 
           <v-select
-            v-model="requirement.operatorTypeId"
+            v-model="expandedRequirement[0].operatorTypeId"
             label="Operator"
             :items="operators"
             item-text="operatorType"
@@ -184,16 +193,23 @@
           />
 
           <v-select
-            v-model="requirement.dataTypeRequirementId"
+            v-model="expandedRequirement[0].dataTypeRequirementId"
             label="Available Values"
             :items="dataTypeRequirements"
             item-text="dataTypeValue"
             item-value="id"
           />
 
+          <v-text-field
+            v-if="expandedRequirement[0].dataTypeRequirement.secondaryRequirement"
+            v-model="expandedRequirement[0].secondaryRequirementValue"
+            label="Value"
+            placeholder="Enter a value"
+          />
+
           <v-btn
             text
-            @click="updateRequirement(requirement)"
+            @click="updateRequirement(expandedRequirement[0])"
           >
             <v-icon>save</v-icon>
             <template v-if="!IS_MOBILE">Save</template>
@@ -235,7 +251,14 @@ export default {
       IS_MOBILE,
       snackbar: {},
       showNewRequirementForm: false,
-      newRequirement: {},
+      newRequirement: {
+        selectedField: null,
+        objectTypeId: null,
+        processStepId: null,
+        operatorTypeId: null,
+        dataTypeRequirementId: null,
+        secondaryRequirementValue: null
+      },
       fetchedAvailableFields: [],
       availableFields: [],
       availableProcessSteps: [],
@@ -250,7 +273,8 @@ export default {
         {text: 'Value', value: 'requirementValue'},
         {text: null, value: 'actions'}
       ],
-      expandedRequirement: []
+      expandedRequirement: [],
+      originalExpandedRequirement: null
     }
   },
   updated () {
@@ -258,9 +282,13 @@ export default {
       this.resetRequirementForm()
     }
   },
+  computed: {
+    shouldDisableAddRequirementButton () {
+      return !this.newRequirement.dataTypeRequirementId && (!this.dataTypeRequirements.find(r => r.id === this.newRequirement.dataTypeRequirementId)?.secondaryRequirement || !this.newRequirement?.secondaryRequirementValue)
+    }
+  },
   methods: {
     async getAvailableFields () {
-      this.newRequirement = {objectTypeId: this.newRequirement.objectTypeId}
       try {
         const {data} = await getRequest(`/smartlist/availableFieldsByType?objectTypeId=${this.newRequirement.objectTypeId}`)
         this.fetchedAvailableFields = data
@@ -301,9 +329,16 @@ export default {
       this.expandedRequirement = []
     },
     editRequirement (requirement) {
+      debugger
       this.getOperators(requirement.dataTypeId)
       this.getDataTypeRequirements(requirement.dataTypeId)
+      this.originalExpandedRequirement = {...requirement}
       this.expandedRequirement = [requirement]
+    },
+    cancelEditRequirement () {
+      this.requirements[this.requirements.findIndex(r => r.id === this.originalExpandedRequirement.id)] = {...this.originalExpandedRequirement}
+      this.expandedRequirement = []
+      this.originalExpandedRequirement = null
     },
     deleteRequirement (requirement) {
       this.$emit('delete', requirement)
@@ -318,6 +353,46 @@ export default {
       this.showNewRequirementForm = false
       this.newRequirement = {}
       this.$emit('form-reset', true)
+    },
+    resetNewObjectType () {
+      this.newRequirement = {
+        ...this.newRequirement,
+        processStepId: null,
+        selectedField: null,
+        operatorTypeId: null,
+        dataTypeRequirementId: null,
+        secondaryRequirementValue: null
+      }
+    },
+    resetNewProcessStep () {
+      this.newRequirement = {
+        ...this.newRequirement,
+        selectedField: null,
+        operatorTypeId: null,
+        dataTypeRequirementId: null,
+        secondaryRequirementValue: null
+      }
+    },
+    resetNewField () {
+      this.newRequirement = {
+        ...this.newRequirement,
+        operatorTypeId: null,
+        dataTypeRequirementId: null,
+        secondaryRequirementValue: null
+      }
+    },
+    resetNewOperatorType () {
+      this.newRequirement = {
+        ...this.newRequirement,
+        dataTypeRequirementId: null,
+        secondaryRequirementValue: null
+      }
+    },
+    resetNewDataTypeRequirement () {
+      this.newRequirement = {
+        ...this.newRequirement,
+        secondaryRequirementValue: null
+      }
     }
   }
 }
