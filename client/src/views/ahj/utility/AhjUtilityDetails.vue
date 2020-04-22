@@ -1,28 +1,24 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
   <v-row>
-    <v-col cols="12">
+    <v-col cols="12" class="pt-0">
       <v-row justify="space-between">
-        <v-col class="text-left" cols="12">
-          <v-btn id="back-btn" text class="pl-0 pr-2" :to="'/ahjUtility'">
+        <v-col class="text-left pa-0" cols="12">
+          <v-btn id="back-btn" text class="pl-1 pr-2 mb-2" :to="'/ahjUtility'">
             <v-icon>arrow_left</v-icon><span id="back-btn-text">Back to menu</span>
           </v-btn>
 
-          <v-row justify="space-between" align="center" no-gutters>
+          <div class="flex-display justify-space-between align-center px-3 mb-4" style="width: 100%">
             <div class="page-title">Utility</div>
             <div class="page-info">
               <div>{{ ahjUtility.name }}</div>
               <div>{{ ahjUtility.metroArea }}, {{ ahjUtility.state }}</div>
             </div>
-          </v-row>
+          </div>
 
-          <v-divider></v-divider>
-
-          <v-tabs background-color="rgba(0,0,0,0)">
-            <v-tab style="cursor: default" :ripple="false" class="text-capitalize ma-0">Details</v-tab>
+          <v-tabs id="utility-tab-bar" class="mb-6" background-color="var(--v-secondary-base)">
+            <v-tab style="cursor: default" :ripple="false" class="text-capitalize my-0 ml-3 mr-0">Details</v-tab>
           </v-tabs>
-
-          <v-divider></v-divider>
         </v-col>
       </v-row>
 
@@ -707,6 +703,13 @@
     font-family: 'Roboto Condensed', sans-serif;
     font-size: 20px;
     text-align: right;
+  }
+  #utility-tab-bar {
+    border-top: 1px solid #E6E6E6;
+    border-bottom: 1px solid #E6E6E6;
+    .v-tab:hover {
+      color: var(--v-primaryCustom-base);
+    }
   }
   #save-btn {
     margin: 0 5px 10px 0;

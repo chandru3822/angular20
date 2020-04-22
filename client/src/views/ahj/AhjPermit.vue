@@ -1,7 +1,7 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
-  <v-row dense>
-    <v-col class="text-right" cols="12">
+  <v-row no-gutters>
+    <v-col class="text-right py-1" cols="12">
       <a @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
@@ -14,7 +14,7 @@
 
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-col cols="12" md="3" class="px-1 mb-3">
+      <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
         <!-- SUBMISSION DETAILS -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
@@ -251,7 +251,7 @@
       </v-col>
 
       <!-- FOURTH COLUMN -->
-      <v-col cols="12" md="3" class="px-1 mb-3">
+      <v-col cols="12" md="3" class="pl-sm-0 pl-md-1 mb-3">
         <!-- FOLLOW-UP / APPROVAL DETAILS -->
         <v-card class="mb-3">
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -821,6 +821,9 @@
 <style scoped lang="scss">
   .padded-sides {
     padding: 0 5px;
+  }
+  .row {
+    width: 100%;
   }
   .title-with-icon {
     display: flex;
