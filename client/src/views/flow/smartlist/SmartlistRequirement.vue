@@ -129,16 +129,17 @@
 <!--                  </span>-->
         </td>
         <td class="action-cell">
+<!--          Vuetify keeps its own copy of requirements, so we can't just send `requirement` to functions for form reset 💩 -->
           <v-icon
-            v-if="!expandedRequirement.includes(requirement)"
+            v-if="expandedRequirement.findIndex(r => r.id === requirement.id) === -1"
             class="action-icon"
-            @click="editRequirement(requirement)"
+            @click="[cancelEditRequirement(), editRequirement(requirements.find(r => r.id === requirement.id))]"
           >
             edit
           </v-icon>
 
           <v-btn
-            v-if="expandedRequirement.includes(requirement)"
+            v-if="expandedRequirement.findIndex(r => r.id === requirement.id) !== -1"
             small
             text
             @click="cancelEditRequirement"
@@ -329,16 +330,17 @@ export default {
       this.expandedRequirement = []
     },
     editRequirement (requirement) {
-      debugger
       this.getOperators(requirement.dataTypeId)
       this.getDataTypeRequirements(requirement.dataTypeId)
       this.originalExpandedRequirement = {...requirement}
       this.expandedRequirement = [requirement]
     },
     cancelEditRequirement () {
-      this.requirements[this.requirements.findIndex(r => r.id === this.originalExpandedRequirement.id)] = {...this.originalExpandedRequirement}
-      this.expandedRequirement = []
-      this.originalExpandedRequirement = null
+      if (this.originalExpandedRequirement) {
+        this.requirements[this.requirements.findIndex(r => r.id === this.originalExpandedRequirement.id)] = {...this.originalExpandedRequirement}
+        this.expandedRequirement = []
+        this.originalExpandedRequirement = null
+      }
     },
     deleteRequirement (requirement) {
       this.$emit('delete', requirement)
