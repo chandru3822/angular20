@@ -118,7 +118,7 @@ export default {
       }, {
         label: 'Smartlists',
         path: '/smartlist',
-        display: this.$store.getters.userHasFeature('SMARTLIST') && false
+        display: this.$store.getters.userHasFeature('SMARTLIST')
       }]
     }
   },
