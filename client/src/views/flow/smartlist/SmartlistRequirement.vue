@@ -202,7 +202,7 @@
           />
 
           <v-text-field
-            v-if="expandedRequirement[0].dataTypeRequirement.secondaryRequirement"
+            v-if="shouldShowEditFormValueInput"
             v-model="expandedRequirement[0].secondaryRequirementValue"
             label="Value"
             placeholder="Enter a value"
@@ -286,6 +286,9 @@ export default {
   computed: {
     shouldDisableAddRequirementButton () {
       return !this.newRequirement.dataTypeRequirementId && (!this.dataTypeRequirements.find(r => r.id === this.newRequirement.dataTypeRequirementId)?.secondaryRequirement || !this.newRequirement?.secondaryRequirementValue)
+    },
+    shouldShowEditFormValueInput () {
+      return this.expandedRequirement[0].dataTypeRequirement?.secondaryRequirement
     }
   },
   methods: {
