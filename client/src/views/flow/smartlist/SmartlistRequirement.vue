@@ -331,6 +331,7 @@ export default {
     updateRequirement (requirement) {
       this.$emit('update', requirement)
       this.expandedRequirement = []
+      this.originalExpandedRequirement = null
     },
     editRequirement (requirement) {
       this.getOperators(requirement.dataTypeId)

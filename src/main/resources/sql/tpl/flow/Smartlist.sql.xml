@@ -225,6 +225,7 @@ returning id;
 update flow.smartlist_requirement
 set operator_type_id = :operatorTypeId,
     data_type_requirement_id = :dataTypeRequirementId,
+    secondary_requirement_value = :secondaryRequirementValue,
     modified_by_id = :userId,
     date_modified = now()
 where id = :id;
