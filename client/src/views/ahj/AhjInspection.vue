@@ -15,7 +15,7 @@
     <!-- UPPER SECTION -->
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
+      <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
         <!-- SCHEDULING WITH AHJ -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
@@ -389,7 +389,7 @@
     </v-row>
 
     <!-- FOURTH ROW -->
-    <v-row no-gutters>
+    <v-row no-gutters class="mb-6">
       <v-col cols="12" md="12" class="px-1">
         <AhjRequirement v-if="dataReady"
                         title="AHJ Specific Installation Requirements"

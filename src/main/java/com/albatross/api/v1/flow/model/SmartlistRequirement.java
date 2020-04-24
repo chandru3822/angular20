@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @Setter
 public class SmartlistRequirement {
 
-  private Long id, smartlistId, smartlistFieldId, processStepId, customFieldGroupAssignmentId, operatorTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById;
+  private Long id, smartlistId, smartlistFieldId, processStepId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId, dataTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById;
 
   private String requirementValue, secondaryRequirementValue, processStepName, objectType, operatorType, name;
 

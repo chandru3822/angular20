@@ -57,13 +57,14 @@ select null as "smartlistFieldId",
        cf.field_name as "name",
        ps.id as "processStepId",
        ps.process_step_name as "processStepName",
-       null as "dataTypeId"
+       cdt.data_type_id as "dataTypeId"
 from flow.custom_field_group_assignment cfga
 inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
 inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
 where ot.id = :objectTypeId and
       cot.company_id = :companyId and
       cfga.ancillary_custom_field_group_assignment_id is null and
@@ -152,9 +153,11 @@ where id = :id;
 <smartlist.getRequirementById><![CDATA[
 select sr.*,
        ot.object_type,
+       case when sr.smartlist_field_id is not null then cot.object_type_id else cot1.object_type_id end as object_type_id,
        opt.operator_type,
        case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
        case when sr.smartlist_field_id is not null then sf.name else cf.field_name end as name,
+       case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
            'id', dtr.id,
            'dataTypeValue', dtr.data_type_value,
@@ -163,13 +166,16 @@ select sr.*,
 from flow.smartlist_requirement sr
 inner join flow.smartlist s on s.id = sr.smartlist_id
 left join flow.smartlist_field sf on sf.id = sr.smartlist_field_id
-left join flow.company_object_type cot1 on cot1.id = sf.company_object_type_id
-left join flow.object_type ot on ot.id =  cot1.object_type_id
+left join flow.company_object_type cot on cot.id = sf.company_object_type_id
+left join flow.object_type ot on ot.id =  cot.object_type_id
+left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
 inner join flow.operator_type opt on opt.id = sr.operator_type_id
 left join flow.process_step ps1 on ps1.id = sr.process_step_id
 left join flow.custom_field_group_assignment cfga on cfga.id = sr.custom_field_group_assignment_id
 left join flow.custom_field cf on cf.id = cfga.custom_field_id
+left join flow.company_data_type cdt1 on cdt1.id = cf.company_data_type_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 where sr.id = :requirementId and
@@ -179,9 +185,11 @@ where sr.id = :requirementId and
 <smartlist.getRequirements><![CDATA[
 select sr.*,
        ot.object_type,
+       case when sr.smartlist_field_id is not null then cot.object_type_id else cot1.object_type_id end as object_type_id,
        opt.operator_type,
        case when sr.custom_field_group_assignment_id is not null then ps.process_step_name else ps1.process_step_name end as process_step_name,
        case when sr.smartlist_field_id is not null then sf.name else cf.field_name end as name,
+       case when sr.smartlist_field_id is not null then cdt.data_type_id else cdt1.data_type_id end as data_type_id,
        case when sr.data_type_requirement_id is null then null else json_build_object(
            'id', dtr.id,
            'dataTypeValue', dtr.data_type_value,
@@ -189,19 +197,20 @@ select sr.*,
        ) end as data_type_requirement
 from flow.smartlist_requirement sr
 inner join flow.smartlist s on s.id = sr.smartlist_id
-inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 left join flow.smartlist_field sf on sf.id = sr.smartlist_field_id
-left join flow.company_object_type cot1 on cot1.id = sf.company_object_type_id
-left join flow.object_type ot on ot.id =  cot1.object_type_id
+left join flow.company_object_type cot on cot.id = sf.company_object_type_id
+left join flow.object_type ot on ot.id =  cot.object_type_id
+left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
 inner join flow.operator_type opt on opt.id = sr.operator_type_id
 left join flow.process_step ps1 on ps1.id = sr.process_step_id
 left join flow.custom_field_group_assignment cfga on cfga.id = sr.custom_field_group_assignment_id
 left join flow.custom_field cf on cf.id = cfga.custom_field_id
+left join flow.company_data_type cdt1 on cdt1.id = cf.company_data_type_id
 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+left join flow.company_object_type cot1 on cot1.id = cfg.company_object_type_id
 left join flow.process_step ps on ps.id = cfg.process_step_id
 left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
 where sr.smartlist_id = :smartlistId and
-      cot.company_id = :companyId and
       sr.archived is not true
 order by sr.display_order;
 ]]></smartlist.getRequirements>
@@ -211,6 +220,16 @@ insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_fi
 values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :userId, :smartlistFieldId)
 returning id;
 ]]></smartlist.addRequirement>
+
+<smartlist.updateRequirement><![CDATA[
+update flow.smartlist_requirement
+set operator_type_id = :operatorTypeId,
+    data_type_requirement_id = :dataTypeRequirementId,
+    secondary_requirement_value = :secondaryRequirementValue,
+    modified_by_id = :userId,
+    date_modified = now()
+where id = :id;
+]]></smartlist.updateRequirement>
 
 <smartlist.deleteRequirement><![CDATA[
 update flow.smartlist_requirement
@@ -241,5 +260,18 @@ where sl.smartlist_id = :smartlistId and
       sl.archived is not true
 order by sl.sql_order;
 ]]></smartlist.getLogic>
+
+<smartlist.archiveLogic><![CDATA[
+update flow.smartlist_logic
+set archived = true,
+    modified_by_id = :userId,
+    date_modified = now()
+where smartlist_id = :smartlistId;
+]]></smartlist.archiveLogic>
+
+<smartlist.updateLogic><![CDATA[
+insert into flow.smartlist_logic (smartlist_id, smartlist_requirement_id, operation_type_id, sql_order, created_by_id)
+values (:smartlistId, :smartlistRequirementId, :operationTypeId, :sqlOrder, :userId);
+]]></smartlist.updateLogic>
 </sql>
 

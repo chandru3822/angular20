@@ -11,6 +11,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +68,25 @@ public class SmartlistService {
     return sqlCache.query("smartlist.getLogic", Map.of("smartlistId", smartlistId), SmartlistLogic.class);
   }
 
+  @Transactional
+  public List<SmartlistLogic> updateLogic(Long smartlistId, List<SmartlistLogic> logic) {
+    User user = securityService.getCurrentUser();
+    sqlCache.update("smartlist.archiveLogic", Map.of("smartlistId", smartlistId, "userId", user.getId()));
+
+    if (!logic.isEmpty()) {
+      HashMap<String, Object> params = null;
+      int counter = 0;
+      for (SmartlistLogic l : logic) {
+        params = om.convertValue(l, HashMap.class);
+        params.put("userId", user.getId());
+        params.put("sqlOrder", counter++);
+        sqlCache.update("smartlist.updateLogic", params);
+      }
+    }
+
+    return this.getLogic(smartlistId);
+  }
+
   public SmartlistFieldAssignment addField(SmartlistFieldAssignment assignment) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -86,6 +106,13 @@ public class SmartlistService {
     params.put("userId", user.getId());
     Long requirementId = sqlCache.updateReturningId("smartlist.addRequirement", params, "id").longValue();
     return this.getRequirementById(requirementId);
+  }
+
+  public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
+    HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
+    params.put("userId", securityService.getCurrentUser().getId());
+    sqlCache.update("smartlist.updateRequirement", params);
+    return sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirement.getId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
   }
 
   public void deleteRequirement(Long requirementId) {

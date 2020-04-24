@@ -75,6 +75,11 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.addRequirement(smartlistId, requirement), HttpStatus.OK);
   }
 
+  @PutMapping(value = "/{smartlistId}/requirement/{requirementId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SmartlistRequirement> updateRequirementOfSmartlist(@PathVariable Long smartlistId, @PathVariable Long requirementId, @RequestBody SmartlistRequirement requirement) {
+    return new ResponseEntity<>(smartlistService.updateRequirement(requirement), HttpStatus.OK);
+  }
+
   @DeleteMapping(value = "/{smartlistId}/requirement/{requirementId}")
   public ResponseEntity<Void> deleteRequirementFromSmartlist(@PathVariable Long requirementId) {
     smartlistService.deleteRequirement(requirementId);
@@ -84,6 +89,11 @@ public class SmartlistController {
   @GetMapping(value = "/{smartlistId}/logic", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistLogic>> getLogicBySmartlistId(@PathVariable Long smartlistId) {
     return new ResponseEntity<>(smartlistService.getLogic(smartlistId), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/{smartlistId}/logic", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistLogic>> updateLogicBySmartlistId(@PathVariable Long smartlistId, @RequestBody List<SmartlistLogic> logic) {
+    return new ResponseEntity<>(smartlistService.updateLogic(smartlistId, logic), HttpStatus.OK);
   }
 
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)

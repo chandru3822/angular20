@@ -11,7 +11,7 @@
       >Save</v-btn>
     </v-col>
 
-    <v-row no-gutters>
+    <v-row no-gutters class="mb-3">
       <!-- FIRST COLUMN -->
       <v-col cols="12" md="4" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
         <!-- CODES -->
