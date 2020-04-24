@@ -344,6 +344,7 @@ export default new Router({
             path: 'availability',
             name: 'availability',
             redirect: "availability/schedule",
+            props: true,
             component: () => {
               if(store.getters.userHasFeature('SETTINGS')) {
                 return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Availability.vue')
@@ -354,9 +355,11 @@ export default new Router({
             children: [
               {
                 path: 'schedule',
+                props: true,
                 component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Schedule.vue')
               }, {
                 path: 'appointments',
+                props: true,
                 component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Appointments.vue')
               }
             ]

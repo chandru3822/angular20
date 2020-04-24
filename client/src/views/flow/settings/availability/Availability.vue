@@ -13,7 +13,7 @@
                   item-text="orgName"
                   item-value="id"
                   autocomplete="off"
-                  @input="[userId = null, resourceType = 'ORG']">
+                  @input="[userId = null]">
         </v-select>
         <v-select v-model="userId"
                   :items="users"
@@ -21,7 +21,7 @@
                   item-text="fullName"
                   item-value="id"
                   autocomplete="off"
-                  @input="[orgId = null, resourceType = 'USER']">
+                  @input="[orgId = null]">
         </v-select>
         <v-app-bar dense tabs color="white" class="elevation-0">
           <v-tabs :optional="false" color="primaryCustom"
@@ -31,7 +31,7 @@
             </v-tab>
           </v-tabs>
         </v-app-bar>
-        <router-view></router-view>
+        <router-view v-bind="resourceProps"></router-view>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -51,6 +51,12 @@
     computed: {
       displayedTabs () {
         return this.tabs.filter(tab => tab.display)
+      },
+      resourceProps() {
+        console.log('testing', this.userId)
+        console.log('testing o', this.orgId)
+        if (this.userId) { return { userId: this.userId }}
+        if (this.orgId) { return { orgId: this.orgId }}
       }
     },
     data() {
@@ -74,10 +80,15 @@
         }]
       }
     },
-    //testing something
     created() {
       this.getOrgs()
       this.getUsers()
+    },
+    watch: {
+      '$route.params.userId': function () {
+        // reset the schedule when new user selected
+        console.log('randaLogger', this.$route)
+      },
     },
     methods: {
       async getOrgs() {
