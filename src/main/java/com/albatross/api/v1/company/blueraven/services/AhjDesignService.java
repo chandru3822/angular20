@@ -49,7 +49,7 @@ public class AhjDesignService {
       // add a blank design and return that
       Integer id = sqlCache.get("ahj.design.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
       if (id != null) {
-        Optional<AhjDesignDetail> design2 = sqlCache.get("ahj.design.detailByAhj", params, new BaseAhjDetailMapper<>(AhjDesignDetail.class, om));
+        Optional<AhjDesignDetail> design2 = sqlCache.get("ahj.design.detailByAhj", params, new AhjDesignDetailMapper<>(AhjDesignDetail.class, om));
         return design2;
       }
     }
@@ -57,7 +57,7 @@ public class AhjDesignService {
   }
 
   @SuppressWarnings("Duplicates")
-  public Optional<AhjDesign> saveAhjDesign(Long ahjId, Long designId, AhjDesign design) {
+  public Optional<AhjDesignDetail> saveAhjDesign(Long ahjId, Long designId, AhjDesign design) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -86,9 +86,7 @@ public class AhjDesignService {
       blueravenCustomFieldGroupService.bulkHandleSavingCustomFieldValues(design.getCustomFieldGroups(), design.getDesignIds());
     }
 
-    HashMap<String, Object> keyParam = new HashMap<>();
-    keyParam.put("id", designId);
-    return sqlCache.get("ahj.design.findById", keyParam, AhjDesign.class);
+    return getAhjDesignDetailByAhjId(ahjId);
   }
 
   public List<AhjDesign> searchAhjsByState(Long stateId) {
@@ -106,42 +104,32 @@ public class AhjDesignService {
     sqlCache.update("ahj.design.contact.create", params);
   }
 
-  @SuppressWarnings({"WeakerAccess"})
-  public static class BaseAhjDetailMapper<T> extends BeanPropertyRowMapper<T> {
+  public static class AhjDesignDetailMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
-    public BaseAhjDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+    public AhjDesignDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
       super(mappedClass);
       this.objectMapper = objectMapper;
     }
-  }
 
-  @SuppressWarnings({"Duplicates", "unchecked", "WeakerAccess"})
-  public static class AhjDesignDetailMapper<T> extends AhjDesignService.BaseAhjDetailMapper<T> {
-
-    public AhjDesignDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass, objectMapper);
-    }
-
-    @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
 
       bw.registerCustomEditor(List.class, "contacts",
-              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "designRequirements",
-              new JsonCollectionDeserializer(requirementTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "electricalRequirements",
-              new JsonCollectionDeserializer(requirementTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "structuralRequirements",
-              new JsonCollectionDeserializer(requirementTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "utilityRequirements",
-              new JsonCollectionDeserializer(requirementTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
     }
   }
 }

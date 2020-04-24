@@ -203,79 +203,69 @@ public class AhjInspectionService {
     sqlCache.update("ahj.inspection.note.template.delete", params);
   }
 
-  @SuppressWarnings({"WeakerAccess"})
-  public static class BaseAhjDetailMapper<T> extends BeanPropertyRowMapper<T> {
+  public static class AhjInspectionDetailMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
-    public BaseAhjDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+    public AhjInspectionDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
       super(mappedClass);
       this.objectMapper = objectMapper;
     }
-  }
 
-  @SuppressWarnings({"Duplicates", "unchecked", "WeakerAccess"})
-  public static class AhjInspectionDetailMapper<T> extends AhjInspectionService.BaseAhjDetailMapper<T> {
-
-    public AhjInspectionDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass, objectMapper);
-    }
-
-    @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
-      TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjNoteTemplate>> noteTemplateTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjNoteTemplate>> noteTemplateTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<User>> userRef = new TypeReference<>() {};
 
       bw.registerCustomEditor(List.class, "schedulingLinks",
-              new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "fotLinks",
-              new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "resultsLinks",
-              new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "failureChecklist",
-              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "schedulingChecklist",
-              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "obtainingResultsChecklist",
-              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "reinspectionsChecklist",
-              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "schedulingWithAhjChecklist",
-              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "schedulingWithBrsTechnicianChecklist",
-              new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "installationRequirements",
-              new JsonCollectionDeserializer(requirementTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "noteTemplates",
-              new JsonCollectionDeserializer(noteTemplateTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(noteTemplateTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "utilityServiceDeptContacts",
-              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "schedulingContacts",
-              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "obtainingResultsContacts",
-              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "feeContacts",
-              new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "servicingFots",
-              new JsonCollectionDeserializer(userRef, super.objectMapper));
+        new JsonCollectionDeserializer(userRef, objectMapper));
     }
   }
 }

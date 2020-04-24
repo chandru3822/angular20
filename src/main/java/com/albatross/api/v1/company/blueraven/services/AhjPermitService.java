@@ -171,59 +171,26 @@ public class AhjPermitService {
     sqlCache.update("ahj.permit.link.delete", params);
   }
 
-  @SuppressWarnings({"Duplicates", "unchecked", "WeakerAccess"})
-  public static class BaseAhjDetailMapper<T> extends BeanPropertyRowMapper<T> {
+  public static class AhjPermitDetailMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
-    public BaseAhjDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+    public AhjPermitDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
       super(mappedClass);
       this.objectMapper = objectMapper;
     }
 
-    @Override
     protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<AhjLink>> linkRef = new TypeReference<>() {};
       TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
-      TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjNote>> noteTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjNoteTemplate>> baseNoteTemplateTypeRef = new TypeReference<>() {};
+      TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
       TypeReference<List<User>> userRef = new TypeReference<>() {};
-      TypeReference<List<AhjRequirement>> requirementRef = new TypeReference<>() {};
 
-      bw.registerCustomEditor(List.class, "baseNoteTemplates",
-        new JsonCollectionDeserializer(baseNoteTemplateTypeRef, objectMapper));
+      bw.registerCustomEditor(List.class, "submissionLinks",
+        new JsonCollectionDeserializer(linkRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "submissionContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "followUpContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "printLocations",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "utilityServiceDeptContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "schedulingContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "obtainingResultsContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "feeContacts",
-        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "notes",
-        new JsonCollectionDeserializer(noteTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "specialInstructionsNotes",
-        new JsonCollectionDeserializer(noteTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "schedulingNotes",
-        new JsonCollectionDeserializer(noteTypeRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "obtainingResultsNotes",
-        new JsonCollectionDeserializer(noteTypeRef, objectMapper));
+      bw.registerCustomEditor(List.class, "followUpLinks",
+        new JsonCollectionDeserializer(linkRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "submissionChecklist",
         new JsonCollectionDeserializer(itemRef, objectMapper));
@@ -234,71 +201,20 @@ public class AhjPermitService {
       bw.registerCustomEditor(List.class, "asBuiltChecklist",
         new JsonCollectionDeserializer(itemRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "failureChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(List.class, "notes",
+        new JsonCollectionDeserializer(noteTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "schedulingChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(List.class, "submissionContacts",
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "obtainingResultsChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(List.class, "followUpContacts",
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(List.class, "reinspectionsChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "schedulingWithAhjChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "schedulingWithBrsTechnicianChecklist",
-        new JsonCollectionDeserializer(itemRef, objectMapper));
+      bw.registerCustomEditor(List.class, "printLocations",
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "servicingFots",
         new JsonCollectionDeserializer(userRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "designRequirements",
-        new JsonCollectionDeserializer(requirementRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "electricalRequirements",
-        new JsonCollectionDeserializer(requirementRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "structuralRequirements",
-        new JsonCollectionDeserializer(requirementRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "utilityRequirements",
-        new JsonCollectionDeserializer(requirementRef, objectMapper));
-
-      bw.registerCustomEditor(List.class, "installationRequirements",
-        new JsonCollectionDeserializer(requirementRef, objectMapper));
-    }
-  }
-
-  @SuppressWarnings({"unchecked", "WeakerAccess"})
-  public static class AhjPermitDetailMapper<T> extends BaseAhjDetailMapper<T> {
-
-    public AhjPermitDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass, objectMapper);
-    }
-
-    @Override
-    protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<AhjLink>> linkRef = new TypeReference<>() {};
-
-      bw.registerCustomEditor(List.class, "submissionLinks",
-        new JsonCollectionDeserializer(linkRef, super.objectMapper));
-
-      bw.registerCustomEditor(List.class, "followUpLinks",
-        new JsonCollectionDeserializer(linkRef, super.objectMapper));
-
-      bw.registerCustomEditor(List.class, "schedulingLinks",
-        new JsonCollectionDeserializer(linkRef, super.objectMapper));
-
-      bw.registerCustomEditor(List.class, "fotLinks",
-        new JsonCollectionDeserializer(linkRef, super.objectMapper));
-
-      bw.registerCustomEditor(List.class, "resultsLinks",
-        new JsonCollectionDeserializer(linkRef, super.objectMapper));
-
-      super.initBeanWrapper(bw);
     }
   }
 

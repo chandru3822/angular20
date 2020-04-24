@@ -308,22 +308,11 @@
       ahjDesign: {
         designRequirements: [],
         electricalRequirements: [],
-        structuralRequirements: []
+        structuralRequirements: [],
+        contacts: []
       }
     }),
     methods: {
-      async getCustomFieldGroupAssignmentsForScreen() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {sourceId: this.ahjDesign.id, objectTypeId: 1}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroupAssignments = cloneDeep(data)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
       async getAhjDesign() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -333,6 +322,23 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Design')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+      async getCustomFieldGroupAssignmentsForScreen() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          if (this.ahjDesign.id) {
+            const params = {sourceId: this.ahjDesign.id, objectTypeId: 1}
+            const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+            this.customFieldGroupAssignments = cloneDeep(data)
+          } else {
+            console.error('*** ERROR ***', 'Missing parameter "sourceId"')
+            this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },

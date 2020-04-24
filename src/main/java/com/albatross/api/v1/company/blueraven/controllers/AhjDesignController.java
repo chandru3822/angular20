@@ -26,13 +26,13 @@ public class AhjDesignController {
     }
 
     @PostMapping(value = "")
-    public Optional<AhjDesign> createAhjDesign(@PathVariable Long ahjId,
+    public Optional<AhjDesignDetail> createAhjDesign(@PathVariable Long ahjId,
                                                @RequestBody AhjDesign design) {
         return ahjDesignService.saveAhjDesign(ahjId, null, design);
     }
 
     @PutMapping(value = "/{id}")
-    public Optional<AhjDesign> updateAhjDesign(@PathVariable Long ahjId,
+    public Optional<AhjDesignDetail> updateAhjDesign(@PathVariable Long ahjId,
                                                      @PathVariable Long id,
                                                      @RequestBody AhjDesign design) {
         return ahjDesignService.saveAhjDesign(ahjId, id, design);
