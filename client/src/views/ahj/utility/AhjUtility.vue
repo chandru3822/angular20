@@ -108,24 +108,30 @@
         </v-card>
       </v-dialog>
     </v-col>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { getRequest, putRequest, postRequest, IS_MOBILE } from '@/helpers/helpers'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
   import { mapState } from 'vuex'
   import { AppMutations } from '@/stores/AppStore'
 
   const FILTER_DEFAULTS = {
     name: {value: '', type: 'text', model: 'name'},
     metroArea: {value: '', type: 'text', model: 'metroArea'},
-    state: {value: [], type: 'select', model: 'state'}
+    state: {value: '', type: 'select', model: 'state'}
   }
 
   export default {
     name: 'ahjUtilities',
+    components: {
+      Snackbar
+    },
     data: () => ({
+      snackbar: {},
       IS_MOBILE,
       tabs: [
         {
@@ -228,15 +234,32 @@
         this.editedItem = {}
       },
       async saveAhjUtility () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         if (this.addMode) {
-          await postRequest('/ahjUtility', this.editedItem, 'blueraven')
+          try {
+            await postRequest('/ahjUtility', this.editedItem, 'blueraven')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ utility created')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error creating AHJ utility')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         } else {
-          await putRequest('/ahjUtility/simpleUpdate', this.editedItem, 'blueraven')
+          try {
+            await putRequest('/ahjUtility/simpleUpdate', this.editedItem, 'blueraven')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ utility updated')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error updating AHJ utility')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
 
         this.close()
         this.initFilters()
-        this.fetchAhjUtilities()
+        await this.fetchAhjUtilities()
         this.editedItem = {}
       },
       changeSort (column) {

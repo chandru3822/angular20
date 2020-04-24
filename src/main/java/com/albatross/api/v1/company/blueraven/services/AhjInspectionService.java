@@ -56,10 +56,6 @@ public class AhjInspectionService {
     return null;
   }
 
-  public Optional<AhjInspection> createAhjInspection(Long ahjId, AhjInspection inspection) {
-    return saveAhjInspection(ahjId, null, inspection);
-  }
-
   public Optional<AhjInspection> saveAhjInspection(Long ahjId, Long inspectionId, AhjInspection inspection) {
     User currentUser = securityService.getCurrentUser();
 
@@ -94,7 +90,7 @@ public class AhjInspectionService {
     params.put("documentationNote", inspection.getDocumentationNote());
     params.put("mpuInspectionNote", inspection.getMpuInspectionNote());
 
-    if (!inspection.getUpdateAllInState()) {
+    if (inspection.getUpdateAllInState() != null && !inspection.getUpdateAllInState()) {
       params.put("ahjId", ahjId);
 
       if (inspectionId == null) {

@@ -36,9 +36,6 @@ public class AhjPermitService {
   private ObjectMapper om;
 
   @Autowired
-  private AhjService ahjService;
-
-  @Autowired
   private SecurityService securityService;
 
   @Autowired
@@ -48,17 +45,17 @@ public class AhjPermitService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("ahjId", ahjId);
 
-    Optional<AhjPermitDetail> permit = sqlCache.get("ahj.permit.detail", params, new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));
+    Optional<AhjPermitDetail> permit = sqlCache.get("ahj.permit.detailByAhj", params, new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));
     if (permit.isPresent()) {
       return permit;
     } else {
       User currentUser = securityService.getCurrentUser();
       params.put("currentUser", currentUser.getId());
 
-      //add a blank permit and return that
+      // add a blank permit and return that
       Integer id = sqlCache.get("ahj.permit.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
       if (id != null) {
-        Optional<AhjPermitDetail> permit2 = sqlCache.get("ahj.permit.detail", params, new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));
+        Optional<AhjPermitDetail> permit2 = sqlCache.get("ahj.permit.detailByAhj", params, new AhjPermitDetailMapper<>(AhjPermitDetail.class, om));
         return permit2;
       }
     }
@@ -95,7 +92,7 @@ public class AhjPermitService {
     params.put("asBuiltNote", permit.getAsBuiltNote());
     params.put("deliveryNote", permit.getDeliveryNote());
 
-    if (!permit.getUpdateAllInState()) {
+    if (permit.getUpdateAllInState() != null && !permit.getUpdateAllInState()) {
       params.put("ahjId", ahjId);
 
       if (permitId == null) {

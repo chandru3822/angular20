@@ -2,7 +2,6 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesign;
 import com.albatross.api.v1.company.blueraven.models.ahj.AhjDesignDetail;
-import com.albatross.api.v1.company.blueraven.models.ahj.AhjInspection;
 import com.albatross.api.v1.company.blueraven.services.AhjDesignService;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public class AhjDesignController {
     @PostMapping(value = "")
     public Optional<AhjDesign> createAhjDesign(@PathVariable Long ahjId,
                                                @RequestBody AhjDesign design) {
-        return ahjDesignService.createAhjDesign(ahjId, design);
+        return ahjDesignService.saveAhjDesign(ahjId, null, design);
     }
 
     @PutMapping(value = "/{id}")

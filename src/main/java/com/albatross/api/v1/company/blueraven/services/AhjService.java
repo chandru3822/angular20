@@ -39,11 +39,6 @@ public class AhjService {
   }
 
   @Transactional
-  public Optional<AhjSummary> createAhj(AhjSummary ahjSummary) {
-    return saveAhj(ahjSummary.getId(), ahjSummary);
-  }
-
-  @Transactional
   public Optional<AhjSummary> saveAhj(Long id, AhjSummary ahjSummary) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -57,9 +52,10 @@ public class AhjService {
       if (ahj.isEmpty()) {
         id = sqlCache.updateReturningId("ahj.create", params, "id").longValue();
 
-        // create an empty permit and inspection tied to the ahj - only required for new
+        // create an empty permit, inspection, and design tied to the ahj - only required for new
         ahjPermitService.saveAhjPermit(id, null, new AhjPermit());
-        ahjInspectionService.createAhjInspection(id, new AhjInspection());
+        ahjInspectionService.saveAhjInspection(id, null, new AhjInspection());
+        ahjDesignService.saveAhjDesign(id, null, new AhjDesign());
       } else {
         return Optional.empty();
       }

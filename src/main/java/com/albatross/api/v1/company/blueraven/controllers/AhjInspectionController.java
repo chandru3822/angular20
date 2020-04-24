@@ -32,7 +32,7 @@ public class AhjInspectionController {
     @PostMapping(value = "")
     public Optional<AhjInspection> createAhjInspection(@PathVariable Long ahjId,
                                                        @RequestBody AhjInspection inspection) {
-        return ahjInspectionService.createAhjInspection(ahjId, inspection);
+        return ahjInspectionService.saveAhjInspection(ahjId, null, inspection);
     }
 
     @PutMapping(value = "/{id}")

@@ -288,27 +288,28 @@
       close () {
         this.ahjDialog = false
         this.ahjDeleteDialog = false
+        this.editedItem = {}
       },
       async saveAhj () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         if (!this.editedItem.id) {
           try {
             await postRequest('/ahj', this.editedItem, 'blueraven')
-            this.snackbar = getSnackbar('SUCCESS', 'AHJ Created')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ created')
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Creating AHJ')
+            this.snackbar = getSnackbar('ERROR', 'Error creating AHJ')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
           try {
             await putRequest(`/ahj/${this.editedItem.id}`, this.editedItem, 'blueraven')
-            this.snackbar = getSnackbar('SUCCESS', 'AHJ Saved')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ updated')
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving AHJ')
+            this.snackbar = getSnackbar('ERROR', 'Error updating AHJ')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
@@ -326,11 +327,11 @@
           this.initFilters()
           await this.fetchAhjs().then(() => this.fetchStates())
           this.ahjToDelete = {}
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ Deleted')
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting AHJ')
+          this.snackbar = getSnackbar('ERROR', 'Error deleting AHJ')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
 

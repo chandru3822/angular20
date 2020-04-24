@@ -1,5 +1,5 @@
 <sql>
-  <ahj.permit.detail>
+  <ahj.permit.detailByAhj>
     <![CDATA[
       SELECT
         p.*,
@@ -188,7 +188,7 @@
         INNER JOIN flow.state s ON s.id = sa.state_id
       WHERE p.ahj_id = :ahjId
     ]]>
-  </ahj.permit.detail>
+  </ahj.permit.detailByAhj>
 
   <ahj.permit.createBlank>
     <![CDATA[

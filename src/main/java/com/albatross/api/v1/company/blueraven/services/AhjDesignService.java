@@ -46,7 +46,7 @@ public class AhjDesignService {
       User currentUser = securityService.getCurrentUser();
       params.put("currentUser", currentUser.getId());
 
-      //add a blank design and return that
+      // add a blank design and return that
       Integer id = sqlCache.get("ahj.design.createBlank", params, new SingleColumnRowMapper<>(Integer.class)).get();
       if (id != null) {
         Optional<AhjDesignDetail> design2 = sqlCache.get("ahj.design.detailByAhj", params, new BaseAhjDetailMapper<>(AhjDesignDetail.class, om));
@@ -54,10 +54,6 @@ public class AhjDesignService {
       }
     }
     return null;
-  }
-
-  public Optional<AhjDesign> createAhjDesign(Long ahjId, AhjDesign design) {
-    return saveAhjDesign(ahjId, null, design);
   }
 
   @SuppressWarnings("Duplicates")
@@ -74,7 +70,7 @@ public class AhjDesignService {
     params.put("windSpeed", design.getWindSpeed());
     params.put("roofSnowLoad", design.getRoofSnowLoad());
 
-    if (!design.getUpdateAllInState()) {
+    if (design.getUpdateAllInState() != null && !design.getUpdateAllInState()) {
       params.put("ahjId", ahjId);
 
       if (designId == null) {
