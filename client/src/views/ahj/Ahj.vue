@@ -39,6 +39,7 @@
                 <v-text-field v-if="ahjFilters[header.value].type === 'text'"
                               v-model="ahjFilters[header.value].value"
                               :placeholder="'Enter a ' + header.text.toLowerCase()"
+                              clearable
                               filled
                               dense
                 ></v-text-field>
@@ -46,6 +47,7 @@
                           :items="states"
                           v-model="ahjFilters[header.value].value"
                           :placeholder="'Select a ' + header.text.toLowerCase()"
+                          clearable
                           filled
                           dense
                 ></v-select>
@@ -66,10 +68,10 @@
                 <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
                 <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link">Design</router-link>
               </span>
-              <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">
+              <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(item)">
                 edit
               </v-icon>
-              <v-icon small class="ahj-link-icon" @click="deleteItem(ahj)">
+              <v-icon small class="ahj-link-icon" @click="deleteItem(item)">
                 delete
               </v-icon>
             </td>
@@ -195,11 +197,10 @@
     computed: {
       filteredAhjs () {
         return this.ahjs && this.ahjs.filter(ahj => {
-
           return Object.keys(this.ahjFilters).every(filterName => {
             const filter = this.ahjFilters[filterName]
 
-            if (filter.value.length < 1) {
+            if (filter.value && filter.value.length < 1) {
               return true
             }
 
@@ -207,7 +208,13 @@
               return false
             }
 
-            return ahj[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            if (filter.value !== null && filter.value !== undefined) {
+              return ahj[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            } else if (filter.value === undefined) {
+              filter.value = []
+            } else {
+              filter.value = ''
+            }
           })
         })
       },

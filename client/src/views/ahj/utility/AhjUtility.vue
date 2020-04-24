@@ -38,6 +38,7 @@
               <v-text-field v-if="ahjUtilityFilters[header.value]"
                             v-model="ahjUtilityFilters[header.value].value"
                             :placeholder="'Enter a ' + header.text.toLowerCase()"
+                            clearable
                             filled
                             dense
                             class="pt-2 table-filter"
@@ -159,11 +160,10 @@
     computed: {
       filteredAhjUtilities () {
         return this.ahjUtilities && this.ahjUtilities.filter(utility => {
-
           return Object.keys(this.ahjUtilityFilters).every(filterName => {
             const filter = this.ahjUtilityFilters[filterName]
 
-            if (filter.value.length < 1) {
+            if (filter.value && filter.value.length < 1) {
               return true
             }
 
@@ -171,7 +171,11 @@
               return false
             }
 
-            return utility[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            if (filter.value !== null) {
+              return utility[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            } else {
+              filter.value = ''
+            }
           })
         })
       },
