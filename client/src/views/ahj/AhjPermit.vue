@@ -15,7 +15,7 @@
 
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
+      <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
         <!-- SUBMISSION DETAILS -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
@@ -165,7 +165,7 @@
       </v-col>
 
       <!-- SECOND COLUMN -->
-      <v-col cols="12" md="3" class="px-1 mb-3">
+      <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- REVISION SUBMISSION DETAILS -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold">
@@ -216,7 +216,7 @@
       </v-col>
 
       <!-- THIRD COLUMN -->
-      <v-col cols="12" md="3" class="px-1 mb-3">
+      <v-col cols="12" md="3" class="px-sm-0 px-md-1 mb-3">
         <!-- AS-BUILT SUBMISSION DETAILS -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold">

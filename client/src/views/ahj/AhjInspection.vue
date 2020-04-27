@@ -16,7 +16,7 @@
     <!-- UPPER SECTION -->
     <v-row no-gutters>
       <!-- FIRST COLUMN -->
-      <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
+      <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
         <!-- SCHEDULING WITH AHJ -->
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">

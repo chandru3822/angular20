@@ -262,7 +262,7 @@
             </v-card>
 
             <!-- SUBMISSION DETAILS -->
-            <v-card class="mb-sm-3">
+            <v-card>
               <v-card-title class="primaryCustom white--text font-weight-bold">
                 Submission Details
               </v-card-title>

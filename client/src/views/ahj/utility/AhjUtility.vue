@@ -33,6 +33,7 @@
         <template #header="{ props: { headers } }">
           <tr>
             <th v-for="header in headers" :key="header.text" @click="changeSort(header.value)"
+                :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
                 :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
             >
               <v-text-field v-if="ahjUtilityFilters[header.value]"
