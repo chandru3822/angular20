@@ -1,8 +1,9 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
   <v-row no-gutters>
-    <v-col class="text-right py-1" cols="12">
-      <a @click="resetForm"
+    <v-col class="ahj-form-btns py-1" cols="12">
+      <a v-if="dataWasChanged"
+         @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
       >Cancel</a>
@@ -26,7 +27,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(1)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -35,13 +36,14 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjPermit.depositAmount"
+                          @change="dataWasChanged = true"
                           label="Deposit Amount"
                           filled
                           prepend-inner-icon="attach_money"
@@ -49,6 +51,7 @@
             <v-row>
               <v-col cols="6">
                 <v-text-field v-model="ahjPermit.businessLicense"
+                              @change="dataWasChanged = true"
                               label="Business License"
                               filled
                 ></v-text-field>
@@ -62,6 +65,7 @@
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.businessLicenseExpirationDate"
+                                  @change="dataWasChanged = true"
                                   label="mm/dd/yyyy"
                                   filled
                                   append-icon="event"
@@ -70,7 +74,8 @@
                     ></v-text-field>
                   </template>
                   <v-date-picker v-model="ahjPermit.businessLicenseExpirationDate"
-                                 @input="businessLicenseMenu=false"
+                                 @change="dataWasChanged = true"
+                                 @input="businessLicenseMenu = false"
                   ></v-date-picker>
                 </v-menu>
               </v-col>
@@ -78,6 +83,7 @@
             <v-row>
               <v-col cols="6">
                 <v-text-field v-model="ahjPermit.contractorLicense"
+                              @change="dataWasChanged = true"
                               label="Contractor License"
                               filled
                 ></v-text-field>
@@ -91,6 +97,7 @@
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.contractorLicenseExpirationDate"
+                                  @change="dataWasChanged = true"
                                   label="mm/dd/yyyy"
                                   filled
                                   append-icon="event"
@@ -99,7 +106,8 @@
                     ></v-text-field>
                   </template>
                   <v-date-picker v-model="ahjPermit.contractorLicenseExpirationDate"
-                                 @input="contractorLicenseMenu=false"
+                                 @change="dataWasChanged = true"
+                                 @input="contractorLicenseMenu = false"
                   ></v-date-picker>
                 </v-menu>
               </v-col>
@@ -107,6 +115,7 @@
             <v-row>
               <v-col cols="6">
                 <v-text-field v-model="ahjPermit.otherLicense"
+                              @change="dataWasChanged = true"
                               label="Other License"
                               filled
                 ></v-text-field>
@@ -120,6 +129,7 @@
                         min-width="290px">
                   <template v-slot:activator="{ on }">
                     <v-text-field v-model="ahjPermit.otherLicenseExpirationDate"
+                                  @change="dataWasChanged = true"
                                   label="mm/dd/yyyy"
                                   filled
                                   append-icon="event"
@@ -128,7 +138,8 @@
                     ></v-text-field>
                   </template>
                   <v-date-picker v-model="ahjPermit.otherLicenseExpirationDate"
-                                 @input="otherLicenseMenu=false"
+                                 @change="dataWasChanged = true"
+                                 @input="otherLicenseMenu = false"
                   ></v-date-picker>
                 </v-menu>
               </v-col>
@@ -143,6 +154,7 @@
                           :isNested="true"
             ></AhjChecklist>
             <v-textarea v-model="ahjPermit.submissionNote"
+                        @change="dataWasChanged = true"
                         label="Submission Instructions"
                         filled
                         auto-grow
@@ -162,7 +174,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(2)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -171,13 +183,14 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjPermit.revisionFeeAmount"
+                          @change="dataWasChanged = true"
                           label="Fee Amount"
                           filled
                           prepend-inner-icon="attach_money"
@@ -192,6 +205,7 @@
                           :isNested="true"
             ></AhjChecklist>
             <v-textarea v-model="ahjPermit.revisionNote"
+                        @change="dataWasChanged = true"
                         label="Revision Submission Instructions"
                         filled
                         auto-grow
@@ -211,7 +225,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(3)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -220,13 +234,14 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
+                          @change="dataWasChanged = true"
                           label="Fee Amount"
                           filled
                           prepend-inner-icon="attach_money"
@@ -241,6 +256,7 @@
                           :isNested="true"
             ></AhjChecklist>
             <v-textarea v-model="ahjPermit.asBuiltNote"
+                        @change="dataWasChanged = true"
                         label="As-Built Submission Instructions"
                         filled
                         auto-grow
@@ -259,17 +275,19 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <v-text-field v-model="ahjPermit.approvalTimeline"
+                          @change="dataWasChanged = true"
                           label="Approval Timeline"
                           filled
             ></v-text-field>
             <v-text-field v-model="ahjPermit.followUpFeeAmount"
+                          @change="dataWasChanged = true"
                           label="Fee Amount"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <div v-for="item in getCustomFieldsForGroup(4)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -278,13 +296,14 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjPermit.documentsAvailable"
+                          @change="dataWasChanged = true"
                           label="When are documents available?"
                           filled
             ></v-text-field>
@@ -299,7 +318,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(5)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -308,13 +327,14 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjPermit.deliveryFeeAmount"
+                          @change="dataWasChanged = true"
                           label="Fee Amount"
                           filled
                           prepend-inner-icon="attach_money"
@@ -328,6 +348,7 @@
                          :isNested="true"
             ></AhjDocument>
             <v-textarea v-model="ahjPermit.deliveryNote"
+                        @change="dataWasChanged = true"
                         label="Delivery Instructions"
                         filled
                         auto-grow
@@ -556,6 +577,7 @@
       snackbar: {},
       saveDialog: false,
       saveConfirmDialog: false,
+      dataWasChanged: false,
       dataReady: false,
       customFieldGroupAssignments: [],
       approvalRequiredOptions: [{ id: null, name: '' }],
@@ -745,6 +767,7 @@
       },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        this.dataWasChanged = false
         this.dataReady = false
         this.getAhjPermit().then(() => {
           this.getCustomFieldGroupAssignmentsForScreen()
@@ -792,6 +815,7 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
           this.ahjPermit = cloneDeep(data)
           this.ahjPermit.updateAllInState = false
+          this.dataWasChanged = false
           this.resetCustomFieldValueWasChangedFlags()
           this.reformatDates()
           let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : 'Permit updated successfully'
@@ -824,6 +848,12 @@
   }
   .row {
     width: 100%;
+  }
+  .ahj-form-btns {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
   }
   .title-with-icon {
     display: flex;
