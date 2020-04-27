@@ -300,14 +300,6 @@ insert into flow.company_user_status_type( user_status_type, company_id,has_acce
      cross join companies c );*/
 
 
--- custom field list of value for joe
-INSERT INTO brs.list_of_value (name, parent_id, display_order, show_other, date_created, created_by_id)
-VALUES ('1 Day', 4, 1, false, now(), 99999999),
-       ('2 Days', 4, 2, false, now(), 99999999),
-       ('3 Days', 4 , 3, false, now(), 99999999),
-       ('4+ Days', 4, 4, false, now(), 99999999),
-       ('Other', 4, 5, true, now(), 99999999);
-
 --I want employment_type_id,compensation_type_id,personal_email,recruited_by_user_id,referred_by_user_id make custom field
 
 
@@ -6720,9 +6712,8 @@ INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, c
 
 --TODO add project custom records for deal stage source etc  INSERT INTO flow.project_custom_field_value
 
-DELETE FROM brs.list_of_value WHERE id = 160 AND name = 'false';
-DELETE FROM brs.list_of_value WHERE parent_id = 4;
-
+DELETE FROM brs.list_of_value WHERE parent_id = 213 AND name = 'false';
+UPDATE brs.list_of_value SET show_other = true WHERE name = 'Other' AND parent_id IN (1,31);
 
 
 /*insert into commissions*/
