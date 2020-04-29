@@ -146,7 +146,6 @@
   import cloneDeep from 'lodash.clonedeep'
   import Snackbar from '@/components/Snackbar.vue'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
-  import { mapState } from 'vuex'
   import { AppMutations } from '@/stores/AppStore'
 
   const FILTER_DEFAULTS = {
@@ -224,10 +223,7 @@
       },
       ahjBtnTxt () {
         return this.addMode ? 'Add' : 'Update'
-      },
-      ...mapState({
-        loading: state => state.app.loading
-      })
+      }
     },
     watch: {
       ahjDialog (val) {
