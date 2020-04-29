@@ -117,7 +117,7 @@ export default {
       }, {
         path: '/propToolAdmin/inverters',
         title: 'Inverters',
-        show: false
+        show: true
       }, {
         path: '/propToolAdmin/adders',
         title: 'Adders',
@@ -129,7 +129,7 @@ export default {
       }, {
         path: '/propToolAdmin/zipCodes',
         title: 'Zip Codes',
-        show: false
+        show: true
       },
     ]
   }

@@ -1,5 +1,5 @@
 <sql>
-  <ahj.permit.detail>
+  <ahj.permit.detailByAhj>
     <![CDATA[
       SELECT
         p.*,
@@ -188,7 +188,7 @@
         INNER JOIN flow.state s ON s.id = sa.state_id
       WHERE p.ahj_id = :ahjId
     ]]>
-  </ahj.permit.detail>
+  </ahj.permit.detailByAhj>
 
   <ahj.permit.createBlank>
     <![CDATA[
@@ -358,7 +358,7 @@
 <!--      SELECT 'permits'                         as type,-->
 <!--             status                            as status,-->
 <!--             round(avg(t.cycle_time), 2)       as avg,-->
-<!--             cast(median(t.cycle_time) as int) as median,-->
+<!--             cast(brs._final_median(t.cycle_time) as int) as median,-->
 <!--             max(t.cycle_time)                 as max,-->
 <!--             count(t.cycle_time)               as count-->
 <!--      FROM (-->
@@ -371,14 +371,15 @@
 <!--              select coalesce(permit_revision_c_submittal_date,-->
 <!--                              permit_revision_b_submittal_date,-->
 <!--                              permit_pack_revision_submittal_date,-->
-<!--                              permit_packet_submitted_date) as latest_permit_submit_date,-->
+<!--                              (select (select * from flow.get_value_for_custom_field(4, 244, p.id, 67)) as permit_pack_submittal_verified_date from flow.project p)-->
+<!--                             ) as latest_permit_submit_date,-->
 <!--                     (case when permit_revision_c_submittal_date    is not null then permit_revision_c_approved_date-->
 <!--                           when permit_revision_b_submittal_date    is not null then permit_revision_b_approved_date-->
 <!--                           when permit_pack_revision_submittal_date is not null then permit_pack_revision_approved_date-->
-<!--                           when permit_packet_submitted_date        is not null then permit_approved_date-->
+<!--                           when (select (select * from flow.get_value_for_custom_field(4, 244, p.id, 67)) as permit_pack_submittal_verified_date from flow.project p) is not null then (select (select * from flow.get_value_for_custom_field(4, 230, p.id, 15)) as permit_approved_date from flow.project p)-->
 <!--                      end) as latest_permit_approval_date-->
-<!--              from blueraven.deal-->
-<!--              where ahj_id = :ahjId-->
+<!--              from flow.project-->
+<!--              where d.ahj_id = :ahjId-->
 <!--          ) s-->
 <!--          where latest_permit_submit_date between :startDate and :endDate-->
 <!--      ) t-->
@@ -389,7 +390,7 @@
 <!--      SELECT 'as-builts'                       as type,-->
 <!--             t.status                          as status,-->
 <!--             round(avg(t.cycle_time), 2)       as avg,-->
-<!--             cast(median(t.cycle_time) as int) as median,-->
+<!--             cast(brs._final_median(t.cycle_time) as int) as median,-->
 <!--             max(t.cycle_time)                 as max,-->
 <!--             count(t.cycle_time)               as count-->
 <!--      FROM (-->
@@ -398,8 +399,8 @@
 <!--                 case when asbuilt_permit_approved_date is not null then-->
 <!--                           (asbuilt_permit_approved_date::date - asbuilt_permit_pack_submittal_date::date)-->
 <!--                      else (now() at time zone 'US/Mountain')::date - asbuilt_permit_pack_submittal_date::date end as cycle_time-->
-<!--          from blueraven.deal-->
-<!--          where ahj_id = :ahjId-->
+<!--          from flow.project-->
+<!--          where d.ahj_id = :ahjId-->
 <!--            and asbuilt_permit_pack_submittal_date between :startDate and :endDate-->
 <!--      ) t-->
 <!--      GROUP BY t.status-->
@@ -425,18 +426,18 @@
 <!--                     coalesce(permit_revision_c_submittal_date,-->
 <!--                              permit_revision_b_submittal_date,-->
 <!--                              permit_pack_revision_submittal_date,-->
-<!--                              permit_packet_submitted_date) as submitted,-->
+<!--                              (select (select * from flow.get_value_for_custom_field(4, 244, p.id, 67)) as permit_pack_submittal_verified_date from flow.project p)) as submitted,-->
 <!--                     (case when permit_revision_c_submittal_date    is not null then permit_revision_c_approved_date-->
 <!--                           when permit_revision_b_submittal_date    is not null then permit_revision_b_approved_date-->
 <!--                           when permit_pack_revision_submittal_date is not null then permit_pack_revision_approved_date-->
-<!--                           when permit_packet_submitted_date        is not null then permit_approved_date-->
+<!--                           when (select (select * from flow.get_value_for_custom_field(4, 244, p.id, 67)) as permit_pack_submittal_verified_date from flow.project p) is not null then (select (select * from flow.get_value_for_custom_field(4, 230, p.id, 15)) as permit_approved_date from flow.project p)-->
 <!--                      end) as approved-->
 <!--              from flow.project p-->
-<!--                inner join flow.customer c on c.id = p.customer_id-->
+<!--                inner join flow.contact c on c.id = p.contact_id-->
 <!--                inner join brs.ahj_permit ap on ap.ahj_id = d.ahj_id-->
 <!--                inner join brs.ahj a on a.id = ap.ahj_id-->
 <!--              where d.ahj_id = :ahjId-->
-<!--              order by submitted asc-->
+<!--              order by submitted-->
 <!--          ) s-->
 <!--          where submitted between :startDate and :endDate-->
 <!--      ) permits-->
@@ -463,12 +464,12 @@
 <!--                       else 'approved'-->
 <!--                  end) as status-->
 <!--          from flow.project p-->
-<!--            inner join flow.customer c on c.id = p.customer_id-->
+<!--            inner join flow.contact c on c.id = p.contact_id-->
 <!--            inner join brs.ahj_permit ap on ap.ahj_id = d.ahj_id-->
 <!--            inner join brs.ahj a on a.id = ap.ahj_id-->
 <!--          where asbuilt_permit_pack_submittal_date between :startDate and :endDate-->
 <!--            and d.ahj_id = :ahjId-->
-<!--          order by submitted asc-->
+<!--          order by submitted-->
 <!--      ) as_builts-->
 <!--      WHERE status = :status-->
 <!--    ]]>-->

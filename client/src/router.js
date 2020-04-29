@@ -175,7 +175,7 @@ export default new Router({
           }
         },
       }, {
-        path: '/settings',
+        path: 'settings',
         name: 'settings',
         component: () => import(/* webpackChunkName: "settings" */ './views/flow/settings/Settings.vue'),
         children: [
@@ -340,6 +340,29 @@ export default new Router({
                 return accessDenied()
               }
             },
+          }, {
+            path: 'availability',
+            name: 'availability',
+            redirect: "availability/schedule",
+            props: true,
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Availability.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
+            children: [
+              {
+                path: 'schedule',
+                props: true,
+                component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Schedule.vue')
+              }, {
+                path: 'appointments',
+                props: true,
+                component: () => import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Appointments.vue')
+              }
+            ]
           }, {
             path: 'positions',
             component: () => {
@@ -635,8 +658,8 @@ export default new Router({
                 }
               ]
             }, {
-              path: 'admin',
-              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Admin.vue'),
+              path: 'residuals',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Residuals.vue'),
             },
           ]
         }, {
@@ -668,6 +691,40 @@ export default new Router({
                   return accessDenied()
                 }
               }
+            }
+          ]
+        },{
+          path: '/proposal',
+          name: 'proposal',
+          component: () => {
+            if(store.getters.userHasFeature('SYSTEM')) {
+              return import (/* webpackChunkName: "admin" */ './views/flow/proposal/Menu.vue')
+            } else  {
+              return accessDenied()
+            }
+          },
+          children: [
+            {
+              path: 'create',
+              name: 'create',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue'),
+            },
+            {
+              path: 'search',
+              name: 'search',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
+            }, {
+              path: 'export',
+              name: 'export',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Export.vue'),
+            }, {
+              path: 'recreate',
+              name: 'recreate',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Search.vue'),
+            }, {
+              path: ':proposalId',
+              name: 'modify',
+              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue'),
             }
           ]
         }

@@ -49,7 +49,7 @@
                 <v-btn
                   color="primary"
                   text
-                  @click="deleteConfirm = true; deletePlan()">
+                  @click="[deleteConfirm = true, deletePlan()]">
                   Yes
                 </v-btn>
               </v-card-actions>
@@ -113,7 +113,7 @@
                 <v-btn
                   color="primary"
                   text
-                  @click="inactivateConfirm = true; inactivatePlan()">
+                  @click="[inactivateConfirm = true, inactivatePlan()]">
                   Yes
                 </v-btn>
               </v-card-actions>
@@ -172,7 +172,7 @@
                 <v-spacer></v-spacer>
                 <v-btn
                   text
-                  @click="cloneDialog = false; cloneStartDate = null"
+                  @click="[cloneDialog = false, cloneStartDate = null]"
                 >
                   Cancel
                 </v-btn>
@@ -262,7 +262,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="commission.statusType === 'PENDING'" @click="selectedMilestone = {}; addMilestone = !addMilestone; getMilestones()">
+            <v-btn text v-if="commission.statusType === 'PENDING'" @click="[selectedMilestone = {}, addMilestone = !addMilestone, getMilestones()]">
               <v-icon v-if="addMilestone">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -316,7 +316,7 @@
                             v-model="item.allocation">
               </v-text-field>
               <v-btn :disabled="!item.allocation"
-                     @click="milestoneExpanded = []; updateMilestone(item)">Save</v-btn>
+                     @click="[milestoneExpanded = [], updateMilestone(item)]">Save</v-btn>
             </td>
           </template>
 
@@ -396,7 +396,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="commission.statusType === 'PENDING'" @click="selectedSource = {}; addSource = !addSource; getSources()">
+            <v-btn text v-if="commission.statusType === 'PENDING'" @click="[selectedSource = {}, addSource = !addSource, getSources()]">
               <v-icon v-if="addSource">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -475,7 +475,7 @@
                         item-value="milestoneId"
               ></v-select>
               <v-btn :disabled="!item.feeAmount || !item.feeTypeId || !item.milestoneId"
-                     @click="sourceExpanded = []; updateSource(item)">Save</v-btn>
+                     @click="[sourceExpanded = [], updateSource(item)]">Save</v-btn>
             </td>
           </template>
 
@@ -545,7 +545,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addUser = !addUser; newUser = {}; userHistory = []">
+            <v-btn text @click="[addUser = !addUser, newUser = {}, userHistory = []]">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -692,7 +692,7 @@
               <td class="text-left">{{item.endDate}}</td>
               <td>
 
-                <v-btn small text @click="assignedUserExpanded = [item]; getUserHistory(item.userId)"
+                <v-btn small text @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
                        v-if="commission.statusType === 'PENDING' && !assignedUserExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>

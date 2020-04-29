@@ -315,7 +315,8 @@
         try {
           const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
             params: {
-              stateId: this.state?.id ?? null
+              stateId: this.state?.id ?? null,
+              isSchedulingTool: true
             }
           })
           //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
@@ -340,7 +341,8 @@
         try {
           const {data} = await getRequestWithParams(`/user/getSchedulingUsers`, {
             params: {
-              stateId: this.state?.id ?? null
+              stateId: this.state?.id ?? null,
+              isSchedulingTool: true
             }
           })
           //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user

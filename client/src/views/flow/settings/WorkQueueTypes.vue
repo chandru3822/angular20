@@ -5,7 +5,7 @@
         <v-toolbar flat class="app-toolbar">
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newType = {}">
+            <v-btn text @click="[addNew = !addNew, newType = {}]">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -99,7 +99,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="item.archived = true; deleteType(item.id)">
+                              @click="[item.archived = true, deleteType(item.id)]">
                             Yes
                           </v-btn>
                         </v-card-actions>

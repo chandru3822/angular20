@@ -49,7 +49,7 @@ public class OrgService {
     return results;
   }
 
-  public List<Org> getSchedulingOrgs(Long stateId) {
+  public List<Org> getSchedulingOrgs(Long stateId, Boolean isSchedulingTool) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
@@ -58,6 +58,7 @@ public class OrgService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("stateId", stateId);
     params.put("isParent", isParent);
+    params.put("isSchedulingTool", isSchedulingTool);
 
     List<Org> results = sqlCache.query("org.getSchedulingOrgs", params, Org.class);
     return results;

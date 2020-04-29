@@ -6,7 +6,9 @@ import com.albatross.api.v1.flow.model.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.services.ProcessStepService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,4 +66,8 @@ public class ProcessStepController {
     return processStepService.getParentObjectsIncludingTypes(id);
   }
 
+  @GetMapping(value = "/getByCompany", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProcessStep>> getProcessStepsByCompanyId() {
+    return new ResponseEntity<>(processStepService.getByCompanyId(), HttpStatus.OK);
+  }
 }

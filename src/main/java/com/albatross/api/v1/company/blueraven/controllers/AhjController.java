@@ -41,7 +41,7 @@ public class AhjController {
 
   @PostMapping(value = "")
   public Optional<AhjSummary> createAhj(@RequestBody AhjSummary ahjSummary) {
-    return ahjService.createAhj(ahjSummary);
+    return ahjService.saveAhj(null, ahjSummary);
   }
 
   @PutMapping(value = "/{id}")

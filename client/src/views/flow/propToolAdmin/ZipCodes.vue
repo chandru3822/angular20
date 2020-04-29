@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Zip Codes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newZipCode = {}" color="primary">
+            <v-btn text @click="[addNew = !addNew, newZipCode = {}]" color="primary">
               <v-icon>add</v-icon>
               Add New
             </v-btn>
@@ -46,6 +46,10 @@
               <v-text-field v-model="item.zipCode"
                             label="Zip Code">
               </v-text-field>
+              <v-radio-group v-model="item.active" column>
+                <v-radio label="Active" :value="true"></v-radio>
+                <v-radio label="Inactive" :value="false"></v-radio>
+              </v-radio-group>
               <v-btn :disabled="!item.zipCode" @click="saveZipCode(item)">Save</v-btn>
             </td>
           </template>
@@ -53,15 +57,15 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.zipCode}}</td>
-              <td class="text-left">{{item.status}}</td>
+              <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
-                  <v-btn small text @click="expanded = [item]; selectedIndex = index"
+                  <v-btn small text @click="[expanded = [item], selectedIndex = index]"
                          v-if="!expanded.includes(item)">
                     <v-icon v-if="item.immutable">expand_more</v-icon>
                     <v-icon v-else>edit</v-icon>
                   </v-btn>
-                  <v-btn small text @click="expanded = []; selectedIndex = index"
+                  <v-btn small text @click="[expanded = [], selectedIndex = index]"
                          v-if="expanded.includes(item)">cancel
                   </v-btn>
                   <v-dialog
@@ -94,7 +98,7 @@
                         <v-btn
                             color="primary"
                             text
-                            @click="item.archived = true; deleteZipCode(item.id)">
+                            @click="[item.archived = true, deleteZipCode(item.id)]">
                           Yes
                         </v-btn>
                       </v-card-actions>
@@ -135,7 +139,7 @@
         addNew: false,
         headers: [
           {text: 'Zip Code', value: 'zipCode', show: true},
-          {text: 'Status', value: 'status', show: true},
+          {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
       }

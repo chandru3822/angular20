@@ -31,7 +31,7 @@
             <v-list v-if="companies.length > 1">
               <v-list-item v-for="(item, index) in companies" :key="index"
                            :class="item.id === $store.state.user.details.companyId ? 'v-list-item--active' : ''"
-                           @click="menuOpen = false; changeContext(item.id)">
+                           @click="[menuOpen = false, changeContext(item.id)]">
                 <v-list-item-title>{{item.companyName}}</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -108,13 +108,17 @@ export default {
         path: '/schedule',
         display: this.$store.getters.userHasFeature('SCHEDULE')
       }, {
+        label: 'Proposal',
+        path: '/proposal',
+        display: this.$store.getters.userHasFeature('PROPOSAL')
+      }, {
         label: 'Work Queue',
         path: '/workQueue',
         display: this.$store.getters.userHasFeature('WORK_QUEUE')
       }, {
         label: 'Smartlists',
         path: '/smartlist',
-        display: this.$store.getters.userHasFeature('SMARTLIST') && false
+        display: this.$store.getters.userHasFeature('SMARTLIST')
       }]
     }
   },

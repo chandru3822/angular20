@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Organization Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addType = !addType; newType = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addType = !addType, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addType ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -39,7 +39,7 @@
                  @click="saveOrgType(newOrgType, true)">
             Save
           </v-btn>
-          <v-btn @click="addType = !addType; newOrgType = {}">Cancel</v-btn>
+          <v-btn @click="[addType = !addType, newOrgType = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"

@@ -1,8 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Smartlist;
-import com.albatross.api.v1.flow.model.SmartlistField;
 import com.albatross.api.v1.flow.model.SmartlistFieldAssignment;
+import com.albatross.api.v1.flow.model.SmartlistLogic;
+import com.albatross.api.v1.flow.model.SmartlistRequirement;
 import com.albatross.api.v1.flow.services.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,8 +65,39 @@ public class SmartlistController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @GetMapping(value = "/availableFields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<SmartlistField>> getAvailableSmartlistFields() {
-    return new ResponseEntity<>(smartlistService.getAvailableSmartlistFields(), HttpStatus.OK);
+  @GetMapping(value = "/{smartlistId}/requirement", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistRequirement>> getRequirementsBySmartlistId(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistService.getRequirements(smartlistId), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{smartlistId}/requirement", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SmartlistRequirement> addRequirementToSmartlist(@PathVariable Long smartlistId, @RequestBody SmartlistRequirement requirement) {
+    return new ResponseEntity<>(smartlistService.addRequirement(smartlistId, requirement), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/{smartlistId}/requirement/{requirementId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SmartlistRequirement> updateRequirementOfSmartlist(@PathVariable Long smartlistId, @PathVariable Long requirementId, @RequestBody SmartlistRequirement requirement) {
+    return new ResponseEntity<>(smartlistService.updateRequirement(requirement), HttpStatus.OK);
+  }
+
+  @DeleteMapping(value = "/{smartlistId}/requirement/{requirementId}")
+  public ResponseEntity<Void> deleteRequirementFromSmartlist(@PathVariable Long requirementId) {
+    smartlistService.deleteRequirement(requirementId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @GetMapping(value = "/{smartlistId}/logic", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistLogic>> getLogicBySmartlistId(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistService.getLogic(smartlistId), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/{smartlistId}/logic", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistLogic>> updateLogicBySmartlistId(@PathVariable Long smartlistId, @RequestBody List<SmartlistLogic> logic) {
+    return new ResponseEntity<>(smartlistService.updateLogic(smartlistId, logic), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableSmartlistFieldsByObjectType(@RequestParam Long objectTypeId) {
+    return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeId), HttpStatus.OK);
   }
 }

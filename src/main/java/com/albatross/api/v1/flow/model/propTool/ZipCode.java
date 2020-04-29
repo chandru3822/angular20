@@ -11,6 +11,6 @@ public class ZipCode {
 
   private Long id;
   private String zipCode;
-  private Boolean archived;
+  private Boolean active, archived;
 
 }

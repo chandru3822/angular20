@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Financiers</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newFinancier = {}" color="primary">
+            <v-btn text @click="[addNew = !addNew, newFinancier = {}]" color="primary">
               <v-icon>add</v-icon>
               Add New
             </v-btn>
@@ -60,12 +60,12 @@
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
-                  <v-btn small text @click="expanded = [item]; selectedIndex = index"
+                  <v-btn small text @click="[expanded = [item], selectedIndex = index]"
                          v-if="!expanded.includes(item)">
                     <v-icon v-if="item.immutable">expand_more</v-icon>
                     <v-icon v-else>edit</v-icon>
                   </v-btn>
-                  <v-btn small text @click="expanded = []; selectedIndex = index"
+                  <v-btn small text @click="[expanded = [], selectedIndex = index]"
                          v-if="expanded.includes(item)">cancel
                   </v-btn>
                   <v-dialog
@@ -98,7 +98,7 @@
                         <v-btn
                             color="primary"
                             text
-                            @click="item.archived = true; deleteFinancier(item.id)">
+                            @click="[item.archived = true, deleteFinancier(item.id)]">
                           Yes
                         </v-btn>
                       </v-card-actions>

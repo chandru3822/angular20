@@ -1,7 +1,8 @@
 <template>
   <v-row no-gutters>
-    <v-col class="text-right py-1" cols="12">
-      <a @click="resetForm"
+    <v-col class="ahj-form-btns py-1" cols="12">
+      <a v-if="dataWasChanged"
+         @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
       >Cancel</a>
@@ -11,7 +12,7 @@
       >Save</v-btn>
     </v-col>
 
-    <v-row no-gutters>
+    <v-row no-gutters class="mb-3">
       <!-- FIRST COLUMN -->
       <v-col cols="12" md="4" class="pr-sm-0 pr-md-1 mb-sm-0 mb-md-3">
         <!-- CODES -->
@@ -22,7 +23,7 @@
           <v-card-text class="mt-4">
             <div class="flex-display" v-for="item in getCustomFieldsForGroup(12)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -37,6 +38,7 @@
               ></AhjDocumentsButton>
             </div>
             <v-textarea v-model="ahjDesign.referenceStandards"
+                        @change="dataWasChanged = true"
                         label="Reference Standards"
                         filled
                         auto-grow
@@ -52,7 +54,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(13)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -78,7 +80,7 @@
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(14)" :key="item.id">
                 <v-select v-model="item.intValue"
-                          @change="item.valueWasChanged = true"
+                          @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -117,7 +119,7 @@
             <div class="flex-display flex-wrap justify-space-between px-2">
               <div class="flex-display custom-field mx-2" v-for="item in getCustomFieldsForGroup(15)" :key="item.id">
                 <v-select v-model="item.intValue"
-                          @change="item.valueWasChanged = true"
+                          @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -157,7 +159,7 @@
               <div class="flex-display custom-field mx-2"
                    v-for="item in getCustomFieldsForGroup(16)" :key="item.id">
                 <v-select v-model="item.intValue"
-                          @change="item.valueWasChanged = true"
+                          @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
                           item-text="name"
                           item-value="id"
@@ -191,16 +193,19 @@
               </div>
               <v-text-field class="structural-design-text-field mx-2"
                             v-model="ahjDesign.groundSnowLoad"
+                            @change="dataWasChanged = true"
                             label="Ground Snow Load"
                             filled
               ></v-text-field>
               <v-text-field class="structural-design-text-field mx-2"
                             v-model="ahjDesign.roofSnowLoad"
+                            @change="dataWasChanged = true"
                             label="Roof Snow Load"
                             filled
               ></v-text-field>
               <v-text-field class="structural-design-text-field mx-2"
                             v-model="ahjDesign.windSpeed"
+                            @change="dataWasChanged = true"
                             label="Wind Speed"
                             filled
               ></v-text-field>
@@ -303,27 +308,17 @@
       snackbar: {},
       saveDialog: false,
       saveConfirmDialog: false,
+      dataWasChanged: false,
       dataReady: false,
       customFieldGroupAssignments: [],
       ahjDesign: {
         designRequirements: [],
         electricalRequirements: [],
-        structuralRequirements: []
+        structuralRequirements: [],
+        contacts: []
       }
     }),
     methods: {
-      async getCustomFieldGroupAssignmentsForScreen() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {sourceId: this.ahjDesign.id, objectTypeId: 1}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroupAssignments = cloneDeep(data)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
       async getAhjDesign() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -333,6 +328,23 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Design')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+      async getCustomFieldGroupAssignmentsForScreen() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          if (this.ahjDesign.id) {
+            const params = {sourceId: this.ahjDesign.id, objectTypeId: 1}
+            const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+            this.customFieldGroupAssignments = cloneDeep(data)
+          } else {
+            console.error('*** ERROR ***', 'Missing parameter "sourceId"')
+            this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -347,6 +359,7 @@
       },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        this.dataWasChanged = false
         this.dataReady = false
         this.getAhjDesign().then(() => {
           this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
@@ -380,6 +393,7 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
           this.ahjDesign = cloneDeep(data)
           this.ahjDesign.updateAllInState = false
+          this.dataWasChanged = false
           this.resetCustomFieldValueWasChangedFlags()
           let successMessage = updateAllInState ? 'All designs in ' + this.ahjDesign.stateName + ' have been updated successfully' : 'Design updated successfully'
           this.snackbar = getSnackbar('SUCCESS', successMessage)
@@ -404,6 +418,12 @@
 <style scoped lang="scss">
   .padded-sides {
     padding: 0 5px;
+  }
+  .ahj-form-btns {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
   }
   .v-text-field,
   .v-select,

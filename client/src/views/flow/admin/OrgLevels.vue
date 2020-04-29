@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Org Levels</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newOrgLevel = {}">
+            <v-btn text @click="[addNew = !addNew, newOrgLevel = {}]">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -25,7 +25,7 @@
                  @click="saveOrgLevel(newOrgLevel, true)">
             Save
           </v-btn>
-          <v-btn @click="addNew = !addNew; newOrgLevel = {}">Cancel</v-btn>
+          <v-btn @click="[addNew = !addNew, newOrgLevel = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
             :headers="headers"

@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 @Setter
 public class SmartlistField {
 
-  private Long id, companyObjectTypeId, createdById, modifiedById;
+  private Long id, companyObjectTypeId, dataTypeId, createdById, modifiedById;
 
   @JsonIgnore
   private String referenceTable, referenceColumn;

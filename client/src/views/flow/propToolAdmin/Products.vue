@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Products</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newProduct = {}" color="primary">
+            <v-btn text @click="[addNew = !addNew, newProduct = {}]" color="primary">
               <v-icon>add</v-icon>
               Add New
             </v-btn>
@@ -89,20 +89,24 @@
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.productName}}</td>
+              <td class="text-left">{{item.financier}}</td>
+              <td class="text-left">{{item.termLength}}</td>
+              <td class="text-left">{{item.interestRate}}%</td>
+              <td class="text-left">{{item.dealerFee}}</td>
               <td class="text-left">{{item.active ? 'Active' : 'Inactive'}}</td>
               <td>
                 <div style="display: flex;">
-                  <v-btn small text @click="expanded = [item]; selectedIndex = index"
+                  <v-btn small text @click="[expanded = [item], selectedIndex = index]"
                          v-if="!expanded.includes(item)">
                     <v-icon v-if="item.immutable">expand_more</v-icon>
                     <v-icon v-else>edit</v-icon>
                   </v-btn>
-                  <v-btn small text @click="expanded = []; selectedIndex = index"
+                  <v-btn small text @click="[expanded = [], selectedIndex = index]"
                          v-if="expanded.includes(item)">cancel
                   </v-btn>
                   <v-dialog
-                      v-model="item.deleteConfirm"
-                      width="500">
+                    v-model="item.deleteConfirm"
+                    width="500">
                     <template #activator="{ on }">
                       <v-btn small text v-on="on">
                         <v-icon>delete</v-icon>
@@ -130,7 +134,7 @@
                         <v-btn
                             color="primary"
                             text
-                            @click="item.archived = true; deleteProduct(item.id)">
+                            @click="[item.archived = true, deleteProduct(item.id)]">
                           Yes
                         </v-btn>
                       </v-card-actions>
@@ -172,6 +176,10 @@
         addNew: false,
         headers: [
           {text: 'Product', value: 'product', show: true},
+          {text: 'Financier', value: 'financier', show: true},
+          {text: 'Loan Term', value: 'termLength', show: true},
+          {text: 'Interest Rate', value: 'interestRate', show: true},
+          {text: 'Dealer Fee', value: 'dealerFee', show: true},
           {text: 'Status', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
         ],
@@ -251,7 +259,7 @@
 
 <style lang="scss">
   #products-container .v-data-table__wrapper {
-    height: calc(100vh - 400px);
+    height: calc(100vh - 300px);
     min-height: 300px;
   }
 </style>

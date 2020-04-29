@@ -203,18 +203,42 @@
   ]]></propToolIncentive.updateUtilityStateIncentive>
 
   <propToolIncentive.insertCountryIncentive><![CDATA[
-    insert into props.country_incentive(company_country_id, incentive_type_id, incentive_category_id, amount, company_id, created_by_id)
-        values (:incentiveEntityId, :incentiveTypeId, :incentiveCategoryId, :amount, :companyId, :createdById)
+    insert into props.country_incentive(company_country_id, incentive_type_id, incentive_category_id, amount, company_id, active, created_by_id)
+        values (:incentiveEntityId, :incentiveTypeId, :incentiveCategoryId, :amount, :companyId, :active, :createdById)
   ]]></propToolIncentive.insertCountryIncentive>
 
   <propToolIncentive.insertStateIncentive><![CDATA[
-    insert into props.state_incentive(company_state_id, incentive_type_id, incentive_category_id, amount, created_by_id)
-        values (:incentiveEntityId, :incentiveTypeId, :incentiveCategoryId, :amount, :createdById)
+    insert into props.state_incentive(company_state_id, incentive_type_id, incentive_category_id, amount, active, created_by_id)
+        values (:incentiveEntityId, :incentiveTypeId, :incentiveCategoryId, :amount, :active, :createdById)
   ]]></propToolIncentive.insertStateIncentive>
 
   <propToolIncentive.insertUtilityStateIncentive><![CDATA[
-    insert into props.utility_state_incentive(utility_state_id, incentive_type_id, incentive_category_id, amount, created_by_id)
-        values (:incentiveEntityId, :incentiveTypeId, :incentiveCategoryId, :amount, :createdById)
+    insert into props.utility_state_incentive(utility_state_id, incentive_type_id, incentive_category_id, amount, active, created_by_id)
+        values (:incentiveEntityId, :incentiveTypeId, :incentiveCategoryId, :amount, :active, :createdById)
   ]]></propToolIncentive.insertUtilityStateIncentive>
+
+  <propToolIncentive.deleteCountryIncentive><![CDATA[
+    update props.country_incentive
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolIncentive.deleteCountryIncentive>
+
+  <propToolIncentive.deleteStateIncentive><![CDATA[
+    update props.state_incentive
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolIncentive.deleteStateIncentive>
+
+  <propToolIncentive.deleteUtilityStateIncentive><![CDATA[
+    update props.utility_state_incentive
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></propToolIncentive.deleteUtilityStateIncentive>
 
 </sql>

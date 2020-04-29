@@ -30,7 +30,7 @@
                   :key="item.title"
                   :to="item.path"
                   :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
-                  @click="menuOpen = false; setTitle(item.title)"
+                  @click="menuOpen = false"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>

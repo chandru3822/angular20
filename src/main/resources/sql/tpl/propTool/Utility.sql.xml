@@ -82,17 +82,18 @@
         set cost_per_kwh = :costPerKwh,
             escalator = :escalator,
             modified_by_id = :modifiedById,
-            date_modified = now()
+            date_modified = now(),
+            archived = :archived
     where id = :utilityStateId
   ]]></propToolUtility.updateUtilityState>
 
-  <propToolUtility.getUtilityStates><![CDATA[
+  <propToolUtility.getUtilityStatesByCompanyStateId><![CDATA[
     select us.*,
            u.utility_company
     from props.utility_state us
         inner join props.utility u on u.id = us.utility_id
     where us.company_state_id = :companyStateId
         and us.archived is not true
-  ]]></propToolUtility.getUtilityStates>
+  ]]></propToolUtility.getUtilityStatesByCompanyStateId>
 
 </sql>

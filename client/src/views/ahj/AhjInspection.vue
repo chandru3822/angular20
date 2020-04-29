@@ -1,8 +1,9 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
   <v-row no-gutters>
-    <v-col class="text-right py-1" cols="12">
-      <a @click="resetForm"
+    <v-col class="ahj-form-btns py-1" cols="12">
+      <a v-if="dataWasChanged"
+         @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
       >Cancel</a>
@@ -27,7 +28,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(17)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -36,17 +37,19 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjInspection.requiredInspectionTypes"
+                          @change="dataWasChanged = true"
                           label="Type of Inspections Required"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.schedulingNote"
+                        @change="dataWasChanged = true"
                         label="Scheduling Note"
                         filled
                         auto-grow
@@ -74,7 +77,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(18)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -83,18 +86,20 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-textarea v-model="ahjInspection.technicianInstructionNote"
+                        @change="dataWasChanged = true"
                         label="Instructions for BRS Technician"
                         filled
                         auto-grow
             ></v-textarea>
             <v-textarea v-model="ahjInspection.documentationNote"
+                        @change="dataWasChanged = true"
                         label="Documentation Notes"
                         filled
                         auto-grow
@@ -122,7 +127,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(19)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -131,14 +136,17 @@
               ></v-select>
             </div>
             <v-text-field v-model="ahjInspection.timeWindowCallTime"
+                          @change="dataWasChanged = true"
                           label="Time to Call For Window"
                           filled
             ></v-text-field>
             <v-text-field v-model="ahjInspection.timeWindowPhone"
+                          @change="dataWasChanged = true"
                           label="Phone # for Time Window"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.schedulingWithCustomerNote"
+                        @change="dataWasChanged = true"
                         label="Scheduling with Customer Note"
                         filled
                         auto-grow
@@ -162,12 +170,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <v-text-field v-model="ahjInspection.obtainingResultsMethod"
+                          @change="dataWasChanged = true"
                           label="Obtaining Results Method"
                           filled
             ></v-text-field>
             <div v-for="item in getCustomFieldsForGroup(20)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -176,13 +185,14 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-textarea v-model="ahjInspection.obtainingResultsNote"
+                        @change="dataWasChanged = true"
                         label="Obtaining Results Notes"
                         filled
                         auto-grow
@@ -210,7 +220,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(21)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -219,22 +229,25 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
-                            @change="item.valueWasChanged = true"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjInspection.inspectionFee"
+                          @change="dataWasChanged = true"
                           label="Re-inspection Fee Amount"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <v-text-field v-model="ahjInspection.paymentMethod"
+                          @change="dataWasChanged = true"
                           label="Payment Method"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.reinspectionNote"
+                        @change="dataWasChanged = true"
                         label="Re-inspection Notes"
                         filled
                         auto-grow
@@ -266,7 +279,7 @@
           <v-card-text class="mt-4 pb-1">
             <div v-for="item in getCustomFieldsForGroup(22)" :key="item.id">
               <v-select v-model="item.intValue"
-                        @change="item.valueWasChanged = true"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -275,6 +288,7 @@
               ></v-select>
             </div>
             <v-textarea v-model="ahjInspection.mpuInspectionNote"
+                        @change="dataWasChanged = true"
                         label="MPU Inspection Notes"
                         filled
                         auto-grow
@@ -389,7 +403,7 @@
     </v-row>
 
     <!-- FOURTH ROW -->
-    <v-row no-gutters>
+    <v-row no-gutters class="mb-6">
       <v-col cols="12" md="12" class="px-1">
         <AhjRequirement v-if="dataReady"
                         title="AHJ Specific Installation Requirements"
@@ -495,6 +509,7 @@
       snackbar: {},
       saveDialog: false,
       saveConfirmDialog: false,
+      dataWasChanged: false,
       dataReady: false,
       customFieldGroupAssignments: [],
       ahjInspection: {
@@ -567,6 +582,7 @@
       },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        this.dataWasChanged = false
         this.dataReady = false
         this.getAhjInspection().then(() => {
           this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
@@ -600,6 +616,7 @@
           const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
           this.ahjInspection = cloneDeep(data)
           this.ahjInspection.updateAllInState = false
+          this.dataWasChanged = false
           this.resetCustomFieldValueWasChangedFlags()
           let successMessage = updateAllInState ? 'All inspections in ' + this.ahjInspection.stateName + ' have been updated successfully' : 'Inspection updated successfully'
           this.snackbar = getSnackbar('SUCCESS', successMessage)
@@ -624,6 +641,12 @@
 <style scoped lang="scss">
   .padded-sides {
     padding: 0 5px;
+  }
+  .ahj-form-btns {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
   }
   .title-with-icon {
     display: flex;

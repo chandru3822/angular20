@@ -9,9 +9,9 @@ import java.sql.Timestamp;
 @Setter
 public class SmartlistFieldAssignment {
 
-  private Long id, smartlistId, smartlistFieldId, customFieldId, createdById, modifiedById, displayOrder;
+  private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById, displayOrder, processStepId, dataTypeId;
 
-  private String name, objectType;
+  private String name, objectType, processStepName;
 
   private Timestamp dateCreated, dateModified;
 

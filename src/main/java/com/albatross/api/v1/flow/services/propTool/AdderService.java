@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.propTool.Adder;
 import com.albatross.api.v1.flow.model.propTool.AdderState;
+import com.albatross.api.v1.flow.model.propTool.AdderType;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -44,10 +46,15 @@ public class AdderService {
     return results;
   }
 
+  public List<AdderType> getAdderTypes() {
+    List<AdderType> results = sqlCache.query("propToolAdder.getAdderTypes", Collections.emptyMap(), AdderType.class);
+    return results;
+  }
+
   public Optional<Adder> getAdder(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<Adder> results = sqlCache.get("propToolAdder.getOne", params, Adder.class);
+    Optional<Adder> results = sqlCache.get("propToolAdder.getOne", params, new AdderMapper<>(Adder.class, om));
     return results;
   }
 
@@ -55,6 +62,8 @@ public class AdderService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("adderName", adder.getAdderName());
+    params.put("adderTypeId", adder.getAdderTypeId());
+    params.put("active", adder.getActive());
     Long id;
 
     if(null != adder.getId()) {
@@ -66,6 +75,27 @@ public class AdderService {
       params.put("createdById", user.getId());
       params.put("companyId", user.getCompanyId());
       id = sqlCache.updateReturningId("propToolAdder.insert", params, "id").longValue();
+    }
+
+    for (AdderState adderState: adder.getAdderStates()) {
+      params.put("adderId", id);
+      params.put("companyStateId", adderState.getCompanyStateId());
+      params.put("adderAmount", adderState.getAdderAmount());
+      params.put("archived", adderState.isArchived());
+
+      if(null != adderState.getId()) {
+        params.put("adderStateId", adderState.getId());
+        sqlCache.update("propToolAdder.updateAdderState", params);
+      } else {
+        // If newly added and archived, don't insert, just skip
+        if (!adderState.isArchived()) {
+          if (!params.containsKey("createdById")) {
+            params.put("createdById", user.getId());
+          }
+
+          sqlCache.update("propToolAdder.insertAdderState", params);
+        }
+      }
     }
 
     return getAdder(id);

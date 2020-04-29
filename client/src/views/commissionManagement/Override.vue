@@ -49,7 +49,7 @@
                 <v-btn
                   color="primary"
                   text
-                  @click="deleteConfirm = true; deleteOverride()">
+                  @click="[deleteConfirm = true, deleteOverride()]">
                   Yes
                 </v-btn>
               </v-card-actions>
@@ -112,7 +112,7 @@
                 <v-btn
                   color="primary"
                   text
-                  @click="inactivateConfirm = true; inactivateOverride()">
+                  @click="[inactivateConfirm = true, inactivateOverride()]">
                   Yes
                 </v-btn>
               </v-card-actions>
@@ -176,7 +176,7 @@
                 <v-spacer></v-spacer>
                 <v-btn
                   text
-                  @click="cloneDialog = false; cloneStartDate = null"
+                  @click="[cloneDialog = false, cloneStartDate = null]"
                 >
                   Cancel
                 </v-btn>
@@ -336,7 +336,7 @@
                             v-model="item.m2Allocation">
               </v-text-field>
               <v-btn :disabled="!item.m1Allocation || !item.m2Allocation"
-                     @click="expanded = []; updateReceivingUser(item)">Save</v-btn>
+                     @click="[expanded = [], updateReceivingUser(item)]">Save</v-btn>
             </td>
           </template>
 
@@ -406,7 +406,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addAssignedUser = !addAssignedUser; newAssignedUser = {}; userHistory = []">
+            <v-btn text @click="[addAssignedUser = !addAssignedUser, newAssignedUser = {}, userHistory = []]">
               <v-icon v-if="addAssignedUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -554,7 +554,7 @@
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
               <td>
-                <v-btn small text @click="assignedUserExpanded = [item]; getUserHistory(item.userId)"
+                <v-btn small text @click="[assignedUserExpanded = [item], getUserHistory(item.userId)]"
                        v-if="override.status === 'PENDING' && !assignedUserExpanded.includes(item)">
                   <v-icon>edit</v-icon>
                 </v-btn>

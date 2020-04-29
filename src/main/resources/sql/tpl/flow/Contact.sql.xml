@@ -115,6 +115,7 @@
        c.city,
        c.state_id,
        s.state,
+       c.postal_code,
        c.country_id,
        ct.country,
        c.owner_user_position_id,

@@ -29,7 +29,7 @@ public class AsyncProjectProcessStepService {
     childFunctions.forEach(childFunction -> {
       try {
         String params = String.join(", ", prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), userId));
-        String query = String.format("select * from flow.%s(%s)", childFunction.getFunctionName(), params);
+        String query = String.format("select * from %s(%s)", childFunction.getFunctionName(), params);
         sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
         log.info(String.format("Successfully executed child action function. CFA ID: %s, action ID: %s",childFunction.getId(), actionId));
       } catch (Exception e) {

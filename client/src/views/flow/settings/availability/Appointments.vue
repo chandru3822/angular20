@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
-        ADMIN
+        Appointments go here
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -15,7 +15,7 @@
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
-    name: 'Admin',
+    name: 'Appointments',
     components: {
       Snackbar
     },
