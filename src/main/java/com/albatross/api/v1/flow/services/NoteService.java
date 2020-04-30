@@ -78,7 +78,9 @@ public class NoteService {
     p2.put("typeId", typeId);
     sqlCache.query("note.insertNoteRelation", p2, String.class);
 
-    return getNote(noteId);
+    Note fetchedNote = getNote(noteId);
+    fetchedNote.setPrimaryId(note.getPrimaryId());
+    return fetchedNote;
   }
 
   public static class NoteMapper<T> extends BeanPropertyRowMapper<T> {
