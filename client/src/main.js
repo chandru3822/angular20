@@ -18,9 +18,6 @@ import moment from 'moment-timezone'
 import devtools from '@vue/devtools'
 import VueMapbox from 'vue-mapbox'
 import Mapbox from 'mapbox-gl'
-import Datetime from 'vue-datetime'
-// You need a specific loader for CSS files
-import 'vue-datetime/dist/vue-datetime.css'
 
 
 
@@ -41,10 +38,10 @@ Vue.component('downloadExcel', JsonExcel)
 
 Vue.use(Vue2Filters)
 // Vue.use(VueFlatPickr)
-Vue.use(Datetime)
 Vue.use(VueMapbox, { mapboxgl: Mapbox });
+Vue.prototype.$filters = Vue.options.filters
 
-Vue.filter('formatDate', function (value, type, format) {
+Vue.filter('formatDate', function (value, type, format, inputFormat) {
   /*
   //  this part of the code: `moment(String(value))` was throwing format warnings from moment with regular timestamp formats
   //  i can probably handle more scenarios but for now these don't throw errors: .format('YYYY-MM-DD') OR .format('YYYY-MM-DDTHH:mm:ssZ')
@@ -65,7 +62,7 @@ Vue.filter('formatDate', function (value, type, format) {
 
   if (value) {
     // date doesn't do anything with timezone, just reformats the string
-    return type === 'date' ? moment.utc(String(value)).format(format) : moment(String(value)).tz(timezone).format(format)
+    return type === 'date' ? moment.utc(String(value), inputFormat ?? null).format(format) : moment(String(value), inputFormat ?? null).tz(timezone).format(format)
   }
 })
 

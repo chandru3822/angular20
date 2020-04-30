@@ -91,7 +91,6 @@
         }
       },
       async assignToUser(item) {
-        console.log('randaLogger', item)
         //todo: call whatever function humes adds for his screen that does this same thing
         this.snackbar = getSnackbar('WARNING', 'I havent finished this feature yet. waiting to make sure my code is the same as humes')
       },

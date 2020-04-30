@@ -18,6 +18,7 @@ public class AhjInspectionDetail extends AhjInspection {
                                    schedulingWithBrsTechnicianChecklist;
     private List<AhjRequirement> installationRequirements;
     private List<AhjNoteTemplate> noteTemplates;
-    private List<AhjContact> utilityServiceDeptContacts, schedulingContacts, obtainingResultsContacts, feeContacts;
+    private List<AhjContact> utilityServiceDeptContacts, schedulingContacts, obtainingResultsContacts,
+                             feeContacts;
     private List<User> servicingFots;
 }

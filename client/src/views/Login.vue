@@ -76,7 +76,6 @@
       },
       async loginSuccess (details) {
         await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
-        console.log('we be going')
         this.$router.push({name: 'home'})
       }
     }

@@ -128,21 +128,15 @@
                           placeholder=" "
                           :readonly="!userCanEdit"
                           v-model="contact.email"></v-text-field>
-            <div class="field-label">Created Date</div>
-            <datetime
-                type="datetime"
-                v-model="contact.dateCreated"
-                input-class="one-hunned"
-                :zone="timezone.value"
-                :readonly="!userCanEdit"
-                :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
-                :phrases="{ok: 'Ok', cancel: 'Close'}"
-                :hour-step="1"
-                :minute-step="15"
-                use12-hour
-                disabled
-                auto
-            ></datetime>
+            <DatetimePickerInput
+              v-model="contact.dateCreated"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MMMM DD, YYYY'"
+              label="Created Date"
+              :readonly="true"
+            />
+
           </v-card>
         </div>
         <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -175,7 +169,7 @@ import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-import { Datetime } from 'vue-datetime'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getStates} from '@/services/stateService'
 
 export default {
@@ -184,7 +178,7 @@ export default {
     Snackbar,
     CustomValueInput,
     NotesAndActivity,
-    Datetime
+    DatetimePickerInput
   },
   data () {
     return {
@@ -198,7 +192,7 @@ export default {
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
-      timezone: this.$store.state.user.details.timezone,
+      timezone: this.$store.state.user.details.timezone.value,
       changeOwner: false,
       selectedProcess: null,
       availableProcesses: []

@@ -110,13 +110,15 @@
        c.phone,
        c.mobile,
        c.contact_type_id,
+       ct.contact_type,
        c.company_id,
        c.street1,
        c.city,
        c.state_id,
        s.state,
+       c.postal_code,
        c.country_id,
-       ct.country,
+       ctr.country,
        c.owner_user_position_id,
        coalesce((
             SELECT array_to_json(array_agg(row_to_json(projects)))
@@ -138,8 +140,9 @@
                     inner join flow.position p on p.id = up.position_id
                   WHERE up.id = c.owner_user_position_id) o) AS owner
     from flow.contact c
+             inner join flow.contact_type ct on ct.id = c.contact_type_id
              left join flow.state s on s.id = c.state_id
-             inner join flow.country ct on ct.id = c.country_id
+             inner join flow.country ctr on ctr.id = c.country_id
     where c.id = :contactId
 
   ]]></contact.getById>

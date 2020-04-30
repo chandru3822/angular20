@@ -82,8 +82,8 @@ public class PayrollController {
     }
 
     @GetMapping(value = "/{payrollId}/adjustments")
-    public String getPayrollAdjustments(@PathVariable Long payrollId, @RequestParam Long dealId) {
-        return payrollService.getPayrollAdjustments(payrollId, dealId);
+    public String getPayrollAdjustments(@PathVariable Long payrollId, @RequestParam Long projectId) {
+        return payrollService.getPayrollAdjustments(payrollId, projectId);
     }
 
     @PostMapping(value = "/{payrollId}/adjustments")
@@ -103,6 +103,17 @@ public class PayrollController {
         return response.toString();
     }
 
+    @GetMapping(value = "/current/summary")
+    public ResponseEntity<String> getCurrentPayrollSummary() {
+        try {
+            String summary = payrollService.getAccountSummaryForCurrentPayroll();
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping(value = "/{payrollId}/summary")
     public ResponseEntity<String> getPayrollSummary(@PathVariable Long payrollId) {
         try {
@@ -114,9 +125,5 @@ public class PayrollController {
         }
     }
 
-    @GetMapping(value = "/{payrollId}/overrides/{userId}")
-    public String getOverrideDetailsByUser(@PathVariable Long payrollId, @PathVariable Long userId) {
-        return payrollService.getOverrideDetailsByUser(payrollId, userId);
-    }
 
 }

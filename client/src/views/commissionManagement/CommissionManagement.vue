@@ -4,7 +4,7 @@
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1">
           <v-toolbar-title>Commission Management</v-toolbar-title>
-          <v-tabs :optional="true" color="primaryCustom"
+          <v-tabs :optional="false" color="primaryCustom"
                   slot="extension"
                   background-color="white" v-model="model" slider-color="primaryCustom">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
@@ -52,15 +52,15 @@
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Accounting Review',
-          path: '/commissionManagement/accounting',
+          path: '/commissionManagement/accounting/current',
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Payroll Search',
           path: '/commissionManagement/payroll',
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
-          label: 'Admin',
-          path: '/commissionManagement/admin',
+          label: 'Residuals',
+          path: '/commissionManagement/residuals',
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }]
       }

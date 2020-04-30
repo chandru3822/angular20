@@ -30,7 +30,7 @@
                   :key="item.title"
                   :to="item.path"
                   :class="{'shaded-row': item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
-                  @click="menuOpen = false; setTitle(item.title)"
+                  @click="[menuOpen = false, setTitle(item.title)]"
               >
                 <v-list-item-content>
                   <v-list-item-title>{{item.title}}</v-list-item-title>
@@ -126,6 +126,10 @@ export default {
       }, {
         header: 'User Management',
         show: this.hasSettingsAccess
+      }, {
+        path: '/settings/availability',
+        title: 'Availability',
+        show: true
       }, {
         path: '/settings/positions',
         title: 'Positions',

@@ -11,7 +11,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -20,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -29,9 +29,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -58,6 +58,8 @@ public class ProjectProcessStepService {
   private final ProcessStepActionService processStepActionService;
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
+
+  private final AsyncProjectProcessStepService asyncProjectProcessStepService;
 
   private final ObjectMapper om;
 
@@ -102,6 +104,7 @@ public class ProjectProcessStepService {
     params.put("size", file.getSize());
     params.put("createdById", user.getId());
     params.put("attachmentTypeId", attachmentTypeId);
+    params.put("companyId", user.getCompanyId());
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
 
@@ -213,6 +216,7 @@ public class ProjectProcessStepService {
   public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
 
+
     public ProjectProcessStepMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
       super(mappedClass);
       this.objectMapper = objectMapper;
@@ -234,7 +238,7 @@ public class ProjectProcessStepService {
   @Transactional
   public void performAction(Long actionId, Long projectProcessStepId) {
     /*
-     **High level psuedo logic:**
+     **High level pseudo logic:**
 
      * transaction all queries so current state is kept on any errors
      * Performance will be key here as it will be hit a lot and business logic will grow
@@ -264,6 +268,8 @@ public class ProjectProcessStepService {
     });
 
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
+
+    asyncProjectProcessStepService.asyncRunChildFunctions(actionId, projectProcessStepId, securityService.getCurrentUser().getId());
   }
 
   public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
@@ -357,25 +363,277 @@ public class ProjectProcessStepService {
           //@TODO: blow up with error?
       }
     } else if (r.getProcessStepRequirementTypeId() == 2) {
-      Map<String, Object> params = prepareFunctionParams(r);
-      String functionSignature = getFunctionSignature(r, params);
-      Object returnValue = sqlCache.queryBySql("select * from " + r.getFunctionName(), params, Object.class);
+      String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId()));
+      String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
+      //@TODO: Account for function return data types 7 and 9 returning lists
+      Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
       //@TODO: compare returnValue to the requirement value
+      requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
     }
     return requirementMet;
   }
 
-  public String getFunctionSignature(ProjectProcessStepRequirement r, Map<String, Object> params) {
+  public boolean calculateFunctionRequirement(Object functionResult, ProjectProcessStepRequirement r) throws Exception {
+    boolean passed = false;
+    switch (r.getDataTypeId().intValue()) {
+      case 1:
+        // @TODO: Duped from the button logic, potentially combine
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate dateFunctionResult = (functionResult !=  null) ? LocalDate.parse(functionResult.toString(), dateFormatter) : null;
+        LocalDate nowForDate = LocalDate.now();
+        String secondaryDateValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 1:
+            try {
+              Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
+              passed = compareDates(dateFunctionResult, nowForDate.minusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 2:
+            try {
+              Assert.notNull(secondaryDateValue, "Unable to determine secondary value");
+              passed = compareDates(dateFunctionResult, nowForDate.plusDays(Long.parseLong(secondaryDateValue)), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something?
+            }
+            break;
+          case 3:
+            passed = compareDates(dateFunctionResult, nowForDate, r.getOperatorTypeId());
+            break;
+          case 4:
+            try {
+              passed = compareNullDate(dateFunctionResult, r.getOperatorTypeId());
+            } catch (IllegalArgumentException e) {
+              //@TODO: something?
+            }
+            break;
+          case 5:
+            try {
+              passed = compareNonNullDate(dateFunctionResult, r.getOperatorTypeId());
+            } catch (IllegalArgumentException e) {
+              //@TODO: something?
+            }
+            break;
+        }
+        break;
+      case 2:
+        // @TODO: Duped from the button logic, potentially combine
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
+        LocalDateTime timestampFunctionResult = (functionResult !=  null) ? LocalDateTime.parse(functionResult.toString(), dateTimeFormatter).withMinute(0).withSecond(0).withNano(0) : null;
+        LocalDateTime nowForTimestamp =  LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+        String secondaryTimestampValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 6:
+            try {
+              Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
+              passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.minusDays(Long.parseLong(secondaryTimestampValue)).toLocalDate(), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 7:
+            try {
+              Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
+              passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.plusDays(Long.parseLong(secondaryTimestampValue)).toLocalDate(), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 8:
+            passed = compareDates((timestampFunctionResult != null) ? timestampFunctionResult.toLocalDate() : null, nowForTimestamp.toLocalDate(), r.getOperatorTypeId());
+            break;
+          case 9:
+            try {
+              Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
+              passed = compareDateTimes(timestampFunctionResult, nowForTimestamp.minusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 10:
+            try {
+              Assert.notNull(secondaryTimestampValue, "Unable to determine secondary value");
+              passed = compareDateTimes(timestampFunctionResult, nowForTimestamp.plusHours(Long.parseLong(secondaryTimestampValue)), r.getOperatorTypeId());
+            } catch (NumberFormatException e) {
+              //@TODO: something
+            }
+            break;
+          case 11:
+            passed = compareDateTimes(timestampFunctionResult, nowForTimestamp, r.getOperatorTypeId());
+            break;
+          case 12:
+            try {
+              passed = compareNullDateTime(timestampFunctionResult, r.getOperatorTypeId());
+            } catch (IllegalArgumentException e) {
+              //@TODO: something?
+            }
+            break;
+          case 13:
+            try {
+              passed = compareNonNullDateTime(timestampFunctionResult, r.getOperatorTypeId());
+            } catch (IllegalArgumentException e) {
+              //@TODO: something?
+            }
+        }
+        break;
+      case 3:
+        // @TODO: Duped from the button logic, potentially combine
+        Boolean booleanFunctionResult = Boolean.valueOf(functionResult.toString());
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 14:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = booleanFunctionResult != null && booleanFunctionResult;
+                break;
+              case 2:
+                passed = booleanFunctionResult == null || !booleanFunctionResult;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 15:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = booleanFunctionResult != null && !booleanFunctionResult;
+                break;
+              case 2:
+                passed = booleanFunctionResult == null || booleanFunctionResult;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Boolean with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          default:
+            throw new Exception(String.format("Unable to parse data type of Boolean with data type requirement of ID: %s", r.getDataTypeRequirementId()));
+        }
+        break;
+      case 4:
+        // @TODO: Duped from the button logic, potentially combine
+        Double numericFunctionResult = (functionResult == null) ? null : new BigDecimal(functionResult.toString()).setScale(2, RoundingMode.DOWN).doubleValue();
+        switch(r.getDataTypeRequirementId().intValue()) {
+          case 16:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = numericFunctionResult == null;
+                break;
+              case 2:
+                passed = numericFunctionResult != null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 17:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = numericFunctionResult != null;
+                break;
+              case 2:
+                passed = numericFunctionResult == null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Numeric with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+        }
+        break;
+      case 5:
+        // @TODO: Duped from the button logic, potentially combine
+        String stringFunctionResult = (functionResult != null) ? functionResult.toString() : null;
+        // An empty string and null are treated as the same value during text comparison
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 18:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
+                break;
+              case 2:
+                passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 19:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = stringFunctionResult != null && !stringFunctionResult.isEmpty();
+                break;
+              case 2:
+                passed = stringFunctionResult == null || stringFunctionResult.isEmpty();
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+            }
+        }
+        break;
+      case 6:
+      case 9:
+        Long intFunctionResult = (functionResult != null) ? Long.valueOf(functionResult.toString()) : null;
+        switch(r.getDataTypeRequirementId().intValue()) {
+          case 20:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = intFunctionResult == null;
+                break;
+              case 2:
+                passed = intFunctionResult != null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+          case 21:
+            switch (r.getOperatorTypeId().intValue()) {
+              case 1:
+                passed = intFunctionResult != null;
+                break;
+              case 2:
+                passed = intFunctionResult == null;
+                break;
+              case 3:
+              case 4:
+                break;
+              default:
+                throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+        }
+        break;
+      case 7:
+        break;
+      default:
 
-    StringBuilder signature = new StringBuilder();
-
-    return signature.toString();
+    }
+    return passed;
   }
 
-  public Map<String, Object> prepareFunctionParams(ProjectProcessStepRequirement r) throws Exception {
-    Map<String, Object> params = new HashMap<>();
+  public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId) throws Exception {
+    Map<Long, String> params = new TreeMap<>();
 
-    r.getCompanyFunctionParams().forEach(param -> {
+    functionParams.forEach(param -> {
       switch (param.getParameterTypeId().intValue()) {
         case 1:
           Long systemValue = null;
@@ -384,19 +642,20 @@ public class ProjectProcessStepService {
               systemValue = securityService.getCurrentUser().getId();
               break;
             case 2:
-              systemValue = r.getProjectId();
+              systemValue = projectId;
               break;
             default:
               //@TODO: die a horrible death
           }
-          params.put(param.getDisplayOrder().toString(), systemValue);
+          params.put(param.getDisplayOrder(), systemValue != null ? systemValue.toString() : null);
           break;
         case 2:
-          params.put(param.getDisplayOrder().toString(), getTypedDynamicValue(param));
+          params.put(param.getDisplayOrder(), param.getDynamicValue());
           break;
         case 3:
           try {
-            params.put(param.getDisplayOrder().toString(), getParamValueByDataType(param));
+            Object paramValue = getParamValueByDataType(param);
+            params.put(param.getDisplayOrder(), (paramValue != null) ? paramValue.toString() : null);
           } catch (Exception e) {
             ///@TODO: throw ex
           }
@@ -406,41 +665,41 @@ public class ProjectProcessStepService {
       }
     });
 
-    return params;
+    return params.values().toArray(String[]::new);
   }
 
-  public Object getTypedDynamicValue(CompanyFunctionParam param) {
-
-    String startingValue = param.getDynamicValue();
-    Object typedValue = null;
-
-    try {
-      switch (param.getDataTypeId().intValue()) {
-        case 1:
-        case 2:
-          typedValue = Timestamp.valueOf(startingValue);
-          break;
-        case 3:
-          typedValue = Boolean.parseBoolean(startingValue);
-          break;
-        case 4:
-          typedValue = Double.parseDouble(startingValue);
-          break;
-        case 5:
-          typedValue = startingValue;
-          break;
-        case 6:
-          typedValue = Long.parseLong(startingValue);
-          break;
-        default:
-
-      }
-    } catch (Exception e) {
-      //@TODO: die here
-    }
-
-    return typedValue;
-  }
+//  public Object getTypedDynamicValue(CompanyFunctionParam param) {
+//
+//    String startingValue = param.getDynamicValue();
+//    Object typedValue = null;
+//
+//    try {
+//      switch (param.getDataTypeId().intValue()) {
+//        case 1:
+//        case 2:
+//          typedValue = Timestamp.valueOf(startingValue);
+//          break;
+//        case 3:
+//          typedValue = Boolean.parseBoolean(startingValue);
+//          break;
+//        case 4:
+//          typedValue = Double.parseDouble(startingValue);
+//          break;
+//        case 5:
+//          typedValue = startingValue;
+//          break;
+//        case 6:
+//          typedValue = Long.parseLong(startingValue);
+//          break;
+//        default:
+//
+//      }
+//    } catch (Exception e) {
+//      //@TODO: die here
+//    }
+//
+//    return typedValue;
+//  }
 
   public Object getParamValueByDataType(CompanyFunctionParam param) throws Exception {
 

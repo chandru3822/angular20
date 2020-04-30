@@ -70,7 +70,7 @@
        dfp.parameter_name,
        null as dynamic_value
     from flow.db_function_param dfp
-    where dfp.db_function_id = :functionId
+    where dfp.db_function_id = :dbFunctionId
       and dfp.archived is not true
       and dfp.parameter_type_id = :parameterTypeId
   ]]></companyFunction.getFunctionDynamicParams>

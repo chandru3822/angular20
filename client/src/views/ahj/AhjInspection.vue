@@ -1,15 +1,15 @@
 <!--suppress CssInvalidPseudoSelector -->
 <template>
   <v-row no-gutters>
-    <v-col class="text-right py-1" cols="12">
-      <a @click="resetForm"
+    <v-col class="ahj-form-btns py-1" cols="12">
+      <a v-if="dataWasChanged"
+         @click="resetForm"
          class="cancel-link"
          style="margin-right: 10px"
       >Cancel</a>
-      <v-btn id="save-btn"
+      <v-btn class="white--text mr-0 save-btn"
              color="primaryButton"
-             class="white--text mr-0"
-             @click="saveAhjInspection"
+             @click="saveDialog = true"
       >Save</v-btn>
     </v-col>
 
@@ -28,6 +28,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(17)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -36,16 +37,19 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjInspection.requiredInspectionTypes"
+                          @change="dataWasChanged = true"
                           label="Type of Inspections Required"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.schedulingNote"
+                        @change="dataWasChanged = true"
                         label="Scheduling Note"
                         filled
                         auto-grow
@@ -73,6 +77,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(18)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -81,17 +86,20 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-textarea v-model="ahjInspection.technicianInstructionNote"
+                        @change="dataWasChanged = true"
                         label="Instructions for BRS Technician"
                         filled
                         auto-grow
             ></v-textarea>
             <v-textarea v-model="ahjInspection.documentationNote"
+                        @change="dataWasChanged = true"
                         label="Documentation Notes"
                         filled
                         auto-grow
@@ -119,6 +127,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(19)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -127,14 +136,17 @@
               ></v-select>
             </div>
             <v-text-field v-model="ahjInspection.timeWindowCallTime"
+                          @change="dataWasChanged = true"
                           label="Time to Call For Window"
                           filled
             ></v-text-field>
             <v-text-field v-model="ahjInspection.timeWindowPhone"
+                          @change="dataWasChanged = true"
                           label="Phone # for Time Window"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.schedulingWithCustomerNote"
+                        @change="dataWasChanged = true"
                         label="Scheduling with Customer Note"
                         filled
                         auto-grow
@@ -158,11 +170,13 @@
           </v-card-title>
           <v-card-text class="mt-4">
             <v-text-field v-model="ahjInspection.obtainingResultsMethod"
+                          @change="dataWasChanged = true"
                           label="Obtaining Results Method"
                           filled
             ></v-text-field>
             <div v-for="item in getCustomFieldsForGroup(20)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -171,12 +185,14 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-textarea v-model="ahjInspection.obtainingResultsNote"
+                        @change="dataWasChanged = true"
                         label="Obtaining Results Notes"
                         filled
                         auto-grow
@@ -204,6 +220,7 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(21)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -212,21 +229,25 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjInspection.inspectionFee"
+                          @change="dataWasChanged = true"
                           label="Re-inspection Fee Amount"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <v-text-field v-model="ahjInspection.paymentMethod"
+                          @change="dataWasChanged = true"
                           label="Payment Method"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.reinspectionNote"
+                        @change="dataWasChanged = true"
                         label="Re-inspection Notes"
                         filled
                         auto-grow
@@ -258,6 +279,7 @@
           <v-card-text class="mt-4 pb-1">
             <div v-for="item in getCustomFieldsForGroup(22)" :key="item.id">
               <v-select v-model="item.intValue"
+                        @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
                         item-value="id"
@@ -266,6 +288,7 @@
               ></v-select>
             </div>
             <v-textarea v-model="ahjInspection.mpuInspectionNote"
+                        @change="dataWasChanged = true"
                         label="MPU Inspection Notes"
                         filled
                         auto-grow
@@ -380,7 +403,7 @@
     </v-row>
 
     <!-- FOURTH ROW -->
-    <v-row no-gutters>
+    <v-row no-gutters class="mb-6">
       <v-col cols="12" md="12" class="px-1">
         <AhjRequirement v-if="dataReady"
                         title="AHJ Specific Installation Requirements"
@@ -392,6 +415,65 @@
         ></AhjRequirement>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="saveDialog" max-width="700">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Save Changes</span>
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <v-card-text class="pb-0">
+          <v-radio-group v-model="ahjInspection.updateAllInState">
+            <v-radio label="Save changes to this AHJ only" :value="false"></v-radio>
+            <v-radio :label="`Save changes to all AHJs in ${ahjInspection.stateName}`" :value="true"></v-radio>
+          </v-radio-group>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions class="px-6">
+          <v-spacer></v-spacer>
+          <a @click="saveDialog = false"
+             class="cancel-link mr-2"
+          >Cancel</a>
+          <v-btn v-if="ahjInspection.updateAllInState"
+                 class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="saveConfirmDialog = true"
+          >Save</v-btn>
+          <v-btn v-else
+                 class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="updateAhjInspection"
+          >Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="saveConfirmDialog" max-width="500">
+      <v-card>
+        <v-card-title>
+          <span class="headline">Confirm</span>
+        </v-card-title>
+
+        <v-card-text class="pb-0 py-2">
+          Are you sure you want to update <strong>ALL</strong>? This action cannot be undone.
+        </v-card-text>
+
+        <v-card-actions class="px-6">
+          <v-spacer></v-spacer>
+          <a @click="saveConfirmDialog = false"
+             class="cancel-link mr-2"
+          >Cancel</a>
+          <v-btn class="white--text mr-0 save-btn"
+                 color="primaryButton"
+                 @click="updateAhjInspection"
+          >Yes</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
@@ -425,6 +507,9 @@
       ahjId: null,
       itemType: 'inspection',
       snackbar: {},
+      saveDialog: false,
+      saveConfirmDialog: false,
+      dataWasChanged: false,
       dataReady: false,
       customFieldGroupAssignments: [],
       ahjInspection: {
@@ -448,18 +533,6 @@
       }
     }),
     methods: {
-      async getCustomFieldGroupAssignmentsForScreen() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {sourceId: this.ahjInspection.id, objectTypeId: 3}
-          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
-          this.customFieldGroupAssignments = cloneDeep(data)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
-        }
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      },
       async getAhjInspection() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -475,9 +548,22 @@
             }
           })
           this.ahjInspection = cloneDeep(data)
+          this.ahjInspection.updateAllInState = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving AHJ Inspection')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+      async getCustomFieldGroupAssignmentsForScreen() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {sourceId: this.ahjInspection.id, objectTypeId: 3}
+          const {data} = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupAssignmentsByObjectType`, {params}, 'blueraven')
+          this.customFieldGroupAssignments = cloneDeep(data)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving custom fields')
         }
         this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -489,24 +575,57 @@
         let match = list.find(l => l.id === int)
         return match ? match.showOther : false
       },
+      resetCustomFieldValueWasChangedFlags() {
+        this.customFieldGroupAssignments.forEach(group => {
+          group.customFieldValues.forEach(cfv => cfv.valueWasChanged = false)
+        })
+      },
       async resetForm() {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        this.dataWasChanged = false
         this.dataReady = false
         this.getAhjInspection().then(() => {
           this.getCustomFieldGroupAssignmentsForScreen().then(() => this.dataReady = true)
         })
       },
-      async saveAhjInspection() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      async updateAhjInspection() {
+        this.saveDialog = false
+        this.saveConfirmDialog = false
+        let updateAllInState = this.ahjInspection.updateAllInState
+
         try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+
+          if (updateAllInState) {
+            try {
+              const {data} = await getRequest(`/ahj/${this.ahjId}/inspection/searchAhjsByState/${this.ahjInspection.stateId}`, 'blueraven')
+              this.ahjInspection.ahjIds = []
+              this.ahjInspection.inspectionIds = []
+
+              data.forEach(row => {
+                this.ahjInspection.ahjIds.push(row.ahjId)
+                this.ahjInspection.inspectionIds.push(row.id)
+              })
+            } catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all inspections in ' + this.ahjInspection.stateName)
+            }
+          }
+
           this.ahjInspection.customFieldGroups = this.customFieldGroupAssignments
           const {data} = await putRequest(`/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
           this.ahjInspection = cloneDeep(data)
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ Inspection saved')
+          this.ahjInspection.updateAllInState = false
+          this.dataWasChanged = false
+          this.resetCustomFieldValueWasChangedFlags()
+          let successMessage = updateAllInState ? 'All inspections in ' + this.ahjInspection.stateName + ' have been updated successfully' : 'Inspection updated successfully'
+          this.snackbar = getSnackbar('SUCCESS', successMessage)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error saving AHJ Inspection')
+          let errorMessage = updateAllInState ? 'An error occurred when attempting to update all inspections in ' + this.ahjInspection.stateName : 'Failed to update inspection'
+          this.snackbar = getSnackbar('ERROR', errorMessage)
         }
+
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -522,6 +641,12 @@
 <style scoped lang="scss">
   .padded-sides {
     padding: 0 5px;
+  }
+  .ahj-form-btns {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
   }
   .title-with-icon {
     display: flex;
@@ -554,7 +679,7 @@
       margin: 0 0 0 7px;
     }
   }
-  #save-btn {
+  .save-btn {
     margin: 10px 5px 10px 0;
     text-transform: capitalize;
   }

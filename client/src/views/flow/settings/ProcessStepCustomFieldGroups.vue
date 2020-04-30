@@ -22,7 +22,7 @@
             ></v-text-field>
             <div v-if="showScheduleGroupCheckbox()">
               <label>Schedule Group:</label>
-              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="getSchedulingFields(); getEventTypes()">
+              <input type="checkbox" class="ml-2" v-model="newGroup.schedulable" @change="[getSchedulingFields(), getEventTypes()]">
             </div>
             <div v-if="newGroup.schedulable">
               <v-select
@@ -54,7 +54,7 @@
             Save
           </v-btn>
           <v-btn
-              @click="newGroup = { schedulingFields: [], schedulable: false }; createNew = false;">
+              @click="[newGroup = { schedulingFields: [], schedulable: false }, createNew = false]">
             Cancel
           </v-btn>
         </v-card>
@@ -85,7 +85,7 @@
                                   v-if="item.edit"
                                   v-model="item.groupName">
                       <template slot="append-outer">
-                        <v-icon @click="saveGroupName(item); item.edit = false">save</v-icon>
+                        <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                         <v-icon @click="item.edit = false">clear</v-icon>
                       </template>
                     </v-text-field>
@@ -94,11 +94,11 @@
                     </a>
                   </td>
                   <td><div class="item-icons">
-                    <v-btn v-if="!item.eventTypeId" small text @click="addField = !addField; selectedIndex = index, expanded = [item]; fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
+                    <v-btn v-if="!item.eventTypeId" small text @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
-                    <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
+                    <v-btn small text @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
                       <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
@@ -135,7 +135,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="item.archived = true; deleteGroupFromStep(item.id)">
+                              @click="[item.archived = true, deleteGroupFromStep(item.id)]">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -233,7 +233,7 @@
                                 <v-btn
                                     color="primary"
                                     text
-                                    @click="cf.archived = true; deleteFieldFromGroup(cf.id)">
+                                    @click="[cf.archived = true, deleteFieldFromGroup(cf.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>

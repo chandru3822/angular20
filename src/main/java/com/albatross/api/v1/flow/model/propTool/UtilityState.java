@@ -14,6 +14,6 @@ public class UtilityState {
   private Long id, utilityId, companyStateId;
   private String state, utilityCompany;
   private Double costPerKwh, escalator;
-  private Boolean archived;
+  private boolean archived;
 }
 

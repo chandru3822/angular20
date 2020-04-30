@@ -465,7 +465,26 @@
         WHERE op.id = :id
     ]]></overridePlan.getPlanStatus>
 
-  <overridePlan.updateReceivingUser><![CDATA[
+  <overridePlan.getReceivingUser><![CDATA[
+    SELECT row_to_json(receiving) receiving
+    FROM (SELECT opu.user_id                        AS "userId",
+                 u.first_name || ' ' || u.last_name AS name,
+                 opu.m1_allocation                      AS "m1Allocation",
+                 opu.m2_allocation                      AS "m2Allocation",
+                 (select
+                      string_agg(DISTINCT p.position, ', ')
+                  from flow.user_position up
+                           inner join flow.position p on p.id = up.position_id
+                  where up.user_id = u.id
+
+                 )                                  AS position
+          FROM brs.override_plan_receiving_user opu
+                   INNER JOIN flow."user" u ON opu.user_id = u.id
+          WHERE override_plan_id = :planId
+            and u.id = :userId) receiving;
+    ]]></overridePlan.getReceivingUser>
+
+  <overridePlan.addReceivingUser><![CDATA[
      WITH new_user AS (
           INSERT INTO brs.override_plan_receiving_user
               (override_plan_id, user_id, m1_allocation, m2_allocation)
@@ -479,6 +498,15 @@
       SET updated  = now(),
           updated_by = :updatedBy
       WHERE id = :planId;
+    ]]></overridePlan.addReceivingUser>
+
+  <overridePlan.updateReceivingUser><![CDATA[
+       UPDATE brs.override_plan_receiving_user
+         SET note = :note,
+         m1_allocation = :m1,
+         m2_allocation = :m2
+       WHERE override_plan_id = :planId
+        AND user_id = :userId
     ]]></overridePlan.updateReceivingUser>
 
   <overridePlan.deleteReceivingUser><![CDATA[
@@ -548,32 +576,6 @@
     WHERE id = :planId
     ]]></overridePlan.deleteAssignedUser>
 
-  <overridePlan.updateMilestone><![CDATA[
-      WITH new_milestone_alloc AS (
-      INSERT INTO brs.override_plan_milestone_allocation
-      (override_plan_id, milestone_query_condition_id, allocation)
-      VALUES (:planId, :queryConditionId, :allocation)
-      ON CONFLICT (override_plan_id, milestone_query_condition_id)
-        DO UPDATE
-          SET
-            allocation = EXCLUDED.allocation
-      RETURNING override_plan_id)
-    UPDATE brs.override_plan
-    SET updated  = now(),
-      updated_by = :updatedBy
-    WHERE id = :planId
-    ]]></overridePlan.updateMilestone>
-
-  <overridePlan.deleteMilestone><![CDATA[
-        WITH delete_milestone_alloc AS (
-          DELETE FROM brs.override_plan_milestone_allocation
-          WHERE override_plan_id = :planId AND milestone_query_condition_id = :queryConditionId)
-        UPDATE brs.override_plan
-        SET updated  = now(),
-          updated_by = :updatedBy
-        WHERE id = :planId;
-    ]]></overridePlan.deleteMilestone>
-
   <overridePlan.approve><![CDATA[
     UPDATE brs.override_plan
     SET approved  = now(),
@@ -610,7 +612,6 @@
                        SELECT
                          opu.user_id as "userId",
                          u.first_name || ' ' || u.last_name AS name,
-                         u.employee_id                      AS "employeeId",
                          p.position,
                          p.id                               AS "positionId"
                        FROM brs.override_plan_receiving_user opu
@@ -627,7 +628,6 @@
                              opa.id,
                              opa.user_id as "userId",
                              u.first_name || ' ' || u.last_name AS name,
-                             u.employee_id                      AS "employeeId",
                              p.position,
                              p.id                               AS "positionId",
                              opa.start_date                     AS "startDate",
@@ -645,6 +645,8 @@
         FROM brs.override_plan op
           INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
           LEFT JOIN brs.override_plan_assigned_user au ON op.id = au.override_plan_id
+        where case when :excludeInactive is true then
+          op.status_id != 3 else 1=1 end
         GROUP BY op.id, op.name, op.description, op.total, ops.status_type
         ORDER BY op.name
      ) t
@@ -676,7 +678,6 @@ FROM (SELECT op.id,
              coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
                        FROM (SELECT opu.user_id                        AS "userId",
                                     u.first_name || ' ' || u.last_name AS name,
-                                    u.employee_id                      AS "employeeId",
                                     opu.m1_allocation                      AS "m1Allocation",
                                     opu.m2_allocation                      AS "m2Allocation",
                                     (select
@@ -689,13 +690,11 @@ FROM (SELECT op.id,
                              FROM brs.override_plan_receiving_user opu
                                       INNER JOIN flow."user" u ON opu.user_id = u.id
                              WHERE override_plan_id = op.id
-                             GROUP BY 1, 2, 3, 4, 5, 6) u), '[]')                          AS "receivingUsers",
+                             GROUP BY 1, 2, 3, 4, 5) u), '[]')                          AS "receivingUsers",
              coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
                        FROM (SELECT opa.id,
                                     opa.user_id                        AS "userId",
                                     u.first_name || ' ' || u.last_name AS name,
-                                    u.employee_id                      AS "employeeId",
-                                    u.hire_date                        AS "hireDate",
                                     opa.start_date                     AS "startDate",
                                     opa.end_date                       AS "endDate"
                              FROM brs.override_plan_assigned_user opa
@@ -703,7 +702,7 @@ FROM (SELECT op.id,
                                       INNER JOIN flow.user_position up ON u.id = up.user_id
                                       INNER JOIN flow.position p ON up.position_id = p.id
                              WHERE opa.override_plan_id = op.id
-                             GROUP BY 1, 2, 3, 4, 5, 6, 7) u), '[]')                    AS "assignedUsers"
+                             GROUP BY 1, 2, 3, 4, 5) u), '[]')                    AS "assignedUsers"
       FROM brs.override_plan op
                INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
       WHERE op.id = :id) t;
@@ -727,20 +726,18 @@ FROM (SELECT op.id,
 
   <overridePlan.findUsers><![CDATA[
       SELECT coalesce(array_to_json(array_agg(row_to_json(results))), '[]')
-      FROM (SELECT u.id                                                             AS "userId",
+FROM (SELECT u.id                                                             AS "userId",
              u.first_name || ' ' || u.last_name                               AS name,
-             u.employee_id                                                    AS "employeeId",
              u.email,
-             u.hire_date as "hireDate",
              (SELECT string_agg( distinct position, ', ')
               FROM flow.user_position up1
-                     INNER JOIN brs.position p1 ON p1.id = up1.position_id
+                       INNER JOIN flow.position p1 ON p1.id = up1.position_id
               WHERE up1.user_id = u.id
-                AND CASE WHEN :positions = 1
-                              THEN p1.id IN (1, 2, 3)
-                         WHEN :positions = 4
-                              THEN p1.id IN (4, 5, 6)
-                        END)                                                  AS position,
+                AND CASE WHEN :positionId = 1
+                             THEN p1.id IN (1, 2, 3)
+                         WHEN :positionId = 4
+                             THEN p1.id IN (4, 5, 6)
+                  END)                                                  AS position,
              coalesce((SELECT array_to_json(array_agg(row_to_json(aup)))
                        FROM (SELECT op.id,
                                     op.name,
@@ -748,39 +745,60 @@ FROM (SELECT op.id,
                                     opau.start_date AS "startDate",
                                     opau.end_date   AS "endDate"
                              FROM brs.override_plan op
-                                    INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
-                                    INNER JOIN brs.override_plan_assigned_user opau
-                                      ON op.id = opau.override_plan_id AND opau.user_id = u.id
+                                      INNER JOIN brs.override_plan_status ops ON op.status_id = ops.id
+                                      INNER JOIN brs.override_plan_assigned_user opau
+                                                 ON op.id = opau.override_plan_id AND opau.user_id = u.id
                              WHERE op.status_id <> 3
-                                     AND opau.end_date IS NULL
+                                 AND opau.end_date IS NULL
                                 OR opau.end_date >= current_date) aup), '[]') AS "assignedUserPlans"
       FROM flow."user" u
-        WHERE (
-                lower(trim(first_name)) || '' || lower(trim(last_name)) LIKE :search
-                  OR lower(trim(last_name)) LIKE :search
-                  OR lower(trim(u.email)) LIKE :search
-                )
-        AND (CASE WHEN :positions:: INT IS NOT NULL
-                       THEN u.id IN (SELECT up.user_id
-                                     FROM flow.user_position up
-                                            INNER JOIN brs.position p ON p.id = up.position_id
-                                     WHERE  (
-                                               CASE WHEN :positions = 1
-                                                         THEN p.id IN (1, 2, 3)
-                                                    WHEN :positions = 4
-                                                         THEN p.id IN (4, 5, 6) END)) ELSE 1 = 1 END)
+      WHERE (
+              lower(trim(first_name)) || ' ' || lower(trim(last_name)) LIKE lower(:search)
+                OR lower(trim(last_name)) LIKE lower(:search)
+                OR lower(trim(u.email)) LIKE lower(:search)
+          )
+        AND (CASE WHEN :positionId:: INT IS NOT NULL
+                      THEN u.id IN (SELECT up.user_id
+                                    FROM flow.user_position up
+                                             INNER JOIN flow.position p ON p.id = up.position_id
+                                    WHERE  (
+                                               CASE WHEN :positionId = 1
+                                                        THEN p.id IN (1, 2, 3)
+                                                    WHEN :positionId = 4
+                                                        THEN p.id IN (4, 5, 6) END)) ELSE 1 = 1 END)
+        and ( case when :planId::int is not null and :isReceiving::boolean is true
+                then u.id not in (
+                    select user_id
+                    from brs.override_plan_receiving_user
+                    where override_plan_id = :planId
+                ) else 1 = 1 end
+            )
+        and ( case when :planId::int is not null and :isReceiving::boolean is false
+                       then u.id not in (
+              select user_id
+              from brs.override_plan_assigned_user
+              where override_plan_id = :planId
+          ) else 1 = 1 end
+          )
 
       ORDER BY first_name, last_name
       LIMIT 10) results;
+
     ]]></overridePlan.findUsers>
+
+  <overridePlan.updatePlanUser><![CDATA[
+       UPDATE brs.override_plan_assigned_user
+         SET note = :note,
+         end_date = :endDate
+       WHERE id = :id
+        AND user_id = :userId
+    ]]></overridePlan.updatePlanUser>
 
   <overridePlan.getAssignedUsers><![CDATA[
     SELECT coalesce(array_to_json(array_agg(row_to_json(u))), '[]')
     FROM (SELECT opa.id,
                  opa.user_id                        AS "userId",
                  u.first_name || ' ' || u.last_name AS name,
-                 u.employee_id                      AS "employeeId",
-                 u.hire_date                        AS "hireDate",
                  opa.start_date                     AS "startDate",
                  opa.end_date                       AS "endDate",
                  string_agg(DISTINCT p.position, ', ') FILTER (
@@ -798,15 +816,33 @@ FROM (SELECT op.id,
                  INNER JOIN flow.position p ON up.position_id = p.id
           WHERE op.id = :planId
           AND up.active IS TRUE
-          GROUP BY 1, 2, 3, 4, 5, 6, 7) u
+          GROUP BY 1, 2, 3, 4, 5, 6) u
     ]]></overridePlan.getAssignedUsers>
+
+  <overridePlan.getAssignedUser><![CDATA[
+    SELECT row_to_json(assigned) assigned
+    FROM (SELECT
+              opa.id,
+              opa.user_id as "userId",
+              u.first_name || ' ' || u.last_name AS name,
+              p.position,
+              p.id                               AS "positionId",
+              opa.start_date                     AS "startDate",
+              opa.end_date                       AS "endDate"
+          FROM brs.override_plan_assigned_user opa
+                   INNER JOIN flow."user" u ON opa.user_id = u.id
+                   INNER JOIN flow.user_position up ON u.id = up.user_id
+                   INNER JOIN flow.position p ON up.position_id = p.id
+          WHERE opa.override_plan_id = :planId
+            and u.id = :userId
+            AND up.archived IS NOT TRUE AND up.primary_flag IS TRUE) assigned;
+    ]]></overridePlan.getAssignedUser>
 
   <overridePlan.getReceivingUsers><![CDATA[
     SELECT coalesce(array_to_json(array_agg(row_to_json(u))), '[]')
     FROM (SELECT opu.user_id                        AS "userId",
              opu.allocation,
              u.first_name || ' ' || u.last_name AS name,
-             u.employee_id                      AS "employeeId",
              up.active,
              string_agg(DISTINCT p.position, ', ') FILTER (
              WHERE
@@ -826,36 +862,4 @@ FROM (SELECT op.id,
       GROUP BY 1, 2, 3, 4, 5) u;
     ]]></overridePlan.getReceivingUsers>
 
-  <overridePlan.export><![CDATA[
-        select op.name,
-               u.first_name||' '||u.last_name closer,
-               opau.start_date,
-               opau.end_date,
-               op.total,
-               ops.status_type,
-               (select allocation
-                from brs.override_plan_milestone_allocation opma
-                inner join brs.milestone_query_condition mqc
-                    on opma.milestone_query_condition_id = mqc.id and milestone_id = 1
-                where opma.override_plan_id = op.id) as milestone_1_allocation,
-               (select allocation
-                from brs.override_plan_milestone_allocation opma
-                inner join brs.milestone_query_condition mqc
-                    on opma.milestone_query_condition_id = mqc.id and milestone_id = 2
-                where opma.override_plan_id = op.id) as milestone_2_allocation,
-               json_object_agg(u1.first_name||' '||u1.last_name,
-                               opru.allocation) receiving_users
-        from brs.override_plan op
-         inner join brs.override_plan_assigned_user opau
-            on opau.override_plan_id = op.id
-        inner join flow.user u
-            on u.id = opau.user_id
-        inner join brs.override_plan_status ops
-            on ops.id = op.status_id
-        inner join brs.override_plan_receiving_user opru
-            on opru.override_plan_id = op.id
-        inner join flow.user u1
-            on u1.id = opru.user_id
-        group by op.name, closer, opau.start_date, opau.end_date, total, status_type, milestone_1_allocation, milestone_2_allocation;
-    ]]></overridePlan.export>
 </sql>

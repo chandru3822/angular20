@@ -16,7 +16,6 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -291,57 +290,49 @@ public class AhjUtilityService {
     sqlCache.update("ahj.utility.requirement.archive", params);
   }
 
-  public static class BaseAhjDetailMapper<T> extends BeanPropertyRowMapper<T> {
+  public static class AhjUtilityDetailMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
-    public BaseAhjDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+    public AhjUtilityDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
       super(mappedClass);
       this.objectMapper = objectMapper;
     }
-  }
 
-  public static class AhjUtilityDetailMapper<T> extends BaseAhjDetailMapper<T> {
-
-    public AhjUtilityDetailMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass, objectMapper);
-    }
-
-    @Override
     protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjChecklistItem>> itemRef = new TypeReference<>() {};
       TypeReference<List<AhjContact>> contactTypeRef = new TypeReference<>() {};
-      TypeReference<List<AhjLink>> linkTypeRef = new TypeReference<>() {};
       TypeReference<List<AhjRequirement>> requirementTypeRef = new TypeReference<>() {};
 
       bw.registerCustomEditor(List.class, "customerSignatureLinks",
-        new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "ptoLinks",
-        new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "ptoFollowupLinks",
-        new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "submissionLinks",
-        new JsonCollectionDeserializer(linkTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(linkTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "submissionChecklist",
-        new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "approvalChecklist",
-        new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "ptoChecklist",
-        new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "utilityInspectionChecklist",
-        new JsonCollectionDeserializer(itemRef, super.objectMapper));
+        new JsonCollectionDeserializer(itemRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "contacts",
-        new JsonCollectionDeserializer(contactTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
       bw.registerCustomEditor(List.class, "utilityRequirements",
-        new JsonCollectionDeserializer(requirementTypeRef, super.objectMapper));
+        new JsonCollectionDeserializer(requirementTypeRef, objectMapper));
     }
   }
 }

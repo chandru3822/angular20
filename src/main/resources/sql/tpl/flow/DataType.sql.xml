@@ -8,7 +8,8 @@
        cdt.archived,
        dt.data_type,
        dt.custom_behavior,
-       dt.system_list
+       dt.system_list,
+       cdt.allow_multiple
     from flow.company_data_type cdt
            inner join flow.data_type dt on dt.id = cdt.data_type_id
     where cdt.company_id = :companyId

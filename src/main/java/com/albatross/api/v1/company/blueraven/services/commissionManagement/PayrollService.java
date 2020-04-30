@@ -49,7 +49,7 @@ public class PayrollService {
         params.put("endDate", searchQuery.getEndDate());
         params.put("customerName", searchQuery.getCustomerName());
         params.put("salesRepId", searchQuery.getSalesRepId());
-        params.put("dealId", searchQuery.getDealId());
+        params.put("projectId", searchQuery.getProjectId());
         Optional<String> results = sqlCache.get("payroll.search", params, new SingleColumnRowMapper<>(String.class));
         return results.orElse("[]");
     }
@@ -64,14 +64,6 @@ public class PayrollService {
         return sqlCache.query("payroll.getApprovedPayrolls",
                 Collections.emptyMap(),
                 Payroll.class);
-    }
-
-    public void refresh() {
-        new SimpleJdbcCall(dataSource)
-                .withCatalogName("brs")
-                .withProcedureName("refresh_payroll_views")
-                .withoutProcedureColumnMetaDataAccess()
-                .execute();
     }
 
     @Transactional
@@ -151,10 +143,7 @@ public class PayrollService {
         params.put("payrollId", payrollId);
 
         Optional<Boolean> created = sqlCache.getBySql("select brs.create_payroll_snapshot(:payrollId::int, :currentUserId::int)", params, new SingleColumnRowMapper<>(Boolean.class));
-        if (created.isPresent()) {
-            return created.get();
-        }
-        return false;
+        return created.orElse(false);
     }
 
     public String getAccountReview(AccountSearchRequest request) throws SQLException {
@@ -162,7 +151,7 @@ public class PayrollService {
         params.put("payrollId", request.getPayrollId());
         params.put("periodEndDate", request.getPeriodEnd());
         params.put("locked", request.getLocked());
-        params.put("dealId", null);
+        params.put("projectId", null);
         params.put("customerId", request.getCustomerId());
         params.put("salesRepId", request.getSalesRepId());
         params.put("cancelStartDate", request.getCancelStartDate());
@@ -170,13 +159,8 @@ public class PayrollService {
         params.put("overridePlanId", request.getOverridePlanId());
         params.put("commissionPlanId", request.getCommissionPlanId());
 
-        if (request.getDealId() != null) {
-            params.put("dealId", createSqlArrayOfType("int", Arrays.asList(request.getDealId())));
-        }
-
-        if (request.isRefresh()) {
-            // refresh data before fetching from mat view.. not really a huge fan of this
-            refresh();
+        if (request.getProjectId() != null) {
+            params.put("projectId", createSqlArrayOfType("int", Arrays.asList(request.getProjectId())));
         }
 
         Optional<String> bySql = sqlCache.get("payroll.getAccountReview", params, new SingleColumnRowMapper<>(String.class));
@@ -208,6 +192,11 @@ public class PayrollService {
         }
     }
 
+    public String getAccountSummaryForCurrentPayroll() {
+        HashMap<String, Object> params = new HashMap<>();
+        return sqlCache.get("payroll.getCurrentSummary", params, new SingleColumnRowMapper<>(String.class)).orElse("[]");
+    }
+
     public String getAccountSummaryByPayrollId(Long payrollId) {
             HashMap<String, Object> params = new HashMap<>();
             params.put("payrollId", payrollId);
@@ -223,33 +212,18 @@ public class PayrollService {
         params.put("payrollId", payrollId);
         params.put("description", updateRequest.getDescription());
         params.put("periodEndDate", updateRequest.getPeriodEnd());
-        params.put("dealIds", createSqlArrayOfType("bigint", updateRequest.getDealIds()));
+        params.put("projectIds", createSqlArrayOfType("bigint", updateRequest.getProjectIds()));
 
         int update = sqlCache.update("payroll.updatePayroll", params);
 
-        if (!updateRequest.getLockedDeals().isEmpty()) {
-            updateRequest.getLockedDeals().forEach(p -> updateLockedDeal(p.getId(), p.isLocked()));
-        }
-
         return update != 0;
-    }
-
-    private int updateLockedDeal(Long dealId, Boolean isLocked) {
-
-//        HashMap<String, Object> params = new HashMap<>();
-//        params.put("dealId", dealId);
-//        params.put("locked", isLocked);
-//
-//        return sqlCache.updateBySql("UPDATE brs.deal SET locked = :locked WHERE id = :dealId", params);
-//        todo handle updating locked deal
-        return 1;
     }
 
     public void addPayrollAdjustment(Long payrollId, PayrollAdjustmentRequest adjustmentRequest) {
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("payrollId", payrollId);
-        params.put("dealId", adjustmentRequest.getDealId());
+        params.put("projectId", adjustmentRequest.getProjectId());
         params.put("closerId", adjustmentRequest.getCloserId());
         params.put("amount", adjustmentRequest.getAmount());
         params.put("note", adjustmentRequest.getNote());
@@ -259,10 +233,10 @@ public class PayrollService {
         sqlCache.update("payroll.addCommissionAdjustment", params);
     }
 
-    public String getPayrollAdjustments(Long payrollId, Long dealId) {
+    public String getPayrollAdjustments(Long payrollId, Long projectId) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("payrollId", payrollId);
-        params.put("dealId", dealId);
+        params.put("projectId", projectId);
 
         Optional<String> adjustmentsOpt = sqlCache.get("payroll.getCommissionAdjustments", params, new SingleColumnRowMapper<>(String.class));
         return adjustmentsOpt.orElse("[]");
@@ -282,15 +256,6 @@ public class PayrollService {
         return false;
     }
 
-    public String getOverrideDetailsByUser(Long payrollId, Long userId) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("payrollId", payrollId);
-        params.put("userId", userId);
-
-        Optional<String> overrideDetails = sqlCache.get("payroll.getOverrideDetailsByUser", params, new SingleColumnRowMapper<>(String.class));
-        return overrideDetails.orElse("[]");
-    }
-
     private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             return connection.createArrayOf(typeName, array.toArray());
@@ -298,7 +263,7 @@ public class PayrollService {
     }
 
     @Data
-    public static class DealLocked {
+    public static class ProjectLocked {
         private Long id;
         private boolean locked;
     }
@@ -306,13 +271,12 @@ public class PayrollService {
     @Data
     public static class PayrollUpdateRequest {
         private String description, periodEnd;
-        private List<Integer> dealIds;
-        private List<DealLocked> lockedDeals;
+        private List<Integer> projectIds;
     }
 
     @Data
     public static class PayrollAdjustmentRequest {
-        private Long dealId, closerId;
+        private Long projectId, closerId;
         private Double amount;
         private String note;
 

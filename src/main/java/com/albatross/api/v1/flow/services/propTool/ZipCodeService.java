@@ -50,6 +50,7 @@ public class ZipCodeService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("zipCode", zipCode.getZipCode());
+    params.put("active", zipCode.getActive());
     Long id;
 
     if(null != zipCode.getId()) {

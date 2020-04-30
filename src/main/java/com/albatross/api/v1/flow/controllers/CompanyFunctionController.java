@@ -41,8 +41,8 @@ public class CompanyFunctionController {
   }
 
   @GetMapping(value = "/{id}/dynamicParams", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<RequirementParamDynamicValue> getFunctionDynamicParams(@PathVariable Long id) {
-    return companyFunctionService.getFunctionDynamicParams(id);
+  public List<RequirementParamDynamicValue> getFunctionDynamicParams(@PathVariable("id") Long dbFunctionId) {
+    return companyFunctionService.getFunctionDynamicParams(dbFunctionId);
   }
 
   @PostMapping(value = "/{id}/param", produces = MediaType.APPLICATION_JSON_VALUE)

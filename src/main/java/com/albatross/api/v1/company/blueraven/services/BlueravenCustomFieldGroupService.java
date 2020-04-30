@@ -13,10 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -57,8 +60,7 @@ public class BlueravenCustomFieldGroupService {
     if (groups != null && groups.size() > 0) {
       for(CustomFieldGroup group : groups) {
         for(CustomFieldValue cfv : group.getCustomFieldValues()) {
-          //todo: only save if something changed
-          if(fieldHasValue(cfv)) {
+          if(fieldHasValue(cfv) && cfv.getValueWasChanged()) {
             HashMap<String, Object> params = new HashMap<>();
             params.put("dateValue", cfv.getDateValue());
             params.put("timestampValue", cfv.getTimestampValue());
@@ -89,7 +91,7 @@ public class BlueravenCustomFieldGroupService {
     if (groups != null && groups.size() > 0) {
       for(CustomFieldGroup group : groups) {
         for(CustomFieldValue cfv : group.getCustomFieldValues()) {
-          if(fieldHasValue(cfv)) {
+          if(fieldHasValue(cfv) && cfv.getValueWasChanged()) {
             HashMap<String, Object> params = new HashMap<>();
             params.put("dateValue", cfv.getDateValue());
             params.put("timestampValue", cfv.getTimestampValue());
@@ -99,21 +101,25 @@ public class BlueravenCustomFieldGroupService {
             params.put("intValue", cfv.getIntValue());
             params.put("intArrayValue", cfv.getIntArrayValue());
             params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-            params.put("sourceIds", sourceIds);
+            params.put("modifiedById", currentUser.getId());
+            params.put("createdById", currentUser.getId());
 
-            if(null != cfv.getId()){
-              params.put("id", cfv.getId());
-              params.put("modifiedById", currentUser.getId());
-              sqlCache.update("blueravenCustomFieldGroup.bulkUpdateCustomFieldValues", params);
-            } else {
-              params.put("createdById", currentUser.getId());
+            ArrayList<Long> cfvIds = new ArrayList<>();
 
-              AtomicInteger count = new AtomicInteger();
-              sourceIds.forEach(sourceId -> {
-                params.put("sourceId", sourceId);
+            sourceIds.forEach(sourceId -> {
+              params.put("sourceId", sourceId);
+              Optional<Long> id = sqlCache.get("blueravenCustomFieldGroup.findBySourceId", params, new SingleColumnRowMapper<>(Long.class)); // only returns ids of rows that need to be updated
+
+              if (id.isEmpty()) {
                 sqlCache.update("blueravenCustomFieldGroup.insertCustomFieldValue", params);
-                count.getAndIncrement();
-              });
+              } else {
+                cfvIds.add(id.get());
+              }
+            });
+
+            if (cfvIds.size() > 0) {
+              params.put("cfvIds", cfvIds);
+              sqlCache.update("blueravenCustomFieldGroup.bulkUpdateCustomFieldValues", params);
             }
           }
         }

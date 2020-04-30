@@ -1,25 +1,6 @@
 <template>
   <v-row>
     <v-col cols="12">
-<!--      <v-row class="mb-1 px-3" align="center">-->
-<!--        <v-col class="pa-0 text-left" cols="6">-->
-<!--          <v-tabs-->
-<!--            v-model="tabs"-->
-<!--            background-color="rgba(0,0,0,0)"-->
-<!--            slider-color="primaryCustom"-->
-<!--          >-->
-<!--            <v-tab to="/ahj" class="ma-0">AHJ</v-tab>-->
-<!--            <v-tab to="/ahjUtility" class="text-capitalize">Utility</v-tab>-->
-<!--          </v-tabs>-->
-<!--        </v-col>-->
-<!--        <v-col class="pa-0 text-right" cols="6">-->
-<!--          <v-btn-->
-<!--            color="primaryButton"-->
-<!--            class="ma-0 app-button white&#45;&#45;text"-->
-<!--            @click="addItem"-->
-<!--          >Add New</v-btn>-->
-<!--        </v-col>-->
-<!--      </v-row>-->
       <v-toolbar color="white" class="elevation-1">
         <v-toolbar-title class="app-title">
           <v-btn text to="/ahj" color="primary">
@@ -38,167 +19,139 @@
         </v-toolbar-items>
       </v-toolbar>
 
-
-          <v-toolbar color="white" class="elevation-1 mt-3">
-              <v-text-field
-                  class="mt-2"
-                  v-model="ahjSearch"
-                  prepend-inner-icon="search"
-                  label="Search..."
-                  single-line
-                  hide-details
-              ></v-text-field>
-            <v-spacer v-if="!IS_MOBILE"></v-spacer>
-          </v-toolbar>
-            <v-data-table
-              :headers="visibleHeaders"
-              :items="filteredAhjs"
-              :search="ahjSearch"
-              :options="pagination"
-              :items-per-page="-1"
-              :mobile-breakpoint="0"
-              fixed-header
-              dense
-              hide-default-footer
-              class="elevation-1 ahj-table"
-              style="width: 100%"
+      <v-data-table
+        :headers="headers"
+        :items="filteredAhjs"
+        :options="pagination"
+        :items-per-page="-1"
+        :mobile-breakpoint="0"
+        fixed-header
+        dense
+        hide-default-footer
+        class="elevation-1 ahj-table"
+      >
+        <template #header="{ props: { headers } }">
+          <tr>
+            <th v-for="header in headers" :key="header.text" @click="changeSort(header.value)"
+                :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
+                :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
             >
-<!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
-<!--                    <template #header="{ headers }">-->
-<!--                      <thead>-->
-<!--                        <tr-->
-<!--                          v-for="header in headers"-->
-<!--                          :key="header.text"-->
-<!--                        >-->
-<!--                          <th-->
-<!--                            :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"-->
-<!--                            @click="changeSort(header.value)"-->
-<!--                          >-->
-<!--                            {{ header.text }}-->
-<!--                            <v-icon small>arrow_upward</v-icon>-->
-<!--                          </th>-->
-<!--                        </tr>-->
-<!--                        <tr-->
-<!--                          v-for="header in headers"-->
-<!--                          :key="header.text"-->
-<!--                          style="padding-top: 10px"-->
-<!--                        >-->
-<!--                          <td>-->
-<!--                            <v-text-field-->
-<!--                              v-if="ahjFilters[header.value].type === FILTER_TYPE.TEXT"-->
-<!--                              v-model="ahjFilters[header.value].value"-->
-<!--                              filled-->
-<!--                            />-->
-<!--                            <v-select-->
-<!--                              v-else-if="ahjFilters[header.value].type === FILTER_TYPE.SELECT"-->
-<!--                              :items="ahjSearchFilters[header.value]"-->
-<!--                              v-model="ahjFilters[header.value].value"-->
-<!--                              filled-->
-<!--                            ></v-select>-->
-<!--                          </td>-->
-<!--                        </tr>-->
-<!--                      </thead>-->
-<!--                    </template>-->
+              <div v-if="ahjFilters[header.value]" class="pt-2 table-filter">
+                <v-text-field v-if="ahjFilters[header.value].type === 'text'"
+                              v-model="ahjFilters[header.value].value"
+                              :placeholder="'Enter a ' + header.text.toLowerCase()"
+                              clearable
+                              filled
+                              dense
+                ></v-text-field>
+                <v-select v-else-if="ahjFilters[header.value].type === 'select'"
+                          :items="states"
+                          v-model="ahjFilters[header.value].value"
+                          :placeholder="'Select a ' + header.text.toLowerCase()"
+                          clearable
+                          filled
+                          dense
+                ></v-select>
+              </div>
+            </th>
+          </tr>
+        </template>
 
-              <template #body="{ items }" class="table-body">
-                <tr
-                  v-for="(ahj, index) in items"
-                  :key="ahj.id"
-                  :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
-                >
-                  <td class="text-left">{{ ahj.name ? ahj.name : '' }}</td>
-                  <td class="text-left">{{ ahj.metroArea ? ahj.metroArea : '' }}</td>
-                  <td class="text-left">{{ ahj.state ? ahj.state : '' }}</td>
-                  <td class="text-left">
-                    <router-link v-if="IS_MOBILE" :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
-                    <span v-else>
-                      <router-link :to="'ahj/' + ahj.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
-                      <router-link :to="'ahj/' + ahj.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
-                      <router-link :to="'ahj/' + ahj.id + '/design'" class="mr-3 ahj-link">Design</router-link>
-                    </span>
-                    <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(ahj)">
-                      edit
-                    </v-icon>
-                    <v-icon small class="ahj-link-icon" @click="deleteItem(ahj)">
-                      delete
-                    </v-icon>
-                  </td>
-                </tr>
-              </template>
-            </v-data-table>
+        <template #item="{ item, index }" class="table-body">
+          <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+            <td class="text-left">{{ item.name ? item.name : '' }}</td>
+            <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
+            <td class="text-left">{{ item.state ? item.state : '' }}</td>
+            <td class="text-left">
+              <router-link v-if="IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
+              <span v-else>
+                <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
+                <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
+                <router-link :to="'ahj/' + item.id + '/design'" class="mr-3 ahj-link">Design</router-link>
+              </span>
+              <v-icon small class="mr-3 ahj-link-icon" @click="editAhj(item)">
+                edit
+              </v-icon>
+              <v-icon small class="ahj-link-icon" @click="deleteItem(item)">
+                delete
+              </v-icon>
+            </td>
+          </tr>
+        </template>
 
-            <v-dialog v-model="ahjDialog" max-width="500px">
-              <v-card>
-                <v-card-title>
-                  <span class="headline">{{ ahjFormTitle }}</span>
-                </v-card-title>
+        <template #no-data>
+          <div class="mt-2 mb-4">No records found</div>
+        </template>
 
-                <v-card-text>
-                  <v-text-field
-                    label="Name"
-                    v-model="editedItem.name"
-                    required
-                    filled
-                  ></v-text-field>
-                  <v-select
-                    label="Metro Area"
-                    :items="metroAreas"
-                    v-model="editedItem.metroAreaId"
-                    required
-                    filled
-                  ></v-select>
-                </v-card-text>
+        <template #no-results>
+          <div class="mt-2 mb-4">No records found</div>
+        </template>
+      </v-data-table>
 
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-                  <v-btn color="primaryButton" raised @click="saveAhj" class="white--text"
-                         :disabled="!editedItem.name || !editedItem.metroAreaId">
-                    {{ ahjBtnTxt }}
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+      <v-dialog v-model="ahjDialog" max-width="500px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">{{ ahjFormTitle }}</span>
+          </v-card-title>
 
-            <v-dialog v-model="ahjDeleteDialog" max-width="500px">
-              <v-card>
-                <v-card-title>
-                  <span class="headline">Confirm</span>
-                </v-card-title>
+          <v-card-text>
+            <v-text-field label="Name"
+                          v-model="editedItem.name"
+                          required
+                          filled
+            ></v-text-field>
+            <v-select label="Metro Area"
+                      :items="metroAreas"
+                      v-model="editedItem.metroAreaId"
+                      required
+                      filled
+            ></v-select>
+          </v-card-text>
 
-                <v-card-text>
-                  Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
-                </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
+            <v-btn color="primaryButton" raised @click="saveAhj" class="white--text"
+                   :disabled="!editedItem.name || !editedItem.metroAreaId">
+              {{ ahjBtnTxt }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
-                  <v-btn color="brRed" class="white--text" raised
-                         @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-        </v-col>
-      <Snackbar :snackbar="snackbar"></Snackbar>
-    </v-row>
+      <v-dialog v-model="ahjDeleteDialog" max-width="500px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Confirm</span>
+          </v-card-title>
+
+          <v-card-text>
+            Are you sure you want to delete the AHJ for {{ ahjToDelete.name }}?
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="secondaryButton" text @click="close">Cancel</v-btn>
+            <v-btn color="brRed" class="white--text" raised
+                   @click="deleteAhj(ahjToDelete.id)">Yes</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-col>
+    <Snackbar :snackbar="snackbar"></Snackbar>
+  </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
   import Snackbar from '@/components/Snackbar.vue'
   import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
-  import { mapState } from 'vuex'
   import { AppMutations } from '@/stores/AppStore'
 
-  const FILTER_TYPE = {
-    TEXT: 'text',
-    SELECT: 'select'
-  }
-
   const FILTER_DEFAULTS = {
-    name: {value: [], type: FILTER_TYPE.TEXT, model: 'name'},
-    metroArea: {value: [], type: FILTER_TYPE.TEXT, model: 'metroArea'},
-    state: {value: [], type: FILTER_TYPE.SELECT, model: 'state'}
+    name: {value: '', type: 'text', model: 'name'},
+    metroArea: {value: '', type: 'text', model: 'metroArea'},
+    state: {value: [], type: 'select', model: 'state'}
   }
 
   export default {
@@ -207,7 +160,6 @@
       Snackbar
     },
     data: () => ({
-      FILTER_TYPE,
       snackbar: {},
       IS_MOBILE,
       tabs: [
@@ -229,7 +181,6 @@
         { text: null, value: null, sortable: false, show: true, width: IS_MOBILE ? 135 : 300 }
       ],
       ahjs: [],
-      ahjSearch: '',
       editedItem: {
         name: '',
         metroAreaId: ''
@@ -238,26 +189,18 @@
       ahjDeleteDialog: false,
       addMode: false,
       ahjFilters: [],
-      ahjSearchFilters: {
-        name: [],
-        metroArea: [],
-        state: []
-      },
+      states: [],
       ahjToDelete: {},
       pagination: {},
       metroAreas: []
     }),
     computed: {
-      visibleHeaders () {
-        return this.headers.filter(header => header.show === true)
-      },
       filteredAhjs () {
         return this.ahjs && this.ahjs.filter(ahj => {
-
           return Object.keys(this.ahjFilters).every(filterName => {
             const filter = this.ahjFilters[filterName]
 
-            if (filter.value.length < 1) {
+            if (filter.value && filter.value.length < 1) {
               return true
             }
 
@@ -265,7 +208,13 @@
               return false
             }
 
-            return ahj[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            if (filter.value !== null && filter.value !== undefined) {
+              return ahj[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            } else if (filter.value === undefined) {
+              filter.value = []
+            } else {
+              filter.value = ''
+            }
           })
         })
       },
@@ -274,10 +223,7 @@
       },
       ahjBtnTxt () {
         return this.addMode ? 'Add' : 'Update'
-      },
-      ...mapState({
-        loading: state => state.app.loading
-      })
+      }
     },
     watch: {
       ahjDialog (val) {
@@ -339,35 +285,35 @@
       close () {
         this.ahjDialog = false
         this.ahjDeleteDialog = false
+        this.editedItem = {}
       },
       async saveAhj () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         if (!this.editedItem.id) {
           try {
             await postRequest('/ahj', this.editedItem, 'blueraven')
-            this.snackbar = getSnackbar('SUCCESS', 'AHJ Created')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ created')
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Creating AHJ')
+            this.snackbar = getSnackbar('ERROR', 'Error creating AHJ')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
           try {
             await putRequest(`/ahj/${this.editedItem.id}`, this.editedItem, 'blueraven')
-            this.snackbar = getSnackbar('SUCCESS', 'AHJ Saved')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ updated')
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving AHJ')
+            this.snackbar = getSnackbar('ERROR', 'Error updating AHJ')
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
 
         this.close()
         this.initFilters()
-        this.fetchAhjs()
-        this.fetchAhjSearchFilters()
+        await this.fetchAhjs().then(() => this.fetchStates())
         this.editedItem = {}
       },
       async deleteAhj (id) {
@@ -376,36 +322,24 @@
           await deleteRequest(`/ahj/${id}`, 'blueraven')
           this.close()
           this.initFilters()
-          this.fetchAhjs()
-          this.fetchAhjSearchFilters()
+          await this.fetchAhjs().then(() => this.fetchStates())
           this.ahjToDelete = {}
-          this.snackbar = getSnackbar('SUCCESS', 'AHJ Deleted')
+          this.snackbar = getSnackbar('SUCCESS', 'AHJ deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting AHJ')
+          this.snackbar = getSnackbar('ERROR', 'Error deleting AHJ')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
 
       },
-      fetchAhjSearchFilters () {
-        let ahjNames = []
+      fetchStates () {
+        this.states = ['']
         this.ahjs.forEach(ahj => {
-          ahjNames.push(ahj.name)
+          if (ahj.state && this.states.indexOf(ahj.state) === -1) {
+            this.states.push(ahj.state)
+          }
         })
-        this.ahjSearchFilters.name = ahjNames
-
-        let ahjMetroAreas = []
-        this.ahjs.forEach(ahj => {
-          ahjMetroAreas.push(ahj.metroArea)
-        })
-        this.ahjSearchFilters.metroArea = ahjMetroAreas
-
-        let ahjStates = ['']
-        this.ahjs.forEach(ahj => {
-          ahjStates.push(ahj.state)
-        })
-        this.ahjSearchFilters.state = ahjStates
       },
       changeSort (column) {
         if (this.pagination.sortBy === column) {
@@ -420,14 +354,12 @@
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.currentUser = this.$store.state.user.details.id
       this.initFilters()
-
-      Promise.all([
-        this.fetchAhjs()
-      ]).then(() => this.$store.commit(AppMutations.SET_LOADING, false))
-
-      if (this.ahjs.length > 0) {
-        this.fetchAhjSearchFilters()
-      }
+      this.fetchAhjs().then(() => {
+        if (this.ahjs.length > 0) {
+          this.fetchStates()
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      })
     }
   }
 </script>
@@ -449,5 +381,16 @@
   }
   .ahj-table {
     margin-top: 2px;
+  }
+  .v-data-table ::v-deep .v-data-table__wrapper {
+    max-height: calc(100vh - 160px);
+  }
+  .table-filter {
+    font-weight: normal;
+    margin-bottom: -15px;
+    .v-text-field,
+    .v-select {
+      font-size: 1.2em;
+    }
   }
 </style>

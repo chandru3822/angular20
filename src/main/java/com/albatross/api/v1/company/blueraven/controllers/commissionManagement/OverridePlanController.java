@@ -1,5 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.CommissionManagementService;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.OverridePlanService;
 import com.google.common.collect.ImmutableMap;
@@ -11,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
@@ -29,62 +29,33 @@ public class OverridePlanController {
 
     @GetMapping(value = "")
     public String getOverridePlans() {
-        return overridePlanService.findOverridePlans();
+        return overridePlanService.findOverridePlans(false);
     }
 
-    @GetMapping(value = "/milestones")
-    public String getOverrideMilestoneConditions() {
-        return commissionManagementService.findMilestoneQueryConditions(2L);
+    @GetMapping(value = "/active")
+    public String getActiveOverridePlans() {
+        return overridePlanService.findOverridePlans(true);
     }
 
     @GetMapping(value = "/_search")
     public String findOverridePlanUsers(@RequestParam String query,
-                                        @RequestParam(required = false) Long positions) {
-        String userForOverrides = overridePlanService.findUserForOverrides(query, positions);
+                                        @RequestParam(required = false) Long positionId,
+                                        @RequestParam(required = false) Long planId,
+                                        @RequestParam(required = false) Boolean isReceiving) {
+        String userForOverrides = overridePlanService.findUserForOverrides(query, positionId, planId, isReceiving);
         return userForOverrides;
     }
 
-//    @GetMapping(value = "/export/allocations",
-//                produces = "text/csv")
-//    public ResponseEntity exportAllocationsAsCsv() throws IOException {
-//        // set up CSV writing
-//        CsvMapper mapper = new CsvMapper();
-//        CsvSchema schema = mapper.typedSchemaFor(OverridePlanAllocationCsvTemplate.class)
-//                                 .withHeader();
-//        ObjectWriter writer = mapper.writer(schema);
-//        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-//
-//        // get override deets and write to CSV
-//        try (SequenceWriter outToBuffer = writer.writeValues(buffer)) {
-//            // first, get deets
-//            Collection<OverridePlanAllocationCsvTemplate> details = Collections2.transform(
-//                    overridePlanService.getAllocationDetails(),
-//                    OverridePlanAllocationCsvTemplate::new);
-//
-//            // next, write them to a buffer so we can identify errors before writing across the network
-//            outToBuffer.writeAll(details);
-//            outToBuffer.flush();
-//
-//            // finally, write to network because no errors were encountered
-//            return ResponseEntity.ok(buffer.toString("UTF-8"));
-//        } catch (IOException e) {
-//            log.error("Encountered error while writing override allocation to CSV", e);
-//            return ResponseEntity.status(500)
-//                                 .body("Encountered error while writing override allocation to CSV");
-//        }
-//    }
-
     @PostMapping(value = "")
     public ResponseEntity<Object> createOverridePlanDetails(@RequestBody OverridePlanService.OverridePlan overridePlan) {
-        String detail = overridePlanService.updateOverridePlan(null, overridePlan);
+        String detail = overridePlanService.updateOverridePlan(overridePlan);
         return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
     }
 
-    @PostMapping(value = "/{id}")
-    public ResponseEntity<Object> updateOverridePlanDetails(@PathVariable Long id,
-                                                            @RequestBody OverridePlanService.OverridePlan overridePlan) {
-        String detail = overridePlanService.updateOverridePlan(id, overridePlan);
-        return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
+    @PostMapping(value = "/{planId}/updateUser")
+    public void updatePlanUser(@PathVariable Long planId,
+                               @RequestBody PlanUser planUser) {
+        overridePlanService.updatePlanUser(planId, planUser);
     }
 
     @GetMapping(value = "/{id}")
@@ -143,19 +114,15 @@ public class OverridePlanController {
         overridePlanService.deletePlan(id);
     }
 
-    @PostMapping(value = "/{id}/milestone")
-    public void addMilestone(@PathVariable Long id, @RequestBody OverridePlanService.OverrideMilestone overrideMilestone) {
-        overridePlanService.updateMilestone(id, overrideMilestone);
-    }
-
-    @DeleteMapping(value = "/{id}/milestone/{milestoneQueryId}")
-    public void deleteMilestone(@PathVariable Long id, @PathVariable Long milestoneQueryId) {
-        overridePlanService.deleteMilestone(id, milestoneQueryId);
-    }
-
     @PostMapping(value = "/{id}/receivingUsers")
-    public void addReceivingUser(@PathVariable Long id,
+    public String addReceivingUser(@PathVariable Long id,
                                  @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
+        return overridePlanService.addReceivingUser(id, receivingUser);
+    }
+
+    @PostMapping(value = "/{id}/receivingUser")
+    public void updateReceivingUser(@PathVariable Long id,
+                                    @RequestBody OverridePlanService.OverrideReceivingUser receivingUser) {
         overridePlanService.updateReceivingUser(id, receivingUser);
     }
 
@@ -180,10 +147,8 @@ public class OverridePlanController {
     public ResponseEntity addAssignedUser(@PathVariable Long id,
                                           @RequestBody OverridePlanService.OverrideAssignedUser assignedUser) {
         try {
-            overridePlanService.updateAssignedUser(id, assignedUser);
-            String s = String.format("/api/v1/plans/overrides/%d/assignedUsers", id);
-            return ResponseEntity.created(URI.create(s))
-                    .build();
+            String result = overridePlanService.updateAssignedUser(id, assignedUser);
+            return ResponseEntity.ok(result);
         } catch (OverridePlanService.BackdatedPlanApprovalRequiredException e) {
             SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
             Map<String, String> body = ImmutableMap.of("msg", e.getMessage(),

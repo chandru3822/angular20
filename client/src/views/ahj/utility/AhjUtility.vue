@@ -19,21 +19,9 @@
         </v-toolbar-items>
       </v-toolbar>
 
-      <v-toolbar color="white" class="elevation-1 mt-3">
-        <v-text-field
-            class="mt-2"
-            v-model="ahjUtilitySearch"
-            prepend-inner-icon="search"
-            label="Search..."
-            single-line
-            hide-details
-        ></v-text-field>
-        <v-spacer v-if="!IS_MOBILE"></v-spacer>
-      </v-toolbar>
       <v-data-table
-        :headers="visibleHeaders"
+        :headers="headers"
         :items="filteredAhjUtilities"
-        :search="ahjUtilitySearch"
         :options="pagination"
         :items-per-page="-1"
         :mobile-breakpoint="0"
@@ -42,51 +30,44 @@
         hide-default-footer
         class="elevation-1 ahj-utility-table"
       >
-<!-- TODO: Implement individual column filtering once the Vuetify v2.0.0 documentation improves -->
-<!--        <template #header="{ headers }">-->
-<!--          <tr>-->
-<!--            <th-->
-<!--              v-for="header in headers"-->
-<!--              :key="header.text"-->
-<!--              :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"-->
-<!--              @click="changeSort(header.value)"-->
-<!--            >-->
-<!--              {{ header.text }}-->
-<!--              <v-icon small>arrow_upward</v-icon>-->
-<!--            </th>-->
-<!--            <th></th>-->
-<!--          </tr>-->
-<!--          <tr>-->
-<!--            <th-->
-<!--              v-for="header in headers"-->
-<!--              :key="header.text"-->
-<!--            >-->
-<!--              <v-text-field style="margin-top: 10px"-->
-<!--                v-model="ahjUtilityFilters[header.value].value" box-->
-<!--              />-->
-<!--            </th>-->
-<!--            <th></th>-->
-<!--          </tr>-->
-<!--        </template>-->
+        <template #header="{ props: { headers } }">
+          <tr>
+            <th v-for="header in headers" :key="header.text" @click="changeSort(header.value)"
+                :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
+                :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
+            >
+              <v-text-field v-if="ahjUtilityFilters[header.value]"
+                            v-model="ahjUtilityFilters[header.value].value"
+                            :placeholder="'Enter a ' + header.text.toLowerCase()"
+                            clearable
+                            filled
+                            dense
+                            class="pt-2 table-filter"
+              ></v-text-field>
+            </th>
+          </tr>
+        </template>
 
-        <template #body="{ items }" class="table-body">
-          <tr
-            v-for="(ahjUtility, index) in items"
-            :key="ahjUtility.id"
-            :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
-          >
-            <td class="text-left" :class="{ 'strike': ahjUtility.archived}">
-              {{ ahjUtility.name ? ahjUtility.name : '' }}
-            </td>
-            <td class="text-left">{{ ahjUtility.metroArea ? ahjUtility.metroArea : '' }}</td>
-            <td class="text-left">{{ ahjUtility.state ? ahjUtility.state : '' }}</td>
+        <template #item="{ item, index }" class="table-body">
+          <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+            <td class="text-left" :class="{'strike': item.archived}">{{ item.name ? item.name : '' }}</td>
+            <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
+            <td class="text-left">{{ item.state ? item.state : '' }}</td>
             <td class="text-left">
-              <router-link :to="'ahjUtility/' + ahjUtility.id + '/details'" class="mr-3 ahj-link">Details</router-link>
-              <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(ahjUtility)">
+              <router-link :to="'ahjUtility/' + item.id + '/details'" class="mr-3 ahj-link">Details</router-link>
+              <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(item)">
                 edit
               </v-icon>
             </td>
           </tr>
+        </template>
+
+        <template #no-data>
+          <div class="mt-2 mb-4">No records found</div>
+        </template>
+
+        <template #no-results>
+          <div class="mt-2 mb-4">No records found</div>
         </template>
       </v-data-table>
 
@@ -128,30 +109,29 @@
         </v-card>
       </v-dialog>
     </v-col>
+    <Snackbar :snackbar="snackbar"></Snackbar>
   </v-row>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import { getRequest, putRequest, postRequest, IS_MOBILE } from '@/helpers/helpers'
-  import { mapState } from 'vuex'
+  import Snackbar from '@/components/Snackbar.vue'
+  import { getRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
 
-  const FILTER_TYPE = {
-    TEXT: 'text',
-    SELECT: 'select'
-  }
-
   const FILTER_DEFAULTS = {
-    name: {value: [], type: FILTER_TYPE.TEXT, model: 'name'},
-    metroArea: {value: [], type: FILTER_TYPE.TEXT, model: 'metroArea'},
-    state: {value: [], type: FILTER_TYPE.SELECT, model: 'state'}
+    name: {value: '', type: 'text', model: 'name'},
+    metroArea: {value: '', type: 'text', model: 'metroArea'},
+    state: {value: '', type: 'select', model: 'state'}
   }
 
   export default {
     name: 'ahjUtilities',
+    components: {
+      Snackbar
+    },
     data: () => ({
-      FILTER_TYPE,
+      snackbar: {},
       IS_MOBILE,
       tabs: [
         {
@@ -172,7 +152,6 @@
         { text: null, value: null, sortable: false, show: true, width: 120 }
       ],
       ahjUtilities: [],
-      ahjUtilitySearch: '',
       editedItem: {
         utilityName: '',
         metroAreaId: '',
@@ -181,25 +160,16 @@
       ahjUtilityDialog: false,
       addMode: false,
       ahjUtilityFilters: [],
-      ahjUtilitySearchFilters: {
-        name: [],
-        metroArea: [],
-        state: []
-      },
       pagination: {},
       metroAreas: []
     }),
     computed: {
-      visibleHeaders () {
-        return this.headers.filter(header => header.show === true)
-      },
       filteredAhjUtilities () {
         return this.ahjUtilities && this.ahjUtilities.filter(utility => {
-
           return Object.keys(this.ahjUtilityFilters).every(filterName => {
             const filter = this.ahjUtilityFilters[filterName]
 
-            if (filter.value.length < 1) {
+            if (filter.value && filter.value.length < 1) {
               return true
             }
 
@@ -207,7 +177,11 @@
               return false
             }
 
-            return utility[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            if (filter.value !== null) {
+              return utility[filterName].toLowerCase().includes(filter.value.toLowerCase())
+            } else {
+              filter.value = ''
+            }
           })
         })
       },
@@ -216,10 +190,7 @@
       },
       ahjUtilityBtnTxt () {
         return this.addMode ? 'Add' : 'Update'
-      },
-      ...mapState({
-        loading: state => state.app.loading
-      })
+      }
     },
     watch: {
       ahjUtilityDialog (val) {
@@ -260,36 +231,33 @@
         this.editedItem = {}
       },
       async saveAhjUtility () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         if (this.addMode) {
-          await postRequest('/ahjUtility', this.editedItem, 'blueraven')
+          try {
+            await postRequest('/ahjUtility', this.editedItem, 'blueraven')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ utility created')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error creating AHJ utility')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         } else {
-          await putRequest('/ahjUtility/simpleUpdate', this.editedItem, 'blueraven')
+          try {
+            await putRequest('/ahjUtility/simpleUpdate', this.editedItem, 'blueraven')
+            this.snackbar = getSnackbar('SUCCESS', 'AHJ utility updated')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error updating AHJ utility')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
 
         this.close()
         this.initFilters()
-        this.fetchAhjUtilities()
-        this.fetchAhjUtilitySearchFilters()
+        await this.fetchAhjUtilities()
         this.editedItem = {}
-      },
-      fetchAhjUtilitySearchFilters () {
-        let ahjUtilityNames = []
-        this.ahjUtilities.forEach(utility => {
-          ahjUtilityNames.push(utility.name)
-        })
-        this.ahjUtilitySearchFilters.name = ahjUtilityNames
-
-        let ahjUtilityMetroAreas = []
-        this.ahjUtilities.forEach(utility => {
-          ahjUtilityMetroAreas.push(utility.metroArea)
-        })
-        this.ahjUtilitySearchFilters.metroArea = ahjUtilityMetroAreas
-
-        let ahjUtilityStates = []
-        this.ahjUtilities.forEach(utility => {
-          ahjUtilityStates.push(utility.state)
-        })
-        this.ahjUtilitySearchFilters.state = ahjUtilityStates
       },
       changeSort (column) {
         if (this.pagination.sortBy === column) {
@@ -303,14 +271,7 @@
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.initFilters()
-
-      Promise.all([
-        this.fetchAhjUtilities()
-      ]).then(() => this.$store.commit(AppMutations.SET_LOADING, false))
-
-      if (this.ahjUtilities.length > 0) {
-        this.fetchAhjUtilitySearchFilters()
-      }
+      this.fetchAhjUtilities().then(() => this.$store.commit(AppMutations.SET_LOADING, false))
     }
   }
 </script>
@@ -335,5 +296,16 @@
   }
   .ahj-utility-table {
     margin-top: 2px;
+  }
+  .v-data-table ::v-deep .v-data-table__wrapper {
+    max-height: calc(100vh - 160px);
+  }
+  .table-filter {
+    font-weight: normal;
+    margin-bottom: -15px;
+    .v-text-field,
+    .v-select {
+      font-size: 1.2em;
+    }
   }
 </style>

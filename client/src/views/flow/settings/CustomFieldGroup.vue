@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newGroup = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newGroup = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -53,7 +53,7 @@
                                 v-if="item.edit"
                                 v-model="item.groupName">
                     <template slot="append-outer">
-                      <v-icon @click="saveGroupName(item); item.edit = false">save</v-icon>
+                      <v-icon @click="[saveGroupName(item), item.edit = false]">save</v-icon>
                       <v-icon @click="item.edit = false">clear</v-icon>
                     </template>
                   </v-text-field>
@@ -63,11 +63,11 @@
                 </td>
                 <td>
                   <div class="item-icons">
-                    <v-btn small text @click="addField = !addField; fetchAvailableCustomFields(item.id); expanded = [item]; selectedIndex = index">
+                    <v-btn small text @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
-                    <v-btn small text @click="expanded.includes(item) ? expanded = [] : expanded = [item]; selectedIndex = index">
+                    <v-btn small text @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
                       <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
@@ -102,7 +102,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="item.archived = true; deleteGroup(item.id)">
+                              @click="[item.archived = true, deleteGroup(item.id)]">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -197,7 +197,7 @@
                               <v-btn
                                   color="primary"
                                   text
-                                  @click="cf.archived = true; deleteFieldFromGroup(cf.id)">
+                                  @click="[cf.archived = true, deleteFieldFromGroup(cf.id)]">
                                 Yes
                               </v-btn>
                             </v-card-actions>
@@ -269,7 +269,7 @@
                         <v-btn
                             color="primary"
                             text
-                            @click="a.archived = true; deleteAttachmentType(a.id)">
+                            @click="[a.archived = true, deleteAttachmentType(a.id)]">
                           Yes
                         </v-btn>
                       </v-card-actions>

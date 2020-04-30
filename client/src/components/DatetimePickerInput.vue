@@ -9,10 +9,12 @@
 >
   <template #activator="{on}">
     <v-text-field
-      :value="value | formatDate(type, format)"
+      :value="value | formatDate(type, format, type === 'time' ? 'HH:mm' : null)"
       :label="label"
       prepend-icon="event"
       readonly
+      clear-icon="mdi-close-circle"
+      :clearable="!readonly"
       :disabled="readonly"
       v-on="!readonly && on"
     />

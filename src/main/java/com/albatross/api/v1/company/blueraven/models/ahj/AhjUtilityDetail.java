@@ -12,7 +12,8 @@ import java.util.List;
 @Setter
 public class AhjUtilityDetail extends AhjUtility {
     private List<AhjLink> customerSignatureLinks, ptoLinks, ptoFollowupLinks, submissionLinks;
-    private List<AhjChecklistItem> submissionChecklist, approvalChecklist, ptoChecklist, utilityInspectionChecklist;
+    private List<AhjChecklistItem> submissionChecklist, approvalChecklist, ptoChecklist,
+                                   utilityInspectionChecklist;
     private List<AhjContact> contacts;
     private List<AhjRequirement> utilityRequirements;
 }

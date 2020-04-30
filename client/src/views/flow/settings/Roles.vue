@@ -69,7 +69,7 @@
                       <v-btn
                           color="primary"
                           text
-                          @click="item.archived = true; deleteRole(item.id)">
+                          @click="[item.archived = true, deleteRole(item.id)]">
                         Yes
                       </v-btn>
                     </v-card-actions>

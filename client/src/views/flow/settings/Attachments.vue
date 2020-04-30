@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="addNew = !addNew; newType = {}" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -63,7 +63,7 @@
                     <v-btn
                         color="primary"
                         text
-                        @click="a.archived = true; deleteType(a.id)">
+                        @click="[a.archived = true, deleteType(a.id)]">
                       Yes
                     </v-btn>
                   </v-card-actions>

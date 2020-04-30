@@ -10,10 +10,8 @@ import org.springframework.data.annotation.Id;
  */
 @Getter
 @Setter
-public class GetQueryCondition {
+public class Residual {
 
     @Id
-    private Long queryConditionId;
-    private String queryCondition;
-
+    private Long id;
 }
