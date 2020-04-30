@@ -6482,6 +6482,14 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
      FROM blueraven.deal WHERE cancelled_date IS NOT NULL
         and  originator_id = 1);
 
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'AHJ') as custom_field_id,
+            ahj_id,
+            2350555 as created_by_id
+     FROM blueraven.deal WHERE ahj_id IS NOT NULL
+                           and  originator_id = 1);
+
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, boolean_value, created_by_id)
     (SELECT id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'On Hold') as custom_field_id,
