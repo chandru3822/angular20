@@ -81,7 +81,7 @@
 
   <availability.insertHours><![CDATA[
     insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time, day_of_week_id, created_by_id)
-    values (:resourceScheduleId, :startTime::time, :endTime::time, :dayOfWeekId, :createdById)
+    values (:resourceScheduleId, :startTime::timestamp, :endTime::timestamp, :dayOfWeekId, :createdById)
   ]]></availability.insertHours>
 
 </sql>

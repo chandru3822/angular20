@@ -73,14 +73,24 @@
                   />
                 </td>
                 <td class="text-left px-0" width="150px">
-                  <v-btn v-if="index !== 6" text small @click="copyTimes(item, index, 'down')">
-                    <v-icon>mdi-arrow-collapse-down</v-icon>
-                  </v-btn>
+                  <v-tooltip top v-if="index !== 6">
+                    <template v-slot:activator="{ on }">
+                      <v-btn text small v-on="on" @click="copyTimes(item, index, 'down')">
+                        <v-icon>mdi-arrow-collapse-down</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Copy Down</span>
+                  </v-tooltip>
                   <v-btn text small v-else>
                   </v-btn>
-                  <v-btn v-if="index !== 0" text small @click="copyTimes(item, index, 'up')">
-                    <v-icon>mdi-arrow-collapse-up</v-icon>
-                  </v-btn>
+                  <v-tooltip top v-if="index !== 0">
+                    <template v-slot:activator="{ on }">
+                      <v-btn text small v-on="on" @click="copyTimes(item, index, 'up')">
+                        <v-icon>mdi-arrow-collapse-up</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Copy Up</span>
+                  </v-tooltip>
                   <v-btn text small v-else>
                   </v-btn>
                   <v-btn text small @click="[item.startTime = null, item.endTime = null]">
@@ -97,7 +107,7 @@
           <v-card-actions>
             <v-card-actions>
               <v-btn color="secondary" @click="[newSchedule = [], addNew = false]">Cancel</v-btn>
-              <v-btn color="primaryCustom"  @click="saveSchedule(newSchedule)" class="white--text"
+              <v-btn color="primaryCustom"  @click="saveSchedule(newSchedule, true)" class="white--text"
                      >
                 Save
               </v-btn>
@@ -192,14 +202,26 @@
                         />
                       </td>
                       <td class="text-left px-0" width="150px">
-                        <v-btn v-if="index !== 6" text small @click="copyTimes(item, index, 'down')">
-                          <v-icon>mdi-arrow-collapse-down</v-icon>
-                        </v-btn>
+
+                        <v-tooltip top v-if="index !== 6">
+                          <template v-slot:activator="{ on }">
+                            <v-btn text small v-on="on" @click="copyTimes(item, index, 'down')">
+                              <v-icon>mdi-arrow-collapse-down</v-icon>
+                            </v-btn>
+                          </template>
+                          <span>Copy Down</span>
+                        </v-tooltip>
                         <v-btn text small v-else>
                         </v-btn>
-                        <v-btn v-if="index !== 0" text small @click="copyTimes(item, index, 'up')">
-                          <v-icon>mdi-arrow-collapse-up</v-icon>
-                        </v-btn>
+                        <v-tooltip top v-if="index !== 0">
+                          <template v-slot:activator="{ on }">
+                            <v-btn text small v-on="on" @click="copyTimes(item, index, 'up')">
+                              <v-icon>mdi-arrow-collapse-up</v-icon>
+                            </v-btn>
+                          </template>
+                          <span>Copy Up</span>
+                        </v-tooltip>
+
                         <v-btn text small v-else>
                         </v-btn>
                         <v-btn text small @click="[item.startTime = null, item.endTime = null]">
@@ -215,7 +237,7 @@
                 </div>
                 <v-card-actions>
                   <v-card-actions>
-                    <v-btn color="primaryCustom"  @click="saveSchedule(item)" class="white--text"
+                    <v-btn color="primaryCustom"  @click="saveSchedule(item, false)" class="white--text"
                            :disabled="!item.startDate || !item.endDate">
                       Save
                     </v-btn>
@@ -337,35 +359,43 @@
           this.snackbar = getSnackbar('ERROR', 'Error Loading Work Days')
         }
       },
-      async saveSchedule(s) {
+      async saveSchedule(s, isNew) {
 
-        console.log('randaLogger', s.resourceScheduleAvailability[0].startTime)
-        console.log('randaLogger', moment(s.resourceScheduleAvailability[0].startTime))
-        console.log('randaLogger', moment(s.resourceScheduleAvailability[0].startTime)).utc()
-        //do validations: todo: add the rest of them
-        // if(s.startDate >= s.endDate) {
-        //   this.saveError = true
-        //   this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
-        // } else {
-        //   this.$store.commit(AppMutations.SET_LOADING, true)
-        //   try {
-        //     let params = {
-        //       orgId: this.orgId,
-        //       userId: this.userId,
-        //       startDate: s.startDate,
-        //       endDate: s.endDate,
-        //       resourceScheduleAvailability: s.id == null
-        //         ? s.resourceScheduleAvailability.filter(rsa => { return rsa.startTime != null || rsa.endTime != null })
-        //         : s.resourceScheduleAvailability
-        //     }
-        //     const {data} = await postRequest(`/availability`, params)
-        //     this.$store.commit(AppMutations.SET_LOADING, false)
-        //   } catch (e) {
-        //     console.error('*** ERROR ***', e)
-        //     this.$store.commit(AppMutations.SET_LOADING, false)
-        //     this.snackbar = getSnackbar('ERROR', 'Error Saving Schedule')
-        //   }
-        // }
+        console.log('randaLogger s', s)
+        console.log('randaLogger s1', s.resourceScheduleAvailability[0].startTime)
+        console.log('randaLogger s2', moment(s.resourceScheduleAvailability[0].startTime))
+        console.log('randaLogger s3', moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z'))
+        console.log('randaLogger s4', moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z').toDate())
+        console.log('randaLogger s5', moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z').utc())
+        console.log('randaLogger s6', moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z').utc().toDate())
+
+        s.resourceScheduleAvailability[0].startTime = moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z').toDate()
+        s.resourceScheduleAvailability[0].endTime = moment(s.resourceScheduleAvailability[0].endTime, 'HH:mm:ss A Z').toDate()
+
+        // do validations: todo: add the rest of them
+        if(s.startDate >= s.endDate) {
+          this.saveError = true
+          this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
+        } else {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            let params = {
+              orgId: this.orgId,
+              userId: this.userId,
+              startDate: s.startDate,
+              endDate: s.endDate,
+              resourceScheduleAvailability: s.id == null
+                ? s.resourceScheduleAvailability.filter(rsa => { return rsa.startTime != null || rsa.endTime != null })
+                : s.resourceScheduleAvailability
+            }
+            const {data} = await postRequest(`/availability`, params)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Schedule')
+          }
+        }
       },
       setNew() {
         this.addNew = !this.addNew
