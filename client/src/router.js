@@ -657,6 +657,14 @@ export default new Router({
                   component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollSummary.vue'),
                 }
               ]
+            },  {
+              path: 'residualPlans',
+              name: 'residualPlans',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/ResidualPlans.vue'),
+            }, {
+              path: 'residualPlan/:id?',
+              name: 'residualPlan',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/ResidualPlan.vue'),
             }, {
               path: 'residuals',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Residuals.vue'),

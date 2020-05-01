@@ -59,6 +59,10 @@
           path: '/commissionManagement/payroll',
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
+          label: 'Residual Plans',
+          path: '/commissionManagement/residualPlans',
+          display: this.$store.getters.userHasFeature('COMMISSIONS')
+        }, {
           label: 'Residuals',
           path: '/commissionManagement/residuals',
           display: this.$store.getters.userHasFeature('COMMISSIONS')
