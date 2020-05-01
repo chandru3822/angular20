@@ -22,7 +22,6 @@ create table if not exists flow.smartlist
     archived               boolean   default false not null
 );
 
-alter table if exists flow.smartlist owner to blueraven_uat;
 
 create table if not exists flow.smartlist_field
 (
@@ -49,7 +48,6 @@ create table if not exists flow.smartlist_field
             references flow.company_data_type
 );
 
-alter table if exists flow.smartlist_field owner to blueraven_uat;
 
 create table if not exists flow.smartlist_field_assignment
 (
@@ -80,7 +78,6 @@ create table if not exists flow.smartlist_field_assignment
             references flow.process_step
 );
 
-alter table if exists flow.smartlist_field_assignment owner to blueraven_uat;
 
 create table if not exists flow.smartlist_logic
 (
@@ -108,7 +105,6 @@ create table if not exists flow.smartlist_logic
     archived                 boolean   default false not null
 );
 
-alter table if exists flow.smartlist_logic owner to blueraven_uat;
 
 create unique index if not exists smartlist_logic_id_uindex on flow.smartlist_logic (id);
 
@@ -149,7 +145,5 @@ create table if not exists flow.smartlist_requirement
         constraint sr_smartlist_field_id_fk
             references flow.smartlist_field
 );
-
-alter table if exists flow.smartlist_requirement owner to blueraven_uat;
 
 create unique index if not exists smartlist_requirement_id_uindex on flow.smartlist_requirement (id);
