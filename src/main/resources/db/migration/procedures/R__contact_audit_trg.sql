@@ -51,7 +51,7 @@ BEGIN
 END
 $$;
 
-drop trigger if exists contact_audit_trg on flow.user_asset;
+drop trigger if exists contact_audit_trg on flow.contact_custom_field_value;
 
 create trigger contact_audit_trg
 after insert or update or delete on flow.contact_custom_field_value
