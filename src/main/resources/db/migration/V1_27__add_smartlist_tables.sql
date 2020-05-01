@@ -78,36 +78,6 @@ create table if not exists flow.smartlist_field_assignment
             references flow.process_step
 );
 
-
-create table if not exists flow.smartlist_logic
-(
-    id                       serial                  not null
-        constraint smartlist_logic_pk
-            primary key,
-    smartlist_id             integer                 not null
-        constraint sl_smartlist_id_fk
-            references flow.smartlist,
-    smartlist_requirement_id integer
-        constraint sl_smartlist_requirement_id_fk
-            references flow.smartlist_requirement,
-    operation_type_id        integer
-        constraint sl_operation_type_id_fk
-            references flow.operation_type,
-    sql_order                integer                 not null,
-    created_by_id            integer                 not null
-        constraint sl_created_by_id_fk
-            references flow.user,
-    date_created             timestamp default now() not null,
-    modified_by_id           integer
-        constraint sl_modified_by_id_fk
-            references flow.user,
-    date_modified            timestamp,
-    archived                 boolean   default false not null
-);
-
-
-create unique index if not exists smartlist_logic_id_uindex on flow.smartlist_logic (id);
-
 create table if not exists flow.smartlist_requirement
 (
     id                               serial                  not null
@@ -147,3 +117,33 @@ create table if not exists flow.smartlist_requirement
 );
 
 create unique index if not exists smartlist_requirement_id_uindex on flow.smartlist_requirement (id);
+
+
+create table if not exists flow.smartlist_logic
+(
+    id                       serial                  not null
+        constraint smartlist_logic_pk
+            primary key,
+    smartlist_id             integer                 not null
+        constraint sl_smartlist_id_fk
+            references flow.smartlist,
+    smartlist_requirement_id integer
+        constraint sl_smartlist_requirement_id_fk
+            references flow.smartlist_requirement,
+    operation_type_id        integer
+        constraint sl_operation_type_id_fk
+            references flow.operation_type,
+    sql_order                integer                 not null,
+    created_by_id            integer                 not null
+        constraint sl_created_by_id_fk
+            references flow.user,
+    date_created             timestamp default now() not null,
+    modified_by_id           integer
+        constraint sl_modified_by_id_fk
+            references flow.user,
+    date_modified            timestamp,
+    archived                 boolean   default false not null
+);
+
+
+create unique index if not exists smartlist_logic_id_uindex on flow.smartlist_logic (id);
