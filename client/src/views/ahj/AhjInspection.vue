@@ -14,7 +14,7 @@
     </v-col>
 
     <!-- UPPER SECTION -->
-    <v-row no-gutters>
+    <v-row class="mb-4" no-gutters>
       <!-- FIRST COLUMN -->
       <v-col cols="12" md="3" class="pr-sm-0 pr-md-1 mb-3">
         <!-- SCHEDULING WITH AHJ -->
