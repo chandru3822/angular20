@@ -192,6 +192,24 @@ export default new Router({
               }
             },
           }, {
+            path: 'postalCodes',
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCodes.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
+          }, {
+            path: 'postalCode/:id',
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCode.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
+          },{
             path: 'orgTypes',
             component: () => {
               if(store.getters.userHasFeature('SETTINGS')) {

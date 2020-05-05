@@ -1,0 +1,128 @@
+<sql>
+  <postalCode.getZones><![CDATA[
+    select id,
+           company_id,
+           zone_name,
+           archived
+    from flow.postal_code_zone
+    where company_id = :companyId
+      and archived is not true
+    order by zone_name
+  ]]></postalCode.getZones>
+
+  <postalCode.getZone><![CDATA[
+    select pcz.id,
+       pcz.company_id,
+       pcz.zone_name,
+       pcz.archived,
+       coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
+                 FROM (
+                          select pczu.id,
+                                 pczu.user_id as "userId",
+                                 u.first_name as "firstName",
+                                 u.last_name as "lastName",
+                                 u.first_name || ' ' || u.last_name as "fullName",
+                                 pczu.postal_code_zone_id as "postalCodeZoneId",
+                                 pczu.archived
+                          from flow.postal_code_zone_user pczu
+                            inner join flow."user" u on u.id = pczu.user_id
+                          where pczu.postal_code_zone_id = pcz.id
+                            and pczu.archived is not true
+                          order by u.first_name, u.last_name
+                      ) AS users), '[]') AS postalCodeZoneUsers,
+       coalesce((SELECT array_to_json(array_agg(row_to_json(postalCodes)))
+                 FROM (
+                          select pc.id,
+                                 pc.postal_code as "postalCode",
+                                 pc.postal_code_zone_id as "postalCodeZoneId",
+                                 pc.archived
+                          from flow.postal_code pc
+                          where pc.postal_code_zone_id = pcz.id
+                            and pc.archived is not true
+                          order by pc.postal_code
+                      ) AS postalCodes), '[]') AS postalCodes
+    from flow.postal_code_zone pcz
+    where pcz.id = :id
+  ]]></postalCode.getZone>
+
+
+  <postalCode.insertZone><![CDATA[
+    insert into flow.postal_code_zone(company_id, zone_name, date_created, created_by_id)
+    values (:companyId, :zoneName, now(), :createdById)
+  ]]></postalCode.insertZone>
+
+  <postalCode.updateZone><![CDATA[
+    update flow.postal_code_zone
+    set zone_name = :zoneName,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></postalCode.updateZone>
+
+  <postalCode.deleteZone><![CDATA[
+    update flow.postal_code_zone
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></postalCode.deleteZone>
+
+  <postalCode.addZoneUser><![CDATA[
+    insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, date_created, created_by_id)
+    values (:postalCodeZoneId, :userId, now(), :createdById)
+  ]]></postalCode.addZoneUser>
+
+  <postalCode.deleteZoneUser><![CDATA[
+    update flow.postal_code_zone_user
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></postalCode.deleteZoneUser>
+
+  <postalCode.getZoneUser><![CDATA[
+    select pczu.id,
+       pczu.postal_code_zone_id,
+       u.first_name,
+       u.last_name,
+       u.first_name || ' ' || u.last_name as full_name,
+       pczu.user_id,
+       pczu.archived
+    from flow.postal_code_zone_user pczu
+        inner join flow."user" u on u.id = pczu.user_id
+    where pczu.id = :id
+  ]]></postalCode.getZoneUser>
+
+  <postalCode.addZoneCode><![CDATA[
+    insert into flow.postal_code(postal_code_zone_id, postal_code, date_created, created_by_id)
+    values (:postalCodeZoneId, :postalCode, now(), :createdById)
+  ]]></postalCode.addZoneCode>
+
+  <postalCode.deleteZoneCode><![CDATA[
+    update flow.postal_code
+    set archived = true,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></postalCode.deleteZoneCode>
+
+  <postalCode.getZoneCode><![CDATA[
+    select pc.id,
+       pc.postal_code_zone_id,
+       pc.postal_code,
+       pc.archived
+    from flow.postal_code pc
+    where pc.id = :id
+  ]]></postalCode.getZoneCode>
+
+  <postalCode.checkForExisting><![CDATA[
+    select pc.id,
+       pc.postal_code_zone_id,
+       pc.postal_code,
+       pc.archived
+    from flow.postal_code pc
+    where pc.postal_code = :postalCode
+      and archived is not true
+  ]]></postalCode.checkForExisting>
+
+</sql>
