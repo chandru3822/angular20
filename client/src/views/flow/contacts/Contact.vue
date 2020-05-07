@@ -12,7 +12,7 @@
           >
             <template v-slot:activator="{ on }">
               <v-btn v-on="on" dark color="primary" class="white--text"  @click="getAvailableProcesses">
-                Convert
+                Add Project
               </v-btn>
             </template>
             <v-card class="pa-5">
