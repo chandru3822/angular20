@@ -500,7 +500,51 @@ where user_id not in (select distinct u.id
                                inner join blueraven.user_position up on up.user_id = u.id
                                inner join blueraven.org o on o.id = up.org_id
                           and o.org_type_id in (15,16))
-and position_id not in (176,175,197,156,149,174,10,23,33,78,31);
+and position_id not in (176,175,197,156,149,174,10,23,78,31);
+
+
+insert into flow.user_position(id, user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
+select up2.id,
+       up2.user_id,
+       p.id,
+       up2.start_date,
+       up2.end_date,
+       up2.org_id,
+       up2.primary_flag,
+       2350555
+from blueraven.user_position up2
+         inner join blueraven.position p2  on p2.id = up2.position_id
+         inner join flow.position p on p.position  = p2.position and p.company_id = 2
+where user_id not in (select distinct u.id
+                      from blueraven.user u
+                               inner join blueraven.user_position up on up.user_id = u.id
+                               inner join blueraven.org o on o.id = up.org_id
+                          and o.org_type_id in (15,16))
+  and position_id  in (10,23,78)
+  and org_id in (select distinct id
+                 from blueraven.org_hierarchy_filter_down(
+                         '{216,217}'));
+
+
+insert into flow.user_position(id, user_id, position_id, start_date, end_date, org_id, primary_flag,created_by_id)
+select up2.id,
+       up2.user_id,
+       up2.position_id,
+       up2.start_date,
+       up2.end_date,
+       up2.org_id,
+       up2.primary_flag,
+       2350555
+from blueraven.user_position up2
+where user_id not in (select distinct u.id
+                      from blueraven.user u
+                               inner join blueraven.user_position up on up.user_id = u.id
+                               inner join blueraven.org o on o.id = up.org_id
+                          and o.org_type_id in (15,16))
+  and position_id  in (10,23,78)
+  and org_id in (select distinct id
+                 from blueraven.org_hierarchy_filter_down(
+                         '{215}'));
 
 
 -- INSERT INTO flow.org_level (company_id, level, level_name) VALUES ( (select id from flow.company where company_name = 'B+C Electric'), 1, 'Parent');
@@ -3013,13 +3057,13 @@ INSERT INTO flow.custom_field_group(
     group_name,company_object_type_id, group_order)
 VALUES ('Termination',33, 5);
 
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Project PlaceHolder',31, 1);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Contact PlaceHolder',32, 1);
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Project PlaceHolder',31, 1);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Contact PlaceHolder',32, 1);
 
 --blueraven solar
 INSERT INTO flow.custom_field_group(
@@ -3223,7 +3267,7 @@ INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Referred By' and company_data_type_id = 5 and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+            (select id from flow.custom_field where field_name = 'Referred By' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
@@ -3645,7 +3689,7 @@ INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Referred By' and company_data_type_id = 5 and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+            (select id from flow.custom_field where field_name = 'Referred By' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
@@ -5844,7 +5888,62 @@ INSERT INTO flow.contact (city,
             created_date,
             (select id from flow.company where company_name = 'Solenrgi')
      from blueraven.customer c
-     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =2));
+     where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =2)
+        and c.id != 109137);
+
+
+INSERT INTO flow.contact (city,
+                          country_id,
+                          email,
+                          first_name,
+                          last_name,
+                          latitude,
+                          location_unavailable,
+                          longitude,
+                          mailing_city,
+                          mailing_postal_code,
+                          mailing_state,
+                          mailing_street1,
+                          mailing_street2,
+                          mobile,
+                          phone,
+                          postal_code,
+                          prospect_status,
+                          state,
+                          street1,
+                          street2,
+                          time_zone,
+                          contact_type_id,
+                          created_by_id,
+                          date_created,
+                          company_id)
+    (SELECT city,
+            1,
+            email,
+            first_name,
+            last_name,
+            latitude,
+            location_unavailable,
+            longitude,
+            mailing_city,
+            mailing_postal_code,
+            mailing_state,
+            mailing_street1,
+            mailing_street2,
+            mobile,
+            phone,
+            postal_code,
+            prospect_status,
+            state,
+            street1,
+            street2,
+            time_zone,
+            (select id from flow.contact_type where contact_type='Customer'),
+            2350555 as created_by_id,
+            created_date,
+            (select id from flow.company where company_name = 'Solenrgi')
+     from blueraven.customer c
+     where  c.id = 109137);
 
 INSERT INTO flow.contact (city,
                            country_id,
@@ -6301,6 +6400,8 @@ values ((select id from flow.project_status_type where project_status_type.proje
        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Sun Run'), 'On Hold', 2350555);
 
 -- copy over the common deal/project fields
+
+--TODO add entered_into_payment_system_date to the project table
 INSERT INTO flow.project (id,
                           contact_id,
                           project_name,
@@ -6334,6 +6435,9 @@ INSERT INTO flow.project (id,
 
      FROM blueraven.deal where deal.customer_id IS NOT NULl
         and originator_id !=5);  -- TODO Add all the other companies projects
+
+update flow.project set contact_id = (select id from flow.contact where first_name = 'Robert' and last_name = 'Earl' and city = 'Pahrump' and state = 'Nevada' and company_id = 7)
+where id =153066;
 -- ask Judson how to resolve these deals
 -- select * from blueraven.deal where customer_id is null;
 insert into brs.project_commission(project_id, commission_plan_id)
@@ -6438,6 +6542,12 @@ INSERT INTO flow.custom_field_group_assignment(
     custom_field_id,field_order,archived,created_by_id)
     (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
             (select id from flow.custom_field where field_name = 'On Hold'),1,false, 2350555);
+
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'AHJ'),1,false, 2350555);
 --
 insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,1
@@ -6670,8 +6780,8 @@ insert into brs.ahj_requirements(ahj_id, requirement_id, original_requirement_id
 
 
 
-insert into flow.custom_field(company_id, field_name, company_data_type_id, created_by_id, custom_field_sql_key_id)
-values((select id from flow.company where company_name = 'Blue Raven Solar'), 'AHJ', 9, 2350555, 1);
+-- insert into flow.custom_field(company_id, field_name, company_data_type_id, created_by_id, custom_field_sql_key_id)
+-- values((select id from flow.company where company_name = 'Blue Raven Solar'), 'AHJ', 9, 2350555, 1);
 
 
 with parent as (
@@ -6813,7 +6923,10 @@ with updates as (
 insert into brs.payroll(id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current, selected_project_ids)
 (select id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current, u.deal_ids
 from blueraven.payroll p
-    inner join updates u on u.payroll_id = p.id);
+    inner join updates u on u.payroll_id = p.id
+ union
+ select id, period_end, paid_date, description, payroll_status_id, created, updated, created_by, updated_by, current, null
+ from blueraven.payroll where id = 0);
 
 
 insert into brs.payroll_adjustment_type
@@ -6836,7 +6949,7 @@ select * from blueraven.ledger_type;
 insert into brs.project_commission_ledger(id, project_id, closer_id, ledger_type_id, amount, note, created_by, created, payroll_id, paid_to_date)
 select id, deal_id, closer_id, ledger_type_id, amount, note, created_by, created, payroll_id, paid_to_date from blueraven.deal_commission_ledger;
 
-insert into brs.project_commission_snapshot(id, payroll_id, project_id, customer_name, system_size, sales_rep_id, sales_rep, source, stage, cancelled, commission_plan_id, commission_plan, install_agreement_signed, final_design_signed, financial_agreement_sent, deposit, hoi, sc, commissions_earned, override_earned, override_plan_id, override_plan, commission_adjustment, commission_paid_to_date, overrides_paid_to_date, remaining_value, current_pay, deal_total_value, updated, override_adjustment, total_commissions, current_pay_commissions, remaining_value_commissions, total_overrides, remaining_value_overrides, current_pay_overrides, percent_of_cash_deposit, utility_bill_verified_date)
+insert into brs.project_commission_snapshot(id, payroll_id, project_id, customer_name, system_size, sales_rep_id, sales_rep, source, stage, cancelled, commission_plan_id, commission_plan, install_agreement_signed, final_design_signed, financial_agreement_sent, deposit, hoi, sc, commissions_earned, override_earned, override_plan_id, override_plan, commission_adjustment, commission_paid_to_date, overrides_paid_to_date, remaining_value, current_pay, project_total_value, updated, override_adjustment, total_commissions, current_pay_commissions, remaining_value_commissions, total_overrides, remaining_value_overrides, current_pay_overrides, percent_of_cash_deposit, utility_bill_verified_date)
 select id, payroll_id, deal_id, customer_name, system_size, sales_rep_id, sales_rep, source, stage, cancelled, commission_plan_id, commission_plan, install_agreement_signed, final_design_signed, financial_agreement_sent, deposit, hoi, sc, commissions_earned, override_earned, override_plan_id, override_plan, commission_adjustment, commission_paid_to_date, overrides_paid_to_date, remaining_value, current_pay, deal_total_value, updated, override_adjustment, total_commissions, current_pay_commissions, remaining_value_commissions, total_overrides, remaining_value_overrides, current_pay_overrides, percent_of_cash_deposit, utility_bill_verified_date
 from blueraven.deal_commission_snapshot;
 
