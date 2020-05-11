@@ -18,6 +18,16 @@
         <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
+
+<!--          @TODO: Remove once smartlists are "done" -->
+          <v-btn
+            id="runReport"
+            text
+            @click="runReport">
+            <v-icon>warning</v-icon>
+            <span>Run (for testing only)</span>
+          </v-btn>
+
           <v-btn
             text
             color="primary"
@@ -270,6 +280,7 @@ import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError,
 import Snackbar from '@/components/Snackbar'
 import draggable from 'vuedraggable'
 import SmartlistRequirement from './SmartlistRequirement'
+import { saveAs } from 'file-saver'
 
 export default {
   name: 'Smartlist',
@@ -557,6 +568,18 @@ export default {
         smartlistId: this.smartlist.id
       })
       this.logicUpdated = true
+    },
+    async runReport () {
+      console.log('running report')
+      try {
+        const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/generate`)
+        let blob = new Blob([data], {
+          type: 'text/csv;charset=utf-8'
+        });
+        saveAs(blob, "smartlist.csv");
+      } catch (e) {
+        logError(e)
+      }
     }
   }
 }
@@ -582,6 +605,16 @@ export default {
 
     .v-btn__content {
       justify-content: start;
+    }
+  }
+
+  #runReport {
+    .v-btn__content {
+      color: red;
+    }
+
+    .v-icon {
+      color: red !important;
     }
   }
 }

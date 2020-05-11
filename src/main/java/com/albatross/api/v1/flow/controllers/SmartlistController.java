@@ -96,6 +96,12 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.updateLogic(smartlistId, logic), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/{smartlistId}/generate", produces = "text/csv")
+  public ResponseEntity<String> generateSmartlistReport(@PathVariable Long smartlistId) {
+    String report = smartlistService.generate(smartlistId);
+    return new ResponseEntity<>(report, (report == null) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
+  }
+
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableSmartlistFieldsByObjectType(@RequestParam Long objectTypeId) {
     return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeId), HttpStatus.OK);
