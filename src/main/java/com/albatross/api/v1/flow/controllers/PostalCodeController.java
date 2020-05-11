@@ -4,6 +4,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.PostalCode;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
 import com.albatross.api.v1.flow.model.PostalCodeZoneUser;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.PostalCodeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,5 +62,10 @@ public class PostalCodeController {
     @DeleteMapping(value = "/zone/code/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteCode(@PathVariable Long id) {
         postalCodeService.deleteCode(id);
+    }
+
+    @GetMapping(value = "/zone/{id}/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<User> getZoneUsers(@PathVariable Long id) {
+        return postalCodeService.getZoneUsers(id);
     }
 }

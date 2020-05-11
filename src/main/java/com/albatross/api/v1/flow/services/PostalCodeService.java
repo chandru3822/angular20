@@ -152,6 +152,21 @@ public class PostalCodeService {
     sqlCache.update("postalCode.deleteZoneCode", params);
   }
 
+  public List<User> getZoneUsers(Long zoneId) {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("zoneId", zoneId);
+    params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+    params.put("isSchedulingTool", true);
+
+    List<User> results = sqlCache.query("postalCode.getZoneUsers", params, User.class);
+    return results;
+  }
+
   public PostalCode getZonePostalCode(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);

@@ -30,7 +30,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addUser = !addUser, selectedUser = {}]">
+            <v-btn text @click="[addUser = !addUser, selectedUser = {}, getUsers()]">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -41,6 +41,7 @@
           <v-select v-model="selectedUser.id"
                     :items="users"
                     label="Select a User..."
+                    :loading="usersLoading"
                     item-text="fullName"
                     item-value="id"
                     autocomplete="off">
@@ -222,8 +223,8 @@
         users: [],
         zoneId: this.$route.params.id,
         dataLoading: true,
-        addUser: false,
         usersLoading: false,
+        addUser: false,
         userHeaders: [
           {text: 'Name', value: 'name', show: true},
           {text: '', value: 'icons', show: true},
@@ -238,7 +239,6 @@
     },
     created () {
       this.getZoneDetails()
-      this.getUsers()
     },
     methods: {
       filterPostalCodeZoneUsers () {
@@ -304,16 +304,16 @@
         }
       },
       async getUsers() {
-        this.usersLoading = true
-        try {
-          const {data} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
-              isSchedulingTool: true
-            }})
-          this.users = data
-          this.usersLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Users')
+        if (this.addUser) {
+          this.usersLoading = true
+          try {
+            const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/users`)
+            this.users = data
+            this.usersLoading = false
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Users')
+          }
         }
       },
       async deleteCodeFromZone (code) {

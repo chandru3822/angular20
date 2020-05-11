@@ -115,6 +115,27 @@
     where pc.id = :id
   ]]></postalCode.getZoneCode>
 
+  <postalCode.getZoneUsers><![CDATA[
+      select distinct upv.user_id as id,
+                      upv.first_name,
+                      upv.last_name,
+                      upv.first_name || ' ' || upv.last_name as full_name,
+                      upv.first_name || ' ' || upv.last_name as title
+      from flow.user_positions_vw upv
+      where upv.position_schedulable is true
+        and case when :isParent and :isSchedulingTool
+                     then array[upv.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                 else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
+        and upv.position_schedulable is true
+        and upv.user_archived is not true
+        and not exists (select user_id
+                          from flow.postal_code_zone_user pczu
+                          where postal_code_zone_id = :zoneId
+                            and pczu.user_id = upv.user_id
+                            and archived is not true)
+      order by full_name
+  ]]></postalCode.getZoneUsers>
+
   <postalCode.checkForExisting><![CDATA[
     select pc.id,
        pc.postal_code_zone_id,
