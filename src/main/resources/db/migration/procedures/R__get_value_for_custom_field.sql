@@ -12,6 +12,9 @@ BEGIN
     case when p_object_type_id = 4 then
         return query
             select case
+                       when cdt.id = 7 then (select lov.name
+                                             from flow.list_of_value lov
+                                             where lov.id = pscfv.int_value::integer)::text
                        when dt.id = 1 then pscfv.date_value::text
                        when dt.id = 2 then pscfv.timestamp_value::text
                        when dt.id = 3 then pscfv.boolean_value::text
@@ -38,6 +41,9 @@ BEGIN
         when p_object_type_id = 1 then
             return query
                 select case
+                           when cdt.id = 7 then (select lov.name
+                                                 from flow.list_of_value lov
+                                                 where lov.id = pcfv.int_value::integer)::text
                            when dt.id = 1 then pcfv.date_value::text
                            when dt.id = 2 then pcfv.timestamp_value::text
                            when dt.id = 3 then pcfv.boolean_value::text
@@ -61,6 +67,9 @@ BEGIN
         when p_object_type_id = 2 then
             return query
                 select case
+                           when cdt.id = 7 then (select lov.name
+                                                 from flow.list_of_value lov
+                                                 where lov.id = ccfv.int_value::integer)::text
                            when dt.id = 1 then ccfv.date_value::text
                            when dt.id = 2 then ccfv.timestamp_value::text
                            when dt.id = 3 then ccfv.boolean_value::text
@@ -84,6 +93,9 @@ BEGIN
         when p_object_type_id = 3 then
             return query
                 select case
+                           when cdt.id = 7 then (select lov.name
+                                                 from flow.list_of_value lov
+                                                 where lov.id = ucfv.int_value::integer)::text
                            when dt.id = 1 then ucfv.date_value::text
                            when dt.id = 2 then ucfv.timestamp_value::text
                            when dt.id = 3 then ucfv.boolean_value::text
@@ -107,6 +119,9 @@ BEGIN
         when p_object_type_id = 5 then
             return query
                 select case
+                           when cdt.id = 7 then (select lov.name
+                                                 from flow.list_of_value lov
+                                                 where lov.id = ocfv.int_value::integer)::text
                            when dt.id = 1 then ocfv.date_value::text
                            when dt.id = 2 then ocfv.timestamp_value::text
                            when dt.id = 3 then ocfv.boolean_value::text
