@@ -23,10 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -157,23 +154,48 @@ public class SmartlistService {
     List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAssignedFields", params, SmartlistFieldAssignment.class);
     List<SmartlistRequirement> requirements = sqlCache.query("smartlist.getRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
+    // Map storing custom field group assignment ID as key,
+    // - value 0: a UUID alias for the join table
+    // - value 1: object type ID
+    // - value 2: process step ID
+    // - value 3: hasListValue (from company_data_type)
+    HashMap<Long, List<Object>> joinObjectTypes = new HashMap<>();
+
     ArrayList<String> dateFields = new ArrayList<>();
-    ArrayList<Long> joinObjectTypeIds = new ArrayList<>();
     StringBuilder query = new StringBuilder("select");
+
 
     for (SmartlistFieldAssignment f : fields) {
 
-      final String location = String.format("%s.%s", f.getReferenceTable(), f.getReferenceColumn());
+      final Long fieldObjectTypeId = f.getObjectTypeId();
+
+      if (!fieldObjectTypeId.equals(smartlist.getObjectTypeId()) && !joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId())) {
+
+        List<Object> mapVals = new ArrayList<>();
+        mapVals.add(UUID.randomUUID());
+        mapVals.add(f.getObjectTypeId());
+        mapVals.add(f.getProcessStepId());
+        mapVals.add(f.getHasListValues());
+
+        joinObjectTypes.put(f.getCustomFieldGroupAssignmentId(), mapVals);
+      }
+
+      String location;
+
+      if (f.getCustomFieldGroupAssignmentId() != null && joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId())) {
+        final String table = joinObjectTypes.get(f.getCustomFieldGroupAssignmentId()).get(0).toString();
+        final String column = (f.getHasListValues() != null && f.getHasListValues()) ? "name" : getReferenceColumn(f.getDataTypeId());
+        location = String.format("\"%s\".%s", table, column);
+      } else {
+        location = String.format("%s.%s", f.getReferenceTable(), f.getReferenceColumn());
+      }
+
 
       if (f.getDataTypeId() == 1) {
         query.append(String.format(" date(%s) as \"%s\",", location, f.getName()));
         dateFields.add(f.getName());
       } else {
         query.append(String.format(" %s as \"%s\",", location, f.getName()));
-      }
-
-      if (!f.getObjectTypeId().equals(smartlist.getObjectTypeId()) && !joinObjectTypeIds.contains(f.getObjectTypeId())) {
-        joinObjectTypeIds.add(f.getObjectTypeId());
       }
     }
 
@@ -184,22 +206,54 @@ public class SmartlistService {
       case 1:
         query.append(" from flow.project ");
 
-        // join tables from object types which aren't the same as the report object type (used for `from` clause)
-        for (Long objectTypeId : joinObjectTypeIds) {
-          //@TODO humes, might make these joins more programatic by using foreign keys to join
+        // join tables from object types which aren't the same as the report object type (used in `from` clause)
+        for (Map.Entry<Long, List<Object>> entry : joinObjectTypes.entrySet()) {
+          final Long cfgaId = entry.getKey();
+          List<Object> vals = entry.getValue();
+          final String uuid = vals.get(0).toString();
+          final Long objectTypeId = Long.parseLong(vals.get(1).toString());
+          final Boolean hasListValues = Boolean.parseBoolean((vals.get(3) == null) ? "false" : vals.get(3).toString());
+
+          //@TODO humes, might make these joins more programmatic by using foreign keys to join
           switch (objectTypeId.intValue()) {
             case 2:
-              query.append("inner join flow.contact on flow.contact.id = flow.project.contact_id ");
+              if (hasListValues) {
+
+                final String newUUID = UUID.randomUUID().toString();
+                query.append(String.format("inner join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), newUUID, newUUID, newUUID, cfgaId));
+                query.append(String.format("inner join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, newUUID));
+              } else {
+                query.append(String.format("inner join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
+              }
               break;
             case 3:
+              query.append("left join flow.user_position on flow.user_position.id = flow.project.user_position_id ");
+              query.append("left join flow.user on flow.user.id = flow.user_position.user_id ");
               break;
-            case 4:
-              break;
+//            case 4:
+////              query.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
+////              query.append(String.format("left join flow.process_step \"%s\" on \"%s\".id = %s", psUUID, psUUID, processStepId));
+//              final Long processStepId = Long.parseLong(entry.getValue().get(2).toString());
+//              final String newUUID = UUID.randomUUID().toString();
+//              query.append(String.format("inner join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", newUUID, newUUID, newUUID, processStepId));
+//              query.append(String.format("inner join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, newUUID, uuid, cfgaId));
+//              break;
             case 5:
+              query.append("left join flow.user_position on flow.user_position.id = flow.project.user_position_id ");
+              query.append("left join flow.org on flow.org.id = flow.user_position.org_id ");
               break;
           }
         }
 
+        // join process step tables via aliases
+//        for (Map.Entry<Long, List<UUID>> entry : joinProcessSteps.entrySet()) {
+//          final Long processStepId = entry.getKey();
+//          final String ppsUUID = entry.getValue().get(0).toString();
+//          final String psUUID = entry.getValue().get(1).toString();
+//
+//          query.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
+//          query.append(String.format("left join flow.process_step \"%s\" on \"%s\".id = %s", psUUID, psUUID, processStepId));
+//        }
 
         break;
       case 2:
@@ -223,21 +277,25 @@ public class SmartlistService {
 
     log.info(query.toString());
 
-    List<Map<String, Object>> result = sqlCache.queryBySql(query.toString(), null, new ColumnMapRowMapper());
+    List<Map<String, Object>> results = sqlCache.queryBySql(query.toString(), null, new ColumnMapRowMapper());
 
+    return writeCsv(results, fields, dateFields);
+  }
+
+  private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, ArrayList<String> dateFields) {
     CsvSchema.Builder builder = CsvSchema.builder();
 
     // Dates have to be set as string, else when written to buffer, they display as epoch milli
-    for (int i = 0; i < result.size(); i++) {
-      Map<String, Object> r = result.get(i);
+    for (int i = 0; i < data.size(); i++) {
+      Map<String, Object> r = data.get(i);
 
       for (String field : dateFields) {
         r.put(field, r.get(field).toString());
       }
-      result.set(i, r);
+      data.set(i, r);
     }
 
-    for (SmartlistFieldAssignment f : fields) {
+    for (SmartlistFieldAssignment f : headers) {
       builder.addColumn(f.getName(), CsvSchema.ColumnType.NUMBER_OR_STRING);
     }
 
@@ -246,11 +304,55 @@ public class SmartlistService {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
     try (SequenceWriter toBuffer = w.writeValues(buffer)) {
-      toBuffer.writeAll(result);
+      toBuffer.writeAll(data);
       toBuffer.flush();
       return buffer.toString(StandardCharsets.UTF_8);
     } catch (IOException e) {
       return null;
+    }
+  }
+
+  private String getReferenceTable(Long objectTypeId) {
+    switch (objectTypeId.intValue()) {
+      case 1:
+        return "flow.project_custom_field_value";
+      case 2:
+        return "flow.contact_custom_field_value";
+      case 3:
+        return "flow.user_custom_field_value";
+      case 4:
+        return "flow.project_process_step_custom_field_value";
+      case 5:
+        return "flow.organization_custom_field_value";
+      default:
+        return "";
+    }
+  }
+
+  private String getReferenceColumn(Long dataTypeId) {
+    switch (dataTypeId.intValue()) {
+      case 1:
+        return "date_value";
+      case 2:
+        return "timestamp_value";
+      case 3:
+        return "boolean_value";
+      case 4:
+        return "numeric_value";
+      case 5:
+        return "text_value";
+      case 6:
+        return "int_value";
+      case 7:
+        return "int_array_value";
+      case 8:
+        //@TODO: figure system value
+        return "";
+      case 9:
+        //@TODO: figure system list. I think this uses the same int_value column??
+        return "";
+      default:
+        return "";
     }
   }
 

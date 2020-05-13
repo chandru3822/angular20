@@ -17,5 +17,5 @@ public class SmartlistFieldAssignment {
 
   private Timestamp dateCreated, dateModified;
 
-  private boolean archived;
+  private Boolean archived, hasListValues, allowMultiple;
 }
