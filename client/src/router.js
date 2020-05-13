@@ -119,15 +119,25 @@ export default new Router({
         },
         children: []
       }, {
-          path: '/ahj',
-          name: 'ahj',
-          component: () => {
-            if(store.getters.userHasFeature('AHJ_DATABASE')) {
-              return import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
-            } else  {
-              return accessDenied()
-            }
-          },
+        path: '/closerDashboard',
+        name: 'closerDashboard',
+        component: () => {
+          if(store.getters.userHasFeature('CLOSER_DASHBOARD')) {
+            return import (/* webpackChunkName: "closerDashboard" */ './views/closerDashboard/CloserDashboard.vue')
+          } else {
+            return accessDenied()
+          }
+        }
+      }, {
+        path: '/ahj',
+        name: 'ahj',
+        component: () => {
+          if(store.getters.userHasFeature('AHJ_DATABASE')) {
+            return import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
       }, {
         path: '/ahj/:ahjId',
         name: 'ahjDetails',

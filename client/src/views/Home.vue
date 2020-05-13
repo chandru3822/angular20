@@ -96,6 +96,10 @@ export default {
         path: '/project/search',
         display: this.$store.getters.userHasFeature('PROJECTS')
       }, {
+        label: 'Closer Dashboard',
+        path: '/closerDashboard',
+        display: this.$store.getters.userHasFeature('CLOSER_DASHBOARD')
+      }, {
         label: 'AHJ Database',
         path: '/ahj',
         display: this.$store.getters.userHasFeature('AHJ_DATABASE')
