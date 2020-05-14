@@ -218,43 +218,39 @@ public class SmartlistService {
           switch (objectTypeId.intValue()) {
             case 2:
               if (hasListValues) {
-
-                final String newUUID = UUID.randomUUID().toString();
-                query.append(String.format("inner join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), newUUID, newUUID, newUUID, cfgaId));
-                query.append(String.format("inner join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, newUUID));
+                final String ccfvUUID = UUID.randomUUID().toString();
+                query.append(String.format("left join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ccfvUUID, ccfvUUID, ccfvUUID, cfgaId));
+                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ccfvUUID));
               } else {
-                query.append(String.format("inner join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
+                query.append(String.format("left join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
               }
               break;
             case 3:
               query.append("left join flow.user_position on flow.user_position.id = flow.project.user_position_id ");
               query.append("left join flow.user on flow.user.id = flow.user_position.user_id ");
               break;
-//            case 4:
-////              query.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
-////              query.append(String.format("left join flow.process_step \"%s\" on \"%s\".id = %s", psUUID, psUUID, processStepId));
-//              final Long processStepId = Long.parseLong(entry.getValue().get(2).toString());
-//              final String newUUID = UUID.randomUUID().toString();
-//              query.append(String.format("inner join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", newUUID, newUUID, newUUID, processStepId));
-//              query.append(String.format("inner join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, newUUID, uuid, cfgaId));
-//              break;
+            case 4:
+              // @TODO: possibly check for vals.get(2) being null even though it "shouldn't" ever happen here
+              final Long processStepId = Long.parseLong(vals.get(2).toString());
+              final String ppsUUID = UUID.randomUUID().toString();
+
+              query.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
+
+              if (hasListValues) {
+                final String ppscfvUUID = UUID.randomUUID().toString();
+                query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, cfgaId));
+                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ppscfvUUID));
+              } else {
+                query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, ppsUUID, uuid, cfgaId));
+              }
+
+              break;
             case 5:
               query.append("left join flow.user_position on flow.user_position.id = flow.project.user_position_id ");
               query.append("left join flow.org on flow.org.id = flow.user_position.org_id ");
               break;
           }
         }
-
-        // join process step tables via aliases
-//        for (Map.Entry<Long, List<UUID>> entry : joinProcessSteps.entrySet()) {
-//          final Long processStepId = entry.getKey();
-//          final String ppsUUID = entry.getValue().get(0).toString();
-//          final String psUUID = entry.getValue().get(1).toString();
-//
-//          query.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
-//          query.append(String.format("left join flow.process_step \"%s\" on \"%s\".id = %s", psUUID, psUUID, processStepId));
-//        }
-
         break;
       case 2:
         query.append(" from flow.user ");
