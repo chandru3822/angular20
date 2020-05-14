@@ -22,11 +22,14 @@
       )
       SELECT (select coalesce(sum(q1points), 0)
               from (select count(1) *
-                case when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-01-01') and ('2020-01-31') and lov.id::integer in (6,8,484)
+                case when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-01-01') and ('2020-01-31')
+                       and source in ('Referral', 'Setter Gen', 'Events - Closer Gen')
                    then 1.5
-                 when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31') and lov.id::integer = 6
+                 when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
+                   and source = 'Setter Gen'
                    then 3
-                 when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31') and lov.id::integer in (8,484)
+                 when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
+                   and source in ('Referral', 'Events - Closer Gen')
                    then 2
                  else 1
                  end as q1points
@@ -34,6 +37,7 @@
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_project up on up.project_id = p.id
                 inner join flow.user_position up2 on up2.id = up.user_position_id and up2.position_id = 1
+                inner join flow.user u on u.id = up2.user_id
 -- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
 
 --                 left join lateral (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) as first_cash_payment_paid_date) first_cash_payment_paid_date on true
@@ -41,7 +45,6 @@
                 left join lateral (select * from flow.get_value_for_custom_field(4, 104, p.id, 9) as final_design_signed_date) final_design_signed_date on true
                 left join lateral (select * from flow.get_value_for_custom_field(4, 108, p.id, 4) as agreement_signed_date) agreement_signed_date on true
                 left join lateral (select * from flow.get_value_for_custom_field(1, 5, p.id) as source) source on true
-                inner join flow.list_of_value lov on (lov.parent_id = 5 and lov.name = source)
                 left join lateral (select * from flow.get_value_for_custom_field(4, 109, p.id, 4) as financier) financier on true
                 left join lateral (select * from flow.get_value_for_custom_field(1, 52, p.id) as cancelled_date) cancelled_date on true
                 left join lateral (select * from flow.get_value_for_custom_field(1, 200, p.id) as on_hold) on_hold on true
@@ -56,14 +59,15 @@
                 end
                 and ((cancelled_date is null) or (cancelled_date is not null and cancelled_date::date > (select q1_end from quarters)))
                 and (on_hold is null or on_hold::boolean is false)
-                and c.id = :currentUserId
-              group by first_cash_payment_paid_date, final_design_signed_date, agreement_signed_date, lov.id) t
+                and u.id = :currentUserId
+              group by first_cash_payment_paid_date, final_design_signed_date, agreement_signed_date, source) t
              ) as "q1",
              (select count(1)
               from flow.project p
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_project up on up.project_id = p.id
                 inner join flow.user_position up2 on up2.id = up.user_position_id and up2.position_id = 1
+                inner join flow.user u on u.id = up2.user_id
 -- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
 
 --                 left join lateral (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) as first_cash_payment_paid_date) first_cash_payment_paid_date on true
@@ -83,13 +87,14 @@
                 end
                 and ((cancelled_date is null) or (cancelled_date is not null and cancelled_date::date > (select q2_end from quarters)))
                 and (on_hold is null or on_hold::boolean is false)
-                and c.id = :currentUserId
+                and u.id = :currentUserId
              ) as "q2",
              (select count(1)
               from flow.project p
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_project up on up.project_id = p.id
                 inner join flow.user_position up2 on up2.id = up.user_position_id and up2.position_id = 1
+                inner join flow.user u on u.id = up2.user_id
 -- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
 
 --                 left join lateral (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) as first_cash_payment_paid_date) first_cash_payment_paid_date on true
@@ -109,13 +114,14 @@
                 end
                 and ((cancelled_date is null) or (cancelled_date is not null and cancelled_date::date > (select q2_end from quarters)))
                 and (on_hold is null or on_hold::boolean is false)
-                and c.id = :currentUserId
+                and u.id = :currentUserId
              ) as "q3",
              (select count(1)
               from flow.project p
                 inner join flow.contact c on c.id = p.contact_id
                 inner join flow.user_project up on up.project_id = p.id
                 inner join flow.user_position up2 on up2.id = up.user_position_id and up2.position_id = 1
+                inner join flow.user u on u.id = up2.user_id
 -- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
 
 --                 left join lateral (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) as first_cash_payment_paid_date) first_cash_payment_paid_date on true
@@ -135,7 +141,7 @@
                 end
                 and ((cancelled_date is null) or (cancelled_date is not null and cancelled_date::date > (select q2_end from quarters)))
                 and (on_hold is null or on_hold::boolean is false)
-                and c.id = :currentUserId
+                and u.id = :currentUserId
              ) as "q4"
     ]]>
   </closerDashboard.getIronmanFdcCounts>
