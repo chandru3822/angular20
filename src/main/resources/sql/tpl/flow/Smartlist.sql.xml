@@ -13,11 +13,12 @@ inner join flow.object_type ot on ot.id = cot.object_type_id
 <smartlist.getById><![CDATA[
 select
   s.*,
-  ot.object_type
+  ot.object_type,
+  cot.object_type_id
 from flow.smartlist s
 inner join flow.company_object_type cot on cot.id = s.company_object_type_id
 inner join flow.object_type ot on ot.id = cot.object_type_id
-where s.id = :id;
+where s.id = :smartlistId;
 ]]></smartlist.getById>
 
 <smartlist.add><![CDATA[

@@ -41,7 +41,7 @@ public class SmartlistService {
   }
 
   public Smartlist getSmartlist(Long id) {
-    return sqlCache.get("smartlist.getById", Map.of("id", id), Smartlist.class).orElse(null);
+    return sqlCache.get("smartlist.getById", Map.of("smartlistId", id), Smartlist.class).orElse(null);
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
@@ -146,7 +146,7 @@ public class SmartlistService {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("smartlistId", smartlistId);
-    Smartlist smartlist = sqlCache.get("smartlist.get", params, Smartlist.class).orElse(null);
+    Smartlist smartlist = sqlCache.get("smartlist.getById", params, Smartlist.class).orElse(null);
     if (smartlist == null) {
       return null;
     }
@@ -168,8 +168,9 @@ public class SmartlistService {
     for (SmartlistFieldAssignment f : fields) {
 
       final Long fieldObjectTypeId = f.getObjectTypeId();
+      final boolean checkCfgaId = f.getCustomFieldGroupAssignmentId() != null && !joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId());
 
-      if (!fieldObjectTypeId.equals(smartlist.getObjectTypeId()) && !joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId())) {
+      if (!fieldObjectTypeId.equals(smartlist.getObjectTypeId()) && checkCfgaId) {
 
         List<Object> mapVals = new ArrayList<>();
         mapVals.add(UUID.randomUUID());
@@ -205,6 +206,10 @@ public class SmartlistService {
     switch (smartlist.getObjectTypeId().intValue()) {
       case 1:
         query.append(" from flow.project ");
+        query.append("inner join flow.contact on flow.contact.id = flow.project.contact_id ");
+        query.append("left join flow.user_position on flow.user_position.id = flow.project.user_position_id ");
+        query.append("left join flow.user on flow.user.id = flow.user_position.user_id ");
+        query.append("left join flow.org on flow.org.id = flow.user_position.org_id ");
 
         // join tables from object types which aren't the same as the report object type (used in `from` clause)
         for (Map.Entry<Long, List<Object>> entry : joinObjectTypes.entrySet()) {
@@ -271,26 +276,107 @@ public class SmartlistService {
         }
         break;
       case 2:
+        query.append(" from flow.contact ");
+        query.append("left join flow.project on flow.project.contact_id = flow.contact.id ");
+        query.append("left join flow.user_position on flow.user_position.id = flow.contact.owner_user_position_id ");
+        query.append("left join flow.user on flow.user.id = flow.user_position.user_id ");
+        query.append("left join flow.org on flow.org.id = flow.user_position.org_id ");
+
+        // join tables from object types which aren't the same as the report object type (used in `from` clause)
+        for (Map.Entry<Long, List<Object>> entry : joinObjectTypes.entrySet()) {
+          final Long cfgaId = entry.getKey();
+          List<Object> vals = entry.getValue();
+          final String uuid = vals.get(0).toString();
+          final Long objectTypeId = Long.parseLong(vals.get(1).toString());
+          final Boolean hasListValues = Boolean.parseBoolean((vals.get(3) == null) ? "false" : vals.get(3).toString());
+
+          //@TODO humes, might make these joins more programmatic by using foreign keys to join
+          switch (objectTypeId.intValue()) {
+            case 1:
+              if (hasListValues) {
+                final String pcfvUUID = UUID.randomUUID().toString();
+                query.append(String.format("left join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), pcfvUUID, pcfvUUID, pcfvUUID, cfgaId));
+                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, pcfvUUID));
+              } else {
+                query.append(String.format("left join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
+              }
+              break;
+            case 3:
+              final String upUUID = UUID.randomUUID().toString();
+
+              if (hasListValues) {
+                final String ucfvUUID = UUID.randomUUID().toString();
+                query.append(String.format("left join flow.user_position \"%s\" on \"%s\".id = flow.contact.owner_user_position_id ", upUUID, upUUID));
+                query.append(String.format("left join %s \"%s\" on \"%s\".user_id = \"%s\".user_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ucfvUUID, ucfvUUID, upUUID, ucfvUUID, cfgaId));
+                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ucfvUUID));
+              } else {
+                query.append(String.format("left join flow.user_position \"%s\" on \"%s\".id = flow.contact.owner_user_position_id ", upUUID, upUUID));
+                query.append(String.format("left join %s \"%s\" on \"%s\".user_id = \"%s\".user_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, upUUID, uuid, cfgaId));
+              }
+              break;
+            case 4:
+              // @TODO: possibly check for vals.get(2) being null even though it "shouldn't" ever happen here
+              final Long processStepId = Long.parseLong(vals.get(2).toString());
+              final String ppsUUID = UUID.randomUUID().toString();
+
+              query.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
+
+              if (hasListValues) {
+                final String ppscfvUUID = UUID.randomUUID().toString();
+                query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, cfgaId));
+                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ppscfvUUID));
+              } else {
+                query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, ppsUUID, uuid, cfgaId));
+              }
+
+              break;
+            case 5:
+              final String userPositionUUID = UUID.randomUUID().toString();
+
+              if (hasListValues) {
+                final String ocfvUUID = UUID.randomUUID().toString();
+                query.append(String.format("left join flow.user_position \"%s\" on \"%s\".id = flow.contact.owner_user_position_id ", userPositionUUID, userPositionUUID));
+                query.append(String.format("left join %s \"%s\" on \"%s\".org_id = \"%s\".org_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ocfvUUID, ocfvUUID, userPositionUUID, ocfvUUID, cfgaId));
+                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ocfvUUID));
+              } else {
+                query.append(String.format("left join flow.user_position \"%s\" on \"%s\".id = flow.contact.owner_user_position_id ", userPositionUUID, userPositionUUID));
+                query.append(String.format("left join %s \"%s\" on \"%s\".org_id = \"%s\".org_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, userPositionUUID, uuid, cfgaId));
+              }
+              break;
+          }
+        }
+        break;
+      case 3:
         query.append(" from flow.user ");
+        break;
+      case 4:
+        query.append(" from flow.proess_step ");
+        break;
+      case 5:
+        query.append(" from flow.org ");
+        break;
     }
 
-    query.append(" where");
+    query.append(" where ");
 
     for (SmartlistRequirement r : requirements) {
+      String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeRequirement());
 
+      // @TODO: requirements need to take into account
       switch (r.getDataTypeId().intValue()) {
         case 1:
-          String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId());
-          query.append(String.format(" %s.%s %s '%s'", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
+          query.append(String.format("%s.%s %s '%s' ", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
           break;
         case 5:
-          query.append(String.format(" %s.%s in(%s)", r.getReferenceTable(), r.getReferenceColumn(), r.getRequirementValue()));
+//          query.append(String.format("%s.%s in(%s) ", r.getReferenceTable(), r.getReferenceColumn(), r.getRequirementValue()));
+          query.append(String.format("%s.%s %s %s", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
           break;
       }
     }
 
     log.info(query.toString());
 
+    //@TODO: wrap in try/catch and gracefully handle failed queries
     List<Map<String, Object>> results = sqlCache.queryBySql(query.toString(), null, new ColumnMapRowMapper());
 
     return writeCsv(results, fields, dateFields);
@@ -387,18 +473,27 @@ public class SmartlistService {
           case 3:
             return now;
         }
+      case 5:
+        switch (r.getDataTypeRequirementId().intValue()) {
+          case 18:
+          case 19:
+            return "null";
+        }
       default:
         return null;
     }
   }
 
-  private String getSqlOperator(Long operatorTypeId, Long dataTypeId) {
-    //@TODO will also need to take data type id into account
+  private String getSqlOperator(Long operatorTypeId, DataTypeRequirement r) {
+
+    // List of whether the dataTypeRequirementId is being compared to `null` or `not null`
+    List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L);
+
     switch (operatorTypeId.intValue()) {
       case 1:
-        return "=";
+        return (nullableIds.contains(r.getId()) ? "is" : "=");
       case 2:
-        return "!=";
+        return (nullableIds.contains(r.getId()) ? "is not" : "!=");
       case 3:
         return ">";
       case 4:
