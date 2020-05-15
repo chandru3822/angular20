@@ -145,4 +145,71 @@
              ) as "q4"
     ]]>
   </closerDashboard.getIronmanFdcCounts>
+
+  <closerDashboard.getCloserTableScores>
+    <![CDATA[
+      SELECT u.id,
+             u.first_name || ' ' || u.last_name as name,
+             o.org_name as companyName,
+             o2.org_name as region,
+             sma.sales_metro_area,
+             count(case when appointment_date::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and source not in ('Referral', 'Setter Gen', 'Events - Closer Gen')
+               and final_design_signed_date is not null
+               and agreement_signed_date is not null
+               and case when financier = 'Cash'
+                 then first_cash_payment_paid_date is not null
+                 else 1=1
+                 end
+               and (on_hold is null or on_hold::boolean is false) then 1 end) as leadGenFdcPercentageNumerator,
+             count(case when appointment_date::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and source not in ('Referral', 'Setter Gen', 'Events - Closer Gen') then 1 end) as leadGenFdcPercentageDenominator,
+             count(case when greatest(final_design_signed_date::date, agreement_signed_date::date, first_cash_payment_paid_date::date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and source not in ('Referral', 'Setter Gen', 'Events - Closer Gen')
+               and final_design_signed_date is not null
+               and agreement_signed_date is not null
+               and case when financier = 'Cash'
+                 then first_cash_payment_paid_date is not null
+                 else 1=1
+                 end
+               and (on_hold is null or on_hold::boolean is false) then 1 end) as selfGenFdc,
+             count(case when greatest(final_design_signed_date::date, agreement_signed_date::date, first_cash_payment_paid_date::date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and final_design_signed_date is not null
+               and agreement_signed_date is not null
+               and case when financier = 'Cash'
+                 then first_cash_payment_paid_date is not null
+                 else 1=1
+                 end
+               and (on_hold is null or on_hold::boolean is false) then 1 end) as totalFdc
+      FROM flow.project p
+        INNER JOIN flow.contact c ON c.id = p.contact_id
+        INNER JOIN flow.user_project up ON up.project_id = p.id
+        INNER JOIN flow.user_position up2 ON up2.id = up.user_position_id AND up2.position_id = 1
+        INNER JOIN flow.org o ON o.id = up2.org_id
+        LEFT JOIN brs.sales_area sa ON o.state_id = sa.state_id
+        LEFT JOIN brs.sales_metro_area sma ON sma.sales_area_id = sa.id
+        INNER JOIN flow.org o2 ON (o2.id = o.parent_org_id and o2.org_type_id = 2)
+        INNER JOIN flow.user u ON u.id = up2.user_id
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 1, p.id, 1) as appointment_date) appointment_date ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(1, 5, p.id) as source) source ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 109, p.id, 4) as financier) financier ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(1, 200, p.id) as on_hold) on_hold ON TRUE
+        -- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
+
+--         LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) AS first_cash_payment_paid_date) first_cash_payment_paid_date ON TRUE
+        LEFT JOIN LATERAL (select null as first_cash_payment_paid_date) first_cash_payment_paid_date ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 104, p.id, 9) AS final_design_signed_date) final_design_signed_date ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 108, p.id, 4) AS agreement_signed_date) agreement_signed_date ON TRUE
+      WHERE CASE WHEN :officeRanking IS TRUE
+        THEN
+          up2.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived = false and up2.primary_flag = true)
+          AND u.archived IS FALSE
+          ELSE -- Company Ranking
+            up2.archived IS FALSE
+            AND up2.position_id = 1
+            AND (select active_flag from flow.org where id = up2.org_id) IS TRUE
+            END
+      GROUP BY u.id, companyName, region, sma.sales_metro_area
+    ]]>
+  </closerDashboard.getCloserTableScores>
 </sql>

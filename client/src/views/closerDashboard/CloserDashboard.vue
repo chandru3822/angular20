@@ -27,9 +27,9 @@
 
     <!---------------------------------- DASHBOARD TAB START ---------------------------------->
     <!-- IRONMAN START -->
-    <v-row class="mb-6" justify="center" no-gutters>
+    <v-row v-if="showDashboard" class="mb-6" justify="center" no-gutters>
       <v-col cols="12" id="ironman-container">
-        <v-card v-if="showDashboard" id="ironman-component" class="mb-4 pb-4">
+        <v-card id="ironman-component" class="mb-4 pb-4">
           <img id="ironman-banner-mobile" src="../../assets/ironman_banner_mobile.png" alt="Mobile version of Ironman competition banner">
           <img id="ironman-banner" src="../../assets/ironman_banner.png"  alt="Desktop version of Ironman competition banner">
           <div id="milestones-container">
@@ -118,9 +118,9 @@
               <div id="seventh-segment" class="progress-bar-segment"></div>
               <div id="eighth-segment" class="progress-bar-segment">
                 <img v-if="!progressBarIsFull" src="../../assets/progress_bar_icon_blue.png"
-                     alt="blue Blue Raven Solar logo">
+                     alt="Blue Raven Solar logo in blue">
                 <img v-if="progressBarIsFull" src="../../assets/progress_bar_icon_white.png"
-                     alt="white Blue Raven Solar logo">
+                     alt="Blue Raven Solar logo in white">
               </div>
               <div id="progress-bar-fill" :style="{borderRadius: progressBarIsFull ? '5px' : '5px 0 0 5px'}"></div>
             </div>
@@ -185,6 +185,199 @@
       </v-card>
     </v-dialog>
     <!-- IRONMAN END -->
+
+    <!-- RANKING TABLES FIRST HEADER START -->
+    <div v-if="showDashboard" class="ranking-tables-section-header">
+      Your Office Ranking
+    </div>
+    <!-- RANKING TABLES FIRST HEADER END -->
+
+    <!-- RANKING TABLES TOP ROW START -->
+    <div v-if="showDashboard" class="ranking-tables-section">
+      <!-- OFFICE LEAD ALLOCATION RANK START -->
+      <div class="ranking-table">
+        <div class="ranking-table-header">
+          <img class="ranking-table-icon left-text" src="../../assets/sort_desc_icon.png"
+               alt="Gray descending sort icon with an arrow pointing downward">
+          <span>Office Lead Allocation Rank</span>
+        </div>
+
+        <table v-if="leadAllocationRankingData.length > 0">
+          <tr>
+            <th class="center-text">Rank</th>
+            <th></th>
+            <th class="left-text">Rep</th>
+            <th class="center-text">Lead-Gen FDC %</th>
+            <th class="center-text">Self-Gen FDC</th>
+            <th class="center-text">Average Availability</th>
+            <th class="center-text">Lead Allocation %</th>
+          </tr>
+
+          <tr v-for="(row, index) in leadAllocationRankingData" :key="index"
+              :class="{'highlight-user-row': row.userId === currentUserId}">
+            <td class="center-text">{{ row.rank }}</td>
+            <td class="user-img-col">
+              <img class="ranking-table-img default-img"
+                   src="../../assets/user_img_placeholder.png" alt="User photo placeholder">
+            </td>
+            <td class="left-text">{{ row.name }}</td>
+            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
+            <td class="center-text">{{ row.selfGenFdc }}</td>
+            <td class="center-text">{{ row.avgAvailability }}</td>
+            <td class="center-text">{{ row.leadAllocationPercentage }}%</td>
+          </tr>
+        </table>
+        <div v-else class="ranking-tables-no-data left-text">
+          Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
+        </div>
+      </div>
+      <!-- OFFICE LEAD ALLOCATION RANK END -->
+
+      <!-- OFFICE FDC RANK START -->
+      <div class="ranking-table">
+        <div class="ranking-table-header">
+          <img class="ranking-table-icon" src="../../assets/down_arrows_icon_lighter.png"
+               alt="Gray icon with two arrows pointing downward">
+          <span>Office FDC Rank</span>
+        </div>
+
+        <table v-if="officeFdcRankingData.length > 0">
+          <tr>
+            <th class="center-text">Rank</th>
+            <th></th>
+            <th class="left-text">Rep</th>
+            <th class="center-text">Lead-Gen FDC %</th>
+            <th class="center-text">Self-Gen FDC</th>
+            <th class="center-text">Total FDC</th>
+          </tr>
+
+          <tr v-for="(row, index) in officeFdcRankingData" :key="index"
+              :class="{'highlight-user-row': row.userId === currentUserId}">
+            <td class="center-text">{{ row.rank }}</td>
+            <td class="user-img-col">
+              <img class="ranking-table-img default-img"
+                   src="../../assets/user_img_placeholder.png" alt="User photo placeholder">
+            </td>
+            <td class="left-text">{{ row.name }}</td>
+            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
+            <td class="center-text">{{ row.selfGenFdc }}</td>
+            <td class="center-text">{{ row.totalFdc }}</td>
+          </tr>
+        </table>
+        <div v-else class="ranking-tables-no-data left-text">
+          Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
+        </div>
+      </div>
+      <!-- OFFICE FDC RANK END -->
+    </div>
+    <!-- RANKING TABLES TOP ROW END -->
+
+    <!-- RANKING TABLES SECOND HEADER START -->
+    <div v-if="showDashboard" class="ranking-tables-section-header">
+      Company Ranking
+    </div>
+    <!-- RANKING TABLES SECOND HEADER END -->
+
+    <!-- RANKING TABLES BOTTOM ROW START -->
+    <div v-if="showDashboard" class="ranking-tables-section">
+      <!-- OFFICE RANKING START -->
+      <div class="ranking-table">
+        <div class="ranking-table-header">
+          <img class="ranking-table-icon" src="../../assets/office_icon.png" alt="Gray house icon">
+          <span>Office Ranking</span>
+        </div>
+
+        <table v-if="officeRankingData.length > 0">
+          <tr>
+            <th class="center-text">Rank</th>
+            <th class="left-text">Office</th>
+            <th class="left-text">Metro Area</th>
+            <th class="left-text">Region</th>
+            <th class="center-text">Lead-Gen FDC %</th>
+            <th class="center-text">Self-Gen FDC</th>
+            <th class="center-text">Total FDC</th>
+          </tr>
+
+          <tr v-for="(row, index) in officeRankingData" :key="index"
+              :class="{'highlight-user-row': row.companyName === userCompany}">
+            <td class="center-text">{{ row.rank }}</td>
+            <td class="left-text">{{ row.companyName }}</td>
+            <td class="left-text">{{ row.salesMetroArea }}</td>
+            <td class="left-text">{{ row.region }}</td>
+            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
+            <td class="center-text">{{ row.selfGenFdc }}</td>
+            <td class="center-text">{{ row.totalFdc }}</td>
+          </tr>
+        </table>
+        <div v-else class="ranking-tables-no-data left-text">
+          Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
+        </div>
+      </div>
+      <!-- OFFICE RANKING END -->
+
+      <!-- TOP REPS START -->
+      <div class="ranking-table">
+        <div class="ranking-table-header" id="top-reps-table-header">
+          <div>
+            <img class="ranking-table-icon default-img"
+                 src="../../assets/user_img_placeholder.png"
+                 alt="User photo placeholder">
+            <span>Top Reps</span>
+          </div>
+          <input type="text" placeholder="Search" :model="searchText">
+        </div>
+
+        <table v-if="topRepsData.length > 0">
+          <tr>
+            <th class="center-text">Rank</th>
+            <th></th>
+            <th class="left-text">Rep</th>
+            <th class="left-text">Office</th>
+            <th class="left-text">Metro Area</th>
+            <th class="center-text">Lead-Gen FDC %</th>
+            <th class="center-text">Self-Gen FDC</th>
+            <th class="center-text">Total FDC</th>
+          </tr>
+
+          <!-- TODO: Add these filters in in the VueJS way -->
+<!--              | filter: searchText | limitTo: (userRow && !searchText) ? numOffices - 1 : numOffices" -->
+          <tr v-for="(row, index) in topRepsData"
+              :key="index"
+              :class="{'highlight-user-row': row.userId === currentUserId}">
+            <td class="center-text">{{ row.rank }}</td>
+            <td class="user-img-col">
+              <img class="ranking-table-img default-img"
+                   src="../../assets/user_img_placeholder.png" alt="User photo placeholder">
+            </td>
+            <td class="left-text">{{ row.name }}</td>
+            <td class="left-text">{{ row.companyName }}</td>
+            <td class="left-text">{{ row.salesMetroArea }}</td>
+            <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
+            <td class="center-text">{{ row.selfGenFdc }}</td>
+            <td class="center-text">{{ row.totalFdc }}</td>
+          </tr>
+          <tr v-if="userRow && !searchText"
+              class="highlight-user-row">
+            <td class="center-text">{{ userRow.rank }}</td>
+            <td class="user-img-col">
+              <img class="ranking-table-img default-img"
+                   src="../../assets/user_img_placeholder.png" alt="User photo placeholder">
+            </td>
+            <td class="left-text">{{ userRow.name }}</td>
+            <td class="left-text">{{ userRow.companyName }}</td>
+            <td class="left-text">{{ userRow.salesMetroArea }}</td>
+            <td class="center-text">{{ userRow.leadGenFdcPercentage }}%</td>
+            <td class="center-text">{{ userRow.selfGenFdc }}</td>
+            <td class="center-text">{{ userRow.totalFdc }}</td>
+          </tr>
+        </table>
+        <div v-else class="ranking-tables-no-data left-text">
+          Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
+        </div>
+      </div>
+      <!-- TOP REPS END -->
+    </div>
+    <!-- RANKING TABLES BOTTOM ROW END -->
     <!---------------------------------- DASHBOARD TAB END ---------------------------------->
 
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -193,6 +386,8 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
+  import groupBy from 'lodash.groupby'
+  import orderBy from 'lodash.orderby'
   import $ from 'jquery'
   import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
@@ -208,6 +403,7 @@
       IS_MOBILE,
       snackbar: {},
       milestoneDialog: false,
+      currentUserId: null,
       selectedQuarter: 1,
       headers: [
         { text: '', value: '', show: true, sortable: false },
@@ -225,7 +421,6 @@
       timeInterval: +moment().format('DD'),
       tabNum: 1, // Dashboard tab is selected by default
       showDashboard: true,
-      showTopCharts: true,
       showFunnel: false,
       dashboardWasLoaded: false,
       funnelWasLoaded: false,
@@ -247,7 +442,17 @@
       q2_lower_label: '',
       q3_lower_label: '',
       q4_lower_label: '',
-      progressBarIsFull: false
+      progressBarIsFull: false,
+      rankingData: [],
+      searchText: '',
+      leadAllocationRankingData: [],
+      officeFdcRankingData: [],
+      officeRankingData: [],
+      topRepsData: [],
+      userCompany: '',
+      userRow: [],
+      userRowIndex: -1,
+      numOffices: 0
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -259,34 +464,58 @@
       }
     },
     methods: {
-      switchTabs (tabNum) {
+      async switchTabs (tabNum) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.tabNum = tabNum
 
         switch (tabNum) {
           case 2: // Funnel tab
             this.showDashboard = false
-            this.showTopCharts = false
             this.showFunnel = true
             if (!this.funnelWasLoaded) {
-              // this.loadFunnel()
+              // await this.loadFunnel()
               this.funnelWasLoaded = true
             }
             break
           default: // Dashboard tab
             this.showDashboard = true
-            this.showTopCharts = true
             this.showFunnel = false
             if (!this.dashboardWasLoaded) {
-              this.loadIronman()
-              // this.loadRankingTables('MTD') // MTD is the default
+              await this.loadIronman()
+              await this.loadRankingTables('MTD') // MTD is the default
               this.dashboardWasLoaded = true
             }
         }
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+
+      assignCloserRanks (rankingData, fieldName) {
+        let currentRank = 1
+        let tiedRowNums = []
+        rankingData = orderBy(rankingData, fieldName, 'desc')
+
+        // handles ties & assigns rank #'s
+        rankingData.forEach((row, index) => {
+          if ((index < rankingData.length - 1) && (rankingData[index][fieldName] === rankingData[index + 1][fieldName])) { // makes sure we're not out of bounds & checks if current row is tied with next row
+            tiedRowNums.push(index) // adds current row # to list of tied row #'s
+          } else {
+            if (tiedRowNums.length > 0) {
+              if (tiedRowNums.indexOf(index) === -1) tiedRowNums.push(index) // adds row # for last tied row in current set
+              tiedRowNums.forEach(tiedRowNum => rankingData[tiedRowNum].rank = 'T' + currentRank) // adds T-prefixed rank labels to all tied rows
+              currentRank += tiedRowNums.length // skips rank #'s based on # of tied rows
+              tiedRowNums = [] // clears out #'s of tied rows since they've already been taken care of
+            } else {
+              rankingData[index].rank = currentRank++ // adds 1 to currentRank after assigning current rank # to current row
+            }
+          }
+        })
+
+        return rankingData
       },
 
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         getRequest('/closerDashboard/getIronmanFdcCounts', 'blueraven').then(res => {
           this.fdcCounts = res.data
 
@@ -334,7 +563,6 @@
           this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
           this.progressBarIsFull = this.percentAchieved === 100
           $('#progress-bar-fill').css('width', this.percentAchieved + '%')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         })
       },
 
@@ -470,10 +698,24 @@
       /* IRONMAN-RELATED CODE END */
 
       /* RANKING TABLES-RELATED CODE START */
-      getCloserTableScores (timeIntervalString) {
+      async loadRankingTables (timeIntervalString) {
+        this.rankingData = []
+        this.searchText = ''
+
+        if (this.$store.state.user.details.positions.length > 0) {
+          this.userCompany = this.$store.state.user.details.companyName
+        }
+
+        await this.getCloserTableScores(timeIntervalString)
+      },
+
+      async getCloserTableScores (timeIntervalString) {
         this.timeIntervalString = timeIntervalString
 
         switch (timeIntervalString) {
+          case 'MTD':
+            this.timeInterval = +moment().format('DD') // MTD
+            break
           case '60 days':
             this.timeInterval = 60
             break
@@ -481,10 +723,118 @@
             this.timeInterval = 90
             break
           case 'YTD':
-            this.timeInterval = moment().dayOfYear()
+            this.timeInterval = moment().dayOfYear() // YTD
             break
-          default:
-            this.timeInterval = +moment().format('DD') // 'MTD'
+        }
+
+        const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params: {timeInterval: this.timeInterval}}, 'blueraven')
+        this.processRankingData(cloneDeep(data.officeRankingValues), 'Office Lead Allocation Rank')
+        this.processRankingData(cloneDeep(data.officeRankingValues), 'Office FDC Rank')
+        this.processRankingData(cloneDeep(data.companyRankingValues), 'Office Ranking')
+        this.processRankingData(cloneDeep(data.companyRankingValues), 'Top Reps')
+      },
+
+      processRankingData (rankingData, currentTable) {
+        if (currentTable === 'Office Lead Allocation Rank') {
+          let leadAllocationScoreSum = 0
+          // let startDate = moment().subtract(3, 'weeks').format('YYYY-MM-DD')
+          // let endDate = moment().format('YYYY-MM-DD')
+          let userIds = []
+          // let closerAvgAvailMap = {}
+
+          rankingData.forEach(row => {
+            if (row.userId !== null && row.userId !== undefined) {
+              userIds.push(row.userId)
+            }
+          })
+
+          // calculate average availability values for each closer
+          if (userIds.length > 0) {
+          //   CloserAvailabilityService.getCsvCalendarData(startDate, endDate, userIds).then(resp => {
+          //     resp.forEach(closer => {
+          //       let avgAvail = 0
+          //       if (closer.appointments.length > 0) {
+          //         closer.appointments.forEach(appointment => {
+          //           // customer appointment
+          //           if (!appointment.personal) {
+          //             avgAvail++
+          //           }
+          //         })
+          //       }
+          //       avgAvail += closer.availabilities.length
+          //       closerAvgAvailMap[closer.name] = Math.round(avgAvail / 3)
+          //     })
+          //
+              // populate avgAvailability and calculate leadAllocationScore values
+              rankingData.forEach(closer => {
+          //       if (closer.name in closerAvgAvailMap) {
+          //         closer.avgAvailability = closerAvgAvailMap[closer.name]
+          //       } else {
+                  closer.avgAvailability = 0
+          //       }
+
+                let leadAllocationScore = (closer.leadGenFdcPercentage / 100 * 1000) + (closer.selfGenFdc * 2) + closer.avgAvailability
+                leadAllocationScoreSum += leadAllocationScore
+                closer.leadAllocationScore = leadAllocationScore
+              })
+
+              // calculate leadAllocationPercentage
+              rankingData.forEach(closer => {
+                if (leadAllocationScoreSum !== 0) {
+                  closer.leadAllocationPercentage = Math.round((closer.leadAllocationScore / leadAllocationScoreSum) * 100)
+                } else {
+                  closer.leadAllocationPercentage = 0
+                }
+              })
+
+              this.leadAllocationRankingData = this.assignCloserRanks(rankingData, 'leadAllocationPercentage')
+            // })
+          }
+        } else {
+          switch (currentTable) {
+            case 'Office FDC Rank':
+              this.officeFdcRankingData = this.assignCloserRanks(rankingData, 'totalFdc')
+              break
+            case 'Office Ranking':
+              this.officeRankingData = []
+              rankingData = groupBy(rankingData, 'companyName')
+
+              Object.keys(rankingData).forEach(group => {
+                let leadGenFdcPercentageSum = 0
+                let selfGenFdcSum = 0
+                let totalFdcSum = 0
+                let numRepsInGroup = 0
+
+                rankingData[group].forEach(rep => {
+                  leadGenFdcPercentageSum += parseInt(rep.leadGenFdcPercentage)
+                  selfGenFdcSum += rep.selfGenFdc
+                  totalFdcSum += rep.totalFdc
+                  numRepsInGroup++
+                })
+
+                this.officeRankingData.push({
+                  companyName: rankingData[group][0].companyName,
+                  salesMetroArea: rankingData[group][0].salesMetroArea,
+                  region: rankingData[group][0].region,
+                  leadGenFdcPercentage: Math.round(leadGenFdcPercentageSum / numRepsInGroup),
+                  selfGenFdc: selfGenFdcSum,
+                  totalFdc: totalFdcSum
+                })
+              })
+
+              this.officeRankingData = this.assignCloserRanks(this.officeRankingData, 'totalFdc')
+              break
+            case 'Top Reps':
+              this.userRow = null
+              this.numOffices = this.officeRankingData.length
+              this.topRepsData = this.assignCloserRanks(rankingData, 'totalFdc')
+
+              // determine whether current user's row is one of the visible rows
+              this.userRowIndex = this.topRepsData.findIndex(row => row.userId === this.currentUserId)
+              if (this.userRowIndex !== -1 && this.userRowIndex > this.numOffices - 1) {
+                this.userRow = this.topRepsData.filter(row => row.userId === this.currentUserId)[0]
+              }
+          }
         }
       }
       /* RANKING TABLES-RELATED CODE END */
@@ -494,11 +844,10 @@
       /* FUNNEL-RELATED CODE END */
     },
     created () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.currentUser = this.$store.state.user.details.id
+      this.currentUserId = this.$store.state.user.details.id
+      this.switchTabs(this.tabNum)
     },
     mounted () {
-      this.switchTabs(this.tabNum)
       $(window).bind('resize', this.checkWindowWidth)
     },
     beforeDestroy () {
@@ -517,7 +866,7 @@
   #closer-dash-toolbar-container {
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 3;
 
     #closer-dash-toolbar {
       padding: 0;
@@ -814,7 +1163,7 @@
     #progress-bar-fill {
       position: absolute;
       top: 0.02em;
-      z-index: 10;
+      z-index: 1;
       background: linear-gradient(to right, #164761, #2C8EC2);
       transition: width 1s ease-out;
       opacity: 0.9;
@@ -842,7 +1191,7 @@
 
     #eighth-segment img {
       position: relative;
-      z-index: 11;
+      z-index: 2;
       max-width: 20px;
       top: -6px;
     }
@@ -860,230 +1209,453 @@
     }
   }
 
-    @media (min-width: 500px) {
-      #progress-bar-container {
-        span {
-          font-size: 14px;
-        }
+  .ranking-tables-section-header {
+    color: var(--v-primaryCustom-base);
+    text-align: left;
+    font-family: "Roboto", sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    border-bottom: 2px solid var(--v-primaryCustom-base);
+    margin: 0 auto 12px auto;
+    padding-bottom: 3px;
+    width: 100%;
+  }
 
-        #progress-bar {
-          height: 17px;
-        }
+  .ranking-tables-section {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    width: 100%;
+  }
 
-        #progress-bar-fill {
-          height: 16px;
-        }
+  .ranking-tables-no-data {
+    font-family: "Roboto", sans-serif;
+    font-size: 11px;
+    padding: 10px 10px 15px 10px;
+  }
 
-        #eighth-segment img {
-          max-width: 22px;
-          top: -4px;
-        }
+  .ranking-table {
+    font-family: "Roboto", sans-serif;
+    background-color: #fff;
+    box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    margin-bottom: 15px;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .ranking-table-header {
+    display: flex;
+    flex-flow: row nowrap;
+    color: var(--v-primaryCustom-base);
+    font-weight: bold;
+    font-size: 16px;
+    text-align: left;
+    padding: 10px 5px 5px 10px;
+  }
+
+  #top-reps-table-header {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #top-reps-table-header div {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    padding-right: 3px;
+    padding-bottom: 3px;
+  }
+
+  #top-reps-table-header input {
+    font-weight: normal;
+    border: 1px solid #ccc;
+    padding-left: 3px;
+    margin-right: 5px;
+    max-width: 150px;
+  }
+
+  .ranking-table-icon {
+    margin-right: 4px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .ranking-table table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .ranking-table th {
+    border-bottom: 1px solid #e6eeff;
+    color: var(--v-primaryCustom-base);
+    font-size: 11px;
+    height: 55px;
+  }
+
+  .ranking-table td {
+    border-bottom: 1px solid #e6eeff;
+    font-weight: bold;
+    font-size: 10px;
+    height: 40px;
+  }
+
+  .ranking-table th,
+  .ranking-table td {
+    padding: 2px 4px;
+  }
+
+  .ranking-table .user-img-col {
+    padding-top: 6px;
+  }
+
+  .ranking-table .center-text {
+    text-align: center;
+  }
+
+  .ranking-table .left-text {
+    text-align: left;
+  }
+
+  .highlight-user-row {
+    background-color: var(--v-primaryCustom-base);
+    color: #fff;
+  }
+
+  .ranking-table-img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .default-img {
+    background-color: #e9e9e9;
+    padding : 1px;
+    border-radius: 50%;
+  }
+
+  @media (min-width: 500px) {
+    #progress-bar-container {
+      span {
+        font-size: 14px;
+      }
+
+      #progress-bar {
+        height: 17px;
+      }
+
+      #progress-bar-fill {
+        height: 16px;
+      }
+
+      #eighth-segment img {
+        max-width: 22px;
+        top: -4px;
+      }
+    }
+  }
+
+  @media (min-width: 737px) {
+    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-btn-toggle {
+      margin-right: 0;
+
+      .v-btn {
+        font-size: 12px;
+        height: 30px;
       }
     }
 
-    @media (min-width: 737px) {
-      #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-btn-toggle {
-        margin-right: 0;
+    #closer-dash-tabs {
+      margin: 0 auto;
+      max-width: calc(100% - 50px);
 
-        .v-btn {
-          font-size: 12px;
-          height: 30px;
-        }
-      }
-
-      #closer-dash-tabs {
-        margin: 0 auto;
-        max-width: calc(100% - 50px);
-
-        .col-12 span {
-          font-size: 12px;
-        }
-      }
-
-      #ironman-component {
-        box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
-        border-radius: 4px;
-        max-width: calc(100% - 50px);
-        padding: 20px 0;
-
-        #ironman-banner-mobile {
-          display: none;
-        }
-
-        #ironman-banner {
-          display: block;
-          width: 100%;
-          margin-top: -10px;
-          margin-bottom: 20px;
-        }
-      }
-
-      #milestones-container {
-        flex-flow: row wrap;
-        margin: 0 auto;
-        max-width: calc(100% - 110px);
-
-        .milestone {
-          margin-top: 0;
-          margin-bottom: 10px;
-          width: 300px;
-
-          .milestone-top-label,
-          .milestone-bottom-label {
-            font-size: 12px;
-            width: 220px;
-          }
-
-          .milestone-content {
-            width: 220px;
-            height: 100px;
-          }
-        }
-
-        #swim-phase img {
-          max-width: 140px;
-          max-height: 79px;
-          top: 12px;
-          left: 25px;
-        }
-
-        #bike-phase img {
-          max-width: 150px;
-          max-height: 75px;
-          top: 18px;
-          left: 25px;
-        }
-
-        #run-phase img {
-          max-width: 150px;
-          max-height: 80px;
-          top: 10px;
-          left: 45px;
-        }
-
-        #finish-phase img {
-          max-width: 178px;
-          max-height: 93px;
-          top: 2px;
-          left: 65px;
-        }
-
-        .active-milestone .milestone-content {
-          width: 250px;
-          height: 140px;
-        }
-
-        #swim-phase.active-milestone img {
-          max-width: 180px;
-          max-height: 158px;
-          top: 20px;
-          left: 20px;
-        }
-
-        #bike-phase.active-milestone img {
-          max-width: 200px;
-          max-height: 176px;
-          top: 25px;
-          left: 25px;
-        }
-
-        #run-phase.active-milestone img {
-          max-width: 190px;
-          max-height: 102px;
-          top: 18px;
-          left: 45px;
-        }
-
-        #finish-phase.active-milestone img {
-          max-width: 220px;
-          max-height: 116px;
-          top: 10px;
-          left: 65px;
-        }
-      }
-
-      #progress-bar-container {
-        #progress-bar {
-          height: 20px;
-        }
-
-        #progress-bar-fill {
-          height: 19px;
-        }
-
-        #eighth-segment img {
-          max-width: 25px;
-          top: -2px;
-        }
-      }
-
-      #drilldown-title {
-        font-size: 18px;
-      }
-
-      #drilldown-table {
-        th, td {
+      .col-12 span {
         font-size: 12px;
       }
     }
 
-    @media (min-width: 1070px) {
-      #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-btn-toggle {
-        margin-right: -2px;
+    #ironman-component {
+      box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+      max-width: calc(100% - 50px);
+      padding: 20px 0;
 
-        .v-btn {
-          font-size: 13px;
-          height: 35px;
-        }
+      #ironman-banner-mobile {
+        display: none;
       }
 
-      #closer-dash-tabs .col-12 span {
-        font-size: 13px;
-      }
-
-      #milestones-container {
-        max-width: calc(100% - 144px);
-        height: 60%;
-
-        .milestone {
-          margin-bottom: 0;
-
-          .milestone-top-label,
-          .milestone-bottom-label {
-            font-size: 13px;
-          }
-        }
-
-        #swim-phase,
-        #bike-phase {
-          margin-bottom: 20px;
-        }
-      }
-
-      #progress-bar-container {
-        height: 15%;
-      }
-
-      #drilldown-title {
-        font-size: 24px;
+      #ironman-banner {
+        display: block;
+        width: 100%;
+        margin-top: -10px;
+        margin-bottom: 20px;
       }
     }
 
-    @media (min-width: 1135px) {
-      #closer-dash-tabs,
-      #ironman-component {
-        max-width: 1130px;
-      }
+    #milestones-container {
+      flex-flow: row wrap;
+      margin: 0 auto;
+      max-width: calc(100% - 110px);
 
-      #milestones-container {
-        max-width: calc(100% - 60px);
-        flex-flow: row nowrap;
+      .milestone {
+        margin-top: 0;
+        margin-bottom: 10px;
+        width: 300px;
 
-        #swim-phase,
-        #bike-phase {
-          margin-bottom: 0;
+        .milestone-top-label,
+        .milestone-bottom-label {
+          font-size: 12px;
+          width: 220px;
+        }
+
+        .milestone-content {
+          width: 220px;
+          height: 100px;
         }
       }
+
+      #swim-phase img {
+        max-width: 140px;
+        max-height: 79px;
+        top: 12px;
+        left: 25px;
+      }
+
+      #bike-phase img {
+        max-width: 150px;
+        max-height: 75px;
+        top: 18px;
+        left: 25px;
+      }
+
+      #run-phase img {
+        max-width: 150px;
+        max-height: 80px;
+        top: 10px;
+        left: 45px;
+      }
+
+      #finish-phase img {
+        max-width: 178px;
+        max-height: 93px;
+        top: 2px;
+        left: 65px;
+      }
+
+      .active-milestone .milestone-content {
+        width: 250px;
+        height: 140px;
+      }
+
+      #swim-phase.active-milestone img {
+        max-width: 180px;
+        max-height: 158px;
+        top: 20px;
+        left: 20px;
+      }
+
+      #bike-phase.active-milestone img {
+        max-width: 200px;
+        max-height: 176px;
+        top: 25px;
+        left: 25px;
+      }
+
+      #run-phase.active-milestone img {
+        max-width: 190px;
+        max-height: 102px;
+        top: 18px;
+        left: 45px;
+      }
+
+      #finish-phase.active-milestone img {
+        max-width: 220px;
+        max-height: 116px;
+        top: 10px;
+        left: 65px;
+      }
+    }
+
+    #progress-bar-container {
+      #progress-bar {
+        height: 20px;
+      }
+
+      #progress-bar-fill {
+        height: 19px;
+      }
+
+      #eighth-segment img {
+        max-width: 25px;
+        top: -2px;
+      }
+    }
+
+    #drilldown-title {
+      font-size: 18px;
+    }
+
+    #drilldown-table {
+      th, td {
+        font-size: 12px;
+      }
+    }
+
+    .ranking-tables-section-header {
+      font-size: 26px;
+      margin-bottom: 20px;
+      padding-bottom: 5px;
+      max-width: calc(100% - 50px);
+    }
+
+    .ranking-tables-no-data {
+      font-size: 14px;
+    }
+
+    .ranking-table {
+      margin-bottom: 30px;
+      font-size: 14px;
+      max-width: calc(100% - 50px);
+    }
+
+    .ranking-table-header {
+      font-size: 24px;
+      padding: 20px 15px 15px 15px;
+    }
+
+    .ranking-table-icon {
+      margin-right: 5px;
+      width: 30px;
+      height: 30px;
+    }
+
+    .ranking-table th {
+      height: 50px;
+    }
+
+    .ranking-table td {
+      height: 45px;
+    }
+
+    .ranking-table th,
+    .ranking-table td {
+      font-size: 14px;
+      padding: 0 5px;
+    }
+
+    .ranking-table-img {
+      width: 40px;
+      height: 40px;
+    }
+
+    #top-reps-table-header div {
+      padding-right: 0;
+      padding-bottom: 0;
+    }
+
+    #top-reps-table-header input {
+      font-size: 14px;
+      max-width: 250px;
+      height: 30px;
+    }
+  }
+
+  @media (min-width: 1070px) {
+    #closer-dash-toolbar-container #closer-dash-toolbar .v-toolbar .v-btn-toggle {
+      margin-right: -2px;
+
+      .v-btn {
+        font-size: 13px;
+        height: 35px;
+      }
+    }
+
+    #closer-dash-tabs .col-12 span {
+      font-size: 13px;
+    }
+
+    #milestones-container {
+      max-width: calc(100% - 161px);
+
+      .milestone {
+        margin-bottom: 0;
+
+        .milestone-top-label,
+        .milestone-bottom-label {
+          font-size: 13px;
+        }
+      }
+
+      #swim-phase,
+      #bike-phase {
+        margin-bottom: 20px;
+      }
+    }
+
+    #progress-bar-container {
+      height: 42px;
+    }
+
+    #drilldown-title {
+      font-size: 24px;
+    }
+
+    .ranking-tables-section-header {
+      margin: 20px auto;
+      max-width: calc(100% - 50px)
+    }
+
+    .ranking-tables-section {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      max-width: calc(100% - 50px);
+      margin: 0 auto;
+    }
+
+    .ranking-table {
+      width: 100%;
+      max-width: calc((100% / 2) - 10px);
+    }
+
+    .ranking-table th {
+      font-size: 12px;
+      height: 55px;
+    }
+
+    .ranking-table td {
+      font-size: 12px;
+      height: 50px;
+    }
+
+    .ranking-tables-no-data {
+      font-size: 12px;
+    }
+  }
+
+  @media (min-width: 1135px) {
+    #closer-dash-tabs,
+    #ironman-component {
+      max-width: 1130px;
+    }
+
+    #milestones-container {
+      max-width: calc(100% - 60px);
+      flex-flow: row nowrap;
+
+      #swim-phase,
+      #bike-phase {
+        margin-bottom: 0;
+      }
+    }
+
+    .ranking-tables-section-header {
+      max-width: 1130px;
+    }
+
+    .ranking-tables-section {
+      max-width: 1130px;
+      margin: 0 auto;
     }
   }
 </style>
