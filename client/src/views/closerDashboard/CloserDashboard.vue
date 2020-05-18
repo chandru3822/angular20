@@ -324,7 +324,7 @@
                  alt="User photo placeholder">
             <span>Top Reps</span>
           </div>
-          <input type="text" placeholder="Search" :model="searchText">
+          <input type="text" placeholder="Search" v-model="searchText">
         </div>
 
         <table v-if="topRepsData.length > 0">
@@ -339,9 +339,7 @@
             <th class="center-text">Total FDC</th>
           </tr>
 
-          <!-- TODO: Add these filters in in the VueJS way -->
-<!--              | filter: searchText | limitTo: (userRow && !searchText) ? numOffices - 1 : numOffices" -->
-          <tr v-for="(row, index) in topRepsData"
+          <tr v-for="(row, index) in filteredTopRepsData"
               :key="index"
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
@@ -461,6 +459,15 @@
       is_q4 () { return this.currentQuarter === 4 },
       milestoneDrilldownTitle () {
         return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Final Designs Completed - Q' + this.selectedQuarter
+      },
+      filteredTopRepsData () {
+        if (this.searchText) {
+          return this.topRepsData.filter(r => {
+            return (r.name + r.companyName + r.salesMetroArea).toLowerCase().includes(this.searchText.toLowerCase())
+          })
+        } else {
+          return this.topRepsData
+        }
       }
     },
     methods: {
@@ -844,6 +851,7 @@
       /* FUNNEL-RELATED CODE END */
     },
     created () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       this.currentUserId = this.$store.state.user.details.id
       this.switchTabs(this.tabNum)
     },
@@ -1297,7 +1305,7 @@
     border-bottom: 1px solid #e6eeff;
     font-weight: bold;
     font-size: 10px;
-    height: 40px;
+    height: 41px;
   }
 
   .ranking-table th,
@@ -1533,7 +1541,7 @@
     }
 
     .ranking-table td {
-      height: 45px;
+      height: 53px;
     }
 
     .ranking-table th,
@@ -1625,7 +1633,7 @@
 
     .ranking-table td {
       font-size: 12px;
-      height: 50px;
+      height: 55px;
     }
 
     .ranking-tables-no-data {
