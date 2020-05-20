@@ -339,7 +339,7 @@
             <th class="center-text">Total FDC</th>
           </tr>
 
-          <tr v-for="(row, index) in filteredTopRepsData"
+          <tr v-for="(row, index) in filteredTopRepsData.slice(0, userRow && !searchText ? numOffices - 1 : numOffices)"
               :key="index"
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
