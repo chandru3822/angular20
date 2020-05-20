@@ -115,6 +115,7 @@
           </v-card-actions>
         </v-card>
         <v-data-table
+          v-if="!addNew"
           :headers="headers"
           :items="schedules"
           :fixed-header="true"
@@ -135,7 +136,7 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
-              <v-card flat class="px-3">
+              <v-card flat color="transparent" class="px-3">
                 <DatetimePickerInput
                   v-model="item.startDate"
                   :timezone="timezone"

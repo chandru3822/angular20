@@ -25,8 +25,7 @@
             cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
             cf.list_of_value_id as "listOfValueId",
             cf.field_name as "fieldName",
-            cf.custom_field_sql_key_id as "customFieldSqlKeyId",
-            cfsk.sql_key as "customFieldSqlKey",
+            cf.custom_field_sql_key as "customFieldSqlKey",
             cf.company_system_list_id as "companySystemListId",
             cf.system_list_option_ids as "systemListOptionIds",
             cf.company_data_type_id as "companyDataTypeId",
@@ -53,7 +52,6 @@
         inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id in (cot.id, :processStepTypeId)
         inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
         left join flow.project_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_id = :projectId
-        left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
         left join flow.project p on p.id = pcv.project_id
         where cfga.custom_field_group_id = cfg.id
           and cfga.archived is not true
@@ -91,7 +89,7 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
-                                    cf.custom_field_sql_key_id as "customFieldSqlKeyId",
+                                    cf.custom_field_sql_key as "customFieldSqlKey",
                                     cfsk.sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
@@ -117,7 +115,6 @@
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                       left join flow.contact_custom_field_value ccv on ccv.custom_field_group_assignment_id = cfga.id and ccv.contact_id = :primaryId
-                                      left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
                                and cfot.archived is not true
@@ -154,7 +151,7 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
-                                    cf.custom_field_sql_key_id as "customFieldSqlKeyId",
+                                    cf.custom_field_sql_key as "customFieldSqlKey",
                                     cfsk.sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
@@ -180,7 +177,6 @@
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                       left join flow.organization_custom_field_value ocv on ocv.custom_field_group_assignment_id = cfga.id and ocv.org_id = :primaryId
-                                      left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
                                and cfot.archived is not true
@@ -222,7 +218,7 @@
                                   cfga.field_order as "fieldOrder",
                                   cf.list_of_value_id as "listOfValueId",
                                   cf.field_name as "fieldName",
-                                  cf.custom_field_sql_key_id as "customFieldSqlKeyId",
+                                  cf.custom_field_sql_key as "customFieldSqlKey",
                                   cfsk.sql_key as "customFieldSqlKey",
                                   cf.company_system_list_id as "companySystemListId",
                                   cf.system_list_option_ids as "systemListOptionIds",
@@ -250,7 +246,6 @@
                                        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                        inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                        left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :projectProcessStepId
-                                       left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
                                        left join flow.project_process_step p on p.id = pcv.project_process_step_id
                               where cfga.custom_field_group_id = cfg.id
                                 and cfga.archived is not true
@@ -328,7 +323,7 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
-                                    cf.custom_field_sql_key_id as "customFieldSqlKeyId",
+                                    cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
                                     cfsk.sql_key as "customFieldSqlKey",
@@ -354,7 +349,6 @@
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                       left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :primaryId
-                                      left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
                                and cfot.archived is not true

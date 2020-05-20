@@ -38,8 +38,7 @@
                                         cf.list_of_value_id as "listOfValueId",
                                         cf.id as "customFieldId",
                                         cf.field_name as "fieldName",
-                                        cf.custom_field_sql_key_id as "customFieldSqlKeyId",
-                                        cfsk.sql_key as "customFieldSqlKey",
+                                        cf.custom_field_sql_key as "customFieldSqlKey",
                                         cf.company_data_type_id as "companyDataTypeId",
                                         cdt.data_type_id as "dataTypeId",
                                         cdt.has_list_values as "hasListValues",
@@ -61,7 +60,6 @@
                                           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                           inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
                                           inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                          left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
                                  where cfga.custom_field_group_id = cfg.id
                                    and cfga.archived is not true
                                    and cfot.archived is not true

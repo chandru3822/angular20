@@ -44,9 +44,14 @@ public class PostalCodeController {
         postalCodeService.deleteZone(id);
     }
 
-    @PostMapping(value = "/zone/addUser", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PostalCodeZoneUser addUser(@RequestBody PostalCodeZoneUser user) {
-        return postalCodeService.addUser(user);
+    @PostMapping(value = "/zone/saveUser", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PostalCodeZoneUser saveUser(@RequestBody PostalCodeZoneUser user) {
+        return postalCodeService.saveUser(user);
+    }
+
+    @PostMapping(value = "/zone/saveAllocations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void saveAllocations(@RequestBody List<PostalCodeZoneUser> users) {
+        postalCodeService.saveAllocations(users);
     }
 
     @DeleteMapping(value = "/zone/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
