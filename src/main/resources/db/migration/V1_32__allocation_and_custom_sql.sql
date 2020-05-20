@@ -1,6 +1,9 @@
 alter table flow.postal_code_zone_user
     add column if not exists allocation int;
 
+alter table flow.postal_code_zone
+    add column if not exists distribution_time_frame_days int;
+
 alter table flow.custom_field
     add column if not exists custom_field_sql_reference_table varchar(100);
 

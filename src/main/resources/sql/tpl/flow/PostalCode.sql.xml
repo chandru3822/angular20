@@ -3,6 +3,7 @@
     select id,
            company_id,
            zone_name,
+           distribution_time_frame_days,
            archived
     from flow.postal_code_zone
     where company_id = :companyId
@@ -13,6 +14,7 @@
   <postalCode.getZone><![CDATA[
     select pcz.id,
        pcz.company_id,
+       pcz.distribution_time_frame_days,
        pcz.zone_name,
        pcz.archived,
        coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
@@ -29,7 +31,7 @@
                             inner join flow."user" u on u.id = pczu.user_id
                           where pczu.postal_code_zone_id = pcz.id
                             and pczu.archived is not true
-                          order by allocation desc, u.first_name, u.last_name
+                          order by u.first_name, u.last_name
                       ) AS users), '[]') AS postalCodeZoneUsers,
        coalesce((SELECT array_to_json(array_agg(row_to_json(postalCodes)))
                  FROM (
@@ -48,13 +50,14 @@
 
 
   <postalCode.insertZone><![CDATA[
-    insert into flow.postal_code_zone(company_id, zone_name, date_created, created_by_id)
-    values (:companyId, :zoneName, now(), :createdById)
+    insert into flow.postal_code_zone(company_id, zone_name, date_created, created_by_id, distribution_time_frame_days)
+    values (:companyId, :zoneName, now(), :createdById, :distributionTimeFrameDays)
   ]]></postalCode.insertZone>
 
   <postalCode.updateZone><![CDATA[
     update flow.postal_code_zone
     set zone_name = :zoneName,
+        distribution_time_frame_days = :distributionTimeFrameDays,
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id

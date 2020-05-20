@@ -8,11 +8,27 @@
                         label="Name"
                         v-model="zone.zoneName">
           </v-text-field>
-          <v-btn text color="primaryCustom" @click="saveZoneName()">
+          <v-text-field text class="d-inline-block mt-4 ml-3"
+                        type="text"
+                        label="DTF"
+                        v-model="zone.distributionTimeFrameDays">
+          </v-text-field>
+          <v-btn text color="primaryCustom" @click="saveZoneInfo()">
             <v-icon>save</v-icon>
           </v-btn>
         </div>
-        <span v-else>{{zone.zoneName}}</span>
+        <div v-else>
+          {{zone.zoneName}}
+          <v-tooltip top>
+            <template v-slot:activator="{ on }">
+              <div class="dtf" v-on="on">
+                DTF: {{zone.distributionTimeFrameDays}} days
+              </div>
+            </template>
+            <span>Distribution Time Frame</span>
+          </v-tooltip>
+
+        </div>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
@@ -259,7 +275,7 @@
       filterPostalCodes () {
         return this.zone.postalCodes?.length ? this.zone.postalCodes.filter(pc => { return !pc.archived}) : []
       },
-      async saveZoneName () {
+      async saveZoneInfo () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await postRequest(`/postalCode/zone`, this.zone)
@@ -392,6 +408,9 @@
 </style>
 
 <style lang="scss" scoped>
+  .dtf {
+    font-size: 14px;
+  }
 
 </style>
 

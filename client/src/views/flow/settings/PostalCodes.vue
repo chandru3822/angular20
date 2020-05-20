@@ -18,7 +18,12 @@
                 tabindex=1
                 v-model="newZone.zoneName"
             ></v-text-field>
-            <v-btn :disabled="!newZone.zoneName" @click="addPostalCodeZone">Save</v-btn>
+            <v-text-field
+                label="Distribution Time Frame (Days)"
+                tabindex=1
+                v-model="newZone.distributionTimeFrameDays"
+            ></v-text-field>
+            <v-btn :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card>
@@ -38,13 +43,13 @@
               :items-per-page="-1"
               disable-sort
               :search="search"
-              hide-default-header
               hide-default-footer
               class="elevation-1"
             >
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left">{{item.zoneName}}</td>
+                  <td class="text-left">{{item.distributionTimeFrameDays}}</td>
                   <td class="text-right">
                     <v-btn small text @click="goToPostalCodeZone(item.id)">
                       <v-icon>edit</v-icon>
@@ -124,6 +129,7 @@
         postalCodeZones: [],
         headers: [
           {text: 'Zone Name', value: 'zoneName', show: true},
+          {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
           {text: '', value: 'icons', show: true},
         ]
       }

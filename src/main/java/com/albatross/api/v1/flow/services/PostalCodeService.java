@@ -58,6 +58,7 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("zoneName", zone.getZoneName());
+    params.put("distributionTimeFrameDays", zone.getDistributionTimeFrameDays());
 
     Long id;
     if(null != zone.getId()) {
