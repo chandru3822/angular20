@@ -5,6 +5,7 @@
         rs.org_id,
         rs.start_date,
         rs.end_date,
+        rs.archived,
         rs.company_id,
         (
             SELECT array_to_json(array_agg(row_to_json(d)))
@@ -27,6 +28,7 @@
     WHERE case when :orgId::int is not null then rs.org_id = :orgId
         else rs.user_id = :userId end
     and rs.company_id = :companyId
+    and rs.archived is not true
   ]]></availability.getAllForResource>
 
   <availability.getWorkDays><![CDATA[
@@ -43,6 +45,14 @@
   <availability.updateSchedule><![CDATA[
 
   ]]></availability.updateSchedule>
+
+  <availability.deleteSchedule><![CDATA[
+    update flow.resource_schedule
+      set archived = true,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+      where id = :id
+  ]]></availability.deleteSchedule>
 
   <availability.insertSchedule><![CDATA[
     insert into flow.resource_schedule(company_id, user_id, org_id, start_date, end_date, created_by_id)

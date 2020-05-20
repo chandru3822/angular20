@@ -98,6 +98,16 @@ public class AvailabilityService {
     return getOneResourceAvailability(id);
   }
 
+  public void deleteSchedule(Long id) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", user.getId());
+
+    sqlCache.update("availability.deleteSchedule", params);
+  }
+
   public void saveAvailability(ResourceScheduleAvailability rsa, Long resourceScheduleId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
