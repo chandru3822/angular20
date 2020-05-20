@@ -151,6 +151,7 @@ public class SmartlistService {
       return null;
     }
 
+    //@TODO humes: grab custom field sql key stuff here to account for custom custom fields
     List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAssignedFields", params, SmartlistFieldAssignment.class);
     List<SmartlistRequirement> requirements = sqlCache.query("smartlist.getRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
@@ -613,14 +614,18 @@ public class SmartlistService {
       // @TODO: requirements need to take into account
       switch (r.getDataTypeId().intValue()) {
         case 1:
-          query.append(String.format("%s.%s %s '%s' ", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
+          query.append(String.format("%s.%s %s '%s' and ", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
           break;
         case 5:
-//          query.append(String.format("%s.%s in(%s) ", r.getReferenceTable(), r.getReferenceColumn(), r.getRequirementValue()));
-          query.append(String.format("%s.%s %s %s ", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
+          query.append(String.format("%s.%s %s %s and ", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
           break;
       }
     }
+
+    // remvoe the last "and "
+    query = query.delete(query.length() - 4, query.length());
+
+    query.append(";");
 
     log.info(query.toString());
 

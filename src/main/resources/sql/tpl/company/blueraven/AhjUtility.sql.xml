@@ -260,7 +260,7 @@
     ]]>
   </ahj.utility.detailById>
 
-  <!-- CONTACTS STUFF -->
+  <!-- CONTACT -->
   <ahj.utility.contact.findById>
     <![CDATA[
       SELECT * FROM brs.ahj_contact WHERE id = :id
@@ -307,7 +307,7 @@
     ]]>
   </ahj.utility.contact.delete>
 
-  <!-- CHECKLISTS STUFF -->
+  <!-- CHECKLIST -->
   <ahj.utility.checklist.findById>
     <![CDATA[
       SELECT * FROM brs.ahj_checklist WHERE id = :id
@@ -353,7 +353,7 @@
     ]]>
   </ahj.utility.checklist.delete>
 
-  <!-- LINKS STUFF -->
+  <!-- LINK -->
   <ahj.utility.link.findById>
     <![CDATA[
       SELECT * FROM brs.ahj_utility_link WHERE id = :id
@@ -393,7 +393,7 @@
     ]]>
   </ahj.utility.link.delete>
 
-  <!-- REQUIREMENTS STUFF -->
+  <!-- REQUIREMENT -->
   <ahj.utility.requirement.history>
     <![CDATA[
       SELECT ar.requirement_type_id,

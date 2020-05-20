@@ -443,7 +443,7 @@
     ]]>
   </ahj.inspection.searchAhjsByState>
 
-  <!-- CHECKLIST STUFF -->
+  <!-- CHECKLIST -->
   <ahj.inspection.checklist.create>
     <![CDATA[
       INSERT INTO brs.ahj_inspection_checklist (ahj_inspection_id, ahj_checklist_id)
@@ -451,7 +451,7 @@
     ]]>
   </ahj.inspection.checklist.create>
 
-  <!-- CONTACT STUFF -->
+  <!-- CONTACT -->
   <ahj.inspection.contact.create>
     <![CDATA[
       INSERT INTO brs.ahj_inspection_contact (ahj_inspection_id, ahj_contact_id)
@@ -459,7 +459,7 @@
     ]]>
   </ahj.inspection.contact.create>
 
-  <!-- INSPECTION LINK STUFF -->
+  <!-- LINK -->
   <ahj.inspection.link.findById>
     <![CDATA[
       SELECT * FROM brs.ahj_inspection_link WHERE id = :id
@@ -502,7 +502,7 @@
     ]]>
   </ahj.inspection.link.delete>
 
-  <!-- NOTE TEMPLATES STUFF -->
+  <!-- NOTE TEMPLATE -->
   <ahj.inspection.note.template.findById>
     <![CDATA[
       SELECT *

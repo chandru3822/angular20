@@ -152,7 +152,7 @@
              u.first_name || ' ' || u.last_name as name,
              o.org_name as companyName,
              o2.org_name as region,
-             sma.sales_metro_area,
+             '--' as salesMetroArea, -- TODO: Add sales_metro_area once it has been migrated
              count(case when appointment_date::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
                and source not in ('Referral', 'Setter Gen', 'Events - Closer Gen')
                and final_design_signed_date is not null
@@ -186,8 +186,6 @@
         INNER JOIN flow.user_project up ON up.project_id = p.id
         INNER JOIN flow.user_position up2 ON up2.id = up.user_position_id AND up2.position_id = 1
         INNER JOIN flow.org o ON o.id = up2.org_id
-        LEFT JOIN brs.sales_area sa ON o.state_id = sa.state_id
-        LEFT JOIN brs.sales_metro_area sma ON sma.sales_area_id = sa.id
         INNER JOIN flow.org o2 ON (o2.id = o.parent_org_id and o2.org_type_id = 2)
         INNER JOIN flow.user u ON u.id = up2.user_id
         LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 1, p.id, 1) as appointment_date) appointment_date ON TRUE
@@ -209,7 +207,7 @@
             AND up2.position_id = 1
             AND (select active_flag from flow.org where id = up2.org_id) IS TRUE
             END
-      GROUP BY u.id, companyName, region, sma.sales_metro_area
+      GROUP BY u.id, companyName, region
     ]]>
   </closerDashboard.getCloserTableScores>
 </sql>

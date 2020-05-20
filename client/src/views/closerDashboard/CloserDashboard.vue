@@ -339,7 +339,7 @@
             <th class="center-text">Total FDC</th>
           </tr>
 
-          <tr v-for="(row, index) in filteredTopRepsData"
+          <tr v-for="(row, index) in filteredTopRepsData.slice(0, userRow && !searchText ? numOffices - 1 : numOffices)"
               :key="index"
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
@@ -709,14 +709,11 @@
         this.rankingData = []
         this.searchText = ''
 
-        if (this.$store.state.user.details.positions.length > 0) {
-          this.userCompany = this.$store.state.user.details.companyName
-        }
-
         await this.getCloserTableScores(timeIntervalString)
       },
 
       async getCloserTableScores (timeIntervalString) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.timeIntervalString = timeIntervalString
 
         switch (timeIntervalString) {
@@ -734,11 +731,20 @@
             break
         }
 
-        const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params: {timeInterval: this.timeInterval}}, 'blueraven')
-        this.processRankingData(cloneDeep(data.officeRankingValues), 'Office Lead Allocation Rank')
-        this.processRankingData(cloneDeep(data.officeRankingValues), 'Office FDC Rank')
-        this.processRankingData(cloneDeep(data.companyRankingValues), 'Office Ranking')
-        this.processRankingData(cloneDeep(data.companyRankingValues), 'Top Reps')
+        try {
+          const params = {timeInterval: this.timeInterval}
+          const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven')
+          this.userCompany = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].companyName
+
+          this.processRankingData(cloneDeep(data.officeRankingValues), 'Office Lead Allocation Rank')
+          this.processRankingData(cloneDeep(data.officeRankingValues), 'Office FDC Rank')
+          this.processRankingData(cloneDeep(data.companyRankingValues), 'Office Ranking')
+          this.processRankingData(cloneDeep(data.companyRankingValues), 'Top Reps')
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving ranking table data')
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       processRankingData (rankingData, currentTable) {
@@ -755,6 +761,7 @@
             }
           })
 
+          // TODO: Get closer availability stuff working
           // calculate average availability values for each closer
           if (userIds.length > 0) {
           //   CloserAvailabilityService.getCsvCalendarData(startDate, endDate, userIds).then(resp => {
@@ -857,6 +864,7 @@
     },
     mounted () {
       $(window).bind('resize', this.checkWindowWidth)
+      this.checkWindowWidth()
     },
     beforeDestroy () {
       $(window).unbind('resize', this.checkWindowWidth)

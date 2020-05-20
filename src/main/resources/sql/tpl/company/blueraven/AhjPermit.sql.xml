@@ -293,7 +293,7 @@
     ]]>
   </ahj.permit.searchAhjsByState>
 
-  <!-- CHECKLIST STUFF -->
+  <!-- CHECKLIST -->
   <ahj.permit.checklist.create>
     <![CDATA[
       INSERT INTO brs.ahj_permit_checklist (ahj_permit_id, ahj_checklist_id)
@@ -301,7 +301,7 @@
     ]]>
   </ahj.permit.checklist.create>
 
-  <!-- CONTACT STUFF -->
+  <!-- CONTACT -->
   <ahj.permit.contact.create>
     <![CDATA[
       INSERT INTO brs.ahj_permit_contact (ahj_permit_id, ahj_contact_id)
@@ -309,7 +309,7 @@
     ]]>
   </ahj.permit.contact.create>
 
-  <!-- PERMIT LINK STUFF -->
+  <!-- LINK -->
   <ahj.permit.link.findById>
     <![CDATA[
       SELECT * FROM brs.ahj_permit_link WHERE id = :id
