@@ -2,8 +2,9 @@ CREATE OR REPLACE FUNCTION flow.get_value_for_custom_field(p_object_type_id inte
                                                            p_custom_field_id integer,
                                                            p_id integer,
                                                             -- p_id = the primary key for the object type record you are using, so contact_id, project_id, user_id, etc
-                                                           p_process_step_id integer default 0
+                                                           p_process_step_id integer default 0,
                                                             -- if using object_type_id = 4 then p_process_step_id is required
+                                                           p_get_id boolean default false
                                                            )
     RETURNS setof text AS
 $BODY$
@@ -12,7 +13,7 @@ BEGIN
     case when p_object_type_id = 4 then
         return query
             select case
-                       when cdt.id = 7 then (select lov.name
+                       when cdt.id = 7 and p_get_id is false then (select lov.name
                                              from flow.list_of_value lov
                                              where lov.id = pscfv.int_value::integer)::text
                        when dt.id = 1 then pscfv.date_value::text
@@ -41,7 +42,7 @@ BEGIN
         when p_object_type_id = 1 then
             return query
                 select case
-                           when cdt.id = 7 then (select lov.name
+                           when cdt.id = 7 and p_get_id is false then (select lov.name
                                                  from flow.list_of_value lov
                                                  where lov.id = pcfv.int_value::integer)::text
                            when dt.id = 1 then pcfv.date_value::text
@@ -67,7 +68,7 @@ BEGIN
         when p_object_type_id = 2 then
             return query
                 select case
-                           when cdt.id = 7 then (select lov.name
+                           when cdt.id = 7 and p_get_id is false then (select lov.name
                                                  from flow.list_of_value lov
                                                  where lov.id = ccfv.int_value::integer)::text
                            when dt.id = 1 then ccfv.date_value::text
@@ -93,7 +94,7 @@ BEGIN
         when p_object_type_id = 3 then
             return query
                 select case
-                           when cdt.id = 7 then (select lov.name
+                           when cdt.id = 7 and p_get_id is false then (select lov.name
                                                  from flow.list_of_value lov
                                                  where lov.id = ucfv.int_value::integer)::text
                            when dt.id = 1 then ucfv.date_value::text
@@ -119,7 +120,7 @@ BEGIN
         when p_object_type_id = 5 then
             return query
                 select case
-                           when cdt.id = 7 then (select lov.name
+                           when cdt.id = 7 and p_get_id is false then (select lov.name
                                                  from flow.list_of_value lov
                                                  where lov.id = ocfv.int_value::integer)::text
                            when dt.id = 1 then ocfv.date_value::text

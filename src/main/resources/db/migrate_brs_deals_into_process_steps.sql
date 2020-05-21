@@ -224,7 +224,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 44 then (select id from flow.list_of_value where parent_id = 143
                                                                                                         and name = d2.inverter_brand)
                  when p.custom_field_group_assignment_id = 45 then (select id from flow.list_of_value where parent_id = 115
-                                                                                                        and name = d2.financier)
+                                                                                                        and name = d2.financier :: JSON #>> '{0}')
                 when p.custom_field_group_assignment_id = 58 then (select id from flow.list_of_value where parent_id = 423
                                                                                                                         and name::integer = d2.loan_term)
                  when p.custom_field_group_assignment_id = 54 then d2.number_of_promotion_payments
