@@ -1,7 +1,7 @@
 <template>
   <v-container id="closer-dash-container">
-    <v-row id="closer-dash-toolbar-container">
-      <v-col v-if="showDashboard" cols="12" id="closer-dash-toolbar">
+    <v-row v-if="showDashboard" id="closer-dash-toolbar-container">
+      <v-col cols="12" id="closer-dash-toolbar">
         <v-toolbar class="elevation-1">
           <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
             <v-btn text @click="getCloserTableScores('MTD')">MTD</v-btn>
@@ -187,13 +187,15 @@
     <!-- IRONMAN END -->
 
     <!-- RANKING TABLES FIRST HEADER START -->
-    <div v-if="showDashboard" class="ranking-tables-section-header">
+    <div v-if="showDashboard && leadAllocationRankingData.length > 0 && officeFdcRankingData.length > 0"
+         class="ranking-tables-section-header">
       Your Office Ranking
     </div>
     <!-- RANKING TABLES FIRST HEADER END -->
 
     <!-- RANKING TABLES TOP ROW START -->
-    <div v-if="showDashboard" class="ranking-tables-section">
+    <div v-if="showDashboard && leadAllocationRankingData.length > 0 && officeFdcRankingData.length > 0"
+         class="ranking-tables-section">
       <!-- OFFICE LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
         <div class="ranking-table-header">
@@ -273,13 +275,15 @@
     <!-- RANKING TABLES TOP ROW END -->
 
     <!-- RANKING TABLES SECOND HEADER START -->
-    <div v-if="showDashboard" class="ranking-tables-section-header">
+    <div v-if="showDashboard && officeRankingData.length > 0 && topRepsData.length > 0"
+         class="ranking-tables-section-header">
       Company Ranking
     </div>
     <!-- RANKING TABLES SECOND HEADER END -->
 
     <!-- RANKING TABLES BOTTOM ROW START -->
-    <div v-if="showDashboard" class="ranking-tables-section">
+    <div v-if="showDashboard && officeRankingData.length > 0 && topRepsData.length > 0"
+         class="ranking-tables-section">
       <!-- OFFICE RANKING START -->
       <div class="ranking-table">
         <div class="ranking-table-header">
@@ -734,7 +738,10 @@
         try {
           const params = {timeInterval: this.timeInterval}
           const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven')
-          this.userCompany = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].companyName
+
+          if (data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
+            this.userCompany = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].companyName
+          }
 
           this.processRankingData(cloneDeep(data.officeRankingValues), 'Office Lead Allocation Rank')
           this.processRankingData(cloneDeep(data.officeRankingValues), 'Office FDC Rank')
