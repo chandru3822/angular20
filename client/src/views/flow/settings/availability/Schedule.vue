@@ -333,12 +333,20 @@
       this.getWorkDays()
     },
     watch: {
-      //we only have to watch one of the params cuz if userId gets set, then orgId will go null
       'orgId': function () {
-        // reset the schedule when new user selected
-        console.log('randaLogger', this.orgId)
-        this.schedules = []
-        this.getSchedules()
+        //without these if statements the schedule will get reloaded twice when switching between org and user
+        if(this.orgId != null) {
+          // reset the schedule when new org selected
+          this.schedules = []
+          this.getSchedules()
+        }
+      },
+      'userId': function () {
+        if(this.userId != null) {
+          // reset the schedule when new user selected
+          this.schedules = []
+          this.getSchedules()
+        }
       }
     },
     methods: {
