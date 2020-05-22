@@ -129,8 +129,8 @@ from blueraven.org_type ot2
 
 
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);*/
-
--- custom org field:  sales_area_id,email,sales_metro_area_id
+--TODO fix this org stuff
+-- custom org field:  sales_area_id,email,sales_metro_area_id,podium id and birdeye id in org check it out
 
 --Migrate only orgs with originator_id = 1
 --Randa thinks she want s to rename active_flag to active

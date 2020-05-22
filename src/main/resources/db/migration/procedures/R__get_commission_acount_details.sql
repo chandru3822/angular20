@@ -28,7 +28,7 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      deposit_color                               TEXT,
                      agreement_signed_date                       DATE,
                      utility_bill_verified_date                  DATE,
-                     proof_of_howmeowners_insurance_required     BOOLEAN,
+                     proof_of_howmeowners_insurance_required     character varying,
                      proof_of_homeowners_insurance_obtained_date DATE,
                      financier                                   TEXT,
                      first_cash_payment_paid_date                DATE,
@@ -122,7 +122,7 @@ BEGIN
                         utitlity_bill_verified_date.date_value::date as utility_bill_verified_date,
                         proof_of_homeowners_insurance_required.name::character varying as proof_of_howmeowners_insurance_required,
                         proof_of_homeowners_insurance_obtained.date_value::date as proof_of_homeowners_insurance_obtained_date,
-                        financier.name                                   AS financier,
+                        financier.name::text                                  AS financier,
                         first_cash_paid_date.date_value::date as first_cash_payment_paid_date,
                         first_cash_payment_amount.numeric_value::numeric as first_cash_payment_amount,
                         total_system_price.numeric_value::numeric as total_system_price,
@@ -285,9 +285,9 @@ BEGIN
           )*/
                             AS overrides_paid_to_date
                  FROM flow.project p
-                          inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_complete_date is not null and process_step_id = 9
+                          inner join flow.project_process_step pps on pps.project_id = p.id and process_step_id = 9 and pps.process_step_complete_date is not null
                           inner join flow.contact c on c.id = p.contact_id
-                          inner join flow.user_project up on up.project_id = p.id
+                          inner join flow.user_project up on up.project_id = p.id and up.end_date is null
                           inner join flow.user_position up2  on up2.id = up.user_position_id and up2.position_id = 1
                           INNER JOIN flow.user u ON u.id = up2.user_id
                           inner join flow.user_status_type ust  on ust.user_id = u.id
