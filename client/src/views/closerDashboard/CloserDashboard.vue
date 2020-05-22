@@ -4,10 +4,10 @@
       <v-col cols="12" id="closer-dash-toolbar">
         <v-toolbar class="elevation-1">
           <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
-            <v-btn text @click="getCloserTableScores('MTD')">MTD</v-btn>
-            <v-btn text @click="getCloserTableScores('60 days')" class="text-lowercase">60 days</v-btn>
-            <v-btn text @click="getCloserTableScores('90 days')" class="text-lowercase">90 days</v-btn>
-            <v-btn text @click="getCloserTableScores('YTD')">YTD</v-btn>
+            <v-btn text @click="loadRankingTables('MTD')">MTD</v-btn>
+            <v-btn text @click="loadRankingTables('60 days')" class="text-lowercase">60 days</v-btn>
+            <v-btn text @click="loadRankingTables('90 days')" class="text-lowercase">90 days</v-btn>
+            <v-btn text @click="loadRankingTables('YTD')">YTD</v-btn>
           </v-btn-toggle>
         </v-toolbar>
       </v-col>
@@ -219,8 +219,10 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img class="ranking-table-img default-img"
-                   src="../../assets/user_img_placeholder.png" alt="User photo placeholder">
+              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+                   :src="row.userImageUrl" :alt="row.userImageAltText">
+              <img v-else class="ranking-table-img default-img"
+                   src="../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
@@ -257,8 +259,10 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img class="ranking-table-img default-img"
-                   src="../../assets/user_img_placeholder.png" alt="User photo placeholder">
+              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+                   :src="row.userImageUrl" :alt="row.userImageAltText">
+              <img v-else class="ranking-table-img default-img"
+                   src="../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
@@ -348,8 +352,10 @@
               :class="{'highlight-user-row': row.userId === currentUserId}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="user-img-col">
-              <img class="ranking-table-img default-img"
-                   src="../../assets/user_img_placeholder.png" alt="User photo placeholder">
+              <img v-if="row.userImageUrl" class="ranking-table-img default-img"
+                   :src="row.userImageUrl" :alt="row.userImageAltText">
+              <img v-else class="ranking-table-img default-img"
+                   src="../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="left-text">{{ row.companyName }}</td>
@@ -362,8 +368,10 @@
               class="highlight-user-row">
             <td class="center-text">{{ userRow.rank }}</td>
             <td class="user-img-col">
-              <img class="ranking-table-img default-img"
-                   src="../../assets/user_img_placeholder.png" alt="User photo placeholder">
+              <img v-if="userRow.userImageUrl" class="ranking-table-img default-img"
+                   :src="userRow.userImageUrl" :alt="userRow.userImageAltText">
+              <img v-else class="ranking-table-img default-img"
+                   src="../../assets/user_img_placeholder.png" :alt="userRow.userImageAltText">
             </td>
             <td class="left-text">{{ userRow.name }}</td>
             <td class="left-text">{{ userRow.companyName }}</td>
@@ -424,6 +432,8 @@
       tabNum: 1, // Dashboard tab is selected by default
       showDashboard: true,
       showFunnel: false,
+      ironmanLoaded: false,
+      rankingTablesLoaded: false,
       dashboardWasLoaded: false,
       funnelWasLoaded: false,
       currentQuarter: moment().quarter(),
@@ -474,9 +484,16 @@
         }
       }
     },
+    watch: {
+      // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
+      '$store.state.app.loading': function () {
+        if (!this.ironmanLoaded || !this.rankingTablesLoaded) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+        }
+      }
+    },
     methods: {
       async switchTabs (tabNum) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         this.tabNum = tabNum
 
         switch (tabNum) {
@@ -497,8 +514,6 @@
               this.dashboardWasLoaded = true
             }
         }
-
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       assignCloserRanks (rankingData, fieldName) {
@@ -527,54 +542,67 @@
 
       /* IRONMAN-RELATED CODE START */
       async loadIronman () {
-        getRequest('/closerDashboard/getIronmanFdcCounts', 'blueraven').then(res => {
-          this.fdcCounts = res.data
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.ironmanLoaded = false
 
-          // Calculate points for each quarter
-          this.q1_points = this.calcPointsForQuarter(this.fdcCounts.q1)
-          this.q2_points = this.calcPointsForQuarter(this.fdcCounts.q2)
-          this.q3_points = this.calcPointsForQuarter(this.fdcCounts.q3)
-          this.q4_points = this.calcPointsForQuarter(this.fdcCounts.q4)
+        try {
+          getRequest('/closerDashboard/getIronmanFdcCounts', 'blueraven').then(res => {
+            this.fdcCounts = res.data
 
-          // Get milestone backgrounds
-          this.q1_background = this.getMilestoneBackground(this.q1_points)
-          this.q2_background = this.getMilestoneBackground(this.q2_points)
-          this.q3_background = this.getMilestoneBackground(this.q3_points)
-          this.q4_background = this.getMilestoneBackground(this.q4_points)
+            // Calculate points for each quarter
+            this.q1_points = this.calcPointsForQuarter(this.fdcCounts.q1)
+            this.q2_points = this.calcPointsForQuarter(this.fdcCounts.q2)
+            this.q3_points = this.calcPointsForQuarter(this.fdcCounts.q3)
+            this.q4_points = this.calcPointsForQuarter(this.fdcCounts.q4)
 
-          // Set milestone backgrounds
-          $('#swim-phase .milestone-content').addClass(this.q1_background)
-          $('#bike-phase .milestone-content').addClass(this.q2_background)
-          $('#run-phase .milestone-content').addClass(this.q3_background)
-          $('#finish-phase .milestone-content').addClass(this.q4_background)
+            // Get milestone backgrounds
+            this.q1_background = this.getMilestoneBackground(this.q1_points)
+            this.q2_background = this.getMilestoneBackground(this.q2_points)
+            this.q3_background = this.getMilestoneBackground(this.q3_points)
+            this.q4_background = this.getMilestoneBackground(this.q4_points)
 
-          // Remove black background for previous quarters where closer has < 10 FDC
-          if (this.is_q2) {
-            $('#swim-phase .milestone-content').addClass('unranked')
-          } else if (this.is_q3) {
-            $('#swim-phase .milestone-content, #bike-phase .milestone-content').addClass('unranked')
-          } else if (this.is_q4) {
-            $('#swim-phase .milestone-content, #bike-phase .milestone-content, #run-phase .milestone-content').addClass('unranked')
-          }
+            // Set milestone backgrounds
+            $('#swim-phase .milestone-content').addClass(this.q1_background)
+            $('#bike-phase .milestone-content').addClass(this.q2_background)
+            $('#run-phase .milestone-content').addClass(this.q3_background)
+            $('#finish-phase .milestone-content').addClass(this.q4_background)
 
-          // Get upper milestone labels
-          this.q1_upper_label = this.getUpperMilestoneLabel(this.fdcCounts.q1)
-          this.q2_upper_label = this.currentQuarter < 2 ? 'April 1' : this.getUpperMilestoneLabel(this.fdcCounts.q2)
-          this.q3_upper_label = this.currentQuarter < 3 ? 'July 1' : this.getUpperMilestoneLabel(this.fdcCounts.q3)
-          this.q4_upper_label = this.currentQuarter < 4 ? 'October 1' : this.getUpperMilestoneLabel(this.fdcCounts.q4)
+            // Remove black background for previous quarters where closer has < 10 FDC
+            if (this.is_q2) {
+              $('#swim-phase .milestone-content').addClass('unranked')
+            } else if (this.is_q3) {
+              $('#swim-phase .milestone-content, #bike-phase .milestone-content').addClass('unranked')
+            } else if (this.is_q4) {
+              $('#swim-phase .milestone-content, #bike-phase .milestone-content, #run-phase .milestone-content').addClass('unranked')
+            }
 
-          // Get lower milestone labels
-          this.q1_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q1)
-          this.q2_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q2)
-          this.q3_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q3)
-          this.q4_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q4)
+            // Get upper milestone labels
+            this.q1_upper_label = this.getUpperMilestoneLabel(this.fdcCounts.q1)
+            this.q2_upper_label = this.currentQuarter < 2 ? 'April 1' : this.getUpperMilestoneLabel(this.fdcCounts.q2)
+            this.q3_upper_label = this.currentQuarter < 3 ? 'July 1' : this.getUpperMilestoneLabel(this.fdcCounts.q3)
+            this.q4_upper_label = this.currentQuarter < 4 ? 'October 1' : this.getUpperMilestoneLabel(this.fdcCounts.q4)
 
-          // Fill progress bar based on closer's points for the year
-          this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 8) * 100
-          this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
-          this.progressBarIsFull = this.percentAchieved === 100
-          $('#progress-bar-fill').css('width', this.percentAchieved + '%')
-        })
+            // Get lower milestone labels
+            this.q1_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q1)
+            this.q2_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q2)
+            this.q3_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q3)
+            this.q4_lower_label = this.getLowerMilestoneLabel(this.fdcCounts.q4)
+
+            // Fill progress bar based on closer's points for the year
+            this.percentAchieved = ((this.q1_points + this.q2_points + this.q3_points + this.q4_points) / 8) * 100
+            this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
+            this.progressBarIsFull = this.percentAchieved === 100
+            $('#progress-bar-fill').css('width', this.percentAchieved + '%')
+
+            this.ironmanLoaded = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          })
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving Ironman data')
+          this.ironmanLoaded = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
 
       checkWindowWidth () {
@@ -687,12 +715,12 @@
 
           this.selectedQuarter = quarter
           this.milestoneDialog = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       reformatDates () {
@@ -710,15 +738,11 @@
 
       /* RANKING TABLES-RELATED CODE START */
       async loadRankingTables (timeIntervalString) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.rankingTablesLoaded = false
+        this.timeIntervalString = timeIntervalString
         this.rankingData = []
         this.searchText = ''
-
-        await this.getCloserTableScores(timeIntervalString)
-      },
-
-      async getCloserTableScores (timeIntervalString) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.timeIntervalString = timeIntervalString
 
         switch (timeIntervalString) {
           case 'MTD':
@@ -747,11 +771,15 @@
           this.processRankingData(cloneDeep(data.officeRankingValues), 'Office FDC Rank')
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Office Ranking')
           this.processRankingData(cloneDeep(data.companyRankingValues), 'Top Reps')
+
+          this.rankingTablesLoaded = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving ranking table data')
+          this.rankingTablesLoaded = true
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       processRankingData (rankingData, currentTable) {
@@ -865,7 +893,6 @@
       /* FUNNEL-RELATED CODE END */
     },
     created () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       this.currentUserId = this.$store.state.user.details.id
       this.switchTabs(this.tabNum)
     },

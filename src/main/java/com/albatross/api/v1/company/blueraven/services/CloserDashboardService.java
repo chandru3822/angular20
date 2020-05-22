@@ -14,7 +14,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +25,8 @@ import java.util.Map;
  */
 @Service
 public class CloserDashboardService {
-  @Value("${aws.storageBucket}")
+//  @Value("${aws.blueraven.storageBucket}") // TODO: Replace this after user photos have been migrated to new AWS s3 storage
+  @Value("blueraven-photos")
   private String bucket;
 
   @Autowired
@@ -63,40 +63,31 @@ public class CloserDashboardService {
     closerDashboardData.put("officeRankingValues", processCloserData(timeInterval, true));
     closerDashboardData.put("companyRankingValues", processCloserData(timeInterval, false));
 
-    List<Long> userIds = new ArrayList<>();
-    for (Object row : closerDashboardData.getJSONArray("officeRankingValues")) {
-      JSONObject rowObject = (JSONObject)row;
-      userIds.add(rowObject.getLong("userId"));
-    }
+    return getUserImages(new String[] {"officeRankingValues", "companyRankingValues"}, closerDashboardData);
+  }
 
-    for (Object row : closerDashboardData.getJSONArray("companyRankingValues")) {
-      JSONObject rowObject = (JSONObject)row;
-      userIds.add(rowObject.getLong("userId"));
+  public String getUserImages(String[] keys, JSONObject closerDashboardData) {
+    List<Long> userIds = new ArrayList<>();
+
+    for (String key : keys) {
+      for (Object row : closerDashboardData.getJSONArray(key)) {
+        JSONObject rowObject = (JSONObject)row;
+        userIds.add(rowObject.getLong("userId"));
+      }
     }
 
     Map<Long, String> userImageUrls = attachmentService.getAttachmentPresignedUrlForUserList(bucket, userIds, 9L);
 
-    for (Object row : closerDashboardData.getJSONArray("officeRankingValues")) {
-      JSONObject rowObject = (JSONObject)row;
+    for (String key : keys) {
+      for (Object row : closerDashboardData.getJSONArray(key)) {
+        JSONObject rowObject = (JSONObject)row;
 
-      if (userImageUrls.get(rowObject.getLong("userId")) != null) {
-        rowObject.put("userImageUrl", userImageUrls.get(rowObject.getLong("userId")));
-        rowObject.put("userImageAltText", "Photo of " + rowObject.get("name") + ", a Blue Raven Solar employee");
-      } else {
-        rowObject.put("userImageUrl", "../../assets/user_img_placeholder.png");
-        rowObject.put("userImageAltText", "User image placeholder");
-      }
-    }
-
-    for (Object row : closerDashboardData.getJSONArray("companyRankingValues")) {
-      JSONObject rowObject = (JSONObject)row;
-
-      if (userImageUrls.get(rowObject.getLong("userId")) != null) {
-        rowObject.put("userImageUrl", userImageUrls.get(rowObject.getLong("userId")));
-        rowObject.put("userImageAltText", "Photo of " + rowObject.get("name") + ", a Blue Raven Solar employee");
-      } else {
-        rowObject.put("userImageUrl", "../../assets/user_img_placeholder.png");
-        rowObject.put("userImageAltText", "User image placeholder");
+        if (userImageUrls.get(rowObject.getLong("userId")) != null) {
+          rowObject.put("userImageUrl", userImageUrls.get(rowObject.getLong("userId")));
+          rowObject.put("userImageAltText", "Photo of " + rowObject.get("name") + ", a Blue Raven Solar employee");
+        } else {
+          rowObject.put("userImageAltText", "User photo placeholder");
+        }
       }
     }
 

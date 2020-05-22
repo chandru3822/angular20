@@ -1503,6 +1503,22 @@ VALUES ('Hire Date',72,now(), 2350555,(select id from flow.company where company
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id)
+VALUES ('Qualifer',74,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('Leave of Absence Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('Reactivation Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('Termination Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
 VALUES ('Employee ID',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
@@ -1676,13 +1692,32 @@ INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id)
 VALUES ('New Hire Orientation Meeting Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('BRU Pass Off Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
 
 --1 General blue raven solar
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id)
+VALUES ('Qualifier',4,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
 VALUES ('Hire Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('Leave of Absence Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('Reactivation Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('Termination Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id)
@@ -1859,6 +1894,10 @@ INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id, company_id)
 VALUES ('New Hire Orientation Meeting Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('BRU Pass Off Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
 
 --group 2 blueraven corporate
 INSERT INTO flow.custom_field(
@@ -2093,6 +2132,10 @@ INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id ,company_id)
 VALUES ('Termination Reason',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id ,company_id)
+VALUES ('Leave of Absence Reason',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
 
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
@@ -2120,6 +2163,10 @@ INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
     created_by_id ,company_id)
 VALUES ('Termination Reason',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id ,company_id)
+VALUES ('Leave of Absence Reason',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
 
 INSERT INTO flow.custom_field(
     field_name, company_data_type_id, date_created,
@@ -2208,6 +2255,36 @@ insert into flow.custom_field_object_type(custom_field_id, company_object_type_i
     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
      from flow.custom_field cf
      where cf.field_name = 'Submitted By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+     from flow.custom_field cf
+     where cf.field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+     from flow.custom_field cf
+     where cf.field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+     from flow.custom_field cf
+     where cf.field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+     from flow.custom_field cf
+     where cf.field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+     from flow.custom_field cf
+     where cf.field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+     from flow.custom_field cf
+     where cf.field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
     );
 insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
@@ -2622,6 +2699,36 @@ insert into flow.custom_field_object_type(custom_field_id, company_object_type_i
     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
      from flow.custom_field cf
      where cf.field_name = 'Submitted By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+     from flow.custom_field cf
+     where cf.field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+     from flow.custom_field cf
+     where cf.field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+     from flow.custom_field cf
+     where cf.field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+     from flow.custom_field cf
+     where cf.field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+    );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+          (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+           from flow.custom_field cf
+           where cf.field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+          );
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+     from flow.custom_field cf
+     where cf.field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
     );
 insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
@@ -3111,6 +3218,37 @@ INSERT INTO flow.custom_field_group_assignment(
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+            (select id from flow.custom_field where field_name = 'Qualifier' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+            (select id from flow.custom_field where field_name = 'Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+            (select id from flow.custom_field where field_name = 'Leave of Absence Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+            (select id from flow.custom_field where field_name = 'Leave of Absence Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+            (select id from flow.custom_field where field_name = 'Reactivation Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+            (select id from flow.custom_field where field_name = 'BRU Pass Off Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
             (select id from flow.custom_field where field_name = 'Uniform/Badge Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
@@ -3470,7 +3608,7 @@ INSERT INTO flow.custom_field_group_assignment(
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
             (select id from flow.custom_field where field_name = 'Phone Extension' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
@@ -3523,7 +3661,37 @@ INSERT INTO flow.custom_field_group_assignment(
     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
             (select id from flow.custom_field where field_name = 'New Hire Orientation Meeting Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
 
---blueraven solar
+--blueraven solar********************************************
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+            (select id from flow.custom_field where field_name = 'Leave of Absence Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+            (select id from flow.custom_field where field_name = 'Qualifier' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+            (select id from flow.custom_field where field_name = 'Leave of Absence Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+            (select id from flow.custom_field where field_name = 'Reactivation Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+            (select id from flow.custom_field where field_name = 'Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+            (select id from flow.custom_field where field_name = 'BRU Pass Off Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
@@ -3892,7 +4060,7 @@ INSERT INTO flow.custom_field_group_assignment(
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
     custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
             (select id from flow.custom_field where field_name = 'Phone Extension' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
@@ -3947,6 +4115,61 @@ INSERT INTO flow.custom_field_group_assignment(
 
 
 --blueraven corporate
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            leave_of_absence_reason,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 2
+     WHERE leave_of_absence_reason IS NOT NULL);
+
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            qualifier,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 2
+     WHERE qualifier IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            leave_of_absence_date,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 2
+     WHERE leave_of_absence_date IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            reactivation_date,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 2
+     WHERE reactivation_date IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            bru_pass_off_date,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 2
+     WHERE bru_pass_off_date IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
+            termination_date,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 2
+     WHERE termination_date IS NOT NULL);
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Submitted By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
@@ -4831,6 +5054,60 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
 
 
 --blueraven solar
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            leave_of_absence_reason,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 3
+     WHERE leave_of_absence_reason IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            qualifier,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 3
+     WHERE qualifier IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            leave_of_absence_date,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 3
+     WHERE leave_of_absence_date IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            reactivation_date,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 3
+     WHERE reactivation_date IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            termination_date,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 3
+     WHERE termination_date IS NOT NULL);
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT u.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
+            bru_pass_off_date,
+            2350555 as created_by_id
+     FROM blueraven.user u
+              inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
+              inner join flow.org o on o.id = up.org_id and company_id = 3
+     WHERE bru_pass_off_date IS NOT NULL);
 INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Submitted By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
@@ -6401,7 +6678,6 @@ values ((select id from flow.project_status_type where project_status_type.proje
 
 -- copy over the common deal/project fields
 
---TODO add entered_into_payment_system_date to the project table
 INSERT INTO flow.project (id,
                           contact_id,
                           project_name,
@@ -6457,7 +6733,7 @@ insert into brs.project_override(project_id, override_plan_id)
 insert into brs.exclude_commission(project_id)
     (select d.id
      from blueraven.deal d
-     where d.exclude_commission is not null
+     where d.exclude_commission is true
         and d.id in (select id from flow.project));
 
 -- change the flow.project id sequence so the imported ids don't cause problems
@@ -6475,22 +6751,29 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
                   from blueraven.user_position up
                   where user_id = d.closer_user_id
                     and position_id = 1
-                    and up.start_date <= up.end_date
-                    and tsrange(up.start_date, up.end_date) @> d.pre_design_complete_date
+                    and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
+                      or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
+                      or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+                      or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+                      or (up.primary_flag is true))
                   limit 1) AS user_position_id,
                  2350555 AS created_by_id,
                  now() AS date_created,
                  (select up.start_date
                   from blueraven.user_position up
                   where user_id = d.closer_user_id
-                    and position_id = 1
-                    and up.start_date <= up.end_date
-                    and tsrange(up.start_date, up.end_date) @> d.pre_design_complete_date
+                    and position_id = 1 and
+                      ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
+                          or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
+                          or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+                          or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+                          or (up.primary_flag is true))
                   limit 1) as start_date
           FROM blueraven.deal d
                    INNER JOIN flow.project p ON p.id = d.id -- TODO remove this when WHERE clause is removed from flow.project migration
-          WHERE d.closer_user_id IS NOT NULL) AS foo
+          WHERE d.closer_user_id IS NOT NULL and d.id = 231303) AS foo
      WHERE foo.user_position_id IS NOT NULL);
+
 
 INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created,start_date)
     (SELECT *
@@ -6500,8 +6783,11 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
                   from blueraven.user_position up
                   where user_id = d.setter_user_id
                     and position_id = 4
-                    and tsrange(least(up.start_date, up.end_date),
-                                greatest(up.start_date, up.end_date)) @> d.pre_design_complete_date
+                    and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
+                      or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
+                      or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+                      or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+                      or (up.primary_flag is true))
                   limit 1) AS user_position_id,
                  2350555 AS created_by_id,
                  now() AS date_created,
@@ -6509,8 +6795,11 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
                   from blueraven.user_position up
                   where user_id = d.setter_user_id
                     and position_id = 4
-                    and tsrange(least(up.start_date, up.end_date),
-                                greatest(up.start_date, up.end_date)) @> d.pre_design_complete_date
+                    and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
+                      or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
+                      or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+                      or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+                      or (up.primary_flag is true))
                   limit 1) AS start_date
           FROM blueraven.deal d
                    INNER JOIN flow.project p
@@ -6518,6 +6807,28 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
           WHERE d.setter_user_id IS NOT NULL) AS foo
      WHERE foo.user_position_id IS NOT NULL);
 
+INSERT INTO flow.custom_field(
+    field_name, company_data_type_id, date_created,
+    created_by_id, company_id)
+VALUES ('Entered into Payment System Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+    (select id,1
+     from flow.custom_field cf
+     where cf.field_name = 'Entered into Payment System Date'
+    );
+
+INSERT INTO flow.custom_field_group_assignment(
+    custom_field_group_id,
+    custom_field_id,field_order,archived,created_by_id)
+    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+            (select id from flow.custom_field where field_name = 'Entered into Payment System Date'),1,false, 2350555);
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
+    (SELECT id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Entered into Payment System Date') as custom_field_id,
+            entered_into_payment_system_date,
+            2350555 as created_by_id
+     FROM blueraven.deal WHERE entered_into_payment_system_date IS NOT NULL
+                           and  originator_id = 1);
 
 INSERT INTO flow.custom_field_group_assignment(
     custom_field_group_id,
@@ -7029,3 +7340,23 @@ insert into flow.company_function(company_function_name, db_function_id, company
 insert into flow.company_function_param(company_function_id, system_value_id, db_function_param_id, created_by_id, modified_by_id, date_modified)
     (select (select id from flow.company_function where company_function_name = 'Insert Commissions on Project'),2,(select id from flow.db_function_param where parameter_name = 'project_id'),2350555,2350555,now());
 
+
+
+/*REBATE MIGRATION*/
+insert into brs.project_rebate_payment_state(id, name)
+select * from blueraven.deal_rebate_payment_state;
+
+insert into brs.project_rebate_batch(id, project_rebate_payment_ids, batch_date, updated_date, voided_batch, updated_by_user_id)
+select * from blueraven.deal_rebate_batch;
+
+insert into brs.project_rebate_payment(id, project_id, payment_amount, created_by_user_id, created_date, approved_by_user_id, approved_date, updated_by_user_id, updated_date, state_id, processed_date, processed_by_user_id, payment_nbr, project_rebate_batch_id, check_number, void_note)
+select * from blueraven.deal_rebate_payment;
+
+insert into brs.project_rebate_payment_audit(id, project_id, audit, changed_date, changed_by_user_id)
+select * from blueraven.deal_rebate_payment_audit;
+
+
+SELECT setval('brs.project_rebate_payment_state_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.project_rebate_payment_state), 1), false);
+SELECT setval('brs.project_rebate_batch_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.project_rebate_batch), 1), false);
+SELECT setval('brs.project_rebate_payment_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.project_rebate_payment), 1), false);
+SELECT setval('brs.project_rebate_payment_audit_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.project_rebate_payment_audit), 1), false);
