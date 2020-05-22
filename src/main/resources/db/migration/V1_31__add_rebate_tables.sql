@@ -89,8 +89,3 @@ CREATE TABLE if NOT EXISTS brs.project_rebate_payment_state
             primary key,
     name varchar(50) not null
 );
-
-insert into brs.project_rebate_payment_state (name) values ('Needs approval');
-insert into brs.project_rebate_payment_state (name) values ('Processed');
-insert into brs.project_rebate_payment_state (name) values ('Paused');
-insert into brs.project_rebate_payment_state (name) values ('Canceled');

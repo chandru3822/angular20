@@ -143,7 +143,7 @@
     <payroll.getAccountReview><![CDATA[
      SELECT array_to_json(array_agg(row_to_json(sub_rows)))
 FROM (SELECT *
-      FROM brs.get_commission_account_details(:payrollId::int, :periodEndDate::date, :locked::bool, :projectId::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
+      FROM brs.get_commission_account_details(:payrollId::int, :projectId::int[], :customerId::int, :salesRepId::int, :cancelStartDate::date, :cancelEndDate::date, :overridePlanId::int, :commissionPlanId::int)) sub_rows
     ]]></payroll.getAccountReview>
 
     <payroll.getPayrollSearchDetail><![CDATA[
