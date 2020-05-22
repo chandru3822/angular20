@@ -97,8 +97,6 @@ public class CustomFieldService {
       doInsertAfterHandlingOtherScenarios = true;
       // only insert the parent list value record if this is a new custom field
       insertParentRecordIfNeeded = true;
-      // only insert the sql key record if this is a new custom field
-      insertSqlKey = true;
     }
 
     Long parentId = null;
@@ -146,25 +144,10 @@ public class CustomFieldService {
 
     }
 
-    Long customFieldSqlKeyId = null;
-
-    if(null != customField.getCustomFieldSqlKey()) {
-      HashMap<String, Object> sqlParams = new HashMap<>();
-      sqlParams.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
-
-      if(insertSqlKey){
-        // insert the sql row if it is for a new field
-        customFieldSqlKeyId = sqlCache.updateReturningId("customField.insertSqlKey", sqlParams, "id").longValue();
-      } else {
-        sqlParams.put("customFieldSqlKeyId", customField.getCustomFieldSqlKeyId());
-        sqlCache.update("customField.updateSqlKey", sqlParams);
-      }
-    }
-
-
     if(doInsertAfterHandlingOtherScenarios) {
       params.put("listOfValueId", parentId);
-      params.put("customFieldSqlKeyId", customFieldSqlKeyId);
+      params.put("customFieldSqlKey", customField.getCustomFieldSqlKey());
+      params.put("customFieldSqlReferenceTable", customField.getCustomFieldSqlReferenceTable());
       params.put("companyId", customField.getCompanyId());
       params.put("systemListId", customField.getCompanySystemListId());
       params.put("createdById", customField.getCreatedById());

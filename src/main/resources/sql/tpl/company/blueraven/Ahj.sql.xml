@@ -80,7 +80,7 @@
     ]]>
   </ahj.delete>
 
-  <!-- CHECKLISTS STUFF -->
+  <!-- CHECKLIST -->
   <ahj.checklist.findById>
     <![CDATA[
       SELECT *
@@ -127,7 +127,7 @@
     ]]>
   </ahj.checklist.delete>
 
-  <!-- CONTACTS STUFF -->
+  <!-- CONTACT -->
   <ahj.contact.findById>
     <![CDATA[
       SELECT * FROM brs.ahj_contact WHERE id = :id

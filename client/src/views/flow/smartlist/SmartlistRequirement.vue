@@ -119,7 +119,7 @@
           <template v-else-if="requirement.dataTypeRequirementId">
             {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
           </template>
-<!--              <span v-else-if="item.listOfValueId || item.customFieldSqlKeyId || item.companySystemListId">-->
+<!--              <span v-else-if="item.listOfValueId || item.customFieldSqlKey || item.companySystemListId">-->
 <!--&lt;!&ndash;                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}&ndash;&gt;-->
 <!--                    {{ getListValueName(item) }}-->
 <!--                  </span>-->

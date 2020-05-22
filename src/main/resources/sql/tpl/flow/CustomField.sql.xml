@@ -8,10 +8,10 @@
      cf.created_by_id,
      cf.modified_by_id,
      cf.company_data_type_id,
-     cf.custom_field_sql_key_id,
+     cf.custom_field_sql_key,
+     cf.custom_field_sql_reference_table,
      cf.company_system_list_id,
      array_to_json(cf.system_list_option_ids) as system_list_option_ids,
-     cfsk.sql_key as "custom_field_sql_key",
      coalesce((
                   select array_to_json(array_agg(rows))
                   from (
@@ -42,7 +42,6 @@
                              order by lv.display_order
                         ) rows), '[]') AS list_of_values
     from flow.custom_field cf
-      left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where cf.id = :id
     order by cf.field_name
   ]]></customField.getOne>
@@ -56,10 +55,10 @@
        cf.created_by_id,
        cf.modified_by_id,
        cf.company_data_type_id,
-       cf.custom_field_sql_key_id,
+       cf.custom_field_sql_key,
+       cf.custom_field_sql_reference_table,
        cf.company_system_list_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
-       cfsk.sql_key as "custom_field_sql_key",
        coalesce((
                   select array_to_json(array_agg(rows))
                   from (
@@ -92,7 +91,6 @@
                                order by lv.display_order
                           ) rows), '[]') AS list_of_values
     from flow.custom_field cf
-      left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where cf.company_id = :companyId
       and cf.archived is not true
     order by cf.field_name
@@ -130,8 +128,8 @@
   ]]></customField.saveField>
 
   <customField.insertField><![CDATA[
-    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key_id, company_system_list_id, system_list_option_ids)
-    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKeyId, :systemListId, array[ :systemListOptionIds ]::integer[])
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids)
+    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, array[ :systemListOptionIds ]::integer[])
     returning id
   ]]></customField.insertField>
 
@@ -158,17 +156,6 @@
     where id = :id
   ]]></customField.archiveListOfValue>
 
-  <customField.insertSqlKey><![CDATA[
-    insert into flow.custom_field_sql_key(sql_key)
-    values (:customFieldSqlKey)
-  ]]></customField.insertSqlKey>
-
-  <customField.updateSqlKey><![CDATA[
-    update flow.custom_field_sql_key
-      set sql_key = :customFieldSqlKey
-    where id = :customFieldSqlKeyId
-  ]]></customField.updateSqlKey>
-
   <customField.updateCustomFieldObjectType><![CDATA[
     update flow.custom_field_object_type
     set archived = :archived
@@ -184,7 +171,7 @@
   <customField.getByParentProcessStep><![CDATA[
     select cf.id,
        cf.list_of_value_id,
-       cf.custom_field_sql_key_id,
+       cf.custom_field_sql_key,
        cf.company_id,
        cf.field_name,
        cf.company_data_type_id,
@@ -193,8 +180,6 @@
        cf.created_by_id,
        cf.modified_by_id,
        cf.archived,
-       cf.custom_field_sql_key_id as "customFieldSqlKeyId",
-       cfsk.sql_key as "customFieldSqlKey",
        cf.company_system_list_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
        cfga.id as custom_field_group_assignment_id,
@@ -222,7 +207,6 @@
              inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
              inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-             left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     where ps.id = :id
       and cfga.ancillary_custom_field_group_assignment_id is null
       and cfg.archived is not true

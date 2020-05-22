@@ -127,12 +127,19 @@
                         return-object
                     ></v-autocomplete>
 
-                    <v-text-field v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior"
-                                  v-model="item.customFieldSqlKey"
-                                  label="SQL Key"
-                    ></v-text-field>
+                    <div v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
+                      <v-text-field
+                                    v-model="item.customFieldSqlKey"
+                                    label="SQL Key"
+                      ></v-text-field>
+                      <v-text-field
+                        v-model="item.customFieldSqlReferenceTable"
+                        label="SQL Reference Table"
+                      ></v-text-field>
 
-                    <v-select v-if="item.companyDataType && item.companyDataType.systemList"
+                    </div>
+
+                    <v-select v-else-if="item.companyDataType && item.companyDataType.systemList"
                               v-model="item.companySystemListId"
                               :items="systemLists"
                               :disabled="!item.custom"
@@ -143,7 +150,7 @@
                               @change="getSystemListOptions(item.companySystemListId)"
                     ></v-select>
 
-                    <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
+                    <v-select v-else-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
                               v-model="item.systemListOptionIds"
                               :items="systemListOptions"
                               multiple
@@ -153,7 +160,7 @@
                     ></v-select>
 
                     <v-col class="options-container"
-                            v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
+                            v-else-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
                       <span>Selectable Options</span>
                       <draggable v-model="item.listOfValues"
                                  group="listOfValues" @start="drag=true" @end="drag=false">
@@ -456,7 +463,8 @@
       invalid(item) {
         // todo: use real form validation?
         let invalidOptions = false
-        if (item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList) {
+        let invalidCustomSql = false
+        if ((item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.customBehavior) && !item.companyDataType.systemList) {
           if (item.listOfValues && item.listOfValues.length === 0) {
             invalidOptions = true
           } else {
@@ -466,8 +474,13 @@
               }
             })
           }
+        } else if (item.companyDataType?.customBehavior) {
+          if(!item.customFieldSqlKey || !item.customFieldSqlReferenceTable) {
+            invalidCustomSql = true
+          }
         }
-        return !item.fieldName || !item.companyDataType || invalidOptions
+
+        return !item.fieldName || !item.companyDataType || invalidOptions || invalidCustomSql
 
       },
       filterCustomFields () {

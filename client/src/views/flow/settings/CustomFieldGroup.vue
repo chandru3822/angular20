@@ -164,6 +164,20 @@
                             Show On Insert
                           </div>
                         </v-list-item-content>
+                        <v-menu offset-y v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                          <template v-slot:activator="{ on }">
+                            <v-btn text small v-on="on">
+                              <v-icon>mdi-cursor-move</v-icon>
+                            </v-btn>
+                          </template>
+                          <v-list>
+                            <v-list-item
+                              v-for="(cfg, index) in filterBy(customFieldGroups, (g) => { return g.id !== cf.customFieldGroupId })"
+                              :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
+                              <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
+                            </v-list-item>
+                          </v-list>
+                        </v-menu>
                         <v-dialog
                             v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                             v-model="cf.deleteConfirm"
@@ -181,7 +195,9 @@
                               Confirm
                             </v-card-title>
 
-                            <v-card-text>
+                            <v-card-text class="mt-2">
+                              <span class="error--text">WARNING:</span>
+                              By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
                               Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
                               item.groupName }}</strong>?
                             </v-card-text>
@@ -445,8 +461,22 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async moveFieldToOtherGroup (field, newGroup) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      console.log('randaLogger group', newGroup)
+      console.log('randaLogger Field', field)
+      try {
+        await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
+        this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
+        //currently reloading the page because moving the field in the UI seems too hard (even though it isn't i just cant make myself do it right now)
+        window.location.reload()
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Moving Field')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async assignAncillaryCustomField (item) {
-      console.log('will ancillary', item)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const params = {

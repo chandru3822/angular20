@@ -119,15 +119,25 @@ export default new Router({
         },
         children: []
       }, {
-          path: '/ahj',
-          name: 'ahj',
-          component: () => {
-            if(store.getters.userHasFeature('AHJ_DATABASE')) {
-              return import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
-            } else  {
-              return accessDenied()
-            }
-          },
+        path: '/closerDashboard',
+        name: 'closerDashboard',
+        component: () => {
+          if(store.getters.userHasFeature('CLOSER_DASHBOARD')) {
+            return import (/* webpackChunkName: "closerDashboard" */ './views/closerDashboard/CloserDashboard.vue')
+          } else {
+            return accessDenied()
+          }
+        }
+      }, {
+        path: '/ahj',
+        name: 'ahj',
+        component: () => {
+          if(store.getters.userHasFeature('AHJ_DATABASE')) {
+            return import (/* webpackChunkName: "ahj" */ './views/ahj/Ahj.vue')
+          } else  {
+            return accessDenied()
+          }
+        },
       }, {
         path: '/ahj/:ahjId',
         name: 'ahjDetails',
@@ -192,6 +202,24 @@ export default new Router({
               }
             },
           }, {
+            path: 'postalCodes',
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCodes.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
+          }, {
+            path: 'postalCode/:id',
+            component: () => {
+              if(store.getters.userHasFeature('SETTINGS')) {
+                return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/PostalCode.vue')
+              } else  {
+                return accessDenied()
+              }
+            },
+          },{
             path: 'orgTypes',
             component: () => {
               if(store.getters.userHasFeature('SETTINGS')) {
@@ -657,6 +685,14 @@ export default new Router({
                   component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/PayrollSummary.vue'),
                 }
               ]
+            },  {
+              path: 'residualPlans',
+              name: 'residualPlans',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/ResidualPlans.vue'),
+            }, {
+              path: 'residualPlan/:id?',
+              name: 'residualPlan',
+              component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/ResidualPlan.vue'),
             }, {
               path: 'residuals',
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Residuals.vue'),

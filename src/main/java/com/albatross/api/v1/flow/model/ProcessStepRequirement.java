@@ -14,8 +14,7 @@ import java.util.List;
 public class ProcessStepRequirement {
 
   private Long id, processStepRequirementTypeId, operatorTypeId, customFieldGroupAssignmentId, companyFunctionId,
-    requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId, returnDataTypeId,
-    customFieldSqlKeyId, companySystemListId, systemListOptionId, customSqlOptionId;
+    requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId, returnDataTypeId, companySystemListId, systemListOptionId, customSqlOptionId;
 
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, functionName, processStepName,
     secondaryRequirementValue, customFieldSqlKey;

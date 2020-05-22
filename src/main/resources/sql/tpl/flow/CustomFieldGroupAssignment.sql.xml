@@ -42,6 +42,7 @@
                              SELECT cfga.id,
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.custom_field_id as "customFieldId",
+                                    cfga.id as "customFieldGroupAssignmentId",
                                     cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                     cfga.field_order as "fieldOrder",
                                     cfga.archived,
@@ -58,6 +59,7 @@
                              SELECT cfga.id,
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.custom_field_id as "customFieldId",
+                                    cfga.id as "customFieldGroupAssignmentId",
                                     cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                     cfga.field_order as "fieldOrder",
                                     cfga.archived,
@@ -196,6 +198,14 @@
     insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, schedule_field_type_id)
     values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, :fieldOrder, :createdById, :scheduleFieldTypeId)
   ]]></customFieldGroupAssignment.addFieldToGroup>
+
+  <customFieldGroupAssignment.moveFieldToOtherGroup><![CDATA[
+    update flow.custom_field_group_assignment
+        set custom_field_group_id = :newGroupId,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :id
+  ]]></customFieldGroupAssignment.moveFieldToOtherGroup>
 
   <customFieldGroupAssignment.updateFieldInGroup><![CDATA[
     update flow.custom_field_group_assignment

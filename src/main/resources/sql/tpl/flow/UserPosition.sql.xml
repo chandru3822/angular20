@@ -7,8 +7,9 @@
                 upv.position,
                 upv.position_id,
                 upv.company_id,
-                upv.hierarchy
+                uphv.hierarchy
       from flow.user_positions_vw upv
+      inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id and uphv.org_id = upv.org_id and uphv.position_id = upv.position_id
       where upv.company_id = :companyId
         and upv.user_id = :userId
       order by upv.start_date desc

@@ -1,9 +1,11 @@
+-- drop FUNCTION if exists flow.get_project_process_step_requirements_with_values(INTEGER, INTEGER[]);
+
 CREATE OR REPLACE FUNCTION flow.get_project_process_step_requirements_with_values(p_project_process_step_id INTEGER, p_requirement_ids INTEGER[])
 
   RETURNS TABLE (id int, project_id int, process_step_requirement_type_id int, process_step_id int, operator_type_id int, requirement_value varchar, custom_field_group_assignment_id int,
                  company_function_id int, requirement_nbr int, date_created timestamp, date_modified timestamp, immutable boolean, created_by_id int, modified_by_id int,
                  archived boolean, secondary_requirement_value varchar, data_type_requirement_id int, list_of_value_id int, list_of_value_ids json, operator_type varchar,
-                 process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key_id int, custom_field_sql_key varchar,
+                 process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
                  company_system_list_id int, system_list_option_id int, custom_sql_option_id int, project_custom_field_value_id int, project_process_step_id int, text_value text,
                  date_value date, timestamp_value timestamp, boolean_value boolean, numeric__value numeric, int_value int, int_array_value json, system_list_option_ids json,
                  data_type_requirement json, list_of_value json, list_of_values json, data_type_id int, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
@@ -38,8 +40,7 @@ BEGIN
       case when psr.data_type_requirement_id is null then true else false end as custom_value,
       ps.process_step_name as parent_name,
       cf.field_name,
-      cf.custom_field_sql_key_id,
-      cfsk.sql_key as custom_field_sql_key,
+      cf.custom_field_sql_key,
       cf.company_system_list_id,
       psr.system_list_option_id,
       psr.custom_sql_option_id,
@@ -138,7 +139,6 @@ BEGIN
     left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
     left join flow.process_step ps on ps.id = cfg.process_step_id
-    left join flow.custom_field_sql_key cfsk on cfsk.id = cf.custom_field_sql_key_id
     left join flow.company_function cfn on cfn.id = psr.company_function_id
     left join flow.db_function df on df.id = cfn.db_function_id
     left join flow.data_type_requirement dtr on dtr.id = psr.data_type_requirement_id
