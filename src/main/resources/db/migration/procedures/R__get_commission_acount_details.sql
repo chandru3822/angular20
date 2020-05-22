@@ -102,7 +102,7 @@ BEGIN
                         u.first_name||' '||u.last_name                                  AS closer,
                         (cust.user_status_type = 'Terminated')                           AS closer_is_terminated,
                         source.name::character varying as source_name,
-                        stage.text_value::character varying as stage_name,
+                        stage.name::character varying as stage_name,
                         cancelled_date.date_value::date as cancelled_date,
                         installation_agreement_signed_date.date_value::date as installation_agreement_signed_date,
                         final_design_signed_date.date_value::date as final_design_signed_date,
@@ -112,21 +112,21 @@ BEGIN
                                  THEN 'red' ELSE 'black' END                           AS asd_color,
                         CASE WHEN substantial_completion_date.date_value::date IS NULL
                                  THEN 'red' ELSE 'black' END                           AS scd_color,
-                        CASE WHEN proof_of_homeowners_insurance_required.boolean_value = 'Yes'
+                        CASE WHEN proof_of_homeowners_insurance_required.name = 'Yes'
                             and proof_of_homeowners_insurance_obtained.date_value::date is null
                                  THEN 'red' ELSE 'black' END                           AS pohi_color,
-                        CASE WHEN financier.text_value = 'Cash' and
+                        CASE WHEN financier.name = 'Cash' and
                                   first_cash_paid_date.date_value::date is null
                                  THEN 'red' ELSE 'black' END                           AS deposit_color,
                         agreement_signed_date.date_value::date as agreement_signed_date,
                         utitlity_bill_verified_date.date_value::date as utility_bill_verified_date,
-                        proof_of_homeowners_insurance_required.boolean_value::boolean as proof_of_howmeowners_insurance_required,
+                        proof_of_homeowners_insurance_required.name::character varying as proof_of_howmeowners_insurance_required,
                         proof_of_homeowners_insurance_obtained.date_value::date as proof_of_homeowners_insurance_obtained_date,
-                        financier.text_value                                   AS financier,
+                        financier.name                                   AS financier,
                         first_cash_paid_date.date_value::date as first_cash_payment_paid_date,
                         first_cash_payment_amount.numeric_value::numeric as first_cash_payment_amount,
                         total_system_price.numeric_value::numeric as total_system_price,
-                        case when financier.text_value = 'Cash' THEN
+                        case when financier.name = 'Cash' THEN
                                  round(first_cash_payment_amount.numeric_value::numeric/total_system_price.numeric_value::numeric,2)
                          else 0::numeric end as percent_of_cash_deposit,
                         substantial_completion_date.date_value::date as substantial_completion_date,
@@ -304,11 +304,13 @@ BEGIN
                           left join flow.project_process_step pps4 on pps4.project_id = p.id and pps4.process_step_id  = 68
                           left join flow.project_process_step_custom_field_value utitlity_bill_verified_date on utitlity_bill_verified_date.project_process_step_id = pps4.id and utitlity_bill_verified_date.custom_field_group_assignment_id = 109
                           left join flow.project_process_step pps5 on pps5.project_id = p.id and pps5.process_step_id  = 68
-                          left join flow.project_process_step_custom_field_value proof_of_homeowners_insurance_required on proof_of_homeowners_insurance_required.project_process_step_id = pps5.id and proof_of_homeowners_insurance_required.custom_field_group_assignment_id = 111
+                          left join flow.project_process_step_custom_field_value proof_of_homeowners_insurance_required_id on proof_of_homeowners_insurance_required_id.project_process_step_id = pps5.id and proof_of_homeowners_insurance_required_id.custom_field_group_assignment_id = 111
+                          left join flow.list_of_value proof_of_homeowners_insurance_required on proof_of_homeowners_insurance_required_id.int_value = proof_of_homeowners_insurance_required.id
                           left join flow.project_process_step pps6 on pps6.project_id = p.id and pps6.process_step_id  = 68
                           left join flow.project_process_step_custom_field_value proof_of_homeowners_insurance_obtained on proof_of_homeowners_insurance_obtained.project_process_step_id = pps6.id and proof_of_homeowners_insurance_obtained.custom_field_group_assignment_id = 110
                           left join flow.project_process_step pps7 on pps7.project_id = p.id and pps7.process_step_id  = 4
-                          left join flow.project_process_step_custom_field_value financier on financier.project_process_step_id = pps7.id and financier.custom_field_group_assignment_id = 45
+                          left join flow.project_process_step_custom_field_value financier1 on financier1.project_process_step_id = pps7.id and financier1.custom_field_group_assignment_id = 45
+                          left join flow.list_of_value financier on financier.id = financier1.int_value
                           left join flow.project_process_step pps8 on pps8.project_id = p.id and pps8.process_step_id  = 57
                           left join flow.project_process_step_custom_field_value first_cash_paid_date on first_cash_paid_date.project_process_step_id = pps8.id and first_cash_paid_date.custom_field_group_assignment_id = 210
                           left join flow.project_process_step pps9 on pps9.project_id = p.id and pps9.process_step_id  = 56
@@ -320,8 +322,9 @@ BEGIN
                           left join flow.project_custom_field_value sourceId on sourceId.project_id = p.id and sourceId.custom_field_group_assignment_id = 341
                           left join flow.project_custom_field_value sourceId1 on sourceId1.project_id = p.id and sourceId1.custom_field_group_assignment_id = 341
                           left join flow.list_of_value source on source.id = sourceId1.int_value
-                          left join flow.project_custom_field_value stage on stage.project_id = p.id and stage.custom_field_group_assignment_id = 342
-                          left join flow.project_custom_field_value cancelled_date on cancelled_date.project_id = p.id and cancelled_date.custom_field_group_assignment_id = 370
+                          left join flow.project_custom_field_value stageId on stageId.project_id = p.id and stageId.custom_field_group_assignment_id = 342
+                          left join flow.list_of_value stage on stage.id = stageId.int_value
+                          left join flow.project_custom_field_value cancelled_date on cancelled_date.project_id = p.id and cancelled_date.custom_field_group_assignment_id = 343
                  WHERE  (ec.project_id is null) and
                     CASE WHEN p_project_ids IS NOT NULL
                         THEN p.id = ANY(p_project_ids) ELSE 1 = 1 END
