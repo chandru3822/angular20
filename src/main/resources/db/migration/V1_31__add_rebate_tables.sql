@@ -12,6 +12,15 @@ CREATE TABLE if NOT EXISTS brs.project_rebate_batch
             references flow."user"
 );
 
+CREATE TABLE if NOT EXISTS brs.project_rebate_payment_state
+(
+    id   serial      not null
+        constraint project_rebate_payment_state_pkey
+            primary key,
+    name varchar(50) not null
+);
+
+
 CREATE TABLE if NOT EXISTS brs.project_rebate_payment
 (
     id                   serial         not null
@@ -81,11 +90,3 @@ CREATE INDEX if not exists fki_project_rebate_payment_audit_user_id
 
 CREATE INDEX if not exists idx_project_rebate_payment_audit_created_date
     on brs.project_rebate_payment_audit (changed_date);
-
-CREATE TABLE if NOT EXISTS brs.project_rebate_payment_state
-(
-    id   serial      not null
-        constraint project_rebate_payment_state_pkey
-            primary key,
-    name varchar(50) not null
-);
