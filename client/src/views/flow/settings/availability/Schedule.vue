@@ -115,8 +115,9 @@
           </v-card-actions>
         </v-card>
         <v-data-table
+          v-if="!addNew"
           :headers="headers"
-          :items="schedules"
+          :items="filterSchedules()"
           :fixed-header="true"
           :items-per-page="-1"
           single-expand
@@ -135,7 +136,7 @@
 
           <template #expanded-item="{ headers, item }">
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
-              <v-card flat class="px-3">
+              <v-card flat color="transparent" class="px-3">
                 <DatetimePickerInput
                   v-model="item.startDate"
                   :timezone="timezone"
@@ -258,6 +259,28 @@
                 <v-btn small text @click="expanded = []"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
+                <v-dialog v-model="item.deleteConfirm" max-width="500px">
+                  <template #activator="{ on }">
+                    <v-btn v-on="on" small text>
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title>
+                      <span class="headline">Confirm</span>
+                    </v-card-title>
+                    <v-card-text>
+                      Are you sure you want to archive this schedule?<br>
+                      <strong>{{ item.startDate | formatDate('date') }} - {{ item.endDate | formatDate('date') }}</strong>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="secondaryButton" text @click="item.deleteConfirm = false">No</v-btn>
+                      <v-btn color="brRed" class="white--text"
+                             @click="archiveSchedule(item)">Yes</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
               </td>
             </tr>
           </template>
@@ -274,7 +297,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
 
   export default {
     name: 'Schedule',
@@ -310,12 +333,20 @@
       this.getWorkDays()
     },
     watch: {
-      //we only have to watch one of the params cuz if userId gets set, then orgId will go null
       'orgId': function () {
-        // reset the schedule when new user selected
-        console.log('randaLogger', this.orgId)
-        this.schedules = []
-        this.getSchedules()
+        //without these if statements the schedule will get reloaded twice when switching between org and user
+        if(this.orgId != null) {
+          // reset the schedule when new org selected
+          this.schedules = []
+          this.getSchedules()
+        }
+      },
+      'userId': function () {
+        if(this.userId != null) {
+          // reset the schedule when new user selected
+          this.schedules = []
+          this.getSchedules()
+        }
       }
     },
     methods: {
@@ -422,7 +453,24 @@
           this.$set(dayToUpdate, 'startTime', day.startTime)
           this.$set(dayToUpdate, 'endTime', day.endTime)
         }
-      }
+      },
+      async archiveSchedule(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          await deleteRequest(`/availability/${item.id}`)
+          item.archived = true
+          this.snackbar = getSnackbar('SUCCESS', 'Schedule Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error deleting schedule')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      filterSchedules () {
+        return this.schedules.filter(s => { return !s.archived})
+      },
     }
   }
 </script>

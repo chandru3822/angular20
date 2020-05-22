@@ -25,6 +25,7 @@
     "file-saver": "^2.0.2",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
+    "lodash.groupby": "^4.6.0",
     "lodash.keyby": "^4.6.0",
     "lodash.max": "^4.0.1",
     "lodash.orderby": "^4.6.0",

@@ -124,6 +124,10 @@ export default {
         title: 'Company',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/postalCodes',
+        title: 'Postal Code Zones',
+        show: this.hasSettingsAccess
+      }, {
         header: 'User Management',
         show: this.hasSettingsAccess
       }, {

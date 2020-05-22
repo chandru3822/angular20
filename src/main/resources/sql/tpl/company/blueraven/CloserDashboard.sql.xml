@@ -1,0 +1,213 @@
+<sql>
+  <closerDashboard.getIronmanFdcCounts>
+    <![CDATA[
+      -- Custom fields needed for closerDashboard.getIronmanFdcCounts query --
+        -- 'First Cash Payment Paid' object_type_id = ?, custom_field_id = 112, process_step_id = ?
+        -- 'Final Design Signed' object_type_id = 4, custom_field_id = 104, process_step_id = 9
+        -- 'Financial Agreement Signed' object_type_id = 4, custom_field_id = 108, process_step_id = 4
+        -- 'Source' object_type_id = 1, custom_field_id = 5
+        -- 'Financier' object_type_id = 4, custom_field_id = 109, process_step_id = 4
+        -- 'Cancelled' object_type_id = 1, custom_field_id = 52
+        -- 'On Hold' object_type_id = 1, custom_field_id = 200
+
+      WITH "quarters" AS (
+        select (extract('year' from now()) || '-01-01')::date as "q1_start",
+               (extract('year' from now()) || '-03-31')::date as "q1_end",
+               (extract('year' from now()) || '-04-01')::date as "q2_start",
+               (extract('year' from now()) || '-06-30')::date as "q2_end",
+               (extract('year' from now()) || '-07-01')::date as "q3_start",
+               (extract('year' from now()) || '-09-30')::date as "q3_end",
+               (extract('year' from now()) || '-10-01')::date as "q4_start",
+               (extract('year' from now()) || '-12-31')::date as "q4_end"
+      )
+      SELECT (select coalesce(sum(q1points), 0)
+              from (select count(1) *
+                case when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-01-01') and ('2020-01-31')
+                       and source in ('Referral', 'Setter Gen', 'Events - Closer Gen')
+                   then 1.5
+                 when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
+                   and source = 'Setter Gen'
+                   then 3
+                 when greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
+                   and source in ('Referral', 'Events - Closer Gen')
+                   then 2
+                 else 1
+                 end as q1points
+              from flow.project p
+                inner join flow.contact c on c.id = p.contact_id
+                inner join flow.user_project up on up.project_id = p.id
+                inner join flow.user_position up2 on up2.id = up.user_position_id and up2.position_id = 1
+                inner join flow.user u on u.id = up2.user_id
+-- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
+
+--                 left join lateral (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) as first_cash_payment_paid_date) first_cash_payment_paid_date on true
+                left join lateral (select null as first_cash_payment_paid_date) first_cash_payment_paid_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 104, p.id, 9) as final_design_signed_date) final_design_signed_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 108, p.id, 4) as agreement_signed_date) agreement_signed_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 5, p.id) as source) source on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 109, p.id, 4) as financier) financier on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 52, p.id) as cancelled_date) cancelled_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 200, p.id) as on_hold) on_hold on true
+              where final_design_signed_date is not null
+                and agreement_signed_date is not null
+                and case when financier = 'Cash'
+                  then first_cash_payment_paid_date is not null
+                and greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date)
+                  between (select q1_start from quarters) and (select q1_end from quarters)
+                else greatest(final_design_signed_date::date, agreement_signed_date::date)
+                  between (select q1_start from quarters) and (select q1_end from quarters)
+                end
+                and ((cancelled_date is null) or (cancelled_date is not null and cancelled_date::date > (select q1_end from quarters)))
+                and (on_hold is null or on_hold::boolean is false)
+                and u.id = :currentUserId
+              group by first_cash_payment_paid_date, final_design_signed_date, agreement_signed_date, source) t
+             ) as "q1",
+             (select count(1)
+              from flow.project p
+                inner join flow.contact c on c.id = p.contact_id
+                inner join flow.user_project up on up.project_id = p.id
+                inner join flow.user_position up2 on up2.id = up.user_position_id and up2.position_id = 1
+                inner join flow.user u on u.id = up2.user_id
+-- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
+
+--                 left join lateral (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) as first_cash_payment_paid_date) first_cash_payment_paid_date on true
+                left join lateral (select null as first_cash_payment_paid_date) first_cash_payment_paid_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 104, p.id, 9) as final_design_signed_date) final_design_signed_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 108, p.id, 4) as agreement_signed_date) agreement_signed_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 109, p.id, 4) as financier) financier on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 52, p.id) as cancelled_date) cancelled_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 200, p.id) as on_hold) on_hold on true
+              where final_design_signed_date is not null and agreement_signed_date is not null
+                and case when financier = 'Cash'
+                  then first_cash_payment_paid_date is not null
+                and greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date)
+                  between (select q2_start from quarters) and (select q2_end from quarters)
+                else greatest(final_design_signed_date::date, agreement_signed_date::date)
+                  between (select q2_start from quarters) and (select q2_end from quarters)
+                end
+                and ((cancelled_date is null) or (cancelled_date is not null and cancelled_date::date > (select q2_end from quarters)))
+                and (on_hold is null or on_hold::boolean is false)
+                and u.id = :currentUserId
+             ) as "q2",
+             (select count(1)
+              from flow.project p
+                inner join flow.contact c on c.id = p.contact_id
+                inner join flow.user_project up on up.project_id = p.id
+                inner join flow.user_position up2 on up2.id = up.user_position_id and up2.position_id = 1
+                inner join flow.user u on u.id = up2.user_id
+-- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
+
+--                 left join lateral (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) as first_cash_payment_paid_date) first_cash_payment_paid_date on true
+                left join lateral (select null as first_cash_payment_paid_date) first_cash_payment_paid_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 104, p.id, 9) as final_design_signed_date) final_design_signed_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 108, p.id, 4) as agreement_signed_date) agreement_signed_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 109, p.id, 4) as financier) financier on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 52, p.id) as cancelled_date) cancelled_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 200, p.id) as on_hold) on_hold on true
+              where final_design_signed_date is not null and agreement_signed_date is not null
+                and case when financier = 'Cash'
+                  then first_cash_payment_paid_date is not null
+                and greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date)
+                  between (select q2_start from quarters) and (select q2_end from quarters)
+                else greatest(final_design_signed_date::date, agreement_signed_date::date)
+                  between (select q2_start from quarters) and (select q2_end from quarters)
+                end
+                and ((cancelled_date is null) or (cancelled_date is not null and cancelled_date::date > (select q2_end from quarters)))
+                and (on_hold is null or on_hold::boolean is false)
+                and u.id = :currentUserId
+             ) as "q3",
+             (select count(1)
+              from flow.project p
+                inner join flow.contact c on c.id = p.contact_id
+                inner join flow.user_project up on up.project_id = p.id
+                inner join flow.user_position up2 on up2.id = up.user_position_id and up2.position_id = 1
+                inner join flow.user u on u.id = up2.user_id
+-- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
+
+--                 left join lateral (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) as first_cash_payment_paid_date) first_cash_payment_paid_date on true
+                left join lateral (select null as first_cash_payment_paid_date) first_cash_payment_paid_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 104, p.id, 9) as final_design_signed_date) final_design_signed_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 108, p.id, 4) as agreement_signed_date) agreement_signed_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(4, 109, p.id, 4) as financier) financier on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 52, p.id) as cancelled_date) cancelled_date on true
+                left join lateral (select * from flow.get_value_for_custom_field(1, 200, p.id) as on_hold) on_hold on true
+              where final_design_signed_date is not null and agreement_signed_date is not null
+                and case when financier = 'Cash'
+                  then first_cash_payment_paid_date is not null
+                and greatest(first_cash_payment_paid_date::date, final_design_signed_date::date, agreement_signed_date::date)
+                  between (select q2_start from quarters) and (select q2_end from quarters)
+                else greatest(final_design_signed_date::date, agreement_signed_date::date)
+                  between (select q2_start from quarters) and (select q2_end from quarters)
+                end
+                and ((cancelled_date is null) or (cancelled_date is not null and cancelled_date::date > (select q2_end from quarters)))
+                and (on_hold is null or on_hold::boolean is false)
+                and u.id = :currentUserId
+             ) as "q4"
+    ]]>
+  </closerDashboard.getIronmanFdcCounts>
+
+  <closerDashboard.getCloserTableScores>
+    <![CDATA[
+      SELECT u.id,
+             u.first_name || ' ' || u.last_name as name,
+             o.org_name as companyName,
+             o2.org_name as region,
+             '--' as salesMetroArea, -- TODO: Add sales_metro_area once it has been migrated
+             count(case when appointment_date::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and source not in ('Referral', 'Setter Gen', 'Events - Closer Gen')
+               and final_design_signed_date is not null
+               and agreement_signed_date is not null
+               and case when financier = 'Cash'
+                 then first_cash_payment_paid_date is not null
+                 else 1=1
+                 end
+               and (on_hold is null or on_hold::boolean is false) then 1 end) as leadGenFdcPercentageNumerator,
+             count(case when appointment_date::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and source not in ('Referral', 'Setter Gen', 'Events - Closer Gen') then 1 end) as leadGenFdcPercentageDenominator,
+             count(case when greatest(final_design_signed_date::date, agreement_signed_date::date, first_cash_payment_paid_date::date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and source not in ('Referral', 'Setter Gen', 'Events - Closer Gen')
+               and final_design_signed_date is not null
+               and agreement_signed_date is not null
+               and case when financier = 'Cash'
+                 then first_cash_payment_paid_date is not null
+                 else 1=1
+                 end
+               and (on_hold is null or on_hold::boolean is false) then 1 end) as selfGenFdc,
+             count(case when greatest(final_design_signed_date::date, agreement_signed_date::date, first_cash_payment_paid_date::date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and final_design_signed_date is not null
+               and agreement_signed_date is not null
+               and case when financier = 'Cash'
+                 then first_cash_payment_paid_date is not null
+                 else 1=1
+                 end
+               and (on_hold is null or on_hold::boolean is false) then 1 end) as totalFdc
+      FROM flow.project p
+        INNER JOIN flow.contact c ON c.id = p.contact_id
+        INNER JOIN flow.user_project up ON up.project_id = p.id
+        INNER JOIN flow.user_position up2 ON up2.id = up.user_position_id AND up2.position_id = 1
+        INNER JOIN flow.org o ON o.id = up2.org_id
+        INNER JOIN flow.org o2 ON (o2.id = o.parent_org_id and o2.org_type_id = 2)
+        INNER JOIN flow.user u ON u.id = up2.user_id
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 1, p.id, 1) as appointment_date) appointment_date ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(1, 5, p.id) as source) source ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 109, p.id, 4) as financier) financier ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(1, 200, p.id) as on_hold) on_hold ON TRUE
+        -- TODO: Replace ?'s below w/ correct ID's once 'First Cash Payment Paid Date' custom field gets added to a custom field group
+
+--         LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(?, 112, p.id, ?) AS first_cash_payment_paid_date) first_cash_payment_paid_date ON TRUE
+        LEFT JOIN LATERAL (select null as first_cash_payment_paid_date) first_cash_payment_paid_date ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 104, p.id, 9) AS final_design_signed_date) final_design_signed_date ON TRUE
+        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(4, 108, p.id, 4) AS agreement_signed_date) agreement_signed_date ON TRUE
+      WHERE CASE WHEN :officeRanking IS TRUE
+        THEN
+          up2.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived = false and up2.primary_flag = true)
+          AND u.archived IS FALSE
+          ELSE -- Company Ranking
+            up2.archived IS FALSE
+            AND up2.position_id = 1
+            AND (select active_flag from flow.org where id = up2.org_id) IS TRUE
+            END
+      GROUP BY u.id, companyName, region
+    ]]>
+  </closerDashboard.getCloserTableScores>
+</sql>

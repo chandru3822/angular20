@@ -39,4 +39,9 @@ public class AvailabilityController {
   public ResourceSchedule saveSchedule(@RequestBody ResourceSchedule resourceAvailability) {
     return availabilityService.saveSchedule(resourceAvailability);
   }
+
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteSchedule(@PathVariable Long id) {
+    availabilityService.deleteSchedule(id);
+  }
 }

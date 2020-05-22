@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @Setter
 public class Smartlist {
 
-  private Long id, companyObjectTypeId, ownerId, createdById, modifiedById;
+  private Long id, companyObjectTypeId, ownerId, createdById, modifiedById, objectTypeId;
 
   private String name, objectType;
 
