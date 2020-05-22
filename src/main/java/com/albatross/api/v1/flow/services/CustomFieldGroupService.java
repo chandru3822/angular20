@@ -63,6 +63,19 @@ public class CustomFieldGroupService {
     return getCustomField(id);
   }
 
+  public CustomField moveFieldToOtherGroup(CustomField customField, Long newGroupId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", customField.getCustomFieldGroupAssignmentId());
+    params.put("newGroupId", newGroupId);
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("customFieldGroupAssignment.moveFieldToOtherGroup", params);
+
+    return getCustomField(customField.getCustomFieldGroupAssignmentId());
+  }
+
   public CustomField getCustomField(Long id){
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);

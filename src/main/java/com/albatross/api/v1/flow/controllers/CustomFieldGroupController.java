@@ -31,6 +31,13 @@ public class CustomFieldGroupController {
     return customFieldGroupService.addFieldToGroup(customField);
   }
 
+  @PostMapping(value = "/moveFieldToOtherGroup/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public CustomField moveFieldToOtherGroup (@PathVariable Long id,
+                                            @RequestBody CustomField customField) {
+    return customFieldGroupService.moveFieldToOtherGroup(customField, id);
+  }
+
+
   @DeleteMapping(value = "/deleteFieldFromGroup/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteFieldInGroup(@PathVariable Long id) {
     customFieldGroupService.deleteFieldFromGroup(id);
