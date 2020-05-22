@@ -294,37 +294,53 @@ BEGIN
                           inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.company_id = 3
                           left join brs.exclude_commission ec on ec.project_id = p.id
                           left join flow.project_process_step pps0 on pps0.project_id = p.id and pps0.process_step_id  = 4
-                          left join flow.project_process_step_custom_field_value system_size on system_size.project_process_step_id = pps0.id and system_size.custom_field_group_assignment_id = 40
+                          left join flow.project_process_step_custom_field_value system_size on system_size.project_process_step_id = pps0.id
+                          left join flow.custom_field_group_assignment cfga on cfga.id = system_size.custom_field_group_assignment_id and cfga.custom_field_id = 333
                           left join flow.project_process_step pps1 on pps1.project_id = p.id and pps1.process_step_id  = 4
-                          left join flow.project_process_step_custom_field_value installation_agreement_signed_date on installation_agreement_signed_date.project_process_step_id = pps1.id and installation_agreement_signed_date.custom_field_group_assignment_id= 62
+                          left join flow.project_process_step_custom_field_value installation_agreement_signed_date on installation_agreement_signed_date.project_process_step_id = pps1.id
+                          left join flow.custom_field_group_assignment cfga1 on cfga1.id = installation_agreement_signed_date.custom_field_group_assignment_id and cfga1.custom_field_id = 58
                           left join flow.project_process_step pps2 on pps2.project_id = p.id and pps2.process_step_id  = 9
-                          left join flow.project_process_step_custom_field_value final_design_signed_date on final_design_signed_date.project_process_step_id = pps2.id and final_design_signed_date.custom_field_group_assignment_id = 60
+                          left join flow.project_process_step_custom_field_value final_design_signed_date on final_design_signed_date.project_process_step_id = pps2.id
+                          left join flow.custom_field_group_assignment cfga2 on cfga2.id = final_design_signed_date.custom_field_group_assignment_id and cfga2.custom_field_id = 104
                           left join flow.project_process_step pps3 on pps3.project_id = p.id and pps3.process_step_id  = 4
-                          left join flow.project_process_step_custom_field_value agreement_signed_date on agreement_signed_date.project_process_step_id = pps3.id and agreement_signed_date.custom_field_group_assignment_id = 13
+                          left join flow.project_process_step_custom_field_value agreement_signed_date on agreement_signed_date.project_process_step_id = pps3.id
+                          left join flow.custom_field_group_assignment cfga3 on cfga3.id = agreement_signed_date.custom_field_group_assignment_id and cfga3.custom_field_id = 108
                           left join flow.project_process_step pps4 on pps4.project_id = p.id and pps4.process_step_id  = 68
-                          left join flow.project_process_step_custom_field_value utitlity_bill_verified_date on utitlity_bill_verified_date.project_process_step_id = pps4.id and utitlity_bill_verified_date.custom_field_group_assignment_id = 109
+                          left join flow.project_process_step_custom_field_value utitlity_bill_verified_date on utitlity_bill_verified_date.project_process_step_id = pps4.id
+                          left join flow.custom_field_group_assignment cfga4 on cfga4.id = utitlity_bill_verified_date.custom_field_group_assignment_id and cfga4.custom_field_id = 348
                           left join flow.project_process_step pps5 on pps5.project_id = p.id and pps5.process_step_id  = 68
-                          left join flow.project_process_step_custom_field_value proof_of_homeowners_insurance_required_id on proof_of_homeowners_insurance_required_id.project_process_step_id = pps5.id and proof_of_homeowners_insurance_required_id.custom_field_group_assignment_id = 111
+                          left join flow.project_process_step_custom_field_value proof_of_homeowners_insurance_required_id on proof_of_homeowners_insurance_required_id.project_process_step_id = pps5.id
+                          left join flow.custom_field_group_assignment cfga5 on cfga5.id = proof_of_homeowners_insurance_required_id.custom_field_group_assignment_id and cfga5.custom_field_id = 266
                           left join flow.list_of_value proof_of_homeowners_insurance_required on proof_of_homeowners_insurance_required_id.int_value = proof_of_homeowners_insurance_required.id
                           left join flow.project_process_step pps6 on pps6.project_id = p.id and pps6.process_step_id  = 68
-                          left join flow.project_process_step_custom_field_value proof_of_homeowners_insurance_obtained on proof_of_homeowners_insurance_obtained.project_process_step_id = pps6.id and proof_of_homeowners_insurance_obtained.custom_field_group_assignment_id = 110
+                          left join flow.project_process_step_custom_field_value proof_of_homeowners_insurance_obtained on proof_of_homeowners_insurance_obtained.project_process_step_id = pps6.id
+                          left join flow.custom_field_group_assignment cfga6 on cfga6.id = proof_of_homeowners_insurance_obtained.custom_field_group_assignment_id and cfga6.custom_field_id = 265
                           left join flow.project_process_step pps7 on pps7.project_id = p.id and pps7.process_step_id  = 4
-                          left join flow.project_process_step_custom_field_value financier1 on financier1.project_process_step_id = pps7.id and financier1.custom_field_group_assignment_id = 45
+                          left join flow.project_process_step_custom_field_value financier1 on financier1.project_process_step_id = pps7.id
+                          left join flow.custom_field_group_assignment cfga7 on cfga7.id = financier1.custom_field_group_assignment_id and cfga7.custom_field_id = 109
                           left join flow.list_of_value financier on financier.id = financier1.int_value
                           left join flow.project_process_step pps8 on pps8.project_id = p.id and pps8.process_step_id  = 57
-                          left join flow.project_process_step_custom_field_value first_cash_paid_date on first_cash_paid_date.project_process_step_id = pps8.id and first_cash_paid_date.custom_field_group_assignment_id = 210
+                          left join flow.project_process_step_custom_field_value first_cash_paid_date on first_cash_paid_date.project_process_step_id = pps8.id
+                          left join flow.custom_field_group_assignment cfga8 on cfga8.id = first_cash_paid_date.custom_field_group_assignment_id and cfga8.custom_field_id = 112
                           left join flow.project_process_step pps9 on pps9.project_id = p.id and pps9.process_step_id  = 56
-                          left join flow.project_process_step_custom_field_value first_cash_payment_amount on first_cash_payment_amount.project_process_step_id = pps9.id and first_cash_payment_amount.custom_field_group_assignment_id = 209
+                          left join flow.project_process_step_custom_field_value first_cash_payment_amount on first_cash_payment_amount.project_process_step_id = pps9.id
+                          left join flow.custom_field_group_assignment cfga9 on cfga9.id = first_cash_payment_amount.custom_field_group_assignment_id and cfga9.custom_field_id = 110
                           left join flow.project_process_step pps10 on pps10.project_id = p.id and pps10.process_step_id  = 4
-                          left join flow.project_process_step_custom_field_value total_system_price on total_system_price.project_process_step_id = pps10.id and total_system_price.custom_field_group_assignment_id = 49
+                          left join flow.project_process_step_custom_field_value total_system_price on total_system_price.project_process_step_id = pps10.id
+                          left join flow.custom_field_group_assignment cfga10 on cfga10.id = total_system_price.custom_field_group_assignment_id and cfga10.custom_field_id = 345
                           left join flow.project_process_step pps11 on pps11.project_id = p.id and pps11.process_step_id  = 35
-                          left join flow.project_process_step_custom_field_value substantial_completion_date on substantial_completion_date.project_process_step_id = pps11.id and substantial_completion_date.custom_field_group_assignment_id = 138
-                          left join flow.project_custom_field_value sourceId on sourceId.project_id = p.id and sourceId.custom_field_group_assignment_id = 341
-                          left join flow.project_custom_field_value sourceId1 on sourceId1.project_id = p.id and sourceId1.custom_field_group_assignment_id = 341
+                          left join flow.project_process_step_custom_field_value substantial_completion_date on substantial_completion_date.project_process_step_id = pps11.id
+                          left join flow.custom_field_group_assignment cfga11 on cfga11.id = substantial_completion_date.custom_field_group_assignment_id and cfga11.custom_field_id = 327
+                          left join flow.project_custom_field_value sourceId on sourceId.project_id = p.id
+                          left join flow.custom_field_group_assignment cfga12 on cfga12.id = sourceId.custom_field_group_assignment_id and cfga12.custom_field_id = 5
+                          left join flow.project_custom_field_value sourceId1 on sourceId1.project_id = p.id
+                          left join flow.custom_field_group_assignment cfga13 on cfga13.id = sourceId1.custom_field_group_assignment_id and cfga13.custom_field_id = 5
                           left join flow.list_of_value source on source.id = sourceId1.int_value
-                          left join flow.project_custom_field_value stageId on stageId.project_id = p.id and stageId.custom_field_group_assignment_id = 342
+                          left join flow.project_custom_field_value stageId on stageId.project_id = p.id
+                          left join flow.custom_field_group_assignment cfga14 on cfga14.id = stageId.custom_field_group_assignment_id and cfga14.custom_field_id = 387
                           left join flow.list_of_value stage on stage.id = stageId.int_value
-                          left join flow.project_custom_field_value cancelled_date on cancelled_date.project_id = p.id and cancelled_date.custom_field_group_assignment_id = 343
+                          left join flow.project_custom_field_value cancelled_date on cancelled_date.project_id = p.id
+                          left join flow.custom_field_group_assignment cfga15 on cfga15.id = cancelled_date.custom_field_group_assignment_id and cfga15.custom_field_id = 52
                  WHERE  (ec.project_id is null) and
                     CASE WHEN p_project_ids IS NOT NULL
                         THEN p.id = ANY(p_project_ids) ELSE 1 = 1 END
