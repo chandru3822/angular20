@@ -31,7 +31,7 @@ CREATE TABLE if NOT EXISTS brs.project_rebate_payment
     approved_date        date,
     updated_by_user_id   integer,
     updated_date         date,
-    state_id             integer        not null
+    project_rebate_payment_state_id             integer        not null
         constraint fk_project_rebate_payment_state_id
             references brs.project_rebate_payment_state,
     processed_date       date,
