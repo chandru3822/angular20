@@ -64,8 +64,38 @@
         @input="resetNewOperatorType"
       />
 
-      <v-select
+      <v-switch
         v-if="newRequirement.operatorTypeId !== null"
+        v-model="newRequirement.isCustomValue"
+        @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
+        class="mx-2"
+        label="Custom"
+      />
+
+<!--      if field is a single-select item -->
+      <v-select
+        v-if="newRequirement.operatorTypeId !== null && newRequirement.isCustomValue && isListField && !newRequirement.selectedField.allowMultiple"
+        v-model="newRequirement.listOfValueId"
+        :items="newRequirement.selectedField.listOfValues"
+        label="Available Values"
+        item-text="name"
+        item-value="id"
+      />
+
+<!--      if field is a multi-select list -->
+      <v-select
+        v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue && newRequirement.selectedField.listOfValueId !== null && newRequirement.selectedField.allowMultiple"
+        v-model="selectedListOfValues"
+        :items="newRequirement.selectedField.listOfValues"
+        label="Available Values"
+        multiple
+        item-text="name"
+        return-object
+      />
+
+<!--      if field doesn't have any custom values, display the data type requirements -->
+      <v-select
+        v-else-if="newRequirement.operatorTypeId !== null && !newRequirement.isCustomValue"
         v-model="newRequirement.dataTypeRequirementId"
         label="Available Values"
         :items="dataTypeRequirements"
@@ -73,6 +103,15 @@
         item-value="id"
         @input="resetNewDataTypeRequirement"
       />
+
+<!--      if nothing else sticks, then it's a regular test input -->
+<!--      @TODO humes: check for date/time here and give a date picker -->
+      <v-text-field
+          v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue"
+          v-model="newRequirement.requirementValue"
+          placeholder="Enter a value"
+          label="Value">
+      </v-text-field>
 
       <v-text-field
         v-if="newRequirement.dataTypeRequirementId && dataTypeRequirements.find(r => r.id === newRequirement.dataTypeRequirementId).secondaryRequirement"
@@ -119,6 +158,7 @@
           <template v-else-if="requirement.dataTypeRequirementId">
             {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
           </template>
+<!--          @TODO humes: account for custom values here too-->
 <!--              <span v-else-if="item.listOfValueId || item.customFieldSqlKey || item.companySystemListId">-->
 <!--&lt;!&ndash;                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}&ndash;&gt;-->
 <!--                    {{ getListValueName(item) }}-->
@@ -258,7 +298,10 @@ export default {
         processStepId: null,
         operatorTypeId: null,
         dataTypeRequirementId: null,
-        secondaryRequirementValue: null
+        secondaryRequirement: null,
+        secondaryRequirementValue: null,
+        isCustomValue: null,
+        allowMultiple: null
       },
       fetchedAvailableFields: [],
       availableFields: [],
@@ -285,10 +328,15 @@ export default {
   },
   computed: {
     shouldDisableAddRequirementButton () {
-      return !this.newRequirement.dataTypeRequirementId && (!this.dataTypeRequirements.find(r => r.id === this.newRequirement.dataTypeRequirementId)?.secondaryRequirement || !this.newRequirement?.secondaryRequirementValue)
+      // @TODO humes: update this to account for new fields
+      return false
+      // return !this.newRequirement.dataTypeRequirementId && (!this.dataTypeRequirements.find(r => r.id === this.newRequirement.dataTypeRequirementId)?.secondaryRequirement || !this.newRequirement?.secondaryRequirementValue)
     },
     shouldShowEditFormValueInput () {
       return this.expandedRequirement[0].dataTypeRequirement?.secondaryRequirement
+    },
+    isListField () {
+      return this.newRequirement.selectedField.hasListValues || this.newRequirement.selectedField.customFieldSqlKey !== null || this.newRequirement.selectedField.companySystemListId !== null
     }
   },
   methods: {

@@ -36,6 +36,8 @@ public class SmartlistService {
 
   private final ObjectMapper om;
 
+  private final SystemListService systemListService;
+
   public List<Smartlist> getSmartlists() {
     return sqlCache.query("smartlist.get", null, Smartlist.class);
   }
@@ -58,7 +60,21 @@ public class SmartlistService {
   }
 
   public List<SmartlistFieldAssignment> getAvailableFields(Long objectTypeId) {
-    return sqlCache.query("smartlist.getAvailableFields", Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeId", objectTypeId), SmartlistFieldAssignment.class);
+    List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAvailableFields", Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeId", objectTypeId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+
+    for (SmartlistFieldAssignment field : fields) {
+
+      if (field.getCustomFieldSqlKey() != null) {
+        final String sql = sqlCache.getByKey(field.getCustomFieldSqlKey());
+        if (sql != null) {
+          field.setListOfValues(sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class));
+        }
+      } else if (field.getCompanySystemListId() != null) {
+        field.setListOfValues(systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds()));
+      }
+    }
+
+    return fields;
   }
 
   public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
@@ -527,7 +543,7 @@ public class SmartlistService {
         query.append("left join flow.user_position on flow.user_position.org_id = flow.org.id and flow.user_position.archived is not true ");
         query.append("left join flow.project on flow.project.user_position_id = flow.user_position.id ");
         query.append("left join flow.contact on flow.contact.owner_user_position_id = flow.user_position.id and flow.contact.archived is not true ");
-        query.append("left join flow.user on flow.user.id = flow.user_position.user_id amd flow.user.archived is not true ");
+        query.append("left join flow.user on flow.user.id = flow.user_position.user_id and flow.user.archived is not true ");
 
         // join tables from object types which aren't the same as the report object type (used in `from` clause)
         for (Map.Entry<Long, List<Object>> entry : joinObjectTypes.entrySet()) {
@@ -769,6 +785,24 @@ public class SmartlistService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "dataTypeRequirement", new JsonCollectionDeserializer(dataTypeRequirementRef, om));
+    }
+  }
+
+  public static class SmartlistFieldAssignmentMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper om;
+
+    public SmartlistFieldAssignmentMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.om = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValues", new JsonCollectionDeserializer(listOfValueRef, om));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionIdsRef, om));
     }
   }
 }
