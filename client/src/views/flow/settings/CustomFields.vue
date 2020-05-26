@@ -126,7 +126,7 @@
                         autocomplete="off"
                         return-object
                     ></v-autocomplete>
-                    item: {{item}}
+
                     <div v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
                       <v-text-field
                                     v-model="item.customFieldSqlKey"
