@@ -126,7 +126,7 @@
                         autocomplete="off"
                         return-object
                     ></v-autocomplete>
-
+                    item: {{item}}
                     <div v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
                       <v-text-field
                                     v-model="item.customFieldSqlKey"
@@ -139,7 +139,7 @@
 
                     </div>
 
-                    <v-select v-else-if="item.companyDataType && item.companyDataType.systemList"
+                    <v-select v-if="item.companyDataType && item.companyDataType.systemList"
                               v-model="item.companySystemListId"
                               :items="systemLists"
                               :disabled="!item.custom"
@@ -150,7 +150,7 @@
                               @change="getSystemListOptions(item.companySystemListId)"
                     ></v-select>
 
-                    <v-select v-else-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
+                    <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
                               v-model="item.systemListOptionIds"
                               :items="systemListOptions"
                               multiple
@@ -160,7 +160,7 @@
                     ></v-select>
 
                     <v-col class="options-container"
-                            v-else-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
+                            v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
                       <span>Selectable Options</span>
                       <draggable v-model="item.listOfValues"
                                  group="listOfValues" @start="drag=true" @end="drag=false">
