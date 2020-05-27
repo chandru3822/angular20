@@ -77,8 +77,6 @@
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
-            selected: {{selectedCustomField}} <br/>
-            new: {{newRequirement}}
             <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]" class="mx-2" label="Custom"></v-switch>
             <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKey === null && selectedCustomField.companySystemListId === null"
                           v-model="newRequirement.requirementValue"
