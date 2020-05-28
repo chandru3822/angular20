@@ -438,12 +438,11 @@ export default {
         const maxNumber = this.requirements.map(r => r.displayOrder).reduce((max, cur) => Math.max(max, cur), 0)
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
+          ...requirement,
           ...requirement.selectedField,
           smartlistId: this.smartlist.id,
-          operatorTypeId: requirement.operatorTypeId,
-          dataTypeRequirementId: requirement.dataTypeRequirementId,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
-          displayOrder: maxNumber + 1,
+          displayOrder: maxNumber + 1
         })
         this.requirements.push(data)
         this.resetRequirementForm = true

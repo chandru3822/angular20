@@ -785,6 +785,18 @@ public class SmartlistService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "dataTypeRequirement", new JsonCollectionDeserializer(dataTypeRequirementRef, om));
+
+      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValues", new JsonCollectionDeserializer(listOfValueRef, om));
+
+      TypeReference<List<Integer>> listOfValueIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "listOfValueIds", new JsonCollectionDeserializer(listOfValueIdsRef, om));
+
+      TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "systemListOptionIds", new JsonCollectionDeserializer(systemListOptionIdsRef, om));
+
+      TypeReference<List<ListOfValue>> availableListOfValuesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "availableListOfValues", new JsonCollectionDeserializer(availableListOfValuesRef, om));
     }
   }
 

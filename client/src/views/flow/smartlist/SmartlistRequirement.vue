@@ -64,10 +64,10 @@
         @input="resetNewOperatorType"
       />
 
+<!--      @TODO humes: on change, reset any value that follows -->
       <v-switch
         v-if="newRequirement.operatorTypeId !== null"
         v-model="newRequirement.isCustomValue"
-        @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
         class="mx-2"
         label="Custom"
       />
@@ -77,7 +77,7 @@
         v-if="newRequirement.operatorTypeId !== null && newRequirement.isCustomValue && isListField && !newRequirement.selectedField.allowMultiple"
         v-model="newRequirement.listOfValueId"
         :items="newRequirement.selectedField.listOfValues"
-        label="Available Values"
+        label="Available Values (list of value id)"
         item-text="name"
         item-value="id"
       />
@@ -85,12 +85,12 @@
 <!--      if field is a multi-select list -->
       <v-select
         v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue && newRequirement.selectedField.listOfValueId !== null && newRequirement.selectedField.allowMultiple"
-        v-model="selectedListOfValues"
+        v-model="newRequirement.listOfValueIds"
         :items="newRequirement.selectedField.listOfValues"
         label="Available Values"
         multiple
         item-text="name"
-        return-object
+        item-value="id"
       />
 
 <!--      if field doesn't have any custom values, display the data type requirements -->
@@ -104,7 +104,7 @@
         @input="resetNewDataTypeRequirement"
       />
 
-<!--      if nothing else sticks, then it's a regular test input -->
+<!--      if nothing else sticks, then it's a regular text input -->
 <!--      @TODO humes: check for date/time here and give a date picker -->
       <v-text-field
           v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue"
@@ -158,15 +158,8 @@
           <template v-else-if="requirement.dataTypeRequirementId">
             {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
           </template>
-<!--          @TODO humes: account for custom values here too-->
-<!--              <span v-else-if="item.listOfValueId || item.customFieldSqlKey || item.companySystemListId">-->
-<!--&lt;!&ndash;                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}&ndash;&gt;-->
-<!--                    {{ getListValueName(item) }}-->
-<!--                  </span>-->
-<!--              <span v-else-if="item.listOfValues">-->
-<!--                    &lt;!&ndash; todo: show the selected values here &ndash;&gt;-->
-<!--                    {{ item.listOfValues.map(v => ' ' + v.name).toString() }}-->
-<!--                  </span>-->
+          <template v-else-if="requirement.listOfValueId || requirement.customFieldSqlKey || requirement.companySystemListId">{{getListValueName(requirement)}}</template>
+          <template v-else-if="requirement.listOfValues">{{requirement.listOfValues.map(v => ` ${v.name}`).toString()}}</template>
         </td>
         <td class="action-cell">
 <!--          Vuetify keeps its own copy of requirements, so we can't just send `requirement` to functions for form reset 💩 -->
@@ -182,7 +175,7 @@
             v-if="expandedRequirement.findIndex(r => r.id === requirement.id) !== -1"
             small
             text
-            @click="cancelEditRequirement"
+            @click="cancelEditRequirement"z`
           >
             Cancel
           </v-btn>
@@ -301,7 +294,10 @@ export default {
         secondaryRequirement: null,
         secondaryRequirementValue: null,
         isCustomValue: null,
-        allowMultiple: null
+        allowMultiple: null,
+        customFieldSqlKey: null,
+        companySystemListId: null,
+        availableListOfValues: []
       },
       fetchedAvailableFields: [],
       availableFields: [],
@@ -447,6 +443,11 @@ export default {
         ...this.newRequirement,
         secondaryRequirementValue: null
       }
+    },
+    getListValueName(listItem) {
+      let idToUse = listItem.customSqlOptionId ? listItem.customSqlOptionId : listItem.systemListOptionId ? listItem.systemListOptionId : listItem.listOfValueId
+      let match = listItem.availableListOfValues.find(i => i.id === idToUse)
+      return match ? match.name : 'unknown'
     }
   }
 }

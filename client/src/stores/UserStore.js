@@ -41,7 +41,6 @@ export const UserStore = {
       commit(UserMutations.LOGIN_ERROR, '')
       commit(UserMutations.SET_DETAILS, details)
 
-      console.log('we got here')
       if (getters.userHasAnyFeature) {
         commit(UserMutations.AUTH_STATUS, true)
       } else {
