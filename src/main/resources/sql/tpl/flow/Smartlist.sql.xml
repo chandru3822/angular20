@@ -220,6 +220,7 @@ select sr.id,
        to_json(sr.list_of_value_ids) as list_of_value_ids,
        sr.system_list_option_id,
        sr.custom_sql_option_id,
+       case when sr.data_type_requirement_id is null then true else false end as is_custom_value,
        sf.reference_table,
        sf.reference_column,
        ot.object_type,
@@ -238,23 +239,13 @@ select sr.id,
            'secondaryRequirement', dtr.secondary_requirement
        ) end as data_type_requirement,
        coalesce((
-        select to_json(array_agg(row_to_json(listOfValues))) from (
-            select
-                lv.id,
-                lv.name,
-                lv.parent_id as "parentId",
-                lv.date_created as "dateCreated",
-                lv.date_modified as "dateModified",
-                lv.created_by_id as "createdById",
-                lv.modified_by_id as "modifiedById",
-                lv.display_order as "displayOrder",
-                lv.archived
-            from flow.list_of_value lv
-            where
-                lv.parent_id = cf.list_of_value_id and
-                lv.archived is not true
-            order by lv.display_order
-        ) listOfValues), '[]') as list_of_values,
+         select array_to_json(array_agg(row_to_json(lov))) from (
+           select
+             lv.id,
+             lv.name
+           from flow.list_of_value lv
+           where array[lv.id] <@ array[sr.list_of_value_ids]
+        ) lov), '[]') as list_of_values,
         case
           when cf.list_of_value_id is not null then
             coalesce((
@@ -313,6 +304,7 @@ select sr.id,
        to_json(sr.list_of_value_ids) as list_of_value_ids,
        sr.system_list_option_id,
        sr.custom_sql_option_id,
+       case when sr.data_type_requirement_id is null then true else false end as is_custom_value,
        sf.reference_table,
        sf.reference_column,
        ot.object_type,
@@ -385,8 +377,13 @@ returning id;
 <smartlist.updateRequirement><![CDATA[
 update flow.smartlist_requirement
 set operator_type_id = :operatorTypeId,
-    data_type_requirement_id = :dataTypeRequirementId,
+    requirement_value = :requirementValue,
     secondary_requirement_value = :secondaryRequirementValue,
+    data_type_requirement_id = :dataTypeRequirementId,
+    list_of_value_id = :listOfValueId,
+    list_of_value_ids = array[ :listOfValueIds ]::int[],
+    system_list_option_id = :systemListOptionId,
+    custom_sql_option_id = :customSqlOptionId,
     modified_by_id = :userId,
     date_modified = now()
 where id = :id;

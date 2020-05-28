@@ -19,7 +19,7 @@ public class SmartlistRequirement {
 
   private Timestamp dateCreated, dateModified;
 
-  private Boolean immutable, archived, hasListValues;
+  private Boolean immutable, archived, hasListValues, isCustomValue;
 
   private List<Long> listOfValueIds, systemListOptionIds;
 
