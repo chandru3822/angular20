@@ -10,7 +10,7 @@
         text
       >
         <v-icon>add</v-icon>
-        <template v-if="!IS_MOBILE">Add Requirement</template>
+        <template v-if="!constants.IS_MOBILE">Add Requirement</template>
       </v-btn>
 
       <v-btn
@@ -127,7 +127,7 @@
         @click="addNewRequirement"
       >
         <v-icon>save</v-icon>
-        <template v-if="!IS_MOBILE">Save</template>
+        <template v-if="!constants.IS_MOBILE">Save</template>
       </v-btn>
     </v-col>
   </v-card>
@@ -288,7 +288,7 @@
             @click="updateRequirement(expandedRequirement)"
           >
             <v-icon>save</v-icon>
-            <template v-if="!IS_MOBILE">Save</template>
+            <template v-if="!constants.IS_MOBILE">Save</template>
           </v-btn>
         </td>
       </tr>
@@ -300,7 +300,8 @@
 
 <script>
 
-import {IS_MOBILE, getRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar'
 
 export default {
@@ -324,7 +325,7 @@ export default {
   },
   data () {
     return {
-      IS_MOBILE,
+      constants,
       snackbar: {},
       showNewRequirementForm: false,
       newRequirement: {

@@ -3,7 +3,7 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Export Proposal Log</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Export Proposal Log</v-toolbar-title>
           <v-spacer></v-spacer>
         </v-toolbar>
 
@@ -34,7 +34,8 @@
   import Snackbar from '@/components/Snackbar.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { saveAs } from 'file-saver'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import moment from "moment";
 
   export default {
@@ -46,7 +47,7 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
         timezone: this.$store.state.user.details.timezone.value,
         prop: {
           startDate: moment().subtract(1, 'w').format('MM/DD/YYYY'),

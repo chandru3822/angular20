@@ -3,11 +3,11 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Scheduling Tool Event Types</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Scheduling Tool Event Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addNew = !addNew, newType = {}]">
-              <v-icon v-if="IS_MOBILE">add</v-icon>
+              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
@@ -84,7 +84,8 @@
   import orderBy from 'lodash.orderby'
   import {getEventTypes} from '@/services/scheduleService'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
 
   export default {
     name: 'Events',
@@ -95,7 +96,7 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
         eventTypes: [],
         addNew: false,
         newType: {},

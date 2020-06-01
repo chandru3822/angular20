@@ -14,7 +14,7 @@
         <v-toolbar-items>
           <v-btn text @click="addItem" color="primary">
             <v-icon>add</v-icon>
-            <span v-if="!IS_MOBILE">Add New</span>
+            <span v-if="!constants.IS_MOBILE">Add New</span>
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
@@ -116,7 +116,8 @@
 <script>
   import cloneDeep from 'lodash.clonedeep'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
+  import { getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
 
   const FILTER_DEFAULTS = {
@@ -132,7 +133,7 @@
     },
     data: () => ({
       snackbar: {},
-      IS_MOBILE,
+      constants,
       tabs: [
         {
           label: 'AHJ',

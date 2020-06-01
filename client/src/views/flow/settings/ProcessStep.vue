@@ -20,9 +20,9 @@
             <v-icon>edit</v-icon>
           </v-btn>
           <v-spacer></v-spacer>
-          <v-toolbar-items :slot="IS_MOBILE ? 'extension' : 'default'">
+          <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs>
-              <!--   todo: turn this into v-tabs in extension if IS_MOBILE           -->
+              <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
               <v-tab :to="`/settings/processStep/${processStepId}/components`">
                 UI Components
               </v-tab>
@@ -44,7 +44,8 @@
   import Vue2Filters from 'vue2-filters'
   import Snackbar from '@/components/Snackbar.vue'
   import ProcessStepCustomFieldGroups from './ProcessStepCustomFieldGroups'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
+  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
 
   export default {
     name: 'ProcessStep',
@@ -56,7 +57,7 @@
     data () {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
         changesMade: false,
         editName: false,
         processStepId: this.$route.params.id,

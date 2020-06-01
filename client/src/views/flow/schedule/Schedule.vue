@@ -248,7 +248,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getActiveStatesByHierarchy} from '@/services/stateService'
   import Map from './components/Map'
   import {getEventTypes} from '@/services/scheduleService'
@@ -267,7 +267,6 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
         showFilters: true,
         timezone: this.$store.state.user.details.timezone,
         // showFilters: false,

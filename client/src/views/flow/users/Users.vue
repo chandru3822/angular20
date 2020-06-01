@@ -24,7 +24,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="handleOrgFilterChange(true)">
-              <v-icon v-if="IS_MOBILE">filter_list</v-icon>
+              <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
               <span v-else>Reset Filters</span>
             </v-btn>
             <v-btn text v-if="totalUsers <= 100000" @click="exportUsers">Export</v-btn>
@@ -239,7 +239,8 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   import {getOrgFilters} from '@/services/orgService'
@@ -254,7 +255,7 @@
     data () {
       return {
         delay: 500,
-        IS_MOBILE,
+        constants,
         dialog: false,
         snackbar: {},
         users: [],
@@ -266,7 +267,7 @@
         descending: true,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 1000],
-          'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         options: {
           itemsPerPage: 100

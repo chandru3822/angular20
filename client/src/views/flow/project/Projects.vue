@@ -59,7 +59,8 @@
 
 <script>
 
-import {logError, getRequestWithParams, IS_MOBILE} from '@/helpers/helpers'
+import {logError, getRequestWithParams} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 
 export default {
@@ -78,7 +79,7 @@ export default {
       ],
       footerProps: {
         'items-per-page-options': [25, 50, 100],
-        'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
       projects:[],
       searchQuery: '',

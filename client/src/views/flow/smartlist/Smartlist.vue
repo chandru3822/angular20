@@ -35,11 +35,11 @@
             @click="smartlist.id ? updateSmartlist() : addSmartlist()"
           >
             <v-icon>save</v-icon>
-            <span v-if="!IS_MOBILE">Save</span>
+            <span v-if="!constants.IS_MOBILE">Save</span>
           </v-btn>
 <!--          <v-btn text to="/smartlist/null" color="primary">-->
 <!--            <v-icon>cancel</v-icon>-->
-<!--            <span v-if="!IS_MOBILE">Cancel</span>-->
+<!--            <span v-if="!constants.IS_MOBILE">Cancel</span>-->
 <!--          </v-btn>-->
         </v-toolbar-items>
       </v-toolbar>
@@ -93,7 +93,7 @@
             @click="showNewFieldForm = true"
           >
             <v-icon>add</v-icon>
-            <template v-if="!IS_MOBILE">Add Field</template>
+            <template v-if="!constants.IS_MOBILE">Add Field</template>
           </v-btn>
 
           <v-btn
@@ -144,7 +144,7 @@
             @click="addNewField"
           >
             <v-icon>save</v-icon>
-            <span v-if="!IS_MOBILE">Save</span>
+            <span v-if="!constants.IS_MOBILE">Save</span>
           </v-btn>
         </v-col>
       </v-card>
@@ -278,7 +278,8 @@
 <script>
 
 import {AppMutations} from '@/stores/AppStore'
-import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar'
 import draggable from 'vuedraggable'
 import SmartlistRequirement from './SmartlistRequirement'
@@ -293,7 +294,7 @@ export default {
   },
   data () {
     return {
-      IS_MOBILE,
+      constants,
       snackbar: {},
       smartlist: {},
       companyObjectTypes: [],

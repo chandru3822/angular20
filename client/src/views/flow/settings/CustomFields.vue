@@ -3,8 +3,8 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat>
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
-          <v-spacer v-if="!IS_MOBILE"></v-spacer>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
+          <v-spacer v-if="!constants.IS_MOBILE"></v-spacer>
           <v-toolbar-items>
             <v-select
                 class="mt-4"
@@ -233,7 +233,8 @@
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
@@ -246,7 +247,7 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
         selectedFieldId: null,
         // this is used so the expanded row uses the full width...bug in vuetify
         // headers: Array(2).fill({}),

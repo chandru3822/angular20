@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-toolbar flat class="app-toolbar" v-if="!IS_MOBILE">
+        <v-toolbar flat class="app-toolbar" v-if="!constants.IS_MOBILE">
           <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
         </v-toolbar>
 <!--        <v-card flat style="background: aliceblue" class="text-center">-->
@@ -106,7 +106,8 @@ import { Actions } from '@/store'
 import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, EMAIL_RULES, BASIC_REQUIRED_RULE, STANDARD_IMAGES_ONLY, IS_MOBILE} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar.vue'
 
 export default {
@@ -117,16 +118,16 @@ export default {
   data () {
     return {
       loadComplete: false,
-      IS_MOBILE,
+      constants,
       addImage: false,
       snackbar: {},
       // timeValue: '2014-06-01T12:00:00Z',
       // timeValue: moment.utc().format('YYYY-MM-DD HH:mm Z'),
       timeValue: moment.utc().format('YYYY-MM-DDTHH:mm:ssZ'),
       user: this.$store.state.user.details,
-      requiredRules: BASIC_REQUIRED_RULE,
-      emailRules: EMAIL_RULES,
-      acceptedFileTypes: STANDARD_IMAGES_ONLY,
+      requiredRules: constants.BASIC_REQUIRED_RULE,
+      emailRules: constants.EMAIL_RULES,
+      acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
       savingUserImage: false,
       attachmentTypeId: 9,
       userId: this.$store.state.user.details.id,
