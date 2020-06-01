@@ -11,10 +11,12 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.ImmutableMap;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +26,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
@@ -161,6 +166,31 @@ public class ProjectService {
 
   public List<Owner> getOwners() {
     return sqlCache.query("project.getOwners", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), Owner.class);
+  }
+
+  public String generateReport(String query) {
+    User user = securityService.getCurrentUser();
+    List<Map<String, Object>> projects = sqlCache.query("project.generateReport", Map.of("companyId", user.getCompanyId(), "query", query), new ColumnMapRowMapper());
+
+    //write CSV
+    CsvSchema.Builder builder = CsvSchema.builder();
+    builder.addColumn("ID", CsvSchema.ColumnType.NUMBER_OR_STRING);
+    builder.addColumn("Name", CsvSchema.ColumnType.NUMBER_OR_STRING);
+    builder.addColumn("Process", CsvSchema.ColumnType.NUMBER_OR_STRING);
+    builder.addColumn("Status", CsvSchema.ColumnType.NUMBER_OR_STRING);
+    builder.addColumn("Date Created", CsvSchema.ColumnType.NUMBER_OR_STRING);
+
+    CsvSchema schema = builder.build().withHeader();
+    ObjectWriter w = new CsvMapper().writer(schema);
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+    try (SequenceWriter toBuffer = w.writeValues(buffer)) {
+      toBuffer.writeAll(projects);
+      toBuffer.flush();
+      return buffer.toString(StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      return null;
+    }
   }
 
   private static class ProjectMapper<T> extends BeanPropertyRowMapper<T> {
