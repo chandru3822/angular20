@@ -91,6 +91,7 @@ import Snackbar from '@/components/Snackbar.vue'
 import Vue2Filters from 'vue2-filters'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+const { VUE_APP_ENV } = process.env
 
 export default {
   name: 'Settings',
@@ -134,7 +135,7 @@ export default {
       }, {
         path: '/settings/availability',
         title: 'Availability',
-        show: true
+        show: VUE_APP_ENV === 'local' // turning this off in uat because i dont want them adding stuff while i am deving
       }, {
         path: '/settings/positions',
         title: 'Positions',
