@@ -158,7 +158,35 @@ public class SmartlistService {
     return sqlCache.query("smartlist.getRequirements", Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
   }
 
-  public String generate(Long smartlistId) {
+  public List<Smartlist> getSharedByType(Long objectTypeId) {
+      User user = securityService.getCurrentUser();
+      return sqlCache.query("project.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId), Smartlist.class);
+  }
+
+  public SmartlistResult getSmartlistResults(Long smartlistId) {
+      final String query = buildSql(smartlistId);
+      List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAssignedFields", Map.of("smartlistId", smartlistId), SmartlistFieldAssignment.class);
+      List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
+
+      return new SmartlistResult(fields, results);
+  }
+
+  public String getCsv(Long smartlistId) {
+      final String query = buildSql(smartlistId);
+      List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
+      List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAssignedFields", Map.of("smartlistId", smartlistId), SmartlistFieldAssignment.class);
+      ArrayList<String> dateFields = new ArrayList<>();
+
+      for(SmartlistFieldAssignment field : fields) {
+         if (field.getDataTypeId() == 1) {
+             dateFields.add(field.getName());
+         }
+  }
+
+      return writeCsv(results, fields, dateFields);
+  }
+
+  public String buildSql(Long smartlistId) {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("smartlistId", smartlistId);
@@ -178,13 +206,10 @@ public class SmartlistService {
     // - value 3: hasListValue (from company_data_type)
     HashMap<Long, List<Object>> joinObjectTypes = new HashMap<>();
 
-    ArrayList<String> dateFields = new ArrayList<>();
     StringBuilder query = new StringBuilder("select");
-
 
     for (SmartlistFieldAssignment f : fields) {
 
-      final Long fieldObjectTypeId = f.getObjectTypeId();
       final boolean checkCfgaId = f.getCustomFieldGroupAssignmentId() != null && !joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId());
 
       if (checkCfgaId) {
@@ -211,7 +236,6 @@ public class SmartlistService {
 
       if (f.getDataTypeId() == 1) {
         query.append(String.format(" date(%s) as \"%s\",", location, f.getName()));
-        dateFields.add(f.getName());
       } else {
         query.append(String.format(" %s as \"%s\",", location, f.getName()));
       }
@@ -639,16 +663,13 @@ public class SmartlistService {
     }
 
     // remvoe the last "and "
-    query = query.delete(query.length() - 4, query.length());
+    query = query.delete(query.length() - 5, query.length());
 
     query.append(";");
 
     log.info(query.toString());
 
-    //@TODO: wrap in try/catch and gracefully handle failed queries
-    List<Map<String, Object>> results = sqlCache.queryBySql(query.toString(), null, new ColumnMapRowMapper());
-
-    return writeCsv(results, fields, dateFields);
+    return query.toString();
   }
 
   private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, ArrayList<String> dateFields) {

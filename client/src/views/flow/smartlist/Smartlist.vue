@@ -546,7 +546,7 @@ export default {
     async runReport () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/generate`)
+        const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         });
