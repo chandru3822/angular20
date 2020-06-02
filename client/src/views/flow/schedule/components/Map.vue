@@ -13,7 +13,7 @@
 <script>
   import Mapbox from 'mapbox-gl'
   import {MglMap, MglMarker, MglNavigationControl} from 'vue-mapbox'
-  import {MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
 
 
   export default {
@@ -44,8 +44,8 @@
         //center of the USA
         defaultCenter: [-98.5795, 39.8283],
         map: {
-          accessToken: MAPBOX_ACCESS_TOKEN,
-          style: MAPBOX_STYLE
+          accessToken: constants.MAPBOX_ACCESS_TOKEN,
+          style: constants.MAPBOX_STYLE
         }
       }
     },

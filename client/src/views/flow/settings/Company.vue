@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-toolbar flat class="app-toolbar" v-if="!IS_MOBILE">
+        <v-toolbar flat class="app-toolbar" v-if="!constants.IS_MOBILE">
           <v-toolbar-title class="app-title">Company Settings</v-toolbar-title>
         </v-toolbar>
       </v-col>
@@ -81,7 +81,8 @@ import { Actions } from '@/store'
 import { UserMutations } from '@/stores/UserStore'
 import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, EMAIL_RULES, BASIC_REQUIRED_RULE, STANDARD_IMAGES_ONLY, IS_MOBILE} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar.vue'
 
 export default {
@@ -92,13 +93,13 @@ export default {
   data () {
     return {
       loadComplete: false,
-      IS_MOBILE,
+      constants,
       addImage: false,
       snackbar: {},
       company: {},
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       companyId: this.$store.state.user.details.companyId,
-      acceptedFileTypes: STANDARD_IMAGES_ONLY,
+      acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
       savingCompanyLogo: false,
       //todo: 29 = company logo - do this on backend?
       attachmentTypeId: 29,

@@ -6,7 +6,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]">
-              <v-icon v-if="IS_MOBILE">add</v-icon>
+              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
@@ -130,7 +130,8 @@
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
 
   export default {
     name: 'WorkQueueCategories',
@@ -141,7 +142,7 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
         colorOptions: {
           canvasHeight: 75,
           width: 200,

@@ -3,8 +3,8 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat>
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
-          <v-spacer v-if="!IS_MOBILE"></v-spacer>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
+          <v-spacer v-if="!constants.IS_MOBILE"></v-spacer>
           <v-toolbar-items>
             <v-select
                 class="mt-4"
@@ -139,7 +139,7 @@
 
                     </div>
 
-                    <v-select v-else-if="item.companyDataType && item.companyDataType.systemList"
+                    <v-select v-if="item.companyDataType && item.companyDataType.systemList"
                               v-model="item.companySystemListId"
                               :items="systemLists"
                               :disabled="!item.custom"
@@ -150,7 +150,7 @@
                               @change="getSystemListOptions(item.companySystemListId)"
                     ></v-select>
 
-                    <v-select v-else-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
+                    <v-select v-if="item.companySystemListId && systemLists.find(sl => sl.companySystemListId === item.companySystemListId)  && systemLists.find(sl => sl.id === item.companySystemListId).hasSubOptions"
                               v-model="item.systemListOptionIds"
                               :items="systemListOptions"
                               multiple
@@ -160,7 +160,7 @@
                     ></v-select>
 
                     <v-col class="options-container"
-                            v-else-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
+                            v-if="item.companyDataType && item.companyDataType.hasListValues && !item.companyDataType.systemList">
                       <span>Selectable Options</span>
                       <draggable v-model="item.listOfValues"
                                  group="listOfValues" @start="drag=true" @end="drag=false">
@@ -233,7 +233,8 @@
   import orderBy from 'lodash.orderby'
   import draggable from 'vuedraggable'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import {getRequestWithParams} from "../../../helpers/helpers";
 
   export default {
@@ -246,7 +247,7 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
         selectedFieldId: null,
         // this is used so the expanded row uses the full width...bug in vuetify
         // headers: Array(2).fill({}),

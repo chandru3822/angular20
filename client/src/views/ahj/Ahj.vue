@@ -14,7 +14,7 @@
         <v-toolbar-items>
           <v-btn text @click="addItem" color="primary">
             <v-icon>add</v-icon>
-            <span v-if="!IS_MOBILE">Add New</span>
+            <span v-if="!constants.IS_MOBILE">Add New</span>
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
@@ -63,7 +63,7 @@
             <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
             <td class="text-left">{{ item.state ? item.state : '' }}</td>
             <td class="text-left">
-              <router-link v-if="IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
+              <router-link v-if="constants.IS_MOBILE" :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Details</router-link>
               <span v-else>
                 <router-link :to="'ahj/' + item.id + '/permit'" class="mr-3 ahj-link">Permit</router-link>
                 <router-link :to="'ahj/' + item.id + '/inspection'" class="mr-3 ahj-link">Inspection</router-link>
@@ -145,7 +145,8 @@
 <script>
   import cloneDeep from 'lodash.clonedeep'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
+  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
 
   const FILTER_DEFAULTS = {
@@ -161,7 +162,7 @@
     },
     data: () => ({
       snackbar: {},
-      IS_MOBILE,
+      constants,
       tabs: [
         {
           label: 'AHJ',
@@ -178,7 +179,7 @@
         { text: 'Name', value: 'name', show: true },
         { text: 'Metro Area', value: 'metroArea', show: true },
         { text: 'State', value: 'state', show: true },
-        { text: null, value: null, sortable: false, show: true, width: IS_MOBILE ? 135 : 300 }
+        { text: null, value: null, sortable: false, show: true, width: constants.IS_MOBILE ? 135 : 300 }
       ],
       ahjs: [],
       editedItem: {

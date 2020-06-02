@@ -401,7 +401,7 @@
   import $ from 'jquery'
   import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getRequest, getRequestWithParams, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
+  import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
 
   export default {
@@ -410,7 +410,6 @@
       Snackbar
     },
     data: () => ({
-      IS_MOBILE,
       snackbar: {},
       milestoneDialog: false,
       currentUserId: null,

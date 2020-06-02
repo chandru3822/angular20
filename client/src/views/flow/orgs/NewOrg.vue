@@ -54,7 +54,8 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, BASIC_REQUIRED_RULE, EMAIL_RULES, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
 
@@ -74,7 +75,7 @@
         parents: [],
         customFieldGroups: [],
         parentId: this.$store.state.user.details.parentCompanyId,
-        requiredRules: BASIC_REQUIRED_RULE,
+        requiredRules: constants.BASIC_REQUIRED_RULE,
         companyId: this.$store.state.user.details.companyId,
       }
     },

@@ -35,11 +35,11 @@
             @click="smartlist.id ? updateSmartlist() : addSmartlist()"
           >
             <v-icon>save</v-icon>
-            <span v-if="!IS_MOBILE">Save</span>
+            <span v-if="!constants.IS_MOBILE">Save</span>
           </v-btn>
 <!--          <v-btn text to="/smartlist/null" color="primary">-->
 <!--            <v-icon>cancel</v-icon>-->
-<!--            <span v-if="!IS_MOBILE">Cancel</span>-->
+<!--            <span v-if="!constants.IS_MOBILE">Cancel</span>-->
 <!--          </v-btn>-->
         </v-toolbar-items>
       </v-toolbar>
@@ -93,7 +93,7 @@
             @click="showNewFieldForm = true"
           >
             <v-icon>add</v-icon>
-            <template v-if="!IS_MOBILE">Add Field</template>
+            <template v-if="!constants.IS_MOBILE">Add Field</template>
           </v-btn>
 
           <v-btn
@@ -144,7 +144,7 @@
             @click="addNewField"
           >
             <v-icon>save</v-icon>
-            <span v-if="!IS_MOBILE">Save</span>
+            <span v-if="!constants.IS_MOBILE">Save</span>
           </v-btn>
         </v-col>
       </v-card>
@@ -208,66 +208,68 @@
       @form-reset="resetRequirementForm = false"
     />
 
-    <v-col class="text-left">
-      <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>Logic</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn v-if="logicUpdated"
-                 text
-                 @click="restoreLogic"
-          >
-            <v-icon>restore</v-icon>
-            Restore
-          </v-btn>
-          <v-btn v-if="logic.length > 0"
-                 text
-                 @click="clearLogic"
-          >
-            <v-icon>clear</v-icon>
-            Clear All
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-      <v-card flat class="text-left" color="transparent">
-        <v-btn small class="ml-1 mr-1 mt-1"
-               v-for="(l, index) in logic"
-               :key="index"
-               @click="removeLogic(index)">
-          {{l.smartlistRequirementId ? l.displayOrder : l.operationType}}
-        </v-btn>
-      </v-card>
-      <v-toolbar flat dense color="transparent">
-        <v-toolbar-title>Available Operations</v-toolbar-title>
-      </v-toolbar>
-      <v-card flat class="text-left" color="transparent">
-        <v-btn small class="ml-1 mr-1 mt-1"
-               v-for="(o, index) in operations"
-               :key="index"
-               @click="addOperationToLogic(o)">
-          {{o.operationType}}
-        </v-btn>
-      </v-card>
-      <v-toolbar flat dense color="transparent">
-        <v-toolbar-title>Requirements</v-toolbar-title>
-      </v-toolbar>
-      <v-card flat class="text-left mb-4" color="transparent">
-        <v-btn small
-               class="ml-1 mr-1 mt-1"
-               v-for="r in requirements"
-               :key="r.id"
-               @click="addRequirementToLogic(r)">
-          {{r.displayOrder}}
-        </v-btn>
-      </v-card>
-      <v-btn class="mt-4"
-             :disabled="!logicUpdated"
-             @click="updateLogic"
-      >
-        <v-icon class="mr-2">save</v-icon>
-        Save Logic Changes
-      </v-btn>
-    </v-col>
+
+<!--    ***********       smartlist logic is on hold until Smartlist v2        ********************************  -->
+<!--    <v-col class="text-left">-->
+<!--      <v-toolbar color="transparent" class="elevation-0">-->
+<!--        <v-toolbar-title>Logic</v-toolbar-title>-->
+<!--        <v-spacer></v-spacer>-->
+<!--        <v-toolbar-items>-->
+<!--          <v-btn v-if="logicUpdated"-->
+<!--                 text-->
+<!--                 @click="restoreLogic"-->
+<!--          >-->
+<!--            <v-icon>restore</v-icon>-->
+<!--            Restore-->
+<!--          </v-btn>-->
+<!--          <v-btn v-if="logic.length > 0"-->
+<!--                 text-->
+<!--                 @click="clearLogic"-->
+<!--          >-->
+<!--            <v-icon>clear</v-icon>-->
+<!--            Clear All-->
+<!--          </v-btn>-->
+<!--        </v-toolbar-items>-->
+<!--      </v-toolbar>-->
+<!--      <v-card flat class="text-left" color="transparent">-->
+<!--        <v-btn small class="ml-1 mr-1 mt-1"-->
+<!--               v-for="(l, index) in logic"-->
+<!--               :key="index"-->
+<!--               @click="removeLogic(index)">-->
+<!--          {{l.smartlistRequirementId ? l.displayOrder : l.operationType}}-->
+<!--        </v-btn>-->
+<!--      </v-card>-->
+<!--      <v-toolbar flat dense color="transparent">-->
+<!--        <v-toolbar-title>Available Operations</v-toolbar-title>-->
+<!--      </v-toolbar>-->
+<!--      <v-card flat class="text-left" color="transparent">-->
+<!--        <v-btn small class="ml-1 mr-1 mt-1"-->
+<!--               v-for="(o, index) in operations"-->
+<!--               :key="index"-->
+<!--               @click="addOperationToLogic(o)">-->
+<!--          {{o.operationType}}-->
+<!--        </v-btn>-->
+<!--      </v-card>-->
+<!--      <v-toolbar flat dense color="transparent">-->
+<!--        <v-toolbar-title>Requirements</v-toolbar-title>-->
+<!--      </v-toolbar>-->
+<!--      <v-card flat class="text-left mb-4" color="transparent">-->
+<!--        <v-btn small-->
+<!--               class="ml-1 mr-1 mt-1"-->
+<!--               v-for="r in requirements"-->
+<!--               :key="r.id"-->
+<!--               @click="addRequirementToLogic(r)">-->
+<!--          {{r.displayOrder}}-->
+<!--        </v-btn>-->
+<!--      </v-card>-->
+<!--      <v-btn class="mt-4"-->
+<!--             :disabled="!logicUpdated"-->
+<!--             @click="updateLogic"-->
+<!--      >-->
+<!--        <v-icon class="mr-2">save</v-icon>-->
+<!--        Save Logic Changes-->
+<!--      </v-btn>-->
+<!--    </v-col>-->
   </v-row>
   <Snackbar :snackbar="snackbar" />
 </v-container>
@@ -276,7 +278,8 @@
 <script>
 
 import {AppMutations} from '@/stores/AppStore'
-import {IS_MOBILE, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar'
 import draggable from 'vuedraggable'
 import SmartlistRequirement from './SmartlistRequirement'
@@ -291,7 +294,7 @@ export default {
   },
   data () {
     return {
-      IS_MOBILE,
+      constants,
       snackbar: {},
       smartlist: {},
       companyObjectTypes: [],
@@ -438,12 +441,11 @@ export default {
         const maxNumber = this.requirements.map(r => r.displayOrder).reduce((max, cur) => Math.max(max, cur), 0)
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
+          ...requirement,
           ...requirement.selectedField,
           smartlistId: this.smartlist.id,
-          operatorTypeId: requirement.operatorTypeId,
-          dataTypeRequirementId: requirement.dataTypeRequirementId,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
-          displayOrder: maxNumber + 1,
+          displayOrder: maxNumber + 1
         })
         this.requirements.push(data)
         this.resetRequirementForm = true
@@ -541,37 +543,9 @@ export default {
       this.showNewFieldForm = false
       this.newField = {}
     },
-    clearLogic () {
-      this.logic = []
-      this.logicUpdated = true
-    },
-    restoreLogic () {
-      this.logic = [...this.fetchedLogic]
-      this.logicUpdated = false
-    },
-    removeLogic (index) {
-      this.logic.splice(index, 1)
-      this.logicUpdated = true
-    },
-    addOperationToLogic (operation) {
-      this.logic.push({
-        operationType: operation.operationType,
-        operationTypeId: operation.id,
-        smartlistId: this.smartlist.id
-      })
-      this.logicUpdated = true
-    },
-    addRequirementToLogic (requirement) {
-      this.logic.push({
-        displayOrder: requirement.displayOrder,
-        smartlistRequirementId: requirement.id,
-        smartlistId: this.smartlist.id
-      })
-      this.logicUpdated = true
-    },
     async runReport () {
-      console.log('running report')
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/generate`)
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
@@ -579,8 +553,39 @@ export default {
         saveAs(blob, "smartlist.csv");
       } catch (e) {
         logError(e)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
+    // **************************** smartlist logic on hold until smartlist v2 ***************************
+    // clearLogic () {
+    //   this.logic = []
+    //   this.logicUpdated = true
+    // },
+    // restoreLogic () {
+    //   this.logic = [...this.fetchedLogic]
+    //   this.logicUpdated = false
+    // },
+    // removeLogic (index) {
+    //   this.logic.splice(index, 1)
+    //   this.logicUpdated = true
+    // },
+    // addOperationToLogic (operation) {
+    //   this.logic.push({
+    //     operationType: operation.operationType,
+    //     operationTypeId: operation.id,
+    //     smartlistId: this.smartlist.id
+    //   })
+    //   this.logicUpdated = true
+    // },
+    // addRequirementToLogic (requirement) {
+    //   this.logic.push({
+    //     displayOrder: requirement.displayOrder,
+    //     smartlistRequirementId: requirement.id,
+    //     smartlistId: this.smartlist.id
+    //   })
+    //   this.logicUpdated = true
+    // }
   }
 }
 </script>

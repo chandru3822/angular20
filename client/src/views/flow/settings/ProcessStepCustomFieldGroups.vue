@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <v-btn text v-if="!createNew" @click="createNew = !createNew">
               <v-icon>add</v-icon>
-              <span v-if="!IS_MOBILE">Create Group</span>
+              <span v-if="!constants.IS_MOBILE">Create Group</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -282,7 +282,8 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import {getEventTypes} from '@/services/scheduleService'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
@@ -297,7 +298,7 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
         newGroup: {
           schedulingFields: [],
           schedulable: false

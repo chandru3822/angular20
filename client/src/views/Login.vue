@@ -27,7 +27,7 @@
 
 <script>
   import { UserActions, UserMutations } from '@/stores/UserStore'
-  import { VUE_BASE_API } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import axios from 'axios'
 
   export default {
@@ -49,7 +49,7 @@
               username: this.form.email,
               password: this.form.password
             }
-            const {data} = await axios.post(`${VUE_BASE_API}/auth/login`, params)
+            const {data} = await axios.post(`${constants.VUE_APP_BASE_API}/auth/login`, params)
             const {token, details} = data
             if (token) {
               this.$store.commit(UserMutations.SET_JWT, token)

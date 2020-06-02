@@ -201,7 +201,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getStates} from '@/services/stateService'
 
   export default {
@@ -254,7 +254,6 @@
         monitors: [{ value: true, text: "Yes" }, { value: false, text: "No" }],
         adders: [],
         originalAdders: [],
-        IS_MOBILE,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         isModify: false,

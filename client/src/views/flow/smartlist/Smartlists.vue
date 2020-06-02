@@ -8,7 +8,7 @@
         <v-toolbar-items>
           <v-btn text to="/smartlist/null" color="primary">
             <v-icon>add</v-icon>
-            <span v-if="!IS_MOBILE">Add Smartlist</span>
+            <span v-if="!constants.IS_MOBILE">Add Smartlist</span>
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
@@ -50,7 +50,8 @@
 
 <script>
 
-import {getRequest, getSnackbar, logError, IS_MOBILE} from '@/helpers/helpers'
+import {getRequest, getSnackbar, logError} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar.vue'
 
 export default {
@@ -60,7 +61,7 @@ export default {
   },
   data () {
     return {
-      IS_MOBILE,
+      constants,
       isSmartlistsLoading: false,
       snackbar: {},
       smartlists: [],

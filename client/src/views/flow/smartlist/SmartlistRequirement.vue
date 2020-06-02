@@ -10,7 +10,7 @@
         text
       >
         <v-icon>add</v-icon>
-        <template v-if="!IS_MOBILE">Add Requirement</template>
+        <template v-if="!constants.IS_MOBILE">Add Requirement</template>
       </v-btn>
 
       <v-btn
@@ -64,8 +64,38 @@
         @input="resetNewOperatorType"
       />
 
-      <v-select
+<!--      @TODO humes: on change, reset any value that follows -->
+      <v-switch
         v-if="newRequirement.operatorTypeId !== null"
+        v-model="newRequirement.isCustomValue"
+        class="mx-2"
+        label="Custom"
+      />
+
+<!--      if field is a single-select item -->
+      <v-select
+        v-if="newRequirement.operatorTypeId !== null && newRequirement.isCustomValue && isListField && !newRequirement.selectedField.allowMultiple"
+        v-model="newRequirement.listOfValueId"
+        :items="newRequirement.selectedField.listOfValues"
+        label="Available Values (list of value id)"
+        item-text="name"
+        item-value="id"
+      />
+
+<!--      if field is a multi-select list -->
+      <v-select
+        v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue && newRequirement.selectedField.listOfValueId !== null && newRequirement.selectedField.allowMultiple"
+        v-model="newRequirement.listOfValueIds"
+        :items="newRequirement.selectedField.listOfValues"
+        label="Available Values"
+        multiple
+        item-text="name"
+        item-value="id"
+      />
+
+<!--      if field doesn't have any custom values, display the data type requirements -->
+      <v-select
+        v-else-if="newRequirement.operatorTypeId !== null && !newRequirement.isCustomValue"
         v-model="newRequirement.dataTypeRequirementId"
         label="Available Values"
         :items="dataTypeRequirements"
@@ -73,6 +103,15 @@
         item-value="id"
         @input="resetNewDataTypeRequirement"
       />
+
+<!--      if nothing else sticks, then it's a regular text input -->
+<!--      @TODO humes: check for date/time here and give a date picker -->
+      <v-text-field
+          v-else-if="newRequirement.operatorTypeId && newRequirement.isCustomValue"
+          v-model="newRequirement.requirementValue"
+          placeholder="Enter a value"
+          label="Value">
+      </v-text-field>
 
       <v-text-field
         v-if="newRequirement.dataTypeRequirementId && dataTypeRequirements.find(r => r.id === newRequirement.dataTypeRequirementId).secondaryRequirement"
@@ -88,7 +127,7 @@
         @click="addNewRequirement"
       >
         <v-icon>save</v-icon>
-        <template v-if="!IS_MOBILE">Save</template>
+        <template v-if="!constants.IS_MOBILE">Save</template>
       </v-btn>
     </v-col>
   </v-card>
@@ -96,7 +135,7 @@
     :headers="headers"
     :items="requirements"
     hide-default-footer
-    :expanded.sync="expandedRequirement"
+    :expanded.sync="expandedRequirementArray"
     single-expand
   >
     <template #no-data>
@@ -119,19 +158,13 @@
           <template v-else-if="requirement.dataTypeRequirementId">
             {{requirement.dataTypeRequirement ? requirement.dataTypeRequirement.dataTypeValue : 'unknown'}} {{requirement.secondaryRequirementValue}}
           </template>
-<!--              <span v-else-if="item.listOfValueId || item.customFieldSqlKey || item.companySystemListId">-->
-<!--&lt;!&ndash;                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}&ndash;&gt;-->
-<!--                    {{ getListValueName(item) }}-->
-<!--                  </span>-->
-<!--              <span v-else-if="item.listOfValues">-->
-<!--                    &lt;!&ndash; todo: show the selected values here &ndash;&gt;-->
-<!--                    {{ item.listOfValues.map(v => ' ' + v.name).toString() }}-->
-<!--                  </span>-->
+          <template v-else-if="requirement.listOfValueId || requirement.customFieldSqlKey || requirement.companySystemListId">{{getListValueName(requirement)}}</template>
+          <template v-else-if="requirement.listOfValues">{{requirement.listOfValues.map(v => ` ${v.name}`).toString()}}</template>
         </td>
         <td class="action-cell">
 <!--          Vuetify keeps its own copy of requirements, so we can't just send `requirement` to functions for form reset 💩 -->
           <v-icon
-            v-if="expandedRequirement.findIndex(r => r.id === requirement.id) === -1"
+            v-if="expandedRequirement && expandedRequirement.id !== requirement.id"
             class="action-icon"
             @click="[cancelEditRequirement(), editRequirement(requirements.find(r => r.id === requirement.id))]"
           >
@@ -139,7 +172,7 @@
           </v-icon>
 
           <v-btn
-            v-if="expandedRequirement.findIndex(r => r.id === requirement.id) !== -1"
+            v-else
             small
             text
             @click="cancelEditRequirement"
@@ -161,59 +194,101 @@
       <tr>
         <td :colspan="headers.length" class="text-left expanded-row">
           <v-select
-            v-model="expandedRequirement[0]"
-            :items="[expandedRequirement[0]]"
+            v-model="expandedRequirement"
+            :items="[expandedRequirement]"
             label="Object Type"
             item-text="objectType"
             disabled
           />
 
           <v-select
-            v-if="expandedRequirement[0].objectTypeId !== null && expandedRequirement[0].objectTypeId === 4"
-            v-model="expandedRequirement[0]"
-            :items="[expandedRequirement[0]]"
+            v-if="expandedRequirement.objectTypeId !== null && expandedRequirement.objectTypeId === 4"
+            v-model="expandedRequirement"
+            :items="[expandedRequirement]"
             label="Process Step"
             item-text="processStepName"
             disabled
           />
 
           <v-select
-            v-model="expandedRequirement[0]"
-            :items="[expandedRequirement[0]]"
+            v-model="expandedRequirement"
+            :items="[expandedRequirement]"
             label="Field"
             item-text="name"
             disabled
           />
 
           <v-select
-            v-model="expandedRequirement[0].operatorTypeId"
+            v-model="expandedRequirement.operatorTypeId"
             label="Operator"
             :items="operators"
             item-text="operatorType"
             item-value="id"
           />
 
-          <v-select
-            v-model="expandedRequirement[0].dataTypeRequirementId"
-            label="Available Values"
-            :items="dataTypeRequirements"
-            item-text="dataTypeValue"
-            item-value="id"
+          <!--      @TODO humes: on change, reset any value that follows -->
+          <v-switch
+              v-if="expandedRequirement.operatorTypeId !== null"
+              v-model="expandedRequirement.isCustomValue"
+              class="mx-2"
+              label="Custom"
+              @change="resetInputValues(expandedRequirement)"
           />
 
+          <!--      if field is a single-select item -->
+          <v-select
+              v-if="expandedRequirement.operatorTypeId !== null && expandedRequirement.isCustomValue && isExpandedListField && expandedRequirement.listOfValueId"
+              v-model="expandedRequirement.listOfValueId"
+              :items="expandedRequirement.availableListOfValues"
+              label="Available Values"
+              item-text="name"
+              item-value="id"
+          />
+
+          <!--      if field is a multi-select list -->
+          <v-select
+              v-else-if="expandedRequirement.operatorTypeId && expandedRequirement.isCustomValue && isExpandedListField && expandedRequirement.listOfValueIds"
+              v-model="expandedRequirement.listOfValueIds"
+              :items="expandedRequirement.availableListOfValues"
+              label="Available Values"
+              multiple
+              item-text="name"
+              item-value="id"
+          />
+
+          <!--      if field doesn't have any custom values, display the data type requirements -->
+          <v-select
+              v-else-if="expandedRequirement.operatorTypeId !== null && !expandedRequirement.isCustomValue"
+              v-model="expandedRequirement.dataTypeRequirementId"
+              label="Available Values"
+              :items="dataTypeRequirements"
+              item-text="dataTypeValue"
+              item-value="id"
+              @input="resetNewDataTypeRequirement"
+          />
+
+          <!--      if nothing else sticks, then it's a regular text input -->
+          <!--      @TODO humes: check for date/time here and give a date picker -->
           <v-text-field
-            v-if="shouldShowEditFormValueInput"
-            v-model="expandedRequirement[0].secondaryRequirementValue"
-            label="Value"
-            placeholder="Enter a value"
+              v-else-if="expandedRequirement.operatorTypeId && expandedRequirement.isCustomValue"
+              v-model="expandedRequirement.requirementValue"
+              placeholder="Enter a value"
+              label="Value">
+          </v-text-field>
+
+          <v-text-field
+              v-if="shouldShowEditFormValueInput"
+              v-model="expandedRequirement.secondaryRequirementValue"
+              label="Value"
+              placeholder="Enter a value"
           />
 
           <v-btn
             text
-            @click="updateRequirement(expandedRequirement[0])"
+            @click="updateRequirement(expandedRequirement)"
           >
             <v-icon>save</v-icon>
-            <template v-if="!IS_MOBILE">Save</template>
+            <template v-if="!constants.IS_MOBILE">Save</template>
           </v-btn>
         </td>
       </tr>
@@ -225,7 +300,8 @@
 
 <script>
 
-import {IS_MOBILE, getRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar'
 
 export default {
@@ -249,7 +325,7 @@ export default {
   },
   data () {
     return {
-      IS_MOBILE,
+      constants,
       snackbar: {},
       showNewRequirementForm: false,
       newRequirement: {
@@ -258,7 +334,13 @@ export default {
         processStepId: null,
         operatorTypeId: null,
         dataTypeRequirementId: null,
-        secondaryRequirementValue: null
+        secondaryRequirement: null,
+        secondaryRequirementValue: null,
+        isCustomValue: null,
+        allowMultiple: null,
+        customFieldSqlKey: null,
+        companySystemListId: null,
+        availableListOfValues: []
       },
       fetchedAvailableFields: [],
       availableFields: [],
@@ -274,8 +356,20 @@ export default {
         {text: 'Value', value: 'requirementValue'},
         {text: null, value: 'actions'}
       ],
-      expandedRequirement: [],
-      originalExpandedRequirement: null
+      expandedRequirement: {
+        selectedField: null,
+        objectTypeId: null,
+        processStepId: null,
+        operatorTypeId: null,
+        dataTypeRequirementId: null,
+        secondaryRequirement: null,
+        secondaryRequirementValue: null,
+        isCustomValue: null,
+        allowMultiple: null,
+        customFieldSqlKey: null,
+        companySystemListId: null,
+        availableListOfValues: []
+      }
     }
   },
   updated () {
@@ -285,10 +379,25 @@ export default {
   },
   computed: {
     shouldDisableAddRequirementButton () {
-      return !this.newRequirement.dataTypeRequirementId && (!this.dataTypeRequirements.find(r => r.id === this.newRequirement.dataTypeRequirementId)?.secondaryRequirement || !this.newRequirement?.secondaryRequirementValue)
+      // @TODO humes: update this to account for new fields
+      return false
+      // return !this.newRequirement.dataTypeRequirementId && (!this.dataTypeRequirements.find(r => r.id === this.newRequirement.dataTypeRequirementId)?.secondaryRequirement || !this.newRequirement?.secondaryRequirementValue)
     },
     shouldShowEditFormValueInput () {
-      return this.expandedRequirement[0].dataTypeRequirement?.secondaryRequirement
+      return this.expandedRequirement.dataTypeRequirement?.secondaryRequirement
+    },
+    isListField () {
+      return this.newRequirement.selectedField.hasListValues || this.newRequirement.selectedField.customFieldSqlKey !== null || this.newRequirement.selectedField.companySystemListId !== null
+    },
+    isExpandedListField () {
+      return this.expandedRequirement.hasListValues || this.expandedRequirement.customFieldSqlKey !== null || this.expandedRequirement.companySystemListId !== null
+    },
+    expandedRequirementArray: {
+      get: function () {
+        return [this.expandedRequirement]
+      },
+      // Throw away the value vuetify gives back because we don't want to update the expanded row's main row when editing (only upon saving)
+      set: () => {}
     }
   },
   methods: {
@@ -330,21 +439,15 @@ export default {
     },
     updateRequirement (requirement) {
       this.$emit('update', requirement)
-      this.expandedRequirement = []
-      this.originalExpandedRequirement = null
+      this.expandedRequirement = {}
     },
     editRequirement (requirement) {
       this.getOperators(requirement.dataTypeId)
       this.getDataTypeRequirements(requirement.dataTypeId)
-      this.originalExpandedRequirement = {...requirement}
-      this.expandedRequirement = [requirement]
+      this.expandedRequirement = {...requirement}
     },
     cancelEditRequirement () {
-      if (this.originalExpandedRequirement) {
-        this.requirements[this.requirements.findIndex(r => r.id === this.originalExpandedRequirement.id)] = {...this.originalExpandedRequirement}
-        this.expandedRequirement = []
-        this.originalExpandedRequirement = null
-      }
+      this.expandedRequirement = {}
     },
     deleteRequirement (requirement) {
       this.$emit('delete', requirement)
@@ -399,6 +502,18 @@ export default {
         ...this.newRequirement,
         secondaryRequirementValue: null
       }
+    },
+    resetInputValues (requirement) {
+      requirement.listOfValueId = null
+      requirement.listOfValueIds = []
+      requirement.dataTypeRequirementId = null
+      requirement.requirementValue = null
+      requirement.secondaryRequirementValue = null
+    },
+    getListValueName(listItem) {
+      let idToUse = listItem.customSqlOptionId ? listItem.customSqlOptionId : listItem.systemListOptionId ? listItem.systemListOptionId : listItem.listOfValueId
+      let match = listItem.availableListOfValues.find(i => i.id === idToUse)
+      return match ? match.name : 'unknown'
     }
   }
 }

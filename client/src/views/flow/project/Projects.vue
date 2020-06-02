@@ -6,18 +6,22 @@
         <v-toolbar-title>Projects</v-toolbar-title>
       </v-toolbar>
       <v-toolbar class="white elevation-1 mt-3">
-        <v-row class="justify-space-between align-center">
-          <v-col cols="12" lg="6">
-            <v-text-field
-              class="mt-5"
-              prepend-inner-icon="search"
-              text
-              label="Search projects..."
-              v-model="searchQuery"
-              @input="searchProjects"
-            />
-          </v-col>
-        </v-row>
+        <v-text-field
+          class="mt-5"
+          prepend-inner-icon="search"
+          text
+          label="Search projects..."
+          v-model="searchQuery"
+          @input="searchProjects"
+        />
+        <v-spacer />
+        <v-btn
+            text
+            :disabled="isProjectsLoading && !totalProjects > 0"
+            @click="showConfirmDialog = true"
+        >
+          Export
+        </v-btn>
       </v-toolbar>
 
       <v-divider/>
@@ -54,13 +58,53 @@
       </v-data-table>
     </v-col>
   </v-row>
+
+  <v-dialog
+    v-model="showConfirmDialog"
+    width="500"
+  >
+    <v-card>
+      <v-card-title>
+        Export
+      </v-card-title>
+
+      <v-card-text>
+        You are attempting to export {{totalProjects | currency('', 0)}} results.
+        This can take 1-2 minutes.
+        We recommend that you cancel and filter the result set before exporting.
+      </v-card-text>
+
+      <v-divider></v-divider>
+
+      <v-card-actions>
+        <div class="flex-grow-1"></div>
+        <v-btn
+            color="grey"
+            text
+            @click="showConfirmDialog = false"
+        >
+          Cancel
+        </v-btn>
+        <v-btn
+            color="primary"
+            text
+            @click="[showConfirmDialog = false, generateReport()]"
+        >
+          Continue Anyway
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </v-container>
 </template>
 
 <script>
 
-import {logError, getRequestWithParams, IS_MOBILE} from '@/helpers/helpers'
+import {logError, getRequestWithParams} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
+import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
+import saveAs from 'file-saver'
 
 export default {
   name: "Projects",
@@ -78,12 +122,13 @@ export default {
       ],
       footerProps: {
         'items-per-page-options': [25, 50, 100],
-        'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
       projects:[],
       searchQuery: '',
       totalProjects: 0,
       isProjectsLoading: false,
+      showConfirmDialog: false
     }
   },
   watch: {
@@ -115,8 +160,21 @@ export default {
     },
     searchProjects: debounce(function () {
       this.getProjects()
-    }, 500)
+    }, 500),
+    async generateReport () {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await getRequestWithParams(`/project/generate`, {params: {query: this.searchQuery}})
+        let report = new Blob([data], {type: constants.CSV_BLOB_TYPE})
+        saveAs(report, 'projects.csv')
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
   }
+
 }
 </script>
 
