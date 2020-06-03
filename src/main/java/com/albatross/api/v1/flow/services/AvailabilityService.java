@@ -85,6 +85,7 @@ public class AvailabilityService {
       id = ra.getId();
       params.put("id", id);
       params.put("modifiedById", user.getId());
+//      todo
       sqlCache.update("availability.updateSchedule", params);
     } else {
       params.put("createdById", user.getId());
@@ -132,6 +133,66 @@ public class AvailabilityService {
       sqlCache.update("availability.insertHours", params);
     }
 
+  }
+
+//  appointments
+  public List<ResourceAppointment> getResourceAppointments(Long userId, Long orgId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("orgId", orgId);
+    params.put("companyId", user.getCompanyId());
+
+    List<ResourceAppointment> results = sqlCache.query("availability.getAppointmentsForResource", params, ResourceAppointment.class);
+    return results;
+  }
+
+  public ResourceAppointment saveAppointment(ResourceAppointment ra) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("startTime", ra.getStartTime());
+    params.put("endTime", ra.getEndTime());
+    params.put("description", ra.getDescription());
+    params.put("allDay", ra.getAllDay() == null ? false : ra.getAllDay());
+    params.put("companyId", user.getCompanyId());
+    params.put("orgId", ra.getOrgId());
+    params.put("userId", ra.getUserId());
+
+    Long id = null;
+
+    if(null != ra.getId()) {
+      id = ra.getId();
+      params.put("id", id);
+      params.put("modifiedById", user.getId());
+      sqlCache.update("availability.updateAppointment", params);
+    } else {
+      params.put("createdById", user.getId());
+      id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
+    }
+
+    return getOneResourceAppointment(id);
+  }
+
+  public void deleteAppointment(Long id) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", user.getId());
+
+    sqlCache.update("availability.deleteAppointment", params);
+  }
+
+  public ResourceAppointment getOneResourceAppointment(Long id) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<ResourceAppointment> result = sqlCache.get("availability.getAppointment", params, ResourceAppointment.class);
+    return result.orElse(null);
   }
 
   public static class ResourceScheduleMapper<T> extends BeanPropertyRowMapper<T> {

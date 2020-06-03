@@ -67,7 +67,7 @@ export default {
     showDate: false,
     showTime: false,
     //i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
-    defaultTimeFormat: 'HH:mm:ss'
+    defaultTimeFormat: 'YYYY-MM-DD HH:mm:ss'
   }),
   created() {
     this.init()
@@ -75,7 +75,9 @@ export default {
   computed: {
     localTime: {
       get: function() {
-        return moment.utc(this.$props.value, (this.inputFormat ?? this.defaultTimeFormat)).tz(this.timezone).format('HH:mm')
+        return this.$props.value
+          ? moment.utc(this.$props.value, (this.inputFormat ?? this.defaultTimeFormat)).tz(this.timezone).format('HH:mm')
+          : moment().format('HH:mm')
       },
       set: function (date) {
         this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')

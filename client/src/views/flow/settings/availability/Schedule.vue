@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <v-btn v-if="!addNew" @click="setNew">
+        <v-btn v-if="!addNew" @click="setNew" class="mb-3">
           Add Schedule
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
@@ -106,7 +106,7 @@
           </div>
           <v-card-actions>
             <v-card-actions>
-              <v-btn color="secondary" @click="[newSchedule = [], addNew = false]">Cancel</v-btn>
+              <v-btn color="secondary" @click="[newSchedule = {}, addNew = false]">Cancel</v-btn>
               <v-btn color="primaryCustom"  @click="saveSchedule(newSchedule, true)" class="white--text"
                      :disabled="!newSchedule.startDate || !newSchedule.endDate">
                 Save

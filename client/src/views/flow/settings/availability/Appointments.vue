@@ -2,30 +2,150 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <v-btn v-if="!addNew" @click="addNew = !addNew">
+        <v-btn v-if="!addNew" @click="addNew = !addNew" class="mb-3">
           Add Appointment
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
           <v-card-title>Add Schedule</v-card-title>
+          <v-text-field
+            v-model="newAppt.description"
+            counter="50"
+            label="Description"
+          ></v-text-field>
           <DatetimePickerInput
-            v-model="newAppt.startDate"
+            v-model="newAppt.startTime"
             :timezone="this.timezone"
             :type="newAppt.allDay ? dateType : timestampType"
-            :format="'MMMM DD, YYYY'"
-            label="Start Time"
+            :format="newAppt.allDay ? dateFormat : timestampFormat"
+            :label="newAppt.allDay ? 'Start Date' : 'Start Time'"
           />
           <DatetimePickerInput
-            v-model="newAppt.endDate"
+            v-model="newAppt.endTime"
             :timezone="this.timezone"
             :type="newAppt.allDay ? dateType : timestampType"
-            :format="'MMMM DD, YYYY'"
-            label="End Time"
+            :format="newAppt.allDay ? dateFormat : timestampFormat"
+            :label="newAppt.allDay ? 'End Date' : 'End Time'"
           />
           <v-checkbox
             v-model="newAppt.allDay"
             label="All Day"
           ></v-checkbox>
+          <div v-if="saveError" class="error--text mt-3">
+            {{saveErrorMsg}}
+          </div>
+          <v-card-actions>
+            <v-card-actions>
+              <v-btn color="secondary" @click="[newAppt = {}, addNew = false]">Cancel</v-btn>
+              <v-btn color="primaryCustom"  @click="saveAppt(newAppt)" class="white--text"
+                     :disabled="!newAppt.startTime || !newAppt.endTime || !newAppt.description || newAppt.description.length > 50">
+                Save
+              </v-btn>
+            </v-card-actions>
+          </v-card-actions>
         </v-card>
+
+        <v-data-table
+          v-if="!addNew"
+          :headers="headers"
+          :items="filterAppointments()"
+          :fixed-header="true"
+          :items-per-page="-1"
+          single-expand
+          :expanded.sync="expanded"
+          hide-default-footer
+          disable-sort
+          class="elevation-1"
+        >
+          <template #no-data>
+            No available appointments
+          </template>
+
+          <template #no-results>
+            No available appointments
+          </template>
+
+          <template #expanded-item="{ headers, item: appt }">
+            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
+              <v-card flat color="transparent" class="px-3">
+                <v-text-field
+                  v-model="appt.description"
+                  counter="50"
+                  label="Description"
+                ></v-text-field>
+                <DatetimePickerInput
+                  v-model="appt.startTime"
+                  :timezone="timezone"
+                  :type="appt.allDay ? dateType : timestampType"
+                  :format="appt.allDay ? dateFormat : timestampFormat"
+                  :label="appt.allDay ? 'Start Date' : 'Start Time'"
+                />
+                <DatetimePickerInput
+                  v-model="appt.endTime"
+                  :timezone="timezone"
+                  :type="appt.allDay ? dateType : timestampType"
+                  :format="appt.allDay ? dateFormat : timestampFormat"
+                  :label="appt.allDay ? 'End Date' : 'End Time'"
+                />
+                <v-checkbox
+                  v-model="appt.allDay"
+                  label="All Day"
+                ></v-checkbox>
+
+                <div v-if="saveError" class="error--text mt-3">
+                  {{saveErrorMsg}}
+                </div>
+
+                <v-card-actions>
+                  <v-card-actions>
+                    <v-btn color="primaryCustom"  @click="saveAppt(appt)" class="white--text"
+                           :disabled="!appt.startTime || !appt.endTime || !appt.description || appt.description.length > 50">
+                      Save
+                    </v-btn>
+                  </v-card-actions>
+                </v-card-actions>
+              </v-card>
+            </td>
+          </template>
+
+          <template #item="{ item, index }">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.startTime | formatDate(item.allDay ? 'date' : 'timestamp')}} - {{item.endTime | formatDate(item.allDay ? 'date' : 'timestamp')}}</td>
+              <td class="text-left">{{item.description}}</td>
+              <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
+              <td class="text-left">
+                <v-btn small text @click="[expanded = [item], selectedIndex = index, saveError = false]"
+                       v-if="!expanded.includes(item)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn small text @click="expanded = []"
+                       v-if="expanded.includes(item)">cancel
+                </v-btn>
+                <v-dialog v-model="item.deleteConfirm" max-width="500px">
+                  <template #activator="{ on }">
+                    <v-btn v-on="on" small text>
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title>
+                      <span class="headline">Confirm</span>
+                    </v-card-title>
+                    <v-card-text>
+                      Are you sure you want to archive this appointment?<br>
+                      <strong>{{ item.startTime | formatDate(item.allDay ? 'date' : 'timestamp') }} - {{ item.endTime | formatDate(item.allDay ? 'date' : 'timestamp') }}</strong>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="secondaryButton" text @click="item.deleteConfirm = false">No</v-btn>
+                      <v-btn color="brRed" class="white--text"
+                             @click="deleteAppointment(item)">Yes</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -36,7 +156,8 @@
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+  import orderBy from "lodash.orderby"
 
   export default {
     name: 'Appointments',
@@ -48,17 +169,110 @@
       orgId: Number,
       userId: Number
     },
+    watch: {
+      'orgId': function () {
+        //without these if statements the appointments will get reloaded twice when switching between org and user
+        if(this.orgId != null) {
+          // reset the schedule when new org selected
+          this.appointments = []
+          this.getAppointments()
+        }
+      },
+      'userId': function () {
+        if(this.userId != null) {
+          // reset the appointments when new user selected
+          this.appointments = []
+          this.getAppointments()
+        }
+      }
+    },
     data() {
       return {
         snackbar: {},
         addNew: false,
+        expanded: [],
         newAppt: {},
+        appointments: [],
+        saveError: false,
+        saveErrorMsg: '',
         dateType: 'date',
+        dateFormat: 'MMMM DD, YYYY',
         timestampType: 'timestamp',
+        timestampFormat: 'MMMM DD, YYYY h:mm a',
         timezone: this.$store.state.user.details.timezone.value,
+        headers: [
+          { text: 'Appointments', value: 'appointment', show: true},
+          { text: 'Description', value: 'description', show: true},
+          { text: 'All Day', value: 'allDay', show: true},
+          { text: '', value: 'icons', show: true}
+        ],
       }
     },
-    methods: {}
+    created() {
+      this.getAppointments()
+    },
+    methods: {
+      async getAppointments() {
+        if(this.orgId || this.userId) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequestWithParams(`/availability/appointments`, { params: {
+                userId: this.userId,
+                orgId: this.orgId,
+              }})
+            this.appointments = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.snackbar = getSnackbar('ERROR', 'Error Loading Appointments')
+          }
+        }
+      },
+      async saveAppt(appt) {
+        if(appt.startTime >= appt.endTime) {
+          this.saveError = true
+          this.saveErrorMsg = '* Appointment End must be after Appointment Start'
+        } else {
+          try {
+            let params = {
+              orgId: this.orgId,
+              userId: this.userId,
+              ...appt
+            }
+            const {data} = await postRequest(`/availability/appointment`, params)
+            this.addNew = false
+            this.expanded = []
+            if(!appt.id) {
+              this.appointments.push(data)
+            }
+            this.appointments = orderBy(this.appointments, [s => s.startDate])
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Appointment')
+          }
+        }
+      },
+      filterAppointments () {
+        return this.appointments.filter(a => { return !a.archived})
+      },
+      async deleteAppointment(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          await deleteRequest(`/availability/appointment/${item.id}`)
+          item.archived = true
+          this.snackbar = getSnackbar('SUCCESS', 'Appointment Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error deleting appointment')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+    }
   }
 </script>
 
