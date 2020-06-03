@@ -1160,7 +1160,6 @@
             this.newRequirement.requirementValue = null
           } else if (this.newRequirement.customValue && this.selectedCustomField.companySystemListId && !this.selectedCustomField.allowMultiple) {
             //  if from a system list and not allow multiple use the selected value id,
-            console.log('here here here', this.selectedListValue)
             this.newRequirement.systemListOptionId = this.selectedListValue.id
 
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
@@ -1427,7 +1426,6 @@
         }
       },
       async saveFunctionToAction(action) {
-        console.log('save new child function')
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildFunctionToAction`, {
@@ -1448,7 +1446,6 @@
         }
       },
       async deleteChildFunctionFromAction(actionId, id) {
-        console.log('delete child function')
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
@@ -1461,7 +1458,6 @@
         }
       },
       async updateChildFunction(actionId, childFunction) {
-        console.log('update child function')
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildFunction`, childFunction)

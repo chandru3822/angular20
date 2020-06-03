@@ -179,7 +179,7 @@
         }
       },
       async savePosition (item) {
-        console.log('save here', item)
+        // todo save here
       },
     }
   }

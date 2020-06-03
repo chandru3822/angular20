@@ -109,7 +109,6 @@
     },
     methods: {
       async getPayrollData () {
-        console.log('getPayrollData', this.payrollSearch)
         this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

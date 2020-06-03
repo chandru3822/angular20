@@ -36,7 +36,6 @@ export const UserStore = {
       //todo: date/time inputs don't update when the zone is changed. should we refresh?
 
       commit(UserMutations.SET_DETAILS, state.details)
-      console.log('details', state.details)
     },
     [UserActions.LOGIN_SUCCESS]: async ({ commit, getters }, details) => {
       commit(UserMutations.LOGIN_ERROR, '')

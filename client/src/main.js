@@ -84,7 +84,7 @@ axios.interceptors.response.use((response) => {
 }, ({ response }) => {
   if (response && response.data) {
     const { message, status } = response.data
-    console.log('*** Request Error ***', response)
+    console.error('*** Request Error ***', response)
     // if the jwt token expired, or 401 unauthorized, or 403 Forbidden
     if ((message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1)
         || status === 401  || status === 403) {

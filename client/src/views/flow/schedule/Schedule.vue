@@ -358,7 +358,6 @@
           || !this.selectedProject.resource || !this.selectedProject.resource.id  || (this.selectedProject.start >= this.selectedProject.end)
       },
       async scheduleProject() {
-        console.log('will save here', this.selectedProject)
         this.selectedProject.resourceId = this.selectedProject.resource.id
         this.selectedProject.resourceName = this.selectedProject.resource.name
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -508,7 +507,6 @@
 
         // delay new call 500ms
         this._timerId = setTimeout(async () => {
-          console.log('we will load', this.search)
           //todo:_this
           await this.searchForProjects(search)
           this.searchProjectsLoading = false

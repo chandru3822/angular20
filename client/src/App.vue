@@ -27,7 +27,6 @@
       // this doesn't seem to do anything either
       // navigator.serviceWorker.addEventListener(
       //   'controllerchange', () => {
-      //     console.log('this is happening')
       //     if (this.refreshing) {
       //       return
       //     }
@@ -38,11 +37,9 @@
     },
     methods: {
       async showRefreshUI() {
-        console.log('also happening')
         this.$store.commit(AppMutations.SET_AVAILABLE_UPDATE, true)
       },
       async refreshPage() {
-        console.log('some stuff going on')
         this.$store.commit(AppMutations.SET_AVAILABLE_UPDATE, false)
         // true = hard refresh?
         window.location.reload(true)

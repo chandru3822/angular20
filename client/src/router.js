@@ -39,12 +39,9 @@ export default new Router({
           }
         } else {
           if(from.name !== 'login') {
-
-            console.log('from = login')
             try {
               const {data} = await getUser()
               store.commit(UserMutations.SET_DETAILS, data)
-              console.log('going to next')
               next()
             } catch (e) {
               next('/login')

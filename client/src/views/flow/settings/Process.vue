@@ -240,7 +240,6 @@ export default {
         rowsClone.forEach((r, idx) => {
           r.displayOrder = idx
         })
-        console.log('sort event happened', rowsClone)
         _self.saveRowChanges(rowsClone)
       }
     })

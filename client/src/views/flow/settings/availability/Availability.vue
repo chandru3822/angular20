@@ -84,8 +84,7 @@
     },
     watch: {
       '$route.params.userId': function () {
-        // reset the schedule when new user selected
-        console.log('randaLogger', this.$route)
+        // todo: reset the schedule when new user selected
       },
     },
     methods: {

@@ -363,7 +363,6 @@
                 userId: this.userId,
                 orgId: this.orgId,
               }})
-            console.log('HERE',data[0].resourceScheduleAvailability[0].startTime)
             this.schedules = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {

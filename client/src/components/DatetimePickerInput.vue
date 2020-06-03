@@ -67,7 +67,7 @@ export default {
     showDate: false,
     showTime: false,
     //i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
-    defaultTimeFormat: 'YYYY-MM-DD HH:mm:ss'
+    defaultTimeFormat: 'HH:mm:ss'
   }),
   created() {
     this.init()
@@ -95,7 +95,6 @@ export default {
       }
     },
     saveTime () {
-      console.log('save time ran')
       if (this.type === 'timestamp') {
         const date = DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: 'utc'})
         let time = DateTime.fromISO(this.time, {zone: 'utc'})
@@ -117,6 +116,7 @@ export default {
       this.init()
     },
     init () {
+      console.log('VAL', value)
       // let value = DateTime.fromFormat(this.$props.value, 'HH:mm')
       let value = DateTime.fromISO(this.$props.value, { zone: 'utc'})
 
