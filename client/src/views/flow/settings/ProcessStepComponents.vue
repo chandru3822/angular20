@@ -274,7 +274,6 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.addNewType = false
-          console.log('deleting')
           await deleteRequest(`/attachmentType/processStepType/${id}`)
           // this.availableAttachmentTypes = data
           this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
@@ -321,7 +320,6 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.addNewLink = false
-          console.log('deleting')
           await deleteRequest(`/links/processStep/${id}`)
           // this.availableAttachmentTypes = data
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
@@ -353,8 +351,6 @@
         }
       },
       async saveWorkQueueTypes() {
-        console.log('save here', this.selectedOptions)
-
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           //check each processStep.workQueueType, if not exists in selectedOptions then it got archived

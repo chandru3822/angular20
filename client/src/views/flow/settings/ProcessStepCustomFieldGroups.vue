@@ -367,10 +367,8 @@
         }
       },
       changeGroupOrder() {
-        console.log('changed group order')
       },
       changeFieldOrder() {
-        console.log('changed field order')
       },
       async deleteGroupFromStep(groupId) {
         this.$store.commit(AppMutations.SET_LOADING, true)

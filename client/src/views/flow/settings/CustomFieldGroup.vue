@@ -368,7 +368,6 @@ export default {
         fieldGroupsClone.forEach((g, idx) => {
           g.groupOrder = idx
         })
-        console.log('sort event happened', fieldGroupsClone)
         _self.saveGroupChanges(fieldGroupsClone)
       }
     })
@@ -464,8 +463,6 @@ export default {
     },
     async moveFieldToOtherGroup (field, newGroup) {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      console.log('randaLogger group', newGroup)
-      console.log('randaLogger Field', field)
       try {
         await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
         this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
@@ -655,7 +652,6 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewType = false
-        console.log('deleting')
         await deleteRequest(`/attachmentType/projectType/${id}`)
         // this.availableAttachmentTypes = data
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
