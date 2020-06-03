@@ -2,7 +2,7 @@
 <v-container id="projects-container">
     <v-row>
         <v-col cols="12">
-            <v-toolbar class="elevation-1">
+            <v-toolbar class="elevation-1" width="100%">
                 <v-toolbar-title>Projects</v-toolbar-title>
 
                 <v-spacer />
@@ -14,18 +14,22 @@
                     item-value="id"
                 />
             </v-toolbar>
+
             <v-toolbar
                 v-if="selectedSmartlistId === 0"
-                class="white elevation-1 mt-3">
+                class="white elevation-1 mt-3"
+            >
                 <v-text-field
-                    class="mt-5"
+                    class="pt-3"
                     prepend-inner-icon="search"
                     text
                     label="Search projects..."
                     v-model="searchQuery"
                     @input="searchProjects"
                 />
+
                 <v-spacer/>
+
                 <v-btn
                     text
                     :disabled="isProjectsLoading && !totalProjects > 0"
@@ -35,7 +39,7 @@
                 </v-btn>
             </v-toolbar>
 
-            <v-divider/>
+            <v-divider />
 
             <v-data-table
                 v-if="selectedSmartlistId === 0"
@@ -71,48 +75,20 @@
             </v-data-table>
 
             <SmartlistTable
+                class="mt-3"
                 v-else
                 :smartlistId="selectedSmartlistId"
             />
         </v-col>
     </v-row>
 
-    <v-dialog
-        v-model="showConfirmDialog"
-        width="500"
-    >
-        <v-card>
-            <v-card-title>
-                Export
-            </v-card-title>
+    <ExportDialog
+        :show="showConfirmDialog"
+        :totalItems="totalProjects"
+        @cancel="showConfirmDialog = false"
+        @confirm="[showConfirmDialog = false, generateReport()]"
+    />
 
-            <v-card-text>
-                You are attempting to export {{totalProjects | currency('', 0)}} results.
-                This can take 1-2 minutes.
-                We recommend that you cancel and filter the result set before exporting.
-            </v-card-text>
-
-            <v-divider></v-divider>
-
-            <v-card-actions>
-                <div class="flex-grow-1"></div>
-                <v-btn
-                    color="grey"
-                    text
-                    @click="showConfirmDialog = false"
-                >
-                    Cancel
-                </v-btn>
-                <v-btn
-                    color="primary"
-                    text
-                    @click="[showConfirmDialog = false, generateReport()]"
-                >
-                    Continue Anyway
-                </v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
 </v-container>
 </template>
 
@@ -124,11 +100,13 @@ import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import saveAs from 'file-saver'
 import SmartlistTable from '@/components/SmartlistTable'
+import ExportDialog from '@/components/ExportDialog'
 
 export default {
     name: 'Projects',
     components: {
-        SmartlistTable
+        SmartlistTable,
+        ExportDialog
     },
     data() {
         return {

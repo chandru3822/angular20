@@ -64,3 +64,30 @@ export async function deleteRequest (path, companyAbbreviation) {
 export function logError (e) {
   console.error('*** ERROR ***', e)
 }
+
+export function jsonToCsv (data) {
+    let csvData = []
+
+    for (let key in data[0]) {
+        csvData.push(`"${key}"`)
+        csvData.push(',')
+    }
+    csvData.pop()
+    csvData.push('\r\n')
+
+    data.map(function(item) {
+        for (let key in item) {
+            // if value isn't nullish, cast Numbers to string. Else empty string
+            let escapedCSV = (item[key]) ? item[key] + '' : '';
+            if (escapedCSV.match(/[,"\n]/)) {
+                escapedCSV = '"' + escapedCSV.replace(/\"/g, '""') + '"'
+            }
+            csvData.push(escapedCSV)
+            csvData.push(',')
+        }
+        csvData.pop()
+        csvData.push('\r\n')
+    });
+
+    return csvData.join('')
+}
