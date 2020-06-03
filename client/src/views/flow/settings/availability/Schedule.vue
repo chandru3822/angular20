@@ -75,7 +75,7 @@
                 <td class="text-left px-0" width="150px">
                   <v-tooltip top v-if="index !== 6">
                     <template v-slot:activator="{ on }">
-                      <v-btn text small v-on="on" @click="copyTimes(item, index, 'down')">
+                      <v-btn text small v-on="on" @click="copyTimes(newSchedule, item, index, 'down')">
                         <v-icon>mdi-arrow-collapse-down</v-icon>
                       </v-btn>
                     </template>
@@ -85,7 +85,7 @@
                   </v-btn>
                   <v-tooltip top v-if="index !== 0">
                     <template v-slot:activator="{ on }">
-                      <v-btn text small v-on="on" @click="copyTimes(item, index, 'up')">
+                      <v-btn text small v-on="on" @click="copyTimes(newSchedule, item, index, 'up')">
                         <v-icon>mdi-arrow-collapse-up</v-icon>
                       </v-btn>
                     </template>
@@ -108,7 +108,7 @@
             <v-card-actions>
               <v-btn color="secondary" @click="[newSchedule = [], addNew = false]">Cancel</v-btn>
               <v-btn color="primaryCustom"  @click="saveSchedule(newSchedule, true)" class="white--text"
-                     >
+                     :disabled="!newSchedule.startDate || !newSchedule.endDate">
                 Save
               </v-btn>
             </v-card-actions>
@@ -134,26 +134,28 @@
             No available schedules
           </template>
 
-          <template #expanded-item="{ headers, item }">
+          <template #expanded-item="{ headers, item: schedule }">
             <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': selectedIndex % 2}">
               <v-card flat color="transparent" class="px-3">
                 <DatetimePickerInput
-                  v-model="item.startDate"
+                  v-model="schedule.startDate"
                   :timezone="timezone"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
+                  input-format="HH:mm:ss"
                   label="Start Date"
                 />
                 <DatetimePickerInput
-                  v-model="item.endDate"
+                  v-model="schedule.endDate"
                   :timezone="timezone"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
+                  input-format="HH:mm:ss"
                   label="End Date"
                 />
 
                 <v-data-table
-                  :items="item.resourceScheduleAvailability"
+                  :items="schedule.resourceScheduleAvailability"
                   :fixed-header="true"
                   :items-per-page="-1"
                   hide-default-header
@@ -187,6 +189,7 @@
                           :timezone="timezone"
                           type="time"
                           format="h:mm a"
+                          input-format="HH:mm:ss"
                           label="Start Time"
                         />
                       </td>
@@ -199,6 +202,7 @@
                           :timezone="timezone"
                           type="time"
                           format="h:mm a"
+                          input-format="HH:mm:ss"
                           label="End Time"
                         />
                       </td>
@@ -206,7 +210,7 @@
 
                         <v-tooltip top v-if="index !== 6">
                           <template v-slot:activator="{ on }">
-                            <v-btn text small v-on="on" @click="copyTimes(item, index, 'down')">
+                            <v-btn text small v-on="on" @click="copyTimes(schedule, item, index, 'down')">
                               <v-icon>mdi-arrow-collapse-down</v-icon>
                             </v-btn>
                           </template>
@@ -216,7 +220,7 @@
                         </v-btn>
                         <v-tooltip top v-if="index !== 0">
                           <template v-slot:activator="{ on }">
-                            <v-btn text small v-on="on" @click="copyTimes(item, index, 'up')">
+                            <v-btn text small v-on="on" @click="copyTimes(schedule, item, index, 'up')">
                               <v-icon>mdi-arrow-collapse-up</v-icon>
                             </v-btn>
                           </template>
@@ -238,8 +242,8 @@
                 </div>
                 <v-card-actions>
                   <v-card-actions>
-                    <v-btn color="primaryCustom"  @click="saveSchedule(item, false)" class="white--text"
-                           :disabled="!item.startDate || !item.endDate">
+                    <v-btn color="primaryCustom"  @click="saveSchedule(schedule, false)" class="white--text"
+                           :disabled="!schedule.startDate || !schedule.endDate">
                       Save
                     </v-btn>
                   </v-card-actions>
@@ -298,6 +302,7 @@
   import moment from 'moment'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
+  import orderBy from "lodash.orderby";
 
   export default {
     name: 'Schedule',
@@ -358,17 +363,7 @@
                 userId: this.userId,
                 orgId: this.orgId,
               }})
-            data.forEach(d => {
-              d.resourceScheduleAvailability.forEach(rsa => {
-                console.log('start', rsa.startTime)
-                console.log('start format', moment(rsa.startTime, 'hh:mm:ss').format('HH:mm'))
-                console.log('end', rsa.endTime)
-                console.log('end format', moment(rsa.endTime, 'hh:mm:ss').format('HH:mm'))
-
-                rsa.startTime = moment(rsa.startTime, 'hh:mm:ss').format('HH:mm')
-                rsa.endTime = moment(rsa.endTime, 'hh:mm:ss').format('HH:mm')
-              })
-            })
+            console.log('HERE',data[0].resourceScheduleAvailability[0].startTime)
             this.schedules = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
@@ -390,42 +385,84 @@
           this.snackbar = getSnackbar('ERROR', 'Error Loading Work Days')
         }
       },
-      async saveSchedule(s, isNew) {
+      async saveSchedule(sched, isNew) {
 
-        console.log('randaLogger s', s)
-        console.log('randaLogger s1', s.resourceScheduleAvailability[0].startTime)
-        console.log('randaLogger s2', moment(s.resourceScheduleAvailability[0].startTime))
-        console.log('randaLogger s3', moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z'))
-        console.log('randaLogger s4', moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z').toDate())
-        console.log('randaLogger s5', moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z').utc())
-        console.log('randaLogger s6', moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z').utc().toDate())
+        //clone the schedule so the times don't change on the screen, they only change for the save to the db
+        let s = cloneDeep(sched)
 
-        s.resourceScheduleAvailability[0].startTime = moment(s.resourceScheduleAvailability[0].startTime, 'HH:mm:ss A Z').toDate()
-        s.resourceScheduleAvailability[0].endTime = moment(s.resourceScheduleAvailability[0].endTime, 'HH:mm:ss A Z').toDate()
+        // filter out empties that dont need saved
+        s.resourceScheduleAvailability = s.resourceScheduleAvailability ? s.resourceScheduleAvailability.filter(rsa => { return rsa.id != null || (rsa.startTime != null || rsa.endTime != null) }) : []
+        // modify the times for saving to db
+        // s.resourceScheduleAvailability.forEach(rsa => {
+        //   rsa.startTime = rsa.startTime != null ? moment(rsa.startTime, 'HH:mm:ss A Z').toDate() : null
+        //   rsa.endTime = rsa.endTime != null ? moment(rsa.endTime, 'HH:mm:ss A Z').toDate() : null
+        // })
 
-        // do validations: todo: add the rest of them
+
+        // do validations: todo: add the rest of them (make sure dates of schedules can't overlap)
         if(s.startDate >= s.endDate) {
           this.saveError = true
           this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
+        } else if (!s.resourceScheduleAvailability || s.resourceScheduleAvailability.length === 0) {
+          this.saveError = true
+          this.saveErrorMsg = '* Schedule must include at least one day of availability'
         } else {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            let params = {
-              orgId: this.orgId,
-              userId: this.userId,
-              startDate: s.startDate,
-              endDate: s.endDate,
-              resourceScheduleAvailability: s.id == null
-                ? s.resourceScheduleAvailability.filter(rsa => { return rsa.startTime != null || rsa.endTime != null })
-                : s.resourceScheduleAvailability
+          //check that no end times are before start times
+          let timeOverlap = false
+          s.resourceScheduleAvailability.forEach(rsa => {
+            if(rsa.startTime >= rsa.endTime) {
+              timeOverlap = true
             }
-            const {data} = await postRequest(`/availability`, params)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Schedule')
+          })
+          if(timeOverlap) {
+            this.saveError = true
+            this.saveErrorMsg = '* End times must be after start times'
+          } else {
+            //check that no other schedules overlap this one
+            let scheduleOverlap = false
+            this.schedules.forEach(sd => {
+              if(s.id !== sd.id && ((s.startDate >= sd.startDate && s.startDate <= sd.endDate) ||
+                 (s.endDate >= sd.startDate && s.endDate <= sd.endDate))) {
+                scheduleOverlap = true
+              }
+            })
+
+            if(scheduleOverlap) {
+              this.saveError = true
+              this.saveErrorMsg = '* Schedule dates cannot overlap other schedules'
+            } else {
+              this.saveError = false
+              this.saveErrorMsg = ''
+              this.$store.commit(AppMutations.SET_LOADING, true)
+              try {
+                let params = {
+                  id: s.id,
+                  orgId: this.orgId,
+                  userId: this.userId,
+                  startDate: s.startDate,
+                  endDate: s.endDate,
+                  resourceScheduleAvailability: s.resourceScheduleAvailability
+                }
+                const {data} = await postRequest(`/availability`, params)
+                data.resourceScheduleAvailability.forEach(rsa => {
+                  rsa.startTime = rsa.startTime != null ? moment.utc(rsa.startTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
+                  rsa.endTime = rsa.endTime != null ? moment.utc(rsa.endTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
+                })
+                if(!s.id) {
+                  this.schedules.push(data)
+                }
+                this.schedules = orderBy(this.schedules, [s => s.startDate])
+                this.addNew = false
+                this.expanded = []
+                this.$store.commit(AppMutations.SET_LOADING, false)
+              } catch (e) {
+                console.error('*** ERROR ***', e)
+                this.$store.commit(AppMutations.SET_LOADING, false)
+                this.snackbar = getSnackbar('ERROR', 'Error Saving Schedule')
+              }
+            }
           }
+
         }
       },
       setNew() {
@@ -442,12 +479,12 @@
           })
         }
       },
-      copyTimes(day, index, direction) {
+      copyTimes(schedule, day, index, direction) {
         let dayToUpdate = null
         if(direction === 'down') {
-          dayToUpdate = this.newSchedule.resourceScheduleAvailability[index + 1]
+          dayToUpdate = schedule.resourceScheduleAvailability[index + 1]
         } else {
-          dayToUpdate = this.newSchedule.resourceScheduleAvailability[index - 1]
+          dayToUpdate = schedule.resourceScheduleAvailability[index - 1]
         }
         if(dayToUpdate) {
           this.$set(dayToUpdate, 'startTime', day.startTime)

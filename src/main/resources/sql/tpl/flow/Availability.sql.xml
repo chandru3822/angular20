@@ -10,17 +10,18 @@
         (
             SELECT array_to_json(array_agg(row_to_json(d)))
             FROM (
-                     SELECT
-                         rsa.id,
-                         rsa.resource_schedule_id as "resourceScheduleId",
-                         rsa.day_of_week_id as "dayOfWeekId",
-                         dow.day_of_week as "dayOfWeek",
-                         rsa.start_time as "startTime",
-                         rsa.end_time as "endTime",
-                         rsa.archived
-                     FROM flow.resource_schedule_availability rsa
-                      inner join flow.day_of_week dow on dow.id = rsa.day_of_week_id
-                     WHERE rsa.resource_schedule_id = rs.id) d
+                     select rsa.id,
+                        rsa.resource_schedule_id as "resourceScheduleId",
+                        dow.id as "dayOfWeekId",
+                        dow.day_of_week as "dayOfWeek",
+                        rsa.start_time as "startTime",
+                        rsa.end_time as "endTime",
+                        coalesce(rsa.archived, false) as archived
+                    from flow.day_of_week dow
+                             left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id
+                    order by dow.id < (select day_of_week_id
+                                        from flow.company_week_start
+                                        where company_id = :companyId), "dayOfWeekId") d
         ) as resource_schedule_availability
     FROM flow.resource_schedule rs
          LEFT JOIN flow.org o ON o.id = rs.org_id
@@ -69,15 +70,18 @@
         (
             SELECT array_to_json(array_agg(row_to_json(d)))
             FROM (
-                     SELECT
-                         rsa.id,
-                         rsa.resource_schedule_id as "resourceScheduleId",
-                         rsa.day_of_week_id as "dayOfWeekId",
-                         rsa.start_time as "startTime",
-                         rsa.end_time as "endTime",
-                         rsa.archived
-                     FROM flow.resource_schedule_availability rsa
-                     WHERE rsa.resource_schedule_id = rs.id) d
+                     select rsa.id,
+                        rsa.resource_schedule_id as "resourceScheduleId",
+                        dow.id as "dayOfWeekId",
+                        dow.day_of_week as "dayOfWeek",
+                        rsa.start_time as "startTime",
+                        rsa.end_time as "endTime",
+                        coalesce(rsa.archived, false) as archived
+                    from flow.day_of_week dow
+                             left join flow.resource_schedule_availability rsa on rsa.day_of_week_id = dow.id and rsa.resource_schedule_id = rs.id
+                    order by dow.id < (select day_of_week_id
+                                        from flow.company_week_start
+                                        where company_id = :companyId), "dayOfWeekId") d
         ) as resource_schedule_availability
     FROM flow.resource_schedule rs
          LEFT JOIN flow.org o ON o.id = rs.org_id
@@ -86,7 +90,13 @@
   ]]></availability.getOne>
 
   <availability.updateHours><![CDATA[
-
+    update flow.resource_schedule_availability
+     set start_time = :startTime::timestamp,
+         end_time = :endTime::timestamp,
+         modified_by_id = :modifiedById,
+         date_modified = now(),
+         archived = :archived
+    where id = :id
   ]]></availability.updateHours>
 
   <availability.insertHours><![CDATA[

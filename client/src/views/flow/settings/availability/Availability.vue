@@ -53,8 +53,6 @@
         return this.tabs.filter(tab => tab.display)
       },
       resourceProps() {
-        console.log('testing', this.userId)
-        console.log('testing o', this.orgId)
         if (this.userId) { return { userId: this.userId }}
         if (this.orgId) { return { orgId: this.orgId }}
       }

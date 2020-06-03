@@ -59,8 +59,11 @@ public class AvailabilityService {
   }
 
   public ResourceSchedule getOneResourceAvailability(Long id) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("companyId", user.getCompanyId());
 
     Optional<ResourceSchedule> result = sqlCache.get("availability.getOne", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
     return result.orElse(null);

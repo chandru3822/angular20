@@ -62,7 +62,8 @@ Vue.filter('formatDate', function (value, type, format, inputFormat) {
 
   if (value) {
     // date doesn't do anything with timezone, just reformats the string
-    return type === 'date' ? moment.utc(String(value), inputFormat ?? null).format(format) : moment(String(value), inputFormat ?? null).tz(timezone).format(format)
+    // leave it be = assume it is already in the right timezone and dont mess with it
+    return type === 'date' ? moment.utc(String(value), inputFormat ?? null).format(format) : moment.utc(String(value), inputFormat ?? null).tz(timezone).format(format)
   }
 })
 
