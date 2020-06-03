@@ -12,7 +12,6 @@
                     :items="smartlists"
                     item-text="name"
                     item-value="id"
-                    @change="updateView"
                 />
             </v-toolbar>
             <v-toolbar
@@ -208,9 +207,6 @@ export default {
             } finally {
                 this.$store.commit(AppMutations.SET_LOADING, false)
             }
-        },
-
-        async updateView() {
         }
     }
 }
