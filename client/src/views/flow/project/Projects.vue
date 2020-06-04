@@ -12,6 +12,7 @@
                     :items="smartlists"
                     item-text="name"
                     item-value="id"
+                    class="smartlist-selector pt-3"
                 />
             </v-toolbar>
 
@@ -203,5 +204,9 @@ export default {
 
 tr:nth-of-type(even) {
     @extend .shaded-row;
+}
+
+.smartlist-selector {
+    max-width: 350px;
 }
 </style>
