@@ -129,6 +129,7 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
     params.put("userId", user.getId());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     Long requirementId = sqlCache.updateReturningId("smartlist.addRequirement", params, "id").longValue();
     return this.getRequirementById(requirementId);
   }
@@ -136,6 +137,7 @@ public class SmartlistService {
   public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
     HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
     params.put("userId", securityService.getCurrentUser().getId());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     sqlCache.update("smartlist.updateRequirement", params);
     return sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirement.getId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
   }

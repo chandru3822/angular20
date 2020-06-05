@@ -113,7 +113,7 @@ public class ProcessStepRequirementService {
     params.put("listOfValueId", requirement.getListOfValueId());
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
-    params.put("listOfValueIds", requirement.getListOfValueIds());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     params.put("modifiedById", currentUser.getId());
     params.put("id", requirement.getId());
 
@@ -133,7 +133,7 @@ public class ProcessStepRequirementService {
     params.put("secondaryRequirementValue", requirement.getSecondaryRequirementValue());
     params.put("dataTypeRequirementId", requirement.getDataTypeRequirementId());
     params.put("listOfValueId", requirement.getListOfValueId());
-    params.put("listOfValueIds", requirement.getListOfValueIds());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     params.put("customFieldGroupAssignmentId", requirement.getCustomFieldGroupAssignmentId());
     params.put("companyFunctionId", requirement.getCompanyFunctionId());
     params.put("requirementNbr", requirement.getRequirementNbr());
