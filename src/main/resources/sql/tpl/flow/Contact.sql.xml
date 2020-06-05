@@ -231,6 +231,18 @@
     where id = :id
   ]]></contact.updateOwner>
 
+  <contact.updateMailingAddress><![CDATA[
+    update flow.contact set
+           mailing_street1 = :street1,
+           mailing_street2 = :street2,
+           mailing_city = :city,
+           mailing_state = :state,
+           mailing_postal_code = :postalCode,
+           modified_by_id = :modifiedById,
+           date_modified = now()
+    where id = :id
+  ]]></contact.updateMailingAddress>
+
   <contact.convertToContact><![CDATA[
     update flow.contact set
            modified_by_id = :modifiedById,

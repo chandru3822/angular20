@@ -202,6 +202,21 @@ public class ContactService {
     sqlCache.update("contact.updateOwner", params);
   }
 
+  public void updateMailingAddress(Contact contact) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("street1", contact.getMailingStreet1());
+    params.put("street2", contact.getMailingStreet2());
+    params.put("city", contact.getMailingCity());
+    params.put("state", contact.getState());
+    params.put("postalCode", contact.getMailingPostalCode());
+    params.put("modifiedById", currentUser.getId());
+    params.put("id", contact.getId());
+    //add update when we add that to the UI
+    sqlCache.update("contact.updateMailingAddress", params);
+  }
+
   public List<Owner> getOwnersForContact() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

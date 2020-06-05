@@ -264,7 +264,6 @@
       }
     },
     async created () {
-      debugger
       this.getStates()
       this.getUtilityCompanies()
       this.getProducts()
@@ -350,14 +349,11 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
 
-          debugger
           prop.addersChanged = false;
           if (this.isModify) {
             if (this.originalAdders.length == prop.adders.length) {
-              debugger
               for (var i = 0; i < prop.adders.length; ++i) {
                 if (prop.adders[i].id !== this.originalAdders[i].id) {
-                  console.log('2');
                   prop.addersChanged = true;
                 }
               }
@@ -421,9 +417,7 @@
         }
       },
       async deleteAdder(index) {
-        debugger;
         this.prop.adders.splice(index, 1);
-        debugger;
       }
     }
   }
