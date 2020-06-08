@@ -817,7 +817,6 @@
           }
         })
 
-        console.log('randaLogger me me me', this.cloneDateError)
         if(!this.cloneDateError) {
           this.cloneOverride()
           this.cloneDialog = false;

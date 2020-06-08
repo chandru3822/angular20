@@ -107,6 +107,17 @@ export default {
         path: '/commissionManagement/closers',
         display: this.$store.getters.userHasFeature('COMMISSIONS')
       }, {
+        label: 'Finance',
+        display: this.$store.getters.userHasFeature('FINANCES'),
+        path: '/finances/rebate/viewPayments',
+        children: [
+          {
+            label: 'BluePower + Rebates',
+            path: '/finances/rebate/viewPayments',
+            display: this.$store.getters.userHasFeature('FINANCES')
+          }
+        ]
+      }, {
         label: 'Schedule',
         path: '/schedule',
         display: this.$store.getters.userHasFeature('SCHEDULE')

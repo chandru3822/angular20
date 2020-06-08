@@ -62,7 +62,12 @@ Vue.filter('formatDate', function (value, type, format, inputFormat) {
 
   if (value) {
     // date doesn't do anything with timezone, just reformats the string
-    return type === 'date' ? moment.utc(String(value), inputFormat ?? null).format(format) : moment(String(value), inputFormat ?? null).tz(timezone).format(format)
+    // leave it be = assume it is already in the right timezone and dont mess with it
+    console.log('main value', value)
+    console.log('formatted value', moment.utc(String(value), inputFormat ?? null).tz(timezone).format(format))
+    console.log('type', type)
+    console.log('format', format)
+    return type === 'date' ? moment.utc(String(value), inputFormat ?? null).format(format) : moment.utc(String(value), inputFormat ?? null).tz(timezone).format(format)
   }
 })
 
@@ -83,7 +88,7 @@ axios.interceptors.response.use((response) => {
 }, ({ response }) => {
   if (response && response.data) {
     const { message, status } = response.data
-    console.log('*** Request Error ***', response)
+    console.error('*** Request Error ***', response)
     // if the jwt token expired, or 401 unauthorized, or 403 Forbidden
     if ((message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1)
         || status === 401  || status === 403) {

@@ -196,7 +196,6 @@
       },
     },
     created() {
-      // console.log('randaLogger',moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'))
       this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
       this.getSchedulingOrgs()

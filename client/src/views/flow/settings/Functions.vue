@@ -62,7 +62,6 @@
         }
       },
       async deleteFunction (functionId) {
-        console.log('will delete here')
         // await deleteRequest(`/processStep/${processStepId}`)
       }
     },

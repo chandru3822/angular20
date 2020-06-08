@@ -74,13 +74,17 @@
       item-text="name"
    />
 
-    <v-text-field
+    <v-select
       v-if="field.dataTypeId === 7"
       text
+      multiple
       placeholder=" "
+      :items="field.listOfValues"
       :readonly="readonly"
       :label="field.fieldName"
       v-model="field.intArrayValue"
+      item-value="id"
+      item-text="name"
     />
 
     <v-select

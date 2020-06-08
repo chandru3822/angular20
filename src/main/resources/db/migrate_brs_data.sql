@@ -129,14 +129,89 @@ from blueraven.org_type ot2
 
 
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);*/
---TODO fix this org stuff
--- custom org field:  sales_area_id,email,sales_metro_area_id,podium id and birdeye id in org check it out
+
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id,list_of_value_id)
+-- VALUES ('Metro Area',77,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'),172);
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Org Email',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Metro Area',7,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Org Email',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+--
+--
+--
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Metro Area' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Org Email' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Metro Area' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Org Email' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Org PlaceHolder',35, 1);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order, archived)
+-- VALUES ('Org PlaceHolder',5, 6, true);
+--
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Org PlaceHolder' and company_object_type_id = 35),
+--             (select id from flow.custom_field where field_name = 'Metro Area' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Org PlaceHolder' and company_object_type_id = 35),
+--             (select id from flow.custom_field where field_name = 'Org Email' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Org PlaceHolder' and company_object_type_id = 5),
+--             (select id from flow.custom_field where field_name = 'Metro Area' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Org PlaceHolder' and company_object_type_id = 5),
+--             (select id from flow.custom_field where field_name = 'Org Email' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
 
 --Migrate only orgs with originator_id = 1
 --Randa thinks she want s to rename active_flag to active
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (
         with org_types as (
@@ -156,7 +231,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
                o.parent_org_id,
                o.org_type_id,
                o.active_flag,
-               o.email,
                o.has_calendar,
                case when o.active_flag is true then false else true end,
                2350555,
@@ -171,11 +245,11 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
 SELECT setval('flow.org_id_seq', COALESCE((SELECT MAX(id) + 2000 FROM flow.org), 1), false);
 
 INSERT INTO flow.org(company_id, org_name, parent_org_id, org_type_id
-                     , active_flag, email,
+                     , active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
 (select (select id from flow.company where company_name = 'Blue Raven Corporate'), org_name, parent_org_id,
         (select id from flow.org_type where org_type = 'Parent' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),
-     active_flag, email,
+     active_flag,
     false,
         case when o.active_flag is true then false else true end,
         2350555,
@@ -185,7 +259,7 @@ INSERT INTO flow.org(company_id, org_name, parent_org_id, org_type_id
     from blueraven.org o where id = 40);
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                    active_flag, email,
+                    active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (
         with org_types as (
@@ -208,7 +282,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
                     when o.org_type_id = 9 then (select id from flow.org_type where org_type = 'Parent' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate'))
                     else o.org_type_id  end,
                o.active_flag,
-               o.email,
                o.has_calendar,
                case when o.active_flag is true then false else true end,
                2350555,
@@ -303,90 +376,90 @@ insert into flow.company_user_status_type( user_status_type, company_id,has_acce
 --I want employment_type_id,compensation_type_id,personal_email,recruited_by_user_id,referred_by_user_id make custom field
 
 
-with parent as (
-    insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                    created_by_id, archived)
-        values('Employment Type',null,1,now(),2350555,false)
-        returning id ),
-     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                           created_by_id, archived)
-         (select et.employment_type,(select p.id from parent p),1,now(),2350555,false
-          from blueraven.employment_type et))
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Employment Type',
-            7,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            p.id
-     from parent p
-    );
+-- with parent as (
+--     insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                     created_by_id, archived)
+--         values('Employment Type',null,1,now(),2350555,false)
+--         returning id ),
+--      t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                            created_by_id, archived)
+--          (select et.employment_type,(select p.id from parent p),1,now(),2350555,false
+--           from blueraven.employment_type et))
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Employment Type',
+--             7,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Solar'),
+--             p.id
+--      from parent p
+--     );
 
 
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Employment Type',
-            77,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Corporate'),
-            (select id from flow.list_of_value where name = 'Employment Type')
-    );
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Employment Type',
+--             77,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Corporate'),
+--             (select id from flow.list_of_value where name = 'Employment Type')
+--     );
 
-with parent as (
-    insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                    created_by_id, archived)
-        values('Compensation Type',null,1,now(),2350555,false)
-        returning id ),
-     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                           created_by_id, archived)
-         (select ct.compensation_type,(select p.id from parent p),1,now(),2350555,false
-          from blueraven.compensation_type ct))
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Compensation Type',
-            7,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            p.id
-     from parent p
-    );
+-- with parent as (
+--     insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                     created_by_id, archived)
+--         values('Compensation Type',null,1,now(),2350555,false)
+--         returning id ),
+--      t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                            created_by_id, archived)
+--          (select ct.compensation_type,(select p.id from parent p),1,now(),2350555,false
+--           from blueraven.compensation_type ct))
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Compensation Type',
+--             7,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Solar'),
+--             p.id
+--      from parent p
+--     );
+--
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Compensation Type',
+--             77,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Corporate'),
+--             (select id from flow.list_of_value where name = 'Compensation Type')
+--     );
 
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Compensation Type',
-            77,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Corporate'),
-            (select id from flow.list_of_value where name = 'Compensation Type')
-    );
-
-with parent as (
-    insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                    created_by_id, archived)
-        values('Finding Source',null,1,now(),2350555,false)
-        returning id ),
-     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                           created_by_id, archived)
-         (select fs.finding_source,(select p.id from parent p),1,now(),2350555,false
-          from blueraven.finding_source fs))
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Finding Source',
-            7,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            p.id
-     from parent p
-    );
-
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Finding Source',
-            77,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Corporate'),
-            (select id from flow.list_of_value where name = 'Finding Source')
-    );
+-- with parent as (
+--     insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                     created_by_id, archived)
+--         values('Finding Source',null,1,now(),2350555,false)
+--         returning id ),
+--      t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                            created_by_id, archived)
+--          (select fs.finding_source,(select p.id from parent p),1,now(),2350555,false
+--           from blueraven.finding_source fs))
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Finding Source',
+--             7,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Solar'),
+--             p.id
+--      from parent p
+--     );
+--
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Finding Source',
+--             77,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Corporate'),
+--             (select id from flow.list_of_value where name = 'Finding Source')
+--     );
 
 --------------------------------------------------------------------------------
 -- import user data from blueraven schema
@@ -561,17 +634,17 @@ where user_id not in (select distinct u.id
 -- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')), (select id from flow.company where company_name = 'B+C Electric'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'B+C Electric'), 'B+C Electric', null,
             (select id from flow.org_type where org_type.org_type = 'Parent' and
-    company_id in (select id from flow.company where company_name = 'B+C Electric')), true, null,  false,null,false,
+    company_id in (select id from flow.company where company_name = 'B+C Electric')), true,   false,null,false,
             2350555,
             now(),
             2350555,
             now());
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'B+C Electric'),
             id,
@@ -580,7 +653,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_name = 'B+C Electric' and company_id in (select id from flow.company where company_name = 'B+C Electric')),
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'B+C Electric')),
             active_flag,
-            email,
             has_calendar,case when active_flag is true then false else true end,
             2350555,
             now(),
@@ -592,7 +664,7 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
 
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'B+C Electric'),
             o.id,
@@ -601,7 +673,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'B+C Electric')),
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'B+C Electric')),
              o.active_flag,
-            o.email,
             o.has_calendar,
             case when o.active_flag is true then false else true end,
             2350555,
@@ -710,17 +781,17 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 -- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')), (select id from flow.company where company_name = 'Eco Lux Solar'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Eco Lux Solar'), 'Eco Lux Solar', null,
             (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
-             true, null,  false,null,false,
+             true,   false,null,false,
             2350555,
             now(),
             2350555,
             now());
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Eco Lux Solar'),
             id,
@@ -729,7 +800,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_name = 'Eco Lux Solar' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
             active_flag,
-            email,
             has_calendar,
             case when active_flag is true then false else true end,
             2350555,
@@ -742,7 +812,7 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
 
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Eco Lux Solar'),
             o.id,
@@ -751,7 +821,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Eco Lux Solar')),
             o.active_flag,
-            o.email,
             o.has_calendar,
             case when o.active_flag is true then false else true end,
             2350555,
@@ -857,17 +926,17 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 -- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')), (select id from flow.company where company_name = 'Salient Solar'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Salient Solar'), 'Salient Solar', null,
             (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Salient Solar')),
-            true, null,  false,null,false,
+            true,  false,null,false,
             2350555,
             now(),
             2350555,
             now());
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Salient Solar'),
             id,
@@ -876,7 +945,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_name = 'Salient Solar' and company_id in (select id from flow.company where company_name = 'Salient Solar')),
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Salient Solar')),
             active_flag,
-            email,
             has_calendar,
             case when active_flag is true then false else true end,
             2350555,
@@ -889,7 +957,7 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
 
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Salient Solar'),
             o.id,
@@ -898,7 +966,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Salient Solar')),
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Salient Solar')),
             o.active_flag,
-            o.email,
             o.has_calendar,
             case when o.active_flag is true then false else true end,
             2350555,
@@ -1003,17 +1070,17 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 -- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')), (select id from flow.company where company_name = 'Solenrgi'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Solenrgi'), 'Solenrgi', null,
             (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Solenrgi')),
-            true, null,  false,null,false,
+            true,   false,null,false,
             2350555,
             now(),
             2350555,
             now());
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Solenrgi'),
             id,
@@ -1022,7 +1089,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_name = 'Solenrgi' and company_id in (select id from flow.company where company_name = 'Solenrgi')),
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Solenrgi')),
             active_flag,
-            email,
             has_calendar,
             case when active_flag is true then false else true end,
             2350555,
@@ -1035,7 +1101,7 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
 
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Solenrgi'),
             o.id,
@@ -1044,7 +1110,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Solenrgi')),
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Solenrgi')),
             o.active_flag,
-            o.email,
             o.has_calendar,
             case when o.active_flag is true then false else true end,
             2350555,
@@ -1151,17 +1216,17 @@ insert into flow.user_position( user_id, position_id, start_date, end_date, org_
 -- ('Office', (select id from flow.org_type where org_type.org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.org_level where level_name = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')), (select id from flow.company where company_name = 'Sun Run'), false,now(),2350555);
 
 
-INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, email, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
+INSERT INTO flow.org (company_id, org_name, parent_org_id,  org_type_id, active_flag, schedulable, state_id,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Sun Run'), 'Sun Run', null,
             (select id from flow.org_type where org_type.org_type = 'Parent' and company_id in (select id from flow.company where company_name = 'Sun Run')),
-            true, null,  false,null,false,
+            true,   false,null,false,
             2350555,
             now(),
             2350555,
             now());
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Sun Run'),
             id,
@@ -1170,7 +1235,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_name = 'Sun Run' and company_id in (select id from flow.company where company_name = 'Sun Run')),
             (select id from flow.org_type where org_type = 'Region' and company_id in (select id from flow.company where company_name = 'Sun Run')),
             active_flag,
-            email,
             has_calendar,
             case when active_flag is true then false else true end,
             2350555,
@@ -1183,7 +1247,7 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
 
 
 INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
-                     active_flag, email,
+                     active_flag,
                      schedulable,archived,modified_by_id,date_modified,created_by_id,date_created)
     (select (select id from flow.company where company_name = 'Sun Run'),
             o.id,
@@ -1192,7 +1256,6 @@ INSERT INTO flow.org(company_id, id, org_name, parent_org_id, org_type_id,
              from flow.org where org_type_id in (select id from flow.org_type where org_type =  'Region') and company_id in (select id from flow.company where company_name = 'Sun Run')),
             (select id from flow.org_type where org_type = 'Office' and company_id in (select id from flow.company where company_name = 'Sun Run')),
             o.active_flag,
-            o.email,
             o.has_calendar,
             case when o.active_flag is true then false else true end,
             2350555,
@@ -1295,30 +1358,30 @@ insert into flow.user_status_type(user_id, company_user_status_type_id, archived
      where ust2.user_status_type = ust.user_status_type
         and u.id not in (2350555,99999999,2405363));
 
-insert into brs.sales_area_type(id, sales_area_type)
-    (select id, sales_area_type
-     from blueraven.sales_area_type);
-
-SELECT setval('brs.sales_area_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.sales_area_type), 1), false);
-
-
-insert into brs.sales_area(id, area, sales_area_type_id, state_id)
-    (select id, area, sales_area_type_id, state_id
-     from blueraven.sales_area);
-
-SELECT setval('brs.sales_area_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.sales_area), 1), false);
+-- insert into brs.sales_area_type(id, sales_area_type)
+--     (select id, sales_area_type
+--      from blueraven.sales_area_type);
+--
+-- SELECT setval('brs.sales_area_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.sales_area_type), 1), false);
 
 
-insert into brs.sales_metro_area(id, sales_metro_area, sales_area_id, archived, final_design_minimum, fixed_grace_days)
-    (select id,
-            sales_metro_area,
-            sales_area_id,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END,
-            final_design_minimum,
-            fixed_grace_days
-     from blueraven.sales_metro_area);
+-- insert into brs.sales_area(id, area, sales_area_type_id, state_id)
+--     (select id, area, sales_area_type_id, state_id
+--      from blueraven.sales_area);
+--
+-- SELECT setval('brs.sales_area_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.sales_area), 1), false);
 
-SELECT setval('brs.sales_metro_area_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.sales_metro_area), 1), false);
+
+-- insert into brs.sales_metro_area(id, sales_metro_area, sales_area_id, archived, final_design_minimum, fixed_grace_days)
+--     (select id,
+--             sales_metro_area,
+--             sales_area_id,
+--             CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END,
+--             final_design_minimum,
+--             fixed_grace_days
+--      from blueraven.sales_metro_area);
+--
+-- SELECT setval('brs.sales_metro_area_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.sales_metro_area), 1), false);
 
 
 insert into brs.podium_location(id, podium_id, name, date_created, date_modified)
@@ -1436,21 +1499,21 @@ INSERT INTO brs.expense_gl_code(expense_id, gl_code_id, amount, date_created, da
 SELECT setval('brs.expense_gl_code_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.expense_gl_code), 1), false);
 
 
-insert into brs.metro_area(id, metro_area, sales_area_id, archived)
-    (select id,
-            metro_area,
-            sales_area_id,
-            CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
-     from blueraven.metro_area);
-
-SELECT setval('brs.metro_area_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.metro_area), 1), false);
-
-
-insert into brs.org_metro_area
-select *
-from blueraven.org_metro_area;
-
-SELECT setval('brs.org_metro_area_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.org_metro_area), 1), false);
+-- insert into brs.metro_area(id, metro_area, sales_area_id, archived)
+--     (select id,
+--             metro_area,
+--             sales_area_id,
+--             CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END
+--      from blueraven.metro_area);
+--
+-- SELECT setval('brs.metro_area_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.metro_area), 1), false);
+--
+--
+-- insert into brs.org_metro_area
+-- select *
+-- from blueraven.org_metro_area;
+--
+-- SELECT setval('brs.org_metro_area_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.org_metro_area), 1), false);
 
 
 insert into flow.associated_org_type
@@ -1473,8 +1536,8 @@ from blueraven.attachment_source;
 
 SELECT setval('flow.attachment_source_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.attachment_source), 1), false);
 
-insert into brs.ahj(id, name, archived, date_created, created_by_id, date_modified, modified_by_id, metro_area_id)
-    (select id, name, archived, created, created_by_id, updated, updated_by_id, metro_area_id
+insert into brs.ahj(id, name, archived, date_created, created_by_id, date_modified, modified_by_id)
+    (select id, name, archived, created, created_by_id, updated, updated_by_id
      from blueraven.ahj);
 
 SELECT setval('brs.ahj_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj), 1), false);
@@ -1489,2633 +1552,2638 @@ insert into props.financier(id,company_id, name, submission_method, archived, da
 
 SELECT setval('brs.financier_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.financier), 1), false);
 
-insert into brs.ahj_utility(id, name, archived, date_created, date_modified, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id, financier_id)
-    (select id, name, CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END, date_created, date_updated, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, metro_area_id, financier_id
+insert into brs.ahj_utility(id, name, archived, date_created, date_modified, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, financier_id)
+    (select id, name, CASE WHEN active IS FALSE THEN TRUE ELSE FALSE END, date_created, date_updated, timelines_and_stages, regulated_by, monthly_facility_charge, population_of_service, net_metering_rate, rebate_rates, utility_rate_notes, customer_signature_instructions, expected_approval_timeline, rejection_instructions, notes, submission_instructions, final_completion_instructions, overview_of_submission_process, timelines, pto_followup_instructions, financier_id
      from blueraven.ahj_utility);
 
 SELECT setval('brs.ahj_utility_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.ahj_utility), 1), false);
 
---1 General blue raven coroporate
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Hire Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Qualifer',74,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Leave of Absence Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Reactivation Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Termination Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Employee ID',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Submitted By',75,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Phone Directory Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Greenlight Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dividend Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Request Sunops App',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Ignition Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Application Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dropbox Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Oneroof Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dividend Spoof',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('i9 Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Confidentiality Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('W4 Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Quickbase Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dividend Spoof Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Removed From Directory Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Cancelled Greenlight Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Cancelled Dividend Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Removed Sunops Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Removed Sales Rabbit Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Cancelled Ignition Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Reason for Termination',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Termination Notes',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Department',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Crew',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Employee Handbook Signed Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Enter in Timeforce Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Expiry Date',73,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dropbox Cancel Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Timeforce Cancel Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('E-Mail Opt Out Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Request T-Sheets Flag',74,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Phone Extension',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Drivers License Number',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Humanity Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('IT Onboarding Complete Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('IT Termination Complete Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Exit Interview Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Deactivate Badge Request Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Values Meeting Invite Sent Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Cooperate Meeting Invite Sent Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Values Meeting Attended Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('New Hire Orientation Meeting Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('BRU Pass Off Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
---1 General blue raven solar
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Qualifier',4,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Hire Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Leave of Absence Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Reactivation Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Termination Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Employee ID',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Submitted By',5,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Phone Directory Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Greenlight Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dividend Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Request Sunops App',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Ignition Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Application Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dropbox Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Oneroof Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dividend Spoof',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('i9 Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Confidentiality Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('W4 Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Quickbase Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dividend Spoof Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Removed From Directory Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Cancelled Greenlight Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Cancelled Dividend Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Removed Sunops Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Removed Sales Rabbit Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Cancelled Ignition Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Reason for Termination',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Termination Notes',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Department',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Crew',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Employee Handbook Signed Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Enter in Timeforce Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Expiry Date',3,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Dropbox Cancel Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Timeforce Cancel Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('E-Mail Opt Out Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Request T-Sheets Flag',4,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Phone Extension',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Drivers License Number',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Humanity Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('IT Onboarding Complete Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('IT Termination Complete Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Exit Interview Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Deactivate Badge Request Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Values Meeting Invite Sent Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Cooperate Meeting Invite Sent Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Values Meeting Attended Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('New Hire Orientation Meeting Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('BRU Pass Off Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
---group 2 blueraven corporate
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Uniform/Badge Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Shirt Size',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Hat',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Accuity Appointment ID',75,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Personal Email',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
---group 2 blueraven solar
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Uniform/Badge Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Shirt Size',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Hat',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Accuity Appointment ID',5,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Personal Email',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
----systems group 5 blue raven corporate
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Namely Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Email Setup Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Request Base Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Base Contact Created Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Mosiac Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Litmos Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('T-Sheets Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-
----systems group 5 blue raven solar
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Namely Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Email Setup Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Request Base Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Base Contact Created Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Mosiac Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Litmos Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('T-Sheets Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
----onboarding group 3 blueraven corporate
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Offer Letter Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Contract Request Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Contract Received Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Contract Saved Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Background Check Submitted Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Background Check Received Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Welcome E-Mail Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Photo Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Voided Check Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-
----onboarding group 3 blueraven solar
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Offer Letter Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Contract Request Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Contract Received Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Contract Saved Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Background Check Submitted Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Background Check Received Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Welcome E-Mail Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Photo Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Voided Check Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
---HR 4 blueraven corporate
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Re-Hire Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Pending Termination Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Termination Reason',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Leave of Absence Reason',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id,system_list_option_ids,company_system_list_id)
-VALUES ('Recruited By',75,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'),'{10}',2);
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id,system_list_option_ids,company_system_list_id)
-VALUES ('Referred By',75,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'),null,4);
-
-
---HR 4 blueraven solar
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Re-Hire Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Pending Termination Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Termination Reason',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Leave of Absence Reason',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id,system_list_option_ids,company_system_list_id)
-VALUES ('Recruited By',5,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'),'{10}',2);
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id,system_list_option_ids,company_system_list_id)
-VALUES ('Referred By',5,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'),null,4);
-
---6 termination blueraven corporate
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled Namely Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('E-Mail Removed Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled Base Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Base Contact Deleted Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled Mosiac Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled Litmos Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled T-Sheets Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
-
---6 termination blueraven solar
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled Namely Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('E-Mail Removed Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled Base Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Base Contact Deleted Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled Mosiac Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled Litmos Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id ,company_id)
-VALUES ('Cancelled T-Sheets Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- --1 General blue raven coroporate
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Qualifier',4,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Hire Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Qualifer',74,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Leave of Absence Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Reactivation Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Termination Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Employee ID',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Submitted By',75,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Phone Directory Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Greenlight Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dividend Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Request Sunops App',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Ignition Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Application Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dropbox Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Oneroof Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dividend Spoof',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('i9 Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Confidentiality Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('W4 Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Quickbase Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dividend Spoof Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Removed From Directory Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Cancelled Greenlight Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Cancelled Dividend Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Removed Sunops Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Removed Sales Rabbit Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Cancelled Ignition Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Reason for Termination',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Termination Notes',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Department',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Crew',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Employee Handbook Signed Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Enter in Timeforce Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Expiry Date',73,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dropbox Cancel Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Timeforce Cancel Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('E-Mail Opt Out Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Request T-Sheets Flag',74,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Phone Extension',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Drivers License Number',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Humanity Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('IT Onboarding Complete Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('IT Termination Complete Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Exit Interview Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Deactivate Badge Request Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Values Meeting Invite Sent Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Cooperate Meeting Invite Sent Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Values Meeting Attended Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('New Hire Orientation Meeting Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('BRU Pass Off Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- --1 General blue raven solar
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Qualifier',4,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Hire Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Leave of Absence Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Reactivation Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Termination Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Employee ID',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Submitted By',5,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Phone Directory Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Greenlight Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dividend Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Request Sunops App',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Ignition Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Application Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dropbox Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Oneroof Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dividend Spoof',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('i9 Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Confidentiality Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('W4 Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Quickbase Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dividend Spoof Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Removed From Directory Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Cancelled Greenlight Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Cancelled Dividend Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Removed Sunops Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Removed Sales Rabbit Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Cancelled Ignition Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Reason for Termination',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Termination Notes',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Department',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Crew',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Employee Handbook Signed Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Enter in Timeforce Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Expiry Date',3,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Dropbox Cancel Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Timeforce Cancel Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('E-Mail Opt Out Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Request T-Sheets Flag',4,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Phone Extension',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Drivers License Number',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Humanity Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('IT Onboarding Complete Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('IT Termination Complete Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Exit Interview Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Deactivate Badge Request Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Values Meeting Invite Sent Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Cooperate Meeting Invite Sent Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Values Meeting Attended Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('New Hire Orientation Meeting Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('BRU Pass Off Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- --group 2 blueraven corporate
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Uniform/Badge Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Shirt Size',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Hat',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Accuity Appointment ID',75,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Personal Email',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- --group 2 blueraven solar
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Uniform/Badge Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Shirt Size',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Hat',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Accuity Appointment ID',5,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Personal Email',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- ---systems group 5 blue raven corporate
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Namely Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Email Setup Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Request Base Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Base Contact Created Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Mosiac Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Litmos Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('T-Sheets Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+--
+-- ---systems group 5 blue raven solar
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Namely Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Email Setup Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Request Base Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Base Contact Created Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Mosiac Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Litmos Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('T-Sheets Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- ---onboarding group 3 blueraven corporate
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Offer Letter Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Contract Request Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Contract Received Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Contract Saved Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Background Check Submitted Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Background Check Received Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Welcome E-Mail Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Photo Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Voided Check Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+--
+-- ---onboarding group 3 blueraven solar
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Offer Letter Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Contract Request Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Contract Received Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Contract Saved Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Background Check Submitted Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Background Check Received Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Welcome E-Mail Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Photo Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Voided Check Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- --HR 4 blueraven corporate
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Re-Hire Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Pending Termination Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Termination Reason',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Leave of Absence Reason',71,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id,system_list_option_ids,company_system_list_id)
+-- VALUES ('Recruited By',75,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'),'{10}',2);
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id,system_list_option_ids,company_system_list_id)
+-- VALUES ('Referred By',75,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'),null,4);
+--
+--
+-- --HR 4 blueraven solar
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Re-Hire Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Pending Termination Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Termination Reason',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Leave of Absence Reason',1,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id,system_list_option_ids,company_system_list_id)
+-- VALUES ('Recruited By',5,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'),'{10}',2);
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id,system_list_option_ids,company_system_list_id)
+-- VALUES ('Referred By',5,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'),null,4);
+--
+-- --6 termination blueraven corporate
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled Namely Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('E-Mail Removed Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled Base Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Base Contact Deleted Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled Mosiac Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled Litmos Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled T-Sheets Date',72,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Corporate'));
+--
+-- --6 termination blueraven solar
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled Namely Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('E-Mail Removed Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled Base Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Base Contact Deleted Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled Mosiac Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled Litmos Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id ,company_id)
+-- VALUES ('Cancelled T-Sheets Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
 
 --blueraven corporate
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Submitted By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Employee ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Hire Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Phone Directory Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Submitted By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Employee ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Hire Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Phone Directory Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Greenlight Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dividend Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Request Sunops App' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Ignition Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Application Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dropbox Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Oneroof Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dividend Spoof' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'i9 Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Confidentiality Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'W4 Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Quickbase Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dividend Spoof Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Removed From Directory Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Greenlight Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Dividend Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Removed Sunops Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Removed Sales Rabbit Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Ignition Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Reason for Termination' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Termination Notes' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Department' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Crew' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Employee Handbook Signed Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Enter in Timeforce Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Expiry Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dropbox Cancel Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Timeforce Cancel Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'E-Mail Opt Out Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Request T-Sheets Flag' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Phone Extension' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Drivers License Number' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Humanity Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'IT Onboarding Complete Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'IT Termination Complete Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Exit Interview Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Deactivate Badge Request Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Values Meeting Invite Sent Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cooperate Meeting Invite Sent Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Values Meeting Attended Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'New Hire Orientation Meeting Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Uniform/Badge Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Shirt Size' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Hat' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Accuity Appointment ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Email Setup Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Request Base Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Base Contact Created Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Mosiac Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'T-Sheets Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Offer Letter Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Contract Request Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Contract Received Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Contract Saved Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Background Check Submitted Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Background Check Received Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Welcome E-Mail Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Photo Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Voided Check Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Re-Hire Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Pending Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Termination Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'E-Mail Removed Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Base Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Base Contact Deleted Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Mosiac Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled T-Sheets Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Employment Type' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Compensation Type' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Finding Source' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Personal Email' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Referred By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Recruited By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
+--     );
+--
+-- --blueraven solar
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Submitted By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--           (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--            from flow.custom_field cf
+--            where cf.field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--           );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Employee ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Hire Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Phone Directory Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Greenlight Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dividend Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Request Sunops App' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Ignition Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Application Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dropbox Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Oneroof Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dividend Spoof' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'i9 Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Confidentiality Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'W4 Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Quickbase Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dividend Spoof Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Removed From Directory Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Greenlight Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Dividend Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Removed Sunops Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Removed Sales Rabbit Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Ignition Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Reason for Termination' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Termination Notes' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Department' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Crew' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Employee Handbook Signed Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Enter in Timeforce Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Expiry Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Dropbox Cancel Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Timeforce Cancel Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'E-Mail Opt Out Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Request T-Sheets Flag' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Phone Extension' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Drivers License Number' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Humanity Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'IT Onboarding Complete Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'IT Termination Complete Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Exit Interview Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Deactivate Badge Request Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Values Meeting Invite Sent Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cooperate Meeting Invite Sent Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Values Meeting Attended Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'New Hire Orientation Meeting Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Uniform/Badge Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Shirt Size' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Hat' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Accuity Appointment ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Email Setup Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Request Base Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Base Contact Created Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Mosiac Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'T-Sheets Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Offer Letter Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Contract Request Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Contract Received Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Contract Saved Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Background Check Submitted Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Background Check Received Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Welcome E-Mail Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Photo Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Voided Check Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Re-Hire Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Pending Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Termination Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'E-Mail Removed Date'
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Base Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Base Contact Deleted Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Mosiac Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled T-Sheets Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Employment Type' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Compensation Type' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Finding Source' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Personal Email' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Referred By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
+--      from flow.custom_field cf
+--      where cf.field_name = 'Recruited By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
+--     );
 
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Greenlight Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dividend Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Request Sunops App' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Ignition Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Application Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dropbox Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Oneroof Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dividend Spoof' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'i9 Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Confidentiality Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'W4 Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Quickbase Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dividend Spoof Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Removed From Directory Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Greenlight Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Dividend Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Removed Sunops Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Removed Sales Rabbit Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Ignition Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Reason for Termination' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Termination Notes' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Department' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Crew' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Employee Handbook Signed Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Enter in Timeforce Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Expiry Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dropbox Cancel Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Timeforce Cancel Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'E-Mail Opt Out Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Request T-Sheets Flag' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Phone Extension' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Drivers License Number' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Humanity Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'IT Onboarding Complete Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'IT Termination Complete Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Exit Interview Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Deactivate Badge Request Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Values Meeting Invite Sent Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cooperate Meeting Invite Sent Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Values Meeting Attended Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'New Hire Orientation Meeting Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Uniform/Badge Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Shirt Size' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Hat' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Accuity Appointment ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Email Setup Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Request Base Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Base Contact Created Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Mosiac Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'T-Sheets Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Offer Letter Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Contract Request Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Contract Received Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Contract Saved Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Background Check Submitted Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Background Check Received Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Welcome E-Mail Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Photo Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Voided Check Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Re-Hire Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Pending Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Termination Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'E-Mail Removed Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Base Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Base Contact Deleted Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Mosiac Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled T-Sheets Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
 
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Employment Type' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Compensation Type' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Finding Source' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Personal Email' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Referred By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Corporate'))
-     from flow.custom_field cf
-     where cf.field_name = 'Recruited By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')
-    );
-
---blueraven solar
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Submitted By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-          (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-           from flow.custom_field cf
-           where cf.field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-          );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Employee ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Hire Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Phone Directory Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Greenlight Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dividend Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Request Sunops App' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Ignition Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Application Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dropbox Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Oneroof Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dividend Spoof' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'i9 Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Confidentiality Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'W4 Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Quickbase Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dividend Spoof Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Removed From Directory Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Greenlight Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Dividend Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Removed Sunops Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Removed Sales Rabbit Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Ignition Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Reason for Termination' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Termination Notes' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Department' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Crew' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Employee Handbook Signed Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Enter in Timeforce Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Expiry Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Dropbox Cancel Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Timeforce Cancel Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'E-Mail Opt Out Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Request T-Sheets Flag' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Phone Extension' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Drivers License Number' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Humanity Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'IT Onboarding Complete Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'IT Termination Complete Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Exit Interview Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Deactivate Badge Request Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Values Meeting Invite Sent Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cooperate Meeting Invite Sent Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Values Meeting Attended Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'New Hire Orientation Meeting Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Uniform/Badge Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Shirt Size' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Hat' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Accuity Appointment ID' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Email Setup Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Request Base Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Base Contact Created Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Mosiac Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'T-Sheets Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Offer Letter Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Contract Request Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Contract Received Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Contract Saved Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Background Check Submitted Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Background Check Received Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Welcome E-Mail Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Photo Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Voided Check Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Re-Hire Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Pending Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Termination Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Namely Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'E-Mail Removed Date'
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Base Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Base Contact Deleted Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Mosiac Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled Litmos Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled T-Sheets Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Employment Type' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Compensation Type' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Finding Source' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Personal Email' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Referred By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,(select id from flow.company_object_type where object_type_id = 3 and company_id in (select id from flow.company where company_name = 'Blue Raven Solar'))
-     from flow.custom_field cf
-     where cf.field_name = 'Recruited By' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')
-    );
-
-
---blueraven corporate
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order, archived)
-VALUES ('General',33, 6, true);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Personal',33, 1);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Onboarding',33, 2);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('HR',33, 3);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Systems',33, 4);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Termination',33, 5);
-
+-- --blueraven corporate
 -- INSERT INTO flow.custom_field_group(
---     group_name,company_object_type_id, group_order)
--- VALUES ('Project PlaceHolder',31, 1);
+--     group_name,company_object_type_id, group_order, archived)
+-- VALUES ('General',33, 6, true);
 --
 -- INSERT INTO flow.custom_field_group(
 --     group_name,company_object_type_id, group_order)
--- VALUES ('Contact PlaceHolder',32, 1);
+-- VALUES ('Personal',33, 1);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Onboarding',33, 2);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('HR',33, 3);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Systems',33, 4);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Termination',33, 5);
+--
+-- -- INSERT INTO flow.custom_field_group(
+-- --     group_name,company_object_type_id, group_order)
+-- -- VALUES ('Project PlaceHolder',31, 1);
+-- --
+-- -- INSERT INTO flow.custom_field_group(
+-- --     group_name,company_object_type_id, group_order)
+-- -- VALUES ('Contact PlaceHolder',32, 1);
+--
+-- --blueraven solar
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order, archived)
+-- VALUES ('General',3, 6, true);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Personal',3, 1);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Onboarding',3, 2);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('HR',3, 3);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Systems',3, 4);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Termination',3, 5);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Project PlaceHolder',1, 1);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Contact PlaceHolder',2, 1);
+--
+-- INSERT INTO flow.custom_field_group(
+--     group_name,company_object_type_id, group_order)
+-- VALUES ('Process Step PlaceHolder',4, 1);
 
---blueraven solar
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order, archived)
-VALUES ('General',3, 6, true);
 
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Personal',3, 1);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Onboarding',3, 2);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('HR',3, 3);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Systems',3, 4);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Termination',3, 5);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Project PlaceHolder',1, 1);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Contact PlaceHolder',2, 1);
-
-INSERT INTO flow.custom_field_group(
-    group_name,company_object_type_id, group_order)
-VALUES ('Process Step PlaceHolder',4, 1);
+-- --blueraven corporate
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Employee ID' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Qualifier' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Leave of Absence Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Leave of Absence Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Reactivation Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'BRU Pass Off Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Uniform/Badge Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Shirt Size' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Hat' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Accuity Appointment ID' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Personal Email' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Namely Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Email Setup Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Request Base Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Base Contact Created Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Mosiac Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Litmos Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'T-Sheets Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Offer Letter Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Contract Request Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Contract Received Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Contract Saved Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Background Check Submitted Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Background Check Received Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Welcome E-Mail Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Photo Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Voided Check Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Submitted By' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Hire Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Compensation Type' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Employment Type' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Finding Source' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Re-Hire Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Pending Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Termination Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Referred By' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Recruited By' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cancelled Namely Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'E-Mail Removed Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cancelled Base Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Base Contact Deleted Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cancelled Mosiac Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cancelled Litmos Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cancelled T-Sheets Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Phone Directory Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Greenlight Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Dividend Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Request Sunops App' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Ignition Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Application Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Dropbox Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Oneroof Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Dividend Spoof' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'i9 Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Confidentiality Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'W4 Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Quickbase Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Dividend Spoof Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Removed From Directory Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cancelled Greenlight Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cancelled Dividend Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Removed Sunops Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Removed Sales Rabbit Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cancelled Ignition Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Reason for Termination' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Termination Notes' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Department' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Crew' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Employee Handbook Signed Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Enter in Timeforce Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Expiry Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Dropbox Cancel Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Timeforce Cancel Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'E-Mail Opt Out Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Request T-Sheets Flag' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Phone Extension' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Drivers License Number' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Humanity Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'IT Onboarding Complete Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'IT Termination Complete Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Exit Interview Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Deactivate Badge Request Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Values Meeting Invite Sent Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Cooperate Meeting Invite Sent Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'Values Meeting Attended Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
+--             (select id from flow.custom_field where field_name = 'New Hire Orientation Meeting Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
+--
+-- --blueraven solar********************************************
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Leave of Absence Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Qualifier' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Leave of Absence Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Reactivation Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'BRU Pass Off Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Employee ID' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--  (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
+--   (select id from flow.custom_field where field_name = 'Uniform/Badge Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Shirt Size' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Hat' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Accuity Appointment ID' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Personal Email' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Namely Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Email Setup Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Request Base Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Base Contact Created Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Mosiac Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Litmos Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'T-Sheets Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Offer Letter Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Contract Request Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Contract Received Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Contract Saved Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Background Check Submitted Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Background Check Received Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Welcome E-Mail Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Photo Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Voided Check Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Submitted By' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Hire Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Compensation Type' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Employment Type' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Finding Source' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Re-Hire Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Pending Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Termination Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Referred By' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Recruited By' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cancelled Namely Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'E-Mail Removed Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cancelled Base Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Base Contact Deleted Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cancelled Mosiac Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cancelled Litmos Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cancelled T-Sheets Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Phone Directory Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Greenlight Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Dividend Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Request Sunops App' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Ignition Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Application Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Dropbox Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Oneroof Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Dividend Spoof' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'i9 Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Confidentiality Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'W4 Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Quickbase Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Dividend Spoof Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Removed From Directory Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cancelled Greenlight Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cancelled Dividend Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Removed Sunops Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Removed Sales Rabbit Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cancelled Ignition Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Reason for Termination' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Termination Notes' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Department' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Crew' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Employee Handbook Signed Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Enter in Timeforce Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Expiry Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Dropbox Cancel Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Timeforce Cancel Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'E-Mail Opt Out Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Request T-Sheets Flag' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Phone Extension' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Drivers License Number' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Humanity Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'IT Onboarding Complete Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'IT Termination Complete Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Exit Interview Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Deactivate Badge Request Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Values Meeting Invite Sent Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Cooperate Meeting Invite Sent Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'Values Meeting Attended Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
+--             (select id from flow.custom_field where field_name = 'New Hire Orientation Meeting Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
+--
 
 --blueraven corporate
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Employee ID' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Qualifier' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Leave of Absence Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Leave of Absence Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Reactivation Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'BRU Pass Off Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Uniform/Badge Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Shirt Size' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Hat' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Accuity Appointment ID' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Personal Email' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Namely Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Email Setup Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Request Base Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Base Contact Created Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Mosiac Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Litmos Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'T-Sheets Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Offer Letter Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Contract Request Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Contract Received Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Contract Saved Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Background Check Submitted Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Background Check Received Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Welcome E-Mail Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Photo Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Voided Check Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Submitted By' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Hire Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Compensation Type' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Employment Type' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Finding Source' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Re-Hire Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Pending Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Termination Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Referred By' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Recruited By' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cancelled Namely Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'E-Mail Removed Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cancelled Base Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Base Contact Deleted Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cancelled Mosiac Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cancelled Litmos Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cancelled T-Sheets Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Phone Directory Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Greenlight Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Dividend Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Request Sunops App' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Ignition Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Application Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Dropbox Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Oneroof Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Dividend Spoof' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'i9 Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Confidentiality Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'W4 Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Quickbase Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Dividend Spoof Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Removed From Directory Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cancelled Greenlight Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cancelled Dividend Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Removed Sunops Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Removed Sales Rabbit Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cancelled Ignition Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Reason for Termination' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Termination Notes' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Department' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Crew' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Employee Handbook Signed Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Enter in Timeforce Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Expiry Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Dropbox Cancel Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Timeforce Cancel Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'E-Mail Opt Out Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Request T-Sheets Flag' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Phone Extension' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Drivers License Number' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Humanity Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'IT Onboarding Complete Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'IT Termination Complete Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Exit Interview Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Deactivate Badge Request Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Values Meeting Invite Sent Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Cooperate Meeting Invite Sent Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'Values Meeting Attended Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 33),
-            (select id from flow.custom_field where field_name = 'New Hire Orientation Meeting Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')),1,false, 2350555);
-
---blueraven solar********************************************
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Leave of Absence Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Qualifier' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Leave of Absence Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Reactivation Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'BRU Pass Off Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Employee ID' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
- (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
-  (select id from flow.custom_field where field_name = 'Uniform/Badge Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Shirt Size' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Hat' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Accuity Appointment ID' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Personal Email' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Namely Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Email Setup Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Request Base Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Base Contact Created Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Mosiac Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Litmos Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Systems' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'T-Sheets Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Offer Letter Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Contract Request Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Contract Received Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Contract Saved Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Background Check Submitted Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Background Check Received Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Welcome E-Mail Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Photo Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Onboarding' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Voided Check Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Submitted By' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Hire Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Compensation Type' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Employment Type' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Finding Source' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Re-Hire Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Pending Termination Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Termination Reason' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Referred By' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'HR' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Recruited By' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cancelled Namely Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'E-Mail Removed Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cancelled Base Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Base Contact Deleted Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cancelled Mosiac Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cancelled Litmos Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Termination' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cancelled T-Sheets Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Phone Directory Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Greenlight Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Dividend Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Request Sunops App' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Ignition Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Application Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Dropbox Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Oneroof Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Dividend Spoof' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'i9 Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Confidentiality Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'W4 Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Quickbase Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Dividend Spoof Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Removed From Directory Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cancelled Greenlight Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cancelled Dividend Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Removed Sunops Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Removed Sales Rabbit Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cancelled Ignition Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Reason for Termination' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Termination Notes' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Department' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Crew' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Employee Handbook Signed Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Enter in Timeforce Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Expiry Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Dropbox Cancel Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Timeforce Cancel Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'E-Mail Opt Out Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Request T-Sheets Flag' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Personal' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Phone Extension' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Drivers License Number' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Humanity Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'IT Onboarding Complete Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'IT Termination Complete Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Exit Interview Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Deactivate Badge Request Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Values Meeting Invite Sent Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Cooperate Meeting Invite Sent Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'Values Meeting Attended Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'General' and company_object_type_id = 3),
-            (select id from flow.custom_field where field_name = 'New Hire Orientation Meeting Date' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')),1,false, 2350555);
-
-
---blueraven corporate
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             leave_of_absence_reason,
@@ -4125,7 +4193,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.org o on o.id = up.org_id and company_id = 2
      WHERE leave_of_absence_reason IS NOT NULL);
 
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, boolean_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             qualifier,
@@ -4134,7 +4202,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 2
      WHERE qualifier IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             leave_of_absence_date,
@@ -4143,7 +4211,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 2
      WHERE leave_of_absence_date IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             reactivation_date,
@@ -4152,7 +4220,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 2
      WHERE reactivation_date IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             bru_pass_off_date,
@@ -4161,7 +4229,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 2
      WHERE bru_pass_off_date IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Corporate')) as custom_field_id,
             termination_date,
@@ -5054,7 +5122,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
 
 
 --blueraven solar
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, text_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Leave of Absence Reason' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             leave_of_absence_reason,
@@ -5063,7 +5131,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 3
      WHERE leave_of_absence_reason IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, boolean_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Qualifier' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             qualifier,
@@ -5072,7 +5140,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 3
      WHERE qualifier IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Leave of Absence Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             leave_of_absence_date,
@@ -5081,7 +5149,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 3
      WHERE leave_of_absence_date IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Reactivation Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             reactivation_date,
@@ -5090,7 +5158,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 3
      WHERE reactivation_date IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'Termination Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             termination_date,
@@ -5099,7 +5167,7 @@ INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment
               inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true
               inner join flow.org o on o.id = up.org_id and company_id = 3
      WHERE termination_date IS NOT NULL);
-INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, int_value, created_by_id)
+INSERT INTO flow.user_custom_field_value (user_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT u.id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id WHERE field_name = 'BRU Pass Off Date' and cf.company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) as custom_field_id,
             bru_pass_off_date,
@@ -6168,60 +6236,6 @@ INSERT INTO flow.contact (city,
      where  c.id in (select customer_id from blueraven.deal d  where d.originator_id =2)
         and c.id != 109137);
 
-
-INSERT INTO flow.contact (city,
-                          country_id,
-                          email,
-                          first_name,
-                          last_name,
-                          latitude,
-                          location_unavailable,
-                          longitude,
-                          mailing_city,
-                          mailing_postal_code,
-                          mailing_state,
-                          mailing_street1,
-                          mailing_street2,
-                          mobile,
-                          phone,
-                          postal_code,
-                          prospect_status,
-                          state,
-                          street1,
-                          street2,
-                          time_zone,
-                          contact_type_id,
-                          created_by_id,
-                          date_created,
-                          company_id)
-    (SELECT city,
-            1,
-            email,
-            first_name,
-            last_name,
-            latitude,
-            location_unavailable,
-            longitude,
-            mailing_city,
-            mailing_postal_code,
-            mailing_state,
-            mailing_street1,
-            mailing_street2,
-            mobile,
-            phone,
-            postal_code,
-            prospect_status,
-            state,
-            street1,
-            street2,
-            time_zone,
-            (select id from flow.contact_type where contact_type='Customer'),
-            2350555 as created_by_id,
-            created_date,
-            (select id from flow.company where company_name = 'Solenrgi')
-     from blueraven.customer c
-     where  c.id = 109137);
-
 INSERT INTO flow.contact (city,
                            country_id,
                            email,
@@ -6394,10 +6408,59 @@ SELECT setval('flow.customer_id_seq',
 
 
 
--- change the flow.contact id sequence so the imported ids don't cause problems
-SELECT setval('flow.customer_id_seq',
-              COALESCE((SELECT MAX(id) + 1
-                        FROM flow.contact), 1), false);
+
+INSERT INTO flow.contact (city,
+                          country_id,
+                          email,
+                          first_name,
+                          last_name,
+                          latitude,
+                          location_unavailable,
+                          longitude,
+                          mailing_city,
+                          mailing_postal_code,
+                          mailing_state,
+                          mailing_street1,
+                          mailing_street2,
+                          mobile,
+                          phone,
+                          postal_code,
+                          prospect_status,
+                          state,
+                          street1,
+                          street2,
+                          time_zone,
+                          contact_type_id,
+                          created_by_id,
+                          date_created,
+                          company_id)
+    (SELECT city,
+            1,
+            email,
+            first_name,
+            last_name,
+            latitude,
+            location_unavailable,
+            longitude,
+            mailing_city,
+            mailing_postal_code,
+            mailing_state,
+            mailing_street1,
+            mailing_street2,
+            mobile,
+            phone,
+            postal_code,
+            prospect_status,
+            state,
+            street1,
+            street2,
+            time_zone,
+            (select id from flow.contact_type where contact_type='Customer'),
+            2350555 as created_by_id,
+            created_date,
+            (select id from flow.company where company_name = 'Solenrgi')
+     from blueraven.customer c
+     where  c.id = 109137);
 
 --TODO as Judson if we should mover over description from LEAD
 
@@ -6449,139 +6512,139 @@ set state_id = (select s.id
                 where c.id = c2.id);
 
 
-with parent as (
-    insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                    created_by_id, archived)
-        values('Lead Source',null,1,now(),2350555,false)
-        returning id ),
-     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                           created_by_id, archived)
-         (select s.source_name,(select p.id from parent p),1,now(),2350555,s.archived
-          from blueraven.source s
-          where source_type = 'lead'))
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Lead Source',
-            7,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            p.id
-     from parent p
-    );
+-- with parent as (
+--     insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                     created_by_id, archived)
+--         values('Lead Source',null,1,now(),2350555,false)
+--         returning id ),
+--      t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                            created_by_id, archived)
+--          (select s.source_name,(select p.id from parent p),1,now(),2350555,s.archived
+--           from blueraven.source s
+--           where source_type = 'lead'))
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Lead Source',
+--             7,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Solar'),
+--             p.id
+--      from parent p
+--     );
 
 
 
-with parent as (
-    insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                    created_by_id, archived)
-        values('Lead Source Detail',null,1,now(),2350555,false)
-        returning id ),
-     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                           created_by_id, archived)
-         (select s.lead_source_detail,(select p.id from parent p),1,now(),2350555,false
-          from blueraven.lead s
-          where s.lead_source_detail is not null
-          group by s.lead_source_detail))
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Lead Source Detail',
-            7,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            p.id
-     from parent p
-    );
+-- with parent as (
+--     insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                     created_by_id, archived)
+--         values('Lead Source Detail',null,1,now(),2350555,false)
+--         returning id ),
+--      t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                            created_by_id, archived)
+--          (select s.lead_source_detail,(select p.id from parent p),1,now(),2350555,false
+--           from blueraven.lead s
+--           where s.lead_source_detail is not null
+--           group by s.lead_source_detail))
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Lead Source Detail',
+--             7,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Solar'),
+--             p.id
+--      from parent p
+--     );
 
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
-VALUES ('Hubspot ID',
-        5,
-        now(),
-        2350555,
-        (select id from flow.company where company_name = 'Blue Raven Solar'));
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
-VALUES ('Ricochet Lead ID',
-        5,
-        now(),
-        2350555,
-        (select id from flow.company where company_name = 'Blue Raven Solar'));
-
-
-
-with parent as (
-    insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                    created_by_id, archived)
-        values('Lead Status',null,1,now(),2350555,false)
-        returning id ),
-     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                           created_by_id, archived)
-         (select s.status,(select p.id from parent p),1,now(),2350555,false
-          from blueraven.lead s
-          where s.lead_source_detail is not null
-          group by s.status))
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Lead Status',
-            7,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            p.id
-     from parent p
-    );
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
+-- VALUES ('Hubspot ID',
+--         5,
+--         now(),
+--         2350555,
+--         (select id from flow.company where company_name = 'Blue Raven Solar'));
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id)
+-- VALUES ('Ricochet Lead ID',
+--         5,
+--         now(),
+--         2350555,
+--         (select id from flow.company where company_name = 'Blue Raven Solar'));
 
 
 
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,2
-     from flow.custom_field cf
-     where cf.field_name = 'Lead Source'
-    );
+-- with parent as (
+--     insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                     created_by_id, archived)
+--         values('Lead Status',null,1,now(),2350555,false)
+--         returning id ),
+--      t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                            created_by_id, archived)
+--          (select s.status,(select p.id from parent p),1,now(),2350555,false
+--           from blueraven.lead s
+--           where s.lead_source_detail is not null
+--           group by s.status))
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Lead Status',
+--             7,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Solar'),
+--             p.id
+--      from parent p
+--     );
 
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,2
-     from flow.custom_field cf
-     where cf.field_name = 'Lead Source Detail'
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,2
-     from flow.custom_field cf
-     where cf.field_name = 'Hubspot ID'
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,2
-     from flow.custom_field cf
-     where cf.field_name = 'Ricochet Lead ID'
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,2
-     from flow.custom_field cf
-     where cf.field_name = 'Lead Status'
-    );
 
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Lead Source'),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Lead Source Detail' and company_data_type_id = 7),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Hubspot ID'),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Ricochet Lead ID'),1,false, 2350555);
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Lead Status'),1,false, 2350555);
+
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,2
+--      from flow.custom_field cf
+--      where cf.field_name = 'Lead Source'
+--     );
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,2
+--      from flow.custom_field cf
+--      where cf.field_name = 'Lead Source Detail'
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,2
+--      from flow.custom_field cf
+--      where cf.field_name = 'Hubspot ID'
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,2
+--      from flow.custom_field cf
+--      where cf.field_name = 'Ricochet Lead ID'
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,2
+--      from flow.custom_field cf
+--      where cf.field_name = 'Lead Status'
+--     );
+
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Lead Source'),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Lead Source Detail' and company_data_type_id = 7),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Hubspot ID'),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Ricochet Lead ID'),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Contact PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Lead Status'),1,false, 2350555);
 
 
 
@@ -6807,21 +6870,21 @@ INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date
           WHERE d.setter_user_id IS NOT NULL) AS foo
      WHERE foo.user_position_id IS NOT NULL);
 
-INSERT INTO flow.custom_field(
-    field_name, company_data_type_id, date_created,
-    created_by_id, company_id)
-VALUES ('Entered into Payment System Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,1
-     from flow.custom_field cf
-     where cf.field_name = 'Entered into Payment System Date'
-    );
+-- INSERT INTO flow.custom_field(
+--     field_name, company_data_type_id, date_created,
+--     created_by_id, company_id)
+-- VALUES ('Entered into Payment System Date',2,now(), 2350555,(select id from flow.company where company_name = 'Blue Raven Solar'));
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,1
+--      from flow.custom_field cf
+--      where cf.field_name = 'Entered into Payment System Date'
+--     );
 
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Entered into Payment System Date'),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Entered into Payment System Date'),1,false, 2350555);
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT id,
             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Entered into Payment System Date') as custom_field_id,
@@ -6830,46 +6893,46 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
      FROM blueraven.deal WHERE entered_into_payment_system_date IS NOT NULL
                            and  originator_id = 1);
 
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Source'),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Stage'),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'Cancelled'),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'On Hold'),1,false, 2350555);
-
-INSERT INTO flow.custom_field_group_assignment(
-    custom_field_group_id,
-    custom_field_id,field_order,archived,created_by_id)
-    (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
-            (select id from flow.custom_field where field_name = 'AHJ'),1,false, 2350555);
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Source'),1,false, 2350555);
 --
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,1
-     from flow.custom_field cf
-     where cf.field_name = 'Cancelled'
-    );
-insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    (select id,1
-     from flow.custom_field cf
-     where cf.field_name = 'On Hold'
-    );
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Stage'),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'Cancelled'),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'On Hold'),1,false, 2350555);
+--
+-- INSERT INTO flow.custom_field_group_assignment(
+--     custom_field_group_id,
+--     custom_field_id,field_order,archived,created_by_id)
+--     (select (select id from flow.custom_field_group where group_name = 'Project PlaceHolder'),
+--             (select id from flow.custom_field where field_name = 'AHJ'),1,false, 2350555);
+--
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,1
+--      from flow.custom_field cf
+--      where cf.field_name = 'Cancelled'
+--     );
+-- insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
+--     (select id,1
+--      from flow.custom_field cf
+--      where cf.field_name = 'On Hold'
+--     );
 --
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
     (SELECT p.id,
@@ -7095,49 +7158,49 @@ insert into brs.ahj_requirements(ahj_id, requirement_id, original_requirement_id
 -- values((select id from flow.company where company_name = 'Blue Raven Solar'), 'AHJ', 9, 2350555, 1);
 
 
-with parent as (
-    insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                    created_by_id, archived)
-        values('Setter Appointment Outcome',null,1,now(),2350555,false)
-        returning id ),
-     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                           created_by_id, archived)
-         (select c.setter_appointment_outcome,(select p.id from parent p),1,now(),2350555,false
-          from blueraven.customer c
-          where c.setter_appointment_outcome is not null
-          group by c.setter_appointment_outcome))
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Setter Appointment Outcome',
-            7,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            p.id
-     from parent p
-    );
+-- with parent as (
+--     insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                     created_by_id, archived)
+--         values('Setter Appointment Outcome',null,1,now(),2350555,false)
+--         returning id ),
+--      t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                            created_by_id, archived)
+--          (select c.setter_appointment_outcome,(select p.id from parent p),1,now(),2350555,false
+--           from blueraven.customer c
+--           where c.setter_appointment_outcome is not null
+--           group by c.setter_appointment_outcome))
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Setter Appointment Outcome',
+--             7,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Solar'),
+--             p.id
+--      from parent p
+--     );
 
 
 
-with parent as (
-    insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                    created_by_id, archived)
-        values('Deal Stage',null,1,now(),2350555,false)
-        returning id ),
-     t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
-                                           created_by_id, archived)
-         (select c.deal_stage,(select p.id from parent p),1,now(),2350555,false
-          from blueraven.customer c
-          where c.deal_stage is not null
-          group by c.deal_stage))
-INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
-    (select 'Deal Stage',
-            7,
-            now(),
-            2350555,
-            (select id from flow.company where company_name = 'Blue Raven Solar'),
-            p.id
-     from parent p
-    );
+-- with parent as (
+--     insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                     created_by_id, archived)
+--         values('Deal Stage',null,1,now(),2350555,false)
+--         returning id ),
+--      t as (insert into flow.list_of_value( name, parent_id, display_order, date_created,
+--                                            created_by_id, archived)
+--          (select c.deal_stage,(select p.id from parent p),1,now(),2350555,false
+--           from blueraven.customer c
+--           where c.deal_stage is not null
+--           group by c.deal_stage))
+-- INSERT INTO flow.custom_field (field_name, company_data_type_id, date_created, created_by_id, company_id,list_of_value_id)
+--     (select 'Deal Stage',
+--             7,
+--             now(),
+--             2350555,
+--             (select id from flow.company where company_name = 'Blue Raven Solar'),
+--             p.id
+--      from parent p
+--     );
 
 --TODO add project custom records for deal stage source etc  INSERT INTO flow.project_custom_field_value
 
@@ -7349,8 +7412,8 @@ select * from blueraven.deal_rebate_payment_state;
 insert into brs.project_rebate_batch(id, project_rebate_payment_ids, batch_date, updated_date, voided_batch, updated_by_user_id)
 select * from blueraven.deal_rebate_batch;
 
-insert into brs.project_rebate_payment(id, project_id, payment_amount, created_by_user_id, created_date, approved_by_user_id, approved_date, updated_by_user_id, updated_date, state_id, processed_date, processed_by_user_id, payment_nbr, project_rebate_batch_id, check_number, void_note)
-select * from blueraven.deal_rebate_payment;
+insert into brs.project_rebate_payment(id, project_id, payment_amount, created_by_user_id, created_date, approved_by_user_id, approved_date, updated_by_user_id, updated_date, project_rebate_payment_state_id, processed_date, processed_by_user_id, payment_nbr, project_rebate_batch_id, check_number, void_note)
+select id, deal_id, payment_amount, created_by_user_id, created_date, approved_by_user_id, approved_date, updated_by_user_id, updated_date, state_id, processed_date, processed_by_user_id, payment_nbr, deal_rebate_batch_id, check_number, void_note from blueraven.deal_rebate_payment;
 
 insert into brs.project_rebate_payment_audit(id, project_id, audit, changed_date, changed_by_user_id)
 select * from blueraven.deal_rebate_payment_audit;
@@ -7360,3 +7423,174 @@ SELECT setval('brs.project_rebate_payment_state_id_seq', COALESCE((SELECT MAX(id
 SELECT setval('brs.project_rebate_batch_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.project_rebate_batch), 1), false);
 SELECT setval('brs.project_rebate_payment_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.project_rebate_payment), 1), false);
 SELECT setval('brs.project_rebate_payment_audit_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.project_rebate_payment_audit), 1), false);
+
+
+update flow.org o
+set state_id = s.id
+from blueraven.org o1
+inner join blueraven.sales_area sa on sa.id = o1.sales_area_id
+inner join blueraven.state s on s.id = sa.state_id
+where o.id = o1.id and o1.sales_area_id is not null;
+
+
+insert into flow.organization_custom_field_value( org_id, custom_field_group_assignment_id,  text_value, date_created,
+                                                 date_modified, created_by_id, modified_by_id)
+(
+    with org_types as (
+        select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+        from blueraven.org_hierarchy_filter_down('{216,217}') a
+                 inner join blueraven.org_type ot on ot.id = a.org_type_id
+        where org_type_id not in (15,16)
+        union
+        select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+        from blueraven.org_hierarchy_filter_up(
+                     '{216,217}') a
+                 inner join blueraven.org_type ot on ot.id = a.org_type_id
+        where org_type_id not in (15,16))
+    select
+        o.id,
+    (SELECT cfa.id
+     FROM flow.custom_field_group_assignment cfa
+              inner join flow.custom_field cf on  cf.id = cfa.custom_field_id
+              inner join flow.custom_field_group cfg on cfg.id = cfa.custom_field_group_id and cfg.company_object_type_id = 35
+     WHERE field_name = 'Org Email'),
+        o.email,
+        now(),
+        now(),
+        2350555,
+        2350555
+    from blueraven.org o
+            inner join flow.org o1 on o1.id = o.id
+             inner join org_types ot on ot.id = o.org_type_id
+    where o.id not in (215)
+      and o.id not in (select id from blueraven.org_hierarchy_filter_down('{215}'))
+      and o.email is not null);
+
+insert into flow.organization_custom_field_value( org_id, custom_field_group_assignment_id,  text_value, date_created,
+                                                  date_modified, created_by_id, modified_by_id)
+    (
+        with org_types as (
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_down('{215}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16)
+            union
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_up(
+                         '{215}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16))
+        select
+            o.id,
+            (SELECT cfa.id
+             FROM flow.custom_field_group_assignment cfa
+                      inner join flow.custom_field cf on  cf.id = cfa.custom_field_id
+                      inner join flow.custom_field_group cfg on cfg.id = cfa.custom_field_group_id and cfg.company_object_type_id = 5
+             WHERE field_name = 'Org Email'),
+            o.email,
+            now(),
+            now(),
+            2350555,
+            2350555
+        from blueraven.org o
+                 inner join flow.org o1 on o1.id = o.id
+                 inner join org_types ot on ot.id = o.org_type_id
+        where o.id not in (216,217)
+          and o.id not in (select id from blueraven.org_hierarchy_filter_down('{216,217}'))
+          and o.email is not null);
+
+
+
+insert into flow.organization_custom_field_value( org_id, custom_field_group_assignment_id,  int_value, date_created,
+                                                  date_modified, created_by_id, modified_by_id)
+    (
+        with org_types as (
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_down('{216,217}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16)
+            union
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_up(
+                         '{216,217}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16))
+        select
+            o.id,
+            (SELECT cfa.id
+             FROM flow.custom_field_group_assignment cfa
+                      inner join flow.custom_field cf on  cf.id = cfa.custom_field_id
+                      inner join flow.custom_field_group cfg on cfg.id = cfa.custom_field_group_id and cfg.company_object_type_id = 35
+             WHERE field_name = 'Metro Area'),
+            lov.id,
+            now(),
+            now(),
+            2350555,
+            2350555
+        from blueraven.org o
+                 inner join flow.org o1 on o1.id = o.id
+                 inner join org_types ot on ot.id = o.org_type_id
+                 inner join blueraven.org_metro_area oma on oma.org_id = o.id
+                 inner join blueraven.metro_area ma on ma.id = oma.metro_area_id
+            inner join  blueraven.sales_area sa on sa.id = ma.sales_area_id
+            inner join flow.list_of_value lov on lov.name = sa.area || ' - ' || ma.metro_area and parent_id = 172
+        where o.id not in (215)
+          and o.id not in (select id from blueraven.org_hierarchy_filter_down('{215}'))
+          and o.email is not null
+          and  o.sales_metro_area_id is not null);
+
+insert into flow.organization_custom_field_value( org_id, custom_field_group_assignment_id,  int_value, date_created,
+                                                  date_modified, created_by_id, modified_by_id)
+    (
+        with org_types as (
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_down('{215}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16)
+            union
+            select distinct ot.id,ot.org_type,ot.org_parent_type_id,level
+            from blueraven.org_hierarchy_filter_up(
+                         '{215}') a
+                     inner join blueraven.org_type ot on ot.id = a.org_type_id
+            where org_type_id not in (15,16))
+        select
+            o.id,
+            (SELECT cfa.id
+             FROM flow.custom_field_group_assignment cfa
+                      inner join flow.custom_field cf on  cf.id = cfa.custom_field_id
+                      inner join flow.custom_field_group cfg on cfg.id = cfa.custom_field_group_id and cfg.company_object_type_id = 5
+             WHERE field_name = 'Metro Area'),
+            lov.id,
+            now(),
+            now(),
+            2350555,
+            2350555
+        from blueraven.org o
+                 inner join flow.org o1 on o1.id = o.id
+                 inner join org_types ot on ot.id = o.org_type_id
+                 inner join blueraven.org_metro_area oma on oma.org_id = o.id
+                 inner join blueraven.metro_area ma on ma.id = oma.metro_area_id
+                 inner join  blueraven.sales_area sa on sa.id = ma.sales_area_id
+                 inner join flow.list_of_value lov on lov.name = sa.area || ' - ' || ma.metro_area and parent_id = 172
+        where o.id not in (216,217)
+          and o.id not in (select id from blueraven.org_hierarchy_filter_down('{216,217}'))
+          and o.email is not null
+          and  o.sales_metro_area_id is not null);
+
+
+update brs.ahj a1
+set metro_area_id = lov.id
+from blueraven.ahj a
+inner join blueraven.metro_area ma on ma.id = a.metro_area_id
+inner join blueraven.sales_area sa on sa.id = ma.sales_area_id
+inner join flow.list_of_value lov on lov.name = sa.area || ' - ' || ma.metro_area and parent_id = 172
+where a.id = a1.id;
+
+
+update brs.ahj_utility au
+set metro_area_id = lov.id
+from blueraven.ahj_utility a
+         inner join blueraven.metro_area ma on ma.id = a.metro_area_id
+         inner join blueraven.sales_area sa on sa.id = ma.sales_area_id
+         inner join flow.list_of_value lov on lov.name = sa.area || ' - ' || ma.metro_area and parent_id = 172
+where a.id = au.id;

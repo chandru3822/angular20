@@ -39,12 +39,9 @@ export default new Router({
           }
         } else {
           if(from.name !== 'login') {
-
-            console.log('from = login')
             try {
               const {data} = await getUser()
               store.commit(UserMutations.SET_DETAILS, data)
-              console.log('going to next')
               next()
             } catch (e) {
               next('/login')
@@ -698,7 +695,24 @@ export default new Router({
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/commissionManagement/Residuals.vue'),
             },
           ]
-        }, {
+          }, {
+              path: '/finances',
+              name: 'finances',
+              component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/Rebate.vue'),
+              children: [
+                  {
+                      path: 'rebate/batches',
+                      component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/Batches.vue')
+                  },{
+                      path: 'rebate/viewPayments',
+                      component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/ViewPayments.vue'),
+                  },{
+                      path: 'rebate/batches/:id',
+                      name: 'rebateDetails',
+                      component: () => import (/* webpackChunkName: "finances" */ './views/finances/rebate/RebateDetails.vue'),
+                  }
+              ]
+          }, {
           path: '/smartlist',
           component: () => {
             if(store.getters.userHasFeature('SMARTLIST')) {

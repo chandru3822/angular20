@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.ResourceAppointment;
 import com.albatross.api.v1.flow.model.ResourceSchedule;
 import com.albatross.api.v1.flow.model.WorkDay;
 import com.albatross.api.v1.flow.services.AvailabilityService;
@@ -43,5 +44,22 @@ public class AvailabilityController {
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteSchedule(@PathVariable Long id) {
     availabilityService.deleteSchedule(id);
+  }
+
+  // appointments
+  @GetMapping(value = "/appointments", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ResourceAppointment> getResourceAppointments(@RequestParam(required = false) Long userId,
+                                                           @RequestParam(required = false) Long orgId) {
+    return availabilityService.getResourceAppointments(userId, orgId);
+  }
+
+  @PostMapping(value = "/appointment", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResourceAppointment saveAppointment(@RequestBody ResourceAppointment resourceAppointment) {
+    return availabilityService.saveAppointment(resourceAppointment);
+  }
+
+  @DeleteMapping(value = "/appointment/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteAppointment(@PathVariable Long id) {
+    availabilityService.deleteAppointment(id);
   }
 }

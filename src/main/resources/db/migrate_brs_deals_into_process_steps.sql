@@ -404,8 +404,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 30 then ((site_survey_photos_missing_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
                  when p.custom_field_group_assignment_id = 31 then ((site_survey_verified_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')else null end,
-            case when p.custom_field_group_assignment_id = 35 then d2.price_change
-                when p.custom_field_group_assignment_id = 34 then d2.kwh_change
+            case when p.custom_field_group_assignment_id = 35 then (select id from flow.list_of_value where parent_id = 289
+                                                                                                        and name = d2.price_change)
+                 when p.custom_field_group_assignment_id = 34 then (select id from flow.list_of_value where parent_id = 151
+                                                                                                        and name = d2.kwh_change)
                  when   p.custom_field_group_assignment_id = 33 then (select id from blueraven.user where (first_name||' '||last_name) = d2.final_design_completed_by)
                  when p.custom_field_group_assignment_id = 75 then  d2.panel_quantity
                  when p.custom_field_group_assignment_id = 76 then  (select id from flow.list_of_value where parent_id = 238

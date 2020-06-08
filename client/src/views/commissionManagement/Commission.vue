@@ -1207,7 +1207,6 @@
         this.newUser.showNote = false
         this.newUser.noteMsg = ''
         this.errorLoadingUserHistory = false
-        console.log('randaLogger', userId)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/commissionManagement/commissionUser/${userId}/history`, 'blueraven')

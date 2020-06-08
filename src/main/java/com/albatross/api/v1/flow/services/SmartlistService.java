@@ -129,6 +129,7 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
     params.put("userId", user.getId());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     Long requirementId = sqlCache.updateReturningId("smartlist.addRequirement", params, "id").longValue();
     return this.getRequirementById(requirementId);
   }
@@ -136,6 +137,7 @@ public class SmartlistService {
   public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
     HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
     params.put("userId", securityService.getCurrentUser().getId());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     sqlCache.update("smartlist.updateRequirement", params);
     return sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirement.getId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
   }
@@ -158,7 +160,35 @@ public class SmartlistService {
     return sqlCache.query("smartlist.getRequirements", Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
   }
 
-  public String generate(Long smartlistId) {
+  public List<Smartlist> getSharedByType(Long objectTypeId) {
+      User user = securityService.getCurrentUser();
+      return sqlCache.query("project.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId), Smartlist.class);
+  }
+
+  public SmartlistResult getSmartlistResults(Long smartlistId) {
+      final String query = buildSql(smartlistId);
+      List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAssignedFields", Map.of("smartlistId", smartlistId), SmartlistFieldAssignment.class);
+      List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
+
+      return new SmartlistResult(fields, results);
+  }
+
+  public String getCsv(Long smartlistId) {
+      final String query = buildSql(smartlistId);
+      List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
+      List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAssignedFields", Map.of("smartlistId", smartlistId), SmartlistFieldAssignment.class);
+      ArrayList<String> dateFields = new ArrayList<>();
+
+      for(SmartlistFieldAssignment field : fields) {
+         if (field.getDataTypeId() == 1) {
+             dateFields.add(field.getName());
+         }
+  }
+
+      return writeCsv(results, fields, dateFields);
+  }
+
+  public String buildSql(Long smartlistId) {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("smartlistId", smartlistId);
@@ -178,13 +208,10 @@ public class SmartlistService {
     // - value 3: hasListValue (from company_data_type)
     HashMap<Long, List<Object>> joinObjectTypes = new HashMap<>();
 
-    ArrayList<String> dateFields = new ArrayList<>();
     StringBuilder query = new StringBuilder("select");
-
 
     for (SmartlistFieldAssignment f : fields) {
 
-      final Long fieldObjectTypeId = f.getObjectTypeId();
       final boolean checkCfgaId = f.getCustomFieldGroupAssignmentId() != null && !joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId());
 
       if (checkCfgaId) {
@@ -211,7 +238,6 @@ public class SmartlistService {
 
       if (f.getDataTypeId() == 1) {
         query.append(String.format(" date(%s) as \"%s\",", location, f.getName()));
-        dateFields.add(f.getName());
       } else {
         query.append(String.format(" %s as \"%s\",", location, f.getName()));
       }
@@ -622,33 +648,64 @@ public class SmartlistService {
         break;
     }
 
-    query.append(" where ");
+    StringBuilder additionalJoins = new StringBuilder();
+    StringBuilder whereClause = new StringBuilder();
 
-    for (SmartlistRequirement r : requirements) {
-      String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeRequirement());
+      for (SmartlistRequirement r : requirements) {
+          String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
 
-      // @TODO: requirements need to take into account
-      switch (r.getDataTypeId().intValue()) {
-        case 1:
-          query.append(String.format("%s.%s %s '%s' and ", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
-          break;
-        case 5:
-          query.append(String.format("%s.%s %s %s and ", r.getReferenceTable(), r.getReferenceColumn(), operator, getRequirementValue(r)));
-          break;
+          String referenceLocation = "";
+
+          if (r.getIsCustomValue()) {
+              // see if table we need is already been joined, if so use it
+              // @TODO humes, probably want to also check processStepId here is objectTypeId == 4
+              if (joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()) != null) {
+                  referenceLocation = joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()).get(0).toString();
+              } else {
+                  // Do a new join from custom field value table based on object type
+                  if (r.getObjectTypeId() == 4) {
+                      final String ppsUUID = UUID.randomUUID().toString();
+                      final String ppscfvUUID = UUID.randomUUID().toString();
+                      additionalJoins.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, r.getProcessStepId()));
+                      additionalJoins.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, r.getCustomFieldGroupAssignmentId()));
+                      // @TODO humes, reference column changes if field is a list or not.
+                      referenceLocation = "\"" + ppscfvUUID + "\"." + getReferenceColumn(r.getDataTypeId());
+                  } else {
+                      final String newUuid = UUID.randomUUID().toString();
+                      additionalJoins.append(String.format("left join %s \"%s\"", getReferenceTable(r.getObjectTypeId()), newUuid));
+                      referenceLocation = "\"" + newUuid + "\"." + getReferenceColumn(r.getDataTypeId());
+                  }
+              }
+          } else {
+              referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
+          }
+
+          // @TODO: requirements need to take into account
+          switch (r.getDataTypeId().intValue()) {
+              case 1:
+                  whereClause.append(String.format("%s %s '%s' and ", referenceLocation, operator, getRequirementValue(r)));
+                  break;
+              case 5:
+                  whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, getRequirementValue(r)));
+                  break;
+              case 7:
+                  whereClause.append(String.format("%s %s array%s::int[] and ", referenceLocation, operator, getRequirementValue(r)));
+                  break;
+          }
       }
-    }
+
+    query.append(additionalJoins.toString());
+
+    query.append(" where ").append(whereClause.toString());
 
     // remvoe the last "and "
-    query = query.delete(query.length() - 4, query.length());
+    query = query.delete(query.length() - 5, query.length());
 
     query.append(";");
 
     log.info(query.toString());
 
-    //@TODO: wrap in try/catch and gracefully handle failed queries
-    List<Map<String, Object>> results = sqlCache.queryBySql(query.toString(), null, new ColumnMapRowMapper());
-
-    return writeCsv(results, fields, dateFields);
+    return query.toString();
   }
 
   private String writeCsv(List<Map<String, Object>> data, List<SmartlistFieldAssignment> headers, ArrayList<String> dateFields) {
@@ -727,6 +784,7 @@ public class SmartlistService {
 
   //@TODO humes: similar enough to project process step requirement stuff that should probably be merged at some point
   private Object getRequirementValue(SmartlistRequirement r) {
+
     switch (r.getDataTypeId().intValue()) {
       case 1:
         LocalDate requirementValue = (r.getRequirementValue() !=  null) ? LocalDate.parse(r.getRequirementValue()) : null;
@@ -748,21 +806,31 @@ public class SmartlistService {
           case 19:
             return r.getDataTypeRequirement().getDataTypeValue();
         }
+        case 7:
+            if (r.getIsCustomValue()) {
+                return r.getListOfValueIds();
+            } else {
+                switch (r.getDataTypeRequirementId().intValue()) {
+                    case 22:
+                    case 23:
+                        return r.getDataTypeRequirement().getDataTypeValue();
+                }
+            }
       default:
         return null;
     }
   }
 
-  private String getSqlOperator(Long operatorTypeId, DataTypeRequirement r) {
+  private String getSqlOperator(Long operatorTypeId, Long dataTypeId, DataTypeRequirement r) {
 
     // List of whether the dataTypeRequirementId is being compared to `null` or `not null`
     List<Long> nullableIds = List.of(4L, 5L, 12L, 13L, 16L, 17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L);
 
     switch (operatorTypeId.intValue()) {
       case 1:
-        return (nullableIds.contains(r.getId()) ? "is" : "=");
+        return (r != null && nullableIds.contains(r.getId()) ? "is" : "=");
       case 2:
-        return (nullableIds.contains(r.getId()) ? "is" : "!=");
+        return (r != null && nullableIds.contains(r.getId()) ? "is" : "!=");
       case 3:
         return ">";
       case 4:

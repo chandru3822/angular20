@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.exceptions.EmailInUseException;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserSearch;
 import com.albatross.api.v1.flow.model.CompanyUserStatusType;
@@ -17,12 +18,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RequestMapping(value = "/api/v1/flow/user")
 public class UserController {
+
+    private final SecurityService securityService;
 
     private final UserService userService;
 
@@ -69,5 +73,11 @@ public class UserController {
     @GetMapping(value = "/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getLoggedInUser() {
         return userService.getLoggedInUser();
+    }
+
+    @PostMapping(value = "/validate", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity validatePassword(@RequestBody Map<String, String> requestData) {
+      Boolean response = securityService.validatePassword(requestData.get("password"));
+      return response ? new ResponseEntity(HttpStatus.OK) : new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
     }
 }

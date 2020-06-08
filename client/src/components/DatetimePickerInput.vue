@@ -29,7 +29,7 @@
   </v-date-picker>
 
   <v-time-picker
-    v-model="time"
+    v-model="localTime"
     v-if="showTime"
     :ampm-in-title="true"
   >
@@ -44,6 +44,7 @@
 <script>
 
 import {DateTime} from 'luxon'
+import moment from 'moment'
 
 export default {
   name: 'DatetimePickerInput',
@@ -53,6 +54,7 @@ export default {
     type: String,
     label: String,
     format: String,
+    inputFormat: String,
     readonly: {
       type: Boolean,
       default: false
@@ -63,10 +65,25 @@ export default {
     time: null,
     menu: false,
     showDate: false,
-    showTime: false
+    showTime: false,
+    //i'm not sure what the default here will be for normal timestamps. i'm guessing 'YYYY-MM-DD HH:mm:ss' but feel free to change it if that is not the case
+    defaultTimeFormat: 'YYYY-MM-DD HH:mm:ss'
   }),
   created() {
     this.init()
+  },
+  computed: {
+    localTime: {
+      get: function() {
+        return this.$props.value
+          ? moment.utc(this.$props.value, (this.inputFormat ?? this.defaultTimeFormat)).tz(this.timezone).format('HH:mm')
+          : moment().format('HH:mm')
+      },
+      set: function (date) {
+        this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
+        return date
+      }
+    }
   },
   methods: {
     saveDate () {
@@ -81,8 +98,8 @@ export default {
     },
     saveTime () {
       if (this.type === 'timestamp') {
-        const date = DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: this.timezone})
-        let time = DateTime.fromISO(this.time, {zone: this.timezone})
+        const date = DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: 'utc'})
+        let time = DateTime.fromISO(this.time, {zone: 'utc'})
         const datetime = time.set({
           year: date.year,
           month: date.month,
@@ -92,7 +109,7 @@ export default {
         this.showDate = true
         this.showTime = false
       } else {
-        this.$emit('input', DateTime.fromISO(this.time, {zone: this.timezone}).toISOTime())
+        this.$emit('input', DateTime.fromISO(this.time, {zone: 'utc'}).toISOTime())
       }
       this.menu = false
     },
@@ -101,16 +118,18 @@ export default {
       this.init()
     },
     init () {
-      let value = DateTime.fromISO(this.$props.value)
+      console.log('VAL', value)
+      // let value = DateTime.fromFormat(this.$props.value, 'HH:mm')
+      let value = DateTime.fromISO(this.$props.value, { zone: 'utc'})
 
-      if (['timestamp', 'time'].includes(this.type)) {
-        value = value.setZone(this.timezone)
-      }
+      // if (['timestamp', 'time'].includes(this.type)) {
+      //   value = value.setZone(this.timezone)
+      // }
 
-      const now = DateTime.local().setZone(this.timezone)
-      const dateToUse = (value.isValid) ? value : now
-      this.date = dateToUse.toFormat('yyyy-MM-dd')
-      this.time = dateToUse.toFormat('HH:mm')
+      const now = DateTime.local().setZone('utc')
+      this.dateToUse = (value.isValid) ? value : now
+      this.date = this.dateToUse.toFormat('yyyy-MM-dd')
+      this.time = this.dateToUse.toFormat('HH:mm')
 
       if (['timestamp', 'date'].includes(this.type)) {
         this.showDate = true

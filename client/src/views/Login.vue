@@ -70,7 +70,6 @@
             )
           }
         } else {
-          console.log('Error in form')
           this.loginLoading = false
         }
       },

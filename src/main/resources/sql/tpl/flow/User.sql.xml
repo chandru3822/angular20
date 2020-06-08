@@ -256,6 +256,7 @@
            u.first_name,
            u.last_name,
            u.first_name || ' ' || u.last_name as full_name,
+           u.password,
            coalesce(u.default_company_id, uc.company_id) as company_id,
            c.aws_bucket,
            (select has_access

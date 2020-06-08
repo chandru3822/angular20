@@ -1,0 +1,16 @@
+<sql>
+    <wellsfargo.getUpcomingRebatePayments>
+        <![CDATA[
+            SELECT *
+            FROM brs.project_rebate_payment_upcoming
+        ]]>
+    </wellsfargo.getUpcomingRebatePayments>
+
+    <wellsfargo.saveCheckNumberToPayment>
+        <![CDATA[
+            UPDATE brs.project_rebate_payment
+                SET check_number = :checkNumber
+            where id = :paymentId;
+        ]]>
+    </wellsfargo.saveCheckNumberToPayment>
+</sql>

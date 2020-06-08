@@ -158,7 +158,6 @@
         this.$router.push({ name: path })
       },
       async changeTimezone (tz) {
-        console.log('will change timezone', tz)
         await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
         this.timezone = tz
         //todo: actually save it to the DB

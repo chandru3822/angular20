@@ -342,7 +342,6 @@
           }
         })
 
-        console.log('randaLogger', this.dirtyUsers)
         if(dirtyUsers.length > 0) {
           try {
             await postRequest(`/postalCode/zone/saveAllocations`, dirtyUsers)

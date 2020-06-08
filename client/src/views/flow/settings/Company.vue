@@ -139,7 +139,6 @@ export default {
         await this.$store.dispatch(Actions.FILE_DELETE, {
           id,
           callback: async (status) => {
-            console.log('attachment deleted', status)
             this.companyLogo = {}
             // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
             this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
@@ -160,7 +159,6 @@ export default {
           attachmentTypeId,
           sourceId,
           callback: async (img) => {
-            console.log('saved image', img)
             this.companyLogo = img
 
             // this.$store.commit(UserMutations.SET_USER_IMAGE, img)

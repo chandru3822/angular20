@@ -96,14 +96,24 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.updateLogic(smartlistId, logic), HttpStatus.OK);
   }
 
-  @GetMapping(value = "/{smartlistId}/generate", produces = "text/csv")
-  public ResponseEntity<String> generateSmartlistReport(@PathVariable Long smartlistId) {
-    String report = smartlistService.generate(smartlistId);
+  @GetMapping(value = "/{smartlistId}/csv", produces = "text/csv")
+  public ResponseEntity<String> getSmartlistCsvById(@PathVariable Long smartlistId) {
+    String report = smartlistService.getCsv(smartlistId);
     return new ResponseEntity<>(report, (report == null) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{smartlistId}/data", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> getSmartlistDataById(@PathVariable Long smartlistId) {
+      return new ResponseEntity<>(smartlistService.getSmartlistResults(smartlistId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableSmartlistFieldsByObjectType(@RequestParam Long objectTypeId) {
     return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/shared", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Smartlist>> getPublicSmartlistsByType(@RequestParam Long objectTypeId) {
+    return new ResponseEntity<>(smartlistService.getSharedByType(objectTypeId), HttpStatus.OK);
   }
 }
