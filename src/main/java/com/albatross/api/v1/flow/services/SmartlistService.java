@@ -206,6 +206,7 @@ public class SmartlistService {
     // - value 1: object type ID
     // - value 2: process step ID
     // - value 3: hasListValue (from company_data_type)
+        // - value 4: allowMultiple
     HashMap<Long, List<Object>> joinObjectTypes = new HashMap<>();
 
     StringBuilder query = new StringBuilder("select");
@@ -221,6 +222,7 @@ public class SmartlistService {
         mapVals.add(f.getObjectTypeId());
         mapVals.add(f.getProcessStepId());
         mapVals.add(f.getHasListValues());
+        mapVals.add(f.getAllowMultiple());
 
         joinObjectTypes.put(f.getCustomFieldGroupAssignmentId(), mapVals);
       }
@@ -229,15 +231,19 @@ public class SmartlistService {
 
       if (f.getCustomFieldGroupAssignmentId() != null && joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId())) {
         final String table = joinObjectTypes.get(f.getCustomFieldGroupAssignmentId()).get(0).toString();
-        final String column = (f.getHasListValues() != null && f.getHasListValues()) ? "name" : getReferenceColumn(f.getDataTypeId());
+        final String column = (f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) ? "name" : getReferenceColumn(f.getDataTypeId());
         location = String.format("\"%s\".%s", table, column);
       } else {
         location = String.format("%s.%s", f.getReferenceTable(), f.getReferenceColumn());
       }
 
-
+//      @TODO humes, possible switch on dataTypeId. Probably a good place to separate logic into helper function
       if (f.getDataTypeId() == 1) {
         query.append(String.format(" date(%s) as \"%s\",", location, f.getName()));
+      } else if (f.getDataTypeId() == 7) {
+          query.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
+      } else if (f.getDataTypeId() == 9) {
+
       } else {
         query.append(String.format(" %s as \"%s\",", location, f.getName()));
       }
@@ -267,6 +273,7 @@ public class SmartlistService {
           final String uuid = vals.get(0).toString();
           final Long objectTypeId = Long.parseLong(vals.get(1).toString());
           final Boolean hasListValues = Boolean.parseBoolean((vals.get(3) == null) ? "false" : vals.get(3).toString());
+          final Boolean allowMultiple = Boolean.parseBoolean((vals.get(4) == null) ? "false" : vals.get(4).toString());
 
           switch (objectTypeId.intValue()) {
             case 1:
@@ -304,9 +311,13 @@ public class SmartlistService {
               query.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
 
               if (hasListValues) {
-                final String ppscfvUUID = UUID.randomUUID().toString();
-                query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, cfgaId));
-                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ppscfvUUID));
+                if (allowMultiple) {
+                    query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, ppsUUID, uuid, cfgaId));
+                } else {
+                    final String ppscfvUUID = UUID.randomUUID().toString();
+                    query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, cfgaId));
+                    query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ppscfvUUID));
+                }
               } else {
                 query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, ppsUUID, uuid, cfgaId));
               }
@@ -660,7 +671,8 @@ public class SmartlistService {
               // see if table we need is already been joined, if so use it
               // @TODO humes, probably want to also check processStepId here is objectTypeId == 4
               if (joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()) != null) {
-                  referenceLocation = joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()).get(0).toString();
+                  //Only put quotes around table when dataTypeId == 7
+                  referenceLocation = "\"" + joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()).get(0).toString() + "\"." + getReferenceColumn(r.getDataTypeId());
               } else {
                   // Do a new join from custom field value table based on object type
                   if (r.getObjectTypeId() == 4) {
@@ -689,7 +701,7 @@ public class SmartlistService {
                   whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, getRequirementValue(r)));
                   break;
               case 7:
-                  whereClause.append(String.format("%s %s array%s::int[] and ", referenceLocation, operator, getRequirementValue(r)));
+                  whereClause.append(String.format("sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, getRequirementValue(r)));
                   break;
           }
       }
