@@ -164,4 +164,30 @@
     where id = :id
   ]]></availability.deleteAppointment>
 
+  <availability.getUserAppointmentLength><![CDATA[
+    select default_appointment_length
+      from flow.user_company
+      where user_id = :userId
+        and company_id = :companyId
+  ]]></availability.getUserAppointmentLength>
+
+  <availability.getOrgAppointmentLength><![CDATA[
+    select default_appointment_length
+      from flow.org
+      where id = :orgId
+  ]]></availability.getOrgAppointmentLength>
+
+  <availability.saveUserAppointmentLength><![CDATA[
+    update flow.user_company
+      set default_appointment_length = :appointmentLength
+    where user_id = :userId
+      and company_id = :companyId
+  ]]></availability.saveUserAppointmentLength>
+
+  <availability.saveOrgAppointmentLength><![CDATA[
+    update flow.org
+      set default_appointment_length = :appointmentLength
+    where id = :orgId
+  ]]></availability.saveOrgAppointmentLength>
+
 </sql>

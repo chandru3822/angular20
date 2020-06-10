@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -131,6 +132,45 @@ public class AvailabilityService {
     } else {
 
       sqlCache.update("availability.insertHours", params);
+    }
+
+  }
+  // appt length
+  public Long getResourceAppointmentLength(Long userId, Long orgId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("orgId", orgId);
+    params.put("companyId", user.getCompanyId());
+
+    Long result;
+    if(orgId != null) {
+      result = sqlCache.queryForObject("availability.getOrgAppointmentLength", params, Long.class);
+    } else {
+      result = sqlCache.queryForObject("availability.getUserAppointmentLength", params, Long.class);
+    }
+    return result;
+  }
+
+  @Data
+  public static class AppointmentLength {
+    private Long userId, orgId, defaultAppointmentLength;
+  }
+
+  public void saveResourceAppointmentLength(AppointmentLength al) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", al.getUserId());
+    params.put("appointmentLength", al.getDefaultAppointmentLength());
+    params.put("orgId", al.getOrgId());
+    params.put("companyId", user.getCompanyId());
+
+    if(al.getOrgId() != null) {
+      sqlCache.update("availability.saveOrgAppointmentLength", params);
+    } else {
+      sqlCache.update("availability.saveUserAppointmentLength", params);
     }
 
   }
