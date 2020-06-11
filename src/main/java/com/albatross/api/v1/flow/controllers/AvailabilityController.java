@@ -47,6 +47,17 @@ public class AvailabilityController {
   }
 
   // appointments
+  @GetMapping(value = "/appointments/length", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Long getResourceAppointmentLength(@RequestParam(required = false) Long userId,
+                                           @RequestParam(required = false) Long orgId) {
+    return availabilityService.getResourceAppointmentLength(userId, orgId);
+  }
+
+  @PostMapping(value = "/appointments/length", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveResourceAppointmentLength(@RequestBody AvailabilityService.AppointmentLength al) {
+    availabilityService.saveResourceAppointmentLength(al);
+  }
+
   @GetMapping(value = "/appointments", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ResourceAppointment> getResourceAppointments(@RequestParam(required = false) Long userId,
                                                            @RequestParam(required = false) Long orgId) {

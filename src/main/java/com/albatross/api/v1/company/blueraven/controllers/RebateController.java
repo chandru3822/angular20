@@ -56,7 +56,7 @@ public class RebateController {
   }
 
   @GetMapping(value="/getBatchDetails/{id}/chase-csv")
-  public ResponseEntity getCsvForBatch (@NonNull @PathVariable("id") Long batchId) throws Exception {
+  public ResponseEntity<?> getCsvForBatch (@NonNull @PathVariable("id") Long batchId) {
     try {
       return ResponseEntity.ok(chaseService.generateCsv_Ap6DelimitedSingleLine(batchId));
     } catch (ChaseBankService.BadDataException e) {
@@ -106,10 +106,10 @@ public class RebateController {
 
   @RequestMapping(value = "/approve", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public void approvePayments(@RequestBody RebatePayment rebatePayment) throws Exception {
-    try{
+    try {
       //create a batch and mark payments as processed and set the batch id
       rebateService.assignPaymentsToBatch(rebatePayment);
-    }catch(Exception ex){
+    } catch (Exception ex) {
       log.error("WELLS_FARGO: Failed to fully process batch", ex);
       throw ex;
     }
