@@ -13,7 +13,8 @@ public class SmartlistFieldAssignment {
 
   //@TODO humes: should probably make this have a field of type SmartlistField since it uses most of those fields anyways
 
-  private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById, displayOrder, processStepId, dataTypeId, objectTypeId, companySystemListId;
+  private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById,
+      displayOrder, processStepId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId;
 
   private String name, objectType, processStepName, customFieldSqlKey;
 

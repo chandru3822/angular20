@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -238,12 +239,16 @@ public class SmartlistService {
       }
 
 //      @TODO humes, possible switch on dataTypeId. Probably a good place to separate logic into helper function
-      if (f.getDataTypeId() == 1) {
-        query.append(String.format(" date(%s) as \"%s\",", location, f.getName()));
+      if (f.getDataTypeId() == 1 || f.getDataTypeId() == 2) {
+        query.append(String.format(" %s as \"%s\",", location, f.getName()));
       } else if (f.getDataTypeId() == 7) {
           query.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
-
+//          if (f.getSystemListTypeId() == 1) {
+////orgs
+//          } else if (f.getSystemListTypeId() == 2) {
+//              query.append(String.format(" (select \"name\" from flow.user where id = %s, ", f.getIn))
+//          }
       } else {
         query.append(String.format(" %s as \"%s\",", location, f.getName()));
       }
@@ -667,7 +672,7 @@ public class SmartlistService {
 
           String referenceLocation = "";
 
-          if (r.getIsCustomValue()) {
+          if (r.getCustomFieldGroupAssignmentId() != null) {
               // see if table we need is already been joined, if so use it
               // @TODO humes, probably want to also check processStepId here is objectTypeId == 4
               if (joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()) != null) {
@@ -695,8 +700,12 @@ public class SmartlistService {
           // @TODO: requirements need to take into account
           switch (r.getDataTypeId().intValue()) {
               case 1:
+              case 2:
                   whereClause.append(String.format("%s %s '%s' and ", referenceLocation, operator, getRequirementValue(r)));
                   break;
+//              case 3:
+//                  whereClause.append(String.format("%s is %s and ", referenceLocation, operator, getRequirementValue(r)));
+//                  break;
               case 5:
                   whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, getRequirementValue(r)));
                   break;
@@ -767,32 +776,30 @@ public class SmartlistService {
     }
   }
 
-  private String getReferenceColumn(Long dataTypeId) {
-    switch (dataTypeId.intValue()) {
-      case 1:
-        return "date_value";
-      case 2:
-        return "timestamp_value";
-      case 3:
-        return "boolean_value";
-      case 4:
-        return "numeric_value";
-      case 5:
-        return "text_value";
-      case 6:
-        return "int_value";
-      case 7:
-        return "int_array_value";
-      case 8:
-        //@TODO: figure system value
-        return "";
-      case 9:
-        //@TODO: figure system list. I think this uses the same int_value column??
-        return "";
-      default:
-        return "";
+    private String getReferenceColumn(Long dataTypeId) {
+        switch (dataTypeId.intValue()) {
+            case 1:
+                return "date_value";
+            case 2:
+                return "timestamp_value";
+            case 3:
+                return "boolean_value";
+            case 4:
+                return "numeric_value";
+            case 5:
+                return "text_value";
+            case 6:
+            case 9:
+                return "int_value";
+            case 7:
+                return "int_array_value";
+            case 8:
+                //@TODO: figure system value
+                return "";
+            default:
+                return "";
+        }
     }
-  }
 
   //@TODO humes: similar enough to project process step requirement stuff that should probably be merged at some point
   private Object getRequirementValue(SmartlistRequirement r) {
@@ -800,24 +807,54 @@ public class SmartlistService {
     switch (r.getDataTypeId().intValue()) {
       case 1:
         LocalDate requirementValue = (r.getRequirementValue() !=  null) ? LocalDate.parse(r.getRequirementValue()) : null;
-        LocalDate now = LocalDate.now();
-        String secondaryValue = r.getSecondaryRequirementValue();
+
+        if (r.getIsCustomValue()) {
+            return requirementValue;
+        }
+
+        LocalDate nowDate = LocalDate.now();
+        String secondaryDateValue = r.getSecondaryRequirementValue();
 
         //@TODO: format dates for sql query when returning
         switch (r.getDataTypeRequirementId().intValue()) {
           case 1:
-            return now.minusDays(Long.parseLong(secondaryValue));
+            return nowDate.minusDays(Long.parseLong(secondaryDateValue));
           case 2:
-            return now.plusDays(Long.parseLong(secondaryValue));
+            return nowDate.plusDays(Long.parseLong(secondaryDateValue));
           case 3:
-            return now;
+            return nowDate;
         }
+        break;
+        case 2:
+            LocalDateTime fieldValue = (r.getRequirementValue() != null) ? LocalDateTime.parse(r.getRequirementValue()).withSecond(0).withNano(0) : null;
+
+            if (r.getIsCustomValue()) {
+                return fieldValue;
+            }
+
+            LocalDateTime nowDateTime = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+            String secondaryDateTimeValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+
+            switch (r.getDataTypeRequirementId().intValue()) {
+                case 6:
+                    return nowDateTime.minusDays(Long.parseLong(secondaryDateTimeValue));
+                case 7:
+                    return nowDateTime.plusDays(Long.parseLong(secondaryDateTimeValue));
+                case 8:
+                    return nowDateTime;
+                case 9:
+                    return nowDateTime.minusHours(Long.parseLong(secondaryDateTimeValue));
+                case 10:
+                    return nowDateTime.plusHours(Long.parseLong(secondaryDateTimeValue));
+            }
+            break;
       case 5:
         switch (r.getDataTypeRequirementId().intValue()) {
           case 18:
           case 19:
             return r.getDataTypeRequirement().getDataTypeValue();
         }
+        break;
         case 7:
             if (r.getIsCustomValue()) {
                 return r.getListOfValueIds();
@@ -828,9 +865,11 @@ public class SmartlistService {
                         return r.getDataTypeRequirement().getDataTypeValue();
                 }
             }
+            break;
       default:
         return null;
     }
+      return null;
   }
 
   private String getSqlOperator(Long operatorTypeId, Long dataTypeId, DataTypeRequirement r) {
