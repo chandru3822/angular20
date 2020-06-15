@@ -7600,4 +7600,5 @@ INSERT INTO brs.proposal_log (id, proposal_date, source, proposal, project_id, p
     (SELECT pl.id, pl.proposal_date, pl.source, pl.proposal, d.id, pl.proposal_nbr
     FROM blueraven.proposal_log pl
     inner join blueraven.deal d on d.deal_base_oid = pl.deal_base_oid);
+
 SELECT setval('brs.proposal_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.proposal_log), 1), false);
