@@ -703,9 +703,7 @@ public class SmartlistService {
               case 2:
                   whereClause.append(String.format("%s %s '%s' and ", referenceLocation, operator, getRequirementValue(r)));
                   break;
-//              case 3:
-//                  whereClause.append(String.format("%s is %s and ", referenceLocation, operator, getRequirementValue(r)));
-//                  break;
+              case 3:
               case 5:
                   whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, getRequirementValue(r)));
                   break;
@@ -804,12 +802,14 @@ public class SmartlistService {
   //@TODO humes: similar enough to project process step requirement stuff that should probably be merged at some point
   private Object getRequirementValue(SmartlistRequirement r) {
 
+      String requirementValue = r.getRequirementValue();
+
     switch (r.getDataTypeId().intValue()) {
       case 1:
-        LocalDate requirementValue = (r.getRequirementValue() !=  null) ? LocalDate.parse(r.getRequirementValue()) : null;
+        LocalDate dateValue = (requirementValue !=  null) ? LocalDate.parse(requirementValue) : null;
 
         if (r.getIsCustomValue()) {
-            return requirementValue;
+            return dateValue;
         }
 
         LocalDate nowDate = LocalDate.now();
@@ -826,10 +826,10 @@ public class SmartlistService {
         }
         break;
         case 2:
-            LocalDateTime fieldValue = (r.getRequirementValue() != null) ? LocalDateTime.parse(r.getRequirementValue()).withSecond(0).withNano(0) : null;
+            LocalDateTime dateTimeValue = (requirementValue != null) ? LocalDateTime.parse(requirementValue).withSecond(0).withNano(0) : null;
 
             if (r.getIsCustomValue()) {
-                return fieldValue;
+                return dateTimeValue;
             }
 
             LocalDateTime nowDateTime = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
@@ -848,6 +848,16 @@ public class SmartlistService {
                     return nowDateTime.plusHours(Long.parseLong(secondaryDateTimeValue));
             }
             break;
+
+        case 3:
+            Boolean boolReqValue = Boolean.parseBoolean(requirementValue);
+
+            switch (r.getDataTypeRequirementId().intValue()) {
+                case 14:
+                    return "true";
+                case 15:
+                    return "false";
+            }
       case 5:
         switch (r.getDataTypeRequirementId().intValue()) {
           case 18:
@@ -879,9 +889,17 @@ public class SmartlistService {
 
     switch (operatorTypeId.intValue()) {
       case 1:
-        return (r != null && nullableIds.contains(r.getId()) ? "is" : "=");
+          if (dataTypeId == 3) {
+              return "is";
+          } else {
+              return (r != null && nullableIds.contains(r.getId())) ? "is" : "=";
+          }
       case 2:
-        return (r != null && nullableIds.contains(r.getId()) ? "is" : "!=");
+        if (dataTypeId == 3) {
+            return "is not";
+        } else {
+            return (r != null && nullableIds.contains(r.getId())) ? "is" : "!=";
+        }
       case 3:
         return ">";
       case 4:
