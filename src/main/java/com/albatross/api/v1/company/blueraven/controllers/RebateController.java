@@ -74,17 +74,17 @@ public class RebateController {
     return rebateService.getAllBatches();
   }
 
-  @RequestMapping(value = "/voidBatch/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/voidBatch/{id}")
   public Optional<RebateBatchDetail> voidBatch(@PathVariable("id") Long batchId) {
     return rebateService.voidBatch(batchId);
   }
 
-  @RequestMapping(value = "/voidPayment", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/voidPayment")
   public void voidPayment(@RequestBody RebatePayment rebatePayment) {
     rebateService.voidSinglePayment(rebatePayment);
   }
 
-  @RequestMapping(value = "/updateNote", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/updateNote")
   public void updatePaymentNote(@RequestBody RebatePayment rebatePayment) {
     rebateService.updatePaymentNote(rebatePayment);
   }
@@ -94,17 +94,17 @@ public class RebateController {
     return rebateService.getPaymentStates();
   }
 
-  @RequestMapping(value = "/recurringPayment", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/recurringPayment")
   public void createRecurringPayment(@RequestBody RebatePayment rebatePayment) {
     rebateService.createRecurringPayment(rebatePayment);
   }
 
-  @RequestMapping(value = "/addExtraPayment", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/addExtraPayment")
   public void addExtraPayment(@RequestBody RebatePayment rebatePayment) {
     rebateService.addExtraPayment(rebatePayment);
   }
 
-  @RequestMapping(value = "/approve", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/approve")
   public void approvePayments(@RequestBody RebatePayment rebatePayment) throws Exception {
     try {
       //create a batch and mark payments as processed and set the batch id
@@ -115,17 +115,17 @@ public class RebateController {
     }
   }
 
-  @RequestMapping(value = "/updatePayment", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/updatePayment")
   public void updatePayment(@RequestBody RebatePayment rebatePayment) {
     rebateService.updatePayment(rebatePayment);
   }
 
-  @RequestMapping(value = "/updateTotalPromotionAmount", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/updateTotalPromotionAmount")
   public void updateTotalPromotionAmount(@RequestBody RebatePayment rebatePayment) {
     rebateService.updateTotalPromotionAmount(rebatePayment);
   }
 
-  @RequestMapping(value = "/deletePayment/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @DeleteMapping(value = "/deletePayment/{id}")
   public void updatePayment(@PathVariable("id") Long paymentId) {
     rebateService.deletePayment(paymentId);
   }
