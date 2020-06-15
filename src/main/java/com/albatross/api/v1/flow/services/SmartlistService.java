@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -697,18 +699,27 @@ public class SmartlistService {
               referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
           }
 
+          Object requirementValue = getRequirementValue(r);
+
+          // Check for a double negative between the operator and data type requirement value, the user might make a requirement like this for whatever reason
+          if (!r.getIsCustomValue() && r.getOperatorTypeId() == 2 && requirementValue.toString().startsWith("not ")) {
+              operator = operator.replace("not", "");
+              requirementValue = requirementValue.toString().replace("not ", "");
+          }
+
           // @TODO: requirements need to take into account
           switch (r.getDataTypeId().intValue()) {
               case 1:
               case 2:
-                  whereClause.append(String.format("%s %s '%s' and ", referenceLocation, operator, getRequirementValue(r)));
+                  whereClause.append(String.format("%s %s '%s' and ", referenceLocation, operator, requirementValue));
                   break;
               case 3:
+              case 4:
               case 5:
-                  whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, getRequirementValue(r)));
+                  whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, requirementValue));
                   break;
               case 7:
-                  whereClause.append(String.format("sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, getRequirementValue(r)));
+                  whereClause.append(String.format("sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
                   break;
           }
       }
@@ -735,7 +746,7 @@ public class SmartlistService {
       Map<String, Object> r = data.get(i);
 
       for (String field : dateFields) {
-        r.put(field, r.get(field).toString());
+        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
       }
       data.set(i, r);
     }
@@ -823,6 +834,9 @@ public class SmartlistService {
             return nowDate.plusDays(Long.parseLong(secondaryDateValue));
           case 3:
             return nowDate;
+            case 4:
+            case 5:
+                return r.getDataTypeRequirement().getDataTypeValue();
         }
         break;
         case 2:
@@ -841,23 +855,30 @@ public class SmartlistService {
                 case 7:
                     return nowDateTime.plusDays(Long.parseLong(secondaryDateTimeValue));
                 case 8:
-                    return nowDateTime;
+                    return nowDateTime.withHour(0);
                 case 9:
                     return nowDateTime.minusHours(Long.parseLong(secondaryDateTimeValue));
                 case 10:
                     return nowDateTime.plusHours(Long.parseLong(secondaryDateTimeValue));
+                case 11:
+                    return nowDateTime;
+                case 12:
+                case 13:
+                    return r.getDataTypeRequirement().getDataTypeValue();
             }
             break;
 
         case 3:
-            Boolean boolReqValue = Boolean.parseBoolean(requirementValue);
+            return r.getDataTypeRequirement().getDataTypeValue();
+        case 4:
+            BigDecimal tempNumericVal = (requirementValue == null) ? null : new BigDecimal(requirementValue);
+            Double numericReqValue = (tempNumericVal == null) ? null : tempNumericVal.setScale(2, RoundingMode.DOWN).doubleValue();;
 
-            switch (r.getDataTypeRequirementId().intValue()) {
-                case 14:
-                    return "true";
-                case 15:
-                    return "false";
+            if (r.getIsCustomValue()) {
+                return numericReqValue;
             }
+
+            return r.getDataTypeRequirement().getDataTypeValue();
       case 5:
         switch (r.getDataTypeRequirementId().intValue()) {
           case 18:
@@ -898,7 +919,7 @@ public class SmartlistService {
         if (dataTypeId == 3) {
             return "is not";
         } else {
-            return (r != null && nullableIds.contains(r.getId())) ? "is" : "!=";
+            return (r != null && nullableIds.contains(r.getId())) ? "is not" : "!=";
         }
       case 3:
         return ">";
