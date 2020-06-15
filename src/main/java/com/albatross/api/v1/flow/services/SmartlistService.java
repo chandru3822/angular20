@@ -707,20 +707,15 @@ public class SmartlistService {
               requirementValue = requirementValue.toString().replace("not ", "");
           }
 
-          // @TODO: requirements need to take into account
-          switch (r.getDataTypeId().intValue()) {
-              case 1:
-              case 2:
-                  whereClause.append(String.format("%s %s '%s' and ", referenceLocation, operator, requirementValue));
-                  break;
-              case 3:
-              case 4:
-              case 5:
-                  whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, requirementValue));
-                  break;
-              case 7:
-                  whereClause.append(String.format("sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
-                  break;
+          // date, timestamp, and text (text only when it's a custom value) data types need single quotes around them
+          if ((List.of(1L, 2L).contains(r.getDataTypeId())) || r.getDataTypeId() == 5 && r.getIsCustomValue()) {
+              requirementValue = String.format("'%s'", requirementValue);
+          }
+
+          if (r.getDataTypeId() == 7) {
+              whereClause.append(String.format("sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+          } else {
+              whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, requirementValue));
           }
       }
 
@@ -810,98 +805,100 @@ public class SmartlistService {
         }
     }
 
-  //@TODO humes: similar enough to project process step requirement stuff that should probably be merged at some point
-  private Object getRequirementValue(SmartlistRequirement r) {
+    //@TODO humes: similar enough to project process step requirement stuff that should probably be merged at some point
+    private Object getRequirementValue(SmartlistRequirement r) {
 
-      String requirementValue = r.getRequirementValue();
+        String requirementValue = r.getRequirementValue();
 
-    switch (r.getDataTypeId().intValue()) {
-      case 1:
-        LocalDate dateValue = (requirementValue !=  null) ? LocalDate.parse(requirementValue) : null;
+        switch (r.getDataTypeId().intValue()) {
+            case 1:
+                LocalDate dateValue = (requirementValue != null) ? LocalDate.parse(requirementValue) : null;
 
-        if (r.getIsCustomValue()) {
-            return dateValue;
-        }
+                if (r.getIsCustomValue()) {
+                    return dateValue;
+                }
 
-        LocalDate nowDate = LocalDate.now();
-        String secondaryDateValue = r.getSecondaryRequirementValue();
+                LocalDate nowDate = LocalDate.now();
+                String secondaryDateValue = r.getSecondaryRequirementValue();
 
-        //@TODO: format dates for sql query when returning
-        switch (r.getDataTypeRequirementId().intValue()) {
-          case 1:
-            return nowDate.minusDays(Long.parseLong(secondaryDateValue));
-          case 2:
-            return nowDate.plusDays(Long.parseLong(secondaryDateValue));
-          case 3:
-            return nowDate;
-            case 4:
-            case 5:
-                return r.getDataTypeRequirement().getDataTypeValue();
-        }
-        break;
-        case 2:
-            LocalDateTime dateTimeValue = (requirementValue != null) ? LocalDateTime.parse(requirementValue).withSecond(0).withNano(0) : null;
-
-            if (r.getIsCustomValue()) {
-                return dateTimeValue;
-            }
-
-            LocalDateTime nowDateTime = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
-            String secondaryDateTimeValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
-
-            switch (r.getDataTypeRequirementId().intValue()) {
-                case 6:
-                    return nowDateTime.minusDays(Long.parseLong(secondaryDateTimeValue));
-                case 7:
-                    return nowDateTime.plusDays(Long.parseLong(secondaryDateTimeValue));
-                case 8:
-                    return nowDateTime.withHour(0);
-                case 9:
-                    return nowDateTime.minusHours(Long.parseLong(secondaryDateTimeValue));
-                case 10:
-                    return nowDateTime.plusHours(Long.parseLong(secondaryDateTimeValue));
-                case 11:
-                    return nowDateTime;
-                case 12:
-                case 13:
-                    return r.getDataTypeRequirement().getDataTypeValue();
-            }
-            break;
-
-        case 3:
-            return r.getDataTypeRequirement().getDataTypeValue();
-        case 4:
-            BigDecimal tempNumericVal = (requirementValue == null) ? null : new BigDecimal(requirementValue);
-            Double numericReqValue = (tempNumericVal == null) ? null : tempNumericVal.setScale(2, RoundingMode.DOWN).doubleValue();;
-
-            if (r.getIsCustomValue()) {
-                return numericReqValue;
-            }
-
-            return r.getDataTypeRequirement().getDataTypeValue();
-      case 5:
-        switch (r.getDataTypeRequirementId().intValue()) {
-          case 18:
-          case 19:
-            return r.getDataTypeRequirement().getDataTypeValue();
-        }
-        break;
-        case 7:
-            if (r.getIsCustomValue()) {
-                return r.getListOfValueIds();
-            } else {
+                //@TODO: format dates for sql query when returning
                 switch (r.getDataTypeRequirementId().intValue()) {
-                    case 22:
-                    case 23:
+                    case 1:
+                        return nowDate.minusDays(Long.parseLong(secondaryDateValue));
+                    case 2:
+                        return nowDate.plusDays(Long.parseLong(secondaryDateValue));
+                    case 3:
+                        return nowDate;
+                    case 4:
+                    case 5:
                         return r.getDataTypeRequirement().getDataTypeValue();
                 }
-            }
-            break;
-      default:
+                break;
+            case 2:
+                LocalDateTime dateTimeValue = (requirementValue != null) ? LocalDateTime.parse(requirementValue).withSecond(0).withNano(0) : null;
+
+                if (r.getIsCustomValue()) {
+                    return dateTimeValue;
+                }
+
+                LocalDateTime nowDateTime = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+                String secondaryDateTimeValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+
+                switch (r.getDataTypeRequirementId().intValue()) {
+                    case 6:
+                        return nowDateTime.minusDays(Long.parseLong(secondaryDateTimeValue));
+                    case 7:
+                        return nowDateTime.plusDays(Long.parseLong(secondaryDateTimeValue));
+                    case 8:
+                        return nowDateTime.withHour(0);
+                    case 9:
+                        return nowDateTime.minusHours(Long.parseLong(secondaryDateTimeValue));
+                    case 10:
+                        return nowDateTime.plusHours(Long.parseLong(secondaryDateTimeValue));
+                    case 11:
+                        return nowDateTime;
+                    case 12:
+                    case 13:
+                        return r.getDataTypeRequirement().getDataTypeValue();
+                }
+                break;
+
+            case 3:
+                return r.getDataTypeRequirement().getDataTypeValue();
+            case 4:
+                BigDecimal tempNumericVal = (requirementValue == null) ? null : new BigDecimal(requirementValue);
+                Double numericReqValue = (tempNumericVal == null) ? null : tempNumericVal.setScale(2, RoundingMode.DOWN).doubleValue();
+
+                if (r.getIsCustomValue()) {
+                    return numericReqValue;
+                }
+
+                return r.getDataTypeRequirement().getDataTypeValue();
+            case 5:
+                if (r.getIsCustomValue()) {
+                    return requirementValue;
+                }
+
+                return r.getDataTypeRequirement().getDataTypeValue();
+            case 6:
+                Long intReqValue = Long.parseLong(requirementValue);
+
+                if (r.getIsCustomValue()) {
+                    return intReqValue;
+                }
+
+                return r.getDataTypeRequirement().getDataTypeValue();
+            case 7:
+                if (r.getIsCustomValue()) {
+                    return r.getListOfValueIds();
+                }
+
+                return r.getDataTypeRequirement().getDataTypeValue();
+            default:
+                return null;
+        }
         return null;
     }
-      return null;
-  }
 
   private String getSqlOperator(Long operatorTypeId, Long dataTypeId, DataTypeRequirement r) {
 
