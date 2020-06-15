@@ -165,7 +165,7 @@ public class SmartlistService {
 
   public List<Smartlist> getSharedByType(Long objectTypeId) {
       User user = securityService.getCurrentUser();
-      return sqlCache.query("project.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId), Smartlist.class);
+      return sqlCache.query("project.getSharedByObjectType", Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), Smartlist.class);
   }
 
   public SmartlistResult getSmartlistResults(Long smartlistId) {
