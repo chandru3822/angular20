@@ -231,6 +231,18 @@ public class WellsFargoService {
     return incrGet(config.getCheckNumberKey());
   }
 
+    public String getCheckNumberWithoutIncrement() {
+        int num = 0;
+        try (Jedis jedis = jedisPool.getResource()) {
+            String out = jedis.get(config.getCheckNumberKey());
+            if (StringUtils.isNotEmpty(out)) {
+                num = Integer.parseInt(out);
+            }
+        }
+
+        return Integer.toString(num);
+    }
+
     public void setCheckNumber(int checkNumber) {
         try (final Jedis jedis = jedisPool.getResource()) {
             jedis.set(config.getCheckNumberKey(), String.valueOf(checkNumber));

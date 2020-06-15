@@ -3,10 +3,8 @@ package com.albatross.api.v1.company.blueraven.controllers;
 import com.albatross.api.v1.company.blueraven.services.WellsFargoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v1/wellsfargo")
@@ -16,8 +14,21 @@ public class WellsFargoController {
     @Autowired
     private WellsFargoService wellsFargoService;
 
-    @RequestMapping(value="/", method= RequestMethod.GET, produces= MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value="/")
     public String renderFile() throws Exception {
       return wellsFargoService.renderFile();
+    }
+
+
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN')")
+    @PostMapping(value = "/setCheckNumber/{checkNumber}")
+    public void setCheckNumber(@PathVariable int checkNumber) {
+        wellsFargoService.setCheckNumber(checkNumber);
+    }
+
+    @PreAuthorize("hasAnyAuthority('SYSTEM_ADMIN')")
+    @GetMapping(value = "/getCheckNumberWithoutIncrement")
+    public String getCheckNumberWithoutIncrement() {
+        return wellsFargoService.getCheckNumberWithoutIncrement();
     }
 }
