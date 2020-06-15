@@ -675,11 +675,14 @@ public class SmartlistService {
           String referenceLocation = "";
 
           if (r.getCustomFieldGroupAssignmentId() != null) {
+
+              String referenceColumn = (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) ? "id" : getReferenceColumn(r.getDataTypeId());
+
               // see if table we need is already been joined, if so use it
               // @TODO humes, probably want to also check processStepId here is objectTypeId == 4
               if (joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()) != null) {
                   //Only put quotes around table when dataTypeId == 7
-                  referenceLocation = "\"" + joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()).get(0).toString() + "\"." + getReferenceColumn(r.getDataTypeId());
+                  referenceLocation = "\"" + joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()).get(0).toString() + "\"." + referenceColumn;
               } else {
                   // Do a new join from custom field value table based on object type
                   if (r.getObjectTypeId() == 4) {
@@ -688,11 +691,11 @@ public class SmartlistService {
                       additionalJoins.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, r.getProcessStepId()));
                       additionalJoins.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, r.getCustomFieldGroupAssignmentId()));
                       // @TODO humes, reference column changes if field is a list or not.
-                      referenceLocation = "\"" + ppscfvUUID + "\"." + getReferenceColumn(r.getDataTypeId());
+                      referenceLocation = "\"" + ppscfvUUID + "\"." + referenceColumn;
                   } else {
                       final String newUuid = UUID.randomUUID().toString();
                       additionalJoins.append(String.format("left join %s \"%s\"", getReferenceTable(r.getObjectTypeId()), newUuid));
-                      referenceLocation = "\"" + newUuid + "\"." + getReferenceColumn(r.getDataTypeId());
+                      referenceLocation = "\"" + newUuid + "\"." + referenceColumn;
                   }
               }
           } else {
@@ -812,9 +815,8 @@ public class SmartlistService {
 
         switch (r.getDataTypeId().intValue()) {
             case 1:
-                LocalDate dateValue = (requirementValue != null) ? LocalDate.parse(requirementValue) : null;
-
                 if (r.getIsCustomValue()) {
+                    LocalDate dateValue = (requirementValue != null) ? LocalDate.parse(requirementValue) : null;
                     return dateValue;
                 }
 
@@ -835,9 +837,8 @@ public class SmartlistService {
                 }
                 break;
             case 2:
-                LocalDateTime dateTimeValue = (requirementValue != null) ? LocalDateTime.parse(requirementValue).withSecond(0).withNano(0) : null;
-
                 if (r.getIsCustomValue()) {
+                    LocalDateTime dateTimeValue = (requirementValue != null) ? LocalDateTime.parse(requirementValue).withSecond(0).withNano(0) : null;
                     return dateTimeValue;
                 }
 
@@ -866,10 +867,9 @@ public class SmartlistService {
             case 3:
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 4:
-                BigDecimal tempNumericVal = (requirementValue == null) ? null : new BigDecimal(requirementValue);
-                Double numericReqValue = (tempNumericVal == null) ? null : tempNumericVal.setScale(2, RoundingMode.DOWN).doubleValue();
-
                 if (r.getIsCustomValue()) {
+                    BigDecimal tempNumericVal = (requirementValue == null) ? null : new BigDecimal(requirementValue);
+                    Double numericReqValue = (tempNumericVal == null) ? null : tempNumericVal.setScale(2, RoundingMode.DOWN).doubleValue();
                     return numericReqValue;
                 }
 
@@ -878,21 +878,16 @@ public class SmartlistService {
                 if (r.getIsCustomValue()) {
                     return requirementValue;
                 }
-
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 6:
-                Long intReqValue = Long.parseLong(requirementValue);
-
                 if (r.getIsCustomValue()) {
-                    return intReqValue;
+                    return (r.getHasListValues() && r.getListOfValueId() != null) ? r.getListOfValueId() : Long.parseLong(requirementValue);
                 }
-
                 return r.getDataTypeRequirement().getDataTypeValue();
             case 7:
                 if (r.getIsCustomValue()) {
                     return r.getListOfValueIds();
                 }
-
                 return r.getDataTypeRequirement().getDataTypeValue();
             default:
                 return null;
