@@ -68,6 +68,7 @@
       <v-switch
         v-if="newRequirement.operatorTypeId !== null"
         v-model="newRequirement.isCustomValue"
+        :disabled="newRequirement.selectedField.dataTypeId === 3"
         class="mx-2"
         label="Custom"
       />
@@ -230,6 +231,7 @@
           <v-switch
               v-if="expandedRequirement.operatorTypeId !== null"
               v-model="expandedRequirement.isCustomValue"
+              :disabled="expandedRequirement.dataTypeId === 3"
               class="mx-2"
               label="Custom"
               @change="resetInputValues(expandedRequirement)"
