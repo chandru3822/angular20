@@ -135,10 +135,12 @@ public class ExcelImportController {
         projectId = (Integer) json.get("Base Deal ID");
     }
 
-    Map params = new BeanMap(proposal);
-    params.putIfAbsent("proposalDate", new Date());
-    params.putIfAbsent("proposalId", propId);
-    params.putIfAbsent("projectId", projectId);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("proposal", proposal.getProposal());
+    params.put("source", proposal.getSource());
+    params.put("proposalDate", new Date());
+    params.put("proposalId", propId);
+    params.put("projectId", projectId);
 
     Optional<ProposalResponse> created = cache.get("excel.import.insert", params,
         (rs, rowNum) -> {
@@ -209,7 +211,9 @@ public class ExcelImportController {
       }
     }
 
-    Map params = new BeanMap(design);
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("design", design.getDesign());
+    params.put("source", design.getSource());
     params.putIfAbsent("designDate", new Date());
     params.putIfAbsent("designId", designId);
     params.putIfAbsent("projectId", projectId);
