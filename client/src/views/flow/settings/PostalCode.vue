@@ -62,11 +62,12 @@
                     item-value="id"
                     autocomplete="off">
           </v-select>
-          <v-text-field type="number" v-model="selectedUser.allocation"></v-text-field>
+          <v-text-field type="number" label="Allocation" v-model="selectedUser.allocation"></v-text-field>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone()"
                  :disabled="!selectedUser.id || !selectedUser.allocation">
             Add
           </v-btn>
+
         </v-card>
         <v-divider v-if="addUser"></v-divider>
         <v-data-table
