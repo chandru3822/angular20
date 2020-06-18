@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 public class User {
 
-    private Long id, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId;
+    private Long id, companyId, parentCompanyId, highestParentCompanyId, highestCompanyId, defaultAppointmentLength;
     // companyId = context
     // parentCompanyId = true parent of ^^ that company (can be null, can point to albatross)
     // highestParentCompanyId = highest company id within company_id's hierarchy

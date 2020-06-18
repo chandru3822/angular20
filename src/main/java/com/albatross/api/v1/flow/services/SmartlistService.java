@@ -21,8 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -206,6 +209,7 @@ public class SmartlistService {
     // - value 1: object type ID
     // - value 2: process step ID
     // - value 3: hasListValue (from company_data_type)
+        // - value 4: allowMultiple
     HashMap<Long, List<Object>> joinObjectTypes = new HashMap<>();
 
     StringBuilder query = new StringBuilder("select");
@@ -221,6 +225,7 @@ public class SmartlistService {
         mapVals.add(f.getObjectTypeId());
         mapVals.add(f.getProcessStepId());
         mapVals.add(f.getHasListValues());
+        mapVals.add(f.getAllowMultiple());
 
         joinObjectTypes.put(f.getCustomFieldGroupAssignmentId(), mapVals);
       }
@@ -229,15 +234,23 @@ public class SmartlistService {
 
       if (f.getCustomFieldGroupAssignmentId() != null && joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId())) {
         final String table = joinObjectTypes.get(f.getCustomFieldGroupAssignmentId()).get(0).toString();
-        final String column = (f.getHasListValues() != null && f.getHasListValues()) ? "name" : getReferenceColumn(f.getDataTypeId());
+        final String column = (f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) ? "name" : getReferenceColumn(f.getDataTypeId());
         location = String.format("\"%s\".%s", table, column);
       } else {
         location = String.format("%s.%s", f.getReferenceTable(), f.getReferenceColumn());
       }
 
-
-      if (f.getDataTypeId() == 1) {
-        query.append(String.format(" date(%s) as \"%s\",", location, f.getName()));
+//      @TODO humes, possible switch on dataTypeId. Probably a good place to separate logic into helper function
+      if (f.getDataTypeId() == 1 || f.getDataTypeId() == 2) {
+        query.append(String.format(" %s as \"%s\",", location, f.getName()));
+      } else if (f.getDataTypeId() == 7) {
+          query.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
+      } else if (f.getDataTypeId() == 9) {
+//          if (f.getSystemListTypeId() == 1) {
+////orgs
+//          } else if (f.getSystemListTypeId() == 2) {
+//              query.append(String.format(" (select \"name\" from flow.user where id = %s, ", f.getIn))
+//          }
       } else {
         query.append(String.format(" %s as \"%s\",", location, f.getName()));
       }
@@ -267,6 +280,7 @@ public class SmartlistService {
           final String uuid = vals.get(0).toString();
           final Long objectTypeId = Long.parseLong(vals.get(1).toString());
           final Boolean hasListValues = Boolean.parseBoolean((vals.get(3) == null) ? "false" : vals.get(3).toString());
+          final Boolean allowMultiple = Boolean.parseBoolean((vals.get(4) == null) ? "false" : vals.get(4).toString());
 
           switch (objectTypeId.intValue()) {
             case 1:
@@ -304,9 +318,13 @@ public class SmartlistService {
               query.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, processStepId));
 
               if (hasListValues) {
-                final String ppscfvUUID = UUID.randomUUID().toString();
-                query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, cfgaId));
-                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ppscfvUUID));
+                if (allowMultiple) {
+                    query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, ppsUUID, uuid, cfgaId));
+                } else {
+                    final String ppscfvUUID = UUID.randomUUID().toString();
+                    query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, cfgaId));
+                    query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ppscfvUUID));
+                }
               } else {
                 query.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, ppsUUID, uuid, cfgaId));
               }
@@ -656,11 +674,15 @@ public class SmartlistService {
 
           String referenceLocation = "";
 
-          if (r.getIsCustomValue()) {
+          if (r.getCustomFieldGroupAssignmentId() != null) {
+
+              String referenceColumn = (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) ? "id" : getReferenceColumn(r.getDataTypeId());
+
               // see if table we need is already been joined, if so use it
               // @TODO humes, probably want to also check processStepId here is objectTypeId == 4
               if (joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()) != null) {
-                  referenceLocation = joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()).get(0).toString();
+                  //Only put quotes around table when dataTypeId == 7
+                  referenceLocation = "\"" + joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()).get(0).toString() + "\"." + referenceColumn;
               } else {
                   // Do a new join from custom field value table based on object type
                   if (r.getObjectTypeId() == 4) {
@@ -669,28 +691,34 @@ public class SmartlistService {
                       additionalJoins.append(String.format("left join flow.project_process_step \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".process_step_id = %s ", ppsUUID, ppsUUID, ppsUUID, r.getProcessStepId()));
                       additionalJoins.append(String.format("left join %s \"%s\" on \"%s\".project_process_step_id = \"%s\".id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), ppscfvUUID, ppscfvUUID, ppsUUID, ppscfvUUID, r.getCustomFieldGroupAssignmentId()));
                       // @TODO humes, reference column changes if field is a list or not.
-                      referenceLocation = "\"" + ppscfvUUID + "\"." + getReferenceColumn(r.getDataTypeId());
+                      referenceLocation = "\"" + ppscfvUUID + "\"." + referenceColumn;
                   } else {
                       final String newUuid = UUID.randomUUID().toString();
                       additionalJoins.append(String.format("left join %s \"%s\"", getReferenceTable(r.getObjectTypeId()), newUuid));
-                      referenceLocation = "\"" + newUuid + "\"." + getReferenceColumn(r.getDataTypeId());
+                      referenceLocation = "\"" + newUuid + "\"." + referenceColumn;
                   }
               }
           } else {
               referenceLocation = r.getReferenceTable() + "." + r.getReferenceColumn();
           }
 
-          // @TODO: requirements need to take into account
-          switch (r.getDataTypeId().intValue()) {
-              case 1:
-                  whereClause.append(String.format("%s %s '%s' and ", referenceLocation, operator, getRequirementValue(r)));
-                  break;
-              case 5:
-                  whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, getRequirementValue(r)));
-                  break;
-              case 7:
-                  whereClause.append(String.format("%s %s array%s::int[] and ", referenceLocation, operator, getRequirementValue(r)));
-                  break;
+          Object requirementValue = getRequirementValue(r);
+
+          // Check for a double negative between the operator and data type requirement value, the user might make a requirement like this for whatever reason
+          if (!r.getIsCustomValue() && r.getOperatorTypeId() == 2 && requirementValue.toString().startsWith("not ")) {
+              operator = operator.replace("not", "");
+              requirementValue = requirementValue.toString().replace("not ", "");
+          }
+
+          // date, timestamp, and text (text only when it's a custom value) data types need single quotes around them
+          if ((List.of(1L, 2L).contains(r.getDataTypeId())) || r.getDataTypeId() == 5 && r.getIsCustomValue()) {
+              requirementValue = String.format("'%s'", requirementValue);
+          }
+
+          if (r.getDataTypeId() == 7) {
+              whereClause.append(String.format("sort(%s) %s sort(array%s::int[]) and ", referenceLocation, operator, requirementValue));
+          } else {
+              whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, requirementValue));
           }
       }
 
@@ -716,7 +744,7 @@ public class SmartlistService {
       Map<String, Object> r = data.get(i);
 
       for (String field : dateFields) {
-        r.put(field, r.get(field).toString());
+        r.put(field, (r.get(field) == null) ? "N/A" : r.get(field).toString());
       }
       data.set(i, r);
     }
@@ -755,71 +783,117 @@ public class SmartlistService {
     }
   }
 
-  private String getReferenceColumn(Long dataTypeId) {
-    switch (dataTypeId.intValue()) {
-      case 1:
-        return "date_value";
-      case 2:
-        return "timestamp_value";
-      case 3:
-        return "boolean_value";
-      case 4:
-        return "numeric_value";
-      case 5:
-        return "text_value";
-      case 6:
-        return "int_value";
-      case 7:
-        return "int_array_value";
-      case 8:
-        //@TODO: figure system value
-        return "";
-      case 9:
-        //@TODO: figure system list. I think this uses the same int_value column??
-        return "";
-      default:
-        return "";
+    private String getReferenceColumn(Long dataTypeId) {
+        switch (dataTypeId.intValue()) {
+            case 1:
+                return "date_value";
+            case 2:
+                return "timestamp_value";
+            case 3:
+                return "boolean_value";
+            case 4:
+                return "numeric_value";
+            case 5:
+                return "text_value";
+            case 6:
+            case 9:
+                return "int_value";
+            case 7:
+                return "int_array_value";
+            case 8:
+                //@TODO: figure system value
+                return "";
+            default:
+                return "";
+        }
     }
-  }
 
-  //@TODO humes: similar enough to project process step requirement stuff that should probably be merged at some point
-  private Object getRequirementValue(SmartlistRequirement r) {
+    //@TODO humes: similar enough to project process step requirement stuff that should probably be merged at some point
+    private Object getRequirementValue(SmartlistRequirement r) {
 
-    switch (r.getDataTypeId().intValue()) {
-      case 1:
-        LocalDate requirementValue = (r.getRequirementValue() !=  null) ? LocalDate.parse(r.getRequirementValue()) : null;
-        LocalDate now = LocalDate.now();
-        String secondaryValue = r.getSecondaryRequirementValue();
+        String requirementValue = r.getRequirementValue();
 
-        //@TODO: format dates for sql query when returning
-        switch (r.getDataTypeRequirementId().intValue()) {
-          case 1:
-            return now.minusDays(Long.parseLong(secondaryValue));
-          case 2:
-            return now.plusDays(Long.parseLong(secondaryValue));
-          case 3:
-            return now;
-        }
-      case 5:
-        switch (r.getDataTypeRequirementId().intValue()) {
-          case 18:
-          case 19:
-            return r.getDataTypeRequirement().getDataTypeValue();
-        }
-        case 7:
-            if (r.getIsCustomValue()) {
-                return r.getListOfValueIds();
-            } else {
+        switch (r.getDataTypeId().intValue()) {
+            case 1:
+                if (r.getIsCustomValue()) {
+                    LocalDate dateValue = (requirementValue != null) ? LocalDate.parse(requirementValue) : null;
+                    return dateValue;
+                }
+
+                LocalDate nowDate = LocalDate.now();
+                String secondaryDateValue = r.getSecondaryRequirementValue();
+
+                //@TODO: format dates for sql query when returning
                 switch (r.getDataTypeRequirementId().intValue()) {
-                    case 22:
-                    case 23:
+                    case 1:
+                        return nowDate.minusDays(Long.parseLong(secondaryDateValue));
+                    case 2:
+                        return nowDate.plusDays(Long.parseLong(secondaryDateValue));
+                    case 3:
+                        return nowDate;
+                    case 4:
+                    case 5:
                         return r.getDataTypeRequirement().getDataTypeValue();
                 }
-            }
-      default:
+                break;
+            case 2:
+                if (r.getIsCustomValue()) {
+                    LocalDateTime dateTimeValue = (requirementValue != null) ? LocalDateTime.parse(requirementValue).withSecond(0).withNano(0) : null;
+                    return dateTimeValue;
+                }
+
+                LocalDateTime nowDateTime = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+                String secondaryDateTimeValue = (null != r.getDataTypeRequirementId() && r.getSecondaryRequirementValue() != null) ? r.getSecondaryRequirementValue() : null;
+
+                switch (r.getDataTypeRequirementId().intValue()) {
+                    case 6:
+                        return nowDateTime.minusDays(Long.parseLong(secondaryDateTimeValue));
+                    case 7:
+                        return nowDateTime.plusDays(Long.parseLong(secondaryDateTimeValue));
+                    case 8:
+                        return nowDateTime.withHour(0);
+                    case 9:
+                        return nowDateTime.minusHours(Long.parseLong(secondaryDateTimeValue));
+                    case 10:
+                        return nowDateTime.plusHours(Long.parseLong(secondaryDateTimeValue));
+                    case 11:
+                        return nowDateTime;
+                    case 12:
+                    case 13:
+                        return r.getDataTypeRequirement().getDataTypeValue();
+                }
+                break;
+
+            case 3:
+                return r.getDataTypeRequirement().getDataTypeValue();
+            case 4:
+                if (r.getIsCustomValue()) {
+                    BigDecimal tempNumericVal = (requirementValue == null) ? null : new BigDecimal(requirementValue);
+                    Double numericReqValue = (tempNumericVal == null) ? null : tempNumericVal.setScale(2, RoundingMode.DOWN).doubleValue();
+                    return numericReqValue;
+                }
+
+                return r.getDataTypeRequirement().getDataTypeValue();
+            case 5:
+                if (r.getIsCustomValue()) {
+                    return requirementValue;
+                }
+                return r.getDataTypeRequirement().getDataTypeValue();
+            case 6:
+                if (r.getIsCustomValue()) {
+                    return (r.getHasListValues() && r.getListOfValueId() != null) ? r.getListOfValueId() : Long.parseLong(requirementValue);
+                }
+                return r.getDataTypeRequirement().getDataTypeValue();
+            case 7:
+                if (r.getIsCustomValue()) {
+                    return r.getListOfValueIds();
+                }
+                return r.getDataTypeRequirement().getDataTypeValue();
+            default:
+                return null;
+        }
         return null;
     }
-  }
 
   private String getSqlOperator(Long operatorTypeId, Long dataTypeId, DataTypeRequirement r) {
 
@@ -828,9 +902,17 @@ public class SmartlistService {
 
     switch (operatorTypeId.intValue()) {
       case 1:
-        return (r != null && nullableIds.contains(r.getId()) ? "is" : "=");
+          if (dataTypeId == 3) {
+              return "is";
+          } else {
+              return (r != null && nullableIds.contains(r.getId())) ? "is" : "=";
+          }
       case 2:
-        return (r != null && nullableIds.contains(r.getId()) ? "is" : "!=");
+        if (dataTypeId == 3) {
+            return "is not";
+        } else {
+            return (r != null && nullableIds.contains(r.getId())) ? "is not" : "!=";
+        }
       case 3:
         return ">";
       case 4:

@@ -7594,3 +7594,11 @@ from blueraven.ahj_utility a
          inner join blueraven.sales_area sa on sa.id = ma.sales_area_id
          inner join flow.list_of_value lov on lov.name = sa.area || ' - ' || ma.metro_area and parent_id = 172
 where a.id = au.id;
+
+
+INSERT INTO brs.proposal_log (id, proposal_date, source, proposal, project_id, proposal_nbr)
+    (SELECT pl.id, pl.proposal_date, pl.source, pl.proposal, d.id, pl.proposal_nbr
+    FROM blueraven.proposal_log pl
+    inner join blueraven.deal d on d.deal_base_oid = pl.deal_base_oid);
+
+SELECT setval('brs.proposal_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.proposal_log), 1), false);
