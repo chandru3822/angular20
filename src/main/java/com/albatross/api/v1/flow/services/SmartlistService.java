@@ -88,9 +88,18 @@ public class SmartlistService {
     return sqlCache.get("smartlist.getAssignedFieldById", Map.of("id", assignmentId), SmartlistFieldAssignment.class).orElse(null);
   }
 
-  public SmartlistRequirement getRequirementById(Long requirementId) {
-    return sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
-  }
+    public SmartlistRequirement getRequirementById(Long requirementId) {
+        SmartlistRequirement requirement =  sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirementId), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+
+        if (requirement != null && requirement.getCustomFieldSqlKey() != null) {
+            final String sql = sqlCache.getByKey(requirement.getCustomFieldSqlKey());
+            if (sql != null) {
+                requirement.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+            }
+        }
+
+        return requirement;
+    }
 
   public List<SmartlistLogic> getLogic(Long smartlistId) {
     return sqlCache.query("smartlist.getLogic", Map.of("smartlistId", smartlistId), SmartlistLogic.class);
@@ -134,7 +143,7 @@ public class SmartlistService {
     params.put("userId", user.getId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     Long requirementId = sqlCache.updateReturningId("smartlist.addRequirement", params, "id").longValue();
-    return this.getRequirementById(requirementId);
+    return getRequirementById(requirementId);
   }
 
   public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
@@ -142,7 +151,7 @@ public class SmartlistService {
     params.put("userId", securityService.getCurrentUser().getId());
     params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
     sqlCache.update("smartlist.updateRequirement", params);
-    return sqlCache.get("smartlist.getRequirementById", Map.of("requirementId", requirement.getId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om)).orElse(null);
+    return getRequirementById(requirement.getId());
   }
 
   public void deleteRequirement(Long requirementId) {
@@ -166,11 +175,7 @@ public class SmartlistService {
         if (r.getCustomFieldSqlKey() != null) {
             final String sql = sqlCache.getByKey(r.getCustomFieldSqlKey());
             if (sql != null) {
-                List<ListOfValue> vals = sqlCache.queryBySql(sql, null, ListOfValue.class);
-                ListOfValue val = vals.stream().filter(v -> v.getId() == 4165).findFirst().orElse(null);
-                if (val != null) {
-                    r.setRequirementValue(val.getName());
-                }
+                r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
             }
         }
     }
