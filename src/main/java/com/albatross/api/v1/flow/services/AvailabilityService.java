@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -59,8 +60,11 @@ public class AvailabilityService {
   }
 
   public ResourceSchedule getOneResourceAvailability(Long id) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("companyId", user.getCompanyId());
 
     Optional<ResourceSchedule> result = sqlCache.get("availability.getOne", params, new ResourceScheduleMapper<>(ResourceSchedule.class, om));
     return result.orElse(null);
@@ -82,6 +86,7 @@ public class AvailabilityService {
       id = ra.getId();
       params.put("id", id);
       params.put("modifiedById", user.getId());
+//      todo
       sqlCache.update("availability.updateSchedule", params);
     } else {
       params.put("createdById", user.getId());
@@ -129,6 +134,105 @@ public class AvailabilityService {
       sqlCache.update("availability.insertHours", params);
     }
 
+  }
+  // appt length
+  public Long getResourceAppointmentLength(Long userId, Long orgId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("orgId", orgId);
+    params.put("companyId", user.getCompanyId());
+
+    Long result;
+    if(orgId != null) {
+      result = sqlCache.queryForObject("availability.getOrgAppointmentLength", params, Long.class);
+    } else {
+      result = sqlCache.queryForObject("availability.getUserAppointmentLength", params, Long.class);
+    }
+    return result;
+  }
+
+  @Data
+  public static class AppointmentLength {
+    private Long userId, orgId, defaultAppointmentLength;
+  }
+
+  public void saveResourceAppointmentLength(AppointmentLength al) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", al.getUserId());
+    params.put("appointmentLength", al.getDefaultAppointmentLength());
+    params.put("orgId", al.getOrgId());
+    params.put("companyId", user.getCompanyId());
+
+    if(al.getOrgId() != null) {
+      sqlCache.update("availability.saveOrgAppointmentLength", params);
+    } else {
+      sqlCache.update("availability.saveUserAppointmentLength", params);
+    }
+
+  }
+
+//  appointments
+  public List<ResourceAppointment> getResourceAppointments(Long userId, Long orgId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("orgId", orgId);
+    params.put("companyId", user.getCompanyId());
+
+    List<ResourceAppointment> results = sqlCache.query("availability.getAppointmentsForResource", params, ResourceAppointment.class);
+    return results;
+  }
+
+  public ResourceAppointment saveAppointment(ResourceAppointment ra) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("startTime", ra.getStartTime());
+    params.put("endTime", ra.getEndTime());
+    params.put("description", ra.getDescription());
+    params.put("allDay", ra.getAllDay() == null ? false : ra.getAllDay());
+    params.put("companyId", user.getCompanyId());
+    params.put("orgId", ra.getOrgId());
+    params.put("userId", ra.getUserId());
+
+    Long id = null;
+
+    if(null != ra.getId()) {
+      id = ra.getId();
+      params.put("id", id);
+      params.put("modifiedById", user.getId());
+      sqlCache.update("availability.updateAppointment", params);
+    } else {
+      params.put("createdById", user.getId());
+      id = sqlCache.updateReturningId("availability.insertAppointment", params, "id").longValue();
+    }
+
+    return getOneResourceAppointment(id);
+  }
+
+  public void deleteAppointment(Long id) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", user.getId());
+
+    sqlCache.update("availability.deleteAppointment", params);
+  }
+
+  public ResourceAppointment getOneResourceAppointment(Long id) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<ResourceAppointment> result = sqlCache.get("availability.getAppointment", params, ResourceAppointment.class);
+    return result.orElse(null);
   }
 
   public static class ResourceScheduleMapper<T> extends BeanPropertyRowMapper<T> {

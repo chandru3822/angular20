@@ -3,11 +3,11 @@
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
         <v-toolbar flat>
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Organization Types</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Organization Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addType = !addType, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="IS_MOBILE">add</v-icon>
+              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addType ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
@@ -110,7 +110,8 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
+  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import Snackbar from '@/components/Snackbar.vue'
   import orderBy from 'lodash.orderby'
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'
@@ -123,7 +124,7 @@
     data () {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
         orgTypes: [],
         newOrgType: {},
         addType: false,

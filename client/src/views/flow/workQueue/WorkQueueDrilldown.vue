@@ -47,7 +47,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'WorkQueueDrilldown',
@@ -57,7 +57,6 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
         workQueueTypeId: this.$route.params.id,
         userPositionId: this.$route.query.upId,
         unassigned: this.$route.query.unassigned,
@@ -125,5 +124,9 @@
   line-height: 2;
   font-size: 30px;
   font-weight: 600;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
 }
 </style>

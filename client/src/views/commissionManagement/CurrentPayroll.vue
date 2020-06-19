@@ -287,7 +287,6 @@
         this.getCustomersDebounced(val)
       },
       repSearch (val) {
-        console.log('value value val', val)
         if(!val) {
           return
         }
@@ -366,7 +365,6 @@
       },
       async submitForApproval (action) {
         let selectedIds = this.accountingData.filter(ad => ad.selected).map(ad => ad.project_id)
-        console.log('submit', selectedIds)
         let params = {
           payDate: this.payDate
         }
@@ -399,7 +397,6 @@
         }
       },
       async addAdjustment (item) {
-        console.log('randaLogger', item)
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {

@@ -76,7 +76,8 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, BASIC_REQUIRED_RULE, EMAIL_RULES, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
@@ -96,8 +97,8 @@ export default {
       states: [],
       countries: [],
       customFieldGroups: [],
-      requiredRules: BASIC_REQUIRED_RULE,
-      emailRules: EMAIL_RULES,
+      requiredRules: constants.BASIC_REQUIRED_RULE,
+      emailRules: constants.EMAIL_RULES,
       companyId: this.$store.state.user.details.companyId,
     }
   },

@@ -10,7 +10,7 @@
              dark
              v-on="on"
       >
-        <span v-if="!IS_MOBILE">{{userFirstName}} Account</span>
+        <span v-if="!constants.IS_MOBILE">{{userFirstName}} Account</span>
         <v-avatar :tile="false"
                   :size="35"
                   color="grey lighten-4"
@@ -65,7 +65,7 @@
 <script>
   import { Actions } from '@/store'
   import { UserMutations } from '@/stores/UserStore'
-  import { IS_MOBILE } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
   import { UserActions } from '@/stores/UserStore'
   import moment from 'moment-timezone'
   import Vue2Filters from "vue2-filters"
@@ -87,7 +87,7 @@
     },
     data () {
       return {
-        IS_MOBILE,
+        constants,
         loadComplete: false,
         userImage: this.$store.state.user.userImage,
         attachmentTypeId: 9,
@@ -158,7 +158,6 @@
         this.$router.push({ name: path })
       },
       async changeTimezone (tz) {
-        console.log('will change timezone', tz)
         await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
         this.timezone = tz
         //todo: actually save it to the DB

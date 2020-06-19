@@ -127,7 +127,8 @@
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar, IS_MOBILE, COLOR_LIST} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
 
   export default {
     name: 'ScheduleCalendar',
@@ -195,7 +196,6 @@
       },
     },
     created() {
-      // console.log('randaLogger',moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'))
       this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
       this.getSchedulingOrgs()
@@ -281,7 +281,7 @@
           //the event will come get this later
           if(index <= 19) {
             // use one of the first 20 pre-defined colors
-            r.color = COLOR_LIST[index]
+            r.color = constants.COLOR_LIST[index]
           } else {
             //generate a random color
             let hexColorCode = '';

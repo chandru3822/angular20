@@ -3,11 +3,11 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addNew = !addNew, newGroup = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="IS_MOBILE">add</v-icon>
+              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
@@ -310,7 +310,8 @@ import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
-import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
+import { getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 
 export default {
   name: 'CustomFieldGroup',
@@ -322,7 +323,7 @@ export default {
   data () {
     return {
       snackbar: {},
-      IS_MOBILE,
+      constants,
       addNew: false,
       newFieldType: 'native',
       selectedIndex: null,
@@ -367,7 +368,6 @@ export default {
         fieldGroupsClone.forEach((g, idx) => {
           g.groupOrder = idx
         })
-        console.log('sort event happened', fieldGroupsClone)
         _self.saveGroupChanges(fieldGroupsClone)
       }
     })
@@ -463,8 +463,6 @@ export default {
     },
     async moveFieldToOtherGroup (field, newGroup) {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      console.log('randaLogger group', newGroup)
-      console.log('randaLogger Field', field)
       try {
         await postRequest(`/customFieldGroup/moveFieldToOtherGroup/${newGroup.id}`, field)
         this.snackbar = getSnackbar('SUCCESS', 'Field Moved')
@@ -654,7 +652,6 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addNewType = false
-        console.log('deleting')
         await deleteRequest(`/attachmentType/projectType/${id}`)
         // this.availableAttachmentTypes = data
         this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')

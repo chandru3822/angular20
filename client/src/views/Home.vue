@@ -60,7 +60,7 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import { UserActions } from '@/stores/UserStore'
-import { IS_MOBILE, getRequest, getSnackbar } from '@/helpers/helpers'
+import { getRequest, getSnackbar } from '@/helpers/helpers'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
 import Snackbar from '@/components/Snackbar.vue'
@@ -77,7 +77,6 @@ export default {
   },
   data () {
     return {
-      IS_MOBILE,
       snackbar: {},
       appLoading: this.$store.state.app.loading,
       loadComplete: false,
@@ -107,6 +106,17 @@ export default {
         label: 'Commissions',
         path: '/commissionManagement/closers',
         display: this.$store.getters.userHasFeature('COMMISSIONS')
+      }, {
+        label: 'Finance',
+        display: this.$store.getters.userHasFeature('FINANCES'),
+        path: '/finances/rebate/viewPayments',
+        children: [
+          {
+            label: 'BluePower + Rebates',
+            path: '/finances/rebate/viewPayments',
+            display: this.$store.getters.userHasFeature('FINANCES')
+          }
+        ]
       }, {
         label: 'Schedule',
         path: '/schedule',

@@ -69,4 +69,10 @@ public class ProjectController {
     projectService.updateOwner(projectId, owner);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
+
+  @GetMapping(value = "/generate", produces = "text/csv")
+  public ResponseEntity<String> generateProjectSmartlist(@RequestParam String query) {
+    String report = projectService.generateReport(query);
+    return new ResponseEntity<>(report, (report == null) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
+  }
 }

@@ -22,7 +22,7 @@
             </v-tooltip>
           {{user.firstName}} {{user.lastName}}
           <v-spacer></v-spacer>
-          <v-toolbar-items :slot="IS_MOBILE ? 'extension' : 'default'">
+          <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs background-color="transparent">
               <v-tab :to="`/user/${userId}/details`">
                 Details
@@ -53,7 +53,8 @@
   import Snackbar from '@/components/Snackbar.vue'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
 
   export default {
     name: 'User',
@@ -72,7 +73,7 @@
             to: `/users`
           },
         ],
-        IS_MOBILE,
+        constants,
         snackbar: {},
         user: {},
         userId: this.$route.params.id,

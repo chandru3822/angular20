@@ -52,6 +52,11 @@ public class ContactController {
         contactService.updateOwner(contactId, owner);
     }
 
+  @PutMapping(value = "/updateMailingAddress", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateMailingAddress(@RequestBody Contact contact) {
+    contactService.updateMailingAddress(contact);
+  }
+
     @GetMapping(value = "/{contactId}/project", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Project> getContactProjects(@PathVariable Long contactId) {
         return new ResponseEntity<>(new Project(), HttpStatus.OK);

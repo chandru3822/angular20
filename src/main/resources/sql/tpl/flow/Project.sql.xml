@@ -42,6 +42,45 @@
       p.project_name ilike '%' || :query || '%'
   ]]></project.searchCount>
 
+  <project.generateReport><![CDATA[
+    select
+      p.id as "ID",
+      p.project_name as "Name",
+      p.date_created as "Date Created",
+      st.status_type as "Status",
+      pr.process_name as "Process"
+    from flow.project p
+    inner join flow.company_process cp on cp.id = p.company_process_id
+    inner join flow.process pr on pr.id = cp.process_id
+    inner join flow.status_type st on st.id = cp.status_type_id
+    where
+      cp.company_id = :companyId and
+      p.project_name ilike '%' || :query || '%'
+    order by p.date_created desc
+  ]]></project.generateReport>
+
+  <project.getSharedByObjectType><![CDATA[
+    select
+        s.id,
+        s.name,
+        s.company_object_type_id,
+        cot.object_type_id,
+        s.shared,
+        s.owner_id,
+        s.date_created,
+        s.date_modified,
+        s.created_by_id,
+        s.modified_by_id,
+        s.archived
+    from flow.smartlist s
+    inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+    where
+        s.shared is true and
+        cot.object_type_id = :objectTypeId and
+        cot.company_id = :companyId
+    order by s.name
+  ]]></project.getSharedByObjectType>
+
   <project.get>
     <![CDATA[
       select

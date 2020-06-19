@@ -3,9 +3,9 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!IS_MOBILE" class="app-title">Work Queue</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Work Queue</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-toolbar-items :slot="IS_MOBILE ? 'extension' : 'default'">
+          <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs>
               <v-tab :to="`/settings/workQueue/types`">
                 Types
@@ -27,7 +27,8 @@
 <script>
   import Vue2Filters from 'vue2-filters'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
 
   export default {
     name: 'WorkQueueAdmin',
@@ -38,7 +39,7 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
+        constants,
       }
     },
     computed: {},

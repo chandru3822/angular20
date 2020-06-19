@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12" md="3" class="text-left">
         <v-menu data-app left
-                v-if="IS_MOBILE"
+                v-if="constants.IS_MOBILE"
                 offset-y
                 v-model="menuOpen"
                 max-height="350"
@@ -72,7 +72,8 @@
 <script>
 import Snackbar from '@/components/Snackbar.vue'
 import Vue2Filters from 'vue2-filters'
-import { getRequest, getSnackbar, IS_MOBILE } from '@/helpers/helpers'
+import { getRequest, getSnackbar } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 
 export default {
   name: 'Menu',
@@ -84,7 +85,7 @@ export default {
     return {
       snackbar: {},
       menuOpen: false,
-      IS_MOBILE,
+      constants,
       companyId: this.$store.state.user.details.companyId,
       parentId: this.$store.state.user.details.parentCompanyId,
 

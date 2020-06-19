@@ -21,6 +21,7 @@
                       item-value="id"
                       item-text="processStepRequirementType"
                       @input="[selectRequirementType(), parent = {}, selectedCustomField = {}, selectedDataTypeRequirement = {},
+                              validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
@@ -33,6 +34,7 @@
                 item-text="processStepName"
                 return-object
                 @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
+                              validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
@@ -44,6 +46,7 @@
                       return-object
                       @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
                               selectedDataTypeRequirement = {},
+                              validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
@@ -55,7 +58,7 @@
                 label="Function"
                 item-text="companyFunctionName"
                 returnObject
-                @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId)]"
+                @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId), validateRequirementForm()]"
             ></v-select>
             <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
@@ -65,6 +68,7 @@
                     :key="index"
                     placeholder="Enter a dynamic value"
                     v-model="fp.dynamicValue"
+                    @input="validateRequirementForm()"
                     :label="fp.parameterName"></v-text-field>
               </v-card>
             </div>
@@ -73,23 +77,25 @@
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
-                @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
+                @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]"
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
-            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]" class="mx-2" label="Custom"></v-switch>
-            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKey === null && selectedCustomField.systemListId === null"
+            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]" class="mx-2" label="Custom"></v-switch>
+            <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKey === null && selectedCustomField.companySystemListId === null"
                           v-model="newRequirement.requirementValue"
                           placeholder="Enter a value"
+                          @input="validateRequirementForm()"
                           label="Value">
             </v-text-field>
             <v-select
                 v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
-                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKey !== null || selectedCustomField.systemListId !== null)
+                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKey !== null || selectedCustomField.companySystemListId !== null)
                               && !selectedCustomField.allowMultiple"
                 v-model="selectedListValue"
                 :items="selectedCustomField.listOfValues"
+                @change="validateRequirementForm()"
                 label="Available Values"
                 item-text="name"
                 return-object
@@ -101,6 +107,7 @@
                 :items="selectedCustomField.listOfValues"
                 label="Available Values"
                 multiple
+                @change="validateRequirementForm()"
                 item-text="name"
                 return-object
             ></v-select>
@@ -109,15 +116,17 @@
                 v-model="selectedDataTypeRequirement"
                 :items="dataTypeRequirements"
                 label="Available Values"
+                @change="validateRequirementForm()"
                 item-text="dataTypeValue"
                 return-object
             ></v-select>
             <v-text-field v-if="selectedDataTypeRequirement && selectedDataTypeRequirement.secondaryRequirement"
                           v-model="newRequirement.secondaryRequirementValue"
                           placeholder="Enter a value"
+                          @input="validateRequirementForm()"
                           label="Value">
             </v-text-field>
-            <v-btn :disabled="validateRequirementForm()"
+            <v-btn :disabled="invalidRequirement"
                    @click="saveNewRequirement">
               <v-icon>save</v-icon>
               Save
@@ -899,6 +908,7 @@
     data() {
       return {
         snackbar: {},
+        invalidRequirement: true,
         headers: [
           {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
           {text: 'Type', value: 'processStepRequirementType', show: true},
@@ -1117,7 +1127,7 @@
         //if a secondary requirement is required check for a value there
         let invalidSecondaryValue = (this.selectedDataTypeRequirement.secondaryRequirement && !this.newRequirement.secondaryRequirementValue)
 
-        return invalidParams || invalidValue || invalidSecondaryValue
+        this.invalidRequirement = invalidParams || invalidValue || invalidSecondaryValue
       },
       async saveNewRequirement() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -1150,7 +1160,6 @@
             this.newRequirement.requirementValue = null
           } else if (this.newRequirement.customValue && this.selectedCustomField.companySystemListId && !this.selectedCustomField.allowMultiple) {
             //  if from a system list and not allow multiple use the selected value id,
-            console.log('here here here', this.selectedListValue)
             this.newRequirement.systemListOptionId = this.selectedListValue.id
 
             //reset these in case they changed their selections around - it is possible to have all 4 values set because of changing values
@@ -1417,7 +1426,6 @@
         }
       },
       async saveFunctionToAction(action) {
-        console.log('save new child function')
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildFunctionToAction`, {
@@ -1438,7 +1446,6 @@
         }
       },
       async deleteChildFunctionFromAction(actionId, id) {
-        console.log('delete child function')
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
@@ -1451,7 +1458,6 @@
         }
       },
       async updateChildFunction(actionId, childFunction) {
-        console.log('update child function')
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildFunction`, childFunction)

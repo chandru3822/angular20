@@ -1,0 +1,64 @@
+<sql>
+    <excel.import.sqlId>
+        select
+        case
+        when seq.last_value >= 9999 then setval('brs.proposal_excel_id_seq', 1000)
+        else nextval('brs.proposal_excel_id_seq')
+        end as prop_id
+        from brs.proposal_excel_id_seq seq
+    </excel.import.sqlId>
+
+    <excel.import.validateProjectId>
+        select s.customer_name,
+        concat_ws(' ', c.street1, c.street2) street,
+        c.city, c.state, c.postal_code,
+        c.phone, c.email, s.sales_rep as source,
+        trim(concat(users.first_name, ' ', users.last_name)) as project_owner,
+        1111 as epc_proposal_pricing, --TODO: Pull from custom value when Judson adds it
+        s.sales_rep_id as project_owner_id
+        from flow.project p
+        inner join flow.contact c on c.id = p.contact_id
+        left join brs.project_commission_snapshot s ON s.project_id = p.id
+        left join flow.user users on users.id = s.sales_rep_id
+        where s.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
+        and p.id = :projectId
+    </excel.import.validateProjectId>
+
+    <excel.import.insert>
+      <![CDATA[
+              insert into brs.proposal_log (proposal_date, source, proposal, proposal_nbr, project_id)
+                  values ( :proposalDate, :source, :proposal, :proposalId, :projectId)
+              returning *
+          ]]>
+    </excel.import.insert>
+
+    <!-- design log stuff -->
+    <excel.import.design.sqlId>
+        select
+        case
+        when seq.last_value >= 9999 then setval('brs.design_nbr_seq', 1000)
+        else nextval('brs.design_nbr_seq')
+        end as design_id
+        from brs.design_nbr_seq seq
+    </excel.import.design.sqlId>
+
+    <excel.import.design.insert>
+      <![CDATA[
+              WITH t1 AS (
+                INSERT INTO brs.design_log (design_date, source, design, design_nbr, project_id, bom)
+                VALUES (:designDate, :source, :design, nextval('brs.design_nbr_seq'), :projectId, :bom)
+                RETURNING *
+              )
+              SELECT t.*, t.design_nbr AS design_id
+              FROM t1 t
+          ]]>
+    </excel.import.design.insert>
+
+    <excel.import.loadProposal>
+        select proposal
+        from brs.proposal_log
+        where project_id = :projectId
+        and proposal_nbr = :proposalId
+        order by proposal_date desc;
+    </excel.import.loadProposal>
+</sql>

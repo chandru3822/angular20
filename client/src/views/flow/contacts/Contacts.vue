@@ -8,7 +8,7 @@
           <v-toolbar-items>
             <v-btn text to="/newContact" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD')">
               <v-icon>add</v-icon>
-              <span v-if="!IS_MOBILE">Add Contact</span>
+              <span v-if="!constants.IS_MOBILE">Add Contact</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -108,7 +108,8 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import { saveAs } from 'file-saver'
 
@@ -120,14 +121,14 @@ export default {
   data () {
     return {
       delay: 500,
-      IS_MOBILE,
+      constants,
       dialog: false,
       snackbar: {},
       contacts: [],
       descending: true,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 1000],
-        'items-per-page-text': IS_MOBILE ? '' : 'Rows per page:'
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
       options: {
         itemsPerPage: 100

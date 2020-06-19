@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import { UserStore } from '@/stores/UserStore'
 import { AppStore } from '@/stores/AppStore'
-import { MAX_FILE_SIZE } from '@/helpers/helpers'
+import constants from '@/helpers/constants'
 import {postRequest, deleteRequest, getRequest, getRequestWithParams} from "./helpers/helpers";
 import {AppMutations} from "./stores/AppStore";
 
@@ -51,7 +51,7 @@ const store = new Vuex.Store({
     [Actions.FILE_UPLOAD]: (context, { file, attachmentTypeId, sourceId, deleteFirst = true, callback }) => {
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
-        if (file.size > MAX_FILE_SIZE) {
+        if (file.size > constants.MAX_FILE_SIZE) {
           const error = { error: true, errorMsg: 'File size cannot exceed 10MB' }
           callback(error)
         } else {
@@ -75,7 +75,7 @@ const store = new Vuex.Store({
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
-        if (file.size > MAX_FILE_SIZE) {
+        if (file.size > constants.MAX_FILE_SIZE) {
           const error = { error: true, errorMsg: 'File size cannot exceed 10MB' }
           callback(error)
         } else {
@@ -97,7 +97,7 @@ const store = new Vuex.Store({
       // @TODO: Need to find a way to make this work better with the FILE_UPLOAD action. Too much duped code and I hate it
       let reader = new FileReader()
       reader.addEventListener('loadend', async function (e) {
-        if (file.size > MAX_FILE_SIZE) {
+        if (file.size > constants.MAX_FILE_SIZE) {
           const error = { error: true, errorMsg: 'File size cannot exceed 10MB' }
           callback(error)
         } else {

@@ -201,7 +201,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
-  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import {getStates} from '@/services/stateService'
 
   export default {
@@ -254,7 +254,6 @@
         monitors: [{ value: true, text: "Yes" }, { value: false, text: "No" }],
         adders: [],
         originalAdders: [],
-        IS_MOBILE,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         isModify: false,
@@ -265,7 +264,6 @@
       }
     },
     async created () {
-      debugger
       this.getStates()
       this.getUtilityCompanies()
       this.getProducts()
@@ -351,14 +349,11 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
 
-          debugger
           prop.addersChanged = false;
           if (this.isModify) {
             if (this.originalAdders.length == prop.adders.length) {
-              debugger
               for (var i = 0; i < prop.adders.length; ++i) {
                 if (prop.adders[i].id !== this.originalAdders[i].id) {
-                  console.log('2');
                   prop.addersChanged = true;
                 }
               }
@@ -422,9 +417,7 @@
         }
       },
       async deleteAdder(index) {
-        debugger;
         this.prop.adders.splice(index, 1);
-        debugger;
       }
     }
   }

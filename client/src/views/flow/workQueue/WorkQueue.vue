@@ -50,7 +50,7 @@
   import Snackbar from '@/components/Snackbar.vue'
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
-  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar, IS_MOBILE} from '@/helpers/helpers'
+  import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'WorkQueue',
@@ -60,7 +60,6 @@
     data() {
       return {
         snackbar: {},
-        IS_MOBILE,
         model: {},
         selectedWorkQueueCategory: {},
         workQueueCategories: [],
@@ -150,5 +149,9 @@
   line-height: 2;
   font-size: 30px;
   font-weight: 600;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
 }
 </style>
