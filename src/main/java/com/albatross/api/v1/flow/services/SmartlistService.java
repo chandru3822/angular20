@@ -229,8 +229,12 @@ public class SmartlistService {
     // - value 1: object type ID
     // - value 2: process step ID
     // - value 3: hasListValue (from company_data_type)
-        // - value 4: allowMultiple
+    // - value 4: allowMultiple
+    // - value 5: customFieldSqlKey
+    // - value 6: listOfValueId
     HashMap<Long, List<Object>> joinObjectTypes = new HashMap<>();
+
+    StringBuilder withClause = new StringBuilder("");
 
     StringBuilder query = new StringBuilder("select");
 
@@ -246,6 +250,7 @@ public class SmartlistService {
         mapVals.add(f.getProcessStepId());
         mapVals.add(f.getHasListValues());
         mapVals.add(f.getAllowMultiple());
+        mapVals.add(f.getCustomFieldSqlKey());
 
         joinObjectTypes.put(f.getCustomFieldGroupAssignmentId(), mapVals);
       }
@@ -254,7 +259,7 @@ public class SmartlistService {
 
       if (f.getCustomFieldGroupAssignmentId() != null && joinObjectTypes.containsKey(f.getCustomFieldGroupAssignmentId())) {
         final String table = joinObjectTypes.get(f.getCustomFieldGroupAssignmentId()).get(0).toString();
-        final String column = (f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) ? "name" : getReferenceColumn(f.getDataTypeId());
+        final String column = ((f.getHasListValues() != null && f.getHasListValues() && !f.getAllowMultiple()) || f.getCustomFieldSqlKey() != null) ? "name" : getReferenceColumn(f.getDataTypeId());
         location = String.format("\"%s\".%s", table, column);
       } else {
         location = String.format("%s.%s", f.getReferenceTable(), f.getReferenceColumn());
@@ -273,6 +278,10 @@ public class SmartlistService {
 //          }
       } else {
         query.append(String.format(" %s as \"%s\",", location, f.getName()));
+      }
+
+      if (f.getCustomFieldSqlKey() != null) {
+          withClause.append(String.format(" \"%s\" as  (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey())));
       }
     }
 
@@ -301,13 +310,21 @@ public class SmartlistService {
           final Long objectTypeId = Long.parseLong(vals.get(1).toString());
           final Boolean hasListValues = Boolean.parseBoolean((vals.get(3) == null) ? "false" : vals.get(3).toString());
           final Boolean allowMultiple = Boolean.parseBoolean((vals.get(4) == null) ? "false" : vals.get(4).toString());
+          final String customFieldSqlKey = (vals.get(5) != null) ? vals.get(5).toString() : null;
 
           switch (objectTypeId.intValue()) {
             case 1:
-              if (hasListValues) {
+              if (hasListValues || customFieldSqlKey != null) {
+
                 final String pcfvUUID = UUID.randomUUID().toString();
                 query.append(String.format("left join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), pcfvUUID, pcfvUUID, pcfvUUID, cfgaId));
-                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, pcfvUUID));
+
+                if (customFieldSqlKey != null) {
+                    //custom value sql
+                    query.append(String.format("left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", customFieldSqlKey, uuid, uuid, pcfvUUID));
+                } else {
+                    query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, pcfvUUID));
+                }
               } else {
                 query.append(String.format("left join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
               }
@@ -689,6 +706,7 @@ public class SmartlistService {
     StringBuilder additionalJoins = new StringBuilder();
     StringBuilder whereClause = new StringBuilder();
 
+    // @TODO humes, add "with" tables in additional joins
       for (SmartlistRequirement r : requirements) {
           String operator = getSqlOperator(r.getOperatorTypeId(), r.getDataTypeId(), r.getDataTypeRequirement());
 
@@ -704,6 +722,7 @@ public class SmartlistService {
                   //Only put quotes around table when dataTypeId == 7
                   referenceLocation = "\"" + joinObjectTypes.get(r.getCustomFieldGroupAssignmentId()).get(0).toString() + "\"." + referenceColumn;
               } else {
+                  // @TODO humes, need to get rest of the object types here
                   // Do a new join from custom field value table based on object type
                   if (r.getObjectTypeId() == 4) {
                       final String ppsUUID = UUID.randomUUID().toString();
@@ -741,6 +760,14 @@ public class SmartlistService {
               whereClause.append(String.format("%s %s %s and ", referenceLocation, operator, requirementValue));
           }
       }
+
+    if (withClause.length() > 0) {
+        // Remove comma and space from last with table
+        withClause.deleteCharAt(withClause.length() - 1);
+        withClause.deleteCharAt(withClause.length() - 1);
+
+        query.insert(0, "with " + withClause.toString());
+    }
 
     query.append(additionalJoins.toString());
 

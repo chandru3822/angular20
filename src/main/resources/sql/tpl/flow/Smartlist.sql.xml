@@ -124,7 +124,8 @@ select
   cdt1.has_list_values,
   cdt1.allow_multiple,
   cf.company_system_list_id,
-  sl.system_list_type_id
+  sl.system_list_type_id,
+  cf.custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
 left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
@@ -164,7 +165,8 @@ select
   cdt1.has_list_values,
   cdt1.allow_multiple,
   cf.company_system_list_id,
-  sl.system_list_type_id
+  sl.system_list_type_id,
+  cf.custom_field_sql_key
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
 left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
