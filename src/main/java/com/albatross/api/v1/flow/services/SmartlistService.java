@@ -160,7 +160,22 @@ public class SmartlistService {
   }
 
   public List<SmartlistRequirement> getRequirements(Long smartlistId) {
-    return sqlCache.query("smartlist.getRequirements", Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+    List<SmartlistRequirement> requirements =  sqlCache.query("smartlist.getRequirements", Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+
+    for (SmartlistRequirement r : requirements) {
+        if (r.getCustomFieldSqlKey() != null) {
+            final String sql = sqlCache.getByKey(r.getCustomFieldSqlKey());
+            if (sql != null) {
+                List<ListOfValue> vals = sqlCache.queryBySql(sql, null, ListOfValue.class);
+                ListOfValue val = vals.stream().filter(v -> v.getId() == 4165).findFirst().orElse(null);
+                if (val != null) {
+                    r.setRequirementValue(val.getName());
+                }
+            }
+        }
+    }
+
+    return requirements;
   }
 
   public List<Smartlist> getSharedByType(Long objectTypeId) {
