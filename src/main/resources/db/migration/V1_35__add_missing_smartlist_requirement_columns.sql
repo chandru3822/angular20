@@ -11,5 +11,3 @@ alter table flow.smartlist_requirement
 add column if not exists custom_sql_option_id int;
 
 alter table flow.smartlist_requirement drop constraint  if exists sr_list_of_value_id_fk;
-alter table flow.smartlist_requirement
-add constraint  sr_list_of_value_id_fk foreign key (list_of_value_id) references flow.list_of_value;
