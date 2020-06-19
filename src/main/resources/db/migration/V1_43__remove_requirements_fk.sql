@@ -1,0 +1,2 @@
+alter table if exists flow.smartlist_requirement drop constraint if exists sr_list_of_value_id_fk;
+alter table if exists flow.process_step_requirement drop constraint if exists process_step_requirement_list_of_value_id_fkey;
