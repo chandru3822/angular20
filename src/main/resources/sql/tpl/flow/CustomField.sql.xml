@@ -3,6 +3,7 @@
     select cf.id,
      cf.list_of_value_id,
      cf.company_id,
+     cf.readonly,
      cf.field_name,
      cf.archived,
      cf.created_by_id,
@@ -50,6 +51,7 @@
     select cf.id,
        cf.list_of_value_id,
        cf.company_id,
+       cf.readonly,
        cf.field_name,
        cf.archived,
        cf.created_by_id,
@@ -121,6 +123,7 @@
     update flow.custom_field
       set field_name = :fieldName,
           company_system_list_id = :systemListId,
+          readonly = :readonly,
           system_list_option_ids = array[ :systemListOptionIds ]::integer[],
           modified_by_id = :modifiedById,
           date_modified = now()
@@ -128,8 +131,8 @@
   ]]></customField.saveField>
 
   <customField.insertField><![CDATA[
-    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids)
-    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, array[ :systemListOptionIds ]::integer[])
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, readonly)
+    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, array[ :systemListOptionIds ]::integer[], :readonly)
     returning id
   ]]></customField.insertField>
 
@@ -171,6 +174,7 @@
   <customField.getByParentProcessStep><![CDATA[
     select cf.id,
        cf.list_of_value_id,
+       cf.readonly,
        cf.custom_field_sql_key,
        cf.company_id,
        cf.field_name,

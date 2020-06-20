@@ -87,7 +87,7 @@
         <CustomValueInput
           v-for="(field, idx) in cfg.customFieldValues"
           :key="idx"
-          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
+          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null || field.readonly"
           :field="field"
         />
       </v-card>
