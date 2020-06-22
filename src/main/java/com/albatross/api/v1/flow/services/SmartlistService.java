@@ -330,10 +330,16 @@ public class SmartlistService {
               }
               break;
             case 2:
-              if (hasListValues) {
+              if (hasListValues || customFieldSqlKey != null) {
+
                 final String ccfvUUID = UUID.randomUUID().toString();
                 query.append(String.format("left join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), ccfvUUID, ccfvUUID, ccfvUUID, cfgaId));
-                query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ccfvUUID));
+
+                if (customFieldSqlKey != null) {
+                    query.append(String.format("left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", customFieldSqlKey, uuid, uuid, ccfvUUID));
+                } else {
+                    query.append(String.format("left join flow.list_of_value \"%s\" on \"%s\".id = \"%s\".int_value ", uuid, uuid, ccfvUUID));
+                }
               } else {
                 query.append(String.format("left join %s \"%s\" on \"%s\".contact_id = flow.project.contact_id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), uuid, uuid, uuid, cfgaId));
               }
@@ -714,7 +720,7 @@ public class SmartlistService {
 
           if (r.getCustomFieldGroupAssignmentId() != null) {
 
-              String referenceColumn = (r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) ? "id" : getReferenceColumn(r.getDataTypeId());
+              String referenceColumn = ((r.getHasListValues() != null && r.getHasListValues() && !r.getAllowMultiple()) || r.getCustomFieldSqlKey() != null) ? "id" : getReferenceColumn(r.getDataTypeId());
 
               // see if table we need is already been joined, if so use it
               // @TODO humes, probably want to also check processStepId here is objectTypeId == 4
@@ -936,6 +942,8 @@ public class SmartlistService {
                     return r.getListOfValueIds();
                 }
                 return r.getDataTypeRequirement().getDataTypeValue();
+            case 8:
+                return r.getListOfValueId();
             default:
                 return null;
         }
