@@ -82,7 +82,7 @@
         <CustomValueInput
           v-for="field in group.customFieldValues"
           :key="field.fieldName"
-          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null"
+          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null || field.readonly"
           :showFieldName="false"
           :field="field"
         />
