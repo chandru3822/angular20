@@ -19,7 +19,7 @@ public class CustomField {
       customFieldObjectTypeId, dataTypeId, companySystemListId, scheduleFieldTypeId;
   private List<Long> systemListOptionIds;
   private String fieldName, objectType, groupName, customFieldSqlKey, customFieldSqlReferenceTable;
-  private Boolean archived, showOnInsert, hasListValues, allowMultiple;
+  private Boolean archived, showOnInsert, hasListValues, allowMultiple, readonly;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
   private Date dateCreated, dateModified;
