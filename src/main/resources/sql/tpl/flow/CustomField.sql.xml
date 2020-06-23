@@ -25,6 +25,10 @@
                          from flow.company_object_type cot
                                 inner join flow.object_type ot on ot.id = cot.object_type_id
                                 left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id
+                              where cot.company_id = cf.company_id
+                                and cot.archived is not true
+                                and ot.archived is not true
+                                and cfot.archived is not true
                        ) rows), '[]') AS custom_field_object_types,
      coalesce((
                    select array_to_json(array_agg(rows))
@@ -74,6 +78,9 @@
                               inner join flow.object_type ot on ot.id = cot.object_type_id
                                 left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id and cfot.archived is not true
                          where cot.company_id = :companyId
+                                and cot.archived is not true
+                                and ot.archived is not true
+                                and cfot.archived is not true
                        ) rows), '[]') AS custom_field_object_types,
        coalesce((
                      select array_to_json(array_agg(rows))
