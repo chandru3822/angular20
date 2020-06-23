@@ -131,7 +131,7 @@
       set field_name = :fieldName,
           company_system_list_id = :systemListId,
           readonly = :readonly,
-          system_list_option_ids = array[ :systemListOptionIds ]::integer[],
+          system_list_option_ids = case when :systemListOptionIds::int[] is not null then array[ :systemListOptionIds ]::integer[] else null end,
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
@@ -139,7 +139,7 @@
 
   <customField.insertField><![CDATA[
     insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, readonly)
-    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, array[ :systemListOptionIds ]::integer[], :readonly)
+    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, case when :systemListOptionIds::int[] is not null then array[ :systemListOptionIds ]::integer[] else null end, :readonly)
     returning id
   ]]></customField.insertField>
 
