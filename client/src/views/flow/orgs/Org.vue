@@ -61,7 +61,7 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="cf.id" :readonly="false" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="cf.id" :readonly="cf.readonly" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>

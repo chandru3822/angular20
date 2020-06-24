@@ -114,6 +114,10 @@
                         tabindex=1
                         v-model="item.fieldName"
                     ></v-text-field>
+                    <div class="text-left read-only-label">
+                      <label>Read-only:</label>
+                      <input type="checkbox" class="ml-2" v-model="item.readonly">
+                    </div>
                     <v-autocomplete
                         v-model="item.companyDataType"
                         :items="filterDataTypes(item)"
@@ -499,6 +503,10 @@
 </style>
 
 <style scoped lang="scss">
+
+  .read-only-label {
+    font-size: 16px;
+  }
 
   .options-container {
     text-align: left;

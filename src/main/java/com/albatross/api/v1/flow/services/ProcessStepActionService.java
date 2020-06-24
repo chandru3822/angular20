@@ -106,7 +106,7 @@ public class ProcessStepActionService {
         deleteLinkFromAction(link.getId());
       }
     }
-    if(action.getLogicListChanged()) {
+    if(null != action.getLogicListChanged() && action.getLogicListChanged()) {
       // archive all old logic before saving new logi
       sqlCache.update("processStepAction.archiveOldLogic", params);
 

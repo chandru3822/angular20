@@ -49,7 +49,7 @@
         from flow.custom_field_group_assignment cfga
         left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
         inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
-        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id in (cot.id, :processStepTypeId)
+        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
         inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
         left join flow.project_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_id = :projectId
         left join flow.project p on p.id = pcv.project_id
@@ -89,6 +89,7 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
+                                    cf.readonly,
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
@@ -150,6 +151,7 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
+                                    cf.readonly,
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
@@ -216,6 +218,7 @@
                                   cfga.field_order as "fieldOrder",
                                   cf.list_of_value_id as "listOfValueId",
                                   cf.field_name as "fieldName",
+                                  cf.readonly,
                                   cf.custom_field_sql_key as "customFieldSqlKey",
                                   cf.company_system_list_id as "companySystemListId",
                                   cf.system_list_option_ids as "systemListOptionIds",
@@ -320,6 +323,7 @@
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
                                     cf.field_name as "fieldName",
+                                    cf.readonly,
                                     cf.custom_field_sql_key as "customFieldSqlKey",
                                     cf.company_system_list_id as "companySystemListId",
                                     cf.system_list_option_ids as "systemListOptionIds",
