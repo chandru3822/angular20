@@ -53,8 +53,8 @@
             :headers="headers"
             :items="filterProcesses()"
             :items-per-page="-1"
-            :sort-by="['displayOrder']"
             :sort-desc="[false]"
+            :sort-by="['displayOrder']"
             hide-default-footer
             single-expand
             :expanded.sync="expanded"
@@ -237,10 +237,22 @@ export default {
         const rowSelected = _self.process.processStepProcesses.splice(oldIndex, 1)[0]
         _self.process.processStepProcesses.splice(newIndex, 0, rowSelected)
         let rowsClone = cloneDeep(_self.process.processStepProcesses)
+
+        let rowsToSave = []
         rowsClone.forEach((r, idx) => {
+          //check if the row needs to be saved before updating display order
+          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+          //update display order
           r.displayOrder = idx
+          //save only rows that changed
+          if(save) {
+            _self.process.processStepProcesses[idx].newDisplayOrder = idx
+            rowsToSave.push(r)
+          }
         })
-        _self.saveRowChanges(rowsClone)
+        console.log('rows to save', rowsToSave)
+        _self.saveRowChanges(rowsToSave)
       }
     })
   },
@@ -254,6 +266,7 @@ export default {
   methods: {
     filterProcesses () {
       return this.process.processStepProcesses.filter(psp => { return !psp.archived})
+      // return orderBy(this.process.processStepProcesses.filter(psp => { return !psp.archived}), psp => psp.displayOrder)
     },
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -270,7 +283,8 @@ export default {
     async saveRowChanges (rows) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
+        const {data} = await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
+        // this.$set(this.process, 'processStepProcesses', data.processStepProcesses)
         this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

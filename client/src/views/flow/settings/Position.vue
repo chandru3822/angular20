@@ -13,6 +13,10 @@
               <v-icon>save</v-icon>
               Save
             </v-btn>
+            <v-btn text @click="$router.push('/settings/positions')">
+              <v-icon>close</v-icon>
+              Close
+            </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="mt-2 pa-5">
