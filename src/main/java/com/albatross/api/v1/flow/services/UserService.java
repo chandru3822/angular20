@@ -359,9 +359,9 @@ public class UserService {
       bw.registerCustomEditor(List.class, "companies",
           new JsonCollectionDeserializer(companiesRef, objectMapper));
 
-      TypeReference<List<Position>> positionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "positions",
-          new JsonCollectionDeserializer(positionsRef, objectMapper));
+      TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "userPositions",
+          new JsonCollectionDeserializer(userPositionsRef, objectMapper));
     }
   }
 }
