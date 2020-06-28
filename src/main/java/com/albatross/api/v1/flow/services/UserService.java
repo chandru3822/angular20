@@ -279,6 +279,16 @@ public class UserService {
     return results;
   }
 
+  public void saveUserStatus(Long userId, Long companyUserStatusTypeId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", userId);
+    params.put("companyUserStatusTypeId", companyUserStatusTypeId);
+
+    sqlCache.update("user.saveUserStatus", params);
+  }
+
   public ResponseEntity changeContext(Long companyId) {
     User user = securityService.getCurrentUser();
     return user.getHighestCompanyId() == 1L ? changeContextAdmin(companyId) : changeContextNonAdmin(companyId);

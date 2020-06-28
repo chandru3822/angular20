@@ -21,6 +21,19 @@
               </v-card>
             </v-tooltip>
           {{user.firstName}} {{user.lastName}}
+          <v-select class="ml-3"
+                    v-model="user.companyUserStatusTypeId"
+                    :items="companyUserStatusTypes"
+                    label="User Status"
+                    placeholder="Select a status..."
+                    item-text="userStatusType"
+                    item-value="id"
+                    autocomplete="off">
+          </v-select>
+          <v-btn text @click="saveUserStatus" color="primary">
+            <v-icon>save</v-icon>
+            Save User Status
+          </v-btn>
           <v-spacer></v-spacer>
           <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
             <v-tabs background-color="transparent">
@@ -80,12 +93,14 @@
         companyId: this.$store.state.user.details.companyId,
         userImage: {},
         loadComplete: false,
+        companyUserStatusTypes: [],
         attachmentTypeId: 9,
         imageFailed: false
       }
     },
     created () {
       this.getUser()
+      this.getCompanyUserStatusTypes()
       this.getUserImage()
     },
     methods: {
@@ -102,6 +117,30 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving User')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCompanyUserStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/user/statuses`)
+          this.companyUserStatusTypes = data
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveUserStatus () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await postRequest(`/user/${this.userId}/status/${this.user.companyUserStatusTypeId}`)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving User Status')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

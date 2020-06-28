@@ -164,6 +164,9 @@
              u.modified_by_id,
              u.date_modified,
              u.default_company_id,
+             cust.user_status_type,
+             ust.company_user_status_type_id,
+             cust.has_access,
              coalesce((
               SELECT array_to_json(array_agg(row_to_json(companies)))
               FROM (
@@ -180,6 +183,8 @@
                    ) companies), '[]') as companies
       from flow."user" u
         inner join flow.user_company uc on uc.user_id = u.id
+        inner join flow.user_status_type ust on ust.user_id = u.id
+         inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.company_id = uc.company_id
       where u.id = :id
         and uc.company_id = :companyId
         and uc.archived is not true
@@ -300,6 +305,15 @@
          and archived is not true
       order by user_status_type
   ]]></user.getCompanyUserStatuses>
+
+  <user.saveUserStatus><![CDATA[
+    update flow.user_status_type ust
+    set company_user_status_type_id = :companyUserStatusTypeId
+    from flow.company_user_status_type cust
+    where cust.id = ust.company_user_status_type_id
+      and ust.user_id = :userId
+      and cust.company_id = :companyId
+  ]]></user.saveUserStatus>
 
   <user.updateDefault><![CDATA[
       update flow.user_company
