@@ -89,9 +89,16 @@ public class ProjectProcessStepController {
   }
 
   @PostMapping(value = "/{projectProcessStepId}/owner")
-  public ResponseEntity<Void> updateProjectProcessStepOwner(@PathVariable Long projectProcessStepId, @RequestBody Owner owner) {
-    projectProcessStepService.updateOwner(projectProcessStepId, owner);
+  public ResponseEntity<Void> updateProjectProcessStepOwner(@PathVariable Long projectProcessStepId,
+                                                            @RequestBody Owner owner) {
+    projectProcessStepService.updateOwner(projectProcessStepId, owner, false);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PostMapping(value = "/{projectProcessStepId}/owner/checkExisting")
+  public ResponseEntity updateProjectProcessStepOwnerCheckExisting(@PathVariable Long projectProcessStepId,
+                                                                         @RequestBody Owner owner) {
+    return projectProcessStepService.updateOwner(projectProcessStepId, owner, true);
   }
 
   @PostMapping(value = "{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)

@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -129,12 +130,31 @@ public class ProjectProcessStepService {
     sqlCache.update("projectProcessStep.setStatus", params);
   }
 
-  public void updateOwner(Long projectProcessStepId, Owner owner) {
+  public ResponseEntity updateOwner(Long projectProcessStepId, Owner owner, Boolean blockOverride) {
+    /* blockOverride = don't allow someone to assign to themselves if it is already assigned to someone else.
+     / (race-condition should be the only time this is really used)
+     / or if someone sits on the ui for a long time before clicking "Assign to me"
+    */
     HashMap<String, Object> params = new HashMap<>();
     params.put("userPositionId", (owner == null) ? null : owner.getUserPositionId());
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("userId", securityService.getCurrentUser().getId());
-    sqlCache.update("projectProcessStep.updateOwner", params);
+
+
+    boolean canSave = false;
+    if(null != blockOverride && blockOverride) {
+      //check for existing owner
+      Long id = sqlCache.queryForObject("projectProcessStep.getOwner", params, Long.class);
+      canSave = id == null;
+    }
+
+    if(null == blockOverride || !blockOverride || canSave) {
+      sqlCache.update("projectProcessStep.updateOwner", params);
+      return ResponseEntity.ok("Owner Saved");
+    } else {
+      return ResponseEntity.badRequest().body("Project Process Step is already assigned to another user. Please refresh page.");
+    }
+
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {

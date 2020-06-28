@@ -110,4 +110,10 @@
       date_modified = now()
     where id = :projectProcessStepId
   ]]></projectProcessStep.updateOwner>
+
+  <projectProcessStep.getOwner><![CDATA[
+    select user_position_id
+    from flow.project_process_step
+    where id = :projectProcessStepId
+  ]]></projectProcessStep.getOwner>
 </sql>
