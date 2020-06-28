@@ -540,7 +540,7 @@
                     </v-toolbar-items>
                   </v-toolbar>
                   <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
-                    <h3>Add Child Process</h3>
+                    <h3>Add Child Process Step</h3>
                     <v-select v-model="selectedProcessStep"
                               :items="childProcessSteps"
                               label="Process Step"

@@ -75,9 +75,9 @@ public class ProcessController {
     }
 
     @PutMapping(value = "/{processId}/processStepProcesses", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void updateProcessStepProcesses(@PathVariable Long processId,
+    public Optional<Process>  updateProcessStepProcesses(@PathVariable Long processId,
                                            @RequestBody List<ProcessStepProcess> processStepProcesses) {
-        processService.updateProcessStepProcesses(processId, processStepProcesses);
+        return processService.updateProcessStepProcesses(processId, processStepProcesses);
     }
 
     @PutMapping(value = "/{processId}/processStepProcess", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -129,6 +129,7 @@ public class ProjectService {
     params.put("key", key);
     params.put("size", file.getSize());
     params.put("createdById", currentUser.getId());
+    params.put("companyId", currentUser.getCompanyId());
     params.put("attachmentTypeId", attachmentTypeId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();

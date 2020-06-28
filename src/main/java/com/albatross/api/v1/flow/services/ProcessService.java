@@ -38,7 +38,8 @@ public class ProcessService {
     }
 
     public Optional<Process> getProcess(Long companyId, Long processId) {
-        return sqlCache.get("process.get", ImmutableMap.of("companyId", companyId, "processId", processId), new ProcessMapper<>(Process.class, om));
+        Optional<Process> result = sqlCache.get("process.get", ImmutableMap.of("companyId", companyId, "processId", processId), new ProcessMapper<>(Process.class, om));
+        return result;
     }
 
     public void deleteProcess(Long processId) {
@@ -127,11 +128,15 @@ public class ProcessService {
         return getOneProcessStepProcess(id);
     }
 
-    public void updateProcessStepProcesses(Long processId, List<ProcessStepProcess> processStepProcesses) {
+    public Optional<Process> updateProcessStepProcesses(Long processId, List<ProcessStepProcess> processStepProcesses) {
+
+        User user = securityService.getCurrentUser();
 
         for(ProcessStepProcess psp : processStepProcesses){
             updateProcessStepProcess(processId, psp);
         }
+
+        return getProcess(user.getCompanyId(), processId);
     }
 
     public Optional<ProcessStepProcess> updateProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {
