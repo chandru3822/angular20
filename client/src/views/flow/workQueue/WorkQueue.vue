@@ -7,6 +7,11 @@
         </v-toolbar>
         <v-divider class="mt-3"/>
         <v-row class="justify-center">
+          <v-btn class="wq-button mx-2 mt-3 white--text" color="primaryCustom"
+                 :outlined="showAll && !selectedWorkQueueCategory.id"
+                 @click="[showAll = true, getWorkQueues()]">
+            All
+          </v-btn>
           <v-btn v-for="(c, index) in workQueueCategories" class="wq-button mx-2 mt-3"
                  :outlined="selectedWorkQueueCategory.id === c.id"
                  :style="{color: selectedWorkQueueCategory.id === c.id ? `${c.color} !important` : 'white !important'}"
@@ -61,6 +66,7 @@
       return {
         snackbar: {},
         model: {},
+        showAll: false,
         selectedWorkQueueCategory: {},
         workQueueCategories: [],
         workQueues: [],
@@ -74,7 +80,6 @@
     async created() {
       this.getWorkQueueCategories()
       this.getWorkQueueOwners()
-      this.getWorkQueues()
     },
     methods: {
       async getWorkQueueCategories() {
