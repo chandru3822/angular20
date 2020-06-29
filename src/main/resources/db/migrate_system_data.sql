@@ -706,3 +706,11 @@ VALUES
 (33, 'PROJECT_DOCUMENT', 'PROJECT_DOCUMENT', 1, false, 1, true),
 (34, 'PROCESS_STEP_DOCUMENT', 'PROCESS_STEP_DOCUMENT', 1, false, 1, true)
 ON CONFLICT DO NOTHING;
+
+-- this is so humes knows which process step to treat differently for the round robin crap - must be run after flyway scripts create the tables
+insert into flow.unique_behavior_type(unique_behavior_type, date_created, created_by_id)
+values('SCHEDULE_CLOSER_APPOINTMENT', now(), 2350555);
+
+update flow.process_step
+set unique_behavior_type_id = 1
+where id = 1;
