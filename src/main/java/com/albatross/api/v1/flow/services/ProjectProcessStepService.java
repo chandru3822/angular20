@@ -281,10 +281,10 @@ public class ProjectProcessStepService {
 
     List<ProjectProcessStep> newSteps = new ArrayList<>();
 
-    Long ownerId = (projectProcessStep.getOwner() != null) ? projectProcessStep.getOwner().getUserId() : null;
+    Long ownerUserPositionId = (projectProcessStep.getOwner() != null) ? projectProcessStep.getOwner().getUserPositionId() : null;
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, ownerId));
+      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, ownerUserPositionId));
     });
 
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
