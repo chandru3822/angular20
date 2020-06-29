@@ -5,7 +5,7 @@
         <div class="contact-title">
           {{contact.fullName}}
           <v-menu
-              v-if="contact.contactTypeId === 2 && userCanEdit"
+              v-if="userCanEdit"
               bottom
               offset-y
               :close-on-content-click="false"
