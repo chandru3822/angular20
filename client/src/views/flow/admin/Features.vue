@@ -153,6 +153,7 @@
     },
     data() {
       return {
+        constants,
         snackbar: {},
         isCompanyRoot: this.$store.getters.isCompanyRoot(this.$store.state.user.details.companyId),
         addNew: false,
