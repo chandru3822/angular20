@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import retrofit2.Response;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,8 +34,12 @@ public class ProjectProcessStepController {
 
   @DeleteMapping(value = "/{projectProcessStepId}")
   public ResponseEntity<Void> deleteProjectProcessStep(@PathVariable Long projectProcessStepId) {
-    projectProcessStepService.deleteProjectProcessStep(projectProcessStepId);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    try {
+        projectProcessStepService.deleteProjectProcessStep(projectProcessStepId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (Exception e) {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
   }
 
   @GetMapping(value = "/{projectProcessStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,7 +68,7 @@ public class ProjectProcessStepController {
 
   @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> createProjectProcessStep(@RequestBody ProjectProcessStep projectProcessStep) {
-    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), projectProcessStep.getCompanyProcessStepStatusTypeId(), null), HttpStatus.OK);
+    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), projectProcessStep.getCompanyProcessStepStatusTypeId(), null, projectProcessStep.getMain()), HttpStatus.OK);
   }
 
   @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -102,9 +107,19 @@ public class ProjectProcessStepController {
     return projectProcessStepService.updateOwner(projectProcessStepId, owner, true);
   }
 
-  @PostMapping(value = "{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+    @PutMapping(value = "/{projectProcessStepId}/main")
+    public ResponseEntity<Void> updateProjectProcessStepMain(@PathVariable Long projectProcessStepId) {
+        try {
+            projectProcessStepService.updateMain(projectProcessStepId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
   }
 }

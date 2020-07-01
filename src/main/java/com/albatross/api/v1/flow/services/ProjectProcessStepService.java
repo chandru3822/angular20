@@ -169,7 +169,8 @@ public class ProjectProcessStepService {
     return step;
   }
 
-  public ProjectProcessStep insertProjectProcessStep(Long projectId, Long processStepId, Long statusTypeId, Long userPositionId) {
+  @Transactional
+  public ProjectProcessStep insertProjectProcessStep(Long projectId, Long processStepId, Long statusTypeId, Long userPositionId, Boolean main) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -178,7 +179,13 @@ public class ProjectProcessStepService {
     params.put("statusTypeId", statusTypeId);
     params.put("userPositionId", userPositionId);
     params.put("createdById", user.getId());
+    params.put("main", main);
     Long id = sqlCache.updateReturningId("projectProcessStep.insertProjectProcessStep", params, "id").longValue();
+
+    if (main) {
+        params.put("mainProjectProcessStepId", id);
+        sqlCache.update("projectProcessStep.clearMain", params);
+    }
 
     return getProjectProcessStep(id);
   }
@@ -230,10 +237,31 @@ public class ProjectProcessStepService {
 
   @Transactional
   public void deleteProjectProcessStep(Long projectProcessStepId) {
-    sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
+      ProjectProcessStep deletingStep = this.getProjectProcessStep(projectProcessStepId);
+
+      if (deletingStep != null) {
+          Map<String, Object> params = om.convertValue(deletingStep, HashMap.class);
+          List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getNonMain", params, ProjectProcessStep.class);
+
+          if (steps.isEmpty()) {
+              sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
+          } else {
+              throw new RuntimeException("Must mark another project process step as main before deleting this one");
+          }
+      }
   }
 
-  public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
+
+    public void updateMain(Long projectProcessStepId) {
+        ProjectProcessStep updatingStep = this.getProjectProcessStep(projectProcessStepId);
+
+        if (updatingStep != null) {
+            sqlCache.update("projectProcessStep.updateMain", Map.of("projectProcessStepId", projectProcessStepId, "projectId", updatingStep.getProjectId(), "processStepId", updatingStep.getProcessStepId()));
+        }
+    }
+
+
+    public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
 
 
@@ -252,7 +280,6 @@ public class ProjectProcessStepService {
   public List<Owner> getOwners(Long processStepProcessId) {
     return sqlCache.query("projectProcessStep.getOwners", Map.of("processStepProcessId", processStepProcessId), Owner.class);
   }
-
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
   @Transactional
@@ -284,7 +311,7 @@ public class ProjectProcessStepService {
     Long ownerUserPositionId = (projectProcessStep.getOwner() != null) ? projectProcessStep.getOwner().getUserPositionId() : null;
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, ownerUserPositionId));
+      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, ownerUserPositionId, true));
     });
 
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
