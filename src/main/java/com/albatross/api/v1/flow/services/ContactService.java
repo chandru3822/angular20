@@ -251,7 +251,7 @@ public class ContactService {
     if(project.isPresent()) {
       //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), ownerUserPositionId);
+        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), ownerUserPositionId, true);
       }
     }
 
