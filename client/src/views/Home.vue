@@ -99,6 +99,10 @@ export default {
         path: '/closerDashboard',
         display: this.$store.getters.userHasFeature('CLOSER_DASHBOARD')
       }, {
+          label: 'Setter Dashboard',
+          path: '/setterDashboard',
+          display: this.$store.getters.userHasFeature('SETTER_DASHBOARD')
+      }, {
         label: 'AHJ Database',
         path: '/ahj',
         display: this.$store.getters.userHasFeature('AHJ_DATABASE')
