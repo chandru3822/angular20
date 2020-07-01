@@ -49,12 +49,19 @@ public class AttachmentService {
     }
 
     /**
+     * Overload the setAttachmentPresignedUrl function for mobile
+     */
+    private void setAttachmentPresignedUrl(String bucket, Attachment a) {
+      setAttachmentPresignedUrl(bucket, a, false);
+    }
+
+    /**
      * Set the URL to find an Attachment in a custom S3 bucket.
      *
      * @param bucket Name of S3 bucket where the attachment is expected to reside.
      * @param a
      */
-    private void setAttachmentPresignedUrl(String bucket, Attachment a) {
+    private void setAttachmentPresignedUrl(String bucket, Attachment a, Boolean isMobile) {
         GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, a.getS3Key());
 
         // Set expiration to 24hrs
@@ -63,7 +70,12 @@ public class AttachmentService {
 
         ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
         responseHeaders.setCacheControl("No-cache");
-        responseHeaders.setContentDisposition("attachment; filename="+a.getFilename());
+        if (isMobile) {
+          responseHeaders.setContentDisposition("inline");
+          responseHeaders.setContentType(a.getContentType());
+        } else {
+          responseHeaders.setContentDisposition("attachment; filename="+a.getFilename());
+        }
 
         // Add the ResponseHeaderOverrides to the request.
         request.setResponseHeaders(responseHeaders);
@@ -216,9 +228,10 @@ public class AttachmentService {
    * @param bucket
    * @return List<Attachment> attachments
    */
-    List<Attachment> getAttachmentPresignedUrls(List<Attachment> attachments, String bucket) {
+    List<Attachment> getAttachmentPresignedUrls(List<Attachment> attachments, String bucket, Boolean isMobile) {
+      // mobile requires different headers
       if (!attachments.isEmpty()) {
-        attachments.forEach(attachment -> setAttachmentPresignedUrl(bucket, attachment));
+        attachments.forEach(attachment -> setAttachmentPresignedUrl(bucket, attachment, isMobile));
       }
       return attachments;
     }

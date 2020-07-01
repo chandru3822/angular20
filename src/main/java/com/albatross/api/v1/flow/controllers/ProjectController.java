@@ -48,8 +48,9 @@ public class ProjectController {
   }
 
   @GetMapping(value = "/{projectId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Attachment>> getProjectAttachments(@PathVariable Long projectId) {
-    return new ResponseEntity<>(projectService.getAttachments(projectId), HttpStatus.OK);
+  public ResponseEntity<List<Attachment>> getProjectAttachments(@PathVariable Long projectId,
+                                                                @PathVariable(required = false) Boolean isMobile) {
+    return new ResponseEntity<>(projectService.getAttachments(projectId, isMobile), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{projectId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)

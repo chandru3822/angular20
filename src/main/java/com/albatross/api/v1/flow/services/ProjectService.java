@@ -92,11 +92,11 @@ public class ProjectService {
     return getProject(id);
   }
 
-  public List<Attachment> getAttachments(Long projectId) {
+  public List<Attachment> getAttachments(Long projectId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     List<Attachment> attachments = sqlCache.query("project.getAttachments", params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it

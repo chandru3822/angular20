@@ -72,8 +72,9 @@ public class ProjectProcessStepController {
   }
 
   @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Attachment>> getProjectProcessStepAttachments(@PathVariable Long projectProcessStepId) {
-    return new ResponseEntity<>(projectProcessStepService.getProjectProcessStepAttachments(projectProcessStepId), HttpStatus.OK);
+  public ResponseEntity<List<Attachment>> getProjectProcessStepAttachments(@PathVariable Long projectProcessStepId,
+                                                                           @PathVariable(required = false) Boolean isMobile) {
+    return new ResponseEntity<>(projectProcessStepService.getProjectProcessStepAttachments(projectProcessStepId, isMobile), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{projectProcessStepId}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
