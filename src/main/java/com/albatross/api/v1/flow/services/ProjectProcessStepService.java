@@ -67,11 +67,11 @@ public class ProjectProcessStepService {
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
-  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId) {
+  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
     List<Attachment> attachments = sqlCache.query("projectProcessStep.getProjectProcessStepAttachments", params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
