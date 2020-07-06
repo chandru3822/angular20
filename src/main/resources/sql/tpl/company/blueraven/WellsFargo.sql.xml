@@ -10,7 +10,7 @@
         <![CDATA[
             UPDATE brs.project_rebate_payment
                 SET check_number = :checkNumber
-            where id = :paymentId;
+            where id = :paymentId
         ]]>
     </wellsfargo.saveCheckNumberToPayment>
 </sql>

@@ -174,14 +174,10 @@
               (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
               coalesce(prps.name,'New') state,
               (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
-              (select lov.name
-                 from flow.list_of_value lov
-                 where lov.id = financier.int_value) as financier,
-              numberPromPayments.int_value as numberOfPromotionPayments,
-              (select lov.name
-                 from flow.list_of_value lov
-                 where lov.id = product.int_value) as product,
-              totalPrmAmount.numeric_value as totalPromotionAmount,
+              pd.primary_financier as financier,
+              pd.num_of_promotion_payments as numberOfPromotionPayments,
+              pd.product,
+              pd.total_promotion_amount,
               pcfv.date_value as entered_into_payment_system_date
               from flow.project p
                 left outer join brs.project_commission_snapshot s ON s.project_id = p.id
@@ -197,11 +193,7 @@
                 left outer join flow.custom_field cf on cf.id = cfga.custom_field_id
                 left outer join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
                 left outer join flow.data_type dt on dt.id = cdt.data_type_id
-                left join flow.project_process_step pps0 on pps0.project_id = p.id and pps0.process_step_id  = 4
-                left join flow.project_process_step_custom_field_value financier on financier.project_process_step_id = pps0.id and financier.custom_field_group_assignment_id = 45
-                left join flow.project_process_step_custom_field_value numberPromPayments on numberPromPayments.project_process_step_id = pps0.id and numberPromPayments.custom_field_group_assignment_id = 54
-                left join flow.project_process_step_custom_field_value product on product.project_process_step_id = pps0.id and product.custom_field_group_assignment_id = 172
-                left join flow.project_process_step_custom_field_value totalPrmAmount on totalPrmAmount.project_process_step_id = pps0.id and totalPrmAmount.custom_field_group_assignment_id = 51
+                left join brs.project_details pd on pd.project_id = p.id
                 left join flow.project_custom_field_value pcfv on p.id = pcfv.project_id and pcfv.custom_field_group_assignment_id = 369
                 left join flow.custom_field_group_assignment enterSysDate on enterSysDate.id = pcfv.custom_field_group_assignment_id and enterSysDate.custom_field_id = 580
             where sc is not null and cfga.custom_field_id = (select id from flow.custom_field where field_name = 'Product')
@@ -230,27 +222,17 @@
             prps.name state,
             case when (select count(1) from brs.project_rebate_payment where project_id = p.id and payment_nbr < prp.payment_nbr and project_rebate_payment_state_id=1)>0 then false else true end approvable,
             (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
-            (select lov.name
-              from flow.list_of_value lov
-              where lov.id = financier.int_value) as financier,
-            numberPromPayments.int_value as numberOfPromotionPayments,
-            (select lov.name
-              from flow.list_of_value lov
-              where lov.id = product.int_value) as product,
-            totalPrmAmount.numeric_value as totalPromotionAmount,
-            pcfv.date_value as entered_into_payment_system_date,
+            pd.primary_financier as financier,
+            pd.num_of_promotion_payments as numberOfPromotionPayments,
+            pd.product,
+            pd.total_promotion_amount,
+            pd.entered_into_payment_system_date,
             false as selected
 			from flow.project p
                 inner join brs.project_commission_snapshot s ON s.project_id = p.id
                 inner join brs.project_rebate_payment prp on p.id = prp.project_id
                 inner join brs.project_rebate_payment_state prps on prp.project_rebate_payment_state_id = prps.id
-                left join flow.project_process_step pps0 on pps0.project_id = p.id and pps0.process_step_id  = 4
-                left join flow.project_process_step_custom_field_value financier on financier.project_process_step_id = pps0.id and financier.custom_field_group_assignment_id = 45
-                left join flow.project_process_step_custom_field_value numberPromPayments on numberPromPayments.project_process_step_id = pps0.id and numberPromPayments.custom_field_group_assignment_id = 54
-                left join flow.project_process_step_custom_field_value product on product.project_process_step_id = pps0.id and product.custom_field_group_assignment_id = 172
-                left join flow.project_process_step_custom_field_value totalPrmAmount on totalPrmAmount.project_process_step_id = pps0.id and totalPrmAmount.custom_field_group_assignment_id = 51
-                left join flow.project_custom_field_value pcfv on p.id = pcfv.project_id and pcfv.custom_field_group_assignment_id = 369
-                left join flow.custom_field_group_assignment enterSysDate on enterSysDate.id = pcfv.custom_field_group_assignment_id and custom_field_id = 580
+			    left join brs.project_details pd on pd.project_id = p.id
 			where prp.payment_nbr = (select min(payment_nbr) from brs.project_rebate_payment prp1 where prp.project_id = prp1.project_id and prp1.project_rebate_payment_state_id = 1)
                 and s.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
         ]]>
@@ -265,38 +247,28 @@
          sum(prp.payment_amount) payment_amount,
          coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
          (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
-         (select lov.name
-           from flow.list_of_value lov
-           where lov.id = financier.int_value) as financier,
-         numberPromPayments.int_value as numberOfPromotionPayments,
-         (select lov.name
-           from flow.list_of_value lov
-           where lov.id = product.int_value) as product,
-         totalPrmAmount.numeric_value as totalPromotionAmount,
-         pcfv.date_value as entered_into_payment_system_date
+         pd.primary_financier as financier,
+         pd.num_of_promotion_payments as numberOfPromotionPayments,
+         pd.product,
+         pd.total_promotion_amount,
+         pd.entered_into_payment_system_date
          from flow.project p
            inner join brs.project_commission_snapshot s ON s.project_id = p.id
            inner join brs.project_rebate_payment prp on p.id = prp.project_id
-           left join flow.project_process_step pps0 on pps0.project_id = p.id and pps0.process_step_id  = 4
-           left join flow.project_process_step_custom_field_value financier on financier.project_process_step_id = pps0.id and financier.custom_field_group_assignment_id = 45
-           left join flow.project_process_step_custom_field_value numberPromPayments on numberPromPayments.project_process_step_id = pps0.id and numberPromPayments.custom_field_group_assignment_id = 54
-           left join flow.project_process_step_custom_field_value product on product.project_process_step_id = pps0.id and product.custom_field_group_assignment_id = 172
-           left join flow.project_process_step_custom_field_value totalPrmAmount on totalPrmAmount.project_process_step_id = pps0.id and totalPrmAmount.custom_field_group_assignment_id = 51
-           left join flow.project_custom_field_value pcfv on p.id = pcfv.project_id and pcfv.custom_field_group_assignment_id = 369
-           left join flow.custom_field_group_assignment enterSysDate on enterSysDate.id = pcfv.custom_field_group_assignment_id and custom_field_id = 580
+           left join brs.project_details pd on pd.project_id = p.id
          where s.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
            group by p.id,
            s.customer_name,
            s.sc,
-           financier,
-           numberOfPromotionPayments,
+           primary_financier,
+           num_of_promotion_payments,
            entered_into_payment_system_date,
            product,
-           totalPromotionAmount,
+           total_promotion_amount,
            entered_into_payment_system_date,
            coalesce((select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0),
            (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id)
-        ) payments where payments.totalPromotionAmount != payments.total_paid AND (payments.totalPromotionAmount - payments.total_paid > 0)
+        ) payments where payments.total_promotion_amount != payments.total_paid AND (payments.total_promotion_amount - payments.total_paid > 0)
         ]]>
   </rebate.getPaymentsUnbalanced>
 
@@ -307,7 +279,7 @@
       select p.id project_id,
       s.customer_name as project_name,
       s.sc,
-      (totalPrmAmount.numeric_value)/(numberPromPayments.int_value)::numeric as payment_amount,
+      (total_promotion_amount)/(num_of_promotion_payments)::numeric as payment_amount,
       c.id as contact_id,
       c.street1,
       c.street2,
@@ -319,20 +291,16 @@
       c.mailing_city,
       c.mailing_state,
       c.mailing_postal_code,
-      (select lov.name
-       from flow.list_of_value lov
-       where lov.id = financier.int_value) as financier,
-      numberPromPayments.int_value as numberOfPromotionPayments,
-      (select lov.name
-       from flow.list_of_value lov
-       where lov.id = product.int_value) as product,
-      totalPrmAmount.numeric_value as totalPromotionAmount,
-      pcfv.date_value as entered_into_payment_system_date,
+      pd.primary_financier as financier,
+      pd.num_of_promotion_payments as numberOfPromotionPayments,
+      pd.product,
+      pd.total_promotion_amount,
+      pd.entered_into_payment_system_date,
       coalesce((select sum(drp2.payment_amount)from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
       (select sum(drp2.payment_amount)from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
       ((select sum(payment_amount) from brs.project_rebate_payment drp3
-          where drp3.project_id = p.id and project_rebate_payment_state_id != 4) < (totalPrmAmount.numeric_value)::numeric) red_balanced_owed,
-      (totalPrmAmount.numeric_value - (select sum(drp2.payment_amount) from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3)) balance_owed,
+          where drp3.project_id = p.id and project_rebate_payment_state_id != 4) < (total_promotion_amount)::numeric) red_balanced_owed,
+      (total_promotion_amount - (select sum(drp2.payment_amount) from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3)) balance_owed,
       (select array_to_json(array_agg(row_to_json(payment_history))) from
       (select drp.id,
       batch_date,
@@ -350,20 +318,14 @@
         inner join brs.project_commission_snapshot s ON s.project_id = p.id
         inner join brs.project_rebate_payment drp on p.id = drp.project_id
         inner join flow.contact c on c.id = p.contact_id
-        left join flow.project_process_step pps0 on pps0.project_id = p.id and pps0.process_step_id  = 4
-        left join flow.project_process_step_custom_field_value financier on financier.project_process_step_id = pps0.id and financier.custom_field_group_assignment_id = 45
-        left join flow.project_process_step_custom_field_value numberPromPayments on numberPromPayments.project_process_step_id = pps0.id and numberPromPayments.custom_field_group_assignment_id = 54
-        left join flow.project_process_step_custom_field_value product on product.project_process_step_id = pps0.id and product.custom_field_group_assignment_id = 172
-        left join flow.project_process_step_custom_field_value totalPrmAmount on totalPrmAmount.project_process_step_id = pps0.id and totalPrmAmount.custom_field_group_assignment_id = 51
-        left join flow.project_custom_field_value pcfv on p.id = pcfv.project_id and pcfv.custom_field_group_assignment_id = 369
-        left join flow.custom_field_group_assignment enterSysDate on enterSysDate.id = pcfv.custom_field_group_assignment_id and custom_field_id = 580
+        left join brs.project_details pd on pd.project_id = p.id
       where p.id = :projectId
         and s.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
       group by p.id,
       s.customer_name,
       s.sc,
-      totalPrmAmount.numeric_value,
-      numberPromPayments.int_value,
+      total_promotion_amount,
+      num_of_promotion_payments,
       payment_amount,
       c.id,
       c.street1,
@@ -376,9 +338,9 @@
       c.mailing_city,
       c.mailing_state,
       c.mailing_postal_code,
-      financier.int_value,
-      product.int_value,
-      pcfv.date_value,
+      primary_financier,
+      product,
+      entered_into_payment_system_date,
       coalesce((select sum(drp2.payment_amount)from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3),0)
     ) results
     ]]>
