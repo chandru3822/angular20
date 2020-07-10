@@ -109,7 +109,7 @@ public class CloserDashboardService {
         closerTableScoresJson.put("userId", row.getId());
         closerTableScoresJson.put("name", row.getName());
         closerTableScoresJson.put("userStatusType", row.getUserStatusType());
-        closerTableScoresJson.put("companyName", row.getCompanyName());
+        closerTableScoresJson.put("officeName", row.getOfficeName());
         closerTableScoresJson.put("region", row.getRegion());
         closerTableScoresJson.put("salesMetroArea", row.getSalesMetroArea());
 

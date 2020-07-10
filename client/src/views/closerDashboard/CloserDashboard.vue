@@ -307,9 +307,9 @@
           </tr>
 
           <tr v-for="(row, index) in officeRankingData" :key="index"
-              :class="{'highlight-user-row': row.companyName === userCompany}">
+              :class="{'highlight-user-row': row.officeName === userOffice}">
             <td class="center-text">{{ row.rank }}</td>
-            <td class="left-text">{{ row.companyName }}</td>
+            <td class="left-text">{{ row.officeName }}</td>
             <td class="left-text">{{ row.salesMetroArea }}</td>
             <td class="left-text">{{ row.region }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
@@ -358,7 +358,7 @@
                    src="../../assets/user_img_placeholder.png" :alt="row.userImageAltText">
             </td>
             <td class="left-text">{{ row.name }}</td>
-            <td class="left-text">{{ row.companyName }}</td>
+            <td class="left-text">{{ row.officeName }}</td>
             <td class="left-text">{{ row.salesMetroArea }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
             <td class="center-text">{{ row.selfGenFdc }}</td>
@@ -374,7 +374,7 @@
                    src="../../assets/user_img_placeholder.png" :alt="userRow.userImageAltText">
             </td>
             <td class="left-text">{{ userRow.name }}</td>
-            <td class="left-text">{{ userRow.companyName }}</td>
+            <td class="left-text">{{ userRow.officeName }}</td>
             <td class="left-text">{{ userRow.salesMetroArea }}</td>
             <td class="center-text">{{ userRow.leadGenFdcPercentage }}%</td>
             <td class="center-text">{{ userRow.selfGenFdc }}</td>
@@ -461,7 +461,7 @@
       officeFdcRankingData: [],
       officeRankingData: [],
       topRepsData: [],
-      userCompany: '',
+      userOffice: '',
       userRow: [],
       userRowIndex: -1,
       numOffices: 0
@@ -477,7 +477,7 @@
       filteredTopRepsData () {
         if (this.searchText) {
           return this.topRepsData.filter(r => {
-            return (r.name + r.companyName + r.salesMetroArea).toLowerCase().includes(this.searchText.toLowerCase())
+            return (r.name + r.officeName + r.salesMetroArea).toLowerCase().includes(this.searchText.toLowerCase())
           })
         } else {
           return this.topRepsData
@@ -764,7 +764,7 @@
           const {data} = await getRequestWithParams('/closerDashboard/getCloserTableScores', {params}, 'blueraven')
 
           if (data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
-            this.userCompany = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].companyName
+            this.userOffice = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].officeName
           }
 
           this.processRankingData(cloneDeep(data.officeRankingValues), 'Office Lead Allocation Rank')
@@ -846,7 +846,7 @@
               break
             case 'Office Ranking':
               this.officeRankingData = []
-              rankingData = groupBy(rankingData, 'companyName')
+              rankingData = groupBy(rankingData, 'officeName')
 
               Object.keys(rankingData).forEach(group => {
                 let leadGenFdcPercentageSum = 0
@@ -862,7 +862,7 @@
                 })
 
                 this.officeRankingData.push({
-                  companyName: rankingData[group][0].companyName,
+                  officeName: rankingData[group][0].officeName,
                   salesMetroArea: rankingData[group][0].salesMetroArea,
                   region: rankingData[group][0].region,
                   leadGenFdcPercentage: Math.round(leadGenFdcPercentageSum / numRepsInGroup),

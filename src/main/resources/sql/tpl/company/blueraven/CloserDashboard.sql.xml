@@ -101,7 +101,7 @@
       SELECT u.id,
              u.first_name || ' ' || u.last_name as name,
              cust.user_status_type,
-             o.org_name as companyName,
+             o.org_name as officeName,
              o2.org_name as region,
              '--' as salesMetroArea, -- TODO: Add sales_metro_area once it has been migrated
              count(case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
@@ -152,7 +152,7 @@
           AND o2.active_flag IS TRUE
         END
         AND cust.user_status_type = 'Active'
-      GROUP BY u.id, companyName, region, cust.user_status_type
+      GROUP BY u.id, officeName, region, cust.user_status_type
     ]]>
   </closerDashboard.getCloserTableScores>
 </sql>

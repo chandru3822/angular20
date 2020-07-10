@@ -448,8 +448,8 @@
       offices: [],
       reps: [],
       officeRankingData: [],
-      userCompany: '',
-      userCompanyId: null, // TODO: Set this up
+      userOffice: '',
+      userOfficeId: null, // TODO: Set this up
       userRow: [],
       userRowIndex: -1,
       numOffices: 0
@@ -504,7 +504,7 @@
         try {
           const params = {
             isSetterMgr: this.isSetterMgr,
-            setterMgrOfficeId: this.userCompanyId ? this.userCompanyId : null
+            setterMgrOfficeId: this.userOfficeId ? this.userOfficeId : null
           }
 
           const {data} = await getRequestWithParams('/setterDashboard/getIronmanPitchCounts', {params}, 'blueraven')
@@ -755,7 +755,7 @@
             let performanceData = await getRequestWithParams('/setterDashboard/getMgrPerformanceReport',
               {
                 params: {
-                  officeId: this.userCompany,
+                  officeId: this.userOfficeId,
                   startDate,
                   endDate
                 }
@@ -765,7 +765,7 @@
             let officeToBeatData = await getRequestWithParams('/setterDashboard/officeToBeat',
             {
               params: {
-                officeId: this.userCompany,
+                officeId: this.userOfficeId,
                 startDate,
                 endDate
               }
@@ -776,7 +776,7 @@
               if (this.rankBoxData.current_office_rank === "1") {
                 this.rankBoxData.setter_office_to_beat_name = 'Your office is #1!'
               } else if (this.rankBoxData.current_office_rank === 'T1') {
-                let tiedOffices = this.offices.filter(office => office.rank === 'T1' && office.org_id !== this.userCompany)
+                let tiedOffices = this.offices.filter(office => office.rank === 'T1' && office.org_id !== this.userOfficeId)
 
                 if (tiedOffices.length > 0) {
                   let officeToBeat
@@ -885,7 +885,7 @@
           this.reps = data
 
           if (this.reps.length > 0 && data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
-            this.userCompany = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].companyName
+            this.userOffice = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].officeName
             let userIds = []
 
             this.reps.forEach(rep => {
