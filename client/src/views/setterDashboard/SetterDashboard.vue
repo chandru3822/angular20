@@ -292,7 +292,7 @@
               </th>
             </tr>
             <tr data-ng-repeat="office in offices"
-                :class="{'highlight-user-row': office.org_id === currentUserOfficeId}">
+                :class="{'highlight-user-row': office.org_id === userOfficeId}">
               <td class="center-text">{{ office.rank }}</td>
               <td class="left-text">{{ office.name }}</td>
               <td class="center-text">{{ office.pitches }}</td>
@@ -361,7 +361,7 @@
               <th class="center-text">Pitch %</th>
             </tr>
             <tr v-for="office in officeRankingData" :key="office.org_id"
-                :class="{'highlight-user-row': office.org_id === currentUserOfficeId}">
+                :class="{'highlight-user-row': office.org_id === userOfficeId}">
               <td class="center-text">{{ office.rank }}</td>
               <td class="left-text">{{ office.org }}</td>
               <td class="center-text">{{ office.total_appointments }}</td>
@@ -414,7 +414,7 @@
       drilldownData: [],
       timeIntervalBtnGroup: 0,
       timeIntervalString: 'MTD', // MTD is selected by default
-      timeInterval: +moment().format('DD'),
+      timeInterval: +moment().format('DD') - 1,
       tabNum: 1, // Dashboard tab is selected by default
       showDashboard: true,
       showFunnel: false,
@@ -449,7 +449,7 @@
       reps: [],
       officeRankingData: [],
       userOffice: '',
-      userOfficeId: null, // TODO: Set this up
+      userOfficeId: null,
       userRow: [],
       userRowIndex: -1,
       numOffices: 0
@@ -466,7 +466,7 @@
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
       '$store.state.app.loading': function () {
-        if (!this.ironmanLoaded || !this.rankingTablesLoaded) {
+        if (!this.ironmanLoaded || !this.performanceDataLoaded || !this.rankingTablesLoaded) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
       }
@@ -489,7 +489,6 @@
             this.showFunnel = false
             if (!this.dashboardWasLoaded) {
               await this.loadIronman()
-              await this.loadPersonalPerformance()
               await this.loadRankingTables('MTD') // MTD is the default
               this.dashboardWasLoaded = true
             }
@@ -504,7 +503,7 @@
         try {
           const params = {
             isSetterMgr: this.isSetterMgr,
-            setterMgrOfficeId: this.userOfficeId ? this.userOfficeId : null
+            setterMgrOfficeId: this.isSetterMgr && this.userOfficeId ? this.userOfficeId : null
           }
 
           const {data} = await getRequestWithParams('/setterDashboard/getIronmanPitchCounts', {params}, 'blueraven')
@@ -676,7 +675,7 @@
       },
 
       getLowerMilestoneLabel (pitchCount) {
-        if (this.isSetterMgr) {
+        if (!this.isSetterMgr) {
           switch (true) {
             case pitchCount >= 48 && pitchCount < 60:
               return (60 - pitchCount) + ' Pitches to get to Silver'
@@ -975,7 +974,7 @@
 
           switch (timeIntervalString) {
             case 'MTD':
-              this.timeInterval = +moment().format('DD') // MTD
+              this.timeInterval = +moment().format('DD') - 1 // MTD
               break
             case '60 days':
               this.timeInterval = 60
@@ -984,10 +983,11 @@
               this.timeInterval = 90
               break
             case 'YTD':
-              this.timeInterval = moment().dayOfYear() // YTD
+              this.timeInterval = moment().dayOfYear() - 1 // YTD
               break
           }
 
+          await this.loadPersonalPerformance()
           await this.getTopReps()
           await this.getTopOffices()
           await this.getOfficeRanking()
@@ -1008,7 +1008,14 @@
     },
     created () {
       this.currentUserId = this.$store.state.user.details.id
-      this.isSetterMgr = this.$store.state.user.details.userPositions.filter(position => position.positionId === 5 && !position.endDate).length > 0
+      let userPositions = this.$store.state.user.details.userPositions
+
+      if (userPositions.length > 0) {
+        this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate && ([4,5,6].indexOf(position.positionId) !== -1))[0].orgId
+        this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
+        this.isSetterMgr = userPositions.filter(position => position.primaryFlag && !position.endDate && ([5,6].indexOf(position.positionId) !== -1)).length > 0
+      }
+
       this.switchTabs(this.tabNum)
     },
     mounted () {
