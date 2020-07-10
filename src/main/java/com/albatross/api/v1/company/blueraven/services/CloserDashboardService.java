@@ -111,7 +111,7 @@ public class CloserDashboardService {
         closerTableScoresJson.put("userStatusType", row.getUserStatusType());
         closerTableScoresJson.put("officeName", row.getOfficeName());
         closerTableScoresJson.put("region", row.getRegion());
-        closerTableScoresJson.put("salesMetroArea", row.getSalesMetroArea());
+        closerTableScoresJson.put("metroArea", row.getMetroArea());
 
         double leadGenFdcValue = 0;
         if (row.getLeadGenFdcPercentageDenominator() != 0) {

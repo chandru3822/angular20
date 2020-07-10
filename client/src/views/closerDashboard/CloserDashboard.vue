@@ -310,7 +310,7 @@
               :class="{'highlight-user-row': row.officeName === userOffice}">
             <td class="center-text">{{ row.rank }}</td>
             <td class="left-text">{{ row.officeName }}</td>
-            <td class="left-text">{{ row.salesMetroArea }}</td>
+            <td class="left-text">{{ row.metroArea }}</td>
             <td class="left-text">{{ row.region }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
             <td class="center-text">{{ row.selfGenFdc }}</td>
@@ -359,7 +359,7 @@
             </td>
             <td class="left-text">{{ row.name }}</td>
             <td class="left-text">{{ row.officeName }}</td>
-            <td class="left-text">{{ row.salesMetroArea }}</td>
+            <td class="left-text">{{ row.metroArea }}</td>
             <td class="center-text">{{ row.leadGenFdcPercentage }}%</td>
             <td class="center-text">{{ row.selfGenFdc }}</td>
             <td class="center-text">{{ row.totalFdc }}</td>
@@ -375,7 +375,7 @@
             </td>
             <td class="left-text">{{ userRow.name }}</td>
             <td class="left-text">{{ userRow.officeName }}</td>
-            <td class="left-text">{{ userRow.salesMetroArea }}</td>
+            <td class="left-text">{{ userRow.metroArea }}</td>
             <td class="center-text">{{ userRow.leadGenFdcPercentage }}%</td>
             <td class="center-text">{{ userRow.selfGenFdc }}</td>
             <td class="center-text">{{ userRow.totalFdc }}</td>
@@ -477,7 +477,7 @@
       filteredTopRepsData () {
         if (this.searchText) {
           return this.topRepsData.filter(r => {
-            return (r.name + r.officeName + r.salesMetroArea).toLowerCase().includes(this.searchText.toLowerCase())
+            return (r.name + r.officeName + r.metroArea).toLowerCase().includes(this.searchText.toLowerCase())
           })
         } else {
           return this.topRepsData
@@ -863,7 +863,7 @@
 
                 this.officeRankingData.push({
                   officeName: rankingData[group][0].officeName,
-                  salesMetroArea: rankingData[group][0].salesMetroArea,
+                  metroArea: rankingData[group][0].metroArea,
                   region: rankingData[group][0].region,
                   leadGenFdcPercentage: Math.round(leadGenFdcPercentageSum / numRepsInGroup),
                   selfGenFdc: selfGenFdcSum,
