@@ -16,19 +16,19 @@ BEGIN
                setter_to_beat_name,
                (setter_to_beat_pitches - pitches) + 1 as pitches_to_go,
                rank as current_user_rank
-        from (select
-                  setter_user_id,
-                  pitches,
-                  lead(setter_user_id) over (order by pitches, setter_user_id desc) setter_to_beat_id,
-                  lead(name) over (order by pitches, setter_user_id desc) setter_to_beat_name,
-                  lead(pitches) over (order by pitches, setter_user_id desc) setter_to_beat_pitches,
-                  (case when (
-                              rank = lag(rank, 1, -1::bigint) over (order by rank) or
-                              rank = lead(rank, 1, -1::bigint) over (order by rank)
-                      ) then 'T' || rank
-                        else rank::text
-                      end
-                  ) as rank
+        from (
+            select setter_user_id,
+                   pitches,
+                   lead(setter_user_id) over (order by pitches, setter_user_id desc) setter_to_beat_id,
+                   lead(name) over (order by pitches, setter_user_id desc) setter_to_beat_name,
+                   lead(pitches) over (order by pitches, setter_user_id desc) setter_to_beat_pitches,
+                   (case when (
+                               rank = lag(rank, 1, -1::bigint) over (order by rank) or
+                               rank = lead(rank, 1, -1::bigint) over (order by rank)
+                       ) then 'T' || rank
+                         else rank::text
+                       end
+                   ) as rank
               from (
                   select u.id as setter_user_id,
                          u.first_name || ' ' || u.last_name as name,

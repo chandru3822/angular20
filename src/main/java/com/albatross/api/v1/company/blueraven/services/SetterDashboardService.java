@@ -30,7 +30,8 @@ public class SetterDashboardService {
     params.put("isSetterMgr", isSetterMgr);
     params.put("setterMgrOfficeId", setterMgrOfficeId);
 
-    return sqlCache.query("setterDashboard.getIronmanPitchCounts", params, IronmanCounts.class).get(0);
+    IronmanCounts ironmanCounts = sqlCache.query("setterDashboard.getIronmanPitchCounts", params, IronmanCounts.class).get(0);
+    return ironmanCounts;
   }
 
   public String pitchesDrilldown(int quarter, Boolean isSetterMgr, Integer setterMgrOfficeId) {
@@ -42,7 +43,8 @@ public class SetterDashboardService {
     parameters.addValue("isSetterMgr", isSetterMgr);
     parameters.addValue("setterMgrOfficeId", setterMgrOfficeId);
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 
   public String getPerformanceReport(String startDate, String endDate) {
@@ -53,7 +55,8 @@ public class SetterDashboardService {
     parameters.addValue("startDate", startDate);
     parameters.addValue("endDate", endDate);
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 
   public String getMgrPerformanceReport(Integer officeId, String startDate, String endDate) {
@@ -64,7 +67,8 @@ public class SetterDashboardService {
     parameters.addValue("startDate", startDate);
     parameters.addValue("endDate", endDate);
 
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 
   public String repToBeat(int userId, String startDate, String endDate) {
@@ -75,8 +79,8 @@ public class SetterDashboardService {
     parameters.addValue("startDate", startDate);
     parameters.addValue("endDate", endDate);
 
-    String updated = jdbc.queryForObject(sqlQuery, parameters, String.class);
-    return updated;
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 
   public String officeToBeat(int officeId, String startDate, String endDate) {
@@ -87,8 +91,8 @@ public class SetterDashboardService {
     parameters.addValue("startDate", startDate);
     parameters.addValue("endDate", endDate);
 
-    String updated = jdbc.queryForObject(sqlQuery, parameters, String.class);
-    return updated;
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 
   public String topReps(int limit, int days) {
@@ -98,8 +102,8 @@ public class SetterDashboardService {
     parameters.addValue("limit", limit);
     parameters.addValue("days", days);
 
-    String updated = jdbc.queryForObject(sqlQuery, parameters, String.class);
-    return updated;
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 
   public String topOffices(int limit, int days) {
@@ -109,8 +113,8 @@ public class SetterDashboardService {
     parameters.addValue("limit", limit);
     parameters.addValue("days", days);
 
-    String updated = jdbc.queryForObject(sqlQuery, parameters, String.class);
-    return updated;
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 
   public String officeRanking(int limit, int days) {
@@ -120,7 +124,7 @@ public class SetterDashboardService {
     parameters.addValue("limit", limit);
     parameters.addValue("days", days);
 
-    String updated = jdbc.queryForObject(sqlQuery, parameters, String.class);
-    return updated;
+    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return result;
   }
 }
