@@ -131,7 +131,7 @@
        and u.phone_number ILIKE '%' || :phone || '%'
        and ust.company_user_status_type_id in (:statuses)
        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[p.id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
-    order by u.last_name, u.first_name, u.start_date desc
+    order by u.last_name, u.first_name, up.start_date desc
   ]]></user.exportUsers>
 
   <user.updateUser>
@@ -242,8 +242,21 @@
                 SELECT array_to_json(array_agg(row_to_json(positions)))
                 FROM (
                          SELECT up.id,
+                                up.user_id as "userId",
                                 p.position,
-                                up.position_id as "positionId"
+                                up.position_id as "positionId",
+                                up.org_id as "orgId",
+                                up.start_date as "startDate",
+                                up.end_date as "endDate",
+                                up.primary_flag as "primaryFlag",
+                                up.archived,
+                                (select json_agg(json_build_object(
+                                     'orgId', h.org_id,
+                                     'orgName', h.org_name,
+                                     'positionLevel', h.position_level,
+                                     'orgLevelId', h.org_level_id
+                                 ) order by h.org_level_id)::jsonb
+                                 from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
                          FROM flow.user_position up
                             inner join flow.position p on p.id = up.position_id
                          WHERE up.user_id = u.id

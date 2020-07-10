@@ -1,0 +1,80 @@
+<sql>
+  <setterDashboard.getIronmanPitchCounts>
+    <![CDATA[
+      WITH "quarters" AS (
+        select (extract('year' from now()) || '-01-01')::date as "q1_start",
+               (extract('year' from now()) || '-03-31')::date as "q1_end",
+               (extract('year' from now()) || '-04-01')::date as "q2_start",
+               (extract('year' from now()) || '-06-30')::date as "q2_end",
+               (extract('year' from now()) || '-07-01')::date as "q3_start",
+               (extract('year' from now()) || '-09-30')::date as "q3_end",
+               (extract('year' from now()) || '-10-01')::date as "q4_start",
+               (extract('year' from now()) || '-12-31')::date as "q4_end"
+      )
+      SELECT (select count(1)
+              from flow.project p
+                inner join brs.project_details pd on pd.project_id = p.id
+                inner join flow.contact c on c.id = p.contact_id
+                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
+                inner join flow.user u on u.id = upv.user_id
+                left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
+                left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
+              where pd.closer_appointment_start between (select q1_start from quarters) and (select q1_end from quarters)
+                and pd.source in (6,493)
+                and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
+                and upv.primary_flag is true
+                and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
+                  else u.id = :currentUserId
+                  end
+             ) as "q1",
+             (select count(1)
+              from flow.project p
+                inner join brs.project_details pd on pd.project_id = p.id
+                inner join flow.contact c on c.id = p.contact_id
+                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
+                inner join flow.user u on u.id = upv.user_id
+                left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
+                left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
+              where pd.closer_appointment_start between (select q2_start from quarters) and (select q2_end from quarters)
+                and pd.source in (6,493)
+                and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
+                and upv.primary_flag is true
+                and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
+                  else u.id = :currentUserId
+                  end
+             ) as "q2",
+             (select count(1)
+              from flow.project p
+                inner join brs.project_details pd on pd.project_id = p.id
+                inner join flow.contact c on c.id = p.contact_id
+                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
+                inner join flow.user u on u.id = upv.user_id
+                left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
+                left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
+              where pd.closer_appointment_start between (select q3_start from quarters) and (select q3_end from quarters)
+                and pd.source in (6,493)
+                and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
+                and upv.primary_flag is true
+                and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
+                  else u.id = :currentUserId
+                  end
+             ) as "q3",
+             (select count(1)
+              from flow.project p
+                inner join brs.project_details pd on pd.project_id = p.id
+                inner join flow.contact c on c.id = p.contact_id
+                inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
+                inner join flow.user u on u.id = upv.user_id
+                left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
+                left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
+              where pd.closer_appointment_start between (select q4_start from quarters) and (select q4_end from quarters)
+                and pd.source in (6,493)
+                and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
+                and upv.primary_flag is true
+                and case when :isSetterMgr is true then upv.org_id = :setterMgrOfficeId
+                  else u.id = :currentUserId
+                  end
+             ) as "q4"
+      ]]>
+    </setterDashboard.getIronmanPitchCounts>
+</sql>
