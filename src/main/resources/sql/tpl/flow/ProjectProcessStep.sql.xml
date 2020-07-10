@@ -138,12 +138,14 @@
         archived is not true
 ]]></projectProcessStep.getNonMain>
 
+-- Had to break up this into 2 queries. Still not sure why the single query stopped working
 <projectProcessStep.updateMain><![CDATA[
-    update flow.project_process_step pps
-    set main = case when pps.id = :projectProcessStepId then true else false end
-    where
-        pps.project_id = :projectId and
-        pps.process_step_id = :processStepId and
-        pps.archived is not true
+    update flow.project_process_step
+    set main = false
+    where flow.project_process_step.project_id = :projectId and flow.project_process_step.process_step_id = :processStepId;
+
+    update flow.project_process_step
+    set main = true
+    where flow.project_process_step.id = :projectProcessStepId
 ]]></projectProcessStep.updateMain>
 </sql>

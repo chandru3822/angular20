@@ -355,6 +355,11 @@ export default {
             await this.getProjectProcessSteps()
         } catch (e) {
             logError(e)
+            this.snackbar = getSnackbar('ERROR', 'Unable to update the primary process step')
+            const selectedStep = this.projectProcessSteps.find(s => s.projectProcessStepId === projectProcessStepId)
+            if (selectedStep) {
+                selectedStep.main = false
+            }
         } finally {
             this.$store.commit(AppMutations.SET_LOADING, false)
         }
