@@ -405,7 +405,7 @@
   import { AppMutations } from '@/stores/AppStore'
 
   export default {
-    name: 'ahjs',
+    name: 'closerDashboard',
     components: {
       Snackbar
     },

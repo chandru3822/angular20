@@ -393,7 +393,7 @@
   import { AppMutations } from '@/stores/AppStore'
 
   export default {
-    name: 'ahjs',
+    name: 'setterDashboard',
     components: {
       Snackbar
     },
