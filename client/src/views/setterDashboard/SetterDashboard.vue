@@ -190,7 +190,7 @@
     <div v-if="showDashboard" class="ranking-tables-section-header">
       Personal Performance
     </div>
-    <div v-if="showDashboard" id="personal-performance-boxes-container" class="mb-6">
+    <div v-if="showDashboard && performanceDataLoaded" id="personal-performance-boxes-container" class="mb-6">
       <div class="personal-performance-box">
         <span class="personal-performance-box-title">Total Appointments</span>
         <span class="personal-performance-box-number">
@@ -360,13 +360,13 @@
               <th class="center-text">Pitches</th>
               <th class="center-text">Pitch %</th>
             </tr>
-            <tr v-for="setterOffice in officeRankingData" :key="setterOffice.org_id"
-                :class="{'highlight-user-row': setterOffice.org_id === currentUserOfficeId}">
-              <td class="center-text">{{ setterOffice.rank }}</td>
-              <td class="left-text">{{ setterOffice.org }}</td>
-              <td class="center-text">{{ setterOffice.total_appointments }}</td>
-              <td class="center-text">{{ setterOffice.pitches }}</td>
-              <td class="center-text">{{ setterOffice.pitch_percentage }}%</td>
+            <tr v-for="office in officeRankingData" :key="office.org_id"
+                :class="{'highlight-user-row': office.org_id === currentUserOfficeId}">
+              <td class="center-text">{{ office.rank }}</td>
+              <td class="left-text">{{ office.org }}</td>
+              <td class="center-text">{{ office.total_appointments }}</td>
+              <td class="center-text">{{ office.pitches }}</td>
+              <td class="center-text">{{ office.pitch_percentage }}%</td>
             </tr>
           </table>
           <div v-if="officeRankingData.length === 0"
@@ -402,7 +402,6 @@
       milestoneDialog: false,
       currentUserId: null,
       isSetterMgr: false,
-      setterMgrOfficeId: null, // TODO: Set this up
       selectedQuarter: 1,
       headers: [
         { text: '', value: '', show: true, sortable: false },
@@ -420,6 +419,7 @@
       showDashboard: true,
       showFunnel: false,
       ironmanLoaded: false,
+      performanceDataLoaded: false,
       rankingTablesLoaded: false,
       dashboardWasLoaded: false,
       funnelWasLoaded: false,
@@ -443,13 +443,13 @@
       q4_lower_label: '',
       percentAchieved: 0,
       progressBarIsFull: false,
-      rankingData: [],
+      rankingData: {},
       rankBoxData: {},
       offices: [],
       reps: [],
       officeRankingData: [],
       userCompany: '',
-      userCompanyId: null,
+      userCompanyId: null, // TODO: Set this up
       userRow: [],
       userRowIndex: -1,
       numOffices: 0
@@ -641,37 +641,36 @@
           case 4:
             return 'platinum-level'
           default:
-            // return ''
             return 'default'
         }
       },
 
       getUpperMilestoneLabel (pitchCount) {
-        if (this.isSetterMgr) {
+        if (!this.isSetterMgr) {
           switch (true) {
             case pitchCount >= 48 && pitchCount < 60:
-              return (60 - pitchCount) + ' Pitches to get to Silver'
+              return 'BRONZE'
             case pitchCount >= 60 && pitchCount < 72:
-              return (72 - pitchCount) + ' Pitches to get to Gold'
+              return 'SILVER'
             case pitchCount >= 72 && pitchCount < 84:
-              return (84 - pitchCount) + ' Pitches to get to Platinum'
+              return 'GOLD'
             case pitchCount >= 84:
-              return 'Platinum'
+              return 'PLATINUM'
             default:
-              return (48 - pitchCount) + ' Pitches to get to Bronze'
+              return '——'
           }
         } else {
           switch (true) {
             case pitchCount >= 225 && pitchCount < 275:
-              return (275 - pitchCount) + ' Pitches to get to Silver'
+              return 'BRONZE'
             case pitchCount >= 275 && pitchCount < 350:
-              return (350 - pitchCount) + ' Pitches to get to Gold'
+              return 'SILVER'
             case pitchCount >= 350 && pitchCount < 425:
-              return (425 - pitchCount) + ' Pitches to get to Platinum'
+              return 'GOLD'
             case pitchCount >= 425:
-              return 'Platinum'
+              return 'PLATINUM'
             default:
-              return (225 - pitchCount) + ' Pitches to get to Bronze'
+              return '——'
           }
         }
       },
@@ -748,11 +747,12 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
+          this.performanceDataLoaded = false
           let startDate = moment().subtract(this.timeInterval, 'd').format('YYYY-MM-DD')
           let endDate = moment().format('YYYY-MM-DD')
 
           if (this.isSetterMgr) {
-            const {performanceData} = await getRequestWithParams('/setterDashboard/getMgrPerformanceReport',
+            let performanceData = await getRequestWithParams('/setterDashboard/getMgrPerformanceReport',
               {
                 params: {
                   officeId: this.userCompany,
@@ -760,9 +760,9 @@
                   endDate
                 }
               }, 'blueraven')
-            this.rankingData = performanceData
+            this.rankingData = performanceData.data
 
-            const {officeToBeatData} = await getRequestWithParams('/setterDashboard/officeToBeat',
+            let officeToBeatData = await getRequestWithParams('/setterDashboard/officeToBeat',
             {
               params: {
                 officeId: this.userCompany,
@@ -770,11 +770,11 @@
                 endDate
               }
             }, 'blueraven')
-            this.rankBoxData = officeToBeatData
+            this.rankBoxData = officeToBeatData.data
 
-            if (this.rankBoxData.office_to_beat_name && this.rankBoxData.current_office_rank) {
+            if (this.rankBoxData.setter_office_to_beat_name && this.rankBoxData.current_office_rank) {
               if (this.rankBoxData.current_office_rank === "1") {
-                this.rankBoxData.office_to_beat_name = 'Your office is #1!'
+                this.rankBoxData.setter_office_to_beat_name = 'Your office is #1!'
               } else if (this.rankBoxData.current_office_rank === 'T1') {
                 let tiedOffices = this.offices.filter(office => office.rank === 'T1' && office.org_id !== this.userCompany)
 
@@ -788,18 +788,19 @@
                     officeToBeat = tiedOffices[Math.floor(Math.random() * tiedOffices.length)]
                   }
 
-                  this.rankBoxData.office_to_beat_name = officeToBeat.name
+                  this.rankBoxData.setter_office_to_beat_name = officeToBeat.name
                   this.rankBoxData.pitches_to_go = 1
                 }
               }
             }
 
+            this.performanceDataLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           } else {
-            const {performanceData} = await getRequestWithParams('/setterDashboard/getPerformanceReport', {params: {startDate, endDate}}, 'blueraven')
-            this.rankingData = performanceData
+            let performanceData = await getRequestWithParams('/setterDashboard/getPerformanceReport', {params: {startDate, endDate}}, 'blueraven')
+            this.rankingData = performanceData.data
 
-            const {repToBeatData} = await getRequestWithParams('/setterDashboard/repToBeat',
+            let repToBeatData = await getRequestWithParams('/setterDashboard/repToBeat',
               {
                 params: {
                   userId: this.currentUserId,
@@ -807,37 +808,40 @@
                   endDate
                 }
               }, 'blueraven')
-            this.rankBoxData = repToBeatData
+            this.rankBoxData = repToBeatData.data
 
-            if (this.rankBoxData.rep_to_beat_id) {
-              await this.getRepToBeatImage(this.rankBoxData.rep_to_beat_id)
-            } else if (!this.rankBoxData.rep_to_beat_name && this.rankBoxData.current_user_rank) {
-              if (this.rankBoxData.current_user_rank === "1") {
-                this.rankBoxData.rep_to_beat_name = 'You’re #1!'
-                await this.getRepToBeatImage(this.currentUserId) // gets current user's picture
-              } else if (this.rankBoxData.current_user_rank === 'T1' && this.reps.length > 0) {
-                let tiedReps = this.reps.filter(rep => rep.rank === 'T1' && rep.user_id !== this.currentUserId)
+            if (this.rankBoxData) {
+              if (this.rankBoxData.setter_to_beat_id) {
+                await this.getRepToBeatImage(this.rankBoxData.setter_to_beat_id)
+              } else if (!this.rankBoxData.setter_to_beat_name && this.rankBoxData.current_user_rank) {
+                if (this.rankBoxData.current_user_rank === "1") {
+                  this.rankBoxData.setter_to_beat_name = 'You’re #1!'
+                  await this.getRepToBeatImage(this.currentUserId) // gets current user's picture
+                } else if (this.rankBoxData.current_user_rank === 'T1' && this.reps.length > 0) {
+                  let tiedReps = this.reps.filter(rep => rep.rank === 'T1' && rep.user_id !== this.currentUserId)
 
-                if (tiedReps.length > 0) {
-                  let repToBeat
+                  if (tiedReps.length > 0) {
+                    let repToBeat
 
-                  if (tiedReps.length === 1) {
-                    repToBeat = tiedReps[0]
+                    if (tiedReps.length === 1) {
+                      repToBeat = tiedReps[0]
+                    } else {
+                      // randomly selects one of the reps who is tied for 1st with the current rep
+                      repToBeat = tiedReps[Math.floor(Math.random() * tiedReps.length)]
+                    }
+
+                    await this.getRepToBeatImage(repToBeat.user_id)
+                    this.rankBoxData.setter_to_beat_name = repToBeat.name
+                    this.rankBoxData.pitches_to_go = 1
                   } else {
-                    // randomly selects one of the reps who is tied for 1st with the current rep
-                    repToBeat = tiedReps[Math.floor(Math.random() * tiedReps.length)]
+                    this.rankBoxData.imageUrl = null
+                    this.rankBoxData.imageAltText = 'User photo placeholder'
                   }
-
-                  await this.getRepToBeatImage(repToBeat.user_id)
-                  this.rankBoxData.rep_to_beat_name = repToBeat.name
-                  this.rankBoxData.pitches_to_go = 1
-                } else {
-                  this.rankBoxData.imageUrl = null
-                  this.rankBoxData.imageAltText = 'User photo placeholder'
                 }
               }
             }
 
+            this.performanceDataLoaded = true
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         } catch (e) {
@@ -857,8 +861,8 @@
           if (data && data[0] && data[0].presignedUrl) {
             this.rankBoxData.imageUrl = data[0].presignedUrl
 
-            if (this.rankBoxData.rep_to_beat_name) {
-              this.rankBoxData.imageAltText = 'Photo of ' + this.rankBoxData.rep_to_beat_name + ', a Blue Raven Solar employee'
+            if (this.rankBoxData.setter_to_beat_name) {
+              this.rankBoxData.imageAltText = 'Photo of ' + this.rankBoxData.setter_to_beat_name + ', a Blue Raven Solar employee'
             } else {
               this.rankBoxData.imageAltText = 'User photo placeholder'
             }
@@ -880,7 +884,7 @@
           const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
-          if (data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
+          if (this.reps.length > 0 && data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0] !== undefined) {
             this.userCompany = data.companyRankingValues.filter(row => row.userId === this.currentUserId)[0].companyName
             let userIds = []
 
@@ -967,7 +971,7 @@
         try {
           this.rankingTablesLoaded = false
           this.timeIntervalString = timeIntervalString
-          this.rankingData = []
+          this.rankingData = {}
 
           switch (timeIntervalString) {
             case 'MTD':
@@ -1005,7 +1009,6 @@
     created () {
       this.currentUserId = this.$store.state.user.details.id
       this.isSetterMgr = this.$store.state.user.details.userPositions.filter(position => position.positionId === 5 && !position.endDate).length > 0
-      console.log("this.isSetterMgr:", this.isSetterMgr)
       this.switchTabs(this.tabNum)
     },
     mounted () {
