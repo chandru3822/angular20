@@ -279,6 +279,16 @@ public class UserService {
     return results;
   }
 
+  public void saveUserStatus(Long userId, Long companyUserStatusTypeId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("userId", userId);
+    params.put("companyUserStatusTypeId", companyUserStatusTypeId);
+
+    sqlCache.update("user.saveUserStatus", params);
+  }
+
   public ResponseEntity changeContext(Long companyId) {
     User user = securityService.getCurrentUser();
     return user.getHighestCompanyId() == 1L ? changeContextAdmin(companyId) : changeContextNonAdmin(companyId);
@@ -359,9 +369,9 @@ public class UserService {
       bw.registerCustomEditor(List.class, "companies",
           new JsonCollectionDeserializer(companiesRef, objectMapper));
 
-      TypeReference<List<Position>> positionsRef = new TypeReference<>() {};
-      bw.registerCustomEditor(List.class, "positions",
-          new JsonCollectionDeserializer(positionsRef, objectMapper));
+      TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "userPositions",
+          new JsonCollectionDeserializer(userPositionsRef, objectMapper));
     }
   }
 }

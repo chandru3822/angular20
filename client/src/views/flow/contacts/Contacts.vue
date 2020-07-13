@@ -22,52 +22,52 @@
               @input="debounceGetContacts"
           ></v-text-field>
           <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text v-if="totalContacts <= 100000" @click="exportContacts">Export</v-btn>
-            <v-dialog
-                v-model="dialog"
-                width="500"
-                v-else
-            >
-              <template v-slot:activator="{ on }">
-                <v-btn text v-on="on">
-                  Export
-                </v-btn>
-              </template>
+<!--          <v-toolbar-items>-->
+<!--            <v-btn text v-if="totalContacts <= 100000" @click="exportContacts">Export</v-btn>-->
+<!--            <v-dialog-->
+<!--                v-model="dialog"-->
+<!--                width="500"-->
+<!--                v-else-->
+<!--            >-->
+<!--              <template v-slot:activator="{ on }">-->
+<!--                <v-btn text v-on="on">-->
+<!--                  Export-->
+<!--                </v-btn>-->
+<!--              </template>-->
 
-              <v-card>
-                <v-card-title>
-                  Export
-                </v-card-title>
+<!--              <v-card>-->
+<!--                <v-card-title>-->
+<!--                  Export-->
+<!--                </v-card-title>-->
 
-                <v-card-text>
-                  You are attempting to export {{totalContacts | currency('', 0)}} results.
-                  This can take 1-2 minutes.
-                  We recommend that you cancel and filter the result set before exporting.
-                </v-card-text>
+<!--                <v-card-text>-->
+<!--                  You are attempting to export {{totalContacts | currency('', 0)}} results.-->
+<!--                  This can take 1-2 minutes.-->
+<!--                  We recommend that you cancel and filter the result set before exporting.-->
+<!--                </v-card-text>-->
 
-                <v-divider></v-divider>
+<!--                <v-divider></v-divider>-->
 
-                <v-card-actions>
-                  <div class="flex-grow-1"></div>
-                  <v-btn
-                      color="grey"
-                      text
-                      @click="dialog = false"
-                  >
-                    Cancel
-                  </v-btn>
-                  <v-btn
-                      color="primary"
-                      text
-                      @click="exportContacts"
-                  >
-                    Continue Anyway
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </v-toolbar-items>
+<!--                <v-card-actions>-->
+<!--                  <div class="flex-grow-1"></div>-->
+<!--                  <v-btn-->
+<!--                      color="grey"-->
+<!--                      text-->
+<!--                      @click="dialog = false"-->
+<!--                  >-->
+<!--                    Cancel-->
+<!--                  </v-btn>-->
+<!--                  <v-btn-->
+<!--                      color="primary"-->
+<!--                      text-->
+<!--                      @click="exportContacts"-->
+<!--                  >-->
+<!--                    Continue Anyway-->
+<!--                  </v-btn>-->
+<!--                </v-card-actions>-->
+<!--              </v-card>-->
+<!--            </v-dialog>-->
+<!--          </v-toolbar-items>-->
         </v-toolbar>
         <v-data-table
             :headers="headers"

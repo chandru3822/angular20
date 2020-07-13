@@ -245,10 +245,13 @@ public class ContactService {
     //get initial process steps including the initial status
     List<ProcessStepProcess> initialProcessSteps = processService.getInitialProcessStepProcesses(process.getId());
 
+    //for now we will insert the owner of the contact as the owner of all initial process steps
+    Long ownerUserPositionId = (contact.getOwner() != null) ? contact.getOwner().getUserPositionId() : null;
+
     if(project.isPresent()) {
       //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), null);
+        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), ownerUserPositionId, true);
       }
     }
 

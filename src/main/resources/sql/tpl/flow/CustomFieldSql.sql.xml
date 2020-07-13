@@ -6,4 +6,12 @@
     where archived is not true
     order by a.name;
   ]]></customFieldSql.brs.ahjList>
+
+  <customFieldSql.brs.utilityCompanyList><![CDATA[
+    select a.id,
+           a.name
+    from brs.ahj_utility a
+    where archived is not true
+    order by a.name;
+  ]]></customFieldSql.brs.utilityCompanyList>
 </sql>

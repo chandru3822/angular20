@@ -126,6 +126,16 @@ export default new Router({
           }
         }
       }, {
+          path: '/setterDashboard',
+          name: 'setterDashboard',
+          component: () => {
+              if(store.getters.userHasFeature('SETTER_DASHBOARD')) {
+                  return import (/* webpackChunkName: "setterDashboard" */ './views/setterDashboard/SetterDashboard.vue')
+              } else {
+                  return accessDenied()
+              }
+          }
+      }, {
         path: '/ahj',
         name: 'ahj',
         component: () => {

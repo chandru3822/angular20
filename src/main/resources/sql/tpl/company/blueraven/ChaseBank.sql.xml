@@ -33,7 +33,7 @@
               from brs.project_rebate_payment
               group by project_id) payment_numbers
             on payment_numbers.project_id = prp.project_id
-        where prp.project_rebate_batch_id = :batchId;
+        where prp.project_rebate_batch_id = :batchId
     ]]>
   </chasebank.getPaymentsInBatch>
 
@@ -41,7 +41,7 @@
     <![CDATA[
         UPDATE brs.project_rebate_payment
             SET check_number = :checkNumber
-        where id = :paymentId;
+        where id = :paymentId
     ]]>
   </chasebank.saveCheckNumberToPayment>
 </sql>

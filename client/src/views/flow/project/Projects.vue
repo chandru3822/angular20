@@ -31,13 +31,13 @@
 
                 <v-spacer/>
 
-                <v-btn
-                    text
-                    :disabled="isProjectsLoading && !totalProjects > 0"
-                    @click="showConfirmDialog = true"
-                >
-                    Export
-                </v-btn>
+<!--                <v-btn-->
+<!--                    text-->
+<!--                    :disabled="isProjectsLoading && !totalProjects > 0"-->
+<!--                    @click="showConfirmDialog = true"-->
+<!--                >-->
+<!--                    Export-->
+<!--                </v-btn>-->
             </v-toolbar>
 
             <v-divider />

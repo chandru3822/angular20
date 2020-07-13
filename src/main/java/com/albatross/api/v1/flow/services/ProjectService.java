@@ -75,6 +75,21 @@ public class ProjectService {
     return sqlCache.get("project.get", ImmutableMap.of("projectId", projectId), new ProjectMapper<>(Project.class, om));
   }
 
+  public void updateProject(Project project) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", project.getId());
+    params.put("street1", project.getStreet1());
+    params.put("city", project.getCity());
+    params.put("stateId", project.getStateId());
+    params.put("postalCode", project.getPostalCode());
+    params.put("countryId", project.getCountryId());
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("project.update", params);
+  }
+
   public Optional<Project> insertProject(Long contactId, Long processId, String projectName) {
     User user = securityService.getCurrentUser();
 
@@ -92,11 +107,11 @@ public class ProjectService {
     return getProject(id);
   }
 
-  public List<Attachment> getAttachments(Long projectId) {
+  public List<Attachment> getAttachments(Long projectId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     List<Attachment> attachments = sqlCache.query("project.getAttachments", params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
@@ -129,6 +144,7 @@ public class ProjectService {
     params.put("key", key);
     params.put("size", file.getSize());
     params.put("createdById", currentUser.getId());
+    params.put("companyId", currentUser.getCompanyId());
     params.put("attachmentTypeId", attachmentTypeId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();

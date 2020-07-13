@@ -13,6 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +43,8 @@ public class CustomFieldService {
 
   @Autowired
   ObjectMapper om;
+
+  private final DataSource dataSource;
 
   public CustomField findCustomFieldById(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -76,12 +82,13 @@ public class CustomFieldService {
   *   New custom fields
   *     With or without value options (which would always be new/inserts)
    */
-  public CustomField saveField(CustomField customField) {
+  public CustomField saveField(CustomField customField) throws SQLException {
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
     params.put("readonly", customField.getReadonly() == null ? false : customField.getReadonly());
     params.put("systemListId", customField.getCompanySystemListId());
-    params.put("systemListOptionIds", customField.getSystemListOptionIds());
+    params.put("systemListOptionIds", null == customField.getSystemListOptionIds() || customField.getSystemListOptionIds().isEmpty()
+                                          ? null : createSqlArrayOfType("int", customField.getSystemListOptionIds()));
     Long id = null;
     boolean doInsertAfterHandlingOtherScenarios = false;
     boolean insertParentRecordIfNeeded = false;
@@ -228,6 +235,15 @@ public class CustomFieldService {
     List<CustomField> results = sqlCache.query("customField.getByParentType", params, new CustomFieldMapper<>(CustomField.class, om));
 
     return results;
+  }
+
+  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+    if (array != null && !array.isEmpty()) {
+      try (Connection connection = dataSource.getConnection()) {
+        return connection.createArrayOf(typeName, array.toArray());
+      }
+    }
+    return null;
   }
 
   public static class CustomFieldMapper<T> extends BeanPropertyRowMapper<T> {

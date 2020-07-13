@@ -90,6 +90,11 @@
             return-object
           />
 
+          Primary
+          <v-checkbox
+              v-model="selectedNewMain"
+          />
+
           <v-btn
             class="project-admin-btn primary"
             :disabled="selectedNewProjectProcessStep === null || selectedNewStatus === null"
@@ -146,6 +151,13 @@
                 hide-details
               />
             </td>
+            <td class="text-left">
+                <v-checkbox
+                    v-model="projectProcessStep.main"
+                    :disabled="projectProcessStep.main"
+                    @change="updateMain(projectProcessStep.projectProcessStepId)"
+                />
+            </td>
             <td class="text-right">
               <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>
             </td>
@@ -161,7 +173,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, postRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {getRequest, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
 import { v4 as uuid } from 'uuid'
 
@@ -181,12 +193,14 @@ export default {
       isProjectProcessStepsLoading: false,
       selectedNewProjectProcessStep: null,
       selectedNewStatus: null,
+      selectedNewMain: false,
       headers: [
         {text: 'ID', value: 'projectProcessStepId'},
         {text: 'Type', value: 'processStepName'},
         {text: 'Owner', value: 'owner.fullName'},
         {text: 'Last Activity', value: 'lastUpdated'},
         {text: 'Status', value: 'processStepStatusType'},
+        {text: 'Primary', value: 'main'},
         {text: '', value: 'delete', sortable: false}
       ],
       uuid
@@ -304,13 +318,17 @@ export default {
         const {data} = await postRequest(`/projectProcessStep/`, {
           projectId: this.projectId,
           processStepId: this.selectedNewProjectProcessStep.processStepId,
-          companyProcessStepStatusTypeId: this.selectedNewStatus.id
+          companyProcessStepStatusTypeId: this.selectedNewStatus.id,
+          main: this.selectedNewMain
         })
 
         const newStep = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
         this.projectProcessSteps.push(newStep)
         this.selectedNewProjectProcessStep = null
         this.selectedNewStatus = null
+        this.selectedNewMain = false
+
+        this.getProjectProcessSteps()
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
@@ -329,6 +347,22 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    updateMain: async function (projectProcessStepId) {
+        try {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            await putRequest(`/projectProcessStep/${projectProcessStepId}/main`)
+            await this.getProjectProcessSteps()
+        } catch (e) {
+            logError(e)
+            this.snackbar = getSnackbar('ERROR', 'Unable to update the primary process step')
+            const selectedStep = this.projectProcessSteps.find(s => s.projectProcessStepId === projectProcessStepId)
+            if (selectedStep) {
+                selectedStep.main = false
+            }
+        } finally {
+            this.$store.commit(AppMutations.SET_LOADING, false)
+        }
     }
   }
 }
