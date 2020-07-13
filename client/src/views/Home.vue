@@ -43,6 +43,10 @@
           </v-tabs>
           <v-spacer class="ml-5"></v-spacer>
           <v-toolbar-items>
+            <CompanyMenu/>
+          </v-toolbar-items>
+          <v-spacer class="ml-5"></v-spacer>
+          <v-toolbar-items>
             <AccountMenu :showImage="true"></AccountMenu>
           </v-toolbar-items>
         </v-app-bar>
@@ -63,6 +67,7 @@ import { UserActions } from '@/stores/UserStore'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
+import CompanyMenu from '@/components/CompanyMenu.vue'
 import Snackbar from '@/components/Snackbar.vue'
 
 const { VUE_APP_ENV } = process.env
@@ -73,7 +78,8 @@ export default {
   components: {
     Snackbar,
     Spinner,
-    AccountMenu
+    AccountMenu,
+    CompanyMenu,
   },
   data () {
     return {
@@ -94,42 +100,46 @@ export default {
         label: 'Projects',
         path: '/project/search',
         display: this.$store.getters.userHasFeature('PROJECTS')
-      }, {
-        label: 'Closer Dashboard',
-        path: '/closerDashboard',
-        display: this.$store.getters.userHasFeature('CLOSER_DASHBOARD')
-      }, {
-          label: 'Setter Dashboard',
-          path: '/setterDashboard',
-          display: this.$store.getters.userHasFeature('SETTER_DASHBOARD')
-      }, {
-        label: 'AHJ Database',
-        path: '/ahj',
-        display: this.$store.getters.userHasFeature('AHJ_DATABASE')
-      }, {
-        label: 'Commissions',
-        path: '/commissionManagement/closers',
-        display: this.$store.getters.userHasFeature('COMMISSIONS')
-      }, {
-        label: 'Finance',
-        display: this.$store.getters.userHasFeature('FINANCES'),
-        path: '/finances/rebate/viewPayments',
-        children: [
-          {
-            label: 'BluePower + Rebates',
-            path: '/finances/rebate/viewPayments',
-            display: this.$store.getters.userHasFeature('FINANCES')
-          }
-        ]
-      }, {
+      },
+      // {
+      //   label: 'Closer Dashboard',
+      //   path: '/closerDashboard',
+      //   display: this.$store.getters.userHasFeature('CLOSER_DASHBOARD')
+      // }, {
+      //     label: 'Setter Dashboard',
+      //     path: '/setterDashboard',
+      //     display: this.$store.getters.userHasFeature('SETTER_DASHBOARD')
+      // }, {
+      //   label: 'AHJ Database',
+      //   path: '/ahj',
+      //   display: this.$store.getters.userHasFeature('AHJ_DATABASE')
+      // }, {
+      //   label: 'Commissions',
+      //   path: '/commissionManagement/closers',
+      //   display: this.$store.getters.userHasFeature('COMMISSIONS')
+      // }, {
+      //   label: 'Finance',
+      //   display: this.$store.getters.userHasFeature('FINANCES'),
+      //   path: '/finances/rebate/viewPayments',
+      //   children: [
+      //     {
+      //       label: 'BluePower + Rebates',
+      //       path: '/finances/rebate/viewPayments',
+      //       display: this.$store.getters.userHasFeature('FINANCES')
+      //     }
+      //   ]
+      // },
+        {
         label: 'Schedule',
         path: '/schedule',
         display: this.$store.getters.userHasFeature('SCHEDULE')
-      }, {
-        label: 'Proposal',
-        path: '/proposal',
-        display: this.$store.getters.userHasFeature('PROPOSAL')
-      }, {
+      },
+      //   {
+      //   label: 'Proposal',
+      //   path: '/proposal',
+      //   display: this.$store.getters.userHasFeature('PROPOSAL')
+      // },
+        {
         label: 'Work Queue',
         path: '/workQueue',
         display: this.$store.getters.userHasFeature('WORK_QUEUE')
