@@ -12,7 +12,7 @@
             <div class="page-title">Utility</div>
             <div class="page-info">
               <div>{{ ahjUtility.name }}</div>
-              <div>{{ ahjUtility.metroArea }}, {{ ahjUtility.state }}</div>
+              <div>{{ ahjUtility.metroArea }}</div>
             </div>
           </div>
 

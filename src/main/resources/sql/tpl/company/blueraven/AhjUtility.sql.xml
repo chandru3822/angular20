@@ -1,19 +1,26 @@
 <sql>
   <ahj.utility.list.all>
     <![CDATA[
-      SELECT
-        au.id,
-        au.name,
-        au.metro_area_id,
-        ma.metro_area,
-        s.id AS state_id,
-        s.abbreviation AS "state",
-        au.archived
-      FROM brs.ahj_utility au
-        LEFT JOIN brs.metro_area ma ON ma.id = au.metro_area_id
-        LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
-        LEFT JOIN flow.state s ON s.id = sa.state_id
-      ORDER BY au.name
+      WITH metroAreasWithStates AS (
+        select lov.id as "metro_area_id",
+               lov.name as "metro_area",
+               s.id as "state_id",
+               s.abbreviation as "state"
+        from flow.list_of_value lov
+          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
+        where lov.parent_id = 172
+          and lov.archived is false
+      )
+      SELECT u.id,
+             u.name,
+             u.metro_area_id,
+             maws.metro_area,
+             maws.state_id,
+             maws.state,
+             u.archived
+      FROM brs.ahj_utility u
+        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = u.metro_area_id
+      ORDER BY u.name
     ]]>
   </ahj.utility.list.all>
 
@@ -68,12 +75,22 @@
 
   <ahj.utility.detailById>
     <![CDATA[
+      WITH metroAreasWithStates AS (
+        select lov.id as "metro_area_id",
+               lov.name as "metro_area",
+               s.id as "state_id",
+               s.abbreviation as "state"
+        from flow.list_of_value lov
+          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
+        where lov.parent_id = 172
+          and lov.archived is false
+      )
       SELECT
         u.*,
-        f.name as "financier",
-        ma.metro_area,
-        s.id AS "state_id",
-        s.abbreviation AS "state",
+        f.name AS "financier",
+        maws.metro_area,
+        maws.state_id,
+        maws.state,
         coalesce((
           SELECT array_to_json(array_agg(row_to_json(contacts)))
           FROM (
@@ -252,10 +269,8 @@
           ORDER BY aur.position) requirements
         ), '[]') AS utility_requirements
       FROM brs.ahj_utility u
-        LEFT JOIN brs.metro_area ma ON ma.id = u.metro_area_id
+        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = u.metro_area_id
         LEFT JOIN brs.financier f ON f.id = u.financier_id
-        LEFT JOIN brs.sales_area sa ON sa.id = ma.sales_area_id
-        LEFT JOIN flow.state s ON s.id = sa.state_id
       WHERE u.id = :id
     ]]>
   </ahj.utility.detailById>
