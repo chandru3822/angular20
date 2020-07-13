@@ -545,13 +545,28 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/permit`, 'blueraven')
-          data.servicingFots.forEach(servicingFot => servicingFot.hierarchy = servicingFot.hierarchy[0])
+
+          if (data.servicingFots && data.servicingFots.length > 0) {
+            data.servicingFots.forEach(servicingFot => {
+              if (servicingFot.hierarchy && servicingFot.hierarchy.length > 0) {
+                servicingFot.hierarchy = servicingFot.hierarchy[0]
+              }
+            })
+
+            data.servicingFots = orderBy(data.servicingFots, fot => {
+              if (fot.hierarchy && fot.hierarchy.orgName) {
+                return fot.hierarchy.orgName.toLowerCase()
+              }
+            })
+          } else {
+            data.servicingFots = []
+          }
+
           this.ahjPermit = cloneDeep(data)
           this.ahjPermit.submissionLinks = orderBy(this.ahjPermit.submissionLinks, link => link.name.toLowerCase())
           this.ahjPermit.submissionContacts = orderBy(this.ahjPermit.submissionContacts, contact => contact.name.toLowerCase())
           this.ahjPermit.followUpLinks = orderBy(this.ahjPermit.followUpLinks, link => link.name.toLowerCase())
           this.ahjPermit.printLocations = orderBy(this.ahjPermit.printLocations, location => location.name.toLowerCase())
-          this.ahjPermit.servicingFots = orderBy(this.ahjPermit.servicingFots, fot => fot.hierarchy.orgName.toLowerCase())
           this.ahjPermit.followUpContacts = orderBy(this.ahjPermit.followUpContacts, contact => contact.name.toLowerCase())
           this.ahjPermit.updateAllInState = false
         } catch (e) {
@@ -633,6 +648,23 @@
 
           this.ahjPermit.customFieldGroups = this.customFieldGroupAssignments
           const {data} = await putRequest(`/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
+
+          if (data.servicingFots && data.servicingFots.length > 0) {
+            data.servicingFots.forEach(servicingFot => {
+              if (servicingFot.hierarchy && servicingFot.hierarchy.length > 0) {
+                servicingFot.hierarchy = servicingFot.hierarchy[0]
+              }
+            })
+
+            data.servicingFots = orderBy(data.servicingFots, fot => {
+              if (fot.hierarchy && fot.hierarchy.orgName) {
+                return fot.hierarchy.orgName.toLowerCase()
+              }
+            })
+          } else {
+            data.servicingFots = []
+          }
+
           this.ahjPermit = cloneDeep(data)
           this.ahjPermit.updateAllInState = false
           this.dataWasChanged = false

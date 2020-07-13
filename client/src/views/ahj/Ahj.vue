@@ -250,7 +250,7 @@
           const {data} = await getRequest('/metro/getActive', 'blueraven')
           data.forEach(item => {
             let option = {
-              text: item.metroArea + ' (' + item.area + ')',
+              text: item.metroArea,
               value: item.id
             }
             this.metroAreas.push(option)
