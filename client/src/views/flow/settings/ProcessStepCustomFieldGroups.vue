@@ -516,7 +516,8 @@
             customFieldGroupId: cfg.id,
             id: null,
             ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
-            fieldOrder: 0
+            fieldOrder: 0,
+            ancillaryProcessStepId: this.parent.id
           }
           const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
           cfg.customFields.push(data)
