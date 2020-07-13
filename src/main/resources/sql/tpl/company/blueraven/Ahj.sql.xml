@@ -1,52 +1,79 @@
 <sql>
   <ahj.list>
     <![CDATA[
+      WITH metroAreasWithStates AS (
+        select lov.id as "metro_area_id",
+               lov.name as "metro_area",
+               s.id as "state_id",
+               s.state
+        from flow.list_of_value lov
+          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
+        where lov.parent_id = 172
+          and lov.archived is false
+      )
       SELECT
         ahj.id,
         ahj.name,
-        st.id AS "state_id",
-        st.state,
         ahj.metro_area_id,
-        ma.metro_area
+        maws.metro_area,
+        maws.state_id,
+        maws.state,
+        ahj.archived
       FROM brs.ahj ahj
-        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
-        INNER JOIN brs.sales_area sa ON ma.sales_area_id = sa.id
-        INNER JOIN flow.state st ON sa.state_id = st.id
+        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = ahj.metro_area_id
       WHERE ahj.archived IS NOT TRUE
-      ORDER BY st.state, ma.metro_area, ahj.name
+      ORDER BY maws.state, maws.metro_area, ahj.name
     ]]>
   </ahj.list>
 
   <ahj.findById>
     <![CDATA[
+      WITH metroAreasWithStates AS (
+        select lov.id as "metro_area_id",
+               lov.name as "metro_area",
+               s.id as "state_id",
+               s.state
+        from flow.list_of_value lov
+          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
+        where lov.parent_id = 172
+          and lov.archived is false
+      )
       SELECT
         ahj.id,
         ahj.name,
-        st.id AS "state_id",
-        st.state,
         ahj.metro_area_id,
-        ma.metro_area
+        maws.metro_area,
+        maws.state_id,
+        maws.state,
+        ahj.archived
       FROM brs.ahj ahj
-        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
-        INNER JOIN brs.sales_area sa ON ma.sales_area_id = sa.id
-        INNER JOIN flow.state st ON sa.state_id = st.id
+        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = ahj.metro_area_id
       WHERE ahj.id = :id
     ]]>
   </ahj.findById>
 
   <ahj.checkForDuplicate>
     <![CDATA[
+      WITH metroAreasWithStates AS (
+        select lov.id as "metro_area_id",
+               lov.name as "metro_area",
+               s.id as "state_id",
+               s.state
+        from flow.list_of_value lov
+          inner join flow.state s on s.abbreviation = substring(lov.name from 1 for 2)
+        where lov.parent_id = 172
+          and lov.archived is false
+      )
       SELECT
         ahj.id,
         ahj.name,
-        st.id AS "state_id",
-        st.state,
         ahj.metro_area_id,
-        ma.metro_area
+        maws.metro_area,
+        maws.state_id,
+        maws.state,
+        ahj.archived
       FROM brs.ahj ahj
-        INNER JOIN brs.metro_area ma ON ma.id = ahj.metro_area_id
-        INNER JOIN brs.sales_area sa ON ma.sales_area_id = sa.id
-        INNER JOIN flow.state st ON sa.state_id = st.id
+        LEFT JOIN metroAreasWithStates maws ON maws.metro_area_id = ahj.metro_area_id
       WHERE ahj.name = :name
         AND ahj.metro_area_id = :metroAreaId
         AND ahj.archived IS NOT TRUE
