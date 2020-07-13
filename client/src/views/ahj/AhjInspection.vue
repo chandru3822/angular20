@@ -491,6 +491,7 @@
   import Snackbar from '@/components/Snackbar'
   import { AppMutations } from '@/stores/AppStore'
   import { getRequest, getRequestWithParams, putRequest, getSnackbar } from '@/helpers/helpers'
+  import orderBy from "lodash.orderby";
 
   export default {
     name: 'ahjInspection',
@@ -537,7 +538,23 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/ahj/${this.ahjId}/inspection`, 'blueraven')
-          data.servicingFots.forEach(servicingFot => servicingFot.hierarchy = servicingFot.hierarchy[0])
+
+          if (data.servicingFots && data.servicingFots.length > 0) {
+            data.servicingFots.forEach(servicingFot => {
+              if (servicingFot.hierarchy && servicingFot.hierarchy.length > 0) {
+                servicingFot.hierarchy = servicingFot.hierarchy[0]
+              }
+            })
+
+            data.servicingFots = orderBy(data.servicingFots, fot => {
+              if (fot.hierarchy && fot.hierarchy.orgName) {
+                return fot.hierarchy.orgName.toLowerCase()
+              }
+            })
+          } else {
+            data.servicingFots = []
+          }
+
           data.installationRequirements.forEach(requirement => {
             if (requirement.dateCreated && requirement.createdBy) {
               requirement.formattedDateCreated = moment(requirement.dateCreated).format('MM/DD/YY h:mm A')

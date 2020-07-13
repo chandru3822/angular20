@@ -230,7 +230,7 @@
         }
       },
       async saveAppt(appt) {
-        if(appt.startTime >= appt.endTime) {
+        if((!appt.allDay && appt.startTime >= appt.endTime) || (appt.allDay && appt.startTime > appt.endTime)) {
           this.saveError = true
           this.saveErrorMsg = '* Appointment End must be after Appointment Start'
         } else {
