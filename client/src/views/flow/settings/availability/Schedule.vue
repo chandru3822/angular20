@@ -409,9 +409,15 @@
           //check that no end times are before start times
           let timeOverlap = false
           s.resourceScheduleAvailability.forEach(rsa => {
-            if(rsa.startTime >= rsa.endTime) {
+            //this is janky because if they set a time from 5pm - 11pm MST that is 11pm - 5am UTC so the end time is before the start time, i think this fixes that
+            // i transform each selected local time into today's date, even if it would be a different date in utc. then compare, but never save the values that way
+            if( moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment(rsa.startTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()
+                  >= moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment(rsa.endTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()) {
               timeOverlap = true
             }
+            // if(rsa.startTime >= rsa.endTime) {
+            //   timeOverlap = true
+            // }
           })
           if(timeOverlap) {
             this.saveError = true
@@ -449,11 +455,12 @@
                   resourceScheduleAvailability: formattedTimestamps
                 }
                 const {data} = await postRequest(`/availability`, params)
+                //with the changes we made to the datetimepickerinput i dont think we need this code anymore
                 //update the returned formatting to match required input
-                data.resourceScheduleAvailability.forEach(rsa => {
-                  rsa.startTime = rsa.startTime != null ? moment.utc(rsa.startTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
-                  rsa.endTime = rsa.endTime != null ? moment.utc(rsa.endTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
-                })
+                // data.resourceScheduleAvailability.forEach(rsa => {
+                //   rsa.startTime = rsa.startTime != null ? moment.utc(rsa.startTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
+                //   rsa.endTime = rsa.endTime != null ? moment.utc(rsa.endTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
+                // })
                 if(!s.id) {
                   this.schedules.push(data)
                 }
@@ -503,6 +510,8 @@
         try {
           await deleteRequest(`/availability/${item.id}`)
           item.archived = true
+          //remove it from the schedules list so they can recreate one with the same dates
+          this.schedules = this.schedules.filter(s => { return s.id !== item.id })
           this.snackbar = getSnackbar('SUCCESS', 'Schedule Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

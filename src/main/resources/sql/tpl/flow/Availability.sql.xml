@@ -91,8 +91,8 @@
 
   <availability.updateHours><![CDATA[
     update flow.resource_schedule_availability
-     set start_time = :startTime::timestamp,
-         end_time = :endTime::timestamp,
+     set start_time = :startTime::time,
+         end_time = :endTime::time,
          modified_by_id = :modifiedById,
          date_modified = now(),
          archived = :archived
