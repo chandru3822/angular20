@@ -1,9 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.Project;
-import com.albatross.api.v1.flow.model.ProjectProcessStep;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +37,13 @@ public class ProjectController {
     return projectService.getProject(projectId)
       .map(ResponseEntity::ok)
       .orElse(ResponseEntity.notFound().build());
+  }
+
+  @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateProject(@RequestBody Project project) {
+//    currently only saves the address fields
+    projectService.updateProject(project);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @GetMapping(value = "/{projectId}/processSteps", produces = MediaType.APPLICATION_JSON_VALUE)

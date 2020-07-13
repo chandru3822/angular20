@@ -75,6 +75,21 @@ public class ProjectService {
     return sqlCache.get("project.get", ImmutableMap.of("projectId", projectId), new ProjectMapper<>(Project.class, om));
   }
 
+  public void updateProject(Project project) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", project.getId());
+    params.put("street1", project.getStreet1());
+    params.put("city", project.getCity());
+    params.put("stateId", project.getStateId());
+    params.put("postalCode", project.getPostalCode());
+    params.put("countryId", project.getCountryId());
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("project.update", params);
+  }
+
   public Optional<Project> insertProject(Long contactId, Long processId, String projectName) {
     User user = securityService.getCurrentUser();
 

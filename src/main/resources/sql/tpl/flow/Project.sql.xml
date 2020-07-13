@@ -85,6 +85,14 @@
     <![CDATA[
       select
         p.id,
+        p.street1,
+        p.street2,
+        p.city,
+        p.state_id,
+        s.state,
+        p.postal_code,
+        p.country_id,
+        c.country,
         cp.company_id,
         cp.process_id,
         p.contact_id,
@@ -107,10 +115,24 @@
         ) AS owner
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id
+      left join flow.state s on s.id = p.state_id
+      left join flow.country c on c.id = p.country_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
       where p.id = :projectId
     ]]>
   </project.get>
+
+  <project.update>
+    update flow.project set
+      street1 = :street1,
+      city = :city,
+      state_id = :stateId,
+      postal_code = :postalCode,
+      country_id = :countryId,
+      modified_by_id = :modifiedById,
+      date_modified = now()
+    where id = :id
+  </project.update>
 
   <project.insert>
     <![CDATA[
