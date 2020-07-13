@@ -1,12 +1,14 @@
 -- select all active closers
-with users as (select u.id
-               from flow."user" u
-                        inner join flow.user_position up on up.user_id = u.id
-               where up.position_id = 1
-                 and up.archived is not true
-                 and up.start_date is null
-                 and (up.end_date is null or up.end_date > now())
-                 and up.primary_flag is true),
+    with users as (
+        select u.id
+        from flow."user" u
+                 inner join flow.user_position up on up.user_id = u.id
+        where up.position_id = 1
+          and up.archived is not true
+          and up.start_date is null
+          and (up.end_date is null or up.end_date > now())
+          and up.primary_flag is true
+    ),
 -- previous month schedule
      previous_month as (
          insert into flow.resource_schedule(company_id, user_id, start_date, end_date, created_by_id)
@@ -72,11 +74,11 @@ with users as (select u.id
                     (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end  + '18:30' + '5 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end + '20:30' - '5 weeks'::interval), false, 'Test Data', 2350555),
                     (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end  + '18:30' + '6 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end + '20:30' - '6 weeks'::interval), false, 'Test Data', 2350555),
                     (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end  + '18:30' + '7 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end + '20:30' - '7 weeks'::interval), false, 'Test Data', 2350555),
-                    (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end  + '18:30' + '8 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end + '20:30' - '8 weeks'::interval), false, 'Test Data', 2350555),
-     ),
+                    (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end  + '18:30' + '8 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '3 days'::interval else '2 days'::interval end + '20:30' - '8 weeks'::interval), false, 'Test Data', 2350555)
+     )
      -- all day appointments every monday for even user_ids, every tuesday for odd user_ids
-     all_day_appointments as (
-         -- this adds all day appointments + and - 8 weeks to get a full 3 month coverage without having to determine what week number we are on
+--      all_day_appointments as (
+     -- this adds all day appointments + and - 8 weeks to get a full 3 month coverage without having to determine what week number we are on
          insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
              values (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '8 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '8 weeks'::interval), true, 'Test Data', 2350555),
                     (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '7 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '7 weeks'::interval), true, 'Test Data', 2350555),
@@ -94,6 +96,6 @@ with users as (select u.id
                     (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end + '5 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '5 weeks'::interval), true, 'Test Data', 2350555),
                     (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end + '6 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '6 weeks'::interval), true, 'Test Data', 2350555),
                     (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end + '7 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '7 weeks'::interval), true, 'Test Data', 2350555),
-                    (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end + '8 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '8 weeks'::interval), true, 'Test Data', 2350555),
-     )
+                    (3,  (select id from users), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end + '8 weeks'::interval), (select date_trunc('week', now()::date) + case when (select id % 2 from users) = 0 then '0 days'::interval else '1 days'::interval end - '8 weeks'::interval), true, 'Test Data', 2350555)
+--             )
 ;
