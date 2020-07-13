@@ -7603,7 +7603,7 @@ INSERT INTO brs.proposal_log (id, proposal_date, source, proposal, project_id, p
 
 SELECT setval('brs.proposal_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.proposal_log), 1), false);
 
--- populate the project address fields.  this requires that v1_48 runs first to add the columns
+-- populate the project address fields.  this requires that v1_49 runs first to add the columns
 update flow.project p set
       street1 = c.street1,
       street2 = c.street2,
