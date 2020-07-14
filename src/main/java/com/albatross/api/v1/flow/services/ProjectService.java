@@ -90,19 +90,26 @@ public class ProjectService {
     sqlCache.update("project.update", params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, String projectName) {
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
     User user = securityService.getCurrentUser();
 
     // Get active company project status type so new projects can have an active status
     CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(user.getCompanyId());
     Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
-    Long id = sqlCache.updateReturningId("project.insert",
-        ImmutableMap.of("contactId", contactId,
-                        "createdById", user.getId(),
-                        "projectName", projectName,
-                        "processId", processId,
-                        "companyProjectStatusTypeId", companyStatusTypeId), "id").longValue();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId );
+    params.put("createdById", user.getId() );
+    params.put("projectName", contact.getFullName() );
+    params.put("processId", processId );
+    params.put("street1", contact.getStreet1() );
+    params.put("city", contact.getCity() );
+    params.put("stateId", contact.getStateId() );
+    params.put("countryId", contact.getCountryId() );
+    params.put("postalCode", contact.getPostalCode() );
+    params.put("companyProjectStatusTypeId", companyStatusTypeId );
+
+    Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
 
     return getProject(id);
   }

@@ -240,7 +240,7 @@ public class ContactService {
     Contact contact = getContact(contactId);
 
     //create project (use contact_full_name as project_name)
-    Optional<Project> project = projectService.insertProject(contactId, process.getId(), contact.getFullName());
+    Optional<Project> project = projectService.insertProject(contactId, process.getId(), contact);
 
     //get initial process steps including the initial status
     List<ProcessStepProcess> initialProcessSteps = processService.getInitialProcessStepProcesses(process.getId());
