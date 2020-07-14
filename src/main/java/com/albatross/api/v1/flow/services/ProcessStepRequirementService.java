@@ -141,6 +141,7 @@ public class ProcessStepRequirementService {
     params.put("processStepId", requirement.getProcessStepId());
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
+    params.put("customFieldProcessStepId", requirement.getCustomFieldProcessStepId());
 
     Long id = sqlCache.updateReturningId("processStepRequirement.insertRequirement", params, "id").longValue();
 

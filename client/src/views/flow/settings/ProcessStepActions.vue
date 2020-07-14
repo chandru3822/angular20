@@ -1171,6 +1171,7 @@
           this.newRequirement.customFieldGroupAssignmentId = this.selectedCustomField.customFieldGroupAssignmentId
           this.newRequirement.companyFunctionId = this.selectedFunction.id
           this.newRequirement.processStepId = this.processStepId
+          this.newRequirement.customFieldProcessStepId = this.parent.id
 
           //todo: holy crap figure out how to fix the object being sent up so i dont have to do all this validation
           //adjust value of requirementValue as needed:
