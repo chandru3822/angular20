@@ -54,7 +54,7 @@ BEGIN
                         between v_start_date AND v_end_date
                 end
                 and ((pd.cancelled_date is null) OR (pd.cancelled_date is not null and pd.cancelled_date::date > v_end_date))
-                and (pd.on_hold is null or pd.on_hold::boolean is false)
+                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = p_user_id
             order by c.first_name
         ) as sub_rows;
