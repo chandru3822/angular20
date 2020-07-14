@@ -38,7 +38,7 @@
                   between (select q1_start from quarters) and (select q1_end from quarters)
                 end
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
-                and (pd.on_hold is null or pd.on_hold::boolean is false)
+                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
               group by pd.first_cash_payment_paid_date, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.source) t
              ) as "q1",
@@ -56,7 +56,7 @@
                   between (select q2_start from quarters) and (select q2_end from quarters)
                 end
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
-                and (pd.on_hold is null or pd.on_hold::boolean is false)
+                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
              ) as "q2",
              (select count(1)
@@ -73,7 +73,7 @@
                   between (select q3_start from quarters) and (select q3_end from quarters)
                 end
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
-                and (pd.on_hold is null or pd.on_hold::boolean is false)
+                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
              ) as "q3",
              (select count(1)
@@ -90,7 +90,7 @@
                   between (select q4_start from quarters) and (select q4_end from quarters)
                 end
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
-                and (pd.on_hold is null or pd.on_hold::boolean is false)
+                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
              ) as "q4"
     ]]>
@@ -112,7 +112,7 @@
                  then pd.first_cash_payment_paid_date is not null
                  else 1=1
                  end
-               and (pd.on_hold is null or pd.on_hold::boolean is false) then 1 end) as leadGenFdcPercentageNumerator,
+               and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3) then 1 end) as leadGenFdcPercentageNumerator,
              count(case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
                and pd.source not in (6, 8, 484) then 1 end) as leadGenFdcPercentageDenominator,
              count(case when greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.first_cash_payment_paid_date::date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
@@ -123,7 +123,7 @@
                  then pd.first_cash_payment_paid_date is not null
                  else 1=1
                  end
-               and (pd.on_hold is null or pd.on_hold::boolean is false) then 1 end) as selfGenFdc,
+               and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3) then 1 end) as selfGenFdc,
              count(case when greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.first_cash_payment_paid_date::date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
                and pd.final_design_signed_date is not null
                and pd.financial_agreement_signed_date is not null
@@ -131,7 +131,7 @@
                  then pd.first_cash_payment_paid_date is not null
                  else 1=1
                  end
-               and (pd.on_hold is null or pd.on_hold::boolean is false) then 1 end) as totalFdc
+               and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3) then 1 end) as totalFdc
       FROM flow.project p
         INNER JOIN flow.contact c ON c.id = p.contact_id
         INNER JOIN brs.project_details pd ON pd.project_id = p.id
