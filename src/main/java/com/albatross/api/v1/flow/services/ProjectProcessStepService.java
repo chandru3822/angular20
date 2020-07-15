@@ -62,6 +62,8 @@ public class ProjectProcessStepService {
 
   private final AsyncProjectProcessStepService asyncProjectProcessStepService;
 
+  private final CustomFieldValueService customFieldValueService;
+
   private final ObjectMapper om;
 
   @Value("${aws.storageBucket}")
@@ -190,14 +192,14 @@ public class ProjectProcessStepService {
     return getProjectProcessStep(id);
   }
 
-  public ProjectProcessStep saveProjectProcessStep(ProjectProcessStep pps) {
+  public List<CustomFieldGroup> saveProjectProcessStep(ProjectProcessStep pps) {
     User currentUser = securityService.getCurrentUser();
 
     //todo: handle the rest of the save ... if any - see userService.saveUser
 
     handleSavingCustomFieldValues(pps.getCustomFieldGroups(), pps.getProjectProcessStepId());
 
-    return getProjectProcessStep(pps.getProjectProcessStepId());
+    return customFieldValueService.getProjectProcessStepCustomValues(pps.getProjectProcessStepId());
   }
 
   public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long primaryId){
