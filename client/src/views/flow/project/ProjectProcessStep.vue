@@ -266,13 +266,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.processStep.customFieldGroups = this.customFieldGroups
       try {
-        await putRequest(`/projectProcessStep`, this.processStep)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data} = await putRequest(`/projectProcessStep`, this.processStep)
+        this.customFieldGroups = data
         this.$root.$emit('projectProcessStep:checkAction')
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateOwner() {
