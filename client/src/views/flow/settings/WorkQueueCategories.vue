@@ -34,12 +34,13 @@
           <v-data-table
               :headers="headers"
               :items="filterCategories()"
-              :fixed-header="true"
               :items-per-page="-1"
+              :sort-desc="[false]"
+              :sort-by="['displayOrder']"
+              hide-default-footer
               single-expand
               :expanded.sync="expanded"
-              hide-default-footer
-              class="elevation-1 mt-1"
+              class="elevation-1"
           >
             <template #no-data>
               No available fields
@@ -50,11 +51,15 @@
             </template>
 
             <template #item="{ item, index }">
-
-              <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <tr :class="{'shaded-row': index % 2}">
+                <td style="width: 50px">
+                  <v-btn text icon small class="handle">
+                    <v-icon>drag_handle</v-icon>
+                  </v-btn>
+                </td>
                 <td class="text-left">
                   <v-text-field class="one-hunned" v-if="selectedWorkQueueCategoryId === item.id" v-model="item.workQueueCategory"></v-text-field>
-                  <div v-else>{{item.workQueueCategory}}</div>
+                  <div v-else>{{item.workQueueCategory}} - {{item.displayOrder}}</div>
                 </td>
                 <td class="text-left">
                   <v-avatar
@@ -132,12 +137,41 @@
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import Sortable from "sortablejs";
+  import cloneDeep from "lodash.clonedeep";
 
   export default {
     name: 'WorkQueueCategories',
     mixins: [Vue2Filters.mixin],
     components: {
       Snackbar
+    },
+    mounted() {
+      let table = document.querySelector('tbody')
+      const _self = this
+      Sortable.create(table, {
+        handle: '.handle',
+        onEnd({ newIndex, oldIndex }) {
+          const rowSelected = _self.workQueueCategories.splice(oldIndex, 1)[0]
+          _self.workQueueCategories.splice(newIndex, 0, rowSelected)
+          let rowsClone = cloneDeep(_self.workQueueCategories)
+
+          let rowsToSave = []
+          rowsClone.forEach((r, idx) => {
+            //check if the row needs to be saved before updating display order
+            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+            //update display order
+            r.displayOrder = idx
+            //save only rows that changed
+            if(save) {
+              _self.workQueueCategories[idx].newDisplayOrder = idx
+              rowsToSave.push(r)
+            }
+          })
+          _self.saveRowChanges(rowsToSave)
+        }
+      })
     },
     data() {
       return {
@@ -158,6 +192,7 @@
         companyId: this.$store.state.user.details.companyId,
         expanded: [],
         headers: [
+          { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           { text: 'Category', value: 'workQueueCategory', show: true },
           { text: 'Color', value: 'color', show: true },
           { text: null, value: 'icons', show: true }
@@ -175,7 +210,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getWorkQueueCategories()
-          this.workQueueCategories = orderBy(data, [wqc => wqc.workQueueCategory.toLowerCase()])
+          this.workQueueCategories = data
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -230,6 +265,21 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Category')
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveRowChanges(rows) {
+        if(rows?.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await putRequest(`/workQueueCategory/order`, rows)
+            // this.$set(this, 'workQueueCategories', data)
+            this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Order Saved')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Order')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       filterCategories () {

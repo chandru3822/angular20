@@ -203,7 +203,7 @@
             else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and case when :stateId::integer is not null then upv.state_id = :stateId::integer and upv.position_schedulable is true else upv.position_schedulable is true end
         and upv.user_archived is not true
-        and (upv.start_date is null or upv.start_date <= now())
+        and upv.start_date <= now()
         and (upv.end_date is null or upv.end_date >= now())
       order by full_name
   ]]></user.getSchedulingUsers>

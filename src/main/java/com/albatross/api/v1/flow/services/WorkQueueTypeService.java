@@ -54,12 +54,16 @@ public class WorkQueueTypeService {
 
   public Optional<WorkQueueType> updateType(WorkQueueType type) {
     User user = securityService.getCurrentUser();
-    sqlCache.update("workQueueType.updateType",
-        ImmutableMap.of("companyId", user.getCompanyId(),
-            "id", type.getId(),
-            "modifiedById", user.getId(),
-            "workQueueCategoryId", type.getWorkQueueCategoryId(),
-            "workQueueType", type.getWorkQueueType()));
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId() );
+    params.put("id", type.getId() );
+    params.put("modifiedById", user.getId() );
+    params.put("workQueueCategoryId", type.getWorkQueueCategoryId() );
+    params.put("displayOrder", type.getDisplayOrder() );
+    params.put("workQueueType", type.getWorkQueueType() );
+
+    sqlCache.update("workQueueType.updateType", params);
 
     return getType(type.getId());
   }

@@ -5,7 +5,7 @@
                  inner join flow.user_position up on up.user_id = u.id
         where up.position_id = 1
           and up.archived is not true
-          and (up.start_date is null or up.start_date <= now())
+          and up.start_date <= now()
           and (up.end_date is null or up.end_date > now())
           and up.primary_flag is true
     ),
