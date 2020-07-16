@@ -490,7 +490,7 @@ INSERT INTO flow."user" (
             modified_by,
             email
      FROM blueraven."user"
-        where id not in (2350555,99999999,2405363)
+        where id not in (2350555,99999999,2405363, 2356764, 2410143)
         and id not in ( select distinct u.id
                         from blueraven.user u
                                  inner join blueraven.user_position up on up.user_id = u.id
@@ -502,7 +502,7 @@ insert into flow.user_company(company_id,user_id,is_default)
 (
  select (select id from flow.company where company_name = 'Blue Raven Solar'),u1.id,true
  FROM blueraven."user" u1
- where u1.id not in (2350555,99999999,2405363)
+ where u1.id not in (2350555,99999999,2405363, 2356764, 2410143)
    and u1.id not in ( select distinct u.id
                       from blueraven.user u
                                inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
@@ -520,7 +520,7 @@ insert into flow.user_company(company_id,user_id,is_default)
  select (select id from flow.company where company_name = 'Blue Raven Solar'),u2.id,true
  FROM blueraven."user" u2
  where u2.id not in (select user_id from blueraven.user_position)
-      and u2.id not in (2350555,99999999,2405363));
+      and u2.id not in (2350555,99999999,2405363, 2356764, 2410143));
 
 insert into flow.user_company(company_id,user_id,is_default)
 (with
@@ -542,7 +542,7 @@ insert into flow.user_company(company_id,user_id,is_default)
  select c.id,u1.id,case when c.id = (select id from flow.company where company_name = 'Blue Raven Corporate') then true else false end
  FROM blueraven."user" u1
           cross join companies c
- where u1.id not in (2350555,99999999,2405363)
+ where u1.id not in (2350555,99999999,2405363, 2356764, 2410143)
    and u1.id not in ( select distinct u.id
                       from blueraven.user u
                                inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
@@ -725,7 +725,7 @@ INSERT INTO flow."user" (
 insert into flow.user_company(company_id,user_id,is_default)
     (select (select id from flow.company where company_name = 'B+C Electric'),id,true
      FROM blueraven."user"
-     where id not in (2350555,99999999,2405363)
+     where id not in (2350555,99999999,2405363, 2356764, 2410143)
        and id in ( select distinct u.id
                        from blueraven.user u
                                 inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
@@ -872,7 +872,7 @@ INSERT INTO flow."user" (
 insert into flow.user_company(company_id,user_id,is_default)
     (select (select id from flow.company where company_name = 'Eco Lux Solar'),id,true
      FROM blueraven."user"
-     where id not in (2350555,99999999,2405363)
+     where id not in (2350555,99999999,2405363, 2356764, 2410143)
        and id in ( select distinct u.id
                        from blueraven.user u
                                 inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
@@ -1017,7 +1017,7 @@ INSERT INTO flow."user" (
 insert into flow.user_company(company_id,user_id,is_default)
     (select (select id from flow.company where company_name = 'Salient Solar'),id,true
      FROM blueraven."user"
-     where id not in (2350555,99999999,2405363)
+     where id not in (2350555,99999999,2405363, 2356764, 2410143)
        and id in ( select distinct u.id
                        from blueraven.user u
                                 inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
@@ -1161,7 +1161,7 @@ INSERT INTO flow."user" (
 insert into flow.user_company(company_id,user_id,is_default)
     (select (select id from flow.company where company_name = 'Solenrgi'),id,true
      FROM blueraven."user"
-     where id not in (2350555,99999999,2405363)
+     where id not in (2350555,99999999,2405363, 2356764, 2410143)
        and id in ( select distinct u.id
                        from blueraven.user u
                                 inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
@@ -1307,7 +1307,7 @@ INSERT INTO flow."user" (
 insert into flow.user_company(company_id,user_id,is_default)
     (select (select id from flow.company where company_name = 'Sun Run'),id,true
      FROM blueraven."user"
-     where id not in (2350555,99999999,2405363)
+     where id not in (2350555,99999999,2405363, 2356764, 2410143)
        and id in ( select distinct u.id
                        from blueraven.user u
                                 inner join blueraven.user_position up on up.user_id = u.id and up.primary_flag is true
@@ -1356,7 +1356,7 @@ insert into flow.user_status_type(user_id, company_user_status_type_id, archived
               inner join flow.user_company uc on uc.user_id = u.id
               inner join flow.company_user_status_type ust  on ust.company_id = uc.company_id
      where ust2.user_status_type = ust.user_status_type
-        and u.id not in (2350555,99999999,2405363));
+        and u.id not in (2350555,99999999,2405363, 2356764, 2410143));
 
 -- insert into brs.sales_area_type(id, sales_area_type)
 --     (select id, sales_area_type
@@ -6125,6 +6125,67 @@ INSERT INTO flow.contact (city,
       from blueraven.customer c
      where  c.id in (select customer_id from blueraven.deal d  where (d.originator_id =1 or d.originator_id is null)));
 
+with contacts_no_deals as (
+    select c2.id as customer_id
+    from blueraven.customer c2
+             left join blueraven.deal d on d.customer_id = c2.id
+    where d.id is null
+)
+INSERT INTO flow.contact (city,
+                          country_id,
+                          email,
+                          first_name,
+                          id,
+                          last_name,
+                          latitude,
+                          location_unavailable,
+                          longitude,
+                          mailing_city,
+                          mailing_postal_code,
+                          mailing_state,
+                          mailing_street1,
+                          mailing_street2,
+                          mobile,
+                          phone,
+                          postal_code,
+                          prospect_status,
+                          state,
+                          street1,
+                          street2,
+                          time_zone,
+                          contact_type_id,
+                          created_by_id,
+                          date_created,
+                          company_id)
+    (SELECT city,
+            1,
+            email,
+            first_name,
+            c.id,
+            last_name,
+            latitude,
+            location_unavailable,
+            longitude,
+            mailing_city,
+            mailing_postal_code,
+            mailing_state,
+            mailing_street1,
+            mailing_street2,
+            mobile,
+            phone,
+            postal_code,
+            prospect_status,
+            state,
+            street1,
+            street2,
+            time_zone,
+            (select id from flow.contact_type where contact_type='Lead'),
+            2350555 as created_by_id,
+            created_date,
+            (select id from flow.company where company_name = 'Blue Raven Solar')
+     from blueraven.customer c
+              inner join contacts_no_deals cnd on cnd.customer_id = c.id);
+
 INSERT INTO flow.contact (city,
                            country_id,
                            email,
@@ -6805,70 +6866,69 @@ SELECT setval('flow.project_id_seq',
                         FROM flow.project), 1), false);
 
 -- migrate closer and setter to flow.user_project
---TODO look over this when Judson get's the user position records cleaned in production
-INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created,start_date)
-    (SELECT *
-     FROM
-         (SELECT d.id AS project_id,
-                 (select up.id
-                  from blueraven.user_position up
-                  where user_id = d.closer_user_id
-                    and position_id = 1
-                    and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
-                      or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
-                      or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
-                      or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
-                      or (up.primary_flag is true))
-                  limit 1) AS user_position_id,
-                 2350555 AS created_by_id,
-                 now() AS date_created,
-                 (select up.start_date
-                  from blueraven.user_position up
-                  where user_id = d.closer_user_id
-                    and position_id = 1 and
-                      ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
-                          or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
-                          or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
-                          or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
-                          or (up.primary_flag is true))
-                  limit 1) as start_date
-          FROM blueraven.deal d
-                   INNER JOIN flow.project p ON p.id = d.id -- TODO remove this when WHERE clause is removed from flow.project migration
-          WHERE d.closer_user_id IS NOT NULL and d.id = 231303) AS foo
-     WHERE foo.user_position_id IS NOT NULL);
-
-
-INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created,start_date)
-    (SELECT *
-     FROM
-         (SELECT d.id AS project_id,
-                 (select up.id
-                  from blueraven.user_position up
-                  where user_id = d.setter_user_id
-                    and position_id = 4
-                    and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
-                      or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
-                      or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
-                      or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
-                      or (up.primary_flag is true))
-                  limit 1) AS user_position_id,
-                 2350555 AS created_by_id,
-                 now() AS date_created,
-                 (select up.start_date
-                  from blueraven.user_position up
-                  where user_id = d.setter_user_id
-                    and position_id = 4
-                    and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
-                      or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
-                      or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
-                      or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
-                      or (up.primary_flag is true))
-                  limit 1) AS start_date
-          FROM blueraven.deal d
-                   INNER JOIN flow.project p
-                              ON p.id = d.id -- TODO remove this when WHERE clause is removed from flow.project migration
-          WHERE d.setter_user_id IS NOT NULL) AS foo
-     WHERE foo.user_position_id IS NOT NULL);
+-- INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created,start_date)
+--     (SELECT *
+--      FROM
+--          (SELECT d.id AS project_id,
+--                  (select up.id
+--                   from blueraven.user_position up
+--                   where user_id = d.closer_user_id
+--                     and position_id = 1
+--                     and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
+--                       or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
+--                       or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+--                       or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+--                       or (up.primary_flag is true))
+--                   limit 1) AS user_position_id,
+--                  2350555 AS created_by_id,
+--                  now() AS date_created,
+--                  (select up.start_date
+--                   from blueraven.user_position up
+--                   where user_id = d.closer_user_id
+--                     and position_id = 1 and
+--                       ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
+--                           or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
+--                           or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+--                           or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+--                           or (up.primary_flag is true))
+--                   limit 1) as start_date
+--           FROM blueraven.deal d
+--                    INNER JOIN flow.project p ON p.id = d.id
+--           WHERE d.closer_user_id IS NOT NULL) AS foo
+--      WHERE foo.user_position_id IS NOT NULL);
+--
+--
+-- INSERT INTO flow.user_project (project_id, user_position_id, created_by_id, date_created,start_date)
+--     (SELECT *
+--      FROM
+--          (SELECT d.id AS project_id,
+--                  (select up.id
+--                   from blueraven.user_position up
+--                   where user_id = d.setter_user_id
+--                     and position_id = 4
+--                     and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
+--                       or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
+--                       or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+--                       or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+--                       or (up.primary_flag is true))
+--                   limit 1) AS user_position_id,
+--                  2350555 AS created_by_id,
+--                  now() AS date_created,
+--                  (select up.start_date
+--                   from blueraven.user_position up
+--                   where user_id = d.setter_user_id
+--                     and position_id = 4
+--                     and  ((up.end_date is null and primary_flag is true and d.pre_design_complete_date >= up.start_date)
+--                       or (up.end_date is null and d.pre_design_complete_date >= up.start_date)
+--                       or (up.end_date is not null and  primary_flag is true and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+--                       or (up.end_date is not null and d.pre_design_complete_date >= up.start_date and d.pre_design_complete_date <= up.end_date)
+--                       or (up.primary_flag is true))
+--                   limit 1) AS start_date
+--           FROM blueraven.deal d
+--                    INNER JOIN flow.project p
+--                               ON p.id = d.id
+--           WHERE d.setter_user_id IS NOT NULL) AS foo
+--      WHERE foo.user_position_id IS NOT NULL);
 
 -- INSERT INTO flow.custom_field(
 --     field_name, company_data_type_id, date_created,
@@ -6960,7 +7020,7 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
 
 INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, date_value, created_by_id)
     (SELECT id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Cancelled') as custom_field_id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Cancelled' and cfg.archived is false) as custom_field_id,
             cancelled_date,
             2350555 as created_by_id
      FROM blueraven.deal WHERE cancelled_date IS NOT NULL
@@ -6974,13 +7034,34 @@ INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assi
      FROM blueraven.deal WHERE ahj_id IS NOT NULL
                            and  originator_id = 1);
 
-INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, boolean_value, created_by_id)
-    (SELECT id,
-            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'On Hold') as custom_field_id,
-            on_hold,
+-- INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, boolean_value, created_by_id)
+--     (SELECT id,
+--             (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'On Hold' and cfg.archived is false) as custom_field_id,
+--             on_hold,
+--             2350555 as created_by_id
+--      FROM blueraven.deal WHERE on_hold IS NOT NULL
+--                            and originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Utility Company' and company_id = 3) as custom_field_id,
+            au.id,
             2350555 as created_by_id
-     FROM blueraven.deal WHERE on_hold IS NOT NULL
-                           and originator_id = 1);
+     FROM blueraven.deal d
+    inner join blueraven.ahj_utility au on au.name = d.permit_issuer
+    WHERE permit_issuer IS NOT NULL
+                           and  originator_id = 1);
+
+INSERT INTO flow.project_custom_field_value (project_id, custom_field_group_assignment_id, int_value, created_by_id)
+    (SELECT d.id,
+            (SELECT cfg.id FROM flow.custom_field_group_assignment cfg inner join flow.custom_field cf on  cf.id = cfg.custom_field_id  WHERE field_name = 'Metro Area' and company_id = 3) as custom_field_id,
+            lov.id,
+            2350555 as created_by_id
+     FROM blueraven.deal d
+              inner join flow.list_of_value lov on lov.name = d.metro_area and parent_id = 172
+     WHERE metro_area IS NOT NULL
+       and  originator_id = 1);
+
 
 insert into brs.ahj_checklist_type(id, name, archived)
     (select id,
@@ -7202,7 +7283,7 @@ insert into brs.ahj_requirements(ahj_id, requirement_id, original_requirement_id
 --      from parent p
 --     );
 
---TODO add project custom records for deal stage source etc  INSERT INTO flow.project_custom_field_value
+
 
 DELETE FROM brs.list_of_value WHERE parent_id = 213 AND name = 'false';
 UPDATE brs.list_of_value SET show_other = true WHERE name = 'Other' AND parent_id IN (1,31);
