@@ -2,18 +2,19 @@
   <v-container id="closer-dash-container">
     <v-row v-if="showDashboard" id="closer-dash-toolbar-container">
       <v-col cols="12" id="closer-dash-toolbar">
-        <v-toolbar class="elevation-1">
+        <v-app-bar class="elevation-1" fixed style="top: 48px">
           <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
             <v-btn text @click="loadRankingTables('MTD')">MTD</v-btn>
             <v-btn text @click="loadRankingTables('60 days')" class="text-lowercase">60 days</v-btn>
             <v-btn text @click="loadRankingTables('90 days')" class="text-lowercase">90 days</v-btn>
             <v-btn text @click="loadRankingTables('YTD')">YTD</v-btn>
           </v-btn-toggle>
-        </v-toolbar>
+        </v-app-bar>
       </v-col>
     </v-row>
 
-    <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters :class="{'mt-3': showDashboard}">
+    <v-row id="closer-dash-tabs" class="mb-2" :style="{'padding-top': showDashboard ? '60px' : ''}"
+           justify="center" no-gutters>
       <v-col cols="12">
         <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(1)">
           Dashboard
