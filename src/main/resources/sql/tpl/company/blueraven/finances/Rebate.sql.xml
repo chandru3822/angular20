@@ -174,9 +174,13 @@
               (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
               coalesce(prps.name,'New') state,
               (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
-              pd.primary_financier as financier,
+              (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.primary_financier) as financier,
               pd.num_of_promotion_payments as numberOfPromotionPayments,
-              pd.product,
+              (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.product) as product,
               pd.total_promotion_amount,
               pcfv.date_value as entered_into_payment_system_date
               from flow.project p
@@ -222,9 +226,13 @@
             prps.name state,
             case when (select count(1) from brs.project_rebate_payment where project_id = p.id and payment_nbr < prp.payment_nbr and project_rebate_payment_state_id=1)>0 then false else true end approvable,
             (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
-            pd.primary_financier as financier,
+            (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.primary_financier) as financier,
             pd.num_of_promotion_payments as numberOfPromotionPayments,
-            pd.product,
+            (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.product) as product,
             pd.total_promotion_amount,
             pd.entered_into_payment_system_date,
             false as selected
@@ -247,9 +255,13 @@
          sum(prp.payment_amount) payment_amount,
          coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
          (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
-         pd.primary_financier as financier,
+         (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.primary_financier) as financier,
          pd.num_of_promotion_payments as numberOfPromotionPayments,
-         pd.product,
+         (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.product) as product,
          pd.total_promotion_amount,
          pd.entered_into_payment_system_date
          from flow.project p
@@ -291,9 +303,13 @@
       c.mailing_city,
       c.mailing_state,
       c.mailing_postal_code,
-      pd.primary_financier as financier,
+      (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.primary_financier) as financier,
       pd.num_of_promotion_payments as numberOfPromotionPayments,
-      pd.product,
+      (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.product) as product,
       pd.total_promotion_amount,
       pd.entered_into_payment_system_date,
       coalesce((select sum(drp2.payment_amount)from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
