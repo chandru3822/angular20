@@ -59,7 +59,7 @@
                 </td>
                 <td class="text-left">
                   <v-text-field class="one-hunned" v-if="selectedWorkQueueCategoryId === item.id" v-model="item.workQueueCategory"></v-text-field>
-                  <div v-else>{{item.workQueueCategory}} - {{item.displayOrder}}</div>
+                  <div v-else>{{item.workQueueCategory}}</div>
                 </td>
                 <td class="text-left">
                   <v-avatar

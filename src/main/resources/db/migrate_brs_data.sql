@@ -7615,4 +7615,28 @@ from (
          select id, street1, street2, city, state_id, postal_code, country_id
          from flow.contact
      ) as c
-where c.id = p.contact_id
+where c.id = p.contact_id;
+
+-- update display order for work queue categories
+update flow.work_queue_category as wqc
+set display_order = c.displayOrder
+from (
+         select id,
+                ROW_NUMBER () OVER (ORDER BY work_queue_category.work_queue_category) - 1
+         from flow.work_queue_category
+         order by work_queue_category
+     ) as c(id, displayOrder)
+where c.id = wqc.id;
+
+-- update display order for work queue types
+update flow.work_queue_type as wqt
+set display_order = t.row_number
+from (
+         select work_queue_type.id,
+                ROW_NUMBER () OVER (partition by work_queue_category_id ORDER BY work_queue_type) - 1 as row_number
+         from flow.work_queue_type
+                  inner join flow.work_queue_category wqc on wqc.id = work_queue_type.work_queue_category_id
+         where work_queue_type.archived is not true
+         order by wqc.display_order, work_queue_category_id, row_number
+     ) as t(id, row_number)
+where t.id = wqt.id;
