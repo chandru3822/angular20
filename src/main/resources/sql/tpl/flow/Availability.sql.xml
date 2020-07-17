@@ -154,6 +154,7 @@
                else ra.user_id = :userId end
       and ra.company_id = :companyId
       and ra.archived is not true
+      and (ra.start_time >= now() OR ra.end_time >= now())
   ]]></availability.getAppointmentsForResource>
 
   <availability.deleteAppointment><![CDATA[
