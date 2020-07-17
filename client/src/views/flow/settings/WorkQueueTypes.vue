@@ -228,7 +228,7 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },

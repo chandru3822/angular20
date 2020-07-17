@@ -7721,3 +7721,15 @@ from (
          order by wqc.display_order, work_queue_category_id, row_number
      ) as t(id, row_number)
 where t.id = wqt.id;
+
+--update display order for process_step_actions
+update flow.process_step_action as psa
+set display_order = t.row_number
+from (
+         select id,
+                ROW_NUMBER () OVER (partition by process_step_id ORDER BY date_created) - 1 as row_number
+         from flow.process_step_action
+         where archived is not true
+         order by process_step_id, display_order
+     ) as t(id, row_number)
+where t.id = psa.id;
