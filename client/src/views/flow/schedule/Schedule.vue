@@ -160,33 +160,49 @@
             </v-toolbar>
             <div class="pa-3">
               <div class="map-field-label">{{selectedProject.startFieldName || 'Start Time'}}</div>
-              <datetime
-                  type="datetime"
-                  v-model="selectedProject.start"
-                  class="theme-datetime"
-                  input-class="one-hunned map-field-input"
-                  :zone="timezone.value"
-                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
-                  :phrases="{ok: 'Ok', cancel: 'Close'}"
-                  :hour-step="1"
-                  :minute-step="15"
-                  use12-hour
-                  auto
-              ></datetime>
+              <DatetimePickerInput
+                v-model="selectedProject.start"
+                :timezone="this.timezone"
+                :readonly="selectedProject.startFieldReadOnly"
+                :type="'timestamp'"
+                :format="'MMMM DD, YYYY, h:mm A'"
+                label="Start Time"
+              />
+<!--              <datetime-->
+<!--                  type="datetime"-->
+<!--                  v-model="selectedProject.start"-->
+<!--                  class="theme-datetime"-->
+<!--                  input-class="one-hunned map-field-input"-->
+<!--                  :zone="timezone.value"-->
+<!--                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"-->
+<!--                  :phrases="{ok: 'Ok', cancel: 'Close'}"-->
+<!--                  :hour-step="1"-->
+<!--                  :minute-step="15"-->
+<!--                  use12-hour-->
+<!--                  auto-->
+<!--              ></datetime>-->
               <div class="map-field-label mt-3">{{selectedProject.endFieldName || 'End Time'}}</div>
-              <datetime
-                  type="datetime"
-                  v-model="selectedProject.end"
-                  input-class="one-hunned map-field-input"
-                  class="theme-datetime"
-                  :zone="timezone.value"
-                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
-                  :phrases="{ok: 'Ok', cancel: 'Close'}"
-                  :hour-step="1"
-                  :minute-step="15"
-                  use12-hour
-                  auto
-              ></datetime>
+              <DatetimePickerInput
+                v-model="selectedProject.end"
+                :timezone="this.timezone"
+                :readonly="selectedProject.endFieldReadOnly"
+                :type="'timestamp'"
+                :format="'MMMM DD, YYYY, h:mm A'"
+                label="End Time"
+              />
+<!--              <datetime-->
+<!--                  type="datetime"-->
+<!--                  v-model="selectedProject.end"-->
+<!--                  input-class="one-hunned map-field-input"-->
+<!--                  class="theme-datetime"-->
+<!--                  :zone="timezone.value"-->
+<!--                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"-->
+<!--                  :phrases="{ok: 'Ok', cancel: 'Close'}"-->
+<!--                  :hour-step="1"-->
+<!--                  :minute-step="15"-->
+<!--                  use12-hour-->
+<!--                  auto-->
+<!--              ></datetime>-->
               <v-select v-model="selectedProject.resource"
                         :items="selectedProject.resources"
                         :label="selectedProject.resourceFieldName  || 'Resource'"
@@ -253,6 +269,7 @@
   import Map from './components/Map'
   import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
@@ -262,13 +279,14 @@
     components: {
       Snackbar,
       Map,
-      Calendar
+      Calendar,
+      DatetimePickerInput
     },
     data() {
       return {
         snackbar: {},
         showFilters: true,
-        timezone: this.$store.state.user.details.timezone,
+        timezone: this.$store.state.user.details.timezone.value,
         // showFilters: false,
         defaultZoom: 2.0,
         map: {
