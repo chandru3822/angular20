@@ -82,6 +82,19 @@ public class ProcessStepActionService {
     return result.orElse(null);
   }
 
+  public void updateActionOrder(List<ProcessStepAction> actions) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    for(ProcessStepAction action : actions) {
+      params.put("displayOrder", action.getDisplayOrder());
+      params.put("modifiedById", currentUser.getId());
+      params.put("id", action.getId());
+      //save each display_order
+      sqlCache.update("processStepAction.updateActionDisplayOrder", params);
+    }
+  }
+
   public ProcessStepAction updateAction(ProcessStepAction action) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

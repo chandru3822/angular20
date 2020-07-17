@@ -405,10 +405,12 @@
                 :items="filterActions()"
                 :items-per-page="-1"
                 single-expand
+                :sort-desc="[false]"
+                :sort-by="['displayOrder']"
                 :mobile-breakpoint="0"
                 :expanded.sync="actionExpanded"
                 hide-default-footer
-                class="elevation-1 fix-column-width-bug"
+                class="action-table elevation-1 fix-column-width-bug"
             >
               <template #no-data>
                 No actions for this process step
@@ -829,6 +831,11 @@
 
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
+                  <td style="width: 50px">
+                    <v-btn text icon small class="handle">
+                      <v-icon>drag_handle</v-icon>
+                    </v-btn>
+                  </td>
                   <td class="text-left">{{item.actionName}}</td>
                   <td class="text-left">{{item.actionType}}</td>
                   <td class="text-left">{{item.processStepStatusType || 'N/A'}}</td>
@@ -898,12 +905,40 @@
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
+  import Sortable from "sortablejs";
 
   export default {
     name: 'ProcessStepActions',
     mixins: [Vue2Filters.mixin],
     components: {
       Snackbar
+    },
+    mounted() {
+      let table = document.querySelector('.action-table tbody')
+      const _self = this
+      Sortable.create(table, {
+        handle: '.handle',
+        onEnd({ newIndex, oldIndex }) {
+          const rowSelected = _self.actions.splice(oldIndex, 1)[0]
+          _self.actions.splice(newIndex, 0, rowSelected)
+          let rowsClone = cloneDeep(_self.actions)
+
+          let rowsToSave = []
+          rowsClone.forEach((r, idx) => {
+            //check if the row needs to be saved before updating display order
+            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+            //update display order
+            r.displayOrder = idx
+            //save only rows that changed
+            if(save) {
+              _self.actions[idx].newDisplayOrder = idx
+              rowsToSave.push(r)
+            }
+          })
+          _self.saveRowChanges(rowsToSave)
+        }
+      })
     },
     data() {
       return {
@@ -918,6 +953,7 @@
           {text: null, value: 'icons', show: true}
         ],
         actionHeaders: [
+          { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           {text: 'Name', value: 'actionName', show: true},
           {text: 'Type', value: 'actionType', show: true},
           {text: 'Parent Status Change', value: 'processStepStatusType', show: true},
@@ -1516,7 +1552,21 @@
                       item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
         let match = item.availableListOfValues.find(i => i.id === idToUse)
         return match ? match.name : 'unknown'
-      }
+      },
+      async saveRowChanges(rows) {
+        if(rows?.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await putRequest(`/processStep/${this.processStepId}/action/order`, rows)
+            this.snackbar = getSnackbar('SUCCESS', 'Action Order Saved')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Action Order')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
     }
 
   }
