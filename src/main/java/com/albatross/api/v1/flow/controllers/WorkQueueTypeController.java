@@ -38,6 +38,11 @@ public class WorkQueueTypeController {
     return workQueueTypeService.updateType(type);
   }
 
+  @PutMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateTypeDisplayOrders(@RequestBody List<WorkQueueType> types) {
+    workQueueTypeService.updateTypeDisplayOrders(types);
+  }
+
   @PostMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<WorkQueueType> insertType(@RequestBody WorkQueueType type) {
     return workQueueTypeService.insertType(type);

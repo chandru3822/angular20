@@ -23,6 +23,7 @@
       where case when :workQueueCategoryId::int is not null then wqt.work_queue_category_id = :workQueueCategoryId else true end
         and wqt.company_id = :parentCompanyId
         and wqt.archived is not true
+      order by wqc.display_order, wqt.display_order
   ]]></workQueue.getWorkQueues>
 
   <workQueue.getProcessStepsByTypeId><![CDATA[

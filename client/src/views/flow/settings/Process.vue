@@ -251,7 +251,6 @@ export default {
             rowsToSave.push(r)
           }
         })
-        console.log('rows to save', rowsToSave)
         _self.saveRowChanges(rowsToSave)
       }
     })
@@ -281,16 +280,18 @@ export default {
       }
     },
     async saveRowChanges (rows) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
-        // this.$set(this.process, 'processStepProcesses', data.processStepProcesses)
-        this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      if(rows?.length > 0) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await putRequest(`/processes/${this.processId}/processStepProcesses`, rows)
+          // this.$set(this.process, 'processStepProcesses', data.processStepProcesses)
+          this.snackbar = getSnackbar('SUCCESS', 'Order Updated')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Order Changes')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async saveProcessStepProcess (item) {

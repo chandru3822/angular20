@@ -141,6 +141,8 @@
                  else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and upv.position_schedulable is true
         and upv.user_archived is not true
+        and upv.start_date <= now()
+        and (upv.end_date is null or upv.end_date >= now())
         and not exists (select user_id
                           from flow.postal_code_zone_user pczu
                           where postal_code_zone_id = :zoneId
