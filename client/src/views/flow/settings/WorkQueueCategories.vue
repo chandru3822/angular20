@@ -38,6 +38,7 @@
               :sort-desc="[false]"
               :sort-by="['displayOrder']"
               hide-default-footer
+              fixed-header
               single-expand
               :expanded.sync="expanded"
               class="elevation-1"

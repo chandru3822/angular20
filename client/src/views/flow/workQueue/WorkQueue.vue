@@ -85,7 +85,7 @@
       async getWorkQueueCategories() {
         try {
           const {data} = await getWorkQueueCategories()
-          this.workQueueCategories = orderBy(data, [wqc => wqc.workQueueCategory.toLowerCase()])
+          this.workQueueCategories = orderBy(data, [wqc => wqc.displayOrder])
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
