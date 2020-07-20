@@ -59,7 +59,7 @@
                                                       left join flow.position_feature_access_control pfac on ac.id = pfac.access_control_id
                                                                                                              and pfac.company_feature_id = cf.id
                                                                                                              and pfac.position_id = p.id
-                                             order by "accessControlId"
+                                             order by ac.display_order
                                          ) accessControl), '[]') AS "accessControl"
                         from flow.company_feature cf
                         where cf.company_id = :companyId
