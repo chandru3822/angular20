@@ -13,7 +13,7 @@
                     return-object
                     item-text="orgName"
                     item-value="id"
-                    @input="getEvents"
+                    @blur="getEvents"
           >
             <template
                 slot="selection"
@@ -45,6 +45,7 @@
           </v-select>
         </v-col>
         <v-col class="py-0" cols="12" md="6">
+
           <v-autocomplete v-model="selectedUsers"
                     :items="users"
                     label="Users"
@@ -54,7 +55,7 @@
                     return-object
                     item-text="fullName"
                     item-value="id"
-                    @input="getEvents"
+                    @blur="getEvents"
           >
             <template
                 slot="selection"
@@ -106,7 +107,6 @@
                     :hidden-days="calendar.options.hiddenDays"
                     :custom-buttons="calendar.options.customButtons"
                     :slot-width="55"
-                    :view-skeleton-render="getEvents"
                     @eventClick="(info) => handleEventClick(info)"
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
@@ -179,6 +179,9 @@
       this.calendarApi = this.$refs.eventCalendar.getApi()
       this.calendarStart = this.calendarApi.getDate()
       this.setCalendarStartAndEndTimes()
+      //when getEvents was placed in the calendar it loaded before the calendar dates were set: :view-skeleton-render="getEvents"
+      //placing here seems to have solved that
+      this.getEvents()
     },
     watch: {
       '$store.state.user.details.timezone.value': function () {
