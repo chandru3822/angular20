@@ -193,7 +193,7 @@
   <customFieldValues.getProjectProcessStepFieldValues><![CDATA[
 select
     cfg.id,
-    cot.id,
+    cot.id as "companyObjectTypeId",
     cfg.group_name as "groupName",
     cfg.group_order as "groupOrder",
     cfg.event_type_id as "eventTypeId",
