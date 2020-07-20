@@ -179,6 +179,10 @@ public class ProjectService {
     sqlCache.update("project.updateOwner", params);
   }
 
+  public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {
+      sqlCache.update("project.updateStatus", Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
+  }
+
   private CompanyProjectStatusType getActiveCompanyProjectStatusType(Long companyId) {
     return sqlCache.get("project.getActiveProjectStatusTypeByCompanyId", Map.of("companyId", companyId), CompanyProjectStatusType.class).orElse(null);
   }
@@ -189,6 +193,10 @@ public class ProjectService {
 
   public List<Owner> getOwners() {
     return sqlCache.query("project.getOwners", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), Owner.class);
+  }
+
+  public List<ProjectStatus> getStatuses() {
+      return sqlCache.query("project.getStatuses", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), ProjectStatus.class);
   }
 
   public String generateReport(String query) {

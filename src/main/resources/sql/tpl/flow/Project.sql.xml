@@ -263,4 +263,21 @@
       (up.end_date is null or up.end_date >= now())
     order by u.last_name, u.first_name
   ]]></project.getOwners>
+
+<project.getStatuses><![CDATA[
+    select
+        cpst.id,
+        cpst.project_status_type,
+        pst.id as "projectStatusTypeId"
+    from flow.company_project_status_type cpst
+    inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+    where cpst.company_id = :companyId and cpst.archived is not true
+    order by cpst.project_status_type
+]]></project.getStatuses>
+
+<project.updateStatus><![CDATA[
+    update flow.project
+    set company_project_status_type_id = :companyProjectStatusTypeId
+    where id = :projectId
+]]></project.updateStatus>
 </sql>
