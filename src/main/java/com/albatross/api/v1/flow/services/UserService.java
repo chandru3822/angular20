@@ -180,6 +180,7 @@ public class UserService {
   }
 
   public List<User> getSchedulingUsers(Long stateId, Boolean isSchedulingTool) {
+    //i had to change this to return user positions so that when filtering by position in the scheduling tool we have the data
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
@@ -190,7 +191,7 @@ public class UserService {
     params.put("isParent", isParent);
     params.put("isSchedulingTool", isSchedulingTool);
 
-    List<User> results = sqlCache.query("user.getSchedulingUsers", params, User.class);
+    List<User> results = sqlCache.query("user.getSchedulingUsers", params, new UserMapper<>(User.class, om));
     return results;
   }
 
@@ -201,7 +202,6 @@ public class UserService {
   }
 
   public void handleSavingUserCompanies(List<Company> companies, Long userId){
-    log.info("COMPANIA!!!!!!!!!!! {}", companies);
     //archive any existing rows that are no longer there
     List<Long> companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
     HashMap<String, Object> params = new HashMap<>();

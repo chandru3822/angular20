@@ -27,6 +27,11 @@ public class PositionController {
     return positionService.getPositionsForCompany();
   }
 
+  @GetMapping(value = "/scheduling", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Position> getSchedulingPositions() {
+    return positionService.getSchedulingPositions();
+  }
+
   @GetMapping(value = "/withParent", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Position> getPositionsForCompanyWithParent() {
     return positionService.getPositionsForCompanyWithParent();

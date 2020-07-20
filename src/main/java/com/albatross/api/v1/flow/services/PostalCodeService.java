@@ -84,41 +84,17 @@ public class PostalCodeService {
     sqlCache.update("postalCode.deleteZone", params);
   }
 
-  public PostalCodeZoneUser saveUser(PostalCodeZoneUser zoneUser) {
+  public PostalCodeZoneUser insertUser(PostalCodeZoneUser zoneUser) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("postalCodeZoneId", zoneUser.getPostalCodeZoneId());
-    params.put("allocation", zoneUser.getAllocation());
     params.put("userId", zoneUser.getUserId());
+    params.put("createdById", user.getId());
 
-    Long id;
-    if(null != zoneUser.getId()) {
-      id = zoneUser.getId();
-      params.put("modifiedById", user.getId());
-      sqlCache.update("postalCode.updateZoneUser", params);
-
-    } else {
-      params.put("createdById", user.getId());
-      id = sqlCache.updateReturningId("postalCode.insertZoneUser", params, "id").longValue();
-    }
+    Long id = sqlCache.updateReturningId("postalCode.insertZoneUser", params, "id").longValue();
 
     return getZoneUser(id);
-  }
-
-  public void saveAllocations(List<PostalCodeZoneUser> zoneUsers) {
-    User user = securityService.getCurrentUser();
-
-    for(PostalCodeZoneUser zoneUser: zoneUsers) {
-
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("allocation", zoneUser.getAllocation());
-      params.put("modifiedById", user.getId());
-      params.put("id", zoneUser.getId());
-
-      sqlCache.update("postalCode.updateZoneUser", params);
-    }
-
   }
 
   public void deleteUser(Long id) {

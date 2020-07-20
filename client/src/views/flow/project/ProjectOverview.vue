@@ -2,7 +2,7 @@
 <v-row id="project-container">
   <v-col cols="12">
     <v-row class="project-header">
-      <v-col cols="8" class="text-left pl-5">
+      <v-col cols="10" class="text-left pl-5">
         <div class="project-title">
           <router-link :to="`/contact/${project.contactId}`">{{ project.projectName}}</router-link>
         </div>
@@ -44,7 +44,7 @@
         </div>
       </v-col>
 
-      <v-col cols="4" class="lead-owner pb-2 text-right">
+      <v-col cols="2" class="lead-owner pb-2 text-right">
         <div v-if="!displayChangeOwner">
           <div v-if="project.owner && project.owner.userId">
             <v-avatar
@@ -75,6 +75,14 @@
           <span v-else-if="project.owner && project.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
+          <v-select
+              v-model="project.companyProjectStatusTypeId"
+              :items="statuses"
+              item-text="projectStatusType"
+              item-value="id"
+              @change="updateStatus"
+              label="Status"
+          />
       </v-col>
     </v-row>
   </v-col>
@@ -256,7 +264,8 @@ export default {
       availableOwners: [],
       project: {},
       states: [],
-      countries: []
+      countries: [],
+      statuses: []
     }
   },
   created () {
@@ -265,6 +274,7 @@ export default {
     this.getProcessSteps()
     this.getNotes()
     this.getAvailableOwners()
+    this.getStatuses()
   },
   computed: {
     processStepsByName () {
@@ -345,6 +355,14 @@ export default {
         console.log('done gone boom')
       }
     },
+    getStatuses: async function () {
+        try {
+            const {data} = await getRequest('/project/status')
+            this.statuses = data
+        } catch (e) {
+            this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
+        }
+    },
     updateOwner: async function () {
       this.displayChangeOwner = false
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -355,6 +373,17 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    updateStatus: async function () {
+      try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await postRequest(`/project/${this.projectId}/status`, this.project)
+      }  catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error updating project status')
+      } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     saveProjectAddress: async function() {
