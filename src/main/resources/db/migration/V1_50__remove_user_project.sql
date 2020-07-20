@@ -532,3 +532,7 @@ create unique index on flow.project_process_step (project_id,process_step_id)
     where main = true;
 
 create index project_process_step_main_idx on flow.project_process_step (main);
+
+create index if not exists p_postal_code4_idx
+    on flow.project (postal_code);
+
