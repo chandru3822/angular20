@@ -35,12 +35,53 @@
   <project.searchCount><![CDATA[
     select count(*)
     from flow.project p
-    inner join flow.company_process cp on cp.id = p.company_process_id
-    inner join flow.contact c on c.id = p.contact_id
+      inner join flow.company_process cp on cp.id = p.company_process_id
+      inner join flow.process pr on pr.id = cp.process_id
+      inner join flow.status_type st on st.id = cp.status_type_id
     where
       cp.company_id = :companyId and
       p.project_name ilike '%' || :query || '%'
   ]]></project.searchCount>
+
+  <project.searchByOwner><![CDATA[
+    select
+      p.id,
+      p.project_name,
+      p.contact_id,
+      p.date_created,
+      cp.status_type_id,
+      st.status_type,
+      pr.process_name
+    from flow.project p
+       inner join flow.project_process_step pps on pps.project_id = p.id
+       inner join flow.company_process cp on cp.id = p.company_process_id
+       inner join flow.process pr on pr.id = cp.process_id
+       inner join flow.status_type st on st.id = cp.status_type_id
+       left join flow.user_position up on up.id = pps.user_position_id
+       left join flow."user" u on u.id = up.user_id
+    where
+      cp.company_id = :companyId and
+      p.project_name ilike '%' || :query || '%'
+      and u.id = :userId
+    order by p.date_created desc
+    limit :limit
+    offset :offset
+  ]]></project.searchByOwner>
+
+  <project.searchCountByOwner><![CDATA[
+    select count(*)
+    from flow.project p
+       inner join flow.project_process_step pps on pps.project_id = p.id
+       inner join flow.company_process cp on cp.id = p.company_process_id
+       inner join flow.process pr on pr.id = cp.process_id
+       inner join flow.status_type st on st.id = cp.status_type_id
+       left join flow.user_position up on up.id = pps.user_position_id
+       left join flow."user" u on u.id = up.user_id
+    where
+      cp.company_id = :companyId and
+      p.project_name ilike '%' || :query || '%'
+      and u.id = :userId
+  ]]></project.searchCountByOwner>
 
   <project.generateReport><![CDATA[
     select
