@@ -45,6 +45,7 @@
             OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
             OR s.state ILIKE '%' || :query || '%'
           )
+          and case when :viewAll is not true then u.id = :userId else 1=1 end
       order by c.date_created desc
       limit :limit
       offset :offset ;
@@ -63,8 +64,8 @@
           else c.company_id = :companyId end
         and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
         OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
-        OR s.state ILIKE '%' || :query || '%'
-      )
+        OR s.state ILIKE '%' || :query || '%' )
+        and case when :viewAll is not true then u.id = :userId else 1=1 end
   ]]></contact.searchContactCount>
 
   <contact.exportContacts><![CDATA[

@@ -61,13 +61,20 @@ public class ProjectService {
 
   public Page<Project> searchProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", "VIEW_ALL");
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
+    params.put("userId", user.getId());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
-    List<Project> projects = sqlCache.query("project.search", params, Project.class);
-    Integer total = sqlCache.queryForObject("project.searchCount", params, Integer.class);
+
+    String searchSqlKey = viewAll ? "project.search" : "project.searchByOwner";
+    String countSqlKey = viewAll ? "project.searchCount" : "project.searchCountByOwner";
+
+    List<Project> projects = sqlCache.query(searchSqlKey, params, Project.class);
+    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 

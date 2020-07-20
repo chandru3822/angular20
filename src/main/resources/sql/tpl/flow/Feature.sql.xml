@@ -40,7 +40,7 @@
                                         false as enabled
                                  from flow.access_control ac
                                  where ac.archived is not true
-                                 order by ac.id
+                                 order by ac.display_order
                              ) accessControl), '[]') AS "accessControl"
     from flow.company_feature cf
     where cf.company_id = :companyId
@@ -68,7 +68,7 @@
                                       left join flow.user_feature_access_control ufac on ac.id = ufac.access_control_id
                                and ufac.company_feature_id = cf.id
                                 and ufac.user_id = :userId
-                             order by "accessControlId"
+                             order by ac.display_order
                          ) accessControl), '[]') AS "accessControl"
       from flow.company_feature cf
       where cf.company_id = :companyId
