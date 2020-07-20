@@ -110,6 +110,10 @@ export default {
       //     path: '/setterDashboard',
       //     display: this.$store.getters.userHasFeature('SETTER_DASHBOARD')
       // }, {
+      //     label: 'Installation Agreements',
+      //     path: '/installation-agreements/request',
+      //     display: this.$store.getters.userHasFeature('INSTALLATION_AGREEMENT')
+      // }, {
       //   label: 'AHJ Database',
       //   path: '/ahj',
       //   display: this.$store.getters.userHasFeature('AHJ_DATABASE')
@@ -119,13 +123,13 @@ export default {
       //   display: this.$store.getters.userHasFeature('COMMISSIONS')
       // }, {
       //   label: 'Finance',
-      //   display: this.$store.getters.userHasFeature('FINANCES'),
+      //   display: this.$store.getters.userHasFeature('FINANCE'),
       //   path: '/finances/rebate/viewPayments',
       //   children: [
       //     {
       //       label: 'BluePower + Rebates',
       //       path: '/finances/rebate/viewPayments',
-      //       display: this.$store.getters.userHasFeature('FINANCES')
+      //       display: this.$store.getters.userHasFeature('FINANCE')
       //     }
       //   ]
       // },
@@ -137,7 +141,7 @@ export default {
       //   {
       //   label: 'Proposal',
       //   path: '/proposal',
-      //   display: this.$store.getters.userHasFeature('PROPOSAL')
+      //   display: this.$store.getters.userHasFeature('PROPOSALS')
       // },
         {
         label: 'Work Queue',
