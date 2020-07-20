@@ -62,9 +62,8 @@
                     item-value="id"
                     autocomplete="off">
           </v-select>
-          <v-text-field type="number" label="Allocation" v-model="selectedUser.allocation"></v-text-field>
           <v-btn color="primaryCustom" class="mr-3 white--text" @click="addUserToZone()"
-                 :disabled="!selectedUser.id || !selectedUser.allocation">
+                 :disabled="!selectedUser.id">
             Add
           </v-btn>
 
@@ -88,18 +87,9 @@
             No available users
           </template>
 
-          <template #header.icons="{ props: {} }">
-            <th v-if="allocationChangesMade">
-              <v-btn small dark color="primaryCustom" class="white--text" @click="saveAllocationChanges()">Save</v-btn>
-            </th>
-          </template>
-
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.fullName}}</td>
-              <td class="text-left">
-                <v-text-field type="number" v-model="item.allocation" @input="[allocationChangesMade = true, item.dirty = true]"></v-text-field>
-              </td>
               <td>
                 <v-dialog v-model="item.deleteConfirm" width="500">
                   <template v-slot:activator="{ on }">
@@ -246,7 +236,6 @@
         snackbar: {},
         selectedUser: {},
         editZone: false,
-        allocationChangesMade: false,
         zone: {},
         users: [],
         zoneId: this.$route.params.id,
@@ -255,7 +244,6 @@
         addUser: false,
         userHeaders: [
           {text: 'Name', value: 'name', show: true},
-          {text: 'Allocation', value: 'allocation', show: true},
           {text: '', value: 'icons', show: true},
         ],
         addCode: false,
@@ -320,7 +308,6 @@
           let params = {
             postalCodeZoneId: this.zoneId,
             userId: this.selectedUser.id,
-            allocation: this.selectedUser.allocation,
           }
           const {data} = await postRequest(`/postalCode/zone/saveUser`, params)
           this.zone.postalCodeZoneUsers.push(data)
@@ -331,29 +318,6 @@
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Adding User')
           this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveAllocationChanges () {
-        let dirtyUsers = []
-        this.zone.postalCodeZoneUsers?.forEach(u => {
-          if(u.dirty && !u.archived) {
-            dirtyUsers.push(u)
-            //reset dirty for future saves
-            u.dirty = false
-          }
-        })
-
-        if(dirtyUsers.length > 0) {
-          try {
-            await postRequest(`/postalCode/zone/saveAllocations`, dirtyUsers)
-            this.allocationChangesMade = false
-            this.snackbar = getSnackbar('SUCCESS', 'Allocations Saved')
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving User Allocations')
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
         }
       },
       async getUsers() {
