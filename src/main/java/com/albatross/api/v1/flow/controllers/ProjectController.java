@@ -75,6 +75,17 @@ public class ProjectController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
+  @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectStatus>> getProjectStatuses() {
+      return new ResponseEntity<>(projectService.getStatuses(), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{projectId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> updateProjectStatus(@PathVariable Long projectId, @RequestBody Project project) {
+      projectService.updateStatus(projectId, project.getCompanyProjectStatusTypeId());
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
   @GetMapping(value = "/generate", produces = "text/csv")
   public ResponseEntity<String> generateProjectSmartlist(@RequestParam String query) {
     String report = projectService.generateReport(query);
