@@ -192,6 +192,18 @@ public class SecurityService implements UserDetailsService {
         return results;
     }
 
+    public Boolean userHasFeatureAccessLevel(Long userId, Long companyId, Long userHighestCompanyId, String featureCode, String accessCode) {
+        List<FeatureAccessControl> featureAccessControlList = getUserFeatureAccess(userId, companyId);
+        for(FeatureAccessControl fac : featureAccessControlList) {
+            if(fac.getFeatureCode().equals(featureCode) && fac.getAccessCode().equals(accessCode)) {
+                return true;
+            }
+        }
+        //if the user's highest company id is 1, then they are an albatross system admin - 7 oaks employee
+        //we return true for all features, access levels, etc for ^^ these users
+        return userHighestCompanyId == 1;
+    }
+
     @SuppressWarnings("unchecked")
     public Boolean validatePassword(String password){
         User currentUser = getCurrentUser();
