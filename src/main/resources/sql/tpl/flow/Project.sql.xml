@@ -63,6 +63,7 @@
       cp.company_id = :companyId and
       p.project_name ilike '%' || :query || '%'
       and u.id = :userId
+      and pps.archived is not true
     order by p.date_created desc
     limit :limit
     offset :offset
@@ -81,6 +82,7 @@
       cp.company_id = :companyId and
       p.project_name ilike '%' || :query || '%'
       and u.id = :userId
+      and pps.archived is not true
   ]]></project.searchCountByOwner>
 
   <project.generateReport><![CDATA[
