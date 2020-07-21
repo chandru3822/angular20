@@ -1,0 +1,41 @@
+<sql>
+    <pandaDoc.getProjectDetails>
+        <![CDATA[
+            SELECT
+              pl.project_id,
+              pl.proposal_nbr,
+              s.state,
+              (select lov.name
+                from flow.list_of_value lov
+                where lov.id = pd.primary_financier) as financier,
+              c.first_name            AS closer_first_name,
+              c.last_name             AS closer_last_name,
+              c.email                 AS closer_email,
+              c.first_name            AS customer_first_name,
+              c.last_name             AS customer_last_name,
+              c.email                 AS customer_email,
+              c.mailing_state,
+              c.phone,
+              c.city,
+              c.mailing_street1,
+              c.mailing_street2,
+              c.postal_code,
+              cy.country,
+              p.project_name,
+              cp.company_id,
+              pd.total_cash_down_payment,
+              pd.system_size,
+              pd.first_cash_payment_amount,
+              pd.total_system_price,
+              pd.utility_company
+            FROM flow.project p
+              JOIN brs.project_details pd on p.id = pd.project_id
+              JOIN brs.proposal_log pl on pl.project_id = p.id
+              JOIN flow.contact c ON c.id = p.contact_id
+              JOIN flow.state s ON s.id = c.state_id
+              JOIN flow.country cy on cy.id = c.country_id
+              JOIN flow.company_process cp on cp.id = p.company_process_id
+            WHERE p.id = :projectId and pl.proposal_nbr = :proposalNbr
+        ]]>
+    </pandaDoc.getProjectDetails>
+</sql>

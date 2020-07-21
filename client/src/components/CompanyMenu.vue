@@ -73,12 +73,12 @@
             show: this.$store.getters.userHasFeature('COMMISSIONS')
           }, {
             path: '/finances/rebate/viewPayments',
-            title: 'Finance',
-            show: this.$store.getters.userHasFeature('FINANCE')
+            title: 'Rebates',
+            show: this.$store.getters.userHasFeature('REBATES')
           }, {
             path: '/proposal',
             title: 'Proposals',
-            show: this.$store.getters.userHasFeature('PROPOSALS')
+            show: this.$store.getters.userHasFeature('REBATES')
           },
 
         ]
