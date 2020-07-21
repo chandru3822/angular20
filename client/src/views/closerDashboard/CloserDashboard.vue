@@ -159,7 +159,10 @@
                   {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
                 </td>
                 <td class="text-left">
-                  {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
+                  {{ item.financial_agreement_signed_date_formatted ? item.financial_agreement_signed_date_formatted : '' }}
+                </td>
+                <td class="text-left">
+                  {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
                 <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
               </tr>
@@ -423,6 +426,7 @@
         { text: 'System Size', value: 'system_size', show: true },
         { text: 'FD Signed Date', value: 'final_design_signed_date', show: true },
         { text: 'Agreement Signed Date', value: 'agreement_signed_date', show: true },
+        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date', show: true },
         { text: 'Financier', value: 'financier', show: true }
       ],
       drilldownData: [],
@@ -730,8 +734,12 @@
             row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
           }
 
-          if (row.agreement_signed_date) {
-            row.agreement_signed_date_formatted = moment(row.agreement_signed_date).format('MMM D, YYYY')
+          if (row.financial_agreement_signed_date) {
+            row.financial_agreement_signed_date_formatted = moment(row.financial_agreement_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.utility_bill_verified_date) {
+            row.utility_bill_verified_date_formatted = moment(row.utility_bill_verified_date).format('MMM D, YYYY')
           }
         })
       },
