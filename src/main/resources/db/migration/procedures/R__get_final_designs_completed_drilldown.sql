@@ -37,6 +37,7 @@ BEGIN
                    pd.system_size,
                    pd.final_design_signed_date,
                    pd.financial_agreement_signed_date,
+                   pd.utility_bill_verified_date,
                    lov2.name as financier
             from flow.project p
                 inner join flow.contact c on c.id = p.contact_id
@@ -45,18 +46,21 @@ BEGIN
                 inner join flow.user_position up on up.user_id = u.id
                 left join flow.list_of_value lov on lov.id = pd.source
                 left join flow.list_of_value lov2 on lov2.id = pd.primary_financier
-            where pd.final_design_signed_date IS NOT NULL AND pd.financial_agreement_signed_date IS NOT NULL
+            where pd.final_design_signed_date is not null
+                and pd.financial_agreement_signed_date is not null
+                and pd.utility_bill_verified_date is not null
                 and case when pd.primary_financier = 119
-                    then pd.first_cash_payment_paid_date IS NOT NULL
-                        and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                        between v_start_date AND v_end_date
-                    else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
-                        between v_start_date AND v_end_date
+                    then pd.first_cash_payment_paid_date is not null
+                        and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
+                        between v_start_date and v_end_date
+                    else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
+                        between v_start_date and v_end_date
                 end
-                and ((pd.cancelled_date is null) OR (pd.cancelled_date is not null and pd.cancelled_date::date > v_end_date))
+                and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > v_end_date))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = p_user_id
-            order by c.first_name
+            group by customer_name, p.id, source_name, owner_name, pd.system_size, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.utility_bill_verified_date, financier
+            order by customer_name
         ) as sub_rows;
 
 END

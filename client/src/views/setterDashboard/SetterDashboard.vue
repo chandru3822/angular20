@@ -134,6 +134,7 @@
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="milestoneDialog = false">×</a>
         </v-card-title>
 
         <v-card-text>
@@ -1370,9 +1371,24 @@
     }
   }
 
+  .v-card__title {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   #drilldown-title {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 14px;
+  }
+
+  .close-modal-x {
+    font-size: 20px;
+
+    &:hover {
+      font-weight: bolder;
+    }
   }
 
   #drilldown-table {

@@ -134,6 +134,7 @@
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="milestoneDialog = false">×</a>
         </v-card-title>
 
         <v-card-text>
@@ -159,7 +160,10 @@
                   {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
                 </td>
                 <td class="text-left">
-                  {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
+                  {{ item.financial_agreement_signed_date_formatted ? item.financial_agreement_signed_date_formatted : '' }}
+                </td>
+                <td class="text-left">
+                  {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
                 <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
               </tr>
@@ -422,7 +426,8 @@
         { text: 'Source', value: 'source_name', show: true },
         { text: 'System Size', value: 'system_size', show: true },
         { text: 'FD Signed Date', value: 'final_design_signed_date', show: true },
-        { text: 'Agreement Signed Date', value: 'agreement_signed_date', show: true },
+        { text: 'Financial Agreement Signed Date', value: 'financial_agreement_signed_date', show: true },
+        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date', show: true },
         { text: 'Financier', value: 'financier', show: true }
       ],
       drilldownData: [],
@@ -730,8 +735,12 @@
             row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
           }
 
-          if (row.agreement_signed_date) {
-            row.agreement_signed_date_formatted = moment(row.agreement_signed_date).format('MMM D, YYYY')
+          if (row.financial_agreement_signed_date) {
+            row.financial_agreement_signed_date_formatted = moment(row.financial_agreement_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.utility_bill_verified_date) {
+            row.utility_bill_verified_date_formatted = moment(row.utility_bill_verified_date).format('MMM D, YYYY')
           }
         })
       },
@@ -1248,9 +1257,24 @@
     }
   }
 
+  .v-card__title {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   #drilldown-title {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 14px;
+  }
+
+  .close-modal-x {
+    font-size: 20px;
+
+    &:hover {
+      font-weight: bolder;
+    }
   }
 
   #drilldown-table {
