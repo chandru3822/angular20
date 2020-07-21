@@ -425,7 +425,7 @@
         { text: 'Source', value: 'source_name', show: true },
         { text: 'System Size', value: 'system_size', show: true },
         { text: 'FD Signed Date', value: 'final_design_signed_date', show: true },
-        { text: 'Agreement Signed Date', value: 'agreement_signed_date', show: true },
+        { text: 'Financial Agreement Signed Date', value: 'financial_agreement_signed_date', show: true },
         { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date', show: true },
         { text: 'Financier', value: 'financier', show: true }
       ],

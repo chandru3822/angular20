@@ -14,13 +14,13 @@
       SELECT (select coalesce(sum(q1points), 0)
               from (select count(1) *
                 case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date) between ('2020-01-01') and ('2020-01-31')
-                  and pd.source in (6, 8, 484)
+                  and pd.source in (7, 8, 484) -- ('Closer Gen', 'Referral', 'Events - Closer Gen')
                   then 1.5
                 when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date) between ('2020-03-01') and ('2020-03-31')
-                  and pd.source = 6
+                  and pd.source = 7 -- ('Closer Gen')
                   then 3
                 when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date) between ('2020-03-01') and ('2020-03-31')
-                  and pd.source in (8, 484)
+                  and pd.source in (8, 484) -- ('Referral', 'Events - Closer Gen')
                   then 2
                 else 1
                 end as q1points
