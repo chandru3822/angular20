@@ -1,3 +1,4 @@
+drop trigger if exists update_project_details_trg on flow.project_process_step_custom_field_value;
 /*SCHEDULE CLOSER APPOINTMENT*/
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT project.id,
@@ -215,9 +216,11 @@ now(),
          where cfg.process_step_id = 4
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
-insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,date_value,
+insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,timestamp_value,date_value,
                                                          int_value,numeric_value, date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
+            case when p.custom_field_group_assignment_id = 482 then ((installation_agreement_request_submitted_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
+            else null end,
             case when p.custom_field_group_assignment_id = 11 then ((installation_agreement_signed_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
              when p.custom_field_group_assignment_id = 12 then ((financial_agreement_sent_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
                  when p.custom_field_group_assignment_id = 62 then ((credit_decision_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
@@ -588,9 +591,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 
-/*FINAL DESIGN COMPLETION*/
+/*Pending FINAL DESIGN Approval*/
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
-    (SELECT p.id,
+    (SELECT project.id,
             9,
             (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
                                                                                      process_step_status_type = 'Active' else
@@ -598,15 +601,15 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
 now()
-     from flow.project p
-              inner join blueraven.deal d on d.id = p.id
-              inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
-              inner join blueraven.card c on c.id = 206
-     where deal_id is not null
-       and 206 = any(work_queue_deal_ids) and
-         ((exclude_card_ids IS NULL)
-             OR (exclude_card_ids IS NOT NULL AND
-                 NOT work_queue_deal_ids && c.exclude_card_ids)));
+     FROM flow.project
+              INNER JOIN blueraven.deal d
+                         ON project.id = d.id
+     where d.final_design_sent_to_customer_date is not null
+       and final_design_signed_date is null
+       and redesign_requested_date is null
+       AND originator_id = 1
+       and d.current_stage_id not in  (1,2,3) AND (d.financier IS NULL OR d.financier != '["One Roof Energy"]') and
+         (d.on_hold IS NULL OR d.on_hold = FALSE));
 
 with process_step1 as (
     INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
@@ -639,7 +642,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 60 then ((final_design_signed_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
+            case when p.custom_field_group_assignment_id = 459 then ((final_design_signed_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               inner join process_step1 p1 on p1.project_id = d2.id
@@ -6722,6 +6725,13 @@ from id_to_update um
 where um.id = pps.id;
 
 
+
+/*This needs to come after the updates above*/
+CREATE TRIGGER update_project_details_trg
+    after INSERT or update
+    ON flow.project_process_step_custom_field_value
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.update_project_details_process_steps();
 
 with ids as(
     select ppscfv.id
