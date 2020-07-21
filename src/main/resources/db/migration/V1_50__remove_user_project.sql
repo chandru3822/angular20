@@ -266,7 +266,7 @@ values(3,405,'ahj',6);
 insert into brs.project_details_config(company_id , custom_field_group_assignment_id, field_to_update,data_type_id)
 values(3,470,'utility_company',6);
 insert into brs.project_details_config(company_id , custom_field_group_assignment_id, field_to_update,data_type_id)
-values(3,482,'installation_agreement_sent_to_homeowner',1);
+values(3,482,'installation_agreement_sent_to_homeowner',2);
 
 
 
