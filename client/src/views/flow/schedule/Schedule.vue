@@ -9,6 +9,7 @@
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources"
                   ref="calendar"
+                  :states="states"
                   :callback="this.resourceMapCallback"
                   :date-callback="this.dateCallback"></Calendar>
       </v-col>

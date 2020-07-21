@@ -11,8 +11,29 @@
     from flow.position p
         inner join flow.org_type ot on ot.id = p.org_type_id
     where ot.company_id = :companyId
+      and p.archived is not true
     order by p.position
   ]]></position.getAllForCompany>
+
+  <position.getSchedulingPositions><![CDATA[
+    select p.id,
+           p.position,
+           p.id as position_id,
+           p.org_type_id,
+           ot.org_type,
+           p.archived,
+           p.schedulable,
+           p.available_to_children
+    from flow.position p
+             inner join flow.org_type ot on ot.id = p.org_type_id
+    where case when :isParent
+            then array[p.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+            else p.company_id = :companyId end
+        and p.schedulable is true
+        and p.archived is not true
+    order by p.position
+
+  ]]></position.getSchedulingPositions>
 
   <position.getAllForCompanyWithParent><![CDATA[
     select p.id,
@@ -26,6 +47,7 @@
     from flow.position p
         inner join flow.org_type ot on ot.id = p.org_type_id
     where (ot.company_id = :companyId OR (ot.company_id = :parentCompanyId AND p.available_to_children is true))
+      and p.archived is not true
     order by p.position
   ]]></position.getAllForCompanyWithParent>
 
