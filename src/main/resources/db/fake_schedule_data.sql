@@ -195,3 +195,18 @@
          insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
             (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '8 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '8 weeks'::interval), true, 'Test Data', 2350555 from users u)
 ;
+
+-- insert postal code zone stuff
+insert into flow.postal_code_zone(company_id, zone_name, created_by_id, distribution_time_frame_days)
+values (3, 'Scott Fakes It', 2350555, 5);
+insert into flow.postal_code(postal_code_zone_id, postal_code, created_by_id)
+values (1, '97006', 2350555);
+-- mike falls
+insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
+values (1, 2353957, 2350555);
+-- gary brever
+insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
+values (1, 2402401, 2350555);
+-- tyler ballard
+insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
+values (1, 2390155, 2350555);

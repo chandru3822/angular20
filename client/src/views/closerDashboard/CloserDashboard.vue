@@ -134,6 +134,7 @@
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="milestoneDialog = false">×</a>
         </v-card-title>
 
         <v-card-text>
@@ -425,7 +426,7 @@
         { text: 'Source', value: 'source_name', show: true },
         { text: 'System Size', value: 'system_size', show: true },
         { text: 'FD Signed Date', value: 'final_design_signed_date', show: true },
-        { text: 'Agreement Signed Date', value: 'agreement_signed_date', show: true },
+        { text: 'Financial Agreement Signed Date', value: 'financial_agreement_signed_date', show: true },
         { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date', show: true },
         { text: 'Financier', value: 'financier', show: true }
       ],
@@ -1256,9 +1257,24 @@
     }
   }
 
+  .v-card__title {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   #drilldown-title {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 14px;
+  }
+
+  .close-modal-x {
+    font-size: 20px;
+
+    &:hover {
+      font-weight: bolder;
+    }
   }
 
   #drilldown-table {
