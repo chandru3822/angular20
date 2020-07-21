@@ -152,7 +152,7 @@
             <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left">{{ item.customer_name ? item.customer_name : '' }}</td>
+                <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
                 <td class="text-left">{{ item.id ? item.id : '' }}</td>
                 <td class="text-left">{{ item.source_name ? item.source_name : '' }}</td>
                 <td class="text-left">{{ item.system_size ? item.system_size : '' }}</td>
@@ -720,6 +720,11 @@
 
           if (this.drilldownData.length > 0) {
             this.reformatDates()
+            this.drilldownData.forEach(row => {
+              if (row.customer_name) {
+                row.customer_name = row.customer_name.toLowerCase()
+              }
+            })
           } else {
             this.drilldownData = []
           }
@@ -1395,6 +1400,10 @@
     th, td {
       font-family: "Roboto Condensed", sans-serif;
       font-size: 10px;
+    }
+
+    .customer-name {
+      text-transform: capitalize;
     }
   }
 
