@@ -48,7 +48,7 @@ values(3,51,'total_promotion_amount',4);
 insert into brs.project_details_config(company_id , custom_field_group_assignment_id, field_to_update,data_type_id )
 values(3,400,'entered_into_payment_system_date',1);
 insert into brs.project_details_config(company_id , custom_field_group_assignment_id, field_to_update,data_type_id )
-values(3,403,'cancelled_date',1);
+values(3,467,'cancelled_date',1);
 insert into brs.project_details_config(company_id , custom_field_group_assignment_id, field_to_update,data_type_id )
 values(3,7,'closer_user_id',6);
 insert into brs.project_details_config(company_id , custom_field_group_assignment_id, field_to_update,data_type_id )
@@ -265,6 +265,8 @@ insert into brs.project_details_config(company_id , custom_field_group_assignmen
 values(3,405,'ahj',6);
 insert into brs.project_details_config(company_id , custom_field_group_assignment_id, field_to_update,data_type_id)
 values(3,470,'utility_company',6);
+insert into brs.project_details_config(company_id , custom_field_group_assignment_id, field_to_update,data_type_id)
+values(3,482,'installation_agreement_sent_to_homeowner',2);
 
 
 
@@ -283,7 +285,7 @@ CREATE TABLE if NOT EXISTS brs.project_details
     closer_user_id integer,
     credit_check integer,
     credit_decision_date date,
-    final_design_sent_to_homeowner_date timestamp,
+    final_design_sent_to_homeowner_date timestamp without time zone,
     final_design_signed_date date,
     financial_agreement_signed_date date,
     first_cash_payment_paid_date date,
@@ -299,8 +301,8 @@ CREATE TABLE if NOT EXISTS brs.project_details
     first_cash_payment_amount numeric,
     total_system_price numeric,
     ahj_final_inspection_verified date,
-    closer_appointment_start  timestamp,
-    closer_appointment_end timestamp,
+    closer_appointment_start  timestamp without time zone,
+    closer_appointment_end timestamp without time zone,
     closer_appointment_outcome integer,
     Energized_date  date,
     final_completion_approved_date date,
@@ -310,20 +312,20 @@ CREATE TABLE if NOT EXISTS brs.project_details
     first_cash_payment_invoiced_date date,
     hoa_approval_received_date date,
     hoa_request_for_approval_submitted_date date,
-    in_house_mpu_end_time timestamp,
-    in_house_mpu_start_time timestamp,
+    in_house_mpu_end_time timestamp without time zone,
+    in_house_mpu_start_time timestamp without time zone,
     in_house_mpu_inspection_scheduled_date date,
     in_house_mpu_materials_ordered_date date,
     in_house_mpu_permit_approved_date date,
     in_house_mpu_permit_pack_complete_date date,
-    in_house_mpu_permit_submittal_end_date timestamp,
-    in_house_mpu_permit_submittal_start_date timestamp,
+    in_house_mpu_permit_submittal_end_date timestamp without time zone,
+    in_house_mpu_permit_submittal_start_date timestamp without time zone,
     in_house_mpu_permit_submittal_verified_date date,
     in_house_mpu_resource integer,
-    installation_closeout_end_time timestamp,
-    installation_closeout_start_time timestamp,
-    installation_start_time timestamp,
-    installation_end_time timestamp,
+    installation_closeout_end_time timestamp without time zone,
+    installation_closeout_start_time timestamp without time zone,
+    installation_start_time timestamp without time zone,
+    installation_end_time timestamp without time zone,
     installation_ready_to_schedule_date date,
     installation_resource integer,
     interconnection_application_approved_date date,
@@ -340,37 +342,37 @@ CREATE TABLE if NOT EXISTS brs.project_details
     low_production_inquiry_requested_date date,
     low_production_inquiry_resolved_date date,
     low_production_inquiry_reviewed_date date,
-    non_standard_installation_work_end_time timestamp,
-    non_standard_installation_work_start_time timestamp,
+    non_standard_installation_work_end_time timestamp without time zone,
+    non_standard_installation_work_start_time timestamp without time zone,
     non_standard_installation_resource integer,
     non_standard_installation_work_verified_date date,
     panel_brand integer,
     panel_quantity integer,
     panel_watts integer,
     permit_approved_date date,
-    permit_pack_submittal_end_time timestamp,
-    permit_pack_submittal_start_time timestamp,
+    permit_pack_submittal_end_time timestamp without time zone,
+    permit_pack_submittal_start_time timestamp without time zone,
     permit_pack_submittal_verified_date date,
-    permit_pickup_end_time timestamp,
-    permit_pickup_start_time timestamp,
+    permit_pickup_end_time timestamp without time zone,
+    permit_pickup_start_time timestamp without time zone,
     permit_pickup_verified_date date,
     plan_set_created_date date,
-    plan_set_qa_date timestamp,
+    plan_set_qa_date timestamp without time zone,
     referral_promotion_amount numeric,
     secondary_financier integer,
     second_cash_payment_amount numeric,
     second_cash_payment_invoiced_date date,
     second_cash_payment_paid_date date,
-    site_survey_end_time timestamp,
-    site_survey_start_time timestamp,
+    site_survey_end_time timestamp without time zone,
+    site_survey_start_time timestamp without time zone,
     site_survey_type integer,
     site_survey_uploaded_date date,
     structural_analysis_required_date date,
     structural_analysis_complete_date date,
     structural_engineering_review_complete_date date,
     structural_engineering_review_required_date date,
-    structural_engineering_stamp_received_date timestamp,
-    structural_engineering_stamp_requested_date timestamp,
+    structural_engineering_stamp_received_date timestamp without time zone,
+    structural_engineering_stamp_requested_date timestamp without time zone,
     structural_post_install_engineering_letter_complete_date date,
     substantial_completion_approved_date date,
     total_ancillary_cost_with_fees numeric,
@@ -380,14 +382,15 @@ CREATE TABLE if NOT EXISTS brs.project_details
     utility_rebate_application_approved_date date,
     utility_rebate_application_sent_to_homeowner_date date,
     utility_rebate_application_signed_date date,
-    work_order_end_time timestamp,
+    work_order_end_time timestamp without time zone,
     work_order_resource integer,
-    work_order_start_time timestamp,
+    work_order_start_time timestamp without time zone,
     work_order_verified_date date,
     verified_setter_lead boolean,
     verified_usage boolean,
     ahj integer,
     utility_company integer,
+    installation_agreement_sent_to_homeowner timestamp without time zone,
     CONSTRAINT project_details_pk PRIMARY KEY (id),
     CONSTRAINT pb_project_id_fk FOREIGN KEY (project_id)
         REFERENCES flow.project (id) MATCH SIMPLE
@@ -515,7 +518,7 @@ CREATE INDEX if not exists pd_verified_setter_lead_idx ON brs.project_details (v
 CREATE INDEX if not exists pd_verified_usage_idx ON brs.project_details (verified_usage);
 CREATE INDEX if not exists pd_ahj_idx ON brs.project_details (ahj);
 CREATE INDEX if not exists pd_utility_company_idx ON brs.project_details (utility_company);
-
+CREATE INDEX if not exists pd_installation_agreement_sent_to_homeowner_idx ON brs.project_details (installation_agreement_sent_to_homeowner);
 
 
 create unique index project_process_step_pk
@@ -529,3 +532,7 @@ create unique index on flow.project_process_step (project_id,process_step_id)
     where main = true;
 
 create index project_process_step_main_idx on flow.project_process_step (main);
+
+create index if not exists p_postal_code4_idx
+    on flow.project (postal_code);
+

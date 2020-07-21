@@ -13,14 +13,14 @@
       )
       SELECT (select coalesce(sum(q1points), 0)
               from (select count(1) *
-                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-01-01') and ('2020-01-31')
-                  and pd.source in (6, 8, 484)
+                case when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date) between ('2020-01-01') and ('2020-01-31')
+                  and pd.source in (7, 8, 484) -- ('Closer Gen', 'Referral', 'Events - Closer Gen')
                   then 1.5
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
-                  and pd.source = 6
+                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date) between ('2020-03-01') and ('2020-03-31')
+                  and pd.source = 7 -- ('Closer Gen')
                   then 3
-                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date) between ('2020-03-01') and ('2020-03-31')
-                  and pd.source in (8, 484)
+                when greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date) between ('2020-03-01') and ('2020-03-31')
+                  and pd.source in (8, 484) -- ('Referral', 'Events - Closer Gen')
                   then 2
                 else 1
                 end as q1points
@@ -30,29 +30,32 @@
                 inner join flow.user u on u.id = pd.closer_user_id
               where pd.final_design_signed_date is not null
                 and pd.financial_agreement_signed_date is not null
+                and pd.utility_bill_verified_date is not null
                 and case when pd.primary_financier = 5
                   then pd.first_cash_payment_paid_date is not null
-                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
+                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q1_start from quarters) and (select q1_end from quarters)
-                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
+                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q1_start from quarters) and (select q1_end from quarters)
                 end
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q1_end from quarters)))
                 and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3)
                 and u.id = :currentUserId
-              group by pd.first_cash_payment_paid_date, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.source) t
+              group by pd.first_cash_payment_paid_date, pd.final_design_signed_date, pd.financial_agreement_signed_date, pd.utility_bill_verified_date, pd.source) t
              ) as "q1",
              (select count(1)
               from flow.project p
                 inner join flow.contact c on c.id = p.contact_id
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_signed_date is not null and pd.financial_agreement_signed_date is not null
+              where pd.final_design_signed_date is not null
+                and pd.financial_agreement_signed_date is not null
+                and pd.utility_bill_verified_date is not null
                 and case when pd.primary_financier = 5
                   then pd.first_cash_payment_paid_date is not null
-                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
+                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q2_start from quarters) and (select q2_end from quarters)
-                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
+                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q2_start from quarters) and (select q2_end from quarters)
                 end
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q2_end from quarters)))
@@ -64,12 +67,14 @@
                 inner join flow.contact c on c.id = p.contact_id
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_signed_date is not null and pd.financial_agreement_signed_date is not null
+              where pd.final_design_signed_date is not null
+                and pd.financial_agreement_signed_date is not null
+                and pd.utility_bill_verified_date is not null
                 and case when pd.primary_financier = 5
                   then pd.first_cash_payment_paid_date is not null
-                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
+                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q3_start from quarters) and (select q3_end from quarters)
-                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
+                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q3_start from quarters) and (select q3_end from quarters)
                 end
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q3_end from quarters)))
@@ -81,12 +86,14 @@
                 inner join flow.contact c on c.id = p.contact_id
                 inner join brs.project_details pd on pd.project_id = p.id
                 inner join flow.user u on u.id = pd.closer_user_id
-              where pd.final_design_signed_date is not null and pd.financial_agreement_signed_date is not null
+              where pd.final_design_signed_date is not null
+                and pd.financial_agreement_signed_date is not null
+                and pd.utility_bill_verified_date is not null
                 and case when pd.primary_financier = 5
                   then pd.first_cash_payment_paid_date is not null
-                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
+                and greatest(pd.first_cash_payment_paid_date::date, pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q4_start from quarters) and (select q4_end from quarters)
-                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date)
+                else greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.utility_bill_verified_date::date)
                   between (select q4_start from quarters) and (select q4_end from quarters)
                 end
                 and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date::date > (select q4_end from quarters)))
@@ -108,6 +115,8 @@
                and pd.source not in (6, 8, 484)
                and pd.final_design_signed_date is not null
                and pd.financial_agreement_signed_date is not null
+               and pd.utility_bill_verified_date is not null
+               and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
                and case when pd.primary_financier = 5
                  then pd.first_cash_payment_paid_date is not null
                  else 1=1
@@ -115,10 +124,12 @@
                and (p.company_project_status_type_id is null or p.company_project_status_type_id != 3) then 1 end) as leadGenFdcPercentageNumerator,
              count(case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
                and pd.source not in (6, 8, 484) then 1 end) as leadGenFdcPercentageDenominator,
-             count(case when greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.first_cash_payment_paid_date::date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
-               and pd.source not in (6, 8, 484)
+             count(case when greatest(pd.final_design_signed_date::date, pd.financial_agreement_signed_date::date, pd.first_cash_payment_paid_date::date, pd.utility_bill_verified_date::date, pd.proof_of_homeowners_insurance_obtained_date) >= (now() at time zone 'US/Mountain')::date - :timeInterval
+               and pd.source in (6, 8, 484)
                and pd.final_design_signed_date is not null
                and pd.financial_agreement_signed_date is not null
+               and pd.utility_bill_verified_date is not null
+               and (pd.proof_of_homeowners_insurance_obtained_date is not null or pd.proof_of_homeowners_insurance_required = 306)
                and case when pd.primary_financier = 5
                  then pd.first_cash_payment_paid_date is not null
                  else 1=1
