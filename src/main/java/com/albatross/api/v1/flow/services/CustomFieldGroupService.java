@@ -57,7 +57,6 @@ public class CustomFieldGroupService {
     params.put("scheduleFieldTypeId", customField.getScheduleFieldTypeId());
     params.put("ancillaryCustomFieldGroupAssignmentId", customField.getAncillaryCustomFieldGroupAssignmentId());
     params.put("fieldOrder", customField.getFieldOrder());
-    params.put("ancillaryProcessStepId", customField.getAncillaryProcessStepId());
 
     Long id = sqlCache.updateReturningId("customFieldGroupAssignment.addFieldToGroup", params, "id").longValue();
 

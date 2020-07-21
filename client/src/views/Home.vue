@@ -122,16 +122,9 @@ export default {
       //   path: '/commissionManagement/closers',
       //   display: this.$store.getters.userHasFeature('COMMISSIONS')
       // }, {
-      //   label: 'Finance',
-      //   display: this.$store.getters.userHasFeature('FINANCE'),
+      //   label: 'Rebates',
       //   path: '/finances/rebate/viewPayments',
-      //   children: [
-      //     {
-      //       label: 'BluePower + Rebates',
-      //       path: '/finances/rebate/viewPayments',
-      //       display: this.$store.getters.userHasFeature('FINANCE')
-      //     }
-      //   ]
+      //   display: this.$store.getters.userHasFeature('REBATES')
       // },
         {
         label: 'Schedule',

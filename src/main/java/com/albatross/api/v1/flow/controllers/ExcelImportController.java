@@ -29,7 +29,6 @@ import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.security.SecurityService;
 
 import com.albatross.api.utils.SqlCache;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import lombok.Data;
@@ -92,27 +91,6 @@ public class ExcelImportController {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     log.debug(headers + "; " + headers);
     log.debug("Received request for ExcelId:\n{}", baos.toString());
-  }
-
-  @RequestMapping("/baseConfirm/{baseId}/proposals/{proposalId}")
-  public ResponseEntity<String> getProposalData(@PathVariable("baseId") Long projectId,
-                                                @PathVariable("proposalId") Long proposalId) {
-    Map <String, Object> params = ImmutableMap.of("projectId", projectId,
-      "proposalId", proposalId);
-
-    String sql = cache.getByKey("excel.import.loadProposal");
-    List<String> results = jdbc.queryForList(sql, params, String.class);
-
-    if (results.isEmpty()) {
-      String msg = "Found no proposals for " + params;
-      log.warn(msg);
-      return ResponseEntity.notFound().build();
-    } else if(results.size() > 1) {
-      log.warn("Found {} proposals for params {}. Returning the most recent.",
-        results.size(), params);
-    }
-
-    return ResponseEntity.ok(results.get(0));
   }
 
   @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -6840,6 +6840,8 @@ update flow.project set contact_id = (select id from flow.contact where first_na
 where id =153066;
 -- ask Judson how to resolve these deals
 -- select * from blueraven.deal where customer_id is null;
+refresh materialized view blueraven.commission_plan_vw;
+refresh materialized view blueraven.override_plan_vw;
 insert into brs.project_commission(project_id, commission_plan_id)
     (select d.id,cpv.commission_plan_id
      from blueraven.deal d
@@ -7697,6 +7699,11 @@ from (
          from flow.contact
      ) as c
 where c.id = p.contact_id;
+
+
+refresh materialized view flow.user_positions_vw;
+refresh materialized view flow.user_position_hierarchy_vw;
+
 
 -- update display order for work queue categories
 update flow.work_queue_category as wqc
