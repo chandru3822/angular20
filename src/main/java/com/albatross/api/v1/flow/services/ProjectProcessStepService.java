@@ -807,6 +807,10 @@ public class ProjectProcessStepService {
         default:
           throw new Exception(String.format("Unable to parse data type of Multiselect with operator of ID: %s", r.getOperatorTypeId()));
       }
+
+      if (r.getOperatorTypeId() == 2) {
+          passed = !passed;
+      }
     }
     return passed;
   }
