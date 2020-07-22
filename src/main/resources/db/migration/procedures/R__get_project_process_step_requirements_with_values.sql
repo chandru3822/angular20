@@ -134,11 +134,11 @@ BEGIN
     inner join flow.operator_type ot on ot.id = psr.operator_type_id
     inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
     inner join flow.project_process_step pps on pps.process_step_id = psr.process_step_id
-    left join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = psr.custom_field_process_step_id and pps1.main is true and pps1.archived is false
     left join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+    left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+    left join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = cfg.process_step_id and pps1.main is true and pps1.archived is false
     left join flow.custom_field cf on cf.id = cfga.custom_field_id
     left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-    left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
     left join flow.process_step ps on ps.id = cfg.process_step_id
     left join flow.company_function cfn on cfn.id = psr.company_function_id
     left join flow.db_function df on df.id = cfn.db_function_id
