@@ -91,7 +91,7 @@
          ),
          hourly_appointments as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '3 days'::interval else '2 days'::interval end  + '18:30'), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '3 days'::interval else '2 days'::interval end  + '30:30'), false, 'Test Data', 2350555 from users u)
+                (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '3 days'::interval else '2 days'::interval end  + '18:30'), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '3 days'::interval else '2 days'::interval end  + '20:30'), false, 'Test Data', 2350555 from users u)
          ),
          hourly_appointments_add_1 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
@@ -204,9 +204,21 @@ values (1, '97006', 2350555);
 -- mike falls
 insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
 values (1, 2353957, 2350555);
+update flow.user_company
+    set default_appointment_length = 90
+where user_id = 2353957
+and company_id = 3;
 -- gary brever
 insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
 values (1, 2402401, 2350555);
+update flow.user_company
+set default_appointment_length = 90
+where user_id = 2402401
+  and company_id = 3;
 -- tyler ballard
 insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
 values (1, 2390155, 2350555);
+update flow.user_company
+set default_appointment_length = 90
+where user_id = 2390155
+  and company_id = 3;
