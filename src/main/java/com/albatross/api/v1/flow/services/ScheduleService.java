@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.ScheduleController;
 import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.ScheduleAvailability;
 import com.albatross.api.v1.flow.model.ScheduleEvent;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -52,6 +53,20 @@ public class ScheduleService {
     List<ScheduleEvent> results = sqlCache.query("schedule.getEvents", params, ScheduleEvent.class);
     return results;
   }
+
+  public List<ScheduleAvailability> getAvailabilityForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
+    HashMap<String, Object> params = new HashMap<>();
+
+    params.put("userIds", esp.getUserIds());
+    params.put("orgIds", esp.getOrgIds());
+    params.put("startTime", esp.getStartTime());
+    params.put("endTime", esp.getEndTime());
+
+    List<ScheduleAvailability> results = sqlCache.query("schedule.getAvailability", params, ScheduleAvailability.class);
+
+    return results;
+  }
+
   // todo: @randa schedule.getProjects, schedule.getProject and schedule.getEvents are the exact same query except for the where clause. can we make them one? _rn
   public List<ScheduleEvent> getScheduleProjects(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
