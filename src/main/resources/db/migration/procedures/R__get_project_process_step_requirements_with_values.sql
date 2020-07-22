@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION flow.get_project_process_step_requirements_with_value
                  archived boolean, secondary_requirement_value varchar, data_type_requirement_id int, list_of_value_id int, list_of_value_ids json, operator_type varchar,
                  process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
                  company_system_list_id int, system_list_option_id int, custom_sql_option_id int, project_custom_field_value_id int, project_process_step_id int, text_value text,
-                 date_value date, timestamp_value timestamp, boolean_value boolean, numeric__value numeric, int_value int, int_array_value json, system_list_option_ids json,
+                 date_value date, timestamp_value timestamp, boolean_value boolean, numeric_value numeric, int_value int, int_array_value json, system_list_option_ids json,
                  data_type_requirement json, list_of_value json, list_of_values json, data_type_id int, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
                  company_function_params json, available_list_of_values json) AS
 
