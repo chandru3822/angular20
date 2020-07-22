@@ -110,7 +110,7 @@
              cust.user_status_type,
              o.org_name as officeName,
              o2.org_name as region,
-             coalesce(metro_area.metro_area, '--') as metroArea,
+             coalesce(lov.name, '--') as metroArea,
              count(case when pd.closer_appointment_start::date >= (now() at time zone 'US/Mountain')::date - :timeInterval
                and pd.source not in (6, 8, 484)
                and pd.final_design_signed_date is not null
@@ -152,7 +152,8 @@
         INNER JOIN flow.company_user_status_type cust ON cust.id = ust.company_user_status_type_id
         INNER JOIN flow.org o ON o.id = upos.org_id
         INNER JOIN flow.org o2 ON (o2.id = o.parent_org_id and o2.org_type_id = 2)
-        LEFT JOIN LATERAL (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area ON TRUE
+        LEFT JOIN flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
+        LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
       WHERE CASE WHEN :officeRanking IS TRUE
         THEN -- Office Ranking (1st row of tables)
           upos.org_id IN (select distinct org_id from flow.user_position where user_id = :currentUserId and archived is false and primary_flag is true)
@@ -164,7 +165,7 @@
           AND o2.active_flag IS TRUE
         END
         AND cust.user_status_type = 'Active'
-      GROUP BY u.id, officeName, region, metro_area.metro_area, cust.user_status_type
+      GROUP BY u.id, officeName, region, metroArea, cust.user_status_type
     ]]>
   </closerDashboard.getCloserTableScores>
 </sql>
