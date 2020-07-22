@@ -293,7 +293,8 @@
                 {{ timeInterval === 1 ? 'Since yesterday' : 'Last ' + timeInterval + ' days' }}
               </th>
             </tr>
-            <tr data-ng-repeat="office in offices"
+            <tr v-for="office in offices"
+                :key="office.org_id"
                 :class="{'highlight-user-row': office.org_id === userOfficeId}">
               <td class="center-text">{{ office.rank }}</td>
               <td class="left-text">{{ office.name }}</td>
