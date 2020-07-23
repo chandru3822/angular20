@@ -43,7 +43,7 @@ public class LoanPalService {
       }
 
       if (creditCheck.equals("Fail")) {
-        log.info("LOANPAL: not queuing PandaDoc document creation projectId={}", projectId);
+        log.info("LOANPAL: Credit Check failed forprojectId={}", projectId);
         throw new Exception("LoanPal Credit Check failed for project " + projectId.toString());
       } else {
         log.info("LOANPAL: credit check is good for project {}", projectId);

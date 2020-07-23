@@ -58,7 +58,7 @@ public class InstallAgreementRepository {
     sqlCache.update("installAgreement.setAgreementSent", request.toHashMap());
 
     if (sendLoanpalDocs && financier != null && financier.equals("LoanPal")) {
-      JSONObject loanApplication = null;//loanPalService.getApplicationByProjectId(request.getProject_id());
+      JSONObject loanApplication = loanPalService.getApplicationByProjectId(request.getProject_id());
       if (loanApplication != null) {
         try {
           JSONObject outcome = loanApplication.getJSONObject("outcome");
@@ -135,6 +135,27 @@ public class InstallAgreementRepository {
     return financier;
   }
 
+    public String getUtilityFromProposalLog(Long projectId, Long proposalNbr) {
+        String utility = null;
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("projectId", projectId);
+        params.put("proposalNbr", proposalNbr);
+
+        Optional<InstallAgreementRequest> req = sqlCache.get(
+            "installAgreement.getUtilityFromProposalLog",
+            params,
+            InstallAgreementRequest.class
+        );
+
+        if (req.isPresent()) {
+            utility = req.get().getUtility_company();
+        }
+
+        log.info("IARQ: utility from proposal log for project {} #{}: {}", projectId, proposalNbr, utility);
+        return utility;
+    }
+
   public void setRequestStatus(InstallAgreementRequest request) {
     User user = securityService.getCurrentUser();
     setRequestStatus(request, user.getId());
@@ -147,6 +168,7 @@ public class InstallAgreementRepository {
     params.put("user_id", userId);
     params.put("sendInstallationAgreement", request.getSend_installation_agreement());
     params.put("isSpanish", request.getIsSpanish() != null ? request.getIsSpanish() : false);
+    params.put("success", request.getRequest_successful() != null ? request.getRequest_successful() : false);
 
 
     log.info("IARQ: setting status projectId={} proposalNbr={} userId={} success={} isSpanish={}",
