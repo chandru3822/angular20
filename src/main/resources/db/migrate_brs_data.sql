@@ -7740,3 +7740,10 @@ from (
          order by process_step_id, display_order
      ) as t(id, row_number)
 where t.id = psa.id;
+
+-- new requirement types
+insert into flow.process_step_requirement_type(process_step_requirement_type)
+values ('Project - Custom Field'), ('Contact - Custom Field');
+update flow.process_step_requirement_type
+set process_step_requirement_type = 'Process Step - Custom Field'
+where id = 1;

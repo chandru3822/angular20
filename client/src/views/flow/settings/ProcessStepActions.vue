@@ -25,7 +25,7 @@
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
-            <!-- if it is a custom field -->
+            <!-- if it is a process step custom field -->
             <v-select
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
                 v-model="parent"
@@ -38,7 +38,8 @@
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
-            <v-select v-if="parent.id"
+            <!-- if it is a process step custom field it needs parent, other custom fields do not-->
+            <v-select v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
                       v-model="selectedCustomField"
                       :items="customFields"
                       label="Custom Field"
@@ -73,7 +74,7 @@
               </v-card>
             </div>
             <v-select
-                v-if="(newRequirement.processStepRequirementTypeId === 1 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"
+                v-if="(newRequirement.processStepRequirementTypeId !== 2 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
@@ -283,8 +284,11 @@
                     <span v-if="item.processStepRequirementTypeId === 1">
                       {{ item.parentName }} | {{ item.fieldName }}
                     </span>
-                    <span v-else>
+                    <span v-else-if="item.processStepRequirementTypeId === 2">
                       {{ item.companyFunctionName }}
+                    </span>
+                    <span v-else>
+                      {{ item.fieldName }}
                     </span>
                   </td>
                   <td class="text-left">{{item.operatorType}}</td>
@@ -1054,9 +1058,15 @@
       async selectRequirementType() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          //1 == custom field, 2 == function
+          //1 == process step custom field, 2 == function, 3 == project custom field, 4 == contact custom field
           if (this.newRequirement.processStepRequirementTypeId === 1) {
             this.loadParentObjects()
+          } else if (this.newRequirement.processStepRequirementTypeId === 3) {
+            //get project custom fields
+            this.loadCustomFieldsByObjectType(1)
+          } else if (this.newRequirement.processStepRequirementTypeId === 4) {
+            //get contact custom fields
+            this.loadCustomFieldsByObjectType(2)
           } else {
             const {data} = await getRequest(`/function`)
             this.availableFunctions = data
@@ -1083,11 +1093,9 @@
       async loadParentObjects() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if (!this.parentObjects || this.parentObjects.length === 0) {
             const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
             this.parentObjects = data
             this.$store.commit(AppMutations.SET_LOADING, false)
-          }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1098,6 +1106,18 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.id}`)
+          this.customFields = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async loadCustomFieldsByObjectType(objectTypeId) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/customField/getByParentType/${objectTypeId}`)
           this.customFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
