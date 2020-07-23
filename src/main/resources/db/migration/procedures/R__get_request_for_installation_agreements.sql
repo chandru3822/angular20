@@ -24,10 +24,11 @@ BEGIN
                 p.id                                                             AS project_id,
                 p.project_name,
                 c.email,
-                p.street1 || ', ' || p.city || ', ' || p.state || ' ' || p.postal_code AS address
+                p.street1 || ', ' || p.city || ', ' || s.state || ' ' || p.postal_code AS address
             FROM flow.project p
                      left join brs.project_details pd on pd.project_id = p.id
                      INNER JOIN flow.contact c ON c.id = p.contact_id
+                     INNER JOIN flow.state s ON s.id = p.state_id
             WHERE pd.cancelled_date is null AND pd.energized_date is null;
         ELSE
             RETURN QUERY
@@ -35,10 +36,11 @@ BEGIN
                     p.id                                                             AS project_id,
                     p.project_name,
                     c.email,
-                    p.street1 || ', ' || p.city || ', ' || p.state || ' ' || p.postal_code AS address
+                    p.street1 || ', ' || p.city || ', ' || s.state || ' ' || p.postal_code AS address
                 FROM flow.project p
                          left join brs.project_details pd on pd.project_id = p.id
                          INNER JOIN flow.contact c ON c.id = p.contact_id
+                         INNER JOIN flow.state s ON s.id = p.state_id
                 where pd.closer_user_id = p_platform_user_id
                 AND pd.cancelled_date is null
                 AND pd.energized_date is null;
