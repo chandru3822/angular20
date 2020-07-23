@@ -14,6 +14,7 @@ public class InstallAgreementRequest {
   private Long proposal_nbr_id;
   private String product;
   private String financier;
+  private String utility_company;
   private Date installation_agreement_request_submitted_date;
   private Date created_date;
   private Long created_by_user_id;
@@ -33,6 +34,7 @@ public class InstallAgreementRequest {
     data.put("proposal_nbr_id", proposal_nbr_id);
     data.put("product", product);
     data.put("financier", financier);
+    data.put("utility_company", utility_company);
     data.put("submitted_date", installation_agreement_request_submitted_date);
     data.put("created_date", created_date);
     data.put("created_by_user_id", created_by_user_id);

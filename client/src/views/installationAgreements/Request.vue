@@ -5,7 +5,7 @@
         class="mt-5 pay-search"
         prepend-inner-icon="search"
         text
-        label="Search payments..."
+        label="Search projects..."
         v-model="searchQuery"
         @input="debounceFilterProjects"
       ></v-text-field>
@@ -19,6 +19,7 @@
         :options="pagination"
         :footer-props="footerProps"
         :items-per-page="50"
+        :loading="dataLoading"
         fixed-header
         dense
         class="elevation-1"
@@ -58,7 +59,7 @@
                           ></v-text-field>
 
                           <v-text-field label="Email Address"
-                                        v-model="requestItem.email_address"
+                                        v-model="requestItem.email"
                                         disabled
                           ></v-text-field>
                       </v-col>
@@ -108,6 +109,7 @@
     },
     data: () => ({
       snackbar: {},
+      dataLoading: true,
       footerProps: {
         'items-per-page-options': [25, 50, 100, 500],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
@@ -124,7 +126,7 @@
       requestDialog: false,
       requestItem: {
           customer_name: '',
-          email_address: '',
+          email: '',
           proposal_nbr: '',
           proposal_nbrs: [],
           send_loanpal_docs: true,
@@ -152,6 +154,7 @@
             this.projects = data;
             this.filteredProjects = data;
             this.$store.commit(AppMutations.SET_LOADING, false)
+            this.dataLoading = false;
         } catch (e) {
           this.$store.commit(AppMutations.SET_LOADING, false)
           console.error('*** ERROR ***', e)
@@ -159,15 +162,17 @@
         }
       },
         debounceFilterProjects: debounce( function () {
+        this.dataLoading = true
         this.filteredProjects = this.projects && this.projects.filter(p => {
           return (p['customer_name'].toLowerCase().includes(this.searchQuery.toLowerCase()) ||
               (p['address'] != null && p['address'].toString().toLowerCase().includes(this.searchQuery.toLowerCase()))
           )
         })
+        this.dataLoading = false;
       }, 500),
       async openRequest (it) {
           this.requestItem.customer_name = it.customer_name
-          this.requestItem.email_address = it.email_address
+          this.requestItem.email = it.email
           this.requestItem.project_id = it.project_id
 
           // get proposal numbers

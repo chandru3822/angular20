@@ -161,6 +161,9 @@ public class PandaDocService {
    */
   public String createDocument(Long projectId, Long proposalNbr, Boolean isSpanish) throws Exception {
     PandaDocProjectDetails deets = getProjectDetails(projectId, proposalNbr);
+    deets.setFinancier(installAgreementRepository.getFinancierFromProposalLog(projectId, proposalNbr));
+    deets.setUtilityCompany(installAgreementRepository.getUtilityFromProposalLog(projectId, proposalNbr));
+
     String templateId = findTemplateId(deets, isSpanish);
     if (!pandaDoc.getEnabled()) {
       log.info("PANDADOC: not creating document: pandadoc service is disabled");
@@ -312,9 +315,9 @@ public class PandaDocService {
     // allow the recipient email addresses to be overridden FOR TESTING
     String email = pandaDoc.getNotificationEmail();
     if (!isBlank(email)) {
-      customer.put("email", email.replaceFirst("@", "+customer@"));
-      brs.put("email", email.replaceFirst("@", "+brs@"));
-      closer.put("email", email.replaceFirst("@", "+closer@"));
+      customer.put("email", deets.getCustomerEmail());
+      brs.put("email", "support@blueravensolar.com");
+      closer.put("email",deets.getCloserEmail());
     }
 
     body.append("recipients", customer);
@@ -506,6 +509,10 @@ public class PandaDocService {
         tokens.put("Deal.Panel Brand", result.get("custom_fields.Panel Brand"));
         tokens.put("Deal.Inverter Brand", result.get("custom_fields.Inverter Brand"));
         tokens.put("Deal.Notice of Cancellation Deadline", result.get("custom_fields.Notice of Cancellation Deadline"));
+        tokens.put("Deal.Total Cash Down Payment", result.get("custom_fields.Total Cash Down Payment"));
+        tokens.put("Deal.System Size", result.get("custom_fields.System Size"));
+        tokens.put("Deal.First Cash Payment Amount", result.get("custom_fields.First Cash Payment Amount"));
+        tokens.put("Deal.Total System Price", result.get("custom_fields.Total System Price"));
     } catch (EmptyResultDataAccessException e) {
         log.warn("PANDADOC Error getting proposal log values: {}", e);
         e.printStackTrace();
@@ -529,10 +536,6 @@ public class PandaDocService {
     tokens.put("Deal.Address.City", deets.getCity());
     tokens.put("Deal.Address.StateAbbr", deets.getMailingState());
     tokens.put("Deal.Address.PostalCode", deets.getPostalCode());
-    tokens.put("Deal.Total Cash Down Payment", deets.getTotalCashDownPayment());
-    tokens.put("Deal.System Size", deets.getSystemSize());
-    tokens.put("Deal.First Cash Payment Amount", deets.getFirstCashPaymentAmount());
-    tokens.put("Deal.Total System Price", deets.getTotalSystemPrice());
 
     if (!tokens.has("Deal.Proposal Number")) {
       tokens.put("Deal.Proposal Number", deets.getProposalNbr());

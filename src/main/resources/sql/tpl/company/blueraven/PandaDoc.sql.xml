@@ -10,16 +10,21 @@
                 where lov.id = pd.primary_financier) as financier,
               c.first_name            AS closer_first_name,
               c.last_name             AS closer_last_name,
-              c.email                 AS closer_email,
+              (select email from flow.user
+                where id = (select user_id from flow.user_position
+                                where id = (select user_position_id from flow.project_process_step
+                                                where project_id = 80856 and process_step_id = 2)
+                            )
+              ) AS closer_email,
               c.first_name            AS customer_first_name,
               c.last_name             AS customer_last_name,
               c.email                 AS customer_email,
-              c.mailing_state,
+              s.abbreviation as mailing_state,
               c.phone,
-              c.city,
-              c.mailing_street1,
-              c.mailing_street2,
-              c.postal_code,
+              p.city,
+              p.street1 as mailing_street1,
+              p.street2  as mailing_street2,
+              p.postal_code,
               cy.country,
               p.project_name,
               cp.company_id,
@@ -32,7 +37,7 @@
               JOIN brs.project_details pd on p.id = pd.project_id
               JOIN brs.proposal_log pl on pl.project_id = p.id
               JOIN flow.contact c ON c.id = p.contact_id
-              JOIN flow.state s ON s.id = c.state_id
+              JOIN flow.state s ON s.id = p.state_id
               JOIN flow.country cy on cy.id = c.country_id
               JOIN flow.company_process cp on cp.id = p.company_process_id
             WHERE p.id = :projectId and pl.proposal_nbr = :proposalNbr
