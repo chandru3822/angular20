@@ -59,9 +59,18 @@ public class WorkQueueCategoryService {
     params.put("color", category.getColor());
     params.put("id", category.getId());
     params.put("workQueueCategory", category.getWorkQueueCategory());
+    params.put("displayOrder", category.getDisplayOrder());
     sqlCache.update("workQueueCategory.updateCategory", params);
 
     return getCategory(category.getId());
+  }
+
+  public List<WorkQueueCategory> updateCategoryDisplayOrders(List<WorkQueueCategory> categories) {
+    for(WorkQueueCategory cat : categories) {
+      //save each display_order (i guess i can just call the full update - will do the same thing)
+      updateCategory(cat);
+    }
+    return getWorkQueueCategories();
   }
 
   public Optional<WorkQueueCategory> insertCategory(WorkQueueCategory category) {

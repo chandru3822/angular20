@@ -25,6 +25,10 @@
                          from flow.company_object_type cot
                                 inner join flow.object_type ot on ot.id = cot.object_type_id
                                 left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id
+                              where cot.company_id = cf.company_id
+                                and cot.archived is not true
+                                and ot.archived is not true
+                                and cfot.archived is not true
                        ) rows), '[]') AS custom_field_object_types,
      coalesce((
                    select array_to_json(array_agg(rows))
@@ -74,6 +78,9 @@
                               inner join flow.object_type ot on ot.id = cot.object_type_id
                                 left join flow.custom_field_object_type cfot on cfot.company_object_type_id = cot.id and cfot.custom_field_id = cf.id and cfot.archived is not true
                          where cot.company_id = :companyId
+                                and cot.archived is not true
+                                and ot.archived is not true
+                                and cfot.archived is not true
                        ) rows), '[]') AS custom_field_object_types,
        coalesce((
                      select array_to_json(array_agg(rows))
@@ -124,7 +131,7 @@
       set field_name = :fieldName,
           company_system_list_id = :systemListId,
           readonly = :readonly,
-          system_list_option_ids = array[ :systemListOptionIds ]::integer[],
+          system_list_option_ids = :systemListOptionIds::int[],
           modified_by_id = :modifiedById,
           date_modified = now()
     where id = :id
@@ -132,7 +139,7 @@
 
   <customField.insertField><![CDATA[
     insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, readonly)
-    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, array[ :systemListOptionIds ]::integer[], :readonly)
+    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::int[], :readonly)
     returning id
   ]]></customField.insertField>
 
@@ -215,19 +222,55 @@
       and cfga.ancillary_custom_field_group_assignment_id is null
       and cfg.archived is not true
       and cfga.archived is not true
+      and cf.archived is not null
     order by cf.field_name
 
   ]]></customField.getByParentProcessStep>
 
   <customField.getByParentType><![CDATA[
-    select cf.*,
-           cfga.id as custom_field_group_assignment_id
+    select  cf.id,
+            cf.list_of_value_id,
+            cf.readonly,
+            cf.custom_field_sql_key,
+            cf.company_id,
+            cf.field_name,
+            cf.company_data_type_id,
+            cf.date_created,
+            cf.date_modified,
+            cf.created_by_id,
+            cf.modified_by_id,
+            cf.archived,
+            array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+            cfga.id as custom_field_group_assignment_id,
+            cdt.data_type_id,
+            cdt.allow_multiple,
+            coalesce((
+                         select array_to_json(array_agg(rows))
+                         from (
+                                  select lv.id,
+                                         lv.name,
+                                         lv.parent_id as "parentId",
+                                         lv.date_created as "dateCreated",
+                                         lv.date_modified as "dateModified",
+                                         lv.created_by_id as "createdById",
+                                         lv.modified_by_id as "modifiedById",
+                                         lv.display_order as "displayOrder",
+                                         lv.archived
+                                  from flow.list_of_value lv
+                                  where lv.parent_id = cf.list_of_value_id
+                                    and lv.archived is not true
+                                  order by lv.display_order
+                              ) rows), '[]') AS list_of_values
     from flow.company_object_type cot
              inner join flow.custom_field_group cfg on cfg.company_object_type_id = cot.id
              inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+             inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     where cot.object_type_id = :id
       and cfga.ancillary_custom_field_group_assignment_id is null
+      and cfg.archived is not true
+      and cfga.archived is not true
+      and cf.archived is not true
     order by cf.field_name
   ]]></customField.getByParentType>
 

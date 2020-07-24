@@ -126,6 +126,16 @@ export default new Router({
           }
         }
       }, {
+          path: '/setterDashboard',
+          name: 'setterDashboard',
+          component: () => {
+              if(store.getters.userHasFeature('SETTER_DASHBOARD')) {
+                  return import (/* webpackChunkName: "setterDashboard" */ './views/setterDashboard/SetterDashboard.vue')
+              } else {
+                  return accessDenied()
+              }
+          }
+      }, {
         path: '/ahj',
         name: 'ahj',
         component: () => {
@@ -713,14 +723,24 @@ export default new Router({
                   }
               ]
           }, {
-          path: '/smartlist',
-          component: () => {
-            if(store.getters.userHasFeature('SMARTLIST')) {
-              return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/SmartlistHome.vue')
-            } else  {
-              return accessDenied()
-            }
-          },
+              path: '/installation-agreements',
+              name: 'installation-agreements',
+              component: () => import (/* webpackChunkName: "finances" */ './views/installationAgreements/InstallationAgreements.vue'),
+              children: [
+                  {
+                      path: 'request',
+                      component: () => import (/* webpackChunkName: "request" */ './views/installationAgreements/Request.vue')
+                  }
+              ]
+          }, {
+              path: '/smartlist',
+              component: () => {
+                  if(store.getters.userHasFeature('SMARTLIST')) {
+                      return import (/* webpackChunkName: "smartlist" */ './views/flow/smartlist/SmartlistHome.vue')
+                  } else  {
+                      return accessDenied()
+                  }
+              },
           children: [{
               path: '',
               name: 'smartlist',

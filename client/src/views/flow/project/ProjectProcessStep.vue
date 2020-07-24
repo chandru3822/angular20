@@ -58,6 +58,12 @@
 
   <v-col cols="12" class="text-left">
     <h2>{{ processStep.processStepName }}</h2>
+            <v-checkbox
+                v-model="processStep.main"
+                :disabled="processStep.main"
+                label="Primary"
+                @change="updateMain(processStep.projectProcessStepId)"
+            />
   </v-col>
 
   <v-col cols="12" lg="6" class="text-left">
@@ -260,13 +266,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.processStep.customFieldGroups = this.customFieldGroups
       try {
-        await putRequest(`/projectProcessStep`, this.processStep)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data} = await putRequest(`/projectProcessStep`, this.processStep)
+        this.customFieldGroups = data
         this.$root.$emit('projectProcessStep:checkAction')
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+      } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async updateOwner() {
@@ -281,6 +288,18 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+      async updateMain(projectProcessStepId) {
+          try {
+              this.$store.commit(AppMutations.SET_LOADING, true)
+              await putRequest(`/projectProcessStep/${projectProcessStepId}/main`)
+          } catch (e) {
+              logError(e)
+              this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
+              this.processStep.main = false
+          } finally {
+              this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+      },
     handleActionCompleted () {
       this.$router.push({name: 'projectOverview', params: {projectId: this.projectId}})
     },

@@ -6,8 +6,13 @@
           <v-toolbar-title class="app-title">Work Queue</v-toolbar-title>
         </v-toolbar>
         <v-divider class="mt-3"/>
-        <v-row class="justify-center mt-3">
-          <v-btn v-for="(c, index) in workQueueCategories" class="wq-button mx-2"
+        <v-row class="justify-center">
+          <v-btn class="wq-button mx-2 mt-3 white--text" color="primaryCustom"
+                 :outlined="showAll && !selectedWorkQueueCategory.id"
+                 @click="[showAll = true, getWorkQueues()]">
+            All
+          </v-btn>
+          <v-btn v-for="(c, index) in workQueueCategories" class="wq-button mx-2 mt-3"
                  :outlined="selectedWorkQueueCategory.id === c.id"
                  :style="{color: selectedWorkQueueCategory.id === c.id ? `${c.color} !important` : 'white !important'}"
                  :color="c.color" :key="index" @click="getWorkQueues(true, c)">
@@ -61,6 +66,7 @@
       return {
         snackbar: {},
         model: {},
+        showAll: false,
         selectedWorkQueueCategory: {},
         workQueueCategories: [],
         workQueues: [],
@@ -74,35 +80,27 @@
     async created() {
       this.getWorkQueueCategories()
       this.getWorkQueueOwners()
-      this.getWorkQueues()
     },
     methods: {
       async getWorkQueueCategories() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getWorkQueueCategories()
-          this.workQueueCategories = orderBy(data, [wqc => wqc.workQueueCategory.toLowerCase()])
-
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.workQueueCategories = orderBy(data, [wqc => wqc.displayOrder])
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getWorkQueueOwners() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/workQueue/owners`)
           this.workQueueOwners = data
           this.workQueueOwners.unshift(this.noOwner)
           this.workQueueOwners.unshift(this.anyOwner)
 
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Owners')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getWorkQueues(reset, c) {

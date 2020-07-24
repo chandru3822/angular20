@@ -3,6 +3,9 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
+          <v-btn text small :to="`/workQueue`" class="mr-3" color="primaryCustom">
+            <v-icon>mdi-arrow-left</v-icon>
+          </v-btn>
           <v-toolbar-title class="app-title" v-if="results.length > 0">{{results[0].workQueueType}}</v-toolbar-title>
         </v-toolbar>
         <v-data-table
@@ -61,7 +64,7 @@
         userPositionId: this.$route.query.upId,
         unassigned: this.$route.query.unassigned,
         results: [],
-        userPositions: this.$store.state.user.details.positions,
+        userPositions: this.$store.state.user.details.userPositions,
         headers: [
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
@@ -90,14 +93,27 @@
         }
       },
       async assignToUser(item) {
-        //todo: call whatever function humes adds for his screen that does this same thing
-        this.snackbar = getSnackbar('WARNING', 'I havent finished this feature yet. waiting to make sure my code is the same as humes')
+        try {
+          let userPosition = this.userPositions.find(up => up.canAssign)
+          await postRequest(`/projectProcessStep/${item.projectProcessStepId}/owner/checkExisting`, {userPositionId: userPosition.id})
+          this.snackbar = getSnackbar('SUCCESS', 'You are now assigned as the owner.')
+          item.owner = this.$store.state.user.details.fullName
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          let msg = e.data.includes('already assigned') ? e.data : 'Error Saving Owner'
+          this.snackbar = getSnackbar('ERROR', msg)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       userCanOwnProcessStep(item) {
         let canAssign = false
         item?.owningPositions?.forEach(op => {
-          let positionMatch = this.userPositions.find(up => up.id === op.positionId)
-          canAssign = positionMatch !== null && positionMatch !== undefined
+          let positionMatch = this.userPositions.find(up => up.positionId === op.positionId)
+          if(positionMatch !== null && positionMatch !== undefined) {
+            canAssign = true
+            this.userPositions.find(up => up.positionId === op.positionId).canAssign = true
+          }
         })
         return canAssign
       },

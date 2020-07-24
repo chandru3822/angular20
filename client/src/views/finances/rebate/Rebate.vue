@@ -39,11 +39,11 @@
         tabs: [ {
           label: 'View Payments',
           path: '/finances/rebate/viewPayments',
-          display: this.$store.getters.userHasFeature('FINANCES')
+          display: this.$store.getters.userHasFeature('REBATES')
         }, {
           label: 'Batches',
           path: '/finances/rebate/batches',
-          display: this.$store.getters.userHasFeature('FINANCES')
+          display: this.$store.getters.userHasFeature('REBATES')
         }]
       }
     },

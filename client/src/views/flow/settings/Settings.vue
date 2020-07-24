@@ -135,7 +135,7 @@ export default {
       }, {
         path: '/settings/availability',
         title: 'Availability',
-        show: VUE_APP_ENV === 'local' // turning this off in uat because i dont want them adding stuff while i am deving
+        show: this.hasSettingsAccess
       }, {
         path: '/settings/positions',
         title: 'Positions',

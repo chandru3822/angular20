@@ -3,38 +3,79 @@
     <div class="mb-2">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
-        <v-col class="py-0" cols="12" md="6">
-          <v-select v-model="selectedOrgs"
-                    :items="orgs"
-                    label="Organizations"
+        <v-col class="py-0" cols="12" md="4">
+          <v-select v-model="selectedStates"
+                    :items="states"
+                    label="States"
                     multiple
-                    :loading="orgsLoading"
                     hide-details
                     return-object
-                    item-text="orgName"
+                    item-text="state"
                     item-value="id"
-                    @input="getEvents"
+                    @blur="filterOrgsAndUsers"
+          >
+            <template
+              slot="selection"
+              slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedStates.length < 3">
+                <v-chip small v-for="ss in selectedStates">
+                  <span>{{ ss.state }}</span>
+                </v-chip>
+              </div>
+              <span
+                v-if="index === 1 && selectedStates.length >= 3"
+                class="primary--text caption"
+              >{{ selectedStates.length }} selected</span>
+            </template>
+            <v-list-item
+              slot="prepend-item"
+              ripple
+              @click="toggleSelectAllStates()">
+              <v-list-item-action>
+                <v-icon>{{ iconStates }}</v-icon>
+              </v-list-item-action>
+              <v-list-item-title>Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+              slot="prepend-item"
+              class="mt-2"
+            ></v-divider>
+          </v-select>
+        </v-col>
+        <v-col class="py-0" cols="12" md="4">
+          <v-select v-model="selectedOrgTypes"
+                    :items="orgTypes"
+                    label="Organization Types"
+                    multiple
+                    :loading="orgTypesLoading"
+                    hide-details
+                    return-object
+                    item-text="orgType"
+                    item-value="id"
+                    @input="orgTypeValuesChanged = true"
+                    @blur="filterOrgsAndUsers"
           >
             <template
                 slot="selection"
                 slot-scope="{ item, index }"
             >
-              <div v-if="index === 0 && selectedOrgs.length < 3">
-                <v-chip small v-for="sr in selectedOrgs">
-                  <span>{{ sr.orgName }}</span>
+              <div v-if="index === 0 && selectedOrgTypes.length < 3">
+                <v-chip small v-for="sr in selectedOrgTypes">
+                  <span>{{ sr.orgType }}</span>
                 </v-chip>
               </div>
               <span
-                  v-if="index === 1 && selectedOrgs.length >= 3"
+                  v-if="index === 1 && selectedOrgTypes.length >= 3"
                   class="primary--text caption"
-              >{{ selectedOrgs.length }} selected</span>
+              >{{ selectedOrgTypes.length }} selected</span>
             </template>
             <v-list-item
                 slot="prepend-item"
                 ripple
-                @click="toggleSelectAllOrgs()">
+                @click="toggleSelectAllOrgTypes()">
               <v-list-item-action>
-                <v-icon>{{ icon }}</v-icon>
+                <v-icon>{{ iconOrgTypes }}</v-icon>
               </v-list-item-action>
               <v-list-item-title>Select All</v-list-item-title>
             </v-list-item>
@@ -44,38 +85,40 @@
             ></v-divider>
           </v-select>
         </v-col>
-        <v-col class="py-0" cols="12" md="6">
-          <v-autocomplete v-model="selectedUsers"
-                    :items="users"
-                    label="Users"
+        <v-col class="py-0" cols="12" md="4">
+
+          <v-autocomplete v-model="selectedPositions"
+                    :items="positions"
+                    label="Positions"
                     multiple
                     hide-details
-                    :loading="usersLoading"
+                    :loading="positionsLoading"
                     return-object
-                    item-text="fullName"
+                    item-text="position"
                     item-value="id"
-                    @input="getEvents"
+                    @input="poitionValuesChanged = true"
+                    @blur="filterOrgsAndUsers"
           >
             <template
                 slot="selection"
                 slot-scope="{ item, index }"
             >
-              <div v-if="index === 0 && selectedUsers.length < 3">
-                <v-chip small v-for="sr in selectedUsers">
-                  <span>{{ sr.fullName }}</span>
+              <div v-if="index === 0 && selectedPositions.length < 3">
+                <v-chip small v-for="sr in selectedPositions">
+                  <span>{{ sr.position }}</span>
                 </v-chip>
               </div>
               <span
-                  v-if="index === 1 && selectedUsers.length >= 3"
+                  v-if="index === 1 && selectedPositions.length >= 3"
                   class="primary--text caption"
-              >{{ selectedUsers.length }} selected</span>
+              >{{ selectedPositions.length }} selected</span>
             </template>
             <v-list-item
                 slot="prepend-item"
                 ripple
-                @click="toggleSelectAllUsers()">
+                @click="toggleSelectAllPositions()">
               <v-list-item-action>
-                <v-icon>{{ iconUsers }}</v-icon>
+                <v-icon>{{ iconPositions }}</v-icon>
               </v-list-item-action>
               <v-list-item-title>Select All</v-list-item-title>
             </v-list-item>
@@ -86,8 +129,104 @@
           </v-autocomplete>
         </v-col>
       </v-row>
+      <v-row class="py-0">
+        <v-col class="py-0" cols="12" md="4">
+        </v-col>
+        <v-col class="py-0" cols="12" md="4">
+          <v-select v-model="selectedOrgs"
+                    :items="orgs"
+                    label="Organizations"
+                    multiple
+                    :loading="orgsLoading"
+                    hide-details
+                    return-object
+                    item-text="orgName"
+                    item-value="id"
+                    @input="orgValuesChanged = true"
+                    @blur="getEvents(true)"
+          >
+            <template
+              slot="selection"
+              slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedOrgs.length < 3">
+                <v-chip small v-for="sr in selectedOrgs">
+                  <span>{{ sr.orgName }}</span>
+                </v-chip>
+              </div>
+              <span
+                v-if="index === 1 && selectedOrgs.length >= 3"
+                class="primary--text caption"
+              >{{ selectedOrgs.length }} selected</span>
+            </template>
+            <v-list-item
+              slot="prepend-item"
+              ripple
+              @click="toggleSelectAllOrgs()">
+              <v-list-item-action>
+                <v-icon>{{ icon }}</v-icon>
+              </v-list-item-action>
+              <v-list-item-title>Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+              slot="prepend-item"
+              class="mt-2"
+            ></v-divider>
+          </v-select>
+        </v-col>
+        <v-col class="py-0" cols="12" md="4">
+
+          <v-autocomplete v-model="selectedUsers"
+                          :items="users"
+                          label="Users"
+                          multiple
+                          hide-details
+                          :loading="usersLoading"
+                          return-object
+                          item-text="fullName"
+                          item-value="id"
+                          @input="userValuesChanged = true"
+                          @blur="getEvents(false)"
+          >
+            <template
+              slot="selection"
+              slot-scope="{ item, index }"
+            >
+              <div v-if="index === 0 && selectedUsers.length < 3">
+                <v-chip small v-for="sr in selectedUsers">
+                  <span>{{ sr.fullName }}</span>
+                </v-chip>
+              </div>
+              <span
+                v-if="index === 1 && selectedUsers.length >= 3"
+                class="primary--text caption"
+              >{{ selectedUsers.length }} selected</span>
+            </template>
+            <v-list-item
+              slot="prepend-item"
+              ripple
+              @click="toggleSelectAllUsers()">
+              <v-list-item-action>
+                <v-icon>{{ iconUsers }}</v-icon>
+              </v-list-item-action>
+              <v-list-item-title>Select All</v-list-item-title>
+            </v-list-item>
+            <v-divider
+              slot="prepend-item"
+              class="mt-2"
+            ></v-divider>
+          </v-autocomplete>
+        </v-col>
+      </v-row>
     </div>
     <div class="calendar-resize-container">
+      <div id="calendar-loader" v-if="calendarLoading">
+        <v-progress-circular
+          indeterminate
+          :size="80"
+          :color="'primary'"
+        ></v-progress-circular>
+      </div>
       <FullCalendar ref="eventCalendar"
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
                     :defaultView="calendar.options.defaultView"
@@ -96,7 +235,7 @@
                     :time-zone="calendar.options.timezone"
                     :header="calendar.options.header"
                     :editable="calendar.options.editable"
-                    :events="events"
+                    :event-sources="eventSources"
                     :now-indicator="true"
                     :min-time="calendar.options.minTime"
                     :max-time="calendar.options.maxTime"
@@ -106,11 +245,9 @@
                     :hidden-days="calendar.options.hiddenDays"
                     :custom-buttons="calendar.options.customButtons"
                     :slot-width="55"
-                    :view-skeleton-render="getEvents"
                     @eventClick="(info) => handleEventClick(info)"
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
-
       />
     </div>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -124,6 +261,7 @@
   import momentPlugin from '@fullcalendar/moment'
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
+  import {getOrgTypes} from '@/services/orgService'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
@@ -140,6 +278,7 @@
       mapResources: {type: Array},
       callback: Function,
       dateCallback: Function,
+      states: {type: Array}
     },
     computed: {
       //orgs
@@ -174,11 +313,62 @@
         }
         return 'check_box_outline_blank'
       },
+      //states
+      selectAllStates () {
+        return this.states.length === this.selectedStates.length
+      },
+      selectSomeStates () {
+        return this.selectedStates.length > 0 && !this.selectAllStates
+      },
+      iconStates () {
+        if (this.states.length === this.selectedStates.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeStates) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      //org Types
+      selectAllOrgTypes () {
+        return this.orgTypes.length === this.selectedOrgTypes.length
+      },
+      selectSomeOrgTypes () {
+        return this.selectedOrgTypes.length > 0 && !this.selectAllOrgTypes
+      },
+      iconOrgTypes () {
+        if (this.orgTypes.length === this.selectedOrgTypes.length) {
+          return 'check_box'
+        }
+        if (this.selectSomeOrgTypes) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
+      //positions
+      selectAllPositions () {
+        return this.positions.length === this.selectedPositions.length
+      },
+      selectSomePositions () {
+        return this.selectedPositions.length > 0 && !this.selectAllPositions
+      },
+      iconPositions () {
+        if (this.positions.length === this.selectedOrgTypes.length) {
+          return 'check_box'
+        }
+        if (this.selectSomePositions) {
+          return 'indeterminate_check_box'
+        }
+        return 'check_box_outline_blank'
+      },
     },
     mounted () {
       this.calendarApi = this.$refs.eventCalendar.getApi()
       this.calendarStart = this.calendarApi.getDate()
       this.setCalendarStartAndEndTimes()
+      //when getEvents was placed in the calendar it loaded before the calendar dates were set: :view-skeleton-render="getEvents"
+      //placing here seems to have solved that
+      this.getEvents()
     },
     watch: {
       '$store.state.user.details.timezone.value': function () {
@@ -200,23 +390,48 @@
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
       this.getSchedulingOrgs()
       this.getSchedulingUsers()
+      this.getOrgTypes()
+      this.getPositions()
     },
     data() {
       return {
         snackbar: {},
+        calendarLoading: false,
         calendarInitialRender: true,
         calendarApi: null,
         calendarStart: null,
         calendarView: null,
         calendarStartTime: null,
         calendarEndTime: null,
+        eventSources: [
+          { name: 'Regular Events',
+            events: [] },
+          { name: 'Appt Events',
+            events: [] }
+        ],
         events: [],
+        selectedStates: [],
+        previousStateCount: 0,
+        masterOrgs: [],
+        orgValuesChanged: false,
         orgs: [],
         selectedOrgs: [],
         orgsLoading: true,
         usersLoading: true,
+        userValuesChanged: false,
+        masterUsers: [],
         users: [],
         selectedUsers: [],
+        orgTypes: [],
+        orgTypeValuesChanged: false,
+        selectedOrgTypes: [],
+        previousTypeCount: 0,
+        orgTypesLoading: true,
+        positions: [],
+        positionValuesChanged: false,
+        selectedPositions: [],
+        previousPositionCount: 0,
+        positionsLoading: true,
         resources: [],
         mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
@@ -244,7 +459,7 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.gotoDate(new Date)
                   // this.setCalendarStartAndEndTimes()
-                  this.getEvents()
+                  this.getEvents(false, true)
                 }
               },
               customPrev: {
@@ -254,7 +469,7 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.prev()
                   // this.setCalendarStartAndEndTimes()
-                  this.getEvents()
+                  this.getEvents(false, true)
                 }
               },
               customNext: {
@@ -264,7 +479,7 @@
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.next()
                   // this.setCalendarStartAndEndTimes()
-                  this.getEvents()
+                  this.getEvents(false, true)
                 }
               }
             }
@@ -310,6 +525,33 @@
           }
         })
       },
+      toggleSelectAllStates () {
+        this.$nextTick(() => {
+          if (this.selectAllStates) {
+            this.selectedStates = []
+          } else {
+            this.selectedStates = cloneDeep(this.states)
+          }
+        })
+      },
+      toggleSelectAllOrgTypes () {
+        this.$nextTick(() => {
+          if (this.selectAllOrgTypes) {
+            this.selectedOrgTypes = []
+          } else {
+            this.selectedOrgTypes = cloneDeep(this.orgTypes)
+          }
+        })
+      },
+      toggleSelectAllPositions () {
+        this.$nextTick(() => {
+          if (this.selectAllPositions) {
+            this.selectedPositions = []
+          } else {
+            this.selectedPositions = cloneDeep(this.positions)
+          }
+        })
+      },
       async getSchedulingOrgs() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -325,6 +567,7 @@
             d.id = `${1}${d.id}`
           })
           this.orgs = data
+          this.masterOrgs = cloneDeep(this.orgs)
           this.orgsLoading = false
           this.selectedOrgs = this.selectedOrgs.filter(so => {
             return this.orgs.some(o => o.id === so.id)
@@ -333,6 +576,32 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Orgs')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getOrgTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getOrgTypes()
+          this.orgTypes = data
+          this.orgTypesLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getPositions() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/position/scheduling`)
+          this.positions = data
+          this.positionsLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -351,6 +620,7 @@
             d.id = `${2}${d.id}`
           })
           this.users = data
+          this.masterUsers = cloneDeep(this.users)
           this.usersLoading = false
           this.selectedUsers = this.selectedUsers.filter(su => {
             return this.users.some(u => u.id === su.id)
@@ -362,41 +632,77 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getEvents() {
+      async getAvailability() {
+        try {
+          let params = {
+            orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+            startTime: this.calendarStartTime,
+            endTime: this.calendarEndTime
+          }
+          const {data} = await postRequest(`/schedule/availability`, params)
+          data.forEach(d => {
+            d.resourceId = `${d.systemListTypeId}${d.resourceId}`
+            d.color = 'gray'
+          })
+          this.eventSources[1].events = cloneDeep(data)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getEvents(isOrgs, reload) {
         localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
         localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
-        if(!this.calendarInitialRender) {
-          this.setCalendarStartAndEndTimes()
-        }
-        this.calendarInitialRender = false
-        // note: this gets called every render of the calendar which makes clicking the 'day' and 'week' buttons work
-        this.events = []
-        if(this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+        //dont reload events if they deselected all of one type
+        //and only load if the selected values changed
+        console.log('we are loading reload', reload)
+        console.log('we are loading initial', this.calendarInitialRender)
+        if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
+          if (!this.calendarInitialRender) {
+            this.setCalendarStartAndEndTimes()
+          }
+          this.calendarInitialRender = false
+          // note: this gets called every render of the calendar which makes clicking the 'day' and 'week' buttons work
+          this.eventSources = [
+            { name: 'Regular Events',
+              events: [] },
+            { name: 'Appt Events',
+              events: [] }
+          ]
+          if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
+            //i do this here instead of on its own because all of the code above here has to happen for get availability as well
+            this.calendarLoading = true
+            this.getAvailability()
 
-          try {
-            let params = {
-              orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-              userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
-              startTime: this.calendarStartTime,
-              endTime: this.calendarEndTime
+            try {
+              let params = {
+                orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+                userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+                startTime: this.calendarStartTime,
+                endTime: this.calendarEndTime
+              }
+              const {data} = await postRequest(`/schedule`, params)
+              data.forEach(d => {
+                d.resourceId = `${d.systemListTypeId}${d.resourceId}`
+                d.title = `<b>${d.contactFirstName} ${d.contactLastName}</b> <br/> ${d.groupName}`
+                let matchingResource = this.resources.find(r => r.id === d.resourceId)
+                d.colorForBorder = matchingResource?.color
+              })
+              this.eventSources[0].events = cloneDeep(data)
+
+              this.calendarLoading = false
+            } catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
+              this.calendarLoading = false
+            } finally {
+              this.orgValuesChanged = false
+              this.userValuesChanged = false
             }
-            const {data} = await postRequest(`/schedule`, params)
-            data.forEach(d => {
-              d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-              d.title = `<b>${d.contactFirstName} ${d.contactLastName}</b> <br/> ${d.groupName}`
-              let matchingResource = this.resources.find(r => r.id === d.resourceId)
-              d.colorForBorder = matchingResource?.color
-            })
-            this.events = cloneDeep(data)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
-            this.$store.commit(AppMutations.SET_LOADING, false)
           }
         }
-
       },
       setCalendarStartAndEndTimes () {
         this.calendarStart = this.calendarApi.getDate()
@@ -412,12 +718,22 @@
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
       handleEventClick (info) {
-        let props = info.event.extendedProps
-        this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
+        if(info.event.title) {
+          let props = info.event.extendedProps
+          this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
+        }
       },
       handleEventRender (info) {
-        info.el.querySelector('.fc-title').innerHTML = info.event.title
-        info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
+        //3 types of rendering. null = regular scheduled events,
+        // background = blocked out from start to end, (resource_appointments)
+        // inverse-background = blocked before start and after end (resource_schedule_availability)
+        if(info.event.rendering === 'background') {
+          info.el.textContent = info.event.title
+          info.el.style.cssText += `padding-left: 10px; opacity: 100%; color: black;`
+        } else if(info.event.rendering !== 'inverse-background') {
+          info.el.querySelector('.fc-title').innerHTML = info.event.title
+          info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
+        }
       },
       handleResourceRender (renderInfo) {
         let checkbox = document.createElement('INPUT');
@@ -426,9 +742,8 @@
 
         checkbox.onchange = (event) => {
           if(event.target.checked) {
-            // debugger
             let resource = renderInfo.resource
-            let resourceEvents = this.events.filter(e => {
+            let resourceEvents = this.eventSources[0].events.filter(e => {
               return e.resourceId === resource.id
             })
             resourceEvents.forEach(re => {
@@ -445,13 +760,51 @@
             })
           }
           this.callback(this.mapResourceEvents)
-
         }
 
         renderInfo.el.querySelector('.fc-cell-text')
           .prepend(checkbox)
 
+      },
+      filterOrgsAndUsers() {
+        //only filter if something is selected
+        let stateFilterRequired = this.selectedStates?.length > 0
+        let orgTypeFilterRequired = this.selectedOrgTypes?.length > 0
+        let positionFilterRequired = this.selectedPositions?.length > 0
+        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired) {
+          this.orgs = this.masterOrgs.filter(mo => {
+            let stateMatch = true
+            let orgTypeMatch = true
+            if(stateFilterRequired) {
+              let match = this.selectedStates.find(ss => ss.id === mo.stateId)
+              stateMatch = match !== null && match !== undefined
+            }
+            if(orgTypeFilterRequired) {
+              let match = this.selectedOrgTypes.find(sot => sot.id === mo.orgTypeId)
+              orgTypeMatch = match !== null && match !== undefined
+            }
+            return stateMatch && orgTypeMatch
+          })
+          let selectedPositionIds = this.selectedPositions.map(p => p.id)
+          let selectedStateIds = this.selectedStates.map(s => s.id)
+          this.users = this.masterUsers.filter(mo => {
+            let stateMatch = true
+            let positionMatch = true
+            if(stateFilterRequired) {
+              stateMatch = mo.userPositions.some(up => {
+                return selectedStateIds.includes(up.stateId)
+              })
+            }
+            if(positionFilterRequired) {
+              positionMatch = mo.userPositions.some(up => {
+                return selectedPositionIds.includes(up.positionId)
+              })
+            }
+            return stateMatch && positionMatch
+          })
+        }
       }
+
     }
   }
 </script>
@@ -491,6 +844,23 @@
 .calendar-resize-container {
   /* without this when you resize the screen the calendar goes whackadoodle */
   flex: 1 1 auto;
+  position: relative;
+}
+#calendar-loader {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  background-color: var(--v-secondary-base);
+  opacity: .5;
 }
 </style>
 

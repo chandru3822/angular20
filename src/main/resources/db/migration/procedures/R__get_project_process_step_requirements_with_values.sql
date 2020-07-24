@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION flow.get_project_process_step_requirements_with_value
                  archived boolean, secondary_requirement_value varchar, data_type_requirement_id int, list_of_value_id int, list_of_value_ids json, operator_type varchar,
                  process_step_requirement_type varchar, parent_id int, custom_value boolean, parent_name varchar, field_name varchar, custom_field_sql_key varchar,
                  company_system_list_id int, system_list_option_id int, custom_sql_option_id int, project_custom_field_value_id int, project_process_step_id int, text_value text,
-                 date_value date, timestamp_value timestamp, boolean_value boolean, numeric__value numeric, int_value int, int_array_value json, system_list_option_ids json,
+                 date_value date, timestamp_value timestamp, boolean_value boolean, numeric_value numeric, int_value int, int_array_value json, system_list_option_ids json,
                  data_type_requirement json, list_of_value json, list_of_values json, data_type_id int, has_list_values boolean, company_function_name varchar, function_name varchar, requirement_param_dynamic_values json,
                  company_function_params json, available_list_of_values json) AS
 
@@ -44,14 +44,14 @@ BEGIN
       cf.company_system_list_id,
       psr.system_list_option_id,
       psr.custom_sql_option_id,
-      ppscfv.id as project_custom_field_value_id,
-      ppscfv.project_process_step_id,
-      ppscfv.text_value,
-      ppscfv.date_value,
-      ppscfv.timestamp_value,
-      ppscfv.boolean_value,
-      ppscfv.numeric_value,
-      ppscfv.int_value,
+      case when pps1.id is not null then ppscfv1.id else ppscfv.id end as project_custom_field_value_id,
+      case when pps1.id is not null then ppscfv1.project_process_step_id else ppscfv.project_process_step_id end as "projectprocessStepId",
+      case when pps1.id is not null then ppscfv1.text_value else ppscfv.text_value end as "textValue",
+      case when pps1.id is not null then ppscfv1.date_value else ppscfv.date_value end as "dateValue",
+      case when pps1.id is not null then ppscfv1.timestamp_value else ppscfv.timestamp_value end as "timestampValue",
+      case when pps1.id is not null then ppscfv1.boolean_value else ppscfv.boolean_value end as "booleanValue",
+      case when pps1.id is not null then ppscfv1.numeric_value else ppscfv.numeric_value end as "numericValue",
+      case when pps1.id is not null then ppscfv1.int_value else ppscfv.int_value end as "intValue",
       coalesce(array_to_json(ppscfv.int_array_value), '[]') as int_array_value,
       array_to_json(cf.system_list_option_ids) as system_list_option_ids,
       (select json_build_object(
@@ -135,17 +135,20 @@ BEGIN
     inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
     inner join flow.project_process_step pps on pps.process_step_id = psr.process_step_id
     left join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+    left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+    left join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = cfg.process_step_id and pps1.main is true and pps1.archived is false
     left join flow.custom_field cf on cf.id = cfga.custom_field_id
     left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-    left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
     left join flow.process_step ps on ps.id = cfg.process_step_id
     left join flow.company_function cfn on cfn.id = psr.company_function_id
     left join flow.db_function df on df.id = cfn.db_function_id
     left join flow.data_type_requirement dtr on dtr.id = psr.data_type_requirement_id
     left join flow.list_of_value lov on lov.id = psr.list_of_value_id
     left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfga.id
+    left join flow.project_process_step_custom_field_value ppscfv1 on ppscfv1.custom_field_group_assignment_id = cfga.id and ppscfv1.project_process_step_id = pps1.id and ppscfv1.archived is not true
     where
       psr.archived is not true and
+      cfga.archived is not true and
       pps.id = p_project_process_step_id and
       psr.id = any (array[p_requirement_ids]::int[])
     order by psr.requirement_nbr;

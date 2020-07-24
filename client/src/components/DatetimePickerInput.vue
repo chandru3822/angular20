@@ -17,6 +17,7 @@
       :clearable="!readonly"
       :disabled="readonly"
       v-on="!readonly && on"
+      @click:clear="clearInput"
     />
   </template>
   <v-date-picker
@@ -77,7 +78,7 @@ export default {
       get: function() {
         return this.$props.value
           ? moment.utc(this.$props.value, (this.inputFormat ?? this.defaultTimeFormat)).tz(this.timezone).format('HH:mm')
-          : moment().format('HH:mm')
+          : moment().startOf('hour').format('HH:mm')
       },
       set: function (date) {
         this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
@@ -118,7 +119,6 @@ export default {
       this.init()
     },
     init () {
-      console.log('VAL', value)
       // let value = DateTime.fromFormat(this.$props.value, 'HH:mm')
       let value = DateTime.fromISO(this.$props.value, { zone: 'utc'})
 
@@ -129,7 +129,7 @@ export default {
       const now = DateTime.local().setZone('utc')
       this.dateToUse = (value.isValid) ? value : now
       this.date = this.dateToUse.toFormat('yyyy-MM-dd')
-      this.time = this.dateToUse.toFormat('HH:mm')
+      this.time = this.dateToUse.startOf('hour').toFormat('HH:mm')
 
       if (['timestamp', 'date'].includes(this.type)) {
         this.showDate = true
@@ -138,6 +138,9 @@ export default {
         this.showDate = false
         this.showTime = true
       }
+    },
+    clearInput () {
+        this.$emit('input', null)
     }
   }
 }

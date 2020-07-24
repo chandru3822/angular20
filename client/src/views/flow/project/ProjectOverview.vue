@@ -2,16 +2,49 @@
 <v-row id="project-container">
   <v-col cols="12">
     <v-row class="project-header">
-      <v-col cols="8" class="text-left pl-5">
+      <v-col cols="10" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/contact/${contact.id}`">{{ contact.fullName}}</router-link>
+          <router-link :to="`/contact/${project.contactId}`">{{ project.projectName}}</router-link>
         </div>
         <div class="project-subtitle">
-          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
+          <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }}</span>
+          <div v-else>
+            <v-text-field
+              v-model="project.street1"
+              label="Street"
+            ></v-text-field>
+            <v-text-field
+              v-model="project.city"
+              label="City"
+            ></v-text-field>
+            <v-text-field
+              v-model="project.postalCode"
+              label="Postal Code"
+            ></v-text-field>
+            <v-select v-model="project.stateId"
+                      :items="states"
+                      label="State"
+                      item-text="state"
+                      item-value="id"
+            ></v-select>
+            <v-select v-model="project.countryId"
+                      :items="countries"
+                      label="Country"
+                      item-text="country"
+                      item-value="id"
+            ></v-select>
+          </div>
+          <v-btn x-small text @click="[editAddress = !editAddress, getStatesAndCountries()]">
+            <span v-if="editAddress">Cancel</span>
+            <v-icon v-else>edit</v-icon>
+          </v-btn>
+          <v-btn small color="primaryCustom" dark class="white--text" v-if="editAddress" @click="saveProjectAddress">
+            Save
+          </v-btn>
         </div>
       </v-col>
 
-      <v-col cols="4" class="lead-owner pb-2 text-right">
+      <v-col cols="2" class="lead-owner pb-2 text-right">
         <div v-if="!displayChangeOwner">
           <div v-if="project.owner && project.owner.userId">
             <v-avatar
@@ -39,9 +72,17 @@
         </div>
         <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
           <span v-if="displayChangeOwner">cancel</span>
-          <span v-else-if="contact.owner && contact.owner.userId">change</span>
+          <span v-else-if="project.owner && project.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
+          <v-select
+              v-model="project.companyProjectStatusTypeId"
+              :items="statuses"
+              item-text="projectStatusType"
+              item-value="id"
+              @change="updateStatus"
+              label="Status"
+          />
       </v-col>
     </v-row>
   </v-col>
@@ -103,7 +144,7 @@
           <ActiveProjectProcessStepSnippet
             :steps="processSteps.filter(step => step.processStepStatusTypeId === 1)"
             :projectId="projectId"
-            :contactId="contact.id"/>
+            :contactId="project.contactId"/>
         </v-col>
       </v-row>
     </v-col>
@@ -152,7 +193,7 @@
                 :key="step.processStepName"
                 :steps="step.processSteps"
                 :projectId="projectId"
-                :contactId="contact.id"/>
+                :contactId="project.contactId"/>
             </template>
           </v-col>
 
@@ -184,7 +225,7 @@
 
 <script>
 
-import {getRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import ActiveProjectProcessStepSnippet from '@/views/flow/project/ActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
@@ -193,6 +234,8 @@ import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import {getCountries} from '@/services/countryService'
+import {getStates} from '@/services/stateService'
 
 export default {
   name: 'ProjectOverview',
@@ -214,12 +257,15 @@ export default {
       isFieldsLoading: true,
       notes: [],
       snackbar: {},
+      editAddress: false,
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
-      contact: {},
       displayChangeOwner: false,
       availableOwners: [],
-      project: {}
+      project: {},
+      states: [],
+      countries: [],
+      statuses: []
     }
   },
   created () {
@@ -227,8 +273,8 @@ export default {
     this.getFieldGroups()
     this.getProcessSteps()
     this.getNotes()
-    this.getContact()
     this.getAvailableOwners()
+    this.getStatuses()
   },
   computed: {
     processStepsByName () {
@@ -309,13 +355,13 @@ export default {
         console.log('done gone boom')
       }
     },
-    getContact: async function () {
-      try {
-        const{data} = await getRequest(`/contact/project/${this.projectId}`)
-        this.contact = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-      }
+    getStatuses: async function () {
+        try {
+            const {data} = await getRequest('/project/status')
+            this.statuses = data
+        } catch (e) {
+            this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')
+        }
     },
     updateOwner: async function () {
       this.displayChangeOwner = false
@@ -328,7 +374,61 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    }
+    },
+    updateStatus: async function () {
+      try {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          await postRequest(`/project/${this.projectId}/status`, this.project)
+      }  catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error updating project status')
+      } finally {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    saveProjectAddress: async function() {
+      this.editAddress = false
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/project`, this.project)
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Address')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getStatesAndCountries: function () {
+      // only load countries and states if they try to edit the project address and they haven't already been loaded
+      if(this.states.length === 0 || this.countries.length === 0) {
+        this.getStates()
+        this.getCountries()
+      }
+    },
+    getStates: async function () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getStates()
+        this.states = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving States')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    getCountries: async function () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getCountries()
+        this.countries = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Countries')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
   }
 }
 </script>

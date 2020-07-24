@@ -61,13 +61,20 @@ public class ProjectService {
 
   public Page<Project> searchProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", "VIEW_ALL");
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
+    params.put("userId", user.getId());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
-    List<Project> projects = sqlCache.query("project.search", params, Project.class);
-    Integer total = sqlCache.queryForObject("project.searchCount", params, Integer.class);
+
+    String searchSqlKey = viewAll ? "project.search" : "project.searchByOwner";
+    String countSqlKey = viewAll ? "project.searchCount" : "project.searchCountByOwner";
+
+    List<Project> projects = sqlCache.query(searchSqlKey, params, Project.class);
+    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
@@ -75,28 +82,50 @@ public class ProjectService {
     return sqlCache.get("project.get", ImmutableMap.of("projectId", projectId), new ProjectMapper<>(Project.class, om));
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, String projectName) {
+  public void updateProject(Project project) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", project.getId());
+    params.put("street1", project.getStreet1());
+    params.put("city", project.getCity());
+    params.put("stateId", project.getStateId());
+    params.put("postalCode", project.getPostalCode());
+    params.put("countryId", project.getCountryId());
+    params.put("modifiedById", currentUser.getId());
+
+    sqlCache.update("project.update", params);
+  }
+
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
     User user = securityService.getCurrentUser();
 
     // Get active company project status type so new projects can have an active status
     CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(user.getCompanyId());
     Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
-    Long id = sqlCache.updateReturningId("project.insert",
-        ImmutableMap.of("contactId", contactId,
-                        "createdById", user.getId(),
-                        "projectName", projectName,
-                        "processId", processId,
-                        "companyProjectStatusTypeId", companyStatusTypeId), "id").longValue();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId );
+    params.put("createdById", user.getId() );
+    params.put("projectName", contact.getFullName() );
+    params.put("processId", processId );
+    params.put("street1", contact.getStreet1() );
+    params.put("city", contact.getCity() );
+    params.put("stateId", contact.getStateId() );
+    params.put("countryId", contact.getCountryId() );
+    params.put("postalCode", contact.getPostalCode() );
+    params.put("companyProjectStatusTypeId", companyStatusTypeId );
+
+    Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
 
     return getProject(id);
   }
 
-  public List<Attachment> getAttachments(Long projectId) {
+  public List<Attachment> getAttachments(Long projectId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     List<Attachment> attachments = sqlCache.query("project.getAttachments", params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
@@ -129,6 +158,7 @@ public class ProjectService {
     params.put("key", key);
     params.put("size", file.getSize());
     params.put("createdById", currentUser.getId());
+    params.put("companyId", currentUser.getCompanyId());
     params.put("attachmentTypeId", attachmentTypeId);
 
     Long attachmentId = sqlCache.updateReturningId("attachment.create", params, "id").longValue();
@@ -156,6 +186,10 @@ public class ProjectService {
     sqlCache.update("project.updateOwner", params);
   }
 
+  public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {
+      sqlCache.update("project.updateStatus", Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
+  }
+
   private CompanyProjectStatusType getActiveCompanyProjectStatusType(Long companyId) {
     return sqlCache.get("project.getActiveProjectStatusTypeByCompanyId", Map.of("companyId", companyId), CompanyProjectStatusType.class).orElse(null);
   }
@@ -166,6 +200,10 @@ public class ProjectService {
 
   public List<Owner> getOwners() {
     return sqlCache.query("project.getOwners", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), Owner.class);
+  }
+
+  public List<ProjectStatus> getStatuses() {
+      return sqlCache.query("project.getStatuses", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), ProjectStatus.class);
   }
 
   public String generateReport(String query) {

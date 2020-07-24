@@ -49,7 +49,7 @@
         from flow.custom_field_group_assignment cfga
         left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
         inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
-        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id in (cot.id, :processStepTypeId)
+        inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
         inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
         left join flow.project_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_id = :projectId
         left join flow.project p on p.id = pcv.project_id
@@ -191,75 +191,78 @@
   ]]></customFieldValues.getOrgFieldValues>
 
   <customFieldValues.getProjectProcessStepFieldValues><![CDATA[
-    select
-        cfg.id,
-           cot.id,
-        cfg.group_name as "groupName",
-        cfg.group_order as "groupOrder",
-        cfg.event_type_id as "eventTypeId",
-        coalesce((
-                     SELECT array_to_json(array_agg(row_to_json(fields)))
-                     FROM (
-                              select
-                                  pcv.id,
-                                  p.project_id as "projectId",
-                                  p.process_step_id as "processStepId",
-                                  pcv.date_value as "dateValue",
-                                  pcv.timestamp_value as "timestampValue",
-                                  pcv.boolean_value as "booleanValue",
-                                  pcv.text_value as "textValue",
-                                  pcv.numeric_value as "numericValue",
-                                  pcv.int_value as "intValue",
-                                  pcv.int_array_value as "intArrayValue",
-                                  cfga.custom_field_group_id as "customFieldGroupId",
-                                  cfga.id as "customFieldGroupAssignmentId",
-                                  cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                  cfga.custom_field_id as "customFieldId",
-                                  cfga.field_order as "fieldOrder",
-                                  cf.list_of_value_id as "listOfValueId",
-                                  cf.field_name as "fieldName",
-                                  cf.readonly,
-                                  cf.custom_field_sql_key as "customFieldSqlKey",
-                                  cf.company_system_list_id as "companySystemListId",
-                                  cf.system_list_option_ids as "systemListOptionIds",
-                                  cf.company_data_type_id as "companyDataTypeId",
-                                  cdt.data_type_id as "dataTypeId",
-                                  cdt.has_list_values as "hasListValues",
-                                  coalesce((
-                                               SELECT array_to_json(array_agg(row_to_json(listOfValues)))
-                                               FROM (
-                                                        select
-                                                            lov.id,
-                                                            lov.name,
-                                                            lov.code,
-                                                            lov.parent_id,
-                                                            lov.display_order
-                                                        from flow.list_of_value lov
-                                                        where lov.parent_id is not null
-                                                          and lov.parent_id = cf.list_of_value_id
-                                                          and lov.archived is not true
-                                                        order by lov.display_order
-                                                    ) listOfValues), '[]') AS "listOfValues"
-                              from flow.custom_field_group_assignment cfga
-                                       left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
-                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
-                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
-                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                       left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :projectProcessStepId
-                                       left join flow.project_process_step p on p.id = pcv.project_process_step_id
-                              where cfga.custom_field_group_id = cfg.id
-                                and cfga.archived is not true
-                                and cfot.archived is not true
-                              order by cfga.field_order
-                          ) fields), '[]') AS "customFieldValues"
-    from flow.custom_field_group cfg
-             inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-             inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
-    where cot.object_type_id = :objectTypeId
-      and cfg.archived is not true
-      and pps.id = :projectProcessStepId
-      and cot.company_id = :companyId
-    order by cfg.group_order;
+select
+    cfg.id,
+    cot.id as "companyObjectTypeId",
+    cfg.group_name as "groupName",
+    cfg.group_order as "groupOrder",
+    cfg.event_type_id as "eventTypeId",
+    coalesce((
+                 SELECT array_to_json(array_agg(row_to_json(fields)))
+                 FROM (
+                          select
+                              pcv.id,
+                              p.project_id as "projectId",
+                              p.process_step_id as "processStepId",
+                              case when cfga1.id is not null then pcv1.date_value else pcv.date_value end as "dateValue",
+                              case when cfga1.id is not null then pcv1.timestamp_value else pcv.timestamp_value end as "timestampValue",
+                              case when cfga1.id is not null then pcv1.boolean_value else pcv.boolean_value end as "booleanValue",
+                              case when cfga1.id is not null then pcv1.text_value else pcv.text_value end as "textValue",
+                              case when cfga1.id is not null then pcv1.numeric_value else pcv.numeric_value end as "numericValue",
+                              case when cfga1.id is not null then pcv1.int_value else pcv.int_value end as "intValue",
+                              case when cfga1.id is not null then pcv1.int_array_value else pcv.int_array_value end as "intArrayValue",
+                              cfga.custom_field_group_id as "customFieldGroupId",
+                              cfga.id as "customFieldGroupAssignmentId",
+                              cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                              cfga.custom_field_id as "customFieldId",
+                              cfga.field_order as "fieldOrder",
+                              cf.list_of_value_id as "listOfValueId",
+                              cf.field_name as "fieldName",
+                              cf.readonly,
+                              cf.custom_field_sql_key as "customFieldSqlKey",
+                              cf.company_system_list_id as "companySystemListId",
+                              cf.system_list_option_ids as "systemListOptionIds",
+                              cf.company_data_type_id as "companyDataTypeId",
+                              cdt.data_type_id as "dataTypeId",
+                              cdt.has_list_values as "hasListValues",
+                              coalesce((
+                                           SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                           FROM (
+                                                    select
+                                                        lov.id,
+                                                        lov.name,
+                                                        lov.code,
+                                                        lov.parent_id,
+                                                        lov.display_order
+                                                    from flow.list_of_value lov
+                                                    where lov.parent_id is not null
+                                                      and lov.parent_id = cf.list_of_value_id
+                                                      and lov.archived is not true
+                                                    order by lov.display_order
+                                                ) listOfValues), '[]') AS "listOfValues"
+                          from flow.custom_field_group_assignment cfga
+                                   left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
+                                   left join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
+                                   left join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = cfg1.process_step_id and pps1.main is true and pps1.archived is false
+                                   inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
+                                   inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
+                                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                   left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :projectProcessStepId
+                                   left join flow.project_process_step_custom_field_value pcv1 on pcv1.custom_field_group_assignment_id = cfga.ancillary_custom_field_group_assignment_id and pcv1.project_process_step_id = pps1.id is true and pcv1.archived is not true
+                                   left join flow.project_process_step p on p.id = pcv.project_process_step_id
+                          where cfga.custom_field_group_id = cfg.id
+                            and cfga.archived is not true
+                            and cfot.archived is not true
+                          order by cfga.field_order
+                      ) fields), '[]') AS "customFieldValues"
+from flow.custom_field_group cfg
+         inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+         inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
+where cot.object_type_id = :objectTypeId
+  and cfg.archived is not true
+  and pps.id = :projectProcessStepId
+  and cot.company_id = :companyId
+order by cfg.group_order
   ]]></customFieldValues.getProjectProcessStepFieldValues>
 
   <customFieldValues.updateContactCustomFieldValue><![CDATA[

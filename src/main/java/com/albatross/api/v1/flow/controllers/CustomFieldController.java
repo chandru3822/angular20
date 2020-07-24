@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ public class CustomFieldController {
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public CustomField saveField(@RequestBody CustomField customField) {
+  public CustomField saveField(@RequestBody CustomField customField) throws SQLException {
     // add the field and list of values
     CustomField field = customFieldService.saveField(customField);
     return field;

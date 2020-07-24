@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class MetroArea {
     private Long id;
-    private String area, metroArea;
-    private Long salesAreaId;
+    private String metroArea;
     private Boolean archived;
 }

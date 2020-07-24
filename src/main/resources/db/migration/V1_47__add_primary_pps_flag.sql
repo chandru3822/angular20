@@ -1,0 +1,2 @@
+alter table if exists flow.project_process_step add column if not exists main boolean default false not null;
+comment on column flow.project_process_step.main is 'Denotes the main/primary project process step for the related process step and project';

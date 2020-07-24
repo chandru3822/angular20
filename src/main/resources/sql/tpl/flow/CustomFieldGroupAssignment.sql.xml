@@ -55,6 +55,7 @@
                              WHERE cfga.custom_field_group_id = cfg.id
                                AND cfga.archived is not true
                                AND cfot.archived is not true
+                               and cfot.company_object_type_id = :companyObjectTypeId
                              union all
                              SELECT cfga.id,
                                     cfga.custom_field_group_id as "customFieldGroupId",
@@ -70,7 +71,10 @@
                                       inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
                                       inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
-                             WHERE cfga.custom_field_group_id = cfg.id AND cfga.archived is not true
+                             WHERE cfga.custom_field_group_id = cfg.id
+                               AND cfot.archived is not true
+                               AND cfga.archived is not true
+                               and cfot.company_object_type_id = :companyObjectTypeId
                              ORDER BY "fieldOrder") customFields), '[]') AS "customFields"
         from flow.custom_field_group cfg
                  inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id

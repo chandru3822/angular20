@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -61,16 +62,18 @@ public class ProjectProcessStepService {
 
   private final AsyncProjectProcessStepService asyncProjectProcessStepService;
 
+  private final CustomFieldValueService customFieldValueService;
+
   private final ObjectMapper om;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
-  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId) {
+  public List<Attachment> getProjectProcessStepAttachments(Long projectProcessStepId, Boolean isMobile) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
     List<Attachment> attachments = sqlCache.query("projectProcessStep.getProjectProcessStepAttachments", params, Attachment.class);
-    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket);
+    return attachmentService.getAttachmentPresignedUrls(attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
   // @TODO: this needs to work better with the attachment service's create method. Too much duped code right now and I hate it
@@ -129,12 +132,31 @@ public class ProjectProcessStepService {
     sqlCache.update("projectProcessStep.setStatus", params);
   }
 
-  public void updateOwner(Long projectProcessStepId, Owner owner) {
+  public ResponseEntity updateOwner(Long projectProcessStepId, Owner owner, Boolean blockOverride) {
+    /* blockOverride = don't allow someone to assign to themselves if it is already assigned to someone else.
+     / (race-condition should be the only time this is really used)
+     / or if someone sits on the ui for a long time before clicking "Assign to me"
+    */
     HashMap<String, Object> params = new HashMap<>();
     params.put("userPositionId", (owner == null) ? null : owner.getUserPositionId());
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("userId", securityService.getCurrentUser().getId());
-    sqlCache.update("projectProcessStep.updateOwner", params);
+
+
+    boolean canSave = false;
+    if(null != blockOverride && blockOverride) {
+      //check for existing owner
+      Long id = sqlCache.queryForObject("projectProcessStep.getOwner", params, Long.class);
+      canSave = id == null;
+    }
+
+    if(null == blockOverride || !blockOverride || canSave) {
+      sqlCache.update("projectProcessStep.updateOwner", params);
+      return ResponseEntity.ok("Owner Saved");
+    } else {
+      return ResponseEntity.badRequest().body("Project Process Step is already assigned to another user. Please refresh page.");
+    }
+
   }
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
@@ -149,7 +171,8 @@ public class ProjectProcessStepService {
     return step;
   }
 
-  public ProjectProcessStep insertProjectProcessStep(Long projectId, Long processStepId, Long statusTypeId, Long userPositionId) {
+  @Transactional
+  public ProjectProcessStep insertProjectProcessStep(Long projectId, Long processStepId, Long statusTypeId, Long userPositionId, Boolean main) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -158,19 +181,25 @@ public class ProjectProcessStepService {
     params.put("statusTypeId", statusTypeId);
     params.put("userPositionId", userPositionId);
     params.put("createdById", user.getId());
+    params.put("main", main);
     Long id = sqlCache.updateReturningId("projectProcessStep.insertProjectProcessStep", params, "id").longValue();
+
+    if (main) {
+        params.put("mainProjectProcessStepId", id);
+        sqlCache.update("projectProcessStep.clearMain", params);
+    }
 
     return getProjectProcessStep(id);
   }
 
-  public ProjectProcessStep saveProjectProcessStep(ProjectProcessStep pps) {
+  public List<CustomFieldGroup> saveProjectProcessStep(ProjectProcessStep pps) {
     User currentUser = securityService.getCurrentUser();
 
     //todo: handle the rest of the save ... if any - see userService.saveUser
 
     handleSavingCustomFieldValues(pps.getCustomFieldGroups(), pps.getProjectProcessStepId());
 
-    return getProjectProcessStep(pps.getProjectProcessStepId());
+    return customFieldValueService.getProjectProcessStepCustomValues(pps.getProjectProcessStepId());
   }
 
   public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long primaryId){
@@ -210,10 +239,31 @@ public class ProjectProcessStepService {
 
   @Transactional
   public void deleteProjectProcessStep(Long projectProcessStepId) {
-    sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
+      ProjectProcessStep deletingStep = this.getProjectProcessStep(projectProcessStepId);
+
+      if (deletingStep != null) {
+          Map<String, Object> params = om.convertValue(deletingStep, HashMap.class);
+          List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getNonMain", params, ProjectProcessStep.class);
+
+          if (steps.isEmpty()) {
+              sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
+          } else {
+              throw new RuntimeException("Must mark another project process step as main before deleting this one");
+          }
+      }
   }
 
-  public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
+
+    public void updateMain(Long projectProcessStepId) {
+        ProjectProcessStep updatingStep = this.getProjectProcessStep(projectProcessStepId);
+
+        if (updatingStep != null) {
+            sqlCache.update("projectProcessStep.updateMain", Map.of("projectProcessStepId", projectProcessStepId, "projectId", updatingStep.getProjectId(), "processStepId", updatingStep.getProcessStepId()));
+        }
+    }
+
+
+    public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
 
 
@@ -232,7 +282,6 @@ public class ProjectProcessStepService {
   public List<Owner> getOwners(Long processStepProcessId) {
     return sqlCache.query("projectProcessStep.getOwners", Map.of("processStepProcessId", processStepProcessId), Owner.class);
   }
-
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
   @Transactional
@@ -261,10 +310,10 @@ public class ProjectProcessStepService {
 
     List<ProjectProcessStep> newSteps = new ArrayList<>();
 
-    Long ownerId = (projectProcessStep.getOwner() != null) ? projectProcessStep.getOwner().getUserId() : null;
+    Long ownerUserPositionId = (projectProcessStep.getOwner() != null) ? projectProcessStep.getOwner().getUserPositionId() : null;
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, ownerId));
+      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, ownerUserPositionId, true));
     });
 
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
@@ -757,6 +806,10 @@ public class ProjectProcessStepService {
           break;
         default:
           throw new Exception(String.format("Unable to parse data type of Multiselect with operator of ID: %s", r.getOperatorTypeId()));
+      }
+
+      if (r.getOperatorTypeId() == 2) {
+          passed = !passed;
       }
     }
     return passed;

@@ -55,6 +55,11 @@ public class ProcessStepActionController {
     return processStepActionService.addChildStepToAction(actionId, child);
   }
 
+  @PutMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateActionOrder(@RequestBody List<ProcessStepAction> actions) {
+    processStepActionService.updateActionOrder(actions);
+  }
+
   @DeleteMapping(value = "/{actionId}/deleteChildStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteChildProcessFromAction(@PathVariable Long id) {
     processStepActionService.deleteChildProcessFromAction(id);

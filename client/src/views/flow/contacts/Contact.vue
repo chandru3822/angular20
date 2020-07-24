@@ -5,7 +5,7 @@
         <div class="contact-title">
           {{contact.fullName}}
           <v-menu
-              v-if="contact.contactTypeId === 2 && userCanEdit"
+              v-if="userCanEdit"
               bottom
               offset-y
               :close-on-content-click="false"
@@ -70,7 +70,7 @@
       <v-col cols="2" class="contact-owner pb-2">
         Associated Projects<br/>
         <div v-for="p in contact.projects" :key="p.id">
-          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}`">{{p.projectName}}</router-link>
+          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}`">{{p.projectName}} <span v-if="contact.projects && contact.projects.length > 1">- {{p.id}}</span></router-link>
           <span v-else>{{p.projectName}}</span>
         </div>
       </v-col>

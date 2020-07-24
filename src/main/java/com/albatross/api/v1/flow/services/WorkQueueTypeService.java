@@ -2,8 +2,8 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.WorkQueueType;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.WorkQueueType;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,14 +54,26 @@ public class WorkQueueTypeService {
 
   public Optional<WorkQueueType> updateType(WorkQueueType type) {
     User user = securityService.getCurrentUser();
-    sqlCache.update("workQueueType.updateType",
-        ImmutableMap.of("companyId", user.getCompanyId(),
-            "id", type.getId(),
-            "modifiedById", user.getId(),
-            "workQueueCategoryId", type.getWorkQueueCategoryId(),
-            "workQueueType", type.getWorkQueueType()));
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId() );
+    params.put("id", type.getId() );
+    params.put("modifiedById", user.getId() );
+    params.put("workQueueCategoryId", type.getWorkQueueCategoryId() );
+    params.put("displayOrder", type.getDisplayOrder() );
+    params.put("workQueueType", type.getWorkQueueType() );
+
+    sqlCache.update("workQueueType.updateType", params);
 
     return getType(type.getId());
+  }
+
+  public void updateTypeDisplayOrders(List<WorkQueueType> types) {
+    for(WorkQueueType type : types) {
+      //save each display_order (i guess i can just call the full update - will do the same thing)
+      updateType(type);
+    }
+//    return getWorkQueueTypes();
   }
 
   public Optional<WorkQueueType> insertType(WorkQueueType type) {

@@ -25,7 +25,7 @@
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
-            <!-- if it is a custom field -->
+            <!-- if it is a process step custom field -->
             <v-select
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
                 v-model="parent"
@@ -38,7 +38,8 @@
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
-            <v-select v-if="parent.id"
+            <!-- if it is a process step custom field it needs parent, other custom fields do not-->
+            <v-select v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
                       v-model="selectedCustomField"
                       :items="customFields"
                       label="Custom Field"
@@ -73,7 +74,7 @@
               </v-card>
             </div>
             <v-select
-                v-if="(newRequirement.processStepRequirementTypeId === 1 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"
+                v-if="(newRequirement.processStepRequirementTypeId !== 2 && selectedCustomField.customFieldGroupAssignmentId) || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)"
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
@@ -283,8 +284,11 @@
                     <span v-if="item.processStepRequirementTypeId === 1">
                       {{ item.parentName }} | {{ item.fieldName }}
                     </span>
-                    <span v-else>
+                    <span v-else-if="item.processStepRequirementTypeId === 2">
                       {{ item.companyFunctionName }}
+                    </span>
+                    <span v-else>
+                      {{ item.fieldName }}
                     </span>
                   </td>
                   <td class="text-left">{{item.operatorType}}</td>
@@ -405,10 +409,12 @@
                 :items="filterActions()"
                 :items-per-page="-1"
                 single-expand
+                :sort-desc="[false]"
+                :sort-by="['displayOrder']"
                 :mobile-breakpoint="0"
                 :expanded.sync="actionExpanded"
                 hide-default-footer
-                class="elevation-1 fix-column-width-bug"
+                class="action-table elevation-1 fix-column-width-bug"
             >
               <template #no-data>
                 No actions for this process step
@@ -540,7 +546,7 @@
                     </v-toolbar-items>
                   </v-toolbar>
                   <v-card flat class="pa-3" color="transparent" :class="{'shaded-row': !(selectedActionIndex % 2)}" v-if="addChildProcess">
-                    <h3>Add Child Process</h3>
+                    <h3>Add Child Process Step</h3>
                     <v-select v-model="selectedProcessStep"
                               :items="childProcessSteps"
                               label="Process Step"
@@ -829,6 +835,11 @@
 
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
+                  <td style="width: 50px">
+                    <v-btn text icon small class="handle">
+                      <v-icon>drag_handle</v-icon>
+                    </v-btn>
+                  </td>
                   <td class="text-left">{{item.actionName}}</td>
                   <td class="text-left">{{item.actionType}}</td>
                   <td class="text-left">{{item.processStepStatusType || 'N/A'}}</td>
@@ -898,12 +909,40 @@
   import Snackbar from '@/components/Snackbar.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import orderBy from 'lodash.orderby'
+  import Sortable from "sortablejs";
 
   export default {
     name: 'ProcessStepActions',
     mixins: [Vue2Filters.mixin],
     components: {
       Snackbar
+    },
+    mounted() {
+      let table = document.querySelector('.action-table tbody')
+      const _self = this
+      Sortable.create(table, {
+        handle: '.handle',
+        onEnd({ newIndex, oldIndex }) {
+          const rowSelected = _self.actions.splice(oldIndex, 1)[0]
+          _self.actions.splice(newIndex, 0, rowSelected)
+          let rowsClone = cloneDeep(_self.actions)
+
+          let rowsToSave = []
+          rowsClone.forEach((r, idx) => {
+            //check if the row needs to be saved before updating display order
+            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+            //update display order
+            r.displayOrder = idx
+            //save only rows that changed
+            if(save) {
+              _self.actions[idx].newDisplayOrder = idx
+              rowsToSave.push(r)
+            }
+          })
+          _self.saveRowChanges(rowsToSave)
+        }
+      })
     },
     data() {
       return {
@@ -918,6 +957,7 @@
           {text: null, value: 'icons', show: true}
         ],
         actionHeaders: [
+          { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           {text: 'Name', value: 'actionName', show: true},
           {text: 'Type', value: 'actionType', show: true},
           {text: 'Parent Status Change', value: 'processStepStatusType', show: true},
@@ -1018,9 +1058,15 @@
       async selectRequirementType() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          //1 == custom field, 2 == function
+          //1 == process step custom field, 2 == function, 3 == project custom field, 4 == contact custom field
           if (this.newRequirement.processStepRequirementTypeId === 1) {
             this.loadParentObjects()
+          } else if (this.newRequirement.processStepRequirementTypeId === 3) {
+            //get project custom fields
+            this.loadCustomFieldsByObjectType(1)
+          } else if (this.newRequirement.processStepRequirementTypeId === 4) {
+            //get contact custom fields
+            this.loadCustomFieldsByObjectType(2)
           } else {
             const {data} = await getRequest(`/function`)
             this.availableFunctions = data
@@ -1047,11 +1093,9 @@
       async loadParentObjects() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          if (!this.parentObjects || this.parentObjects.length === 0) {
             const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
             this.parentObjects = data
             this.$store.commit(AppMutations.SET_LOADING, false)
-          }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -1062,6 +1106,18 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/customField/getByParentProcessStep/${parent.id}`)
+          this.customFields = data
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async loadCustomFieldsByObjectType(objectTypeId) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/customField/getByParentType/${objectTypeId}`)
           this.customFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -1516,7 +1572,21 @@
                       item.systemListOptionId ? item.systemListOptionId : item.listOfValueId
         let match = item.availableListOfValues.find(i => i.id === idToUse)
         return match ? match.name : 'unknown'
-      }
+      },
+      async saveRowChanges(rows) {
+        if(rows?.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await putRequest(`/processStep/${this.processStepId}/action/order`, rows)
+            this.snackbar = getSnackbar('SUCCESS', 'Action Order Saved')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Action Order')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
     }
 
   }

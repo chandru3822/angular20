@@ -223,6 +223,7 @@
     select *
     from flow.process_step_requirement_type
     where archived is not true
+    order by id
   ]]></processStepRequirement.getRequirementTypes>
 
   <processStepRequirement.updateRequirement><![CDATA[

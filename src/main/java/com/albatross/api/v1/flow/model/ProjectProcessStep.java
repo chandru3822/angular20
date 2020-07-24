@@ -16,6 +16,8 @@ public class ProjectProcessStep {
 
   private LocalDate lastUpdated, processStepCompleteDate;
 
+  private Boolean main;
+
   private List<ProcessStepAction> actions;
 
   private Owner owner;

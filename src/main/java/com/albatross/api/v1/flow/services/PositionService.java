@@ -43,6 +43,20 @@ public class PositionService {
     return results;
   }
 
+  public List<Position> getSchedulingPositions() {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+
+    List<Position> results = sqlCache.query("position.getSchedulingPositions", params, Position.class);
+    return results;
+  }
+
+
   public List<Position> getPositionsForCompanyWithParent() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

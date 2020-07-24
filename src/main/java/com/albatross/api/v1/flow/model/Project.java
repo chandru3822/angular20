@@ -9,8 +9,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class Project {
 
-  private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId;
-  private String projectName, processName, projectStatusType;
+  private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId, stateId, countryId;
+  private String projectName, processName, projectStatusType, state, country, street1, street2, city, postalCode;
 
   private LocalDate dateCreated;
 

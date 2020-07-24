@@ -45,6 +45,7 @@
             OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
             OR s.state ILIKE '%' || :query || '%'
           )
+          and case when :viewAll is not true then u.id = :userId else 1=1 end
       order by c.date_created desc
       limit :limit
       offset :offset ;
@@ -63,8 +64,8 @@
           else c.company_id = :companyId end
         and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
         OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
-        OR s.state ILIKE '%' || :query || '%'
-      )
+        OR s.state ILIKE '%' || :query || '%' )
+        and case when :viewAll is not true then u.id = :userId else 1=1 end
   ]]></contact.searchContactCount>
 
   <contact.exportContacts><![CDATA[
@@ -134,7 +135,8 @@
                      u.first_name as "firstName",
                      u.last_name as "lastName",
                      u.first_name || ' ' || u.last_name AS "fullName",
-                     p.position
+                     p.position,
+                     up.id as "userPositionId"
                   FROM blueraven."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position p on p.id = up.position_id

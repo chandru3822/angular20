@@ -20,7 +20,7 @@ public class User {
     private Long companyUserStatusTypeId;
     private List<Company> companies;
     private List<FeatureAccessControl> featureAccess;
-    private List<Position> positions;
+    private List<UserPosition> userPositions;
     private Boolean hasAccess;
 
     private List<UserOrgHierarchy> hierarchy;

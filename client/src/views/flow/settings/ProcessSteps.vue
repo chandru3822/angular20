@@ -33,7 +33,7 @@
             </v-card-title>
             <v-data-table
               :headers="headers"
-              :items="processSteps"
+              :items="filterProcessSteps()"
               :fixed-header="true"
               :items-per-page="-1"
               disable-sort
@@ -170,6 +170,9 @@
           this.snackbar = getSnackbar('ERROR', 'Error Adding Process Step')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      filterProcessSteps () {
+        return this.processSteps.filter(ps => { return !ps.archived})
       },
     },
     async created () {

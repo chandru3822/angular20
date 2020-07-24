@@ -159,7 +159,7 @@
                         </v-list-item-action>
                         <v-list-item-content>
                           {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
-                          <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
+                          <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
                             <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
                             Show On Insert
                           </div>

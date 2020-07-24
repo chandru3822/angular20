@@ -91,13 +91,13 @@
 
   <availability.updateHours><![CDATA[
     update flow.resource_schedule_availability
-     set start_time = :startTime::timestamp,
-         end_time = :endTime::timestamp,
+     set start_time = :startTime::time,
+         end_time = :endTime::time,
          modified_by_id = :modifiedById,
          date_modified = now(),
          archived = :archived
     where id = :id
-  ]]></availability.updateHours>x
+  ]]></availability.updateHours>
 
   <availability.insertHours><![CDATA[
     insert into flow.resource_schedule_availability(resource_schedule_id, start_time, end_time, day_of_week_id, created_by_id)
@@ -154,6 +154,7 @@
                else ra.user_id = :userId end
       and ra.company_id = :companyId
       and ra.archived is not true
+      and (ra.start_time >= now() OR ra.end_time >= now())
   ]]></availability.getAppointmentsForResource>
 
   <availability.deleteAppointment><![CDATA[

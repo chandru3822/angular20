@@ -19,7 +19,7 @@ public class ScheduleEvent {
       resourceCustomFieldValueId, resourceCustomFieldGroupAssignmentId;
   private String resourceName, groupName, contactFirstName, contactLastName, contactFullName, projectName, processStepName,
       state, processStepStatusType, startFieldName, endFieldName, resourceFieldName;
-  private Boolean archived;
+  private Boolean archived, startFieldReadOnly, endFieldReadOnly, resourceFieldReadOnly;
 
   private Double latitude, longitude;
 
