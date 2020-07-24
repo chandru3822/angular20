@@ -7766,3 +7766,8 @@ CREATE TRIGGER customer_audit_trg
 CREATE TRIGGER organization_audit_trg
     after INSERT or update or delete ON flow.organization_custom_field_value
     FOR EACH ROW EXECUTE PROCEDURE flow.organization_audit();
+
+INSERT INTO brs.funnel (id, name, ratio, display_order)
+    (select id, name, ratio, display_order from blueraven.funnel);
+INSERT INTO brs.setter_funnel (id, name, ratio, display_order)
+    (select id, name, ratio, display_order from blueraven.setter_funnel);
