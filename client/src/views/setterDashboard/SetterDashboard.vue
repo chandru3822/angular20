@@ -239,13 +239,12 @@
             {{ isSetterMgr ? 'Office' : 'Rep' }} to Beat
           </span>
           <div id="rank-box-content" :style="{'justify-content': rankBoxData.current_office_rank === '1' || rankBoxData.current_user_rank === '1' ? 'space-around' : 'space-between'}">
-            <span v-if="isSetterMgr" style="color: #000"
+            <span v-if="isSetterMgr" id="office-to-beat-name"
                   :style="{'font-size': (rankBoxData.setter_office_to_beat_name && rankBoxData.current_office_rank !== '1') ? '10px' : '14px'}">
               {{ rankBoxData.setter_office_to_beat_name ? rankBoxData.setter_office_to_beat_name : 'TBD' }}
             </span>
-            <img v-if="isSetterMgr" id="office-to-beat-img"
-                 :style="{'width': (rankBoxData.setter_office_to_beat_name && rankBoxData.current_office_rank !== '1') ? '30px' : '40px'}"
-                 src="../../assets/office_icon.png" alt="A blue icon depicting an office building">
+            <v-icon v-if="isSetterMgr" class="office-to-beat-icon">mdi-office-building</v-icon>
+
             <span v-if="!isSetterMgr" id="rep-to-beat-name"
                   :style="{'font-size': (rankBoxData.setter_to_beat_name && rankBoxData.current_user_rank !== '1') ? '10px' : '14px'}">
               {{ rankBoxData.setter_to_beat_name ? rankBoxData.setter_to_beat_name : 'TBD' }}
@@ -253,10 +252,8 @@
             <img v-if="!isSetterMgr && rankBoxData.imageUrl" class="rep-to-beat-img"
                  :style="{'width': rankBoxData.current_user_rank !== '1' ? '' : '50px', 'height': rankBoxData.current_user_rank !== '1' ? '' : '50px'}"
                  :alt="rankBoxData.imageAltText" :src="rankBoxData.imageUrl">
-            <img v-if="!isSetterMgr && !rankBoxData.imageUrl" class="rep-to-beat-img"
-                 :class="{'default-img': !rankBoxData.imageUrl}"
-                 :style="{'width': (rankBoxData.setter_to_beat_name && rankBoxData.current_user_rank !== '1') ? '30px' : '50px'}"
-                 src="../../assets/user_img_placeholder.png" :alt="rankBoxData.imageAltText">
+            <v-icon v-if="!isSetterMgr && !rankBoxData.imageUrl" class="rep-to-beat-icon">mdi-account</v-icon>
+
             <span v-if="rankBoxData.current_office_rank !== '1' && rankBoxData.current_user_rank !== '1'"
                   id="rank-box-subtitle">
               {{ rankBoxData.pitches_to_go ? rankBoxData.pitches_to_go : 0 }} {{ rankBoxData.pitches_to_go === 1 ? 'Pitch' : 'Pitches' }} to beat {{ isSetterMgr ? 'office' : 'rep' }}
@@ -280,8 +277,7 @@
         <!-- TOP OFFICES -->
         <div id="setter-ranking-top-offices-table" class="ranking-table">
           <div class="ranking-table-header">
-            <img class="ranking-table-icon" src="../../assets/flag_icon.png"
-                 alt="Blue flag icon">
+            <v-icon class="ranking-table-icon mr-2">mdi-flag-variant</v-icon>
             <span>Top Offices</span>
           </div>
           <table v-if="offices.length > 0">
@@ -309,8 +305,7 @@
         <!-- TOP REPS -->
         <div class="ranking-table">
           <div class="ranking-table-header">
-            <img class="ranking-table-icon" src="../../assets/user_img_placeholder.png"
-                 alt="User photo placeholder">
+            <v-icon class="mr-2 ranking-table-icon">mdi-account-multiple</v-icon>
             <span>Top Reps</span>
           </div>
           <table v-if="reps.length > 0">
@@ -348,8 +343,7 @@
         <!-- OFFICE RANKING -->
         <div class="ranking-table">
           <div class="ranking-table-header">
-            <img class="ranking-table-icon" src="../../assets/office_icon.png"
-                 alt="Blue house icon">
+            <v-icon class="mr-2 ranking-table-icon">mdi-office-building</v-icon>
             <span>Office Ranking</span>
           </div>
           <table v-if="officeRankingData.length > 0">
@@ -1476,15 +1470,16 @@
           justify-content: space-between;
           height: 80px;
 
+          #office-to-beat-name,
           #rep-to-beat-name {
             font-size: 10px;
-            color: #000;
+            color: var(--v-primaryText-base) !important;
           }
 
-          .office-to-beat-img {
-            margin: 5px 0;
-            width: 40px;
-            height: 40px;
+          .office-to-beat-icon,
+          .rep-to-beat-icon {
+            color: var(--v-primaryText-base) !important;
+            font-size: 30px;
           }
 
           .rep-to-beat-img {
@@ -1594,9 +1589,8 @@
   }
 
   .ranking-table-icon {
-    margin-right: 4px;
-    width: 20px;
-    height: 20px;
+    font-size: 24px;
+    color: var(--v-primaryText-base) !important;
   }
 
   .ranking-table table {
@@ -1857,6 +1851,11 @@
               font-size: 12px;
             }
 
+            .office-to-beat-icon,
+            .rep-to-beat-icon {
+              font-size: 35px;
+            }
+
             #rank-box-subtitle {
               font-size: 11px;
             }
@@ -1901,9 +1900,7 @@
     }
 
     .ranking-table-icon {
-      margin-right: 5px;
-      width: 30px;
-      height: 30px;
+      font-size: 30px;
     }
 
     .ranking-table th {
@@ -2009,6 +2006,15 @@
         #rank-box-right-side {
           padding-top: 10px;
         }
+
+        #rank-box-right-side {
+          #rank-box-content {
+            .office-to-beat-icon,
+            .rep-to-beat-icon {
+              font-size: 40px;
+            }
+          }
+        }
       }
     }
 
@@ -2056,6 +2062,10 @@
     .ranking-table {
       width: 100%;
       max-width: calc((100% / 2) - 10px);
+    }
+
+    .ranking-table-icon {
+      font-size: 35px;
     }
 
     .ranking-table th {
