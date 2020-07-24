@@ -141,20 +141,17 @@
     },
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
-
+      this.dataLoading = true
       Promise.all([
         this.fetchProjects()
-      ]).then(() => this.$store.commit(AppMutations.SET_LOADING, false))
+      ]).then(() => {this.$store.commit(AppMutations.SET_LOADING, false); this.dataLoading = false;})
     },
     methods: {
       async fetchProjects() {
         try {
-            this.$store.commit(AppMutations.SET_LOADING, true)
             const {data} = await getRequest('/install-agreement/projects', 'blueraven')
             this.projects = data;
             this.filteredProjects = data;
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            this.dataLoading = false;
         } catch (e) {
           this.$store.commit(AppMutations.SET_LOADING, false)
           console.error('*** ERROR ***', e)

@@ -148,6 +148,7 @@ BEGIN
     left join flow.project_process_step_custom_field_value ppscfv1 on ppscfv1.custom_field_group_assignment_id = cfga.id and ppscfv1.project_process_step_id = pps1.id and ppscfv1.archived is not true
     where
       psr.archived is not true and
+      cfga.archived is not true and
       pps.id = p_project_process_step_id and
       psr.id = any (array[p_requirement_ids]::int[])
     order by psr.requirement_nbr;
