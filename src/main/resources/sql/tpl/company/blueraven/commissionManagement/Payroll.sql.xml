@@ -41,7 +41,7 @@
               FROM brs.payroll p
                        INNER JOIN brs.project_commission_snapshot dcs ON p.id = dcs.payroll_id
                        INNER JOIN flow.project prj ON dcs.project_id = prj.id
-                       INNER JOIN brs.project_details pd on pd.project_id = p.id
+                       INNER JOIN brs.project_details pd on pd.project_id = prj.id
                        LEFT JOIN brs.project_override_commission_snapshot docs ON docs.project_commission_snapshot_id = dcs.id
               WHERE CASE WHEN :startDate:: DATE IS NOT NULL
                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
