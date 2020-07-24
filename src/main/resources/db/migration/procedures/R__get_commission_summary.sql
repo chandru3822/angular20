@@ -5,12 +5,10 @@ declare
     v_json json;
 begin
     with all_project_ids as (
-        select array_agg(DISTINCT upos.user_id) as user_ids,array_agg(DISTINCT p.id) v_all_projects,pay.id
+        select array_agg(DISTINCT pd.closer_user_id) as user_ids,array_agg(DISTINCT p.id) v_all_projects,pay.id
         from brs.payroll pay
                  inner join flow.project p on array[p.id] <@ pay.selected_project_ids::integer[]
-                 inner join flow.user_project up on up.project_id = p.id and up.end_date is null
-                 inner join flow.user_position upos
-                            on upos.id = up.user_position_id and upos.position_id = 1
+                 inner join brs.project_details pd on pd.project_id = p.id
         where pay.payroll_status_id = 1
         group by pay.id
     ),
@@ -28,19 +26,18 @@ begin
                    GROUP BY opru.user_id,p.id,a.v_all_projects
          ),
          commission_users AS (
-             SELECT array_agg(DISTINCT p.id) AS project_ids, upos.user_id AS user_id,pay.id,a.v_all_projects,
+             SELECT array_agg(DISTINCT p.id) AS project_ids, pd.closer_user_id AS user_id,pay.id,a.v_all_projects,
                     coalesce(brs.get_commissions_earned(array_agg(DISTINCT p.id)), 0) as commissions_earned,
                     coalesce(brs.get_ledger_totals(pay.id, array_agg(DISTINCT p.id), 1), 0) as ledger_totals,
-                    coalesce(brs.get_overrides_earned(a.v_all_projects,upos.user_id), 0) as overrides_earned,
-                    coalesce(brs.get_total_overrides(pay.id, a.v_all_projects, upos.user_id),0) as total_overrides,
+                    coalesce(brs.get_overrides_earned(a.v_all_projects,pd.closer_user_id), 0) as overrides_earned,
+                    coalesce(brs.get_total_overrides(pay.id, a.v_all_projects, pd.closer_user_id),0) as total_overrides,
                     coalesce(brs.get_ledger_adjustment_current_totals(pay.id, array_agg(DISTINCT p.id), 1),0) as ledger_adjustments
              FROM brs.payroll pay
                       INNER JOIN flow.project p ON ARRAY[p.id] <@ pay.selected_project_ids::integer[]
-                      inner join flow.user_project up on up.project_id = p.id and up.end_date is null
-                      inner join flow.user_position upos on upos.id = up.user_position_id and upos.position_id = 1
+                      inner join brs.project_details pd on pd.project_id = p.id
                       inner join all_project_ids a on a.id = pay.id
              WHERE pay.payroll_status_id = 1
-             GROUP BY upos.user_id,pay.id,a.v_all_projects
+             GROUP BY pd.closer_user_id,pay.id,a.v_all_projects
          )
     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
     FROM (

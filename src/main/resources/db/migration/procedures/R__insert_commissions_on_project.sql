@@ -10,12 +10,10 @@ declare
     v_user_id integer;
 BEGIN
 --TODO create an error table for when we can't find plans
-    select user_id
+    select pd.closer_user_id
     into v_user_id
-    from flow.user_project up
-    inner join flow.user_position up1 on up1.id = up.user_position_id
-    where up.project_id = p_project_id and up1.position_id = 1 and
-          up.end_date is null;
+    from brs.project_details pd
+    where project_id = p_project_id;
 
     select op.id
     into v_override_plan_id
