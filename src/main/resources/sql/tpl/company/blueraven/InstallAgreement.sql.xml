@@ -1,0 +1,71 @@
+<sql>
+    <installAgreement.getFinancierFromProposalLog>
+        <![CDATA[
+            WITH p AS (
+                SELECT proposal ->> 'Loan Type' AS loan_type
+                FROM brs.proposal_log
+                WHERE project_id = :projectId AND proposal_nbr = :proposalNbr
+            )
+            SELECT substring(p.loan_type, 1, position(' ' IN p.loan_type) - 1) AS financier
+            FROM p
+        ]]>
+    </installAgreement.getFinancierFromProposalLog>
+
+    <installAgreement.getUtilityFromProposalLog>
+        <![CDATA[
+            WITH p AS (
+                SELECT proposal ->> 'Utility Name' AS loan_type
+                FROM brs.proposal_log
+                WHERE project_id = :projectId AND proposal_nbr = :proposalNbr
+            )
+            SELECT substring(p.loan_type, 1, position(' ' IN p.loan_type) - 1) AS utility_company
+            FROM p
+        ]]>
+    </installAgreement.getUtilityFromProposalLog>
+
+    <installAgreement.getProjects>
+        <![CDATA[
+            SELECT *
+            FROM brs.get_request_for_installation_agreements(:view_all, :user_id)
+        ]]>
+    </installAgreement.getProjects>
+
+    <installAgreement.setAgreementSent>
+        <![CDATA[
+            UPDATE flow.project_process_step_custom_field_value
+                SET timestamp_value = now()
+            WHERE project_process_step_id = (select id from flow.project_process_step where
+                project_id = :project_id and process_step_id = 4 and custom_field_group_assignment_id = 482)
+        ]]>
+    </installAgreement.setAgreementSent>
+
+    <installAgreement.setRequestStatus>
+        <![CDATA[
+            INSERT INTO brs.installation_agreement_requests (
+                project_id,
+                proposal_nbr,
+                send_installation_agreement,
+                is_spanish,
+                request_successful,
+                user_id,
+                created_date
+            ) values (
+                :project_id,
+                :proposal_nbr,
+                :sendInstallationAgreement,
+                :isSpanish,
+                :success,
+                :user_id,
+                NOW())
+        ]]>
+    </installAgreement.setRequestStatus>
+
+    <installAgreement.getProposalNumbers>
+        <![CDATA[
+            select proposal_nbr
+            from brs.proposal_log_history plh
+            inner join flow.project p on p.id::text = plh.project_id::text
+            where p.id = :projectId
+        ]]>
+    </installAgreement.getProposalNumbers>
+</sql>

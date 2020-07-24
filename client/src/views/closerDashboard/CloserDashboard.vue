@@ -2,18 +2,19 @@
   <v-container id="closer-dash-container">
     <v-row v-if="showDashboard" id="closer-dash-toolbar-container">
       <v-col cols="12" id="closer-dash-toolbar">
-        <v-toolbar class="elevation-1">
+        <v-app-bar class="elevation-1" fixed style="top: 48px">
           <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
             <v-btn text @click="loadRankingTables('MTD')">MTD</v-btn>
             <v-btn text @click="loadRankingTables('60 days')" class="text-lowercase">60 days</v-btn>
             <v-btn text @click="loadRankingTables('90 days')" class="text-lowercase">90 days</v-btn>
             <v-btn text @click="loadRankingTables('YTD')">YTD</v-btn>
           </v-btn-toggle>
-        </v-toolbar>
+        </v-app-bar>
       </v-col>
     </v-row>
 
-    <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters :class="{'mt-3': showDashboard}">
+    <v-row id="closer-dash-tabs" class="mb-2" :style="{'padding-top': showDashboard ? '60px' : ''}"
+           justify="center" no-gutters>
       <v-col cols="12">
         <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(1)">
           Dashboard
@@ -133,6 +134,7 @@
       <v-card>
         <v-card-title class="mb-1">
           <span id="drilldown-title">{{ milestoneDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="milestoneDialog = false">×</a>
         </v-card-title>
 
         <v-card-text>
@@ -150,7 +152,7 @@
             <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left">{{ item.customer_name ? item.customer_name : '' }}</td>
+                <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
                 <td class="text-left">{{ item.id ? item.id : '' }}</td>
                 <td class="text-left">{{ item.source_name ? item.source_name : '' }}</td>
                 <td class="text-left">{{ item.system_size ? item.system_size : '' }}</td>
@@ -158,7 +160,10 @@
                   {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
                 </td>
                 <td class="text-left">
-                  {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
+                  {{ item.financial_agreement_signed_date_formatted ? item.financial_agreement_signed_date_formatted : '' }}
+                </td>
+                <td class="text-left">
+                  {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
                 <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
               </tr>
@@ -421,7 +426,8 @@
         { text: 'Source', value: 'source_name', show: true },
         { text: 'System Size', value: 'system_size', show: true },
         { text: 'FD Signed Date', value: 'final_design_signed_date', show: true },
-        { text: 'Agreement Signed Date', value: 'agreement_signed_date', show: true },
+        { text: 'Financial Agreement Signed Date', value: 'financial_agreement_signed_date', show: true },
+        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date', show: true },
         { text: 'Financier', value: 'financier', show: true }
       ],
       drilldownData: [],
@@ -709,6 +715,11 @@
 
           if (this.drilldownData.length > 0) {
             this.reformatDates()
+            this.drilldownData.forEach(row => {
+              if (row.customer_name) {
+                row.customer_name = row.customer_name.toLowerCase()
+              }
+            })
           } else {
             this.drilldownData = []
           }
@@ -729,8 +740,12 @@
             row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
           }
 
-          if (row.agreement_signed_date) {
-            row.agreement_signed_date_formatted = moment(row.agreement_signed_date).format('MMM D, YYYY')
+          if (row.financial_agreement_signed_date) {
+            row.financial_agreement_signed_date_formatted = moment(row.financial_agreement_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.utility_bill_verified_date) {
+            row.utility_bill_verified_date_formatted = moment(row.utility_bill_verified_date).format('MMM D, YYYY')
           }
         })
       },
@@ -1247,15 +1262,34 @@
     }
   }
 
+  .v-card__title {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   #drilldown-title {
     font-family: "Roboto Condensed", sans-serif;
     font-size: 14px;
+  }
+
+  .close-modal-x {
+    font-size: 20px;
+
+    &:hover {
+      font-weight: bolder;
+    }
   }
 
   #drilldown-table {
     th, td {
       font-family: "Roboto Condensed", sans-serif;
       font-size: 10px;
+    }
+
+    .customer-name {
+      text-transform: capitalize;
     }
   }
 

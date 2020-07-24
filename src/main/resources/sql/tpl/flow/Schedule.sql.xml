@@ -64,9 +64,6 @@
              left join flow.company_system_list csl on csl.id = cf.company_system_list_id
              left join flow.system_list sl on sl.id = csl.system_list_id
     where cfg.event_type_id is not null
-      and case when :isParent
-          then array[cf.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-          else cf.company_id = :companyId end
       and cfg.archived is not true
       and st.timestamp_value is not null
       and et.timestamp_value is not null
@@ -76,6 +73,45 @@
       and ( case when array_length(ARRAY[ :orgIds ]::INTEGER[], 1) > 0 then ARRAY[coalesce(o.id, -1)] <@ ARRAY[ :orgIds ]::INTEGER[] end
         OR case when array_length(ARRAY [ :userIds ]::BIGINT[], 1) > 0 then ARRAY [coalesce(u.id, -1)] <@ ARRAY [ :userIds ]::BIGINT[] end )
   ]]></schedule.getEvents>
+
+  <schedule.getAvailability><![CDATA[
+  with dates as (
+      select :startTime::date + d.date as date,
+             extract(dow from :startTime::date + d.date) + 1 as day_of_week_id
+      from generate_series(0, 99) as d(date)
+      where :startTime::date + d.date BETWEEN :startTime::date and :endTime::date - 1
+  )
+  select coalesce(rs.user_id, rs.org_id) as resource_id,
+         (d.date || ' ' || rsa.start_time)::timestamp as "start",
+         (d.date || ' ' || rsa.end_time)::timestamp as "end",
+         rsa.day_of_week_id,
+         false as all_day,
+         null as title,
+         'inverse-background' as rendering,
+         case when rs.org_id is not null then 1 else 2 end as system_list_type_id
+  from dates d
+           inner join flow.resource_schedule_availability rsa on rsa.day_of_week_id = d.day_of_week_id
+           inner join flow.resource_schedule rs on rs.id = rsa.resource_schedule_id and d.date between rs.start_date and rs.end_date
+  where rs.archived is not true
+    and rsa.archived is not true
+    and ( case when array_length(ARRAY[ :orgIds ]::INTEGER[], 1) > 0 then ARRAY[coalesce(rs.org_id, -1)] <@ ARRAY[ :orgIds ]::INTEGER[] end
+      OR case when array_length(ARRAY [ :userIds ]::INTEGER[], 1) > 0 then ARRAY [coalesce(rs.user_id, -1)] <@ ARRAY [ :userIds ]::INTEGER[] end )
+  union all
+  select coalesce(ra.user_id, ra.org_id) as resource_id,
+         ra.start_time as "start",
+         ra.end_time as "end",
+         null::int,
+         ra.all_day,
+         ra.description as "title",
+         'background' as rendering,
+         case when ra.org_id is not null then 1 else 2 end as system_list_type_id
+  from flow.resource_appointment ra
+  where ra.start_time >= :startTime::date
+    and ra.end_time <= :endTime::date
+    and ra.archived is not true
+    and ( case when array_length(ARRAY[ :orgIds ]::INTEGER[], 1) > 0 then ARRAY[coalesce(ra.org_id, -1)] <@ ARRAY[ :orgIds ]::INTEGER[] end
+      OR case when array_length(ARRAY [ :userIds ]::INTEGER[], 1) > 0 then ARRAY [coalesce(ra.user_id, -1)] <@ ARRAY [ :userIds ]::INTEGER[] end )
+ ]]></schedule.getAvailability>
 
   <schedule.getProjects><![CDATA[
     with start_time as (
@@ -113,14 +149,17 @@
         st.id as start_custom_field_value_id,
         cfga1.id as start_custom_field_group_assignment_id,
         cf1.field_name as start_field_name,
+        cf1.readonly as start_field_read_only,
         et.timestamp_value as end,
         et.id as end_custom_field_value_id,
         cfga2.id as end_custom_field_group_assignment_id,
         cf2.field_name as end_field_name,
+        cf2.readonly as end_field_read_only,
         r.int_value as resource_id,
         cf3.field_name as resource_field_name,
         r.id as resource_custom_field_value_id,
         cfga3.id as resource_custom_field_group_assignment_id,
+        cf3.readonly as resource_field_read_only,
         c.first_name as contact_first_name,
         c.last_name as contact_last_name,
         c.latitude,
@@ -206,8 +245,10 @@
           sl.system_list_type_id,
           st.timestamp_value as start,
           cf1.field_name as start_field_name,
+          cf1.readonly as start_field_read_only,
           et.timestamp_value as end,
           cf2.field_name as end_field_name,
+          cf2.readonly as end_field_read_only,
           r.int_value as resource_id,
           cf3.field_name as resource_field_name,
           c.first_name as contact_first_name,

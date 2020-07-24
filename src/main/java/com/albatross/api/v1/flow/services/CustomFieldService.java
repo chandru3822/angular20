@@ -234,6 +234,19 @@ public class CustomFieldService {
     params.put("id", id);
     List<CustomField> results = sqlCache.query("customField.getByParentType", params, new CustomFieldMapper<>(CustomField.class, om));
 
+    for(CustomField cf : results ) {
+      if(null != cf.getCustomFieldSqlKey()) {
+        String sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
+        if(null != sql) {
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          cf.setListOfValues(listOfValues);
+        }
+      } else if (null != cf.getCompanySystemListId()) {
+        List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cf.getCompanySystemListId(), true, cf.getSystemListOptionIds());
+        cf.setListOfValues(listOfValues);
+      }
+    }
+
     return results;
   }
 

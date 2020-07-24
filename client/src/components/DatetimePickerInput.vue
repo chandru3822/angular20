@@ -17,6 +17,7 @@
       :clearable="!readonly"
       :disabled="readonly"
       v-on="!readonly && on"
+      @click:clear="clearInput"
     />
   </template>
   <v-date-picker
@@ -137,6 +138,9 @@ export default {
         this.showDate = false
         this.showTime = true
       }
+    },
+    clearInput () {
+        this.$emit('input', null)
     }
   }
 }

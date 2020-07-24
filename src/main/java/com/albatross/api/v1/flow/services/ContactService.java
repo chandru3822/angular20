@@ -63,10 +63,14 @@ public class ContactService {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
 
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "CONTACTS", "VIEW_ALL");
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
+    params.put("viewAll", viewAll);
+    params.put("userId", user.getId());
     params.put("query", query);
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
@@ -240,7 +244,7 @@ public class ContactService {
     Contact contact = getContact(contactId);
 
     //create project (use contact_full_name as project_name)
-    Optional<Project> project = projectService.insertProject(contactId, process.getId(), contact.getFullName());
+    Optional<Project> project = projectService.insertProject(contactId, process.getId(), contact);
 
     //get initial process steps including the initial status
     List<ProcessStepProcess> initialProcessSteps = processService.getInitialProcessStepProcesses(process.getId());

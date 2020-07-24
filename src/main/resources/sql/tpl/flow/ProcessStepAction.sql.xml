@@ -98,7 +98,7 @@
              inner join flow.action_type at on at.id = psa.action_type_id
     where case when :processStepId::integer is not null then psa.process_step_id = :processStepId else 1 = 1 end
       and case when :id::integer is not null then psa.id = :id else 1 = 1 end and psa.archived is not true
-    order by psa.action_name
+    order by psa.display_order
   ]]></processStepAction.getActionsForStep>
 
   <processStepAction.deleteAction><![CDATA[
@@ -115,6 +115,14 @@
       where psl.process_step_requirement_id = :requirementId
         and psl.archived is not true
   ]]></processStepAction.actionsUsingRequirement>
+
+  <processStepAction.updateActionDisplayOrder><![CDATA[
+      update flow.process_step_action
+        set display_order = :displayOrder,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+        where id = :id
+  ]]></processStepAction.updateActionDisplayOrder>
 
   <processStepAction.updateAction><![CDATA[
     update flow.process_step_action

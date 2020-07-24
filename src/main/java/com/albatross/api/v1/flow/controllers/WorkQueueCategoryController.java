@@ -38,6 +38,11 @@ public class WorkQueueCategoryController {
     return workQueueCategoryService.updateCategory(category);
   }
 
+  @PutMapping(value = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueCategory> updateCategoryDisplayOrders(@RequestBody List<WorkQueueCategory> categories) {
+    return workQueueCategoryService.updateCategoryDisplayOrders(categories);
+  }
+
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<WorkQueueCategory> insertCategory(@RequestBody WorkQueueCategory category) {
     return workQueueCategoryService.insertCategory(category);

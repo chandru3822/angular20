@@ -9,6 +9,7 @@
         <!-- map-resources allows the calendar to send events back to the map -->
         <Calendar :map-resources="mapResources"
                   ref="calendar"
+                  :states="states"
                   :callback="this.resourceMapCallback"
                   :date-callback="this.dateCallback"></Calendar>
       </v-col>
@@ -27,7 +28,6 @@
                       return-object
                       item-text="state"
                       item-value="id"
-                      @input="getProjects()"
             ></v-select>
 
             <v-select v-model="selectedEventTypes"
@@ -38,7 +38,6 @@
                       return-object
                       :disabled="!state || !state.id"
                       multiple
-                      @input="getProjects()"
             >
               <v-list-item
                   slot="prepend-item"
@@ -160,39 +159,56 @@
             </v-toolbar>
             <div class="pa-3">
               <div class="map-field-label">{{selectedProject.startFieldName || 'Start Time'}}</div>
-              <datetime
-                  type="datetime"
-                  v-model="selectedProject.start"
-                  class="theme-datetime"
-                  input-class="one-hunned map-field-input"
-                  :zone="timezone.value"
-                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
-                  :phrases="{ok: 'Ok', cancel: 'Close'}"
-                  :hour-step="1"
-                  :minute-step="15"
-                  use12-hour
-                  auto
-              ></datetime>
+              <DatetimePickerInput
+                v-model="selectedProject.start"
+                :timezone="this.timezone"
+                :readonly="selectedProject.startFieldReadOnly"
+                :type="'timestamp'"
+                :format="'MMMM DD, YYYY, h:mm A'"
+                label="Start Time"
+              />
+<!--              <datetime-->
+<!--                  type="datetime"-->
+<!--                  v-model="selectedProject.start"-->
+<!--                  class="theme-datetime"-->
+<!--                  input-class="one-hunned map-field-input"-->
+<!--                  :zone="timezone.value"-->
+<!--                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"-->
+<!--                  :phrases="{ok: 'Ok', cancel: 'Close'}"-->
+<!--                  :hour-step="1"-->
+<!--                  :minute-step="15"-->
+<!--                  use12-hour-->
+<!--                  auto-->
+<!--              ></datetime>-->
               <div class="map-field-label mt-3">{{selectedProject.endFieldName || 'End Time'}}</div>
-              <datetime
-                  type="datetime"
-                  v-model="selectedProject.end"
-                  input-class="one-hunned map-field-input"
-                  class="theme-datetime"
-                  :zone="timezone.value"
-                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"
-                  :phrases="{ok: 'Ok', cancel: 'Close'}"
-                  :hour-step="1"
-                  :minute-step="15"
-                  use12-hour
-                  auto
-              ></datetime>
+              <DatetimePickerInput
+                v-model="selectedProject.end"
+                :timezone="this.timezone"
+                :readonly="selectedProject.endFieldReadOnly"
+                :type="'timestamp'"
+                :format="'MMMM DD, YYYY, h:mm A'"
+                label="End Time"
+              />
+<!--              <datetime-->
+<!--                  type="datetime"-->
+<!--                  v-model="selectedProject.end"-->
+<!--                  input-class="one-hunned map-field-input"-->
+<!--                  class="theme-datetime"-->
+<!--                  :zone="timezone.value"-->
+<!--                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"-->
+<!--                  :phrases="{ok: 'Ok', cancel: 'Close'}"-->
+<!--                  :hour-step="1"-->
+<!--                  :minute-step="15"-->
+<!--                  use12-hour-->
+<!--                  auto-->
+<!--              ></datetime>-->
               <v-select v-model="selectedProject.resource"
                         :items="selectedProject.resources"
                         :label="selectedProject.resourceFieldName  || 'Resource'"
                         placeholder=" "
                         item-text="name"
-                        return-object
+                        :readonly="selectedProject.resourceFieldReadOnly"
+                        :disabled="selectedProject.resourceFieldReadOnly"
                         item-value="id"
                         class="mt-3"
               />
@@ -206,7 +222,14 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="7" class="py-0">
-        <div>
+        <div class="list-container">
+          <div id="list-loader" v-if="listLoading">
+            <v-progress-circular
+              indeterminate
+              :size="80"
+              :color="'primary'"
+            ></v-progress-circular>
+          </div>
           <v-data-table
               :headers="headers"
               :items="projects"
@@ -234,7 +257,7 @@
             </template>
 
             <template #item.projectName="{ item }">
-              <a @click="selectedProject = item" style="text-decoration: underline">{{item.projectName}}</a>
+              <a @click="[selectedProject = item, selectedProject.resource = { id: item.resourceId, name: item.resourceName }]" style="text-decoration: underline">{{item.projectName}}</a>
             </template>
 
           </v-data-table>
@@ -253,6 +276,7 @@
   import Map from './components/Map'
   import {getEventTypes} from '@/services/scheduleService'
   import cloneDeep from 'lodash.clonedeep'
+  import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getStatusTypes} from '@/services/processStepStatusTypeService'
 
   import Calendar from './components/Calendar'
@@ -262,13 +286,15 @@
     components: {
       Snackbar,
       Map,
-      Calendar
+      Calendar,
+      DatetimePickerInput
     },
     data() {
       return {
         snackbar: {},
         showFilters: true,
-        timezone: this.$store.state.user.details.timezone,
+        listLoading: false,
+        timezone: this.$store.state.user.details.timezone.value,
         // showFilters: false,
         defaultZoom: 2.0,
         map: {
@@ -298,6 +324,7 @@
         searchProcessStepStatusType: {},
         searchProject: {},
         searchProjects: [],
+        eventTypesChanged: false,
         searchProjectsLoading: false,
         search: null,
         asyncActions: {},
@@ -355,7 +382,9 @@
     methods: {
       validateSaveEvent () {
         return !this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
-          || !this.selectedProject.resource || !this.selectedProject.resource.id  || (this.selectedProject.start >= this.selectedProject.end)
+          || !this.selectedProject.resource || !this.selectedProject.resource.id  || (this.selectedProject.start >= this.selectedProject.end) ||
+          //if all 3 fields are read only, dont let them save
+          (this.selectedProject.startFieldReadOnly && this.selectedProject.endFieldReadOnly && this.selectedProject.resourceFieldReadOnly)
       },
       async scheduleProject() {
         this.selectedProject.resourceId = this.selectedProject.resource.id
@@ -437,7 +466,7 @@
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
 
         if(this.selectedEventTypes?.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+          this.listLoading = true
           try {
             let params = {
               eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
@@ -455,11 +484,11 @@
             if(this.selectedProcessStepStatusTypes?.length > 0) {
               this.filterProjects()
             }
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.listLoading = false
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Retrieving Projects')
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            this.listLoading = false
           }
         } else {
           this.projects = []
@@ -480,10 +509,8 @@
         this.$nextTick(() => {
           if (this.selectAll) {
             this.selectedEventTypes = []
-            this.getProjects()
           } else {
             this.selectedEventTypes = cloneDeep(this.eventTypes)
-            this.getProjects()
           }
         })
       },
@@ -513,7 +540,7 @@
         }, 500)
       },
       async getSingleProject(projectId, eventTypeId, processStepStatusTypeId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        this.listLoading = true
         try {
           let params = {
             projectId,
@@ -532,11 +559,11 @@
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
           }
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.listLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.listLoading = false
         }
       },
 
@@ -574,6 +601,27 @@
   .map-field-label {
     font-size: 12px;
     color: var(--v-primary-base);
+  }
+
+  .list-container {
+    position: relative;
+  }
+
+  #list-loader {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    background-color: var(--v-secondary-base);
+    opacity: .5;
   }
 
   @media (min-width: 769px) {

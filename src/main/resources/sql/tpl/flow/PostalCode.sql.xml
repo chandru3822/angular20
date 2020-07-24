@@ -25,7 +25,6 @@
                                  u.last_name as "lastName",
                                  u.first_name || ' ' || u.last_name as "fullName",
                                  pczu.postal_code_zone_id as "postalCodeZoneId",
-                                 pczu.allocation,
                                  pczu.archived
                           from flow.postal_code_zone_user pczu
                             inner join flow."user" u on u.id = pczu.user_id
@@ -72,17 +71,9 @@
   ]]></postalCode.deleteZone>
 
   <postalCode.insertZoneUser><![CDATA[
-    insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, date_created, created_by_id, allocation)
-    values (:postalCodeZoneId, :userId, now(), :createdById, :allocation)
+    insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, date_created, created_by_id)
+    values (:postalCodeZoneId, :userId, now(), :createdById)
   ]]></postalCode.insertZoneUser>
-
-  <postalCode.updateZoneUser><![CDATA[
-    update flow.postal_code_zone_user
-    set allocation = :allocation,
-        modified_by_id = :modifiedById,
-        date_modified = now()
-    where id = :id
-  ]]></postalCode.updateZoneUser>
 
   <postalCode.deleteZoneUser><![CDATA[
     update flow.postal_code_zone_user
@@ -95,7 +86,6 @@
   <postalCode.getZoneUser><![CDATA[
     select pczu.id,
        pczu.postal_code_zone_id,
-       pczu.allocation,
        u.first_name,
        u.last_name,
        u.first_name || ' ' || u.last_name as full_name,
@@ -141,6 +131,8 @@
                  else (upv.company_id = :companyId OR (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true )) end
         and upv.position_schedulable is true
         and upv.user_archived is not true
+        and upv.start_date <= now()
+        and (upv.end_date is null or upv.end_date >= now())
         and not exists (select user_id
                           from flow.postal_code_zone_user pczu
                           where postal_code_zone_id = :zoneId

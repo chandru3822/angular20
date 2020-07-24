@@ -60,10 +60,12 @@ public class ProjectProcessStepServiceTests {
 
   private List<ProjectProcessStepRequirement> projectProcessStepRequirements;
 
+  private CustomFieldValueService customFieldValueService = mock(CustomFieldValueService.class);
+
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, null, processStepActionService, projectProcessStepRequirementService, asyncProjectProcessStepService, null));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, null, processStepActionService, projectProcessStepRequirementService, asyncProjectProcessStepService, customFieldValueService, null));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");

@@ -60,6 +60,10 @@
             title: 'Closer Dashboard',
             show: this.$store.getters.userHasFeature('CLOSER_DASHBOARD')
           }, {
+            path: '/installation-agreements/request',
+            title: 'Installation Agreements',
+            show: this.$store.getters.userHasFeature('INSTALLATION_AGREEMENT')
+          }, {
             path: '/setterDashboard',
             title: 'Setter Dashboard',
             show: this.$store.getters.userHasFeature('SETTER_DASHBOARD')
@@ -69,12 +73,12 @@
             show: this.$store.getters.userHasFeature('COMMISSIONS')
           }, {
             path: '/finances/rebate/viewPayments',
-            title: 'Finance',
-            show: this.$store.getters.userHasFeature('FINANCES')
+            title: 'Rebates',
+            show: this.$store.getters.userHasFeature('REBATES')
           }, {
             path: '/proposal',
             title: 'Proposals',
-            show: this.$store.getters.userHasFeature('PROPOSAL')
+            show: this.$store.getters.userHasFeature('REBATES')
           },
 
         ]

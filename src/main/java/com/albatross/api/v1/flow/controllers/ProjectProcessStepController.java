@@ -1,9 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
-import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.ProjectProcessStep;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +69,8 @@ public class ProjectProcessStepController {
   }
 
   @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ProjectProcessStep saveProjectProcessStep(@RequestBody ProjectProcessStep pps) {
-    return projectProcessStepService.saveProjectProcessStep(pps);
+  public ResponseEntity<List<CustomFieldGroup>> saveProjectProcessStep(@RequestBody ProjectProcessStep pps) {
+    return new ResponseEntity<>(projectProcessStepService.saveProjectProcessStep(pps), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)

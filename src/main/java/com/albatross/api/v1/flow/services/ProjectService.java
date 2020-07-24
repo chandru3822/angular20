@@ -61,13 +61,20 @@ public class ProjectService {
 
   public Page<Project> searchProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
+    Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", "VIEW_ALL");
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
+    params.put("userId", user.getId());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
-    List<Project> projects = sqlCache.query("project.search", params, Project.class);
-    Integer total = sqlCache.queryForObject("project.searchCount", params, Integer.class);
+
+    String searchSqlKey = viewAll ? "project.search" : "project.searchByOwner";
+    String countSqlKey = viewAll ? "project.searchCount" : "project.searchCountByOwner";
+
+    List<Project> projects = sqlCache.query(searchSqlKey, params, Project.class);
+    Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
@@ -90,19 +97,26 @@ public class ProjectService {
     sqlCache.update("project.update", params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, String projectName) {
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact) {
     User user = securityService.getCurrentUser();
 
     // Get active company project status type so new projects can have an active status
     CompanyProjectStatusType companyStatusType = this.getActiveCompanyProjectStatusType(user.getCompanyId());
     Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
-    Long id = sqlCache.updateReturningId("project.insert",
-        ImmutableMap.of("contactId", contactId,
-                        "createdById", user.getId(),
-                        "projectName", projectName,
-                        "processId", processId,
-                        "companyProjectStatusTypeId", companyStatusTypeId), "id").longValue();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId );
+    params.put("createdById", user.getId() );
+    params.put("projectName", contact.getFullName() );
+    params.put("processId", processId );
+    params.put("street1", contact.getStreet1() );
+    params.put("city", contact.getCity() );
+    params.put("stateId", contact.getStateId() );
+    params.put("countryId", contact.getCountryId() );
+    params.put("postalCode", contact.getPostalCode() );
+    params.put("companyProjectStatusTypeId", companyStatusTypeId );
+
+    Long id = sqlCache.updateReturningId("project.insert", params, "id").longValue();
 
     return getProject(id);
   }
@@ -172,6 +186,10 @@ public class ProjectService {
     sqlCache.update("project.updateOwner", params);
   }
 
+  public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {
+      sqlCache.update("project.updateStatus", Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
+  }
+
   private CompanyProjectStatusType getActiveCompanyProjectStatusType(Long companyId) {
     return sqlCache.get("project.getActiveProjectStatusTypeByCompanyId", Map.of("companyId", companyId), CompanyProjectStatusType.class).orElse(null);
   }
@@ -182,6 +200,10 @@ public class ProjectService {
 
   public List<Owner> getOwners() {
     return sqlCache.query("project.getOwners", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), Owner.class);
+  }
+
+  public List<ProjectStatus> getStatuses() {
+      return sqlCache.query("project.getStatuses", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), ProjectStatus.class);
   }
 
   public String generateReport(String query) {
