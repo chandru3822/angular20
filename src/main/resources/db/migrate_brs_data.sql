@@ -9,6 +9,11 @@
 -- copy over brs data
 --------------------------------------------------------------------------------
 
+drop trigger if exists organization_audit_trg ON flow.organization_custom_field_value;
+drop trigger if exists customer_audit_trg ON flow.customer_custom_field_value;
+drop trigger if exists user_audit_trg ON flow.user_custom_field_value;
+drop trigger if exists project_audit_trg ON flow.project_custom_field_value;
+
 /*
 INSERT INTO flow.org_level (company_id, level,level_name)
 VALUES ((select id from flow.company where company_name = 'Blue Raven Corporate'), 1,'Parent'),
@@ -7747,3 +7752,17 @@ values ('Project - Custom Field'), ('Contact - Custom Field');
 update flow.process_step_requirement_type
 set process_step_requirement_type = 'Process Step - Custom Field'
 where id = 1;
+
+
+CREATE TRIGGER project_audit_trg
+    after INSERT or update or delete ON flow.project_custom_field_value
+    FOR EACH ROW EXECUTE PROCEDURE flow.project_audit();
+CREATE TRIGGER user_audit_trg
+    after INSERT or update or delete ON flow.user_custom_field_value
+    FOR EACH ROW EXECUTE PROCEDURE flow.user_audit();
+CREATE TRIGGER customer_audit_trg
+    after INSERT or update or delete ON flow.customer_custom_field_value
+    FOR EACH ROW EXECUTE PROCEDURE flow.customer_audit();
+CREATE TRIGGER organization_audit_trg
+    after INSERT or update or delete ON flow.organization_custom_field_value
+    FOR EACH ROW EXECUTE PROCEDURE flow.organization_audit();

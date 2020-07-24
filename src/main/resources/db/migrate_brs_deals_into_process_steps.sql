@@ -10,6 +10,7 @@ from  base_mysql.appointments a
 create index appointment_dates_resource_id_idx
     on appointment_dates(resource_id);
 drop trigger if exists update_project_details_trg on flow.project_process_step_custom_field_value;
+drop  trigger if exists project_process_step_audit_trg on flow.project_process_step_custom_field_value;
 /*SCHEDULE CLOSER APPOINTMENT*/
 with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
@@ -47,7 +48,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             now(),now(),2350555,2350555
      from blueraven.deal d2
               left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -129,7 +130,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                        and name = d2.appointment_outcome) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -214,7 +215,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                         and name = d2.proposal_status) end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -326,7 +327,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -401,6 +402,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 /*SCHEDULE SITE SURVEY*/
+with active_step as (
 INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
     (SELECT p.id,
             5,
@@ -446,7 +448,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -532,7 +534,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 20 then ((site_survey_uploaded_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -635,7 +637,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 81 then d2.inverter_rating else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -750,7 +752,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 38 then final_design_qa_feedback else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -842,7 +844,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 59 then ((final_design_sent_to_customer_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -922,7 +924,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 459 then ((final_design_signed_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -1014,7 +1016,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 80 then d2.inverter_rating else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -1106,7 +1108,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 65 then ((plan_set_qa_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -1193,7 +1195,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 67 then ((greatest(permit_pack_complete,permit_pack_revision_complete_date,permit_revision_b_complete_date,permit_revision_c_complete_date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -1385,7 +1387,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 84 then (select id from blueraven.user where (first_name||' '||last_name) = d2.structural_analysis_completed_by) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -1469,7 +1471,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                         and name = d2.engineering_stamp_required) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -1554,7 +1556,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                         and name = d2.electrical_engineering_stamp_required) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -1647,7 +1649,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 102 then permit_fee_paid else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -1883,7 +1885,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and name = d2.permit_location) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2085,7 +2087,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and name = d2.permit_location) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2294,7 +2296,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and case when name = 'Yes' then True else false end = d2.proof_of_howmeowners_insurance_required) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2376,7 +2378,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 112 then ((nem_signed_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2454,7 +2456,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 113 then ((nem_submitted_to_utility_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2534,7 +2536,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 115 then ((interconnection_application_rejected AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2614,7 +2616,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 116 then ((nem_approved_by_utility_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2693,7 +2695,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 117 then d2.hoa_contact_information else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2772,7 +2774,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 118 then ((hoa_request_for_approval_submitted_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2852,7 +2854,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 119 then ((hoa_approval_received_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -2931,7 +2933,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 120 then ((in_house_mpu_permit_pack_complete_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3011,7 +3013,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 122 then ((in_house_mpu_permit_submittal_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3093,7 +3095,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 124 then ((in_house_mpu_permit_submittal_verified_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3172,7 +3174,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 125 then ((in_house_mpu_permit_approved_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3259,7 +3261,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                          (d2.permit_pick_up_date >= up.start_date and case when end_date is not null then d2.permit_pick_up_date <= end_date else 1=1 end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3491,7 +3493,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                          (d2.fl_noc_application_signature_date >= up.start_date and case when end_date is not null then d2.fl_noc_application_signature_date <= end_date else 1=1 end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3579,7 +3581,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 134 then ((fl_noc_application_signature_verified_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3659,7 +3661,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 126 then ((installation_ready_to_schedule_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3741,7 +3743,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 137 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 1 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3826,7 +3828,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 138 then ((substantial_completion_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3908,7 +3910,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 141 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 2 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -3990,7 +3992,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 142 then ((materials_ordered_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4070,7 +4072,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 143 then ((greatest(placard_ordered_date,additional_placard_ordered_date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4188,7 +4190,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 145 then placard_tracking_number else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4307,7 +4309,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 147 then ((substantial_completion_approved_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4395,7 +4397,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                          (d2.ahj_inspection_date >= up.start_date and case when end_date is not null then d2.ahj_inspection_date <= end_date else 1=1 end) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4573,7 +4575,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 148 then ((ahj_inspection_ready_to_schedule_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4655,7 +4657,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and name = d2.ahj_inspection_outcome) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4815,7 +4817,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 154 then ((greatest(verified_inspection_approval_received_by_utility_date,ahj_inspection_approval_submitted_date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4895,7 +4897,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 155 then ((utility_meter_ordered_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -4976,7 +4978,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 158 then ((permission_to_operate_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain') else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -5065,7 +5067,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                          (d2.system_service_date >= up.start_date and case when end_date is not null then d2.system_service_date <= end_date else 1=1 end ) limit 1) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -5154,7 +5156,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -5291,8 +5293,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 165 then ((greatest(structural_engineering_review_required_date,structural_engineering_review_b_required_date,structural_engineering_review_c_required_date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
-                 when p.custom_field_group_assignment_id = 167 then ((greatest(structural_engineering_review_complete_date,structural_engineering_review_b_required_date,structural_engineering_review_c_required_date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
+            case when p.custom_field_group_assignment_id = 165 then ((greatest(structural_engineering_review_required_date,structural_engineering_review_b_required_date::date,structural_engineering_review_c_required_date::date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
+                 when p.custom_field_group_assignment_id = 167 then ((greatest(structural_engineering_review_complete_date,structural_engineering_review_b_required_date::date,structural_engineering_review_c_required_date::date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
                  else null end,
             case when p.custom_field_group_assignment_id = 166 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5305,7 +5307,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 164 then (select id from blueraven.user where (first_name||' '||last_name) = d2.structural_engineering_review_by) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -5488,8 +5490,8 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                          date_value,int_array_value,int_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
-            case when p.custom_field_group_assignment_id = 168 then ((greatest(engineering_review_required_date,electrical_engineering_review_b_required_date,electrical_engineering_review_c_required_date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
-                 when p.custom_field_group_assignment_id = 170 then ((greatest(engineering_review_complete_date,electrical_engineering_review_b_required_date,electrical_engineering_review_c_required_date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
+            case when p.custom_field_group_assignment_id = 168 then ((greatest(engineering_review_required_date::date,electrical_engineering_review_b_required_date::date,electrical_engineering_review_c_required_date::date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
+                 when p.custom_field_group_assignment_id = 170 then ((greatest(engineering_review_complete_date::date,electrical_engineering_review_b_required_date::date,electrical_engineering_review_c_required_date::date) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')
                  else null end,
             case when p.custom_field_group_assignment_id = 169 then (select array_agg(id)
                                                                      from flow.list_of_value
@@ -5502,7 +5504,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 171 then (select id from blueraven.user where (first_name||' '||last_name) = d2.electrical_engineering_review_by) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -5694,7 +5696,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 179  then d2.low_production_inquiry_details else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -5781,7 +5783,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -5863,7 +5865,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -5944,7 +5946,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6026,7 +6028,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6110,7 +6112,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6196,7 +6198,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6284,7 +6286,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6495,7 +6497,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6580,7 +6582,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6665,7 +6667,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6750,7 +6752,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6834,7 +6836,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -6919,7 +6921,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 201 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 4 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7003,7 +7005,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7085,7 +7087,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 205 then (select org_id from blueraven.deal_calendar_event dce where dce.deal_id = d2.id and dce.work_type_id = 12 and dce.primary_flag is true and dce.deleted is false) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7168,7 +7170,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7248,7 +7250,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7332,7 +7334,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7416,7 +7418,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7500,7 +7502,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7584,7 +7586,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7668,7 +7670,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7768,7 +7770,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 424 then d2.inverter_rating else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -7882,7 +7884,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 424 then d2.inverter_rating else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -8089,7 +8091,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  when p.custom_field_group_assignment_id = 436 then ((utility_rebate_application_signed_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -8171,7 +8173,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                                          and name = d2.pre_design_status)else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -8262,7 +8264,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -8446,7 +8448,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
 
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -8521,7 +8523,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     (select p1.id,p.custom_field_group_assignment_id,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -8599,7 +8601,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 478 then ((energized_date AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -8688,7 +8690,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
-              inner join process_step1 p1 on p1.project_id = d2.id
+              inner join active_step p1 on p1.project_id = d2.id
               cross join p
     );
 
@@ -9636,3 +9638,17 @@ from ids i
 where i.id = p.id;
 
 
+CREATE TRIGGER project_process_step_audit_trg
+    after INSERT or update or delete ON flow.project_process_step_custom_field_value
+    FOR EACH ROW EXECUTE PROCEDURE flow.project_process_step_audit();
+
+insert into flow.resource_appointment(company_id, user_id, start_time, end_time,all_day, description, created_by_id,date_created)
+    (select (select company_id from flow.user_company uc
+             where uc.user_id = u.id and is_default is true limit 1),u.id,
+            a.start_date,a.end_date,case when a.all_day =1 then true else false end,a.name,2350555,now()
+     from base_mysql.appointments a
+              inner join blueraven.user u on  u.user_base_oid = a.user_id or u.user_base_setter_oid= a.user_id
+              left join base_mysql.appointment_contexts ac on ac.appointment_id = a.id
+     where ac.id is null
+       and a.local_deleted = 0
+       and u.id != 2355131);
