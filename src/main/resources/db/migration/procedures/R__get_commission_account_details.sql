@@ -13,7 +13,7 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      customer_id                                 INT,
                      customer_name                               VARCHAR,
                      system_size                                 NUMERIC(10,2),
-                     closer_user_id                              INT,
+                     closer_user_id                              bigint,
                      closer                                      TEXT,
                      closer_is_terminated                        BOOLEAN,
                      source_name                                 VARCHAR,
@@ -30,7 +30,7 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      utility_bill_verified_date                  DATE,
                      proof_of_howmeowners_insurance_required     character varying,
                      proof_of_homeowners_insurance_obtained_date DATE,
-                     financier                                   TEXT,
+                     financier                                   character varying,
                      first_cash_payment_paid_date                DATE,
                      first_cash_payment_amount                   NUMERIC(10,2),
                      total_system_price                          NUMERIC(10,2),
@@ -106,21 +106,21 @@ BEGIN
                         pd.cancelled_date as cancelled_date,
                         pd.installation_agreement_signed_date as installation_agreement_signed_date,
                         pd.final_design_signed_date as final_design_signed_date,
-                        CASE WHEN final_design_signed_date IS NULL
+                        CASE WHEN pd.final_design_signed_date IS NULL
                                  THEN 'red' ELSE 'black' END                           AS fds_color,
                         CASE WHEN pd.financial_agreement_signed_date IS NULL
                                  THEN 'red' ELSE 'black' END                           AS asd_color,
-                        CASE WHEN substantial_completion_date IS NULL
+                        CASE WHEN pd.substantial_completion_date IS NULL
                                  THEN 'red' ELSE 'black' END                           AS scd_color,
-                        CASE WHEN proof_of_homeowners_insurance_required = 'Yes'
-                            and proof_of_homeowners_insurance_obtained_date is null
+                        CASE WHEN lov_proof_of_home.name = 'YES'
+                            and pd.proof_of_homeowners_insurance_obtained_date is null
                                  THEN 'red' ELSE 'black' END                           AS pohi_color,
                         CASE WHEN lov_financier.name = 'Cash' and
-                                  first_cash_payment_paid_date is null
+                                  pd.first_cash_payment_paid_date is null
                                  THEN 'red' ELSE 'black' END                           AS deposit_color,
                         pd.financial_agreement_signed_date as agreement_signed_date,
                         pd.utility_bill_verified_date as utility_bill_verified_date,
-                        pd.proof_of_homeowners_insurance_required as proof_of_howmeowners_insurance_required,
+                        lov_proof_of_home.name as proof_of_howmeowners_insurance_required,
                         pd.proof_of_homeowners_insurance_obtained_date as proof_of_homeowners_insurance_obtained_date,
                         lov_financier.name                                  AS financier,
                         pd.first_cash_payment_paid_date as first_cash_payment_paid_date,
@@ -153,7 +153,7 @@ BEGIN
                                        u.first_name,
                                        u.last_name,
                                        coalesce(
-                                               round(system_size::numeric*opru.m2_allocation,2),
+                                               round(pd.system_size::numeric*opru.m2_allocation,2),
                                                0)  total,
                                        2 as milestone_id
                                 FROM flow.project p1
@@ -197,8 +197,8 @@ BEGIN
                          WHERE pc.project_id = p.id
                         )                                                       AS commission_plan_id,
 
-                        (SELECT coalesce(round(cp.total*system_size::numeric
-                                                   - case when cpsa.fee_type_id = 1 then coalesce(system_size::numeric*cpsa.fee_amount, 0) else
+                        (SELECT coalesce(round(cp.total*pd.system_size::numeric
+                                                   - case when cpsa.fee_type_id = 1 then coalesce(pd.system_size::numeric*cpsa.fee_amount, 0) else
                                 coalesce(cpsa.fee_amount, 0) end ,2),
                                          0) total
                          FROM flow.project p2
@@ -207,7 +207,7 @@ BEGIN
                                   left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.milestone_id = 2
                          where p2.id = p.id and  cpsa.source_id = pd.source) AS total_commissions,
                         coalesce(
-                                (select system_size::numeric * op2.total
+                                (select pd.system_size::numeric * op2.total
                                  from brs.override_plan op2
                                           inner join brs.project_override po on op2.id = po.override_plan_id
                                  where po.project_id = p.id),
@@ -215,8 +215,8 @@ BEGIN
                         coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
                                                  0::NUMERIC
-                                             else coalesce(round(cpa.allocation*system_size::numeric- case when cpsa.milestone_id =1 then
-                                                                                                                             case when cpsa.fee_type_id = 1 then coalesce(system_size::numeric* cpsa.fee_amount,0)
+                                             else coalesce(round(cpa.allocation*pd.system_size::numeric- case when cpsa.milestone_id =1 then
+                                                                                                                             case when cpsa.fee_type_id = 1 then coalesce(pd.system_size::numeric* cpsa.fee_amount,0)
                                                                                                                                   else coalesce(cpsa.fee_amount,0) end
                                                                                                                          else 0 end,2),
                                                            0) end total
@@ -229,8 +229,8 @@ BEGIN
                                  WHERE p1.id = p.id ),0) + coalesce(
                                 (SELECT case when pd.cancelled_date is not null THEN
                                                  0::NUMERIC
-                                             else coalesce(round(cpa.allocation*system_size::numeric-case when cpsa.milestone_id =2 then
-                                                                                                                            case when cpsa.fee_type_id = 1 then coalesce(system_size::numeric* cpsa.fee_amount,0)
+                                             else coalesce(round(cpa.allocation*pd.system_size::numeric-case when cpsa.milestone_id =2 then
+                                                                                                                            case when cpsa.fee_type_id = 1 then coalesce(pd.system_size::numeric* cpsa.fee_amount,0)
                                                                                                                                  else coalesce(cpsa.fee_amount,0) end
                                                                                                                         else 0 end,2),
                                                            0) end total
@@ -244,7 +244,7 @@ BEGIN
                         coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
                                                  0::numeric
-                                             else coalesce(round(system_size::numeric*(select sum(m1_allocation)
+                                             else coalesce(round(pd.system_size::numeric*(select sum(m1_allocation)
                                                                                                      from brs.override_plan_receiving_user opru
                                                                                                      where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
@@ -254,7 +254,7 @@ BEGIN
                                  WHERE p1.id = p.id),0) + coalesce(
                                 (SELECT case when pd.cancelled_date is not null then
                                                  0::NUMERIC
-                                             else coalesce(round(system_size::numeric * (select sum(m2_allocation)
+                                             else coalesce(round(pd.system_size::numeric * (select sum(m2_allocation)
                                                                                                        from brs.override_plan_receiving_user opru
                                                                                                        where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
@@ -295,6 +295,7 @@ BEGIN
                           left join flow.list_of_value lov_source on lov_source.id = pd.source
                           left join flow.list_of_value lov_stage on lov_stage.id = pd.stage
                           left join flow.list_of_value lov_financier on lov_financier.id = pd.primary_financier
+                          left join flow.list_of_value lov_proof_of_home  on lov_proof_of_home.id = pd.proof_of_homeowners_insurance_required
                  WHERE  (ec.project_id is null) and
                      CASE WHEN p_project_ids IS NOT NULL
                               THEN p.id = ANY(p_project_ids) ELSE 1 = 1 END
