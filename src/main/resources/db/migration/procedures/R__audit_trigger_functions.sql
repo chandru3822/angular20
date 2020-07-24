@@ -113,11 +113,11 @@ CREATE TRIGGER user_audit_trg
     FOR EACH ROW EXECUTE PROCEDURE flow.user_audit();
 
 
-CREATE OR REPLACE FUNCTION flow.customer_audit()
+CREATE OR REPLACE FUNCTION flow.contact_audit()
     RETURNS TRIGGER AS $$
 BEGIN
     IF (TG_OP = 'INSERT') THEN
-        insert into flow.customer_custom_field_value_audit(customer_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+        insert into flow.contact_custom_field_value_audit(contact_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(new.id,null,case when new.date_value is not null then new.date_value::text
                                 when new.timestamp_value is not null then new.timestamp_value::text
                                 when new.boolean_value is not null then new.boolean_value::text
@@ -128,7 +128,7 @@ BEGIN
                now(),
                new.modified_by_id);
     elsif (TG_OP = 'UPDATE') THEN
-        insert into flow.customer_custom_field_value_audit(customer_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+        insert into flow.contact_custom_field_value_audit(contact_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
                            when old.boolean_value is not null then old.boolean_value::text
@@ -146,7 +146,7 @@ BEGIN
                now(),
                new.modified_by_id);
     ELSIF (TG_OP = 'DELETE') THEN
-        insert into flow.customer_custom_field_value_audit(customer_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
+        insert into flow.contact_custom_field_value_audit(contact_custom_field_value_id, old_value, new_value, date_modified, modified_by_id)
         values(old.id,case when old.date_value is not null then old.date_value::text
                            when old.timestamp_value is not null then old.timestamp_value::text
                            when old.boolean_value is not null then old.boolean_value::text
@@ -164,10 +164,10 @@ END
 $$
     LANGUAGE plpgsql;
 
-drop trigger if exists customer_audit_trg ON flow.customer_custom_field_value;
-CREATE TRIGGER customer_audit_trg
-    after INSERT or update or delete ON flow.customer_custom_field_value
-    FOR EACH ROW EXECUTE PROCEDURE flow.customer_audit();
+drop trigger if exists contact_audit_trg ON flow.contact_custom_field_value;
+CREATE TRIGGER contact_audit_trg
+    after INSERT or update or delete ON flow.contact_custom_field_value
+    FOR EACH ROW EXECUTE PROCEDURE flow.contact_audit();
 
 
 CREATE OR REPLACE FUNCTION flow.organization_audit()

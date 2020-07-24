@@ -521,17 +521,17 @@ CREATE INDEX if not exists pd_utility_company_idx ON brs.project_details (utilit
 CREATE INDEX if not exists pd_installation_agreement_sent_to_homeowner_idx ON brs.project_details (installation_agreement_sent_to_homeowner);
 
 
-create unique index project_process_step_pk
+create unique index if not exists project_process_step_pk
     on flow.project_process_step (id,process_step_id);
 
-create index project_process_step1_pk
+create index if not exists project_process_step1_pk
     on flow.project_process_step (id);
 
 
 create unique index on flow.project_process_step (project_id,process_step_id)
     where main = true;
 
-create index project_process_step_main_idx on flow.project_process_step (main);
+create index if not exists project_process_step_main_idx on flow.project_process_step (main);
 
 create index if not exists p_postal_code4_idx
     on flow.project (postal_code);
