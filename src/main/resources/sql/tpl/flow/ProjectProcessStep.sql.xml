@@ -124,8 +124,7 @@
     set main = false
     where
         project_id = :projectId and
-        process_step_id = :processStepId and
-        id != :mainProjectProcessStepId
+        process_step_id = :processStepId
 ]]></projectProcessStep.clearMain>
 
 <projectProcessStep.getNonMain><![CDATA[
