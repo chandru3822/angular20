@@ -182,12 +182,12 @@ public class ProjectProcessStepService {
     params.put("userPositionId", userPositionId);
     params.put("createdById", user.getId());
     params.put("main", main);
-    Long id = sqlCache.updateReturningId("projectProcessStep.insertProjectProcessStep", params, "id").longValue();
 
     if (main) {
-        params.put("mainProjectProcessStepId", id);
         sqlCache.update("projectProcessStep.clearMain", params);
     }
+
+    Long id = sqlCache.updateReturningId("projectProcessStep.insertProjectProcessStep", params, "id").longValue();
 
     return getProjectProcessStep(id);
   }

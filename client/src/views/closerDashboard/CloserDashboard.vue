@@ -296,7 +296,7 @@
       <!-- OFFICE RANKING START -->
       <div class="ranking-table">
         <div class="ranking-table-header">
-          <img class="ranking-table-icon" src="../../assets/office_icon.png" alt="Gray house icon">
+<!--          <img class="ranking-table-icon" src="../../assets/office_icon.png" alt="Gray house icon">-->
           <span>Office Ranking</span>
         </div>
 
