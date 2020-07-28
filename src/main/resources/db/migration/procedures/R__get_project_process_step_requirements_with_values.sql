@@ -46,13 +46,55 @@ BEGIN
       psr.custom_sql_option_id,
       case when pps1.id is not null then ppscfv1.id else ppscfv.id end as project_custom_field_value_id,
       case when pps1.id is not null then ppscfv1.project_process_step_id else ppscfv.project_process_step_id end as "projectprocessStepId",
-      case when pps1.id is not null then ppscfv1.text_value else ppscfv.text_value end as "textValue",
-      case when pps1.id is not null then ppscfv1.date_value else ppscfv.date_value end as "dateValue",
-      case when pps1.id is not null then ppscfv1.timestamp_value else ppscfv.timestamp_value end as "timestampValue",
-      case when pps1.id is not null then ppscfv1.boolean_value else ppscfv.boolean_value end as "booleanValue",
-      case when pps1.id is not null then ppscfv1.numeric_value else ppscfv.numeric_value end as "numericValue",
-      case when pps1.id is not null then ppscfv1.int_value else ppscfv.int_value end as "intValue",
-      coalesce(array_to_json(ppscfv.int_array_value), '[]') as int_array_value,
+      case when psr.process_step_requirement_type_id = 1 then
+               case when pps1.id is not null then ppscfv1.text_value else ppscfv.text_value end
+           when psr.process_step_requirement_type_id = 3 then
+               pcfv.text_value
+           when psr.process_step_requirement_type_id = 4 then
+               ccfv.text_value
+          end as "textValue",
+      case when psr.process_step_requirement_type_id = 1 then
+               case when pps1.id is not null then ppscfv1.date_value else ppscfv.date_value end
+           when psr.process_step_requirement_type_id = 3 then
+               pcfv.date_value
+           when psr.process_step_requirement_type_id = 4 then
+               ccfv.date_value
+          end as "dateValue",
+      case when psr.process_step_requirement_type_id = 1 then
+               case when pps1.id is not null then ppscfv1.timestamp_value else ppscfv.timestamp_value end
+           when psr.process_step_requirement_type_id = 3 then
+               pcfv.timestamp_value
+           when psr.process_step_requirement_type_id = 4 then
+               ccfv.timestamp_value
+          end as "timestampValue",
+      case when psr.process_step_requirement_type_id = 1 then
+               case when pps1.id is not null then ppscfv1.boolean_value else ppscfv.boolean_value end
+           when psr.process_step_requirement_type_id = 3 then
+               pcfv.boolean_value
+           when psr.process_step_requirement_type_id = 4 then
+               ccfv.boolean_value
+          end as "booleanValue",
+      case when psr.process_step_requirement_type_id = 1 then
+               case when pps1.id is not null then ppscfv1.numeric_value else ppscfv.numeric_value end
+           when psr.process_step_requirement_type_id = 3 then
+               pcfv.numeric_value
+           when psr.process_step_requirement_type_id = 4 then
+               ccfv.numeric_value
+          end as "numericValue",
+      case when psr.process_step_requirement_type_id = 1 then
+               case when pps1.id is not null then ppscfv1.int_value else ppscfv.int_value end
+           when psr.process_step_requirement_type_id = 3 then
+               pcfv.int_value
+           when psr.process_step_requirement_type_id = 4 then
+               ccfv.int_value
+          end as "intValue",
+      case when psr.process_step_requirement_type_id = 1 then
+               case when pps1.id is not null then coalesce(array_to_json(ppscfv1.int_array_value), '[]') else coalesce(array_to_json(ppscfv.int_array_value), '[]') end
+           when psr.process_step_requirement_type_id = 3 then
+               coalesce(array_to_json(pcfv.int_array_value), '[]')
+           when psr.process_step_requirement_type_id = 4 then
+               coalesce(array_to_json(ccfv.int_array_value), '[]')
+          end as "intArrayValue",
       array_to_json(cf.system_list_option_ids) as system_list_option_ids,
       (select json_build_object(
                 'id', dtr.id,
@@ -134,6 +176,7 @@ BEGIN
     inner join flow.operator_type ot on ot.id = psr.operator_type_id
     inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
     inner join flow.project_process_step pps on pps.process_step_id = psr.process_step_id
+    inner join flow.project p on p.id = pps.project_id
     left join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
     left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
     left join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = cfg.process_step_id and pps1.main is true and pps1.archived is false
@@ -146,6 +189,8 @@ BEGIN
     left join flow.list_of_value lov on lov.id = psr.list_of_value_id
     left join flow.project_process_step_custom_field_value ppscfv on ppscfv.project_process_step_id = pps.id and ppscfv.custom_field_group_assignment_id = cfga.id
     left join flow.project_process_step_custom_field_value ppscfv1 on ppscfv1.custom_field_group_assignment_id = cfga.id and ppscfv1.project_process_step_id = pps1.id and ppscfv1.archived is not true
+    left join flow.project_custom_field_value pcfv on pcfv.custom_field_group_assignment_id = cfga.id and pcfv.project_id = pps.project_id and pcfv.archived is not true
+    left join flow.contact_custom_field_value ccfv on ccfv.custom_field_group_assignment_id = cfga.id and ccfv.contact_id = p.contact_id and ccfv.archived is not true
     where
       psr.archived is not true and
       cfga.archived is not true and
