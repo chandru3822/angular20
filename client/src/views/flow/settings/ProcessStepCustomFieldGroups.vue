@@ -155,31 +155,49 @@
                       <v-radio label="Reference Field: viewed only from other process steps or objects"
                                value="ancillary"></v-radio>
                     </v-radio-group>
-                    <v-select v-if="newFieldType === 'native'"
-                              v-model="newField"
-                              :items="availableCustomFields"
-                              label="New Custom Field"
-                              item-text="fieldName"
-                              return-object
-                              @input="assignCustomField(item)"
-                    ></v-select>
 
-                    <v-select v-if="newFieldType === 'ancillary'"
-                              v-model="parent"
-                              :items="parentObjects"
-                              label="Parent Object"
-                              item-text="name"
-                              return-object
-                              @input="loadFieldsByParent"
-                    ></v-select>
-                    <v-select v-if="newFieldType === 'ancillary'"
-                              v-model="selectedAncillaryField"
-                              :items="ancillaryCustomFields"
-                              label="Custom Field"
-                              item-text="fieldName"
-                              return-object
-                              @input="assignAncillaryCustomField(item)"
-                    ></v-select>
+                    <v-autocomplete v-if="newFieldType === 'native'"
+                                    v-model="newField"
+                                    :items="availableCustomFields"
+                                    cache-items
+                                    label="New Custom Field"
+                                    item-text="fieldName"
+                                    return-object
+                                    autocomplete="off"
+                                    @input="assignCustomField(item)"
+                    >
+                      <template slot='item' slot-scope='{ item }'>
+                        {{ item.fieldName }}
+                      </template>
+                    </v-autocomplete>
+                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    v-model="parent"
+                                    :items="parentObjects"
+                                    cache-items
+                                    label="Parent Object"
+                                    item-text="name"
+                                    return-object
+                                    autocomplete="off"
+                                    @input="loadFieldsByParent"
+                    >
+                      <template slot='item' slot-scope='{ item }'>
+                        {{ item.name }}
+                      </template>
+                    </v-autocomplete>
+                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    v-model="selectedAncillaryField"
+                                    :items="ancillaryCustomFields"
+                                    cache-items
+                                    label="Custom Field"
+                                    item-text="fieldName"
+                                    return-object
+                                    autocomplete="off"
+                                    @input="assignAncillaryCustomField(item)"
+                    >
+                      <template slot='item' slot-scope='{ item }'>
+                        {{ item.fieldName }}
+                      </template>
+                    </v-autocomplete>
                     <v-btn @click="addField = false">Cancel</v-btn>
                   </v-col>
                   <v-col cols="12" justify="center" class="px-3 py-0"

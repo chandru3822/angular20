@@ -197,6 +197,8 @@ public class CustomFieldService {
     params.put("fieldId", id);
     params.put("modifiedById", currentUser.getId());
 
+    //check if field is in use by a custom field group or requirement
+
     // archive single custom field
     sqlCache.update("customField.deleteField", params);
 
