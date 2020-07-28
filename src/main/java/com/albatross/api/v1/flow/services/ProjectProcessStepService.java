@@ -415,11 +415,60 @@ public class ProjectProcessStepService {
               case 7:
                   requirementMet = calculateMultiselectRequirement(r);
                   break;
+              case 8:
+                  requirementMet = calculateCustomRequirement(r);
               default:
                   //@TODO: blow up with error?
           }
       }
     return requirementMet;
+  }
+
+  public boolean calculateCustomRequirement(ProjectProcessStepRequirement r) throws Exception {
+      boolean passed = false;
+
+      if (r.getCustomFieldSqlKey() != null) {
+          // We can compare the IDs without actually having to get the values behind them. Sorta like C++ pointers
+          // This also assumes data type ID of 8 (custom behavior fields) are lists. If we start supporting other types with custom behavior, this needs to update with it
+          if (r.getDataTypeRequirementId() == null) {
+              switch (r.getOperatorTypeId().intValue()) {
+                  case 1:
+                      passed = Objects.equals(r.getCustomSqlOptionId(), r.getIntValue());
+                      break;
+                  case 2:
+                      passed = !Objects.equals(r.getCustomSqlOptionId(), r.getIntValue());
+                      break;
+                  case 3:
+                  case 4:
+                      break;
+                  default:
+                      throw new Exception(String.format("Unable to parse data type of Text with operator of ID: %s", r.getOperatorTypeId()));
+              }
+          } else {
+              switch (r.getDataTypeRequirementId().intValue()) {
+                  case 24:
+                      switch (r.getOperatorTypeId().intValue()) {
+                          case 1:
+                              passed = r.getIntValue() == null;
+                              break;
+                          case 2:
+                              passed = r.getIntValue() != null;
+
+                      }
+                      break;
+                  case 25:
+                      switch (r.getOperatorTypeId().intValue()) {
+                          case 1:
+                              passed = r.getIntValue() != null;
+                              break;
+                          case 2:
+                              passed = r.getIntValue() == null;
+                      }
+              }
+          }
+      }
+
+      return passed;
   }
 
   public boolean calculateFunctionRequirement(Object functionResult, ProjectProcessStepRequirement r) throws Exception {
