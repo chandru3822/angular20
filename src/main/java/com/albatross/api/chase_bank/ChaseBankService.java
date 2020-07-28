@@ -96,7 +96,7 @@ public class ChaseBankService {
                     .validate(payment.getAmount(),       Amount::new,        builder::netAmount)
                     .validate(payment.getAmount(),       Amount::new,        builder::grossAmount)
                     .validate(payment.getCustomerName(), Name::new,          builder::firstPayeeName)
-                    .validate(payment.getStreet1(),      AddressLine::new,   builder::payeeAddressLine1)
+                    .validate(payment.getState(),        AddressLine::new,   builder::payeeAddressLine1)
                     .validate(payment.getCity(),         City::new,          builder::payeeCity)
                     .validate(payment.getState(),        State::valueOf,     builder::payeeState)
                     .validate(payment.getPostalCode(),   USPostalCode::new,  builder::payeePostalCode)
@@ -173,10 +173,10 @@ public class ChaseBankService {
                 && isNotBlank(mailingPostalCode);
         }
 
-        public String getStreet1    () { return useMailingAddress() ? mailingStreet1    : customerStreet1; }
-        public String getCity       () { return useMailingAddress() ? mailingCity       : customerCity; }
-        public String getState      () { return useMailingAddress() ? mailingState      : customerState; }
-        public String getPostalCode () { return useMailingAddress() ? mailingPostalCode : customerPostalCode; }
+        public String getStreet1    () { return useMailingAddress() ? mailingStreet1    : (customerStreet1 == null ? "" : customerStreet1); }
+        public String getCity       () { return useMailingAddress() ? mailingCity       : (customerCity == null ? "" : customerCity); }
+        public String getState      () { return useMailingAddress() ? mailingState      : (customerState == null ? "" : customerState); }
+        public String getPostalCode () { return useMailingAddress() ? mailingPostalCode : (customerPostalCode == null ? "" : customerPostalCode); }
 
         public Optional<String> getStreet2 () {
             return useMailingAddress() ? Optional.ofNullable(StringUtils.trimToNull(mailingStreet2))

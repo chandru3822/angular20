@@ -144,7 +144,7 @@
       <label><b>Approved By:</b></label>
       {{ userName }}
       <br/>
-      <v-btn color="primaryCustom" dark @click="approveDialog = true">Approve & Send</v-btn>
+      <v-btn color="primaryCustom" dark @click="approveDialog = true">Approve and Create Batch</v-btn>
     </div>
 
     <v-dialog v-model="approveDialog" max-width="600px">
@@ -157,7 +157,7 @@
         </v-card-title>
 
         <v-card-text>
-          This will approve and send the selected payments to Wells Fargo, would you like to proceed?
+          This will approve and create a batch for the selected payments, would you like to proceed?
         </v-card-text>
 
         <v-divider></v-divider>
@@ -502,6 +502,7 @@
           if (status === 200) {
             let param = {paymentIds: this.paymentIdsToApprove}
             await postRequest('/rebate/approve', param, 'blueraven')
+            window.location.reload()
           }
 
           this.passwordDialog = false;
