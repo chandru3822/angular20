@@ -26,41 +26,78 @@
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
             <!-- if it is a process step custom field -->
-            <v-select
-                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
-                v-model="parent"
-                :items="parentObjects"
-                label="Parent Object"
-                item-text="processStepName"
-                return-object
-                @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
+            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
+                            v-model="parent"
+                            :items="parentObjects"
+                            cache-items
+                            label="Parent Object"
+                            item-text="processStepName"
+                            return-object
+                            autocomplete="off"
+                            @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-select>
+            ></v-autocomplete>
+<!--            <v-select-->
+<!--                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"-->
+<!--                v-model="parent"-->
+<!--                :items="parentObjects"-->
+<!--                label="Parent Object"-->
+<!--                item-text="processStepName"-->
+<!--                return-object-->
+<!--                @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},-->
+<!--                              validateRequirementForm(),-->
+<!--                              selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,-->
+<!--                              newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"-->
+<!--            ></v-select>-->
             <!-- if it is a process step custom field it needs parent, other custom fields do not-->
-            <v-select v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
-                      v-model="selectedCustomField"
-                      :items="customFields"
-                      label="Custom Field"
-                      item-text="fieldName"
-                      return-object
-                      @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
+            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
+                            v-model="selectedCustomField"
+                            :items="customFields"
+                            cache-items
+                            label="Custom Field"
+                            item-text="fieldName"
+                            return-object
+                            autocomplete="off"
+                            @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
                               selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-select>
+            ></v-autocomplete>
+<!--            <v-select v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"-->
+<!--                      v-model="selectedCustomField"-->
+<!--                      :items="customFields"-->
+<!--                      label="Custom Field"-->
+<!--                      item-text="fieldName"-->
+<!--                      return-object-->
+<!--                      @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),-->
+<!--                              selectedDataTypeRequirement = {},-->
+<!--                              validateRequirementForm(),-->
+<!--                              selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,-->
+<!--                              newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"-->
+<!--            ></v-select>-->
             <!-- if it is a function -->
-            <v-select
-                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
-                v-model="selectedFunction"
-                :items="availableFunctions"
-                label="Function"
-                item-text="companyFunctionName"
-                returnObject
-                @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId), validateRequirementForm()]"
-            ></v-select>
+            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
+                            v-model="selectedFunction"
+                            :items="availableFunctions"
+                            cache-items
+                            label="Function"
+                            item-text="companyFunctionName"
+                            return-object
+                            autocomplete="off"
+                            @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId), validateRequirementForm()]"
+            ></v-autocomplete>
+<!--            <v-select-->
+<!--                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"-->
+<!--                v-model="selectedFunction"-->
+<!--                :items="availableFunctions"-->
+<!--                label="Function"-->
+<!--                item-text="companyFunctionName"-->
+<!--                returnObject-->
+<!--                @input="[loadFunctionParams(selectedFunction.dbFunctionId, true), loadOperatorTypes(selectedFunction.returnDataTypeId), loadDataTypeRequirements(selectedFunction.returnDataTypeId), validateRequirementForm()]"-->
+<!--            ></v-select>-->
             <div v-if="selectedFunction.id && newRequirement.requirementParamDynamicValues.length > 0">
               <h5 class="text-left">Dynamic Function Parameters</h5>
               <v-card flat>
@@ -89,18 +126,30 @@
                           @input="validateRequirementForm()"
                           label="Value">
             </v-text-field>
-            <v-select
-                v-else-if="newRequirement.operatorTypeId
+            <v-autocomplete v-else-if="newRequirement.operatorTypeId
                               && newRequirement.customValue
                               && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKey !== null || selectedCustomField.companySystemListId !== null)
                               && !selectedCustomField.allowMultiple"
-                v-model="selectedListValue"
-                :items="selectedCustomField.listOfValues"
-                @change="validateRequirementForm()"
-                label="Available Values"
-                item-text="name"
-                return-object
-            ></v-select>
+                            v-model="selectedListValue"
+                            :items="selectedCustomField.listOfValues"
+                            cache-items
+                            label="Available Values"
+                            item-text="name"
+                            return-object
+                            autocomplete="off"
+            ></v-autocomplete>
+<!--            <v-select-->
+<!--                v-else-if="newRequirement.operatorTypeId-->
+<!--                              && newRequirement.customValue-->
+<!--                              && (selectedCustomField.listOfValueId !== null || selectedCustomField.customFieldSqlKey !== null || selectedCustomField.companySystemListId !== null)-->
+<!--                              && !selectedCustomField.allowMultiple"-->
+<!--                v-model="selectedListValue"-->
+<!--                :items="selectedCustomField.listOfValues"-->
+<!--                @change="validateRequirementForm()"-->
+<!--                label="Available Values"-->
+<!--                item-text="name"-->
+<!--                return-object-->
+<!--            ></v-select>-->
             <!-- currently only a listOfValueId can be a multiselect.  we may change this down the road for custom sql and system lists -->
             <v-select
                 v-else-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId !== null && selectedCustomField.allowMultiple"
