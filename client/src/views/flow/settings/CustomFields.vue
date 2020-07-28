@@ -1,5 +1,36 @@
 <template>
   <v-container id="custom-field-container">
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">Error Deleting Custom Field</v-card-title>
+
+        <v-card-text>
+          You cannot delete a field that is currently in use.  Please remove the field from the following locations before deleting.
+          <v-list v-for="(item, index) in fieldsInUse" :key="index">
+            <v-list-item-content>
+              {{ item.objectType }} <span v-if="item.processStepName">{{item.processStepName}}</span>{{ item.groupName }} - {{ item.fieldName}}
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat>
@@ -252,6 +283,8 @@
       return {
         snackbar: {},
         constants,
+        deleteError: false,
+        fieldsInUse: [],
         selectedFieldId: null,
         // this is used so the expanded row uses the full width...bug in vuetify
         // headers: Array(2).fill({}),
@@ -383,13 +416,18 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           item.archived = true
-          const {status} = await deleteRequest(`/customField/${item.id}`)
-          if (status === 200) {
+          const {data} = await putRequest(`/customField/delete/${item.id}`)
+          if (data?.length > 0) {
+            this.deleteError = true
+            this.fieldsInUse = data
+            this.snackbar = getSnackbar('ERROR', 'Field Cannot Be Deleted')
+          } else {
+            this.fieldsInUse = []
             this.customFields = this.customFields.filter((cf) => {
               return cf.id !== item.id
             })
+            this.snackbar = getSnackbar('SUCCESS', 'Field Deleted')
           }
-          this.snackbar = getSnackbar('SUCCESS', 'Field Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

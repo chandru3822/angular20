@@ -219,6 +219,14 @@
         and psr.archived is not true
   ]]></processStepRequirement.requirementsUsingCustomFieldGroup>
 
+  <processStepRequirement.requirementsUsingCustomFieldGroupAssignment><![CDATA[
+      select psr.id
+      from flow.process_step_requirement psr
+        inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+      where cfga.id = :customFieldGroupAssignmentId
+        and psr.archived is not true
+  ]]></processStepRequirement.requirementsUsingCustomFieldGroupAssignment>
+
   <processStepRequirement.getRequirementTypes><![CDATA[
     select *
     from flow.process_step_requirement_type
