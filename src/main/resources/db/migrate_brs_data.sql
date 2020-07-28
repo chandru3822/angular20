@@ -7771,3 +7771,11 @@ INSERT INTO brs.funnel (id, name, ratio, display_order)
     (select id, name, ratio, display_order from blueraven.funnel);
 INSERT INTO brs.setter_funnel (id, name, ratio, display_order)
     (select id, name, ratio, display_order from blueraven.setter_funnel);
+
+-- this is so humes knows which process step to treat differently for the round robin crap - must be run after flyway scripts create the tables
+insert into flow.unique_behavior_type(unique_behavior_type, date_created, created_by_id)
+values('SCHEDULE_CLOSER_APPOINTMENT', now(), 2350555);
+
+update flow.process_step
+set unique_behavior_type_id = 1
+where id = 1;

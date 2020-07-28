@@ -191,16 +191,25 @@ public class CustomFieldService {
     }
   }
 
-  public void deleteField(Long id) {
+  public List<CustomField> deleteField(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldId", id);
     params.put("modifiedById", currentUser.getId());
 
-    // archive single custom field
-    sqlCache.update("customField.deleteField", params);
+    //check if field is in use by a custom field group
+    List <CustomField> fields = sqlCache.query("customField.getGroupsUsingField", params, CustomField.class);
 
-    //todo: is there more that needs to be archived when they delete a custom field?
+    //if the field is assigned somewhere, return those values to frontend
+    if(!fields.isEmpty()) {
+      return fields;
+    } else {
+      // archive single custom field
+      sqlCache.update("customField.deleteField", params);
+      return null;
+    }
+
+
   }
 
   public List<CustomField> getByParentProcessStep(Long id) {
