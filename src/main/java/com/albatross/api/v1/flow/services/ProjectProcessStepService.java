@@ -447,11 +447,23 @@ public class ProjectProcessStepService {
           } else {
               switch (r.getDataTypeRequirementId().intValue()) {
                   case 24:
-                      passed = r.getCustomSqlOptionId() == null;
+                      switch (r.getOperatorTypeId().intValue()) {
+                          case 1:
+                              passed = r.getIntValue() == null;
+                              break;
+                          case 2:
+                              passed = r.getIntValue() != null;
+
+                      }
                       break;
                   case 25:
-                      passed = r.getCustomSqlOptionId() != null;
-                      break;
+                      switch (r.getOperatorTypeId().intValue()) {
+                          case 1:
+                              passed = r.getIntValue() != null;
+                              break;
+                          case 2:
+                              passed = r.getIntValue() == null;
+                      }
               }
           }
       }
