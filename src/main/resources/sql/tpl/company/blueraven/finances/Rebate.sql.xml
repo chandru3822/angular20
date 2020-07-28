@@ -235,6 +235,7 @@
                 where lov.id = pd.product) as product,
             pd.total_promotion_amount,
             pd.entered_into_payment_system_date,
+            (pd.total_promotion_amount - (select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3)) balance_owed,
             false as selected
 			from flow.project p
                 inner join brs.project_commission_snapshot s ON s.project_id = p.id
@@ -312,11 +313,11 @@
                 where lov.id = pd.product) as product,
       pd.total_promotion_amount,
       pd.entered_into_payment_system_date,
-      coalesce((select sum(drp2.payment_amount)from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
-      (select sum(drp2.payment_amount)from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
+      coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
+      (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
       ((select sum(payment_amount) from brs.project_rebate_payment drp3
           where drp3.project_id = p.id and project_rebate_payment_state_id != 4) < (total_promotion_amount)::numeric) red_balanced_owed,
-      (total_promotion_amount - (select sum(drp2.payment_amount) from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3)) balance_owed,
+      (total_promotion_amount - (select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3)) balance_owed,
       (select array_to_json(array_agg(row_to_json(payment_history))) from
       (select drp.id,
       batch_date,
@@ -357,7 +358,7 @@
       primary_financier,
       product,
       entered_into_payment_system_date,
-      coalesce((select sum(drp2.payment_amount)from brs.project_rebate_payment drp2 where drp2.project_id = p.id and project_rebate_payment_state_id = 3),0)
+      coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0)
     ) results
     ]]>
   </rebate.getRebateDetails>
