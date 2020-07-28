@@ -182,12 +182,12 @@ public class ProjectProcessStepService {
     params.put("userPositionId", userPositionId);
     params.put("createdById", user.getId());
     params.put("main", main);
-    Long id = sqlCache.updateReturningId("projectProcessStep.insertProjectProcessStep", params, "id").longValue();
 
     if (main) {
-        params.put("mainProjectProcessStepId", id);
         sqlCache.update("projectProcessStep.clearMain", params);
     }
+
+    Long id = sqlCache.updateReturningId("projectProcessStep.insertProjectProcessStep", params, "id").longValue();
 
     return getProjectProcessStep(id);
   }
@@ -382,43 +382,43 @@ public class ProjectProcessStepService {
 
     boolean requirementMet = false;
 
-    if (r.getProcessStepRequirementTypeId() == 1) {
-//      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
-
-      switch (r.getDataTypeId().intValue()) {
-        case 1:
-          requirementMet = calculateDateRequirement(r);
-          break;
-        case 2:
-          requirementMet = calculateTimestampRequirement(r);
-          break;
-        case 3:
-          requirementMet = calculateBooleanRequirement(r);
-          break;
-        case 4:
-          requirementMet = calculateNumericRequirement(r);
-          break;
-        case 5:
-          requirementMet = calculateTextRequirement(r);
-          break;
-        case 6:
-        case 9:
-          requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
-          break;
-        case 7:
-          requirementMet = calculateMultiselectRequirement(r);
-          break;
-        default:
-          //@TODO: blow up with error?
-      }
-    } else if (r.getProcessStepRequirementTypeId() == 2) {
+    if (r.getProcessStepRequirementTypeId() == 2) {
       String params = String.join(", ", prepareFunctionParams(r.getCompanyFunctionParams(), r.getProjectId()));
       String query = String.format("select * from %s(%s)", r.getFunctionName(), params);
       //@TODO: Account for function return data types 7 and 9 returning lists
       Optional<Object> returnValue = sqlCache.getBySql(query, null, new SingleColumnRowMapper<>(Object.class));
       //@TODO: compare returnValue to the requirement value
       requirementMet = calculateFunctionRequirement(returnValue.orElse(null), r);
-    }
+    } else {
+//      go through requirement.data_type_id to select the correct value prop. Then use the operation type to dun the correct comparison
+
+          switch (r.getDataTypeId().intValue()) {
+              case 1:
+                  requirementMet = calculateDateRequirement(r);
+                  break;
+              case 2:
+                  requirementMet = calculateTimestampRequirement(r);
+                  break;
+              case 3:
+                  requirementMet = calculateBooleanRequirement(r);
+                  break;
+              case 4:
+                  requirementMet = calculateNumericRequirement(r);
+                  break;
+              case 5:
+                  requirementMet = calculateTextRequirement(r);
+                  break;
+              case 6:
+              case 9:
+                  requirementMet = ((r.getHasListValues() != null && r.getHasListValues()) || r.getCompanySystemListId() != null) ? caclulateDropdownRequirement(r) : calculateIntRequirement(r);
+                  break;
+              case 7:
+                  requirementMet = calculateMultiselectRequirement(r);
+                  break;
+              default:
+                  //@TODO: blow up with error?
+          }
+      }
     return requirementMet;
   }
 

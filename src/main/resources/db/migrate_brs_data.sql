@@ -10,7 +10,7 @@
 --------------------------------------------------------------------------------
 
 drop trigger if exists organization_audit_trg ON flow.organization_custom_field_value;
-drop trigger if exists customer_audit_trg ON flow.customer_custom_field_value;
+drop trigger if exists contact_audit_trg ON flow.contact_custom_field_value;
 drop trigger if exists user_audit_trg ON flow.user_custom_field_value;
 drop trigger if exists project_audit_trg ON flow.project_custom_field_value;
 
@@ -7760,9 +7760,22 @@ CREATE TRIGGER project_audit_trg
 CREATE TRIGGER user_audit_trg
     after INSERT or update or delete ON flow.user_custom_field_value
     FOR EACH ROW EXECUTE PROCEDURE flow.user_audit();
-CREATE TRIGGER customer_audit_trg
-    after INSERT or update or delete ON flow.customer_custom_field_value
-    FOR EACH ROW EXECUTE PROCEDURE flow.customer_audit();
+CREATE TRIGGER contact_audit_trg
+    after INSERT or update or delete ON flow.contact_custom_field_value
+    FOR EACH ROW EXECUTE PROCEDURE flow.contact_audit();
 CREATE TRIGGER organization_audit_trg
     after INSERT or update or delete ON flow.organization_custom_field_value
     FOR EACH ROW EXECUTE PROCEDURE flow.organization_audit();
+
+INSERT INTO brs.funnel (id, name, ratio, display_order)
+    (select id, name, ratio, display_order from blueraven.funnel);
+INSERT INTO brs.setter_funnel (id, name, ratio, display_order)
+    (select id, name, ratio, display_order from blueraven.setter_funnel);
+
+-- this is so humes knows which process step to treat differently for the round robin crap - must be run after flyway scripts create the tables
+insert into flow.unique_behavior_type(unique_behavior_type, date_created, created_by_id)
+values('SCHEDULE_CLOSER_APPOINTMENT', now(), 2350555);
+
+update flow.process_step
+set unique_behavior_type_id = 1
+where id = 1;

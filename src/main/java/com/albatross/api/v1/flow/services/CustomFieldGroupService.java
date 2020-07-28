@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.CustomFieldGroupController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -202,13 +203,21 @@ public class CustomFieldGroupService {
     return cfg;
   }
 
-  public void deleteCustomFieldGroup(Long id) {
+  public void deleteWithRequirementChecks(CustomFieldGroupController.DeleteWithRequirementParams requirementParams) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
+    params.put("modifiedById", user.getId());
 
-    sqlCache.update("customFieldGroup.deleteCustomFieldGroup", params);
+    if(null != requirementParams.getCustomFieldGroupId()) {
+      params.put("id", requirementParams.getCustomFieldGroupId());
+      sqlCache.update("customFieldGroup.deleteCustomFieldGroup", params);
+    } else {
+      params.put("id", requirementParams.getCustomFieldGroupAssignmentId());
+      sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
+    }
 
-    processStepRequirementService.deleteRequirementIfUsingCustomFieldGroup(id);
+    processStepRequirementService.deleteRequirementIfUsingItem(requirementParams.getCustomFieldGroupId(), requirementParams.getCustomFieldGroupAssignmentId());
   }
 
   public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {

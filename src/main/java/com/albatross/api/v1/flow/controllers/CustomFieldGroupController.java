@@ -6,6 +6,7 @@ import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldObjectType;
 import com.albatross.api.v1.flow.model.ScheduleFieldType;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -87,9 +88,14 @@ public class CustomFieldGroupController {
     return customFieldGroupService.addProcessStepCustomFieldGroup(customFieldGroup);
   }
 
-  @DeleteMapping(value = "/deleteCustomFieldGroup/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteCustomFieldGroup(@PathVariable Long id) {
-    customFieldGroupService.deleteCustomFieldGroup(id);
+  @Data
+  public static class DeleteWithRequirementParams {
+    private Long customFieldGroupId, customFieldGroupAssignmentId;
+  }
+
+  @PutMapping(value = "/deleteWithRequirementChecks", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteWithRequirementChecks(@RequestBody DeleteWithRequirementParams params) {
+    customFieldGroupService.deleteWithRequirementChecks(params);
   }
 
   // to update just one:

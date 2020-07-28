@@ -38,9 +38,11 @@ public class PayrollService {
 
         if (payrollIds.size() > 1) {
             log.error("PAYROLL_ERROR: There are multiple payrolls marked as current and the first one will be returned.");
+        } else if (payrollIds.isEmpty()) {
+            log.error("PAYROLL_ERROR: No Current Payroll Available");
         }
 
-        return payrollIds.get(0);
+        return payrollIds.isEmpty() ? null : payrollIds.get(0);
     }
 
     public String payrollSearch(PayrollSearch searchQuery) {
