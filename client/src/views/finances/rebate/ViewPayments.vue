@@ -352,7 +352,6 @@
 
             let userData = await getRequest('/user/current')
             this.userName = userData.data.fullName;
-
             this.$store.commit(AppMutations.SET_LOADING, false)
           } else if (type === 'pending') {
             const {data} = await getRequest('/rebate/pending', 'blueraven')
