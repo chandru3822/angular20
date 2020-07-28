@@ -41,9 +41,10 @@ public class CustomFieldController {
     return field;
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteField(@PathVariable Long id) {
-    customFieldService.deleteField(id);
+  @PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomField> deleteField(@PathVariable Long id) {
+    //can't make this a delete request as we have to check for list of fields in use and return those
+    return customFieldService.deleteField(id);
   }
 
   @GetMapping(value = "/getByParentProcessStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -74,13 +74,20 @@ public class ProcessStepRequirementService {
     processStepActionService.deleteLogicIfActionsUseRequirement(requirementId);
   }
 
-  public void deleteRequirementIfUsingCustomFieldGroup(Long customFieldGroupId) {
+  public void deleteRequirementIfUsingItem(Long customFieldGroupId, Long customFieldGroupAssignmentId) {
     User currentUser = securityService.getCurrentUser();
     // this method is called when a customFieldGroup gets archived. if a requirement is using a field from that group the requirement will also be archived
     HashMap<String, Object> params = new HashMap<>();
-    params.put("customFieldGroupId", customFieldGroupId);
     params.put("modifiedById", currentUser.getId());
-    List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.requirementsUsingCustomFieldGroup", params, ProcessStepRequirement.class);
+    List<ProcessStepRequirement> results = null;
+
+    if (null != customFieldGroupId) {
+      params.put("customFieldGroupId", customFieldGroupId);
+      results = sqlCache.query("processStepRequirement.requirementsUsingCustomFieldGroup", params, ProcessStepRequirement.class);
+    } else {
+      params.put("customFieldGroupAssignmentId", customFieldGroupAssignmentId);
+      results = sqlCache.query("processStepRequirement.requirementsUsingCustomFieldGroupAssignment", params, ProcessStepRequirement.class);
+    }
 
     for(ProcessStepRequirement requirement : results) {
       //archive any requirements using that custom field group

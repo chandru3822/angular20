@@ -119,7 +119,7 @@
 
                         <v-card-text class="pt-4">
                           <div class="error-text">
-                            WARNING: Any requirements currently using a field from this group will also be archived and any actions currently using those requirements will be reset.
+                            WARNING: Any requirements currently using a field from this group will also be archived and any action logic currently using those requirements will be reset.
                           </div>
                           Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
                         </v-card-text>
@@ -135,7 +135,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="[item.archived = true, deleteGroupFromStep(item.id)]">
+                              @click="[item.archived = true, deleteWithChecks(item.id, null)]">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -256,10 +256,14 @@
                               </v-card-title>
 
                               <v-card-text class="mt-2">
+                                <div class="error-text mb-3">
+                                  WARNING: Any requirements currently using this field will also be archived and any action logic currently using those requirements will be reset.
+                                </div>
+
                                 <span class="error--text">WARNING:</span>
                                 By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
-                                Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
-                                item.groupName }}</strong>?
+
+                                Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{ item.groupName }}</strong>?
                               </v-card-text>
 
                               <v-divider></v-divider>
@@ -273,7 +277,7 @@
                                 <v-btn
                                     color="primary"
                                     text
-                                    @click="[cf.archived = true, deleteFieldFromGroup(cf.id)]">
+                                    @click="[cf.archived = true, deleteWithChecks(null, cf.id)]">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -384,19 +388,18 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      changeGroupOrder() {
-      },
-      changeFieldOrder() {
-      },
-      async deleteGroupFromStep(groupId) {
+      async deleteWithChecks(customFieldGroupId, customFieldGroupAssignmentId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Group Deleted From Step')
+          let params = {
+            customFieldGroupId, customFieldGroupAssignmentId
+          }
+          await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
+          this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Group From Step')
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -412,18 +415,18 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteFieldFromGroup(fieldGroupId) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await deleteRequest(`/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Field Deleted From Group')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Field From Group')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+      // async deleteFieldFromGroup(fieldGroupId) {
+      //   this.$store.commit(AppMutations.SET_LOADING, true)
+      //   try {
+      //     await deleteRequest(`/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
+      //     this.snackbar = getSnackbar('SUCCESS', 'Field Deleted From Group')
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   } catch (e) {
+      //     console.error('*** ERROR ***', e)
+      //     this.snackbar = getSnackbar('ERROR', 'Error Deleting Field From Group')
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // },
       async moveFieldToOtherGroup (field, newGroup) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
