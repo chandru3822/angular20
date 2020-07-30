@@ -900,13 +900,35 @@ public class ProjectProcessStepService {
       }
     } else {
       switch (r.getDataTypeRequirementId().intValue()) {
-        case 12:
-        case 13:
         case 20:
-        case 21:
         case 26:
+            switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                    passed = fieldValue == null;
+                    break;
+                case 2:
+                    passed = fieldValue != null;
+                    break;
+                case 3:
+                case 4:
+                    break;
+                default:
+                    throw new Exception(String.format("Unable to parse data type of Int with operator of ID: %s", r.getOperatorTypeId()));
+            }
+            break;
+        case 21:
         case 27:
-          passed = compareDropdown(fieldValue, null, r.getOperatorTypeId());
+            switch (r.getOperatorTypeId().intValue()) {
+                case 1:
+                    passed = fieldValue != null;
+                    break;
+                case 2:
+                    passed = fieldValue == null;
+                    break;
+                case 3:
+                case 4:
+                    break;
+            }
           break;
         default:
           throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", r.getOperatorTypeId()));
