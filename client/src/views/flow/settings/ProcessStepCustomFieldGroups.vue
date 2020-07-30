@@ -390,6 +390,7 @@
       },
       async deleteWithChecks(customFieldGroupId, customFieldGroupAssignmentId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        debugger
         try {
           let params = {
             customFieldGroupId, customFieldGroupAssignmentId
@@ -519,8 +520,8 @@
           //this line makes pushing it to the list work
           this.newField.archived = false
 
-          await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
-          cfg.customFields.push(this.newField)
+          const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
+          cfg.customFields.push(data)
           this.newField = {}
           this.snackbar = getSnackbar('SUCCESS', 'Custom Field Assigned')
           this.$store.commit(AppMutations.SET_LOADING, false)
