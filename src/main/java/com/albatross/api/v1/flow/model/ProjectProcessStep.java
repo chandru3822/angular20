@@ -10,7 +10,7 @@ public class ProjectProcessStep {
 
   //@TODO: This repeats a lot of the stuff the ProcessStep model does and should probably inherit from it
 
-  private Long projectProcessStepId, processStepId, projectId, processStepStatusTypeId, processStepProcessId, companyProcessStepStatusTypeId;
+  private Long projectProcessStepId, processStepId, projectId, processStepStatusTypeId, processStepProcessId, companyProcessStepStatusTypeId, uniqueBehaviorTypeId;
 
   private String processStepName, processStepStatusType;
 

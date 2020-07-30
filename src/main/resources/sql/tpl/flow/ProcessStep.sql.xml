@@ -74,6 +74,7 @@
                                                                 FROM flow.custom_field_group_assignment cfga
                                                                          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                                                 WHERE cfga.custom_field_group_id = cfg.id AND cfg.archived is not true
+                                                                  and cfga.archived is not true
                                                                 union all
                                                                 SELECT cfga.id,
                                                                        cfga.custom_field_group_id as "customFieldGroupId",
