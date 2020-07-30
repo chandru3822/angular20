@@ -892,7 +892,7 @@ public class ProjectProcessStepService {
 
     if (r.getDataTypeRequirementId() == null) {
       try {
-        Long reqValue = r.getIntValue();
+        Long reqValue = r.getListOfValueId();
         passed = compareDropdown(fieldValue, reqValue, r.getOperatorTypeId());
       } catch (Exception e) {
         throw new Exception(String.format("Unable to parse data type of Dropdown with operator of ID: %s", r.getOperatorTypeId()));
