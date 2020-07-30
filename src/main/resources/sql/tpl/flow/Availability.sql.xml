@@ -191,4 +191,8 @@
     where id = :orgId
   ]]></availability.saveOrgAppointmentLength>
 
+  <availability.getTimeSlots><![CDATA[
+    select scheduled_start_time, array_to_json(users) as users from flow.get_availability_time_slots(:projectId::int, :startTime::timestamp, :endTime::timestamp, :availableDate::date)
+  ]]></availability.getTimeSlots>
+
 </sql>
