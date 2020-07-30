@@ -390,7 +390,6 @@
       },
       async deleteWithChecks(customFieldGroupId, customFieldGroupAssignmentId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        debugger
         try {
           let params = {
             customFieldGroupId, customFieldGroupAssignmentId
