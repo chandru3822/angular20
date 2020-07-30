@@ -165,6 +165,9 @@
                 <td class="text-left">
                   {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
+                <td class="text-left">
+                  {{ item.first_cash_payment_paid_date_formatted ? item.first_cash_payment_paid_date_formatted : '' }}
+                </td>
                 <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
               </tr>
             </template>
@@ -204,8 +207,7 @@
       <!-- OFFICE LEAD ALLOCATION RANK START -->
       <div class="ranking-table">
         <div class="ranking-table-header">
-          <img class="ranking-table-icon left-text" src="../../assets/sort_desc_icon.png"
-               alt="Gray descending sort icon with an arrow pointing downward">
+          <v-icon class="ranking-table-icon mr-2">mdi-sort-descending</v-icon>
           <span>Office Lead Allocation Rank</span>
         </div>
 
@@ -245,8 +247,7 @@
       <!-- OFFICE FDC RANK START -->
       <div class="ranking-table">
         <div class="ranking-table-header">
-          <img class="ranking-table-icon" src="../../assets/down_arrows_icon_lighter.png"
-               alt="Gray icon with two arrows pointing downward">
+          <v-icon class="ranking-table-icon mr-2">mdi-chevron-double-down</v-icon>
           <span>Office FDC Rank</span>
         </div>
 
@@ -296,7 +297,7 @@
       <!-- OFFICE RANKING START -->
       <div class="ranking-table">
         <div class="ranking-table-header">
-<!--          <img class="ranking-table-icon" src="../../assets/office_icon.png" alt="Gray house icon">-->
+          <v-icon class="ranking-table-icon mr-2">mdi-office-building</v-icon>
           <span>Office Ranking</span>
         </div>
 
@@ -332,9 +333,7 @@
       <div class="ranking-table">
         <div class="ranking-table-header" id="top-reps-table-header">
           <div>
-            <img class="ranking-table-icon default-img"
-                 src="../../assets/user_img_placeholder.png"
-                 alt="User photo placeholder">
+            <v-icon class="ranking-table-icon mr-2">mdi-account-multiple</v-icon>
             <span>Top Reps</span>
           </div>
           <input type="text" placeholder="Search" v-model="searchText">
@@ -395,6 +394,497 @@
     <!-- RANKING TABLES BOTTOM ROW END -->
     <!---------------------------------- DASHBOARD TAB END ---------------------------------->
 
+    <!---------------------------------- FUNNEL TAB START ---------------------------------->
+    <!-- APPOINTMENTS CREATED PIPELINE START -->
+    <div v-show="showFunnel" id="appts-created-pipeline-container" class="mb-8">
+      <div class="pipeline-header-container">
+        <v-icon class="pipeline-icon">mdi-poll</v-icon>
+        <div class="pipeline-title">Appointments Created Pipeline</div>
+      </div>
+
+      <!-- FUNNEL -->
+      <div class="funnel-container">
+        <div v-show="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"></div>
+        <table class="funnel-table">
+          <tr class="funnel-tr">
+            <th class="funnel-th"></th>
+            <th class="funnel-th">SOURCE</th>
+            <th class="funnel-th">TODAY</th>
+            <th class="funnel-th">WEEK TO DATE</th>
+            <th class="funnel-th">
+              <div v-show="showApptsCreatedPipelineCustomDates" class="custom-dates-container">
+                <v-menu v-model="appts_created_pipeline_menu1" transition="scale-transition" offset-y min-width="290px">
+                  <template v-slot:activator="{ on }">
+                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1" readonly outlined dense v-on="on"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="appts_created_pipeline_dt1" @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
+                </v-menu>
+                <span class="custom-date-span">-</span>
+                <v-menu v-model="appts_created_pipeline_menu2" transition="scale-transition" offset-y min-width="290px">
+                  <template v-slot:activator="{ on }">
+                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2" readonly outlined dense v-on="on"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="appts_created_pipeline_dt2" @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
+                </v-menu>
+              </div>
+
+              <v-menu v-model="apptsCreatedPipelineCustomSelectorIsOpen"
+                      :close-on-content-click="true"
+                      transition="scale-transition"
+                      offset-y>
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on" class="custom-dates-btn">{{ apptsCreatedPipelineDateRange.label }}<v-icon>mdi-menu-down</v-icon></v-btn>
+                </template>
+                <v-list>
+                  <v-list-item v-for="(dateRange, index) in apptsCreatedPipelineDateRanges"
+                               :key="index"
+                               @click="chooseApptsCreatedPipelineDateRange(dateRange)">
+                    <v-list-item-title>{{ dateRange.label }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </th>
+          </tr>
+
+          <tr class="funnel-tr" v-for="line in apptsCreatedPipelineData" :key="line.id"
+              :class="{'main-row': line.id === 10, 'blue-sub-row': line.id === 13}"
+              :style="{'border-top': line.id === 12 ? '2px solid #000' : ''}">
+            <td class="funnel-td funnel-line-name">{{line.name}}</td>
+            <td class="funnel-td" :class="{'funnel-source': line.id === 12 || line.id === 13}">
+              <v-select v-if="line.id === 12"
+                        class="appts-created-pipeline-dropdown"
+                        v-model="brsProvidedSourceModel"
+                        :items="brsProvidedSourceData"
+                        placeholder="Select"
+                        multiple
+                        solo
+                        dense>
+                <template v-slot:prepend-item>
+                  <v-list-item ripple @click="toggle">
+                    <v-list-item-action>
+                      <v-icon :color="brsProvidedSourceModel.length > 0 ? 'indigo darken-4' : ''">
+                        {{ icon }}
+                      </v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+                <template v-slot:append-item>
+                  <v-divider class="mb-2"></v-divider>
+                  <v-list-item disabled>
+                    <v-list-item-content>
+                      <v-list-item-title>{{ brsProvidedSourceModel.length }} sources selected</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+              </v-select>
+
+              <v-select v-if="line.id === 13"
+                        class="appts-created-pipeline-dropdown"
+                        v-model="selfGenSourceModel"
+                        :items="selfGenSourceData"
+                        placeholder="Select"
+                        multiple
+                        solo
+                        dense>
+                <template v-slot:prepend-item>
+                  <v-list-item ripple @click="toggle">
+                    <v-list-item-action>
+                      <v-icon :color="selfGenSourceModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Select All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+                <template v-slot:append-item>
+                  <v-divider class="mb-2"></v-divider>
+                  <v-list-item disabled>
+                    <v-list-item-content>
+                      <v-list-item-title>{{ selfGenSourceModel.length }} sources selected</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+              </v-select>
+            </td>
+            <td class="funnel-td" @click="drillDown(line.id, 'today', line.name, 'apptsCreatedPipeline', false)">
+              {{line.today_count}}
+            </td>
+            <td class="funnel-td" @click="drillDown(line.id, 'wtd', line.name, 'apptsCreatedPipeline', false)">
+              {{line.week_to_date_count}}
+            </td>
+            <td class="funnel-td" @click="drillDown(line.id, 'custom', line.name, 'apptsCreatedPipeline', false)">
+              {{line.custom_date_range_count}}
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <!-- APPOINTMENTS CREATED PIPELINE END -->
+
+    <!-- APPOINTMENTS TO FDC PIPELINE START -->
+    <div v-show="showFunnel" id="appts-to-fdc-pipeline-container"
+         :class="{'mb-8': apptsToFdcPipelineData.length > 0}">
+      <div class="pipeline-header-container">
+        <div id="pipeline-header-left-side">
+          <v-icon class="pipeline-icon">mdi-poll</v-icon>
+          <div class="pipeline-title">Appointments to FDC Pipeline</div>
+        </div>
+
+        <!-- DROPDOWNS -->
+        <div id="pipeline-header-right-side">
+          <v-select class="appts-to-fdc-pipeline-dropdown"
+                    v-model="districtModel"
+                    :items="districtData"
+                    label="District"
+                    solo
+                    multiple
+                    dense>
+            <template v-slot:prepend-item>
+              <v-list-item ripple @click="toggle">
+                <v-list-item-action>
+                  <v-icon :color="districtModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider class="mt-2"></v-divider>
+            </template>
+            <template v-slot:append-item>
+              <v-divider class="mb-2"></v-divider>
+              <v-list-item disabled>
+                <v-list-item-content>
+                  <v-list-item-title>{{ districtModel.length }} districts selected</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-select>
+
+          <v-select class="appts-to-fdc-pipeline-dropdown"
+                    v-model="regionModel"
+                    :items="regionData"
+                    label="Region"
+                    solo
+                    multiple
+                    dense>
+            <template v-slot:prepend-item>
+              <v-list-item ripple @click="toggle">
+                <v-list-item-action>
+                  <v-icon :color="regionModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider class="mt-2"></v-divider>
+            </template>
+            <template v-slot:append-item>
+              <v-divider class="mb-2"></v-divider>
+              <v-list-item disabled>
+                <v-list-item-content>
+                  <v-list-item-title>{{ regionModel.length }} regions selected</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-select>
+
+          <v-select class="appts-to-fdc-pipeline-dropdown"
+                    v-model="officeModel"
+                    :items="officeData"
+                    label="Office"
+                    solo
+                    multiple
+                    dense>
+            <template v-slot:prepend-item>
+              <v-list-item ripple @click="toggle">
+                <v-list-item-action>
+                  <v-icon :color="officeModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider class="mt-2"></v-divider>
+            </template>
+            <template v-slot:append-item>
+              <v-divider class="mb-2"></v-divider>
+              <v-list-item disabled>
+                <v-list-item-content>
+                  <v-list-item-title>{{ officeModel.length }} offices selected</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-select>
+
+          <v-select class="appts-to-fdc-pipeline-dropdown"
+                    v-model="repModel"
+                    :items="repData"
+                    label="Rep"
+                    solo
+                    multiple
+                    dense>
+            <template v-slot:prepend-item>
+              <v-list-item ripple @click="toggle">
+                <v-list-item-action>
+                  <v-icon :color="repModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Select All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider class="mt-2"></v-divider>
+            </template>
+            <template v-slot:append-item>
+              <v-divider class="mb-2"></v-divider>
+              <v-list-item disabled>
+                <v-list-item-content>
+                  <v-list-item-title>{{ repModel.length }} reps selected</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-select>
+
+          <v-btn id="all-reps-btn" @click="funnelAllReps">All Reps</v-btn>
+        </div>
+      </div>
+
+      <!-- FUNNEL -->
+      <div class="funnel-container">
+        <div v-show="apptsToFdcPipelineData.length > 0" id="appts-to-fdc-pipeline-funnel-background"></div>
+        <table class="funnel-table">
+          <!-- FUNNEL COLUMN HEADERS -->
+          <tr class="funnel-tr">
+            <th class="funnel-th view-btns">
+              <v-btn class="funnel-btn" @click="viewSelected('standard')"
+                     :class="{'white--text': viewSelect === 'standard', 'elevation-2': viewSelect !== 'standard'}"
+                     :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
+                Standard View
+              </v-btn>
+              <v-btn class="funnel-btn" @click="viewSelected('apptDateCohort')"
+                     :class="{'white--text': viewSelect === 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
+                     :color="viewSelect === 'apptDateCohort' ? 'primaryCustom' : 'secondaryCustom'">
+                Appt Date Cohort
+              </v-btn>
+            </th>
+            <th class="funnel-th">TODAY</th>
+<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; Today percentages &ndash;&gt;-->
+            <th class="funnel-th">WEEK TO DATE</th>
+<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; WTD percentages &ndash;&gt;-->
+            <th class="funnel-th">
+              <div v-show="showApptsToFdcPipelineCustomDates" class="custom-dates-container">
+                <v-menu v-model="appts_to_fdc_pipeline_menu1" transition="scale-transition" offset-y min-width="290px">
+                  <template v-slot:activator="{ on }">
+                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1" readonly outlined dense v-on="on"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1" @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
+                </v-menu>
+                <span class="custom-date-span">-</span>
+                <v-menu v-model="appts_to_fdc_pipeline_menu2" transition="scale-transition" offset-y min-width="290px">
+                  <template v-slot:activator="{ on }">
+                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2" readonly outlined dense v-on="on"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2" @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
+                </v-menu>
+              </div>
+
+              <v-menu v-model="apptsToFdcPipelineCustomSelectorIsOpen"
+                      :close-on-content-click="true"
+                      transition="scale-transition"
+                      offset-y>
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on" class="custom-dates-btn">{{ apptsToFdcPipelineDateRange.label }}<v-icon>mdi-menu-down</v-icon></v-btn>
+                </template>
+                <v-list>
+                  <v-list-item v-for="(dateRange, index) in apptsToFdcPipelineDateRanges"
+                               :key="index"
+                               @click="chooseApptsToFdcPipelineDateRange(dateRange)">
+                    <v-list-item-title>{{ dateRange.label }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </th>
+<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; Custom date range percentages &ndash;&gt;-->
+          </tr>
+          <!-- FUNNEL ROWS -->
+          <tr class="funnel-tr" v-for="line in apptsToFdcPipelineData" :key="line.id"
+              :class="{'main-row': [14,17,11,4,21,8].indexOf(line.id) !== -1, 'blue-sub-row': [16,19,3,6].indexOf(line.id) !== -1}">
+            <!-- FUNNEL NAME -->
+            <td class="funnel-td funnel-line-name">{{line.name}}</td>
+
+            <!-- TODAY COUNT -->
+            <td class="funnel-td">
+              <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
+                <!-- CHECKED-IN COUNT -->
+                <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
+                <div v-if="[18,19,20,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
+                     class="checked-in-column-center"
+                     :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
+                     @click="drillDown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
+                  {{line.id === 21 ? '' : line.checked_in_today_count}}
+                </div>
+                <div v-if="line.id === 21"
+                     class="checked-in-column-bottom checked-in-column-line-overlap"
+                     @click="drillDown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
+                  {{line.checked_in_today_count}}
+                </div>
+
+                <!-- COUNT -->
+                <div @click="drillDown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+                  {{line.today_count}}
+                </div>
+
+                <!-- PERCENTAGE -->
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [18,20,9,3,4,6,7].indexOf(line.id) !== -1"
+                    class="percentage-column-segment">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [19,5].indexOf(line.id) !== -1"
+                    class="percentage-column-segment-with-percentage">
+                  <div class="percentage-line"></div>
+                  <span class="funnel-percentage">
+                    {{line.id === 19 ? todayUpperPercentage : todayLowerPercentage}}%
+                  </span>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
+                  <div class="top-percentage-line"></div>
+                  <div class="bottom-percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
+                    class="funnel-td">
+                </div>
+              </div>
+              <div v-else class="funnel-count"
+                   @click="drillDown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+                {{line.today_count}}
+              </div>
+            </td>
+
+            <!-- WTD COUNT -->
+            <td class="funnel-td">
+              <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
+                <!-- CHECKED-IN COUNT -->
+                <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
+                <div v-if="[18,19,20,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
+                     class="checked-in-column-center"
+                     :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
+                     @click="drillDown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', true)">
+                  {{line.id === 21 ? '' : line.checked_in_week_to_date_count}}
+                </div>
+                <div v-if="line.id === 21"
+                     class="checked-in-column-bottom checked-in-column-line-overlap"
+                     @click="drillDown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', true)">
+                  {{line.checked_in_week_to_date_count}}
+                </div>
+
+                <!-- COUNT -->
+                <div @click="drillDown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
+                  {{line.week_to_date_count}}
+                </div>
+
+                <!-- PERCENTAGE -->
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [18,20,9,3,4,6,7].indexOf(line.id) !== -1"
+                    class="percentage-column-segment">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [19,5].indexOf(line.id) !== -1"
+                    class="percentage-column-segment-with-percentage">
+                  <div class="percentage-line"></div>
+                  <span class="funnel-percentage">
+                    {{line.id === 19 ? wtdUpperPercentage : wtdLowerPercentage}}%
+                  </span>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
+                  <div class="top-percentage-line"></div>
+                  <div class="bottom-percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
+                     class="funnel-td">
+                </div>
+              </div>
+              <div v-else class="funnel-count"
+                   @click="drillDown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
+                {{line.week_to_date_count}}
+              </div>
+            </td>
+
+
+            <!-- CUSTOM DATE RANGE COUNT -->
+            <td class="funnel-td">
+              <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
+                <!-- CHECKED-IN COUNT -->
+                <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
+                <div v-if="[18,19,20,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
+                     class="checked-in-column-center"
+                     :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
+                     @click="drillDown(line.id, 'custom', line.name, 'apptsToFdcPipeline', true)">
+                  {{line.id === 21 ? '' : line.checked_in_custom_date_range_count}}
+                </div>
+                <div v-if="line.id === 21"
+                     class="checked-in-column-bottom checked-in-column-line-overlap"
+                     @click="drillDown(line.id, 'custom', line.name, 'apptsToFdcPipeline', true)">
+                  {{line.checked_in_custom_date_range_count}}
+                </div>
+
+                <!-- COUNT -->
+                <div @click="drillDown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
+                  {{line.custom_date_range_count}}
+                </div>
+
+                <!-- PERCENTAGE -->
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [18,20,9,3,4,6,7].indexOf(line.id) !== -1"
+                    class="percentage-column-segment">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [19,5].indexOf(line.id) !== -1"
+                    class="percentage-column-segment-with-percentage">
+                  <div class="percentage-line"></div>
+                  <span class="funnel-percentage">
+                    {{line.id === 19 ? customDateRangeUpperPercentage : customDateRangeLowerPercentage}}%
+                  </span>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
+                  <div class="top-percentage-line"></div>
+                  <div class="bottom-percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
+                  <div class="percentage-line"></div>
+                </div>
+                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
+                    class="funnel-td">
+                </div>
+              </div>
+              <div v-else class="funnel-count"
+                   @click="drillDown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
+                {{line.custom_date_range_count}}
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <!-- APPOINTMENTS TO FDC PIPELINE END -->
+    <!----------------------------------- PIPELINE TAB END ----------------------------------->
+
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
@@ -408,6 +898,7 @@
   import Snackbar from '@/components/Snackbar.vue'
   import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
+  import { getDistricts, getRegions, getOffices, getReps } from '@/services/dashboardService'
 
   export default {
     name: 'closerDashboard',
@@ -428,6 +919,7 @@
         { text: 'FD Signed Date', value: 'final_design_signed_date', show: true },
         { text: 'Financial Agreement Signed Date', value: 'financial_agreement_signed_date', show: true },
         { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date', show: true },
+        { text: 'First Cash Payment Paid Date', value: 'first_cash_payment_paid_date', show: true },
         { text: 'Financier', value: 'financier', show: true }
       ],
       drilldownData: [],
@@ -440,7 +932,7 @@
       ironmanLoaded: false,
       rankingTablesLoaded: false,
       dashboardWasLoaded: false,
-      funnelWasLoaded: false,
+      funnelsWereLoaded: false,
       currentQuarter: moment().quarter(),
       fdcCounts: {q1: 0, q2: 0, q3: 0, q4: 0},
       q1_points: 0,
@@ -470,7 +962,136 @@
       userOffice: '',
       userRow: [],
       userRowIndex: -1,
-      numOffices: 0
+      numOffices: 0,
+      apptsCreatedPipelineData: [
+        {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
+        {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
+        {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
+      ],
+      apptsToFdcPipelineData: [
+          {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
+          {id: 15, name: 'Cancelled in advance', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 5},
+          {id: 16, name: 'Ineligible for solar', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 6},
+          {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 7},
+          {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
+          {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
+          {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
+          {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
+          {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
+          {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
+          {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
+          {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
+          {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
+          {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
+          {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
+          {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 19}
+      ],
+      apptsCreatedPipelineCustomSelectorIsOpen: false,
+      apptsToFdcPipelineCustomSelectorIsOpen: false,
+      todayUpperPercentage: 99,
+      todayLowerPercentage: 99,
+      wtdUpperPercentage: 99,
+      wtdLowerPercentage: 99,
+      customDateRangeUpperPercentage: 99,
+      customDateRangeLowerPercentage: 99,
+      brsProvidedSourceModel: [],
+      brsProvidedSourceData: [],
+      checkAllBrsProvidedSources: false,
+      selfGenSourceModel: [],
+      selfGenSourceData: [],
+      checkAllSelfGenSources: false,
+      districtModel: [],
+      districtData: [],
+      checkAllDistricts: false,
+      regionModel: [],
+      regionData: [],
+      checkAllRegions: false,
+      officeModel: [],
+      officeData: [],
+      checkAllOffices: false,
+      repModel: [],
+      repData: [],
+      checkAllReps: false,
+      apptsCreatedPipelineDateRanges: [
+        {
+          label: 'Yesterday',
+          value: 'yesterday'
+        },
+        {
+          label: 'Last Week',
+          value: 'previousWeek'
+        },
+        {
+          label: 'Month to Date',
+          value: 'MTD'
+        },
+        {
+          label: 'Last 60 days',
+          value: 60
+        },
+        {
+          label: 'Last 90 days',
+          value: 90
+        },
+        {
+          label: 'Year to Date',
+          value: 'YTD'
+        },
+        {
+          label: 'Custom',
+          value: 'Custom'
+        }
+      ],
+      apptsCreatedPipelineDateRange: {
+        label: 'Month to Date',
+        value: 'MTD'
+      },
+      showApptsCreatedPipelineCustomDates: false,
+      apptsToFdcPipelineDateRanges: [
+        {
+          label: 'Yesterday',
+          value: 'yesterday'
+        },
+        {
+          label: 'Last Week',
+          value: 'previousWeek'
+        },
+        {
+          label: 'Month to Date',
+          value: 'MTD'
+        },
+        {
+          label: 'Last 60 days',
+          value: 60
+        },
+        {
+          label: 'Last 90 days',
+          value: 90
+        },
+        {
+          label: 'Year to Date',
+          value: 'YTD'
+        },
+        {
+          label: 'Custom',
+          value: 'Custom'
+        }
+      ],
+      apptsToFdcPipelineDateRange: {
+        label: 'Month to Date',
+        value: 'MTD'
+      },
+      showApptsToFdcPipelineCustomDates: false,
+      // viewSelect: 'standard',
+      viewSelect: 'apptDateCohort',
+      appts_created_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
+      appts_created_pipeline_menu1: false,
+      appts_created_pipeline_dt2: moment().format('YYYY-MM-DD'),
+      appts_created_pipeline_menu2: false,
+      appts_to_fdc_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
+      appts_to_fdc_pipeline_menu1: false,
+      appts_to_fdc_pipeline_dt2: moment().format('YYYY-MM-DD'),
+      appts_to_fdc_pipeline_menu2: false
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -488,6 +1109,17 @@
         } else {
           return this.topRepsData
         }
+      },
+      allDistrictsSelected () {
+        return this.districtModel.length === this.districtData.length
+      },
+      someDistrictsSelected () {
+        return this.districtModel.length > 0 && !this.allDistrictsSelected
+      },
+      icon () {
+        if (this.allDistrictsSelected) return 'mdi-close-box'
+        if (this.someDistrictsSelected) return 'mdi-minus-box'
+        return 'mdi-checkbox-blank-outline'
       }
     },
     watch: {
@@ -506,9 +1138,9 @@
           case 2: // Funnel tab
             this.showDashboard = false
             this.showFunnel = true
-            if (!this.funnelWasLoaded) {
-              // await this.loadFunnel()
-              this.funnelWasLoaded = true
+            if (!this.funnelsWereLoaded) {
+              await this.loadFunnels()
+              this.funnelsWereLoaded = true
             }
             break
           default: // Dashboard tab
@@ -747,6 +1379,10 @@
           if (row.utility_bill_verified_date) {
             row.utility_bill_verified_date_formatted = moment(row.utility_bill_verified_date).format('MMM D, YYYY')
           }
+
+          if (row.first_cash_payment_paid_date) {
+            row.first_cash_payment_paid_date_formatted = moment(row.first_cash_payment_paid_date).format('MMM D, YYYY')
+          }
         })
       },
       /* IRONMAN-RELATED CODE END */
@@ -900,11 +1536,452 @@
               }
           }
         }
-      }
+      },
       /* RANKING TABLES-RELATED CODE END */
 
       /* FUNNEL-RELATED CODE START */
+      chooseApptsCreatedPipelineDateRange (dateRange) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
 
+        this.showApptsCreatedPipelineCustomDates = false
+        this.apptsCreatedPipelineDateRange = dateRange
+
+        switch (dateRange.value) {
+          case 'yesterday':
+            this.yesterday('apptsCreatedPipeline')
+            break
+          case 'previousWeek':
+            this.previousWeek('apptsCreatedPipeline')
+            break
+          case 'MTD':
+            this.monthToDate('apptsCreatedPipeline')
+            break
+          case 'YTD':
+            this.yearToDate('apptsCreatedPipeline')
+            break
+          case 'Custom':
+            this.showApptsCreatedPipelineCustomDates = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            break
+          default:
+            this.previousNumberOfDays('apptsCreatedPipeline', dateRange.value)
+            break
+        }
+      },
+
+      chooseApptsToFdcPipelineDateRange (dateRange) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        this.showApptsToFdcPipelineCustomDates = false
+        this.apptsToFdcPipelineDateRange = dateRange
+
+        switch (dateRange.value) {
+          case 'yesterday':
+            this.yesterday('apptsToFdcPipeline')
+            break
+          case 'previousWeek':
+            this.previousWeek('apptsToFdcPipeline')
+            break
+          case 'MTD':
+            this.monthToDate('apptsToFdcPipeline')
+            break
+          case 'YTD':
+            this.yearToDate('apptsToFdcPipeline')
+            break
+          case 'Custom':
+            this.showApptsToFdcPipelineCustomDates = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            break
+          default:
+            this.previousNumberOfDays('apptsToFdcPipeline', dateRange.value)
+            break
+        }
+      },
+
+      viewSelected (view) {
+        if (this.viewSelect !== view) {
+          this.viewSelect = view
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+        }
+      },
+
+      loadFunnels () {
+        if (this.apptsCreatedPipelineData && this.apptsCreatedPipelineData.length === 0) {
+          this.loadSources()
+        }
+
+        if (this.apptsToFdcPipelineData && this.apptsToFdcPipelineData.length === 0) {
+          if (this.isCloser) {
+            this.districtLoad(true)
+          } else {
+            this.districtLoad(false)
+          }
+        }
+      },
+
+      funnelAllReps () {
+        this.repModel = [
+          {id: -1, label: 'All Reps'}
+        ]
+
+        this.repData = [
+          {id: -1, label: 'All Reps'}
+        ]
+
+        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+      },
+
+      loadSources () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          getRequest('/closerDashboard/brsProvidedSources', 'blueraven').then(res => {
+            this.brsProvidedSourceData = orderBy(res.data, ['source_name'])
+            this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
+
+            getRequest('/api/v1/report/selfGenSources', 'blueraven').then(res => {
+              this.selfGenSourceData = orderBy(res.data, ['source_name'])
+              this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
+
+              this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
+            })
+          })
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving lists of sources')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+
+      apptsCreatedPipelineLoad (start, end) {
+        let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
+        let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.id)
+
+        if (brsProvidedSources.length === 0 && selfGenSources.length === 0) {
+          this.apptsCreatedPipelineData = [
+            {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
+            {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
+            {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
+          ]
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          return
+        }
+
+        const params = {
+          brsProvidedSources: brsProvidedSources,
+          selfGenSources: selfGenSources,
+          start: moment(start).format('YYYY-MM-DD'),
+          end: moment(end).format('YYYY-MM-DD')
+        }
+
+        getRequestWithParams('/closerDashboard/funnel/apptsCreatedPipeline', {params}, 'blueraven').then(res => {
+          this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
+        })
+
+        // TODO: @Joe -- Is this necessary?
+        if (this.isCloser) {
+          if (this.apptsToFdcPipelineData.length > 0) {
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+
+      apptsToFdcPipelineLoad (start, end) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        let reps = this.repModel.map(rep => rep.id)
+        let orgs = this.officeModel.map(org => org.id)
+
+        if (!reps || reps.length === 0) {
+          this.apptsToFdcPipelineData = []
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          return
+        }
+
+        const params = {
+          users: reps,
+          orgs: orgs,
+          start: moment(start).format('YYYY-MM-DD'),
+          end: moment(end).format('YYYY-MM-DD')
+        }
+
+        getRequestWithParams('/closerDashboard/funnel/' + this.viewSelect, {params}, 'blueraven').then(res => {
+          this.apptsToFdcPipelineData = orderBy(res.data, row => row.display_order)
+
+          let todayUpperNumerator, todayUpperDenominator, wtdUpperNumerator, wtdUpperDenominator, customDateRangeUpperNumerator, customDateRangeUpperDenominator, todayLowerNumerator, todayLowerDenominator, wtdLowerNumerator, wtdLowerDenominator, customDateRangeLowerNumerator, customDateRangeLowerDenominator
+
+          this.apptsToFdcPipelineData.forEach(row => {
+            if (row.id === 17) {
+              todayUpperDenominator = row.today_count
+              wtdUpperDenominator = row.week_to_date_count
+              customDateRangeUpperDenominator = row.custom_date_range_count
+            }
+
+            if (row.id === 11) {
+              todayUpperNumerator = row.today_count
+              wtdUpperNumerator = row.week_to_date_count
+              customDateRangeUpperNumerator = row.custom_date_range_count
+              todayLowerDenominator = row.today_count
+              wtdLowerDenominator = row.week_to_date_count
+              customDateRangeLowerDenominator = row.custom_date_range_count
+            }
+
+            if (row.id === 21) {
+              todayLowerNumerator = row.today_count
+              wtdLowerNumerator = row.week_to_date_count
+              customDateRangeLowerNumerator = row.custom_date_range_count
+            }
+          })
+
+          if (todayUpperNumerator && todayUpperDenominator && todayUpperDenominator !== 0) {
+            this.todayUpperPercentage = this.getPercentage(todayUpperNumerator, todayUpperDenominator)
+          }
+
+          if (wtdUpperNumerator && wtdUpperDenominator && wtdUpperDenominator !== 0) {
+            this.wtdUpperPercentage = this.getPercentage(wtdUpperNumerator, wtdUpperDenominator)
+          }
+
+          if (customDateRangeUpperNumerator && customDateRangeUpperDenominator && customDateRangeUpperDenominator !== 0) {
+            this.customDateRangeUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
+          }
+
+          if (todayLowerNumerator && todayLowerDenominator && todayLowerDenominator !== 0) {
+            this.todayLowerPercentage = this.getPercentage(todayLowerNumerator, todayLowerDenominator)
+          }
+
+          if (wtdLowerNumerator && wtdLowerDenominator && wtdLowerDenominator !== 0) {
+            this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
+          }
+
+          if (customDateRangeLowerNumerator && customDateRangeLowerDenominator && customDateRangeLowerDenominator !== 0) {
+            this.customDateRangeLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
+          }
+
+          if (this.apptsCreatedPipelineData.length > 0) {
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        })
+      },
+
+      getPercentage (numerator, denominator) {
+        return Math.round((numerator / denominator) * 100)
+      },
+
+      async districtLoad (preSelectLists) {
+        if (!this.currentUserId) return
+
+        await getDistricts(this.currentUserId, true, false).then(res => {
+          this.districtData = orderBy(res,['active', 'org_name'], ['desc', 'asc'])
+
+          if (preSelectLists) {
+            this.districtModel = cloneDeep(this.districtData)
+          }
+
+          this.regionLoad(preSelectLists)
+        })
+
+        this.apptsToFdcPipelineData = []
+      },
+
+      async regionLoad (preSelectLists) {
+        if (!this.currentUserId) return
+
+        let districts = this.districtModel.map(district => district.id)
+
+        await getRegions(this.currentUserId, JSON.stringify(districts), true, false).then(res => {
+          this.regionData = orderBy(res, ['active', 'org_name'], ['desc', 'asc'])
+
+          if (preSelectLists) {
+            this.regionModel = cloneDeep(this.regionData)
+            this.officeLoad(preSelectLists)
+          }
+        })
+
+        this.apptsToFdcPipelineData = []
+      },
+
+      async officeLoad (preSelectLists) {
+        if (!this.currentUserId) return
+
+        let regions = this.regionModel.map(region => region.id)
+
+        getOffices(this.currentUserId, JSON.stringify(regions), true, false).then(res => {
+          this.officeData = orderBy(res, ['active', 'org_name'], ['desc', 'asc'])
+          this.officeModel = preSelectLists ? cloneDeep(this.officeData) : []
+          this.repLoad(preSelectLists)
+        })
+
+        this.apptsToFdcPipelineData = []
+        this.repData = []
+        this.repModel = []
+      },
+
+      async repLoad (preSelectLists) {
+        if (!this.currentUserId) return
+
+        let regions = this.regionModel.map(region => region.id)
+
+        let offices = this.officeModel.map(office => office.id)
+
+        if (!offices || offices.length === 0) {
+          this.repModel = []
+          this.apptsToFdcPipelineData = []
+          this.repData = []
+          return
+        }
+
+        await getReps(this.currentUserId, JSON.stringify(regions), true, JSON.stringify(offices), true).then(res => {
+          this.repData = res
+          this.repModel = preSelectLists ? this.repData.filter(rep => rep.id === this.currentUserId) : []
+
+          if (this.isMobile()) {
+            this.chooseApptsToFdcPipelineDateRange({
+              label: 'Month to Date',
+              value: 'MTD'
+            })
+          } else {
+            this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+          }
+        })
+
+        this.apptsToFdcPipelineData = []
+      },
+
+      updateApptsCreatedPipelineCalendar () {
+        this.appts_created_pipeline_menu1 = false
+        this.appts_created_pipeline_menu2 = false
+        this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
+      },
+
+      updateApptsToFdcPipelineCalendar () {
+        this.appts_to_fdc_pipeline_menu1 = false
+        this.appts_to_fdc_pipeline_menu2 = false
+        this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+      },
+
+      yesterday (pipelineName) {
+        if (pipelineName === 'apptsCreatedPipeline') {
+          this.appts_created_pipeline_dt1 = moment().subtract(1, 'd').toDate()
+          this.appts_created_pipeline_dt2 = moment().subtract(1, 'd').toDate()
+          this.updateApptsCreatedPipelineCalendar(true)
+        } else {
+          this.appts_to_fdc_pipeline_dt1 = moment().subtract(1, 'd').toDate()
+          this.appts_to_fdc_pipeline_dt2 = moment().subtract(1, 'd').toDate()
+          this.updateApptsToFdcPipelineCalendar(true)
+        }
+      },
+
+      previousWeek (pipelineName) {
+        if (pipelineName === 'apptsCreatedPipeline') {
+          this.appts_created_pipeline_dt1 = moment().startOf('w').subtract(1, 'w').toDate()
+          this.appts_created_pipeline_dt2 = moment().endOf('w').subtract(1, 'w').toDate()
+          this.updateApptsCreatedPipelineCalendar(true)
+        } else {
+          this.appts_to_fdc_pipeline_dt1 = moment().startOf('w').subtract(1, 'w').toDate()
+          this.appts_to_fdc_pipeline_dt2 = moment().endOf('w').subtract(1, 'w').toDate()
+          this.updateApptsToFdcPipelineCalendar(true)
+        }
+      },
+
+      monthToDate (pipelineName) {
+        if (pipelineName === 'apptsCreatedPipeline') {
+          this.appts_created_pipeline_dt1 = moment().startOf('month').toDate()
+          this.appts_created_pipeline_dt2 = moment().toDate()
+          this.updateApptsCreatedPipelineCalendar(true)
+        } else {
+          this.appts_to_fdc_pipeline_dt1 = moment().startOf('month').toDate()
+          this.appts_to_fdc_pipeline_dt2 = moment().toDate()
+          this.updateApptsToFdcPipelineCalendar(true)
+        }
+      },
+
+      previousNumberOfDays (pipelineName, days) {
+        if (pipelineName === 'apptsCreatedPipeline') {
+          this.appts_created_pipeline_dt1 = moment().subtract(days, 'days').toDate()
+          this.appts_created_pipeline_dt2 = moment().toDate()
+          this.updateApptsCreatedPipelineCalendar()
+        } else {
+          this.appts_to_fdc_pipeline_dt1 = moment().subtract(days, 'days').toDate()
+          this.appts_to_fdc_pipeline_dt2 = moment().toDate()
+          this.updateApptsToFdcPipelineCalendar()
+        }
+      },
+
+      yearToDate (pipelineName) {
+        if (pipelineName === 'apptsCreatedPipeline') {
+          this.appts_created_pipeline_dt1 = moment().startOf('year').toDate()
+          this.appts_created_pipeline_dt2 = moment().toDate()
+          this.updateApptsCreatedPipelineCalendar()
+        } else {
+          this.appts_to_fdc_pipeline_dt1 = moment().startOf('year').toDate()
+          this.appts_to_fdc_pipeline_dt2 = moment().toDate()
+          this.updateApptsToFdcPipelineCalendar()
+        }
+      },
+
+      drillDown (funnelId, dateRange, funnelName, pipelineName, isCheckedInColumn) {
+        let sourceIds = []
+        let reps = []
+        let orgs = []
+        let start, end
+
+        if (pipelineName === 'apptsCreatedPipeline') {
+          if (funnelId === 12) { // BRS-provided sources
+            sourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
+          } else { // Self-gen sources
+            sourceIds = this.selfGenSourceModel.map(selfGenSource => selfGenSource.id)
+          }
+
+          switch (dateRange) {
+            case 'today':
+              start = moment().startOf('day').toDate()
+              end = moment().toDate()
+              break
+            case 'wtd':
+              start = moment().startOf('W').toDate()
+              end = moment().toDate()
+              break
+            default:
+              start = this.appts_created_pipeline_dt1
+              end = this.appts_created_pipeline_dt2
+              break
+          }
+        } else {
+          reps = this.repModel.map(rep => rep.id)
+          orgs = this.officeModel.map(org => org.id)
+
+          switch (dateRange) {
+            case 'today':
+              start = moment().startOf('day').toDate()
+              end = moment().toDate()
+              break
+            case 'wtd':
+              start = moment().startOf('W').toDate()
+              end = moment().toDate()
+              break
+            default:
+              start = this.appts_to_fdc_pipeline_dt1
+              end = this.appts_to_fdc_pipeline_dt2
+              break
+          }
+        }
+
+        // TODO: Implement drilldown window and queries
+      },
+
+      toggle () {
+        this.$nextTick(() => {
+          if (this.allDistrictsSelected) {
+            this.districtModel = []
+          } else {
+            this.districtModel = this.districtData.slice()
+          }
+        })
+      }
       /* FUNNEL-RELATED CODE END */
     },
     created () {
@@ -1360,9 +2437,8 @@
   }
 
   .ranking-table-icon {
-    margin-right: 4px;
-    width: 20px;
-    height: 20px;
+    font-size: 24px;
+    color: var(--v-primaryText-base) !important;
   }
 
   .ranking-table table {
@@ -1417,6 +2493,459 @@
     border-radius: 50%;
   }
 
+  #appts-created-pipeline-funnel-background,
+  #appts-to-fdc-pipeline-funnel-background {
+    display: none;
+  }
+
+  #appts-created-pipeline-container {
+    background-color: #fff;
+    box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    width: 100%;
+
+    .pipeline-header-container {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      border-bottom: 1px solid var(--v-primaryCustom-base);
+      padding: 5px;
+      width: 100%;
+
+      .pipeline-icon {
+        color: var(--v-primaryText-base) !important;
+        font-size: 24px;
+      }
+
+      .pipeline-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--v-primaryCustom-base);
+        margin-left: 8px;
+      }
+    }
+
+    .appts-created-pipeline-dropdown {
+      font-size: 10px;
+      transform: scale(0.875);
+      margin: 0 auto 12px auto;
+      width: 80px;
+      height: 25px;
+
+      ::v-deep label {
+        color: #888 !important;
+      }
+
+      ::v-deep i {
+        color: #888 !important;
+        font-size: 16px;
+      }
+
+      ::v-deep .v-text-field__details {
+        display: none;
+      }
+    }
+
+    .funnel-container {
+      position: relative;
+
+      .funnel-table {
+        border-collapse: collapse;
+        width: 100%;
+
+        .main-row {
+          border-top: 1px solid #000;
+          background-color: #aed5ee;
+          font-weight: bold;
+          padding: 5px;
+        }
+
+        .blue-sub-row {
+          background-color: #e9f2ff;
+        }
+
+        .custom-dates-container {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: center;
+          align-items: flex-end;
+
+          .custom-date-input {
+            font-size: 10px;
+            text-align: center;
+            border: 1px solid #aaa;
+            box-shadow: none;
+            margin: 0 0 3px 0;
+            padding: 6px 4px 6px 6px;
+            width: 55px;
+            height: 15px;
+
+            .v-input__control .v-input__slot {
+              width: 55px !important;
+              height: 15px !important;
+            }
+          }
+
+          .custom-date-span {
+            margin: 0 5px;
+          }
+        }
+
+        .funnel-th {
+          padding: 2px;
+          color: var(--v-primaryCustom-base);
+          font-size: 8px;
+          font-weight: normal;
+          text-align: center;
+
+          .custom-dates-btn {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 7px;
+            text-transform: capitalize;
+            padding: 4px 1px;
+            margin: 4px auto;
+            width: 100%;
+            min-width: 40px;
+            max-width: 65px;
+            height: 20px;
+
+            .v-icon {
+              font-size: 12px;
+              margin-left: 0;
+            }
+          }
+        }
+
+        .funnel-line-name {
+          cursor: default !important;
+          position: relative;
+          z-index: 7;
+          text-align: left !important;
+          padding-left: 5px;
+          height: 35px;
+        }
+
+        .funnel-td {
+          cursor: pointer;
+          font-size: 8px;
+          text-align: center;
+        }
+
+        .funnel-source {
+          cursor: default !important;
+          padding: 0 3px;
+          height: 50px;
+        }
+      }
+    }
+  }
+
+  #appts-to-fdc-pipeline-container {
+    background-color: #fff;
+    box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    width: 100%;
+
+    .pipeline-header-container {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--v-primaryCustom-base);
+      padding: 5px 5px 0 5px;
+      width: 100%;
+
+      .pipeline-icon {
+        color: var(--v-primaryText-base) !important;
+        font-size: 24px;
+      }
+
+      .pipeline-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--v-primaryCustom-base);
+        margin-left: 8px;
+      }
+
+      #pipeline-header-left-side,
+      #pipeline-header-right-side {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+      }
+
+      #pipeline-header-right-side {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-start;
+        margin-bottom: 5px;
+        width: 100%;
+
+        .appts-to-fdc-pipeline-dropdown {
+          transform: scale(0.875);
+          transform-origin: left;
+          margin: 2px;
+          max-width: 100px;
+
+          ::v-deep .v-input__slot {
+            margin: 0;
+          }
+
+          ::v-deep label {
+            color: #888 !important;
+            font-size: 10px;
+          }
+
+          ::v-deep i {
+            color: #888 !important;
+            font-size: 16px;
+          }
+
+          ::v-deep .v-text-field__details {
+            display: none;
+          }
+        }
+
+        #all-reps-btn {
+          text-transform: capitalize;
+          font-size: 10px;
+          margin: 2px;
+          width: 87px;
+          height: 33px;
+        }
+      }
+    }
+
+    .funnel-container {
+      position: relative;
+
+      .funnel-table {
+        border-collapse: collapse;
+        width: 100%;
+
+        .main-row {
+          border-top: 1px solid #000;
+          background-color: #aed5ee;
+          font-weight: bold;
+          padding: 5px;
+
+          .funnel-line-name {
+            padding-left: 5px !important;
+          }
+        }
+
+        .blue-sub-row {
+          background-color: #e9f2ff;
+        }
+
+        .view-btns {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: flex-start;
+
+          .funnel-btn {
+            text-transform: capitalize;
+            font-size: 6px;
+            padding: 3px;
+            margin: 3px;
+            min-width: 50px;
+            max-width: 75px;
+            height: 20px;
+          }
+
+          .funnel-btn.primaryCustom {
+            box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3) inset;
+          }
+        }
+
+        .custom-dates-container {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: center;
+          align-items: flex-end;
+
+          .custom-date-input {
+            font-size: 10px;
+            text-align: center;
+            border: 1px solid #aaa;
+            box-shadow: none;
+            margin: 0 0 3px 0;
+            padding: 6px 4px 6px 6px;
+            width: 55px;
+            height: 15px;
+          }
+
+          .custom-date-span {
+            margin: 0 5px;
+          }
+        }
+
+        .funnel-th {
+          color: var(--v-primaryCustom-base);
+          font-size: 8px;
+          font-weight: normal;
+          text-align: center;
+          padding: 2px;
+
+          .custom-dates-btn {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 7px;
+            text-transform: capitalize;
+            padding: 4px 3px;
+            margin: 4px auto;
+            width: 100%;
+            min-width: 40px;
+            max-width: 70px;
+            height: 20px;
+
+            .v-icon {
+              font-size: 12px;
+              margin-left: 0;
+            }
+          }
+        }
+
+        .funnel-line-name {
+          cursor: default !important;
+          position: relative;
+          z-index: 7;
+          text-align: left !important;
+          padding-left: 15px !important;
+          width: 30%;
+          max-width: 130px;
+          height: 27px;
+        }
+
+        .funnel-td {
+          font-size: 7px;
+        }
+
+        .funnel-data-container {
+          cursor: pointer;
+          display: flex;
+          flex-flow: row nowrap;
+          align-items: center;
+          padding: 0 5px;
+          margin-left: 15%;
+        }
+
+        .checked-in-column-top,
+        .checked-in-column-center,
+        .checked-in-column-bottom {
+          background-color: rgba(100, 100, 100, 0.5);
+          color: #fff;
+          border: 1px solid #fff;
+          font-weight: normal;
+          text-align: center;
+          margin-right: 5px;
+          width: 38px;
+        }
+
+        .checked-in-column-top {
+          border-bottom: none;
+          border-top-left-radius: 5px;
+          border-top-right-radius: 5px;
+          padding: 3px 2px 5px 2px;
+          margin-top: 3px;
+        }
+
+        .checked-in-column-center {
+          border-top: none;
+          border-bottom: none;
+          padding: 11.3px 2px;
+        }
+
+        .checked-in-column-bottom {
+          border-top: none;
+          border-bottom-left-radius: 5px;
+          border-bottom-right-radius: 5px;
+          padding: 8px 2px 4px 2px !important;
+          margin-bottom: 3px;
+        }
+
+        .checked-in-column-line-overlap {
+          padding: 11.8px 2px;
+          margin-top: -1px;
+        }
+
+        .percentage-column-top {
+          .percentage-line {
+            border-top: 1px solid blue;
+            border-right: 1px solid blue;
+            border-top-right-radius: 2px;
+            margin-top: 15.6px;
+            margin-left: 2px;
+            width: 8px;
+            height: 17.25px;
+          }
+        }
+
+        .percentage-column-segment {
+          .percentage-line {
+            border-right: 1px solid blue;
+            width: 10px;
+            height: 33px;
+          }
+        }
+
+        .percentage-column-segment-with-percentage {
+          .percentage-line {
+            border-right: 1px solid blue;
+            width: 10px;
+            height: 33px;
+            float: left;
+          }
+
+          .funnel-percentage {
+            color: blue;
+            font-size: 7px;
+            font-weight: bold;
+            float: right;
+            padding-top: 10.5px;
+            margin-right: -18px;
+          }
+        }
+
+        .percentage-column-connector {
+          .top-percentage-line {
+            border-bottom: 1px solid blue;
+            border-right: 1px solid blue;
+            border-bottom-right-radius: 2px;
+            margin-bottom: 2px;
+            margin-left: 2px;
+            width: 8px;
+            height: 15.5px;
+          }
+
+          .bottom-percentage-line {
+            border-top: 1px solid blue;
+            border-right: 1px solid blue;
+            border-top-right-radius: 2px;
+            margin-left: 2px;
+            width: 8px;
+            height: 15.5px;
+          }
+        }
+
+        .percentage-column-bottom {
+          .percentage-line {
+            border-bottom: 1px solid blue;
+            border-right: 1px solid blue;
+            border-bottom-right-radius: 2px;
+            margin-bottom: 12px;
+            margin-left: 2px;
+            width: 8px;
+            height: 14px;
+          }
+        }
+      }
+    }
+  }
+
   @media (min-width: 500px) {
     #progress-bar-container {
       span {
@@ -1434,6 +2963,27 @@
       #eighth-segment img {
         max-width: 22px;
         top: -4px;
+      }
+    }
+
+    #appts-to-fdc-pipeline-container {
+      .funnel-container {
+        .funnel-table {
+          .view-btns {
+            flex-flow: row nowrap;
+            align-items: center;
+
+            .funnel-btn {
+              font-size: 7px;
+              margin: 5px;
+              width: 100px;
+            }
+          }
+
+          .funnel-data-container {
+            margin-left: 20%;
+          }
+        }
       }
     }
   }
@@ -1607,9 +3157,7 @@
     }
 
     .ranking-table-icon {
-      margin-right: 5px;
-      width: 30px;
-      height: 30px;
+      font-size: 30px;
     }
 
     .ranking-table th {
@@ -1640,6 +3188,277 @@
       font-size: 14px;
       max-width: 250px;
       height: 30px;
+    }
+
+    #appts-created-pipeline-funnel-background {
+      display: block;
+      position: absolute;
+      z-index: 250;
+      border-top-style: solid;
+      border-top-color: rgba(0, 110, 200, 0.05);
+      border-top-width: 137px;
+      border-right: 40px solid transparent;
+      border-left: 40px solid transparent;
+      margin-top: 58px;
+      margin-left: 5px;
+      width: 260px;
+      height: 0;
+    }
+
+    #appts-created-pipeline-container {
+      margin: 0 auto;
+      max-width: calc(100% - 50px);
+
+      .pipeline-header-container {
+        border-bottom: 2px solid var(--v-primaryCustom-base);
+        padding: 10px;
+
+        .pipeline-icon {
+          font-size: 32px;
+        }
+
+        .pipeline-title {
+          font-size: 24px;
+          margin-left: 10px;
+        }
+      }
+
+      .appts-created-pipeline-dropdown {
+        font-size: 12px;
+        transform: none;
+        margin-bottom: 0;
+        width: 100px;
+        height: 40px;
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .main-row {
+            border-top: 2px solid #000;
+            padding: 5px;
+          }
+
+          .funnel-th,
+          .funnel-td {
+            font-size: 12px;
+            padding: 5px 2px;
+          }
+
+          .funnel-th {
+            .custom-dates-btn {
+              font-size: 10px;
+              padding: 5px 5px 5px 8px;
+              min-width: 70px;
+              max-width: 110px;
+              height: 40px;
+
+              .v-icon {
+                font-size: 18px;
+              }
+            }
+          }
+
+          .funnel-line-name {
+            padding-left: 50px;
+          }
+        }
+      }
+    }
+
+    #appts-to-fdc-pipeline-container {
+      margin: 0 auto;
+      max-width: calc(100% - 50px);
+
+      .pipeline-header-container {
+        border-bottom: 2px solid var(--v-primaryCustom-base);
+        padding: 10px 10px 5px 10px;
+
+        .pipeline-icon {
+          font-size: 32px;
+        }
+
+        .pipeline-title {
+          font-size: 24px;
+          margin-left: 10px;
+        }
+
+        #pipeline-header-left-side {
+          margin-bottom: 10px;
+        }
+
+        #pipeline-header-right-side {
+          margin: 0;
+
+          .appts-to-fdc-pipeline-dropdown {
+            margin: 0 10px 10px 0;
+            transform: none;
+
+            ::v-deep label {
+              font-size: 14px;
+            }
+
+            ::v-deep i {
+              font-size: 20px;
+            }
+          }
+
+          #all-reps-btn {
+            font-size: 14px;
+            margin: 0 0 10px 0;
+            height: 38px;
+          }
+        }
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .main-row {
+            border-top: 2px solid #000;
+
+            .funnel-line-name {
+              padding-left: 15px !important;
+            }
+          }
+
+          .view-btns {
+            .funnel-btn {
+              font-size: 10px;
+              margin: 0 10px 0 2px;
+              max-width: 100px;
+              height: 40px;
+            }
+          }
+
+          // TODO: Set this up
+          /*.custom-dates-container {*/
+          /*  display: flex;*/
+          /*  flex-flow: row wrap;*/
+          /*  justify-content: center;*/
+          /*  align-items: flex-end;*/
+
+          /*  .custom-date-input {*/
+          /*    font-size: 10px;*/
+          /*    text-align: center;*/
+          /*    border: 1px solid #aaa;*/
+          /*    box-shadow: none;*/
+          /*    margin: 0 0 3px 0;*/
+          /*    padding: 6px 4px 6px 6px;*/
+          /*    width: 55px;*/
+          /*    height: 15px;*/
+          /*  }*/
+          /*  */
+          /*  .custom-date-span {*/
+          /*    margin: 0 5px;*/
+          /*  }*/
+          /*}*/
+
+          .funnel-th {
+            font-size: 12px;
+            padding: 8px;
+
+            .custom-dates-btn {
+              font-size: 10px;
+              padding-left: 5px;
+              margin: 0 auto;
+              max-width: 100px;
+              height: 40px;
+
+              .v-icon {
+                font-size: 18px;
+              }
+            }
+          }
+
+          .funnel-line-name {
+            padding-left: 25px !important;
+            height: 40px;
+          }
+
+          .funnel-td {
+            font-size: 12px;
+            padding: 0 10px;
+          }
+
+          .funnel-data-container {
+            margin-left: 5%;
+          }
+
+          .checked-in-column-td {
+            font-size: 10px;
+          }
+
+          .checked-in-column-top,
+          .checked-in-column-center,
+          .checked-in-column-bottom {
+            margin-right: 10px;
+            width: 60px;
+          }
+
+          .checked-in-column-top {
+            padding: 6px 1px;
+            margin-top: 5px;
+          }
+
+          .checked-in-column-center {
+            padding: 11px 2px;
+          }
+
+          .checked-in-column-bottom {
+            padding: 15px 2px 9px 2px !important;
+            margin-bottom: 5px;
+          }
+
+          .checked-in-column-line-overlap {
+            margin-top: -2px;
+            padding: 12px 2px;
+          }
+
+          .percentage-column-top {
+            .percentage-line {
+              margin-top: 27px;
+              width: 10px;
+              height: 27px;
+            }
+          }
+
+          .percentage-column-segment {
+            .percentage-line {
+              margin-left: 2px;
+              width: 10px;
+              height: 40px;
+            }
+          }
+
+          .percentage-column-segment-with-percentage {
+            .percentage-line {
+              margin-left: 2px;
+              width: 10px;
+              height: 40px;
+            }
+
+            .funnel-percentage {
+              font-size: 12px;
+              padding-left: 3px;
+            }
+          }
+
+          .percentage-column-connector {
+            .top-percentage-line,
+            .bottom-percentage-line {
+              width: 10px;
+              height: 19px;
+            }
+          }
+
+          .percentage-column-bottom {
+            .percentage-line {
+              margin-bottom: 22px;
+              width: 10px;
+              height: 24px;
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1702,6 +3521,10 @@
       max-width: calc((100% / 2) - 10px);
     }
 
+    .ranking-table-icon {
+      font-size: 35px;
+    }
+
     .ranking-table th {
       font-size: 12px;
       height: 55px;
@@ -1714,6 +3537,224 @@
 
     .ranking-tables-no-data {
       font-size: 12px;
+    }
+
+    #appts-created-pipeline-funnel-background {
+      border-top-width: 162px;
+      border-right: 80px solid transparent;
+      border-left: 80px solid transparent;
+      margin-top: 60px;
+      margin-left: 15px;
+      width: 390px;
+    }
+
+    #appts-created-pipeline-container {
+      .pipeline-header-container {
+        .pipeline-icon {
+          font-size: 35px;
+        }
+
+        .pipeline-title {
+          margin-left: 15px;
+        }
+      }
+
+      .appts-created-pipeline-dropdown {
+        font-size: 14px;
+        width: 150px;
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .main-row {
+            border-top: 2px solid #000;
+            padding: 10px;
+          }
+
+          .funnel-th,
+          .funnel-td {
+            font-size: 14px;
+          }
+
+          .funnel-th {
+            padding: 5px;
+
+            .custom-dates-btn {
+              font-size: 12px;
+              padding: 8px 10px;
+              min-width: 80px;
+              max-width: 125px;
+
+              .v-icon {
+                font-size: 20px;
+                margin-left: 0;
+              }
+            }
+          }
+
+          .funnel-td {
+            padding: 10px;
+          }
+
+          .funnel-line-name {
+            padding-left: 112px;
+          }
+        }
+      }
+    }
+
+    #appts-to-fdc-pipeline-funnel-background {
+      display: block;
+      position: absolute;
+      z-index: 250;
+      border-top-style: solid;
+      border-top-color: rgba(0, 110, 200, 0.05);
+      border-top-width: 712px;
+      border-right: 60px solid transparent;
+      border-left: 60px solid transparent;
+      margin-top: 62px;
+      margin-left: 15px;
+      width: 385px;
+      height: 0;
+    }
+
+    #appts-to-fdc-pipeline-container {
+      .pipeline-header-container {
+        .pipeline-icon {
+          font-size: 35px;
+        }
+
+        .pipeline-title {
+          margin-left: 15px;
+        }
+
+        #pipeline-header-right-side {
+          width: 55%;
+        }
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .main-row {
+            .funnel-line-name {
+              padding-left: 117px !important;
+            }
+          }
+
+          .view-btns {
+            .funnel-btn {
+              font-size: 12px;
+              margin: 0 5px;
+              width: 175px;
+              max-width: none;
+            }
+          }
+
+          .funnel-th,
+          .funnel-td {
+            font-size: 14px;
+          }
+
+          .funnel-th {
+            padding: 10px;
+
+            .custom-dates-btn {
+              font-size: 12px;
+              padding: 8px 10px;
+              min-width: 80px;
+              max-width: 125px;
+
+              .v-icon {
+                font-size: 20px;
+                margin-left: 0;
+              }
+            }
+          }
+
+          .funnel-line-name {
+            padding-left: 129px !important;
+          }
+
+          .funnel-td {
+            padding: 0 10px;
+          }
+
+          .checked-in-column-td {
+            font-size: 14px;
+          }
+
+          .checked-in-column-top,
+          .checked-in-column-center,
+          .checked-in-column-bottom {
+            width: 90px;
+          }
+
+          .checked-in-column-top {
+            padding: 10px 5px;
+            margin-top: 5px;
+          }
+
+          .checked-in-column-center {
+            padding: 12px;
+          }
+
+          .checked-in-column-bottom {
+            padding: 12px 5px;
+            margin-bottom: 5px;
+          }
+
+          .checked-in-column-line-overlap {
+            margin-top: -2.5px !important;
+            padding-bottom: 14.5px;
+          }
+
+          .percentage-column-top {
+            padding: 0 5px 0 0;
+
+            .percentage-line {
+              margin-top: 22px;
+              width: 20px;
+              height: 24px;
+            }
+          }
+
+          .percentage-column-segment {
+            .percentage-line {
+              width: 20px;
+              height: 44.8px;
+            }
+          }
+
+          .percentage-column-segment-with-percentage {
+            .percentage-line {
+              width: 20px;
+              height: 44.8px;
+            }
+
+            .funnel-percentage {
+              font-size: 14px;
+              padding-top: 12px;
+              padding-left: 6px;
+            }
+          }
+
+          .percentage-column-connector {
+            .top-percentage-line,
+            .bottom-percentage-line {
+              width: 20px;
+              height: 21.4px;
+            }
+          }
+
+          .percentage-column-bottom {
+            .percentage-line {
+              margin-bottom: 24px;
+              width: 20px;
+              height: 26px;
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1740,6 +3781,203 @@
     .ranking-tables-section {
       max-width: 1130px;
       margin: 0 auto;
+    }
+
+    #appts-created-pipeline-funnel-background {
+      width: 440px;
+    }
+
+    #appts-created-pipeline-container {
+      max-width: 1130px;
+
+      .appts-created-pipeline-dropdown {
+        width: 175px;
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .funnel-line-name {
+            padding-left: 135px;
+          }
+
+          .funnel-th {
+            .custom-dates-btn {
+              font-size: 14px;
+              min-width: 100px;
+              max-width: 143px;
+            }
+          }
+        }
+      }
+    }
+
+    #appts-to-fdc-pipeline-funnel-background {
+      border-top-width: 723px;
+      width: 425px;
+    }
+
+    #appts-to-fdc-pipeline-container {
+      max-width: 1130px;
+
+      .pipeline-header-container {
+        #pipeline-header-right-side {
+          justify-content: flex-end;
+          margin: 5px 5px 0 0;
+        }
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .main-row {
+            .funnel-line-name {
+              padding-left: 142px !important;
+            }
+          }
+
+          .view-btns {
+            .funnel-btn {
+              font-size: 14px;
+              width: 200px;
+            }
+          }
+
+          .funnel-th {
+            .custom-dates-btn {
+              font-size: 14px;
+              min-width: 100px;
+              max-width: 143px;
+            }
+          }
+
+          .funnel-line-name {
+            padding-left: 162px !important;
+          }
+
+          .checked-in-column-top,
+          .checked-in-column-center,
+          .checked-in-column-bottom {
+            margin-right: 15px;
+          }
+
+          .checked-in-column-top {
+            padding: 6px 10px;
+          }
+
+          .checked-in-column-bottom {
+            padding-top: 22px;
+          }
+
+          .percentage-column-top {
+            .percentage-line {
+              margin-top: 29px;
+              margin-left: 5px;
+              height: 31px;
+            }
+          }
+
+          .percentage-column-segment {
+            .percentage-line {
+              margin-left: 5px;
+            }
+          }
+
+          .percentage-column-segment-with-percentage {
+            .percentage-line {
+              margin-left: 5px;
+            }
+
+            .funnel-percentage {
+              padding-left: 8px;
+            }
+          }
+
+          .percentage-column-connector {
+            .top-percentage-line,
+            .bottom-percentage-line {
+              margin-left: 5px;
+            }
+          }
+
+          .percentage-column-bottom {
+            .percentage-line {
+              margin-bottom: 23px;
+              margin-left: 5px;
+              height: 25px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (min-width: 1187px) {
+    #appts-to-fdc-pipeline-funnel-background {
+      border-top-width: 724px;
+    }
+
+    #appts-to-fdc-pipeline-container {
+      .funnel-container {
+        .funnel-table {
+          .checked-in-column-top {
+            padding: 17px 3px;
+          }
+
+          .percentage-column-top {
+            .percentage-line {
+              margin-top: 28.5px;
+              height: 32px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (min-width: 1410px) {
+    #appts-created-pipeline-funnel-background {
+      width: 445px;
+    }
+
+    #appts-created-pipeline-container {
+      .appts-created-pipeline-dropdown {
+        width: 200px;
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .funnel-line-name {
+            padding-left: 135px !important;
+          }
+        }
+      }
+    }
+
+    #appts-to-fdc-pipeline-funnel-background {
+      border-top-width: 726px;
+      margin-top: 60px;
+      width: 450px;
+    }
+
+    #appts-to-fdc-pipeline-container {
+      .funnel-container {
+        .funnel-table {
+          .main-row {
+            .funnel-line-name {
+              padding-left: 152px !important;
+            }
+          }
+
+          .view-btns {
+            .v-btn {
+              margin: 0 10px;
+            }
+          }
+
+          .funnel-line-name {
+            padding-left: 172px !important;
+          }
+        }
+      }
     }
   }
 </style>
