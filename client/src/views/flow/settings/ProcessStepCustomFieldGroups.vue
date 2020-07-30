@@ -149,6 +149,7 @@
                 <td :colspan="headers.length" class="pb-2 px-0"  :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" justify="center" class="pl-3 pr-3" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
+                    {{ newFieldType }}
                     <v-radio-group v-model="newFieldType" @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
                       <v-radio label="Native Field"
                                value="native"></v-radio>
@@ -159,7 +160,6 @@
                     <v-autocomplete v-if="newFieldType === 'native'"
                                     v-model="newField"
                                     :items="availableCustomFields"
-                                    cache-items
                                     label="New Custom Field"
                                     item-text="fieldName"
                                     return-object
@@ -173,7 +173,6 @@
                     <v-autocomplete v-if="newFieldType === 'ancillary'"
                                     v-model="parent"
                                     :items="parentObjects"
-                                    cache-items
                                     label="Parent Object"
                                     item-text="name"
                                     return-object
@@ -187,7 +186,6 @@
                     <v-autocomplete v-if="newFieldType === 'ancillary'"
                                     v-model="selectedAncillaryField"
                                     :items="ancillaryCustomFields"
-                                    cache-items
                                     label="Custom Field"
                                     item-text="fieldName"
                                     return-object
@@ -455,10 +453,10 @@
             this.parentObjects = []
             this.ancillaryCustomFields = []
           } else if (this.addField && this.newFieldType === 'ancillary') {
+            this.availableCustomFields = []
             const {data} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`, { params: { id: this.processStepId}})
             this.selectedAncillaryField = {}
             this.parentObjects = data
-            this.availableCustomFields = []
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
