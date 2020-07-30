@@ -36,6 +36,11 @@
                   <a @click="assignToUser(item)">Assign to me</a>
                 </v-btn>
               </td>
+              <td class="text-left">
+                <div v-for="aps in item.activeProcessSteps">
+                  {{ aps.processStepName }}
+                </div>
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -69,6 +74,7 @@
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
           { text: 'Owner', value: 'owner', show: true },
+          { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
         ],
       }
     },

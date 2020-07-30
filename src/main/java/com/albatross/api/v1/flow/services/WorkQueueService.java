@@ -91,6 +91,10 @@ public class WorkQueueService {
       bw.registerCustomEditor(List.class, "owningPositions",
           new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
 
+      TypeReference<List<ProjectProcessStep>> activeProcessStepsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "activeProcessSteps",
+        new JsonCollectionDeserializer(activeProcessStepsRef, objectMapper));
+
     }
   }
 }
