@@ -892,7 +892,6 @@ public class ProjectProcessStepService {
 
     if (r.getDataTypeRequirementId() == null) {
       try {
-        // @TODO: @humes, need to verify a value is properly fetched here if requirement is a system list
         Long reqValue = r.getListOfValueId();
         passed = compareDropdown(fieldValue, reqValue, r.getOperatorTypeId());
       } catch (Exception e) {
