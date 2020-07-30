@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ResourceAppointment;
 import com.albatross.api.v1.flow.model.ResourceSchedule;
+import com.albatross.api.v1.flow.model.TimeSlot;
 import com.albatross.api.v1.flow.model.WorkDay;
 import com.albatross.api.v1.flow.services.AvailabilityService;
 import lombok.extern.slf4j.Slf4j;
@@ -72,5 +73,13 @@ public class AvailabilityController {
   @DeleteMapping(value = "/appointment/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteAppointment(@PathVariable Long id) {
     availabilityService.deleteAppointment(id);
+  }
+
+  @GetMapping(value = "/timeSlots", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<TimeSlot> getTimeSlots(@RequestParam Long projectId,
+                                     @RequestParam String startTime,
+                                     @RequestParam String endTime,
+                                     @RequestParam String availableDate) {
+    return availabilityService.getTimeSlots(projectId, startTime, endTime, availableDate);
   }
 }

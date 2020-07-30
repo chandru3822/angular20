@@ -225,6 +225,18 @@ public class AvailabilityService {
     sqlCache.update("availability.deleteAppointment", params);
   }
 
+  public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate) {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("startTime", startTime);
+    params.put("endTime", endTime);
+    params.put("availableDate", availableDate);
+
+    List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+    return results;
+  }
+
   public ResourceAppointment getOneResourceAppointment(Long id) {
     User user = securityService.getCurrentUser();
 
@@ -248,6 +260,22 @@ public class AvailabilityService {
       TypeReference<List<ResourceScheduleAvailability>> resourceScheduleAvailabilityRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "resourceScheduleAvailability",
         new JsonCollectionDeserializer(resourceScheduleAvailabilityRef, objectMapper));
+    }
+  }
+
+  public static class TimeSlotMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public TimeSlotMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Integer>> usersRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "users",
+        new JsonCollectionDeserializer(usersRef, objectMapper));
     }
   }
 
