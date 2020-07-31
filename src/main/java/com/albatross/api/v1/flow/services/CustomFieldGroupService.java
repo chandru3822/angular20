@@ -165,12 +165,15 @@ public class CustomFieldGroupService {
   }
 
   public CustomFieldGroup addCustomFieldGroup(CustomFieldGroup customFieldGroup, Long companyObjectTypeId) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("eventTypeId", customFieldGroup.getEventTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
+    params.put("createdById", user.getId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();
     params.put("id", id);
@@ -221,10 +224,13 @@ public class CustomFieldGroupService {
   }
 
   public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customFieldGroup.getId());
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("groupName", customFieldGroup.getGroupName());
+    params.put("modifiedById", user.getId());
 
     sqlCache.update("customFieldGroup.updateCustomFieldGroup", params);
 
