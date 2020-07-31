@@ -75,6 +75,7 @@
                                                                          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                                                 WHERE cfga.custom_field_group_id = cfg.id AND cfg.archived is not true
                                                                   and cfga.archived is not true
+                                                                  and cf.archived is not true
                                                                 union all
                                                                 SELECT cfga.id,
                                                                        cfga.custom_field_group_id as "customFieldGroupId",
@@ -87,12 +88,15 @@
                                                                 FROM flow.custom_field_group_assignment cfga
                                                                          inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
                                                                          inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                                                WHERE cfga.custom_field_group_id = cfg.id AND cfga.archived is not true
+                                                                WHERE cfga.custom_field_group_id = cfg.id
+                                                                     AND cfga.archived is not true
+                                                                     and cf.archived is not true
                                                                 ORDER by "fieldOrder") customFields), '[]') AS "customFields"
                                    FROM flow.custom_field_group cfg
                                        inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
                                        left join flow.event_type et on et.id = cfg.event_type_id
-                                   WHERE cfg.process_step_id = ps.id AND cfg.archived is not true) cfGroups), '[]') AS custom_field_groups,
+                                   WHERE cfg.process_step_id = ps.id AND cfg.archived is not true
+                                   order by cfg.group_order) cfGroups), '[]') AS custom_field_groups,
                   coalesce((
                     SELECT array_to_json(array_agg(row_to_json(workQueueTypes)))
                     FROM (
