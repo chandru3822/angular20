@@ -7710,42 +7710,6 @@ refresh materialized view flow.user_positions_vw;
 refresh materialized view flow.user_position_hierarchy_vw;
 
 
--- update display order for work queue categories
-update flow.work_queue_category as wqc
-set display_order = c.displayOrder
-from (
-         select id,
-                ROW_NUMBER () OVER (ORDER BY work_queue_category.work_queue_category) - 1
-         from flow.work_queue_category
-         order by work_queue_category
-     ) as c(id, displayOrder)
-where c.id = wqc.id;
-
--- update display order for work queue types
-update flow.work_queue_type as wqt
-set display_order = t.row_number
-from (
-         select work_queue_type.id,
-                ROW_NUMBER () OVER (partition by work_queue_category_id ORDER BY work_queue_type) - 1 as row_number
-         from flow.work_queue_type
-                  inner join flow.work_queue_category wqc on wqc.id = work_queue_type.work_queue_category_id
-         where work_queue_type.archived is not true
-         order by wqc.display_order, work_queue_category_id, row_number
-     ) as t(id, row_number)
-where t.id = wqt.id;
-
---update display order for process_step_actions
-update flow.process_step_action as psa
-set display_order = t.row_number
-from (
-         select id,
-                ROW_NUMBER () OVER (partition by process_step_id ORDER BY date_created) - 1 as row_number
-         from flow.process_step_action
-         where archived is not true
-         order by process_step_id, display_order
-     ) as t(id, row_number)
-where t.id = psa.id;
-
 -- new requirement types
 insert into flow.process_step_requirement_type(process_step_requirement_type)
 values ('Project - Custom Field'), ('Contact - Custom Field');
