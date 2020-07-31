@@ -195,4 +195,8 @@
     select scheduled_start_time, array_to_json(users) as users from flow.get_availability_time_slots(:projectId::int, :startTime::timestamp, :endTime::timestamp, :availableDate::date)
   ]]></availability.getTimeSlots>
 
+  <availability.setCloserAppointment><![CDATA[
+    select flow.set_closer_appointment(:projectId::int, :appointmentTime::timestamp, :startTime::timestamp, :endTime::timestamp, :users::int[]);
+  ]]></availability.setCloserAppointment>
+
 </sql>

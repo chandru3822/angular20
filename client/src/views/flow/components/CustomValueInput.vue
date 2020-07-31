@@ -5,7 +5,7 @@
     <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
   </v-col>
 
-  <v-col class="d-flex justify-start align-self-start">
+  <v-col class="d-flex justify-start align-self-start py-0">
 
     <DatetimePickerInput
       v-if="field.dataTypeId === 1"

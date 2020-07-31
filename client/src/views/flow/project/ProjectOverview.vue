@@ -89,23 +89,14 @@
 
   <v-col cols="12" lg="6">
 
-    <v-col class="text-left">
-      <v-btn
-        v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
-        class="manage-btn warning"
-        @click="$router.push({name: 'projectAdmin', params: {projectId}})"
-      >
-        Manage
-      </v-btn>
-    </v-col>
-
     <v-col v-if="isFieldsLoading">
       <SpinnerInline :size="20" color="primary"/>
     </v-col>
 
     <v-col
       v-else
-      class="mt-4"
+      :class="{ 'mt-4': index !== 0 }"
+      class="py-0"
       v-for="(group, index) in customFieldGroups"
       :key="index"
     >
@@ -132,8 +123,18 @@
 
     <v-col>
       <v-row>
-        <v-col cols="12">
+        <v-col cols="9">
           <h3 class="text-left">Active Process Steps</h3>
+        </v-col>
+
+        <v-col cols="3">
+          <v-btn
+            v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
+            class="manage-btn warning"
+            @click="$router.push({name: 'projectAdmin', params: {projectId}})"
+          >
+            Manage
+          </v-btn>
         </v-col>
 
         <v-col cols="12" v-if="isProcessStepsLoading">
