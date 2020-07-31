@@ -52,7 +52,7 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2}">
+              <tr :class="{'shaded-row': workQueueCategories.indexOf(item) % 2}">
                 <td style="width: 50px">
                   <v-btn text icon small class="handle">
                     <v-icon>drag_handle</v-icon>

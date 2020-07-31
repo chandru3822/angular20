@@ -5,7 +5,7 @@
     <span class="ancillary" v-if="field.ancillaryCustomFieldGroupAssignmentId">(Ancillary)</span>
   </v-col>
 
-  <v-col class="d-flex justify-start align-self-start">
+  <v-col class="d-flex justify-start align-self-start py-0">
 
     <DatetimePickerInput
       v-if="field.dataTypeId === 1"
@@ -66,6 +66,7 @@
       v-if="field.dataTypeId === 6 && field.hasListValues"
       v-model="field.intValue"
       text
+      clearable
       :readonly="readonly"
       placeholder=" "
       :items="field.listOfValues"
@@ -80,6 +81,7 @@
       multiple
       placeholder=" "
       :items="field.listOfValues"
+      clearable
       :readonly="readonly"
       :label="field.fieldName"
       v-model="field.intArrayValue"
@@ -91,6 +93,7 @@
       v-if="field.dataTypeId === 8"
       v-model="field.intValue"
       text
+      clearable
       :items="field.listOfValues"
       :label="field.fieldName"
       :readonly="readonly"
@@ -103,6 +106,7 @@
       v-if="field.dataTypeId === 9"
       v-model="field.intValue"
       text
+      clearable
       :items="field.listOfValues"
       :readonly="readonly"
       placeholder=" "

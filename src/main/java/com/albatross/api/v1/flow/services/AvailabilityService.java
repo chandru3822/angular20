@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -235,6 +236,25 @@ public class AvailabilityService {
 
     List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
     return results;
+  }
+
+  public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", request.getProjectId());
+    params.put("appointmentTime", request.getAppointmentTime());
+    params.put("startTime", request.getStartTime());
+    params.put("endTime", request.getEndTime());
+    params.put("users", request.getUsers());
+
+
+    Boolean appointmentSaved = sqlCache.queryForObject("availability.setCloserAppointment", params, Boolean.class);
+
+    if(appointmentSaved) {
+      return ResponseEntity.ok("Appointment Saved");
+    } else {
+      return ResponseEntity.badRequest().body("Selected appointment is not available.");
+    }
   }
 
   public ResourceAppointment getOneResourceAppointment(Long id) {

@@ -233,7 +233,7 @@ public class ProjectProcessStepService {
   }
 
   public Boolean fieldHasValue (CustomFieldValue cv) {
-    return null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
+    return null != cv.getId() || null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
       || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
   }
 

@@ -56,7 +56,7 @@
 
             <template #item="{ item, index }">
 
-              <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
                 <td style="width: 50px">
                   <v-btn v-if="selectedWorkQueueCategoryId !== -1" text icon small class="handle">
                     <v-icon>drag_handle</v-icon>

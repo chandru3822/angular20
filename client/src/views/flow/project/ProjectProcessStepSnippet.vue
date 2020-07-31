@@ -3,7 +3,7 @@
     <v-col cols="12">
       <v-card>
         <v-card-text class="pa-0">
-          <v-row class="header font-weight-bold py-3" no-gutters>
+          <v-row class="header font-weight-bold py-1" no-gutters>
             <v-col cols="2">ID</v-col>
             <v-col cols="3">Name</v-col>
             <v-col cols="2">Owner</v-col>
@@ -16,7 +16,7 @@
             no-gutters
             v-for="step in steps"
             :key="step.projectProcessStepId"
-            class="py-2 align-center"
+            class="py-0 align-center"
           >
             <v-col cols="2" >
               <router-link :to="`/project/${projectId}/processStep/${step.projectProcessStepId}?processStepId=${step.processStepId}&contactId=${contactId}`">{{ step.projectProcessStepId }}</router-link>
