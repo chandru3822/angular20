@@ -9,19 +9,26 @@
     </excel.import.sqlId>
 
     <excel.import.validateProjectId>
-        select s.customer_name,
+        select p.project_name as customer_name,
         concat_ws(' ', c.street1, c.street2) street,
         c.city, c.state, c.postal_code,
-        c.phone, c.email, s.sales_rep as source,
-        trim(concat(users.first_name, ' ', users.last_name)) as project_owner,
-        1111 as epc_proposal_pricing, --TODO: Pull from custom value when Judson adds it
-        s.sales_rep_id as project_owner_id
+        c.phone, c.email,
+        (select lov.name
+        from flow.list_of_value lov
+        where lov.id = (select int_value from flow.contact_custom_field_value where contact_id = (select contact_id from flow.project where id = :projectId) and
+        custom_field_group_assignment_id = 395)::integer) as source,
+        trim(concat(users.first_name, ' ', users.last_name)) as deal_owner,
+        (select numeric_value from flow.project_process_step_custom_field_value where project_process_step_id =
+            (select id from flow.project_process_step where project_id = :projectId and process_step_id=3)
+             and custom_field_group_assignment_id= 709) as epc_proposal_pricing,
+        (select user_id from flow.user_position
+        where id = (select user_position_id from flow.project_process_step
+        where project_id = :projectId and process_step_id = 2)
+        ) as deal_owner_id
         from flow.project p
         inner join flow.contact c on c.id = p.contact_id
-        left join brs.project_commission_snapshot s ON s.project_id = p.id
-        left join flow.user users on users.id = s.sales_rep_id
-        where s.id = (select max(id) from brs.project_commission_snapshot where project_id = p.id)
-        and p.id = :projectId
+        left join flow.user users on users.id = p.created_by_id
+        where p.id = :projectId
     </excel.import.validateProjectId>
 
     <excel.import.insert>

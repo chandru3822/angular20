@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -51,7 +50,7 @@ public class BlueravenCustomFieldGroupService {
   }
 
   public Boolean fieldHasValue (CustomFieldValue cv) {
-    return null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
+    return null != cv.getId() || null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
         || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
   }
 
