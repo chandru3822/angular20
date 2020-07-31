@@ -58,7 +58,7 @@
             Cancel
           </v-btn>
         </v-card>
-        <v-row v-if="customFieldGroups && customFieldGroups.length > 0">
+        <v-row>
           <v-col cols="12">
             <v-data-table
                 :headers="headers"
@@ -68,10 +68,12 @@
                 :expanded.sync="expanded"
                 hide-default-footer
                 hide-default-header
-                class="elevation-1"
+                :sort-desc="[false]"
+                :sort-by="['groupOrder']"
+                class="elevation-1 fix-column-width-bug process-step-cfg-table"
             >
               <template #no-data>
-                No actions for this process step
+                No custom for this process step
               </template>
 
               <template #no-results>
@@ -80,6 +82,11 @@
 
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
+                  <td style="width: 50px">
+                    <v-btn text icon small class="handle">
+                      <v-icon>drag_handle</v-icon>
+                    </v-btn>
+                  </td>
                   <td class="text-left">
                     <v-text-field text
                                   v-if="item.edit"
@@ -303,6 +310,8 @@
   import {getEventTypes} from '@/services/scheduleService'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import Sortable from "sortablejs";
+  import cloneDeep from 'lodash.clonedeep'
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
@@ -313,6 +322,35 @@
     },
     props: {
       customFieldGroups: Array,
+    },
+    mounted() {
+      let table = document.querySelector('.process-step-cfg-table tbody')
+      const _self = this
+      Sortable.create(table, {
+        handle: '.handle',
+        onEnd({ newIndex, oldIndex }) {
+          if(_self.customFieldGroups?.length > 0) {
+            const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
+            _self.customFieldGroups.splice(newIndex, 0, rowSelected)
+            let rowsClone = cloneDeep(_self.customFieldGroups)
+
+            let rowsToSave = []
+            rowsClone.forEach((r, idx) => {
+              //check if the row needs to be saved before updating display order
+              //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+              let save = r.newGroupOrder === undefined ? r.groupOrder !== idx : r.newGroupOrder !== idx
+              //update display order
+              r.groupOrder = idx
+              //save only rows that changed
+              if(save) {
+                _self.customFieldGroups[idx].newGroupOrder = idx
+                rowsToSave.push(r)
+              }
+            })
+            _self.saveRowChanges(rowsToSave)
+          }
+        }
+      })
     },
     data() {
       return {
@@ -337,6 +375,7 @@
         selectedAncillaryField: {},
         ancillaryCustomFields: [],
         headers: [
+          { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           { text: 'Name', value: 'groupName', show: true },
           { text: null, value: 'icons', show: true }
         ],
@@ -550,7 +589,7 @@
         }
       },
       filterCustomFieldGroups () {
-        return this.customFieldGroups.filter(cfg => { return !cfg.archived})
+        return this.customFieldGroups?.filter(cfg => { return !cfg.archived})
       },
       async getSchedulingFields () {
         if(this.newGroup.schedulable) {
@@ -584,7 +623,21 @@
         let tempGroups = this.customFieldGroups.filter(cfg => !cfg.archived)
         return tempGroups?.length === 0 ||
           tempGroups.find(cfg => cfg.eventTypeId) === undefined
-      }
+      },
+      async saveRowChanges(rows) {
+        if(rows?.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
+            this.snackbar = getSnackbar('SUCCESS', 'Group Order Saved')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Saving Group Order')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
     }
 
   }
