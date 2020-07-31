@@ -60,15 +60,14 @@ public class ExcelImportController {
   @Autowired
   ObjectMapper om;
 
-  @RequestMapping("/excelId")
-  public Long getUniqueIdForExcel(HttpServletResponse res, @RequestHeader Map<String, String> headers) {
-    debugPrintHeaders(headers);
+  @GetMapping("/excelId")
+  public Long getUniqueIdForExcel() {
     String sql = cache.getByKey("excel.import.sqlId");
     Long id = jdbc.queryForObject(sql, Maps.newHashMap(), Long.class);
     return id;
   }
 
-   @RequestMapping("/baseConfirm/{baseId}")
+   @GetMapping("/baseConfirm/{baseId}")
    public ResponseEntity getUniqueIdForExcel(@PathVariable("baseId") Long projectId, @RequestHeader Map<String, String> headers) {
        debugPrintHeaders(headers);
        String sql = cache.getByKey("excel.import.validateProjectId");
@@ -94,7 +93,7 @@ public class ExcelImportController {
     log.debug("Received request for ExcelId:\n{}", baos.toString());
   }
 
-    @RequestMapping("/baseConfirm/{baseId}/proposals/{proposalId}")
+    @GetMapping("/baseConfirm/{baseId}/proposals/{proposalId}")
     public ResponseEntity<String> getProposalData(@PathVariable("baseId") Long projectId,
                                                   @PathVariable("proposalId") Long proposalId) {
         Map <String, Object> params = ImmutableMap.of("projectId", projectId,
@@ -116,7 +115,7 @@ public class ExcelImportController {
     }
 
   @PostMapping(value = "/import", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> advanceMatch(HttpServletRequest req,
+  public ResponseEntity<?> importProposal(HttpServletRequest req,
                                         @RequestBody Proposal proposal) {
     log.info("Attempting Excel Proposal Log");
 
