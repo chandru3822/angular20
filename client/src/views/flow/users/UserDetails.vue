@@ -50,7 +50,7 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
-              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="!userCanEdit || cf.readonly" :field="cf"></CustomValueInput>
+              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="!userCanEdit || cf.readonly" :callback="populateDirtyCfvs" :field="cf"></CustomValueInput>
             </v-card>
           </div>
         </v-col>
@@ -72,6 +72,7 @@
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import cloneDeep from 'lodash.clonedeep'
 
   export default {
     name: 'User',
@@ -93,6 +94,7 @@
         snackbar: {},
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
         companies: [],
+        dirtyCfvs: [],
         user: {},
         customFieldGroups: [],
         notes: [],
@@ -111,9 +113,15 @@
     methods: {
       async saveUser() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        this.user.customFieldGroups = this.customFieldGroups
+        // this.user.customFieldGroups = this.customFieldGroups
+
         try {
+          //save user
           await putRequest(`/user`, this.user)
+          // save dirty custom field values
+          const {data} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
+          this.dirtyCfvs = []
+          this.customFieldGroups = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -121,12 +129,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      populateDirtyCfvs(field) {
+        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+        if(!match) {
+          this.dirtyCfvs.push(field)
+        }
+      },
       async getCustomFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/customFieldValues/user`, { params: {
-              primaryId: this.userId
-            }})
+          const {data} = await getRequestWithParams(`/customFieldValues/user/${this.userId}`)
           this.customFieldGroups = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

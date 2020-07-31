@@ -15,6 +15,7 @@
       :format="'MMMM DD, YYYY'"
       :label="field.fieldName"
       :readonly="readonly"
+      @input="callback(field)"
     />
 
     <DatetimePickerInput
@@ -25,6 +26,7 @@
       :format="'MMMM DD, YYYY, h:mm A'"
       :label="field.fieldName"
       :readonly="readonly"
+      @input="callback(field)"
     />
 
     <v-checkbox
@@ -33,6 +35,7 @@
       :label="field.fieldName"
       :disabled="readonly"
       :ripple="false"
+      @change="callback(field)"
     />
 
     <v-text-field
@@ -42,6 +45,7 @@
       placeholder=" "
       :label="field.fieldName"
       v-model="field.numericValue"
+      @change="callback(field)"
     />
 
     <v-text-field
@@ -51,6 +55,7 @@
       placeholder=" "
       :label="field.fieldName"
       v-model="field.textValue"
+      @change="callback(field)"
     />
 
     <v-text-field
@@ -60,6 +65,7 @@
       :label="field.fieldName"
       placeholder=" "
       v-model="field.intValue"
+      @change="callback(field)"
     />
 
     <v-select
@@ -73,6 +79,7 @@
       :label="field.fieldName"
       item-value="id"
       item-text="name"
+      @input="callback(field)"
    />
 
     <v-select
@@ -87,6 +94,7 @@
       v-model="field.intArrayValue"
       item-value="id"
       item-text="name"
+      @input="callback(field)"
     />
 
     <v-select
@@ -100,6 +108,7 @@
       placeholder=" "
       item-value="id"
       item-text="name"
+      @input="callback(field)"
     />
 
     <v-select
@@ -112,6 +121,7 @@
       placeholder=" "
       item-value="id"
       item-text="name"
+      @input="callback(field)"
     />
   </v-col>
 </v-row>
@@ -132,7 +142,8 @@ export default {
     showFieldName: {
       type: Boolean,
       default: true
-    }
+    },
+    callback: Function
   },
   components: {
     DatetimePickerInput

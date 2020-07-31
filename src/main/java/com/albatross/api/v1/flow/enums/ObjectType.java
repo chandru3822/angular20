@@ -16,7 +16,7 @@ public enum ObjectType {
     public static ObjectType get(String name) {
         name = name.toLowerCase();
         for (ObjectType s : values()) {
-            if (s.toString().equals(name)) {
+            if (s.toString().equals(name) || s.textValue().equals(name)) {
                 return s;
             }
         }
@@ -25,5 +25,9 @@ public enum ObjectType {
 
     public String toString() {
         return name().toLowerCase().replaceAll("_", " ");
+    }
+
+    public String textValue() {
+        return name().toLowerCase();
     }
 }

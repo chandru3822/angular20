@@ -158,8 +158,6 @@ public class UserService {
       sqlCache.update("user.insertUserCompany", params);
     }
 
-    handleSavingCustomFieldValues(user.getCustomFieldGroups(), id);
-
     return getUser(id);
   }
 
@@ -195,12 +193,6 @@ public class UserService {
     return results;
   }
 
-
-  public Boolean fieldHasValue (CustomFieldValue cv) {
-    return null != cv.getId() || null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
-        || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
-  }
-
   public void handleSavingUserCompanies(List<Company> companies, Long userId){
     //archive any existing rows that are no longer there
     List<Long> companyIds = companies.stream().map(Company::getId).collect(Collectors.toList());
@@ -215,36 +207,6 @@ public class UserService {
       vars.put("userId", userId);
       vars.put("companyId", company.getId());
       sqlCache.update("user.upsertUserCompany", vars);
-    }
-  }
-
-  public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long primaryId){
-    User currentUser = securityService.getCurrentUser();
-    for(CustomFieldGroup group : groups) {
-      for(CustomFieldValue cfv : group.getCustomFieldValues()){
-        //todo: only save if something changed
-        if(fieldHasValue(cfv)) {
-          HashMap<String, Object> params = new HashMap<>();
-          params.put("dateValue", cfv.getDateValue());
-          params.put("timestampValue", cfv.getTimestampValue());
-          params.put("booleanValue", cfv.getBooleanValue());
-          params.put("textValue", cfv.getTextValue());
-          params.put("numericValue", cfv.getNumericValue());
-          params.put("intValue", cfv.getIntValue());
-          params.put("intArrayValue", cfv.getIntArrayValue());
-          params.put("userId", primaryId);
-          params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-
-          if(null != cfv.getId()){
-            params.put("id", cfv.getId());
-            params.put("modifiedById", currentUser.getId());
-            sqlCache.update("customFieldValues.updateUserCustomFieldValue", params);
-          } else {
-            params.put("createdById", currentUser.getId());
-            sqlCache.update("customFieldValues.insertUserCustomFieldValue", params);
-          }
-        }
-      }
     }
   }
 

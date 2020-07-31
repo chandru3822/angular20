@@ -148,7 +148,7 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="(!userCanEdit || cf.readonly)" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="(!userCanEdit || cf.readonly)" :callback="populateDirtyCfvs" :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
@@ -171,6 +171,7 @@ import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getStates} from '@/services/stateService'
+import cloneDeep from 'lodash.clonedeep'
 
 export default {
   name: 'Contact',
@@ -188,6 +189,7 @@ export default {
       addressChanged: false,
       customFieldGroups: [],
       notes: [],
+      dirtyCfvs: [],
       owners: [],
       contactId: this.$route.params.id,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
@@ -208,11 +210,14 @@ export default {
   methods: {
     async saveContact() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.contact.customFieldGroups = this.customFieldGroups
-      this.contact.reloadCoordinates = this.addressChanged
       try {
+      // save contact
         const {data} = await postRequest(`/contact`, this.contact)
+      // save dirty custom field values
+        await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
+        this.dirtyCfvs = []
         this.addressChanged = false
+        //this line reloads the contact so we dont have to reset the cfgs
         this.$router.push({name: 'contact', params: {id: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -221,12 +226,16 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    populateDirtyCfvs(field) {
+      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+      if(!match) {
+        this.dirtyCfvs.push(field)
+      }
+    },
     async getCustomFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/customFieldValues/contact`, { params: {
-          primaryId: this.contactId
-        }})
+        const {data} = await getRequestWithParams(`/customFieldValues/contact/${this.contactId}`)
         this.customFieldGroups = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

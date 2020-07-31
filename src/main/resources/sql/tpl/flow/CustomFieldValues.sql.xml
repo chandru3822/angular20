@@ -1,5 +1,5 @@
 <sql>
-  <customFieldValues.getProjectFieldValues><![CDATA[
+  <customFieldValues.project.getCustomFieldGroupsAndValues><![CDATA[
     select
       cfg.id,
       cfg.group_name as "groupName",
@@ -51,7 +51,7 @@
         inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
         inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
         inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-        left join flow.project_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_id = :projectId
+        left join flow.project_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_id = :sourceId
         left join flow.project p on p.id = pcv.project_id
         where cfga.custom_field_group_id = cfg.id
           and cfga.archived is not true
@@ -64,9 +64,9 @@
       and cfg.archived is not true
       and cot.company_id = :companyId
     order by cfg.group_order;
-  ]]></customFieldValues.getProjectFieldValues>
+  ]]></customFieldValues.project.getCustomFieldGroupsAndValues>
 
-  <customFieldValues.getContactFieldValues><![CDATA[
+  <customFieldValues.contact.getCustomFieldGroupsAndValues><![CDATA[
     select cfg.id,
        cfg.group_name as "groupName",
        cfg.group_order as "groupOrder",
@@ -114,7 +114,7 @@
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                      left join flow.contact_custom_field_value ccv on ccv.custom_field_group_assignment_id = cfga.id and ccv.contact_id = :primaryId
+                                      left join flow.contact_custom_field_value ccv on ccv.custom_field_group_assignment_id = cfga.id and ccv.contact_id = :sourceId
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
                                and cfot.archived is not true
@@ -126,9 +126,9 @@
     and cfg.archived is not true
     and cot.company_id = :companyId
     order by cfg.group_order
-  ]]></customFieldValues.getContactFieldValues>
+  ]]></customFieldValues.contact.getCustomFieldGroupsAndValues>
 
-  <customFieldValues.getOrgFieldValues><![CDATA[
+  <customFieldValues.organization.getCustomFieldGroupsAndValues><![CDATA[
     select cfg.id,
        cfg.group_name as "groupName",
        cfg.group_order as "groupOrder",
@@ -176,7 +176,7 @@
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                      left join flow.organization_custom_field_value ocv on ocv.custom_field_group_assignment_id = cfga.id and ocv.org_id = :primaryId
+                                      left join flow.organization_custom_field_value ocv on ocv.custom_field_group_assignment_id = cfga.id and ocv.org_id = :sourceId
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
                                and cfot.archived is not true
@@ -188,9 +188,9 @@
           and cfg.archived is not true
           and cot.company_id = :companyId
         order by cfg.group_order
-  ]]></customFieldValues.getOrgFieldValues>
+  ]]></customFieldValues.organization.getCustomFieldGroupsAndValues>
 
-  <customFieldValues.getProjectProcessStepFieldValues><![CDATA[
+  <customFieldValues.process_step.getCustomFieldGroupsAndValues><![CDATA[
 select
     cfg.id,
     cot.id as "companyObjectTypeId",
@@ -247,7 +247,7 @@ select
                                    inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
                                    inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
                                    inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                   left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :projectProcessStepId
+                                   left join flow.project_process_step_custom_field_value pcv on pcv.custom_field_group_assignment_id = cfga.id and pcv.project_process_step_id = :sourceId
                                    left join flow.project_process_step_custom_field_value pcv1 on pcv1.custom_field_group_assignment_id = cfga.ancillary_custom_field_group_assignment_id and pcv1.project_process_step_id = pps1.id is true and pcv1.archived is not true
                                    left join flow.project_process_step p on p.id = pcv.project_process_step_id
                           where cfga.custom_field_group_id = cfg.id
@@ -260,12 +260,12 @@ from flow.custom_field_group cfg
          inner join flow.project_process_step pps on pps.process_step_id = cfg.process_step_id
 where cot.object_type_id = :objectTypeId
   and cfg.archived is not true
-  and pps.id = :projectProcessStepId
+  and pps.id = :sourceId
   and cot.company_id = :companyId
 order by cfg.group_order
-  ]]></customFieldValues.getProjectProcessStepFieldValues>
+  ]]></customFieldValues.process_step.getCustomFieldGroupsAndValues>
 
-  <customFieldValues.updateContactCustomFieldValue><![CDATA[
+  <customFieldValues.contact.updateCustomFieldValue><![CDATA[
     update flow.contact_custom_field_value
     set date_value = :dateValue::date,
         timestamp_value = :timestampValue::timestamp,
@@ -277,14 +277,14 @@ order by cfg.group_order
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
-  ]]></customFieldValues.updateContactCustomFieldValue>
+  ]]></customFieldValues.contact.updateCustomFieldValue>
 
-  <customFieldValues.insertContactCustomFieldValue><![CDATA[
+  <customFieldValues.contact.insertCustomFieldValue><![CDATA[
     insert into flow.contact_custom_field_value(contact_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-    values (:contactId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
-  ]]></customFieldValues.insertContactCustomFieldValue>
+    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
+  ]]></customFieldValues.contact.insertCustomFieldValue>
 
-  <customFieldValues.updateOrgCustomFieldValue><![CDATA[
+  <customFieldValues.organization.updateCustomFieldValue><![CDATA[
     update flow.organization_custom_field_value
     set date_value = :dateValue::date,
         timestamp_value = :timestampValue::timestamp,
@@ -296,14 +296,33 @@ order by cfg.group_order
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
-  ]]></customFieldValues.updateOrgCustomFieldValue>
+  ]]></customFieldValues.organization.updateCustomFieldValue>
 
-  <customFieldValues.insertOrgCustomFieldValue><![CDATA[
+  <customFieldValues.organization.insertCustomFieldValue><![CDATA[
     insert into flow.organization_custom_field_value(org_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-    values (:orgId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
-  ]]></customFieldValues.insertOrgCustomFieldValue>
+    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
+  ]]></customFieldValues.organization.insertCustomFieldValue>
 
-  <customFieldValues.getUserFieldValues><![CDATA[
+  <customFieldValues.user.updateCustomFieldValue><![CDATA[
+    update flow.user_custom_field_value
+    set date_value = :dateValue::date,
+        timestamp_value = :timestampValue::timestamp,
+        boolean_value = :booleanValue,
+        text_value = :textValue,
+        numeric_value = :numericValue,
+        int_value = :intValue,
+        int_array_value = :intArrayValue,
+        modified_by_id = :modifiedById,
+        date_modified = now()
+    where id = :id
+  ]]></customFieldValues.user.updateCustomFieldValue>
+
+  <customFieldValues.user.insertCustomFieldValue><![CDATA[
+    insert into flow.user_custom_field_value(user_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
+    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
+  ]]></customFieldValues.user.insertCustomFieldValue>
+
+  <customFieldValues.user.getCustomFieldGroupsAndValues><![CDATA[
     select cfg.id,
        cfg.group_name as "groupName",
        cfg.group_order as "groupOrder",
@@ -352,7 +371,7 @@ order by cfg.group_order
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                      left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :primaryId
+                                      left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :sourceId
                              where cfga.custom_field_group_id = cfg.id
                                and cfga.archived is not true
                                and cfot.archived is not true
@@ -364,28 +383,11 @@ order by cfg.group_order
           and cfg.archived is not true
           and cot.company_id = :companyId
         order by cfg.group_order
-  ]]></customFieldValues.getUserFieldValues>
+  ]]></customFieldValues.user.getCustomFieldGroupsAndValues>
 
-  <customFieldValues.updateUserCustomFieldValue><![CDATA[
-    update flow.user_custom_field_value
-    set date_value = :dateValue::date,
-        timestamp_value = :timestampValue::timestamp,
-        boolean_value = :booleanValue,
-        text_value = :textValue,
-        numeric_value = :numericValue,
-        int_value = :intValue,
-        int_array_value = :intArrayValue,
-        modified_by_id = :modifiedById,
-        date_modified = now()
-    where id = :id
-  ]]></customFieldValues.updateUserCustomFieldValue>
 
-  <customFieldValues.insertUserCustomFieldValue><![CDATA[
-    insert into flow.user_custom_field_value(user_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-    values (:userId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
-  ]]></customFieldValues.insertUserCustomFieldValue>
 
-  <customFieldValues.updateProjectProcessStepCustomFieldValue><![CDATA[
+  <customFieldValues.process_step.updateCustomFieldValue><![CDATA[
     update flow.project_process_step_custom_field_value
     set date_value = :dateValue::date,
         timestamp_value = :timestampValue::timestamp,
@@ -397,20 +399,20 @@ order by cfg.group_order
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
-  ]]></customFieldValues.updateProjectProcessStepCustomFieldValue>
+  ]]></customFieldValues.process_step.updateCustomFieldValue>
 
-  <customFieldValues.insertProjectProcessStepCustomFieldValue><![CDATA[
+  <customFieldValues.process_step.insertCustomFieldValue><![CDATA[
     insert into flow.project_process_step_custom_field_value(project_process_step_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-    values (:projectProcessStepId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, array[ :intArrayValue ]::int[], :createdById)
-  ]]></customFieldValues.insertProjectProcessStepCustomFieldValue>
+    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, array[ :intArrayValue ]::int[], :createdById)
+  ]]></customFieldValues.process_step.insertCustomFieldValue>
 
 
-  <customFieldValues.insertProjectCustomFieldValue><![CDATA[
+  <customFieldValues.project.insertCustomFieldValue><![CDATA[
     insert into flow.project_custom_field_value (project_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, numeric_value, int_value, int_array_value, created_by_id)
-    values (:projectId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
-  ]]></customFieldValues.insertProjectCustomFieldValue>
+    values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
+  ]]></customFieldValues.project.insertCustomFieldValue>
 
-  <customFieldValues.updateProjectCustomFieldValue><![CDATA[
+  <customFieldValues.project.updateCustomFieldValue><![CDATA[
     update flow.project_custom_field_value
     set
       date_value = :dateValue::date,
@@ -423,5 +425,5 @@ order by cfg.group_order
       modified_by_id = :modifiedById,
       date_modified = now()
     where id = :id
-  ]]></customFieldValues.updateProjectCustomFieldValue>
+  ]]></customFieldValues.project.updateCustomFieldValue>
 </sql>

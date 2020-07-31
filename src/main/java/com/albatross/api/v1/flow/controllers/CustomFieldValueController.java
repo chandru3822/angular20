@@ -1,7 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,34 +23,62 @@ public class CustomFieldValueController {
 
   private final CustomFieldValueService customFieldValueService;
 
-  @GetMapping(value = "/contact", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getCustomFieldValues(@RequestParam Long primaryId) {
-    return customFieldValueService.getContactCustomValues(primaryId);
+  // gets for all types
+  @GetMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getCustomFieldValues(@PathVariable Long id) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.CONTACT.toString(), id);
   }
 
-  @GetMapping(value = "/org", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getOrgCustomValues(@RequestParam Long primaryId) {
-    return customFieldValueService.getOrgCustomValues(primaryId);
+  @GetMapping(value = "/org/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getOrgCustomValues(@PathVariable Long id) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.ORGANIZATION.toString(), id);
   }
 
-  @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getUserCustomValues(@RequestParam Long primaryId) {
-    return customFieldValueService.getUserCustomValues(primaryId);
+  @GetMapping(value = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getUserCustomValues(@PathVariable Long id) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.USER.toString(), id);
   }
 
   @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectId(@PathVariable Long projectId) {
-    return new ResponseEntity<>(customFieldValueService.getProjectCustomValues(projectId), HttpStatus.OK);
+  public List<CustomFieldGroup> getFieldsByProjectId(@PathVariable Long projectId) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROJECT.toString(), projectId);
+  }
+
+  @GetMapping(value = "/project/{projectId}/processStep/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectProcessStepId(@PathVariable Long projectId,
+                                                                                @PathVariable Long projectProcessStepId) {
+    return new ResponseEntity<>(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROCESS_STEP.textValue(), projectProcessStepId), HttpStatus.OK);
+  }
+
+  // updates for all object types
+  @PostMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> updateContactCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                      @PathVariable Long id) {
+    return customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT.toString());
+  }
+
+  @PostMapping(value = "/org/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> updateOrgCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                                           @PathVariable Long id) {
+    return customFieldValueService.updateCustomFieldValues(values, id, ObjectType.ORGANIZATION.toString());
+  }
+
+  @PostMapping(value = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> updateUserCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                          @PathVariable Long id) {
+    return customFieldValueService.updateCustomFieldValues(values, id, ObjectType.USER.toString());
   }
 
   @PostMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CustomFieldGroup>> updateProjectCustomFieldValues(@RequestBody List<CustomFieldGroup> groups, @PathVariable Long projectId) {
-    return new ResponseEntity<>(customFieldValueService.updateProjectCustomFieldValues(projectId, groups), HttpStatus.OK);
+  public List<CustomFieldGroup> updateProjectCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                                                               @PathVariable Long projectId) {
+    return customFieldValueService.updateCustomFieldValues(values, projectId, ObjectType.PROJECT.toString());
   }
 
-  @GetMapping(value = "/project/{projectId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectProcessStepId(@PathVariable Long projectId,
-                                                                                @RequestParam Long projectProcessStepId) {
-    return new ResponseEntity<>(customFieldValueService.getProjectProcessStepCustomValues(projectProcessStepId), HttpStatus.OK);
+  @PostMapping(value = "/project/{projectId}/processStep/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> updateProjectProcessStepCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                                                          @PathVariable Long projectId,
+                                                                          @PathVariable Long projectProcessStepId) {
+    return customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
   }
 }

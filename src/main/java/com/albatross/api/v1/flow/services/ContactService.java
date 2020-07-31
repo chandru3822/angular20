@@ -170,12 +170,10 @@ public class ContactService {
       id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
     }
 
-    if(null == contact.getId() || contact.getReloadCoordinates()) {
+    if(null == contact.getId() || (null != contact.getReloadCoordinates() && contact.getReloadCoordinates())) {
       // if new contact or address changed, reload the coordinates
       getContactCoordinates(contact, id);
     }
-
-    handleSavingCustomFieldValues(contact.getCustomFieldGroups(), id);
 
     return getContact(id);
   }
@@ -261,41 +259,6 @@ public class ContactService {
 
     //return project data so the frontend can navigate to project/{id}
     return project.orElse(null);
-  }
-
-  public Boolean fieldHasValue (CustomFieldValue cv) {
-    return null != cv.getId() || null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
-        || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
-  }
-
-  public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long primaryId){
-    User currentUser = securityService.getCurrentUser();
-    for(CustomFieldGroup group : groups) {
-      for(CustomFieldValue cfv : group.getCustomFieldValues()){
-        //todo: only save if something changed
-        if(fieldHasValue(cfv)) {
-          HashMap<String, Object> params = new HashMap<>();
-          params.put("dateValue", cfv.getDateValue());
-          params.put("timestampValue", cfv.getTimestampValue());
-          params.put("booleanValue", cfv.getBooleanValue());
-          params.put("textValue", cfv.getTextValue());
-          params.put("numericValue", cfv.getNumericValue());
-          params.put("intValue", cfv.getIntValue());
-          params.put("intArrayValue", cfv.getIntArrayValue());
-          params.put("contactId", primaryId);
-          params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-
-          if(null != cfv.getId()){
-            params.put("id", cfv.getId());
-            params.put("modifiedById", currentUser.getId());
-            sqlCache.update("customFieldValues.updateContactCustomFieldValue", params);
-          } else {
-            params.put("createdById", currentUser.getId());
-            sqlCache.update("customFieldValues.insertContactCustomFieldValue", params);
-          }
-        }
-      }
-    }
   }
 
   public static class ContactMapper<T> extends BeanPropertyRowMapper<T> {

@@ -35,49 +35,49 @@ public class CustomFieldValueService {
   @Autowired
   ObjectMapper om;
 
-  public List<CustomFieldGroup> getContactCustomValues(Long primaryId) {
+//  public List<CustomFieldGroup> getContactCustomValues(Long primaryId) {
+//
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("primaryId", primaryId);
+//    params.put("objectTypeId", ObjectType.CONTACT.id);
+//
+//    Long companyId = sqlCache.queryForObject("contact.getContactCompanyId", params, Long.class);
+//
+//    params.put("companyId", companyId);
+//    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getContactFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+//
+//    handleCustomListOfValue(results);
+//    return results;
+//
+//  }
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("primaryId", primaryId);
-    params.put("objectTypeId", ObjectType.CONTACT.id);
+//  public List<CustomFieldGroup> getOrgCustomValues(Long primaryId) {
+//    User user = securityService.getCurrentUser();
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("companyId", user.getCompanyId());
+//    params.put("primaryId", primaryId);
+//    params.put("objectTypeId", ObjectType.ORGANIZATION.id);
+//
+//    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getOrgFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+//
+//    handleCustomListOfValue(results);
+//
+//    return results;
+//  }
 
-    Long companyId = sqlCache.queryForObject("contact.getContactCompanyId", params, Long.class);
-
-    params.put("companyId", companyId);
-    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getContactFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
-
-    handleCustomListOfValue(results);
-    return results;
-
-  }
-
-  public List<CustomFieldGroup> getOrgCustomValues(Long primaryId) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("primaryId", primaryId);
-    params.put("objectTypeId", ObjectType.ORGANIZATION.id);
-
-    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getOrgFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
-
-    handleCustomListOfValue(results);
-
-    return results;
-  }
-
-  public List<CustomFieldGroup> getUserCustomValues(Long primaryId) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("primaryId", primaryId);
-    params.put("objectTypeId", ObjectType.USER.id);
-
-    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getUserFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
-
-    handleCustomListOfValue(results);
-
-    return results;
-  }
+//  public List<CustomFieldGroup> getUserCustomValues(Long primaryId) {
+//    User user = securityService.getCurrentUser();
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("companyId", user.getCompanyId());
+//    params.put("primaryId", primaryId);
+//    params.put("objectTypeId", ObjectType.USER.id);
+//
+//    List<CustomFieldGroup> results = sqlCache.query("customFieldValues.getUserFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+//
+//    handleCustomListOfValue(results);
+//
+//    return results;
+//  }
 
   public void handleCustomListOfValue (List<CustomFieldGroup> results) {
     for(CustomFieldGroup cfg : results) {
@@ -96,70 +96,110 @@ public class CustomFieldValueService {
     }
   }
 
-  public List<CustomFieldGroup> getProjectCustomValues(Long projectId) {
-    User user = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("objectTypeId", ObjectType.PROJECT.id);
-    params.put("processStepTypeId", ObjectType.PROCESS_STEP.id);
-    params.put("projectId", projectId);
+//  public List<CustomFieldGroup> getProjectCustomValues(Long projectId) {
+//    User user = securityService.getCurrentUser();
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("companyId", user.getCompanyId());
+//    params.put("objectTypeId", ObjectType.PROJECT.id);
+//    params.put("processStepTypeId", ObjectType.PROCESS_STEP.id);
+//    params.put("projectId", projectId);
+//
+//    List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+//
+//    handleCustomListOfValue(fieldGroups);
+//
+//    return fieldGroups;
+//  }
 
-    List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+//  public List<CustomFieldGroup> updateProjectCustomFieldValues(Long projectId, List<CustomFieldGroup> groups) {
+//    User currentUser = securityService.getCurrentUser();
+//    for(CustomFieldGroup group : groups) {
+//      for(CustomFieldValue cfv : group.getCustomFieldValues()){
+//        //todo: only save if something changed
+//        if(fieldHasValue(cfv)) {
+//          HashMap<String, Object> params = new HashMap<>();
+//          params.put("dateValue", cfv.getDateValue());
+//          params.put("timestampValue", cfv.getTimestampValue());
+//          params.put("booleanValue", null != cfv.getBooleanValue() ? cfv.getBooleanValue() : false);
+//          params.put("textValue", cfv.getTextValue());
+//          params.put("numericValue", cfv.getNumericValue());
+//          params.put("intValue", cfv.getIntValue());
+//          params.put("intArrayValue", cfv.getIntArrayValue());
+//          params.put("projectId", projectId);
+//          params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+//
+//          if(null != cfv.getId()){
+//            params.put("id", cfv.getId());
+//            params.put("modifiedById", currentUser.getId());
+//            sqlCache.update("customFieldValues.updateProjectCustomFieldValue", params);
+//          } else {
+//            params.put("createdById", currentUser.getId());
+//            sqlCache.update("customFieldValues.insertProjectCustomFieldValue", params);
+//          }
+//        }
+//      }
+//    }
+//    return getProjectCustomValues(projectId);
+//  }
 
-    handleCustomListOfValue(fieldGroups);
-
-    return fieldGroups;
-  }
-
-  public List<CustomFieldGroup> updateProjectCustomFieldValues(Long projectId, List<CustomFieldGroup> groups) {
+  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, String objectType) {
     User currentUser = securityService.getCurrentUser();
-    for(CustomFieldGroup group : groups) {
-      for(CustomFieldValue cfv : group.getCustomFieldValues()){
-        //todo: only save if something changed
-        if(fieldHasValue(cfv)) {
-          HashMap<String, Object> params = new HashMap<>();
-          params.put("dateValue", cfv.getDateValue());
-          params.put("timestampValue", cfv.getTimestampValue());
-          params.put("booleanValue", null != cfv.getBooleanValue() ? cfv.getBooleanValue() : false);
-          params.put("textValue", cfv.getTextValue());
-          params.put("numericValue", cfv.getNumericValue());
-          params.put("intValue", cfv.getIntValue());
-          params.put("intArrayValue", cfv.getIntArrayValue());
-          params.put("projectId", projectId);
-          params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+    for(CustomFieldValue cfv : values) {
+      //if the field came here it was dirty and should always be saved
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("dateValue", cfv.getDateValue());
+      params.put("timestampValue", cfv.getTimestampValue());
+      params.put("booleanValue", null != cfv.getBooleanValue() ? cfv.getBooleanValue() : false);
+      params.put("textValue", cfv.getTextValue());
+      params.put("numericValue", cfv.getNumericValue());
+      params.put("intValue", cfv.getIntValue());
+      params.put("intArrayValue", cfv.getIntArrayValue());
+      params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
+      params.put("sourceId", sourceId);
 
-          if(null != cfv.getId()){
-            params.put("id", cfv.getId());
-            params.put("modifiedById", currentUser.getId());
-            sqlCache.update("customFieldValues.updateProjectCustomFieldValue", params);
-          } else {
-            params.put("createdById", currentUser.getId());
-            sqlCache.update("customFieldValues.insertProjectCustomFieldValue", params);
-          }
-        }
+      String sqlPrefix = "customFieldValues." + objectType;
+
+      if(null != cfv.getId()){
+        params.put("id", cfv.getId());
+        params.put("modifiedById", currentUser.getId());
+        sqlCache.update(sqlPrefix + ".updateCustomFieldValue", params);
+      } else {
+        params.put("createdById", currentUser.getId());
+        sqlCache.update(sqlPrefix + ".insertCustomFieldValue", params);
       }
     }
-    return getProjectCustomValues(projectId);
+    return getCustomFieldGroupsAndValues(objectType, sourceId);
   }
 
-  public List<CustomFieldGroup> getProjectProcessStepCustomValues(Long projectProcessStepId) {
+  public List<CustomFieldGroup> getCustomFieldGroupsAndValues(String objectType, Long id) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
-    params.put("projectProcessStepId", projectProcessStepId);
+    params.put("objectTypeId", ObjectType.get(objectType).id);
+    params.put("sourceId", id);
 
-    List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectProcessStepFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+    String sqlPrefix = "customFieldValues." + objectType;
+
+    List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix + ".getCustomFieldGroupsAndValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
     handleCustomListOfValue(fieldGroups);
 
     return fieldGroups;
   }
 
-  private Boolean fieldHasValue (CustomFieldValue cv) {
-    return null != cv.getId() || null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
-      || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
-  }
+//  public List<CustomFieldGroup> getProjectProcessStepCustomValues(Long projectProcessStepId) {
+//    User user = securityService.getCurrentUser();
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("companyId", user.getCompanyId());
+//    params.put("objectTypeId", ObjectType.PROCESS_STEP.id);
+//    params.put("projectProcessStepId", projectProcessStepId);
+//
+//    List<CustomFieldGroup> fieldGroups = sqlCache.query("customFieldValues.getProjectProcessStepFieldValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+//
+//    handleCustomListOfValue(fieldGroups);
+//
+//    return fieldGroups;
+//  }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
