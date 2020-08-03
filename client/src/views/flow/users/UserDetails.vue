@@ -1,8 +1,8 @@
 <template>
-  <v-container>
+  <v-container py-0>
     <div v-if="user.id">
       <v-row>
-        <v-col cols="12" md="6" class="text-left">
+        <v-col cols="12" md="6" class="text-left" style="padding-top: 0">
           <div>
             <v-toolbar color="transparent" class="elevation-0">
               <v-toolbar-title>Summary</v-toolbar-title>
@@ -12,6 +12,14 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
+              <v-select v-model="user.companyUserStatusTypeId"
+                        :items="companyUserStatusTypes"
+                        label="User Status"
+                        placeholder="Select a status..."
+                        item-text="userStatusType"
+                        item-value="id"
+                        autocomplete="off">
+              </v-select>
               <v-text-field text
                             label="Phone"
                             placeholder=" "
@@ -54,7 +62,7 @@
             </v-card>
           </div>
         </v-col>
-        <v-col cols="12" md="6" class="text-left">
+        <v-col cols="12" md="6" class="text-left" style="padding-top: 0">
           <NotesAndActivity :showNotes="true" :showActivity="false"
                             :notes="notes" :primaryId="parseInt(userId)"
                             type="User"
@@ -101,7 +109,8 @@
         owners: [],
         userId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
-        changeOwner: false
+        changeOwner: false,
+        companyUserStatusTypes: [],
       }
     },
     created () {
@@ -109,6 +118,7 @@
       this.getCompanies()
       this.getCustomFieldGroups()
       this.getNotes()
+      this.getCompanyUserStatusTypes()
     },
     methods: {
       async saveUser() {
@@ -186,7 +196,31 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async getCompanyUserStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/user/statuses`)
+          this.companyUserStatusTypes = data
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveUserStatus () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await postRequest(`/user/${this.userId}/status/${this.user.companyUserStatusTypeId}`)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving User Status')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
   }
 </script>

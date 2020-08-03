@@ -137,7 +137,9 @@ public class UserService {
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
-      //todo: handle saving user_companies here as well
+      //save user status
+      saveUserStatus(id, user.getCompanyUserStatusTypeId());
+      //save user companies
       handleSavingUserCompanies(user.getCompanies(), user.getId());
     } else {
       //get the default password
@@ -156,7 +158,11 @@ public class UserService {
       params.put("id", id);
       params.put("isDefault", true);
       sqlCache.update("user.insertUserCompany", params);
+      //insert a row into user_status
+      saveUserStatus(id, user.getCompanyUserStatusTypeId());
     }
+
+
 
     return getUser(id);
   }

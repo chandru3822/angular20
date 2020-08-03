@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 public class Position {
 
-  private Long id, orgTypeId;
+  private Long id, orgTypeId, orgLevelId, level;
   private String position, orgType;
   private Boolean archived, schedulable, availableToChildren;
 

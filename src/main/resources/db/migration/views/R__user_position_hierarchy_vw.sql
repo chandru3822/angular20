@@ -8,7 +8,9 @@ select up.user_id,
                                 'orgId', h.org_id,
                                 'orgName', h.org_name,
                                 'positionLevel', h.position_level,
-                                'orgLevelId', h.org_level_id
+                                'parentOrgId', h.parent_org_id,
+                                'orgLevelId', h.org_level_id,
+                                'level', h.level
                             ) order by h.org_level_id)::jsonb
         from flow.user_org_hierarchy(up.org_id) as h) as hierarchy
 from flow.user_position up

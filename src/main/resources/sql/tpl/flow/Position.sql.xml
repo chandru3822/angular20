@@ -1,18 +1,22 @@
 <sql>
   <position.getAllForCompany><![CDATA[
     select p.id,
-           p.position,
-           p.id as position_id,
-           p.org_type_id,
-           ot.org_type,
-           p.archived,
-           p.schedulable,
-           p.available_to_children
+       p.position,
+       p.id as position_id,
+       p.org_type_id,
+       ot.org_type,
+       p.archived,
+       p.schedulable,
+       p.available_to_children,
+       ot.org_level_id,
+       ol.level
     from flow.position p
-        inner join flow.org_type ot on ot.id = p.org_type_id
+             inner join flow.org_type ot on ot.id = p.org_type_id
+             inner join flow.org_level ol on ol.id = ot.org_level_id
     where ot.company_id = :companyId
       and p.archived is not true
     order by p.position
+
   ]]></position.getAllForCompany>
 
   <position.getSchedulingPositions><![CDATA[
