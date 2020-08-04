@@ -426,4 +426,28 @@ order by cfg.group_order
       date_modified = now()
     where id = :id
   ]]></customFieldValues.project.updateCustomFieldValue>
+
+  <customFieldValues.project.getCompanyId><![CDATA[
+    select c.company_id
+    from flow.project p
+    inner join flow.contact c on c.id = p.contact_id
+    where p.id = :sourceId
+  ]]></customFieldValues.project.getCompanyId>
+  <customFieldValues.process_step.getCompanyId><![CDATA[
+    select c.company_id
+    from flow.project_process_step pps
+    inner join flow.project p on p.id = pps.project_id
+    inner join flow.contact c on c.id = p.contact_id
+    where pps.id = :sourceId
+  ]]></customFieldValues.process_step.getCompanyId>
+  <customFieldValues.organization.getCompanyId><![CDATA[
+    select company_id
+    from flow.org
+    where id = :sourceId
+  ]]></customFieldValues.organization.getCompanyId>
+  <customFieldValues.contact.getCompanyId><![CDATA[
+    select company_id
+    from flow.contact
+    where id = :sourceId
+  ]]></customFieldValues.contact.getCompanyId>
 </sql>
