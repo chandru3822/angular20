@@ -89,8 +89,13 @@ public class CustomFieldValueService {
     String sqlPrefix = "customFieldValues." + objectType;
 
 //    note: this company id needs to be the company_id of the object (contact, project, org, process_step, user) so that users in the parent can see the custom field groups still
-    Long companyId = sqlCache.queryForObject(sqlPrefix + ".getCompanyId", params, Long.class);
-    params.put("companyId", objectType.equals("user") ? user.getCompanyId() : companyId);
+    Long companyId;
+    if(objectType.equals("user")) {
+      companyId = user.getCompanyId();
+    } else {
+      companyId = sqlCache.queryForObject(sqlPrefix + ".getCompanyId", params, Long.class);
+    }
+    params.put("companyId", companyId);
 
     List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix + ".getCustomFieldGroupsAndValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
