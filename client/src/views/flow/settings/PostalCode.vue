@@ -10,7 +10,7 @@
           </v-text-field>
           <v-text-field text class="d-inline-block mt-4 ml-3"
                         type="text"
-                        label="DTF"
+                        label="Distribution Time Frame"
                         v-model="zone.distributionTimeFrameDays">
           </v-text-field>
           <v-btn text color="primaryCustom" @click="saveZoneInfo()">
@@ -19,14 +19,11 @@
         </div>
         <div v-else>
           {{zone.zoneName}}
-          <v-tooltip top>
-            <template v-slot:activator="{ on }">
-              <div class="dtf" v-on="on">
-                DTF: {{zone.distributionTimeFrameDays}} days
-              </div>
-            </template>
-            <span>Distribution Time Frame</span>
-          </v-tooltip>
+
+          <div class="dtf">
+            Distribution Time Frame: {{zone.distributionTimeFrameDays}} days
+          </div>
+
 
         </div>
       </v-toolbar-title>
