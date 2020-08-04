@@ -413,18 +413,24 @@
             <th class="funnel-th">WEEK TO DATE</th>
             <th class="funnel-th">
               <div v-show="showApptsCreatedPipelineCustomDates" class="custom-dates-container">
-                <v-menu v-model="appts_created_pipeline_menu1" transition="scale-transition" offset-y min-width="290px">
+                <v-menu v-model="appts_created_pipeline_menu1" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1" readonly outlined dense v-on="on"></v-text-field>
+                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
+                                  readonly outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt1" @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
+                  <v-date-picker v-model="appts_created_pipeline_dt1"
+                                 @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
-                <v-menu v-model="appts_created_pipeline_menu2" transition="scale-transition" offset-y min-width="290px">
+                <v-menu v-model="appts_created_pipeline_menu2" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2" readonly outlined dense v-on="on"></v-text-field>
+                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
+                                  readonly outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt2" @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
+                  <v-date-picker v-model="appts_created_pipeline_dt2"
+                                 @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
 
@@ -660,35 +666,41 @@
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
             <th class="funnel-th view-btns">
-              <v-btn class="funnel-btn" @click="viewSelected('standard')"
-                     :class="{'white--text': viewSelect === 'standard', 'elevation-2': viewSelect !== 'standard'}"
-                     :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
-                Standard View
-              </v-btn>
-              <v-btn class="funnel-btn" @click="viewSelected('apptDateCohort')"
-                     :class="{'white--text': viewSelect === 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
-                     :color="viewSelect === 'apptDateCohort' ? 'primaryCustom' : 'secondaryCustom'">
-                Appt Date Cohort
-              </v-btn>
+              <div class="view-btns-container">
+                <v-btn class="funnel-btn" @click="viewSelected('standard')"
+                       :class="{'white--text': viewSelect === 'standard', 'elevation-2': viewSelect !== 'standard'}"
+                       :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
+                  Standard View
+                </v-btn>
+                <v-btn class="funnel-btn" @click="viewSelected('apptDateCohort')"
+                       :class="{'white--text': viewSelect === 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
+                       :color="viewSelect === 'apptDateCohort' ? 'primaryCustom' : 'secondaryCustom'">
+                  Appt Date Cohort
+                </v-btn>
+              </div>
             </th>
             <th class="funnel-th">TODAY</th>
-<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; Today percentages &ndash;&gt;-->
             <th class="funnel-th">WEEK TO DATE</th>
-<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; WTD percentages &ndash;&gt;-->
             <th class="funnel-th">
               <div v-show="showApptsToFdcPipelineCustomDates" class="custom-dates-container">
-                <v-menu v-model="appts_to_fdc_pipeline_menu1" transition="scale-transition" offset-y min-width="290px">
+                <v-menu v-model="appts_to_fdc_pipeline_menu1" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1" readonly outlined dense v-on="on"></v-text-field>
+                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
+                                  outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1" @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1"
+                                 @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
-                <v-menu v-model="appts_to_fdc_pipeline_menu2" transition="scale-transition" offset-y min-width="290px">
+                <v-menu v-model="appts_to_fdc_pipeline_menu2" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2" readonly outlined dense v-on="on"></v-text-field>
+                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
+                                  outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2" @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2"
+                                 @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
 
@@ -708,7 +720,6 @@
                 </v-list>
               </v-menu>
             </th>
-<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; Custom date range percentages &ndash;&gt;-->
           </tr>
           <!-- FUNNEL ROWS -->
           <tr class="funnel-tr" v-for="line in apptsToFdcPipelineData" :key="line.id"
@@ -1082,15 +1093,18 @@
         value: 'MTD'
       },
       showApptsToFdcPipelineCustomDates: false,
-      // viewSelect: 'standard',
-      viewSelect: 'apptDateCohort',
+      viewSelect: 'standard',
       appts_created_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
+      appts_created_pipeline_dt1_formatted: moment().startOf('month').format('M/D/YY'),
       appts_created_pipeline_menu1: false,
       appts_created_pipeline_dt2: moment().format('YYYY-MM-DD'),
+      appts_created_pipeline_dt2_formatted: moment().format('M/D/YY'),
       appts_created_pipeline_menu2: false,
       appts_to_fdc_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
+      appts_to_fdc_pipeline_dt1_formatted: moment().startOf('month').format('M/D/YY'),
       appts_to_fdc_pipeline_menu1: false,
       appts_to_fdc_pipeline_dt2: moment().format('YYYY-MM-DD'),
+      appts_to_fdc_pipeline_dt2_formatted: moment().format('M/D/YY'),
       appts_to_fdc_pipeline_menu2: false
     }),
     computed: {
@@ -1128,6 +1142,18 @@
         if (!this.ironmanLoaded || !this.rankingTablesLoaded) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
+      },
+      appts_created_pipeline_dt1 () {
+        this.appts_created_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt1)
+      },
+      appts_created_pipeline_dt2 () {
+        this.appts_created_pipeline_dt2_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt2)
+      },
+      appts_to_fdc_pipeline_dt1 () {
+        this.appts_to_fdc_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_to_fdc_pipeline_dt1)
+      },
+      appts_to_fdc_pipeline_dt2 () {
+        this.appts_to_fdc_pipeline_dt2_formatted = this.formatFunnelDate(this.appts_to_fdc_pipeline_dt2)
       }
     },
     methods: {
@@ -1606,6 +1632,18 @@
         }
       },
 
+      formatFunnelDate (date) {
+        if (!date) return null
+
+        return moment(date).format('M/D/YY')
+      },
+
+      parseFunnelDate (date) {
+        if (!date) return null
+
+        return moment(date, 'M/D/YY').format('YYYY-MM-DD')
+      },
+
       loadFunnels () {
         if (this.apptsCreatedPipelineData && this.apptsCreatedPipelineData.length === 0) {
           this.loadSources()
@@ -1712,7 +1750,18 @@
         getRequestWithParams('/closerDashboard/funnel/' + this.viewSelect, {params}, 'blueraven').then(res => {
           this.apptsToFdcPipelineData = orderBy(res.data, row => row.display_order)
 
-          let todayUpperNumerator, todayUpperDenominator, wtdUpperNumerator, wtdUpperDenominator, customDateRangeUpperNumerator, customDateRangeUpperDenominator, todayLowerNumerator, todayLowerDenominator, wtdLowerNumerator, wtdLowerDenominator, customDateRangeLowerNumerator, customDateRangeLowerDenominator
+          let todayUpperNumerator = 0
+          let todayUpperDenominator = 0
+          let wtdUpperNumerator = 0
+          let wtdUpperDenominator = 0
+          let customDateRangeUpperNumerator = 0
+          let customDateRangeUpperDenominator = 0
+          let todayLowerNumerator = 0
+          let todayLowerDenominator = 0
+          let wtdLowerNumerator = 0
+          let wtdLowerDenominator = 0
+          let customDateRangeLowerNumerator = 0
+          let customDateRangeLowerDenominator = 0
 
           this.apptsToFdcPipelineData.forEach(row => {
             if (row.id === 17) {
@@ -1737,29 +1786,12 @@
             }
           })
 
-          if (todayUpperNumerator && todayUpperDenominator && todayUpperDenominator !== 0) {
-            this.todayUpperPercentage = this.getPercentage(todayUpperNumerator, todayUpperDenominator)
-          }
-
-          if (wtdUpperNumerator && wtdUpperDenominator && wtdUpperDenominator !== 0) {
-            this.wtdUpperPercentage = this.getPercentage(wtdUpperNumerator, wtdUpperDenominator)
-          }
-
-          if (customDateRangeUpperNumerator && customDateRangeUpperDenominator && customDateRangeUpperDenominator !== 0) {
-            this.customDateRangeUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
-          }
-
-          if (todayLowerNumerator && todayLowerDenominator && todayLowerDenominator !== 0) {
-            this.todayLowerPercentage = this.getPercentage(todayLowerNumerator, todayLowerDenominator)
-          }
-
-          if (wtdLowerNumerator && wtdLowerDenominator && wtdLowerDenominator !== 0) {
-            this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
-          }
-
-          if (customDateRangeLowerNumerator && customDateRangeLowerDenominator && customDateRangeLowerDenominator !== 0) {
-            this.customDateRangeLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
-          }
+          this.todayUpperPercentage = this.getPercentage(todayUpperNumerator, todayUpperDenominator)
+          this.wtdUpperPercentage = this.getPercentage(wtdUpperNumerator, wtdUpperDenominator)
+          this.customDateRangeUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
+          this.todayLowerPercentage = this.getPercentage(todayLowerNumerator, todayLowerDenominator)
+          this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
+          this.customDateRangeLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
 
           if (this.apptsCreatedPipelineData.length > 0) {
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1768,7 +1800,11 @@
       },
 
       getPercentage (numerator, denominator) {
-        return Math.round((numerator / denominator) * 100)
+        if (denominator !== 0) {
+          return Math.round((numerator / denominator) * 100)
+        } else {
+          return 0
+        }
       },
 
       async districtLoad (preSelectLists) {
@@ -2567,26 +2603,38 @@
           display: flex;
           flex-flow: row wrap;
           justify-content: center;
-          align-items: flex-end;
+          margin: 0 auto;
+          max-width: 65px;
 
           .custom-date-input {
-            font-size: 10px;
-            text-align: center;
-            border: 1px solid #aaa;
-            box-shadow: none;
-            margin: 0 0 3px 0;
-            padding: 6px 4px 6px 6px;
-            width: 55px;
-            height: 15px;
+            font-size: 8px;
+            margin-bottom: 2px;
+            max-width: 40px;
+            height: 12px;
 
-            .v-input__control .v-input__slot {
-              width: 55px !important;
-              height: 15px !important;
+            ::v-deep .v-input__control {
+              max-width: 40px;
+              height: 14px;
+            }
+
+            ::v-deep .v-input__slot {
+              padding: 0;
+              width: 40px;
+              height: 12px;
+              min-height: 12px;
+            }
+
+            ::v-deep .v-text-field__slot input {
+              text-align: center;
+            }
+
+            ::v-deep .v-text-field__details {
+              display: none;
             }
           }
 
           .custom-date-span {
-            margin: 0 5px;
+            margin: 0 2px 3px 2px;
           }
         }
 
@@ -2739,10 +2787,11 @@
           background-color: #e9f2ff;
         }
 
-        .view-btns {
+        .view-btns-container {
           display: flex;
           flex-flow: row wrap;
-          justify-content: flex-start;
+          justify-content: center;
+          align-items: center;
 
           .funnel-btn {
             text-transform: capitalize;
@@ -2763,21 +2812,38 @@
           display: flex;
           flex-flow: row wrap;
           justify-content: center;
-          align-items: flex-end;
+          margin: 0 auto;
+          max-width: 65px;
 
           .custom-date-input {
-            font-size: 10px;
-            text-align: center;
-            border: 1px solid #aaa;
-            box-shadow: none;
-            margin: 0 0 3px 0;
-            padding: 6px 4px 6px 6px;
-            width: 55px;
-            height: 15px;
+            font-size: 8px;
+            margin-bottom: 2px;
+            max-width: 40px;
+            height: 12px;
+
+            ::v-deep .v-input__control {
+              max-width: 40px;
+              height: 14px;
+            }
+
+            ::v-deep .v-input__slot {
+              padding: 0;
+              width: 40px;
+              height: 12px;
+              min-height: 12px;
+            }
+
+            ::v-deep .v-text-field__slot input {
+              text-align: center;
+            }
+
+            ::v-deep .v-text-field__details {
+              display: none;
+            }
           }
 
           .custom-date-span {
-            margin: 0 5px;
+            margin: 0 2px 3px 2px;
           }
         }
 
@@ -2830,7 +2896,6 @@
           flex-flow: row nowrap;
           align-items: center;
           padding: 0 5px;
-          margin-left: 15%;
         }
 
         .checked-in-column-top,
@@ -2856,7 +2921,7 @@
         .checked-in-column-center {
           border-top: none;
           border-bottom: none;
-          padding: 11.3px 2px;
+          padding: 11.4px 2px;
         }
 
         .checked-in-column-bottom {
@@ -2868,7 +2933,7 @@
         }
 
         .checked-in-column-line-overlap {
-          padding: 11.8px 2px;
+          padding: 11.9px 2px;
           margin-top: -1px;
         }
 
@@ -2966,12 +3031,21 @@
       }
     }
 
+    #appts-created-pipeline-container {
+     .funnel-container {
+       .funnel-table {
+         .custom-dates-container {
+           max-width: 120px;
+         }
+       }
+     }
+    }
+
     #appts-to-fdc-pipeline-container {
       .funnel-container {
         .funnel-table {
-          .view-btns {
+          .view-btns-container {
             flex-flow: row nowrap;
-            align-items: center;
 
             .funnel-btn {
               font-size: 7px;
@@ -2980,8 +3054,12 @@
             }
           }
 
+          .custom-dates-container {
+            max-width: 120px;
+          }
+
           .funnel-data-container {
-            margin-left: 20%;
+            margin-left: 13%;
           }
         }
       }
@@ -3238,6 +3316,33 @@
             padding: 5px;
           }
 
+          .custom-dates-container {
+            justify-content: space-between;
+            max-width: 110px;
+
+            .custom-date-input {
+              font-size: 10px;
+              margin-bottom: 3px;
+              max-width: 50px;
+              height: 15px;
+
+              ::v-deep .v-input__control {
+                max-width: 50px;
+                height: 15px;
+              }
+
+              ::v-deep .v-input__slot {
+                width: 50px;
+                height: 15px;
+                min-height: 15px;
+              }
+            }
+
+            .custom-date-span {
+              margin: -2px 2px 0 2px;
+            }
+          }
+
           .funnel-th,
           .funnel-td {
             font-size: 12px;
@@ -3320,7 +3425,7 @@
             }
           }
 
-          .view-btns {
+          .view-btns-container {
             .funnel-btn {
               font-size: 10px;
               margin: 0 10px 0 2px;
@@ -3329,28 +3434,33 @@
             }
           }
 
-          // TODO: Set this up
-          /*.custom-dates-container {*/
-          /*  display: flex;*/
-          /*  flex-flow: row wrap;*/
-          /*  justify-content: center;*/
-          /*  align-items: flex-end;*/
+          .custom-dates-container {
+            justify-content: space-between;
+            margin-bottom: 3px;
+            max-width: 110px;
 
-          /*  .custom-date-input {*/
-          /*    font-size: 10px;*/
-          /*    text-align: center;*/
-          /*    border: 1px solid #aaa;*/
-          /*    box-shadow: none;*/
-          /*    margin: 0 0 3px 0;*/
-          /*    padding: 6px 4px 6px 6px;*/
-          /*    width: 55px;*/
-          /*    height: 15px;*/
-          /*  }*/
-          /*  */
-          /*  .custom-date-span {*/
-          /*    margin: 0 5px;*/
-          /*  }*/
-          /*}*/
+            .custom-date-input {
+              font-size: 10px;
+              margin-bottom: 3px;
+              max-width: 50px;
+              height: 15px;
+
+              ::v-deep .v-input__control {
+                max-width: 50px;
+                height: 15px;
+              }
+
+              ::v-deep .v-input__slot {
+                width: 50px;
+                height: 15px;
+                min-height: 15px;
+              }
+            }
+
+            .custom-date-span {
+              margin: -2px 2px 0 2px;
+            }
+          }
 
           .funnel-th {
             font-size: 12px;
@@ -3380,7 +3490,7 @@
           }
 
           .funnel-data-container {
-            margin-left: 5%;
+            margin-left: 3%;
           }
 
           .checked-in-column-td {
@@ -3571,6 +3681,14 @@
             padding: 10px;
           }
 
+          .custom-dates-container {
+            max-width: 125px;
+
+            .custom-date-span {
+              margin: -3px 2px 0 2px;
+            }
+          }
+
           .funnel-th,
           .funnel-td {
             font-size: 14px;
@@ -3641,12 +3759,20 @@
             }
           }
 
-          .view-btns {
+          .view-btns-container {
             .funnel-btn {
               font-size: 12px;
               margin: 0 5px;
               width: 175px;
               max-width: none;
+            }
+          }
+
+          .custom-dates-container {
+            max-width: 125px;
+
+            .custom-date-span {
+              margin: -3px 2px 0 2px;
             }
           }
 
@@ -3796,6 +3922,31 @@
 
       .funnel-container {
         .funnel-table {
+          .custom-dates-container {
+            max-width: 143px;
+
+            .custom-date-input {
+              font-size: 12px;
+              max-width: 60px;
+              height: 20px;
+
+              ::v-deep .v-input__control {
+                max-width: 60px;
+                height: 20px;
+              }
+
+              ::v-deep .v-input__slot {
+                width: 60px;
+                height: 20px;
+                min-height: 20px;
+              }
+            }
+
+            .custom-date-span {
+              margin: -1px 4px 0 4px;
+            }
+          }
+
           .funnel-line-name {
             padding-left: 135px;
           }
@@ -3834,10 +3985,35 @@
             }
           }
 
-          .view-btns {
+          .view-btns-container {
             .funnel-btn {
               font-size: 14px;
               width: 200px;
+            }
+          }
+
+          .custom-dates-container {
+            max-width: 143px;
+
+            .custom-date-input {
+              font-size: 12px;
+              max-width: 60px;
+              height: 20px;
+
+              ::v-deep .v-input__control {
+                max-width: 60px;
+                height: 20px;
+              }
+
+              ::v-deep .v-input__slot {
+                width: 60px;
+                height: 20px;
+                min-height: 20px;
+              }
+            }
+
+            .custom-date-span {
+              margin: -1px 4px 0 4px;
             }
           }
 
@@ -3967,8 +4143,8 @@
             }
           }
 
-          .view-btns {
-            .v-btn {
+          .view-btns-container {
+            .funnel-btn {
               margin: 0 10px;
             }
           }
