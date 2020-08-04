@@ -68,4 +68,13 @@
             where p.id = :projectId
         ]]>
     </installAgreement.getProposalNumbers>
+
+    <installAgreement.getLoanAmountFromLog>
+        <![CDATA[
+            SELECT loan_amount
+            from brs.proposal_log_history
+            where project_id::integer = :projectId::integer
+            and proposal_nbr::integer = :proposalNbr::integer
+        ]]>
+    </installAgreement.getLoanAmountFromLog>
 </sql>
