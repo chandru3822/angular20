@@ -23,16 +23,18 @@
                           label="Positions"
                           item-text="position"
                           item-value="id"
-                          @input="populateHierarchy()"/>
+                          @input="populateHierarchy(newPosition, true)"/>
           <div v-if="newPositionHierarchyPopulated">
             <div v-for="(f, index) in filters" :key="index">
-              <v-autocomplete v-if="newPosition.keyedHierarchy[f.orgLevelId]"
+              <v-autocomplete v-if="newPosition.keyedHierarchy && newPosition.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, newPosition)"
                 v-model="newPosition.keyedHierarchy[f.orgLevelId]['orgId']"
                 :items="f.orgs"
                 :label="f.levelName"
                 item-value="id"
-                @input="resetLowerLevelOrgs(newPosition, f)"
               >
+                <template slot="selection" slot-scope="{ item, index }">
+                  {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                </template>
                 <template slot='item' slot-scope='{ item }'>
                   {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
                 </template>
@@ -40,7 +42,7 @@
             </div>
           </div>
           <v-btn color="secondary" class="mr-2"
-                 @click="[addNew = !addNew]">Cancel</v-btn>
+                 @click="[newPosition = [], addNew = !addNew]">Cancel</v-btn>
           <v-btn color="primary" class="white--text mr-2"
                  :disabled="!newPosition.startDate || !newPosition.positionId"
                  @click="savePosition(newPosition)">Add</v-btn>
@@ -76,8 +78,8 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': userPositions.indexOf(item) % 2}">
-              <h3>Edit Position</h3>
+            <td :colspan="headers.length" class="pa-4 text-left" :class="{'shaded-row': userPositions.indexOf(item) % 2}">
+              <h3 class="mb-3">Edit Position</h3>
               <DatetimePickerInput
                 v-model="item.startDate"
                 :timezone="timezone"
@@ -95,18 +97,27 @@
               <v-autocomplete v-model="item.positionId"
                               :items="positions"
                               label="Positions"
+                              @input="populateHierarchy(item, false)"
                               item-text="position"
                               item-value="id"/>
+              <label>Primary:</label>
+              <input type="checkbox" class="ml-3 mb-4" v-model="item.primaryFlag" :readonly="item.primary" :disabled="item.primary">
               <div v-for="(f, index) in filters" :key="index">
-                <v-select
-                          v-if="item.keyedHierarchy[f.orgLevelId]"
+                <v-autocomplete
+                          v-if="item.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, item)"
                           v-model="item.keyedHierarchy[f.orgLevelId]['orgId']"
-                          :items="filteredOrgs(item, f)"
+                          :items="f.orgs"
                           :label="f.levelName"
                           item-text="orgName"
                           item-value="id"
-                          @input="resetLowerLevelOrgs(item, f)"
-                ></v-select>
+                >
+                  <template slot="selection" slot-scope="{ item, index }">
+                    {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                  </template>
+                  <template slot='item' slot-scope='{ item }'>
+                    {{ item.orgName }} <span v-if="item.showType">&nbsp- {{ item.orgType }}</span>
+                  </template>
+                </v-autocomplete>
               </div>
               <v-btn color="primary" class="white--text mr-2"
                      :disabled="validatePositionFields(item)"
@@ -126,7 +137,7 @@
                 {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
               <td>
-                <v-btn text v-if="!expanded.includes(item)" @click="handleExpand(item, true)">
+                <v-btn text v-if="!expanded.includes(item)" @click="[handleExpand(item, true), item.primary = item.primaryFlag]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
@@ -221,13 +232,14 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      populateHierarchy() {
-        let selectedPosition = this.positions.find(p => p.id === this.newPosition.positionId)
+      populateHierarchy(item, isNew) {
+        this.newPositionHierarchyPopulated = false
+        let selectedPosition = this.positions.find(p => p.id === item.positionId)
         // level = selectedPosition.level
-        this.newPosition.hierarchy = []
+        item.hierarchy = []
+        //push a hierarchy item in for the selected level
         this.filters.forEach(f => {
           if(f.level === selectedPosition.level) {
-          // if(f.level <= selectedPosition.level) {
             let obj = {
               level: f.level,
               orgLevelId: f.orgLevelId,
@@ -236,11 +248,13 @@
               orgId: null,
               parentOrgId: null
             }
-            this.newPosition.hierarchy.push(obj)
+            item.hierarchy.push(obj)
           }
         })
-        this.newPosition.keyedHierarchy = keyBy(this.newPosition.hierarchy, 'orgLevelId')
-        this.newPositionHierarchyPopulated = true
+        item.keyedHierarchy = keyBy(item.hierarchy, 'orgLevelId')
+        if(isNew) {
+          this.newPositionHierarchyPopulated = true
+        }
       },
       async getUserPositions () {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -273,40 +287,29 @@
         let lowestHierarchy = item.hierarchy.reduce((prev, current) => {
           return (prev.level > current.level) ? prev : current
         })
+        let itemId = item.id
         item.orgId = lowestHierarchy.orgId
-
-        const {data} = await postRequest(`/userPosition`, item)
-        item = data
-        item.keyedHierarchy = keyBy(item.hierarchy, 'orgLevelId')
-      },
-      isHighestHierarchy(f) {
-        // get highest level (in this case highest hierarchy == the lowest level number)
-        const maxLevel = this.filters.reduce((prev, current) => {
-          return (prev.level < current.level) ? prev : current
-        })
-        return f.level === maxLevel.level
-      },
-      filteredOrgs(item, f) {
-        if(!this.isHighestHierarchy(f) && item.keyedHierarchy[f.orgLevelId]?.parentOrgId) {
-          let positionOrgLevel = item.keyedHierarchy[f.orgLevelId]
-          let parentOrgId = positionOrgLevel.parentOrgId
-          return f.orgs.filter(f => {
-            return f.parentOrgId === parentOrgId
-          })
-        } else {
-          return f.orgs
+        let params = {
+          ...item,
+          userId: this.userId
         }
-      },
-      resetLowerLevelOrgs(item, f) {
-        item.hierarchy.forEach((h) => {
-          if(h.level > f.level) {
-            // todo: reset this better
-            h.parentOrgId = h.level === (f.level + 1) ? item.keyedHierarchy[f.orgLevelId]['orgId'] : null
-            h.orgId = null
-            h.orgName = null
+
+        const {data} = await postRequest(`/userPosition`, params)
+        item = data
+        if(item && item.hierarchy) {
+          item.keyedHierarchy = keyBy(item.hierarchy, 'orgLevelId')
+          if(!itemId) {
+            this.userPositions.push(item)
           }
-        })
-        // item.keyedHierarchy = keyBy(item.hierarchy, 'orgLevelId')
+        }
+        this.addNew = false
+        this.expanded = []
+      },
+      isSameLevelAsPosition(f, item) {
+        // get hierarchy level to show on screen
+        let selectedPosition = this.positions.find(p => p.id === item.positionId)
+        return f.level === selectedPosition.level
+
       },
       validatePositionFields(item) {
         let lowestHierarchy = item.hierarchy.reduce((prev, current) => {

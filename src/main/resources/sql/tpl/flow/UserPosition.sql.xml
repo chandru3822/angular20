@@ -50,4 +50,16 @@
     values (:userId, :positionId, :startDate::date, :endDate::date, :orgId, :createdById)
   ]]></userPosition.insertUserPosition>
 
+  <userPosition.resetPrimaryFlags><![CDATA[
+    update flow.user_position
+        set primary_flag = false
+    where id in (select up.id
+                 from flow.user_position up
+                          inner join flow.position p on p.id = up.position_id
+                 where up.user_id = :userId
+                   and p.company_id = :companyId
+                   and up.id != :id
+    )
+  ]]></userPosition.resetPrimaryFlags>
+
 </sql>
