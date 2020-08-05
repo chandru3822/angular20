@@ -1718,7 +1718,6 @@
           this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
         })
 
-        // TODO: @Joe -- Is this necessary?
         if (this.isCloser) {
           if (this.apptsToFdcPipelineData.length > 0) {
             this.$store.commit(AppMutations.SET_LOADING, false)
