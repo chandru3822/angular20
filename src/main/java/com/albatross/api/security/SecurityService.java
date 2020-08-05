@@ -48,6 +48,11 @@ public class SecurityService implements UserDetailsService {
         return user;
     }
 
+    public User getUserByUsernameOrEmail(String usernameOrEmail) {
+        User user = userService.findByUsernameOrEmailIgnoreCase(usernameOrEmail);
+        return user;
+    }
+
     public Optional<UserAccountDetails> getUserDetailsById(Long id) {
         Optional<User> user = findUserById(id);
         if (!user.isPresent()) {

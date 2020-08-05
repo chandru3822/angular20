@@ -121,6 +121,19 @@ public class UserService {
     return null != results && !results.isEmpty();
   }
 
+  public void saveForgotPasswordFields(User user, Boolean updatePassword) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", user.getId());
+    params.put("uuid", user.getUuid());
+    params.put("expiryDate", user.getExpiryDate());
+
+    sqlCache.update("user.saveForgotPasswordFields", params);
+    if(updatePassword) {
+      params.put("password", user.getPassword());
+      sqlCache.update("user.saveUserPassword", params);
+    }
+  }
+
   public Optional<User> saveUser(User user) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -220,6 +233,14 @@ public class UserService {
     return user.orElse(null);
   }
 
+  public User findByUsernameOrEmailIgnoreCase(String usernameOrEmail) {
+    // for forgot password they need to be able to enter username or email. this will find them either way
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("usernameOrEmail", usernameOrEmail);
+    Optional<User> user = sqlCache.get("user.findByUsernameOrEmailIgnoreCase", params, new UserMapper<>(User.class, om));
+    return user.orElse(null);
+  }
+
   public User findByUserUuid(UUID uuid) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("uuid", uuid);
@@ -308,6 +329,23 @@ public class UserService {
     } else {
       return ResponseEntity.badRequest().body("No user found");
     }
+  }
+
+  public String updatePassword(PasswordResetRequest passwordResetRequest) {
+
+//    User user = findUserById(passwords.getUserId());
+//    String currentPwdHash = user.getPassword();
+//    if (!StringUtils.isEmpty(passwords.getCurrentPassword()) && !BCrypt.checkpw(passwords.getCurrentPassword(), currentPwdHash)) {
+//      return "{\"error\":\"Current password is incorrect\"}";
+//    }
+    String newPwd = BCrypt.hashpw(passwordResetRequest.getNewPassword(), BCrypt.gensalt(10));
+    User user = new User();
+    user.setPassword(newPwd);
+    user.setUuid(null);
+    user.setId(passwordResetRequest.getUserId());
+    user.setExpiryDate(null);
+    saveForgotPasswordFields(user, true);
+    return "{\"result\":\"Success\"}";
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {
