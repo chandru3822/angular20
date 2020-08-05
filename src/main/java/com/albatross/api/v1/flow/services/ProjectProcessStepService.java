@@ -121,13 +121,40 @@ public class ProjectProcessStepService {
     return attachmentService.findById(storageBucket, attachmentId);
   }
 
+  @Transactional
   public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
+    ProjectProcessStep currentStep = this.getProjectProcessStep(projectProcessStepId);
+
+    if (currentStep == null) {
+        throw new RuntimeException("The given process step does not exist");
+    }
+
+    if (currentStep.getProcessStepStatusTypeId().equals(processStepStatusTypeId)) {
+        return;
+    }
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("processStepStatusTypeId", processStepStatusTypeId);
     params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
     params.put("userId", user.getId());
+    params.put("projectId", currentStep.getProjectId());
+    params.put("processStepId", currentStep.getProcessStepId());
+    params.put("main", currentStep.getMain());
+
+    // If setting status to active, verify no other steps on this project are active
+    if (processStepStatusTypeId == 1) {
+        Long activeIdCount = sqlCache.queryForObject("projectProcessStep.getActiveCountInProject", params, Long.class);
+        if (activeIdCount > 0) {
+            throw new RuntimeException("Can have only 1 active process step of this type");
+        }
+
+        sqlCache.update("projectProcessStep.clearMain", params);
+
+        // Active PPS are primary by default
+        params.put("main", true);
+    }
 
     sqlCache.update("projectProcessStep.setStatus", params);
   }
@@ -180,12 +207,16 @@ public class ProjectProcessStepService {
     params.put("processStepId", processStepId);
     params.put("statusTypeId", statusTypeId);
     params.put("userPositionId", userPositionId);
-    params.put("createdById", user.getId());
+    params.put("userId", user.getId());
     params.put("main", main);
+    params.put("companyId", user.getCompanyId());
 
     if (main) {
         sqlCache.update("projectProcessStep.clearMain", params);
     }
+
+    // New project process steps are defaulted to active. Cancel any existing active steps so there is only 1
+    sqlCache.update("projectProcessStep.cancelActive", params);
 
     Long id = sqlCache.updateReturningId("projectProcessStep.insertProjectProcessStep", params, "id").longValue();
 
@@ -242,14 +273,11 @@ public class ProjectProcessStepService {
       ProjectProcessStep deletingStep = this.getProjectProcessStep(projectProcessStepId);
 
       if (deletingStep != null) {
-          Map<String, Object> params = om.convertValue(deletingStep, HashMap.class);
-          List<ProjectProcessStep> steps = sqlCache.query("projectProcessStep.getNonMain", params, ProjectProcessStep.class);
-
-          if (steps.isEmpty()) {
-              sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
-          } else {
-              throw new RuntimeException("Must mark another project process step as main before deleting this one");
+          if (deletingStep.getMain()) {
+            throw new RuntimeException("Can not delete a primary process step. Must designate another primary step first");
           }
+
+          sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
       }
   }
 
@@ -258,7 +286,16 @@ public class ProjectProcessStepService {
         ProjectProcessStep updatingStep = this.getProjectProcessStep(projectProcessStepId);
 
         if (updatingStep != null) {
-            sqlCache.update("projectProcessStep.updateMain", Map.of("projectProcessStepId", projectProcessStepId, "projectId", updatingStep.getProjectId(), "processStepId", updatingStep.getProcessStepId()));
+
+            Map<String, Object> params = Map.of("projectProcessStepId", projectProcessStepId, "projectId", updatingStep.getProjectId(), "processStepId", updatingStep.getProcessStepId());
+
+            Long activeIdCount = sqlCache.queryForObject("projectProcessStep.getActiveCountInProject", params, Long.class);
+
+            if (activeIdCount > 0) {
+                throw new RuntimeException("An active primary process step already exists");
+            }
+
+            sqlCache.update("projectProcessStep.updateMain", params);
         }
     }
 
