@@ -3,12 +3,14 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.config.LoanPalConfiguration;
 import com.albatross.api.utils.HttpResponse;
 import com.albatross.api.utils.HttpUtils;
+import com.albatross.api.utils.SqlCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -18,12 +20,16 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
 public class LoanPalService {
   @Autowired
   private LoanPalConfiguration config;
+
+  @Autowired
+  private SqlCache sqlCache;
 
   public Boolean processProject(Long projectId) throws Exception {
     log.info("LOANPAL: processing project {}", projectId);
@@ -70,7 +76,19 @@ public class LoanPalService {
   }
 
   public JSONObject getApplicationByProjectId(Long projectId) throws Exception {
-    String uri = "/applications/reference/" + projectId.toString();
+    String refNum = "";
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+
+    Optional<Long> dealId = sqlCache.get("installAgreement.getDealId", params, new SingleColumnRowMapper<>(Long.class));
+    if (dealId.isPresent()) {
+        refNum = dealId.toString();
+    }
+    else {
+        refNum = projectId.toString();
+    }
+
+    String uri = "/applications/reference/" + refNum;
     HttpResponse res = GET(uri);
     if (res.getResponseCode() != 200) {
       throw new Exception(String.format("Unable to locate LoanPal application for project %s: %s", projectId, res.getBody()));

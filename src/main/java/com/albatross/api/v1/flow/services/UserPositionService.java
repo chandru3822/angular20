@@ -58,13 +58,15 @@ public class UserPositionService {
 
   public UserPosition saveUserPosition(UserPosition userPosition) {
     User user = securityService.getCurrentUser();
+    Boolean primaryFlag = null != userPosition.getPrimaryFlag() ? userPosition.getPrimaryFlag() : false;
     HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
     params.put("userId", userPosition.getUserId());
     params.put("positionId", userPosition.getPositionId());
     params.put("orgId", userPosition.getOrgId());
     params.put("startDate", userPosition.getStartDate());
     params.put("endDate", userPosition.getEndDate());
-    params.put("primaryFlag", null != userPosition.getPrimaryFlag() ? userPosition.getPrimaryFlag() : false);
+    params.put("primaryFlag", primaryFlag);
 
     Long id;
     if(null != userPosition.getId()) {
@@ -75,6 +77,11 @@ public class UserPositionService {
     } else {
       params.put("createdById", user.getId());
       id = sqlCache.updateReturningId("userPosition.insertUserPosition", params, "id").longValue();
+    }
+
+    if(primaryFlag) {
+      //if setting a position to primary, need to remove all other primary positions
+      sqlCache.update("userPosition.resetPrimaryFlags", params);
     }
 
     return getOne(id);

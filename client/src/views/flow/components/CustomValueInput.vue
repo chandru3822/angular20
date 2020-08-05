@@ -44,7 +44,8 @@
       :readonly="readonly"
       placeholder=" "
       :label="field.fieldName"
-      v-model="field.numericValue"
+      type="number"
+      v-model.number="field.numericValue"
       @change="callback(field)"
     />
 
@@ -64,7 +65,8 @@
       :readonly="readonly"
       :label="field.fieldName"
       placeholder=" "
-      v-model="field.intValue"
+      type="number"
+      v-model.number="field.intValue"
       @change="callback(field)"
     />
 
