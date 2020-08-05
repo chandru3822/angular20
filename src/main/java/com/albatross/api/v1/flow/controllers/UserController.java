@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -46,12 +47,14 @@ public class UserController {
             throw new EmailInUseException(user.getEmail(), "Email");
         }
 
-        return userService.saveUser(user);
+        Optional<User> result = userService.saveUser(user);
+        return result.isEmpty() ? ResponseEntity.badRequest().body("Cannot Access User") : ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getUser(@PathVariable Long id) {
-        return userService.getUser(id);
+        Optional<User> result = userService.getUser(id);
+        return result.isEmpty() ? ResponseEntity.badRequest().body("Cannot Access User") : ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/getSchedulingUsers", produces = MediaType.APPLICATION_JSON_VALUE)

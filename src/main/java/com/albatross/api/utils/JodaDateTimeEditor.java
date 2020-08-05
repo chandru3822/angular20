@@ -1,4 +1,4 @@
-package com.albatross.api.v1.flow.utils;
+package com.albatross.api.utils;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDateTime;

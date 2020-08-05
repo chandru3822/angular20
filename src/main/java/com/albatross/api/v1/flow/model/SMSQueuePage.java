@@ -1,4 +1,4 @@
-package com.blueraven.model;
+package com.albatross.api.v1.flow.model;
 
 import lombok.Data;
 

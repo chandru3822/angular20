@@ -1,4 +1,4 @@
-package com.blueraven.view.webhook.dto;
+package com.albatross.api.v1.flow.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;

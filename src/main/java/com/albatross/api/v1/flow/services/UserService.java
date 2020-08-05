@@ -121,7 +121,7 @@ public class UserService {
     return null != results && !results.isEmpty();
   }
 
-  public ResponseEntity saveUser(User user) {
+  public Optional<User> saveUser(User user) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("firstName", user.getFirstName());
@@ -167,7 +167,7 @@ public class UserService {
     return getUser(id);
   }
 
-  public ResponseEntity getUser(Long id) {
+  public Optional<User> getUser(Long id) {
     User currentUser = securityService.getCurrentUser();
     // using currentUser.companyId validates that the user requesting the info can actually access this user...i think
     HashMap<String, Object> params = new HashMap<>();
@@ -175,12 +175,7 @@ public class UserService {
     params.put("companyId", currentUser.getCompanyId());
     Optional<User> result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
 
-
-    if(result.isEmpty()) {
-      return ResponseEntity.badRequest().body("Cannot Access User");
-    } else {
-      return ResponseEntity.ok(result);
-    }
+    return result;
   }
 
   public List<User> getSchedulingUsers(Long stateId, Boolean isSchedulingTool) {

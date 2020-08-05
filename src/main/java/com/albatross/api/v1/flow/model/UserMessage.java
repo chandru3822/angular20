@@ -1,4 +1,4 @@
-package com.blueraven.dto;
+package com.albatross.api.v1.flow.model;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,8 @@ import java.util.Date;
  * Created by randa on 5/21/17.
  * !Describe Purpose!
  */
-@Getter @Setter
+@Getter
+@Setter
 public class UserMessage {
 
 

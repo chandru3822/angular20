@@ -1,10 +1,10 @@
-package com.blueraven.view.api.v1.dto.admin;
+package com.albatross.api.v1.flow.model;
+
+import com.albatross.api.v1.flow.enums.TemplatingEngine;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.blueraven.enums.TemplatingEngine;
 
 public class SendTextsRequest {
 	List<Long> userIDs;

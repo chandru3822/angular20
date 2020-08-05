@@ -1,4 +1,4 @@
-package com.blueraven.config;
+package com.albatross.api.config;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,15 +16,6 @@ public class PropertiesConfiguration {
     @Value("${application.description}")
     String applicationDescription;
 
-    @Value("${baseCRM.api.v3.key}")
-    String baseCRMAPIV3Key;
-
-    @Value("${baseCRM.api.v2.key}")
-    String baseCRMAPIV2Key;
-
-    @Value("${baseCRM.api.v1.key}")
-    String baseCRMAPIV1Key;
-
     @Value("${spring.datasource.url}")
     String databaseURL;
 
@@ -33,24 +24,6 @@ public class PropertiesConfiguration {
 
     @Value("${spring.datasource.password}")
     String databasePassword;
-
-    @Value("${mosaic.host.name}")
-    String mosaicHostName;
-
-    @Value("${mosaic.root.url}")
-    String mosaicRootURL;
-
-    @Value("${mosaic.client.secret}")
-    String mosaicClientSecret;
-
-    @Value("${baseCRM.dosync}")
-    Boolean baseCRMDoSync;
-
-    @Value("${baseCRM.baseCRMSyncClientUUID}")
-    String baseCRMSyncClientUUID;
-
-    @Value("${baseCRM.baseCRMCollaboratorsSyncClientUUID}")
-    String baseCRMCollaboratorsSyncClientUUID;
 
     @Value("${smtp.server}")
     String smtpServer;
@@ -79,18 +52,4 @@ public class PropertiesConfiguration {
     @Value("${twilio.customersMessageServiceSID:}")
     String twilioCustomersMessageServiceSID;
 
-    @Value("${excel.user}")
-    String excelUser;
-
-    @Value("${excel.password}")
-    String excelPassword;
-
-    @Value("${sitecapture.auth_header}")
-    String siteCaptureAuthHeader;
-
-    @Value("${sitecapture.api_key}")
-    String siteCaptureApiKey;
-
-    @Value("${sitecapture.page_size}")
-    Integer siteCapturePageSize;
 }

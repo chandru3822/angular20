@@ -1,4 +1,4 @@
-package com.blueraven.service;
+package com.albatross.api.v1.flow.services;
 
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;

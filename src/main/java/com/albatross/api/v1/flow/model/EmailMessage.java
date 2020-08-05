@@ -1,6 +1,4 @@
-package com.blueraven.service;
-
-import com.blueraven.model.User;
+package com.albatross.api.v1.flow.model;
 
 import javax.activation.DataSource;
 import java.net.URL;

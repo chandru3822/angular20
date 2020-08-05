@@ -1,4 +1,4 @@
-package com.blueraven.view.api.v1.dto.admin;
+package com.albatross.api.v1.flow.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

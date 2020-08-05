@@ -1,5 +1,6 @@
-package com.blueraven.model;
+package com.albatross.api.v1.flow.model;
 
+import com.albatross.api.v1.flow.enums.RecordType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.joda.time.DateTime;

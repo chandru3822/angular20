@@ -1,12 +1,11 @@
-package com.blueraven.service;
+package com.albatross.api.v1.flow.services;
 
-import com.blueraven.config.PropertiesConfiguration;
-import com.blueraven.convert.JsonCollectionDeserializer;
-import com.blueraven.model.*;
-import com.blueraven.utils.JodaDateTimeEditor;
-import com.blueraven.utils.SqlCache;
-import com.blueraven.view.webhook.dto.TwilioMessageRequest;
-import com.blueraven.view.webhook.dto.TwilioSMSResponse;
+import com.albatross.api.config.PropertiesConfiguration;
+import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.utils.SqlCache;
+import com.albatross.api.utils.JodaDateTimeEditor;
+import com.albatross.api.v1.flow.enums.RecordType;
+import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,13 +17,12 @@ import com.twilio.exception.ApiException;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
 import com.twilio.type.PhoneNumber;
-import io.prometheus.client.Counter;
-import io.prometheus.client.Gauge;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -35,7 +33,6 @@ import org.springframework.util.StringUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.URI;
@@ -48,32 +45,8 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SMSService {
-    // Prometheus metrics
-    static final Gauge lastProcessingPass = Gauge.build()
-            .name("sms_last_pass")
-            .help("Timestamp for the last time queued text messages were processed")
-            .register();
-    static final Counter mQueued = Counter.build()
-            .name("sms_local_queued_total")
-            .help("Total number of text messages queued to send to Twilio")
-            .register();
-    static final Counter mProcessed = Counter.build()
-            .name("sms_local_processed_total")
-            .help("Total number of text messages processed to send to Twilio")
-            .labelNames("status")
-            .register();
-    static final Counter mTwilioStates = Counter.build()
-            .name("sms_outbound_total")
-            .help("Total number of text messages sent to Twilio")
-            .labelNames("status")
-            .register();
-    static final Counter mReplies = Counter.build()
-            .name("sms_inbound_total")
-            .help("Total number of text messages received via Twilio")
-            .labelNames("service")
-            .register();
 
     private final PropertiesConfiguration properties;
     private final SqlCache sqlCache;
@@ -152,13 +125,11 @@ public class SMSService {
                 new SMSQueueMapper<>(SMSQueueItem.class, om)
         );
 
-        mQueued.inc();
         return items.get(0);
     }
 
     @Transactional
     public void processMessages() {
-        lastProcessingPass.setToCurrentTime();
 
         String queueNext = sqlCache.getByKey("sms.queue.next");
         String queueUpdate = sqlCache.getByKey("sms.queue.updateById");
@@ -206,9 +177,7 @@ public class SMSService {
                 jdbcTemplate.update(queueUpdate, params);
 
                 log.info("TWILIO_SUCCESS: Message SID={} successfully submitted to Twilio. ", message.getSid());
-                mProcessed.labels("success").inc();
             } catch (ApiException e) {
-                mProcessed.labels("error").inc();
 
                 HashMap<String, Object> params = new HashMap<>();
                 params.put("id", sms.getId());
@@ -236,7 +205,6 @@ public class SMSService {
                 msg.getFrom(),
                 msg.getMessageStatus());
 
-        mTwilioStates.labels(msg.getMessageStatus()).inc();
         updateOrQueueSMSStatusUpdate(msg);
     }
 
@@ -400,7 +368,6 @@ public class SMSService {
         log.info("saving Twilio SMS reply: {}", sms.getMessageSid());
 
         RecordType type = getRecordTypeByMessagingServiceSID(sms.getMessagingServiceSid());
-        mReplies.labels(type.name()).inc();
 
         sqlCache.update("sms.reply.save", sms.toHashMap());
     }

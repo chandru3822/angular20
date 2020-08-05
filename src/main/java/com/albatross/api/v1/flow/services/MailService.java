@@ -1,7 +1,7 @@
-package com.blueraven.service;
+package com.albatross.api.v1.flow.services;
 
-import com.blueraven.config.PropertiesConfiguration;
-import com.blueraven.mail.SMTPAuthenticator;
+import com.albatross.api.config.PropertiesConfiguration;
+import com.albatross.api.utils.SMTPAuthenticator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;

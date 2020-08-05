@@ -1,4 +1,4 @@
-package com.blueraven.model;
+package com.albatross.api.v1.flow.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -23,9 +23,9 @@ public class SMSQueueExportItem {
     }
 
     public String getCsvDataString() {
-        return  Objects.toString(fullName, "")+","+Objects.toString(email, "")+","+
-                Objects.toString(toPhone, "")+","+Objects.toString(messageStatus, "")+","+
-                Objects.toString(created, "")+","+Objects.toString(twilioSent, "")+","+
+        return  Objects.toString(fullName, "")+","+ Objects.toString(email, "")+","+
+                Objects.toString(toPhone, "")+","+ Objects.toString(messageStatus, "")+","+
+                Objects.toString(created, "")+","+ Objects.toString(twilioSent, "")+","+
                 Objects.toString(twilioDelivered, "")+"\n";
     }
 }
