@@ -77,4 +77,12 @@
             and proposal_nbr::integer = :proposalNbr::integer
         ]]>
     </installAgreement.getLoanAmountFromLog>
+
+    <installAgreement.getDealId>
+        <![CDATA[
+            SELECT deal_id
+            from brs.project_details
+            where project_id = :projectId
+        ]]>
+    </installAgreement.getDealId>
 </sql>
