@@ -1569,7 +1569,11 @@
       chooseApptsCreatedPipelineDateRange (dateRange) {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        this.showApptsCreatedPipelineCustomDates = false
+        if (this.showApptsCreatedPipelineCustomDates) {
+          this.showApptsCreatedPipelineCustomDates = false
+          this.fixApptsCreatedFunnelTopMargin()
+        }
+
         this.apptsCreatedPipelineDateRange = dateRange
 
         switch (dateRange.value) {
@@ -1587,6 +1591,7 @@
             break
           case 'Custom':
             this.showApptsCreatedPipelineCustomDates = true
+            this.fixApptsCreatedFunnelTopMargin()
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
           default:
@@ -1598,7 +1603,11 @@
       chooseApptsToFdcPipelineDateRange (dateRange) {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        this.showApptsToFdcPipelineCustomDates = false
+        if (this.showApptsToFdcPipelineCustomDates) {
+          this.showApptsToFdcPipelineCustomDates = false
+          this.fixApptsToFdcFunnelTopMargin()
+        }
+
         this.apptsToFdcPipelineDateRange = dateRange
 
         switch (dateRange.value) {
@@ -1616,6 +1625,7 @@
             break
           case 'Custom':
             this.showApptsToFdcPipelineCustomDates = true
+            this.fixApptsToFdcFunnelTopMargin()
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
           default:
@@ -1629,6 +1639,40 @@
           this.viewSelect = view
           this.$store.commit(AppMutations.SET_LOADING, true)
           this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
+        }
+      },
+
+      fixApptsCreatedFunnelTopMargin () {
+        if (this.showApptsCreatedPipelineCustomDates) {
+          if (window.innerWidth >= 737 && window.innerWidth < 1070) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '76px')
+          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '78px')
+          } else if (window.innerWidth >= 1135) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '83px')
+          }
+        } else {
+          if (window.innerWidth >= 737 && window.innerWidth < 1070) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '58px')
+          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '60px')
+          } else if (window.innerWidth >= 1135) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '59px')
+          }
+        }
+      },
+
+      fixApptsToFdcFunnelTopMargin () {
+        if (this.showApptsToFdcPipelineCustomDates) {
+          if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '82px')
+          } else if (window.innerWidth >= 1135) {
+            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '87px')
+          }
+        } else {
+          if (window.innerWidth <= 1070) {
+            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '60px')
+          }
         }
       },
 
@@ -2026,9 +2070,11 @@
     mounted () {
       $(window).bind('resize', this.checkWindowWidth)
       this.checkWindowWidth()
+      $(window).bind('resize', this.fixApptsCreatedFunnelTopMargin)
+      $(window).bind('resize', this.fixApptsToFdcFunnelTopMargin)
     },
     beforeDestroy () {
-      $(window).unbind('resize', this.checkWindowWidth)
+      $(window).unbind('resize')
     }
   }
 </script>
@@ -3726,10 +3772,10 @@
       z-index: 250;
       border-top-style: solid;
       border-top-color: rgba(0, 110, 200, 0.05);
-      border-top-width: 712px;
+      border-top-width: 710px;
       border-right: 60px solid transparent;
       border-left: 60px solid transparent;
-      margin-top: 62px;
+      margin-top: 60px;
       margin-left: 15px;
       width: 385px;
       height: 0;
@@ -3909,6 +3955,7 @@
     }
 
     #appts-created-pipeline-funnel-background {
+      border-top-width: 163px;
       width: 440px;
     }
 
@@ -3962,7 +4009,7 @@
     }
 
     #appts-to-fdc-pipeline-funnel-background {
-      border-top-width: 723px;
+      border-top-width: 722px;
       width: 425px;
     }
 
@@ -4128,8 +4175,7 @@
     }
 
     #appts-to-fdc-pipeline-funnel-background {
-      border-top-width: 726px;
-      margin-top: 60px;
+      border-top-width: 724px;
       width: 450px;
     }
 
