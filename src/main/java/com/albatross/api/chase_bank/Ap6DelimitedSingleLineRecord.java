@@ -237,7 +237,7 @@ public class Ap6DelimitedSingleLineRecord {
     }
 
     public static class Name implements ToStringSerializable {
-        private static final Predicate<String> validChars = CharMatcher.JAVA_LETTER_OR_DIGIT
+        private static final Predicate<String> validChars = CharMatcher.javaLetterOrDigit()
                 .or(CharMatcher.forPredicate(Character::isSpaceChar))
                 .or(CharMatcher.anyOf("-.&/'"))
                 .precomputed()::matchesAllOf;
