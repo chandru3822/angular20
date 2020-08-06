@@ -129,7 +129,6 @@
                   <v-autocomplete v-if="newFieldType === 'native' || $route.params.id !== '1'"
                                   v-model="newField"
                                   :items="availableCustomFields"
-                                  cache-items
                                   label="New Custom Field"
                                   item-text="fieldName"
                                   return-object
@@ -143,21 +142,19 @@
                   <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
                                   v-model="parent"
                                   :items="parentObjects"
-                                  cache-items
                                   label="Parent Object"
-                                  item-text="name"
+                                  item-text="processStepName"
                                   return-object
                                   autocomplete="off"
                                   @input="loadFieldsByParent"
                   >
                     <template slot='item' slot-scope='{ item }'>
-                      {{ item.name }}
+                      {{ item.processStepName }}
                     </template>
                   </v-autocomplete>
                   <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
                                   v-model="selectedAncillaryField"
                                   :items="ancillaryCustomFields"
-                                  cache-items
                                   label="Custom Field"
                                   item-text="fieldName"
                                   return-object
@@ -180,7 +177,12 @@
                           <v-icon>drag_handle</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
-                          {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
+                          <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
+                            {{cf.fieldName}}
+                          </div>
+                          <div v-else>
+                            {{ cf.processStepName }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                          </div>
                           <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
                             <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
                             Show On Insert
@@ -479,6 +481,10 @@ export default {
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
         item.customFields.unshift(data)
         this.newField = {}
+        this.selectedAncillaryField = {}
+        this.parent = {}
+        this.addField = false
+        this.snackbar = getSnackbar
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
