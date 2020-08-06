@@ -177,7 +177,12 @@
                           <v-icon>drag_handle</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
-                          {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
+                          <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
+                            {{cf.fieldName}}
+                          </div>
+                          <div v-else>
+                            {{ cf.processStepName }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                          </div>
                           <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
                             <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
                             Show On Insert

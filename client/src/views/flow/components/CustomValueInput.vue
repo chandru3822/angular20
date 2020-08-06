@@ -74,8 +74,9 @@
       v-if="field.dataTypeId === 6 && field.hasListValues"
       v-model="field.intValue"
       text
-      clearable
+      :clearable="!readonly"
       :readonly="readonly"
+      :disabled="readonly"
       placeholder=" "
       :items="field.listOfValues"
       :label="field.fieldName"
@@ -90,8 +91,9 @@
       multiple
       placeholder=" "
       :items="field.listOfValues"
-      clearable
+      :clearable="!readonly"
       :readonly="readonly"
+      :disabled="readonly"
       :label="field.fieldName"
       v-model="field.intArrayValue"
       item-value="id"
@@ -103,10 +105,11 @@
       v-if="field.dataTypeId === 8"
       v-model="field.intValue"
       text
-      clearable
+      :clearable="!readonly"
+      :readonly="readonly"
+      :disabled="readonly"
       :items="field.listOfValues"
       :label="field.fieldName"
-      :readonly="readonly"
       placeholder=" "
       item-value="id"
       item-text="name"
@@ -117,9 +120,10 @@
       v-if="field.dataTypeId === 9"
       v-model="field.intValue"
       text
-      clearable
+      :clearable="!readonly"
       :items="field.listOfValues"
       :readonly="readonly"
+      :disabled="readonly"
       placeholder=" "
       item-value="id"
       item-text="name"
