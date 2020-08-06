@@ -129,7 +129,6 @@
                   <v-autocomplete v-if="newFieldType === 'native' || $route.params.id !== '1'"
                                   v-model="newField"
                                   :items="availableCustomFields"
-                                  cache-items
                                   label="New Custom Field"
                                   item-text="fieldName"
                                   return-object
@@ -143,21 +142,19 @@
                   <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
                                   v-model="parent"
                                   :items="parentObjects"
-                                  cache-items
                                   label="Parent Object"
-                                  item-text="name"
+                                  item-text="processStepName"
                                   return-object
                                   autocomplete="off"
                                   @input="loadFieldsByParent"
                   >
                     <template slot='item' slot-scope='{ item }'>
-                      {{ item.name }}
+                      {{ item.processStepName }}
                     </template>
                   </v-autocomplete>
                   <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
                                   v-model="selectedAncillaryField"
                                   :items="ancillaryCustomFields"
-                                  cache-items
                                   label="Custom Field"
                                   item-text="fieldName"
                                   return-object
@@ -512,6 +509,9 @@ export default {
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
         item.customFields.unshift(data)
         this.newField = {}
+        this.selectedAncillaryField = {}
+        this.parent = {}
+        this.addField = false
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
