@@ -91,7 +91,7 @@
                                                                 WHERE cfga.custom_field_group_id = cfg.id
                                                                      AND cfga.archived is not true
                                                                      and cf.archived is not true
-                                                                ORDER by "fieldOrder") customFields), '[]') AS "customFields"
+                                                                ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
                                    FROM flow.custom_field_group cfg
                                        inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
                                        left join flow.event_type et on et.id = cfg.event_type_id
