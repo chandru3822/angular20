@@ -13,6 +13,9 @@
                 <v-text-field required color="primary" v-model="form.email" prepend-icon="person" name="login" label="Login" type="email"></v-text-field>
                 <v-text-field required color="primary" v-model="form.password" prepend-icon="lock" name="password" label="Password" id="password" type="password"></v-text-field>
                 <v-card-actions>
+                  <router-link :to="'/forgotPassword'" title="Forgot Password">
+                    Forgot Password
+                  </router-link>
                   <v-spacer></v-spacer>
                   <v-btn :loading="loginLoading" type="submit" color="primaryButton" dark>Login</v-btn>
                 </v-card-actions>
@@ -31,6 +34,7 @@
   import axios from 'axios'
 
   export default {
+    name: 'Login',
     data () {
       return {
         form: {

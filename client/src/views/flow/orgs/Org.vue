@@ -61,7 +61,11 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="cf.id" :readonly="cf.readonly" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                              :key="cf.id"
+                              :callback="populateDirtyCfvs"
+                              :readonly="cf.readonly"
+                              :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
@@ -99,6 +103,7 @@
         customFieldGroups: [],
         orgTypes: [],
         parents: [],
+        dirtyCfvs: [],
         states: [],
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ORGS', 'EDIT'),
         orgId: this.$route.params.id,
@@ -116,9 +121,13 @@
     methods: {
       async saveOrg() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        this.org.customFieldGroups = this.customFieldGroups
+        // this.org.customFieldGroups = this.customFieldGroups
         try {
-          const {data} = await putRequest(`/org`, this.org)
+          await putRequest(`/org`, this.org)
+          // update dirty field values
+          const {data} = await postRequest(`/customFieldValues/org/${this.orgId}`, this.dirtyCfvs)
+          this.dirtyCfvs = []
+          this.customFieldGroups = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -126,12 +135,16 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      populateDirtyCfvs(field) {
+        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+        if(!match) {
+          this.dirtyCfvs.push(field)
+        }
+      },
       async getCustomFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/customFieldValues/org`, { params: {
-              primaryId: this.orgId
-            }})
+          const {data} = await getRequestWithParams(`/customFieldValues/org/${this.orgId}`)
           this.customFieldGroups = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

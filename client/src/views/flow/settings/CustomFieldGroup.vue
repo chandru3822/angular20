@@ -518,6 +518,9 @@ export default {
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
         item.customFields.unshift(data)
         this.newField = {}
+        this.selectedAncillaryField = {}
+        this.parent = {}
+        this.addField = false
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

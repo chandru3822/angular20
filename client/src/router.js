@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Login from './views/Login.vue'
+import ForgotPassword from './views/ForgotPassword.vue'
+import PasswordReset from './views/PasswordReset.vue'
 import store from './store'
 import { UserMutations } from './stores/UserStore'
 import { getRequest } from '@/helpers/helpers'
@@ -15,6 +17,19 @@ export default new Router({
       path: '/login',
       name: 'login',
       component: Login,
+      props: true
+    },
+    {
+      path: '/forgotPassword',
+      name: 'forgotPassword',
+      component: ForgotPassword,
+      props: true
+    },
+    {
+      path: '/passwordReset/:uuid?',
+      // path: 'passwordReset',
+      name: 'passwordReset',
+      component: PasswordReset,
       props: true
     },
     {

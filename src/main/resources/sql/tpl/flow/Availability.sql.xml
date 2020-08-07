@@ -30,6 +30,8 @@
         else rs.user_id = :userId end
     and rs.company_id = :companyId
     and rs.archived is not true
+    and (rs.end_date is null OR rs.end_date > now() - interval '30 days')
+    order by rs.start_date
   ]]></availability.getAllForResource>
 
   <availability.getWorkDays><![CDATA[
@@ -44,8 +46,25 @@
   ]]></availability.getWorkDays>
 
   <availability.updateSchedule><![CDATA[
-
+    update flow.resource_schedule
+    set start_date = :startDate,
+        end_date = :endDate,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+    where id = :id
   ]]></availability.updateSchedule>
+
+  <availability.updateScheduleWithoutEndDate><![CDATA[
+    update flow.resource_schedule
+    set end_date = :startDate::date - interval '1 day',
+        date_modified = now(),
+        modified_by_id = :modifiedById
+    where case when user_id::int is not null then user_id::int = :userId else org_id::int = :orgId end
+      and company_id = :companyId
+      and archived is not true
+      and end_date is null
+      and id != :id
+  ]]></availability.updateScheduleWithoutEndDate>
 
   <availability.deleteSchedule><![CDATA[
     update flow.resource_schedule
@@ -155,6 +174,7 @@
       and ra.company_id = :companyId
       and ra.archived is not true
       and (ra.start_time >= now() OR ra.end_time >= now())
+      order by ra.start_time, ra.end_time, ra.all_day
   ]]></availability.getAppointmentsForResource>
 
   <availability.deleteAppointment><![CDATA[

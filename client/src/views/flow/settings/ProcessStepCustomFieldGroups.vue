@@ -61,6 +61,7 @@
         <v-row>
           <v-col cols="12">
             <v-data-table
+                v-if="showTable"
                 :headers="headers"
                 :items="filterCustomFieldGroups()"
                 :items-per-page="-1"
@@ -81,7 +82,7 @@
               </template>
 
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
+                <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
                     <v-btn text icon small class="handle">
                       <v-icon>drag_handle</v-icon>
@@ -235,7 +236,7 @@
                             </template>
                               <v-list>
                                 <v-list-item
-                                  v-for="(cfg, index) in filterBy(customFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"
+                                  v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"
                                   :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
                                   <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                                 </v-list-item>
@@ -312,6 +313,8 @@
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from 'lodash.clonedeep'
+  import orderBy from "lodash.orderby"
+
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
@@ -329,10 +332,10 @@
       Sortable.create(table, {
         handle: '.handle',
         onEnd({ newIndex, oldIndex }) {
-          if(_self.customFieldGroups?.length > 0) {
-            const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
-            _self.customFieldGroups.splice(newIndex, 0, rowSelected)
-            let rowsClone = cloneDeep(_self.customFieldGroups)
+          if(_self.localCustomFieldGroups?.length > 0) {
+            const rowSelected = _self.localCustomFieldGroups.splice(oldIndex, 1)[0]
+            _self.localCustomFieldGroups.splice(newIndex, 0, rowSelected)
+            let rowsClone = cloneDeep(_self.localCustomFieldGroups)
 
             let rowsToSave = []
             rowsClone.forEach((r, idx) => {
@@ -343,7 +346,7 @@
               r.groupOrder = idx
               //save only rows that changed
               if(save) {
-                _self.customFieldGroups[idx].newGroupOrder = idx
+                _self.localCustomFieldGroups[idx].newGroupOrder = idx
                 rowsToSave.push(r)
               }
             })
@@ -355,6 +358,7 @@
     data() {
       return {
         snackbar: {},
+        showTable: true,
         constants,
         newGroup: {
           schedulingFields: [],
@@ -384,7 +388,19 @@
         eventTypes: []
       }
     },
-    computed: {},
+    computed: {
+      localCustomFieldGroups: {
+        get: function() {
+          return this.customFieldGroups
+        },
+        set: function(val) {
+          val.forEach(v => {
+            v.groupOrder = v.newGroupOrder ?? v.groupOrder
+          })
+          return orderBy(val, v => v.groupOrder)
+        }
+      }
+    },
     methods: {
       async saveFieldGroup() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -396,7 +412,7 @@
           this.newGroup.eventTypeId = this.newGroup.schedulable ? this.newGroup.eventTypeId : null
 
           const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
-          this.customFieldGroups.push(data)
+          this.localCustomFieldGroups.push(data)
           this.newGroup = {
             schedulingFields: [],
             schedulable: false,
@@ -589,7 +605,7 @@
         }
       },
       filterCustomFieldGroups () {
-        return this.customFieldGroups?.filter(cfg => { return !cfg.archived})
+        return this.localCustomFieldGroups?.filter(cfg => { return !cfg.archived})
       },
       async getSchedulingFields () {
         if(this.newGroup.schedulable) {
@@ -620,7 +636,7 @@
         }
       },
       showScheduleGroupCheckbox () {
-        let tempGroups = this.customFieldGroups.filter(cfg => !cfg.archived)
+        let tempGroups = this.localCustomFieldGroups.filter(cfg => !cfg.archived)
         return tempGroups?.length === 0 ||
           tempGroups.find(cfg => cfg.eventTypeId) === undefined
       },
@@ -629,7 +645,13 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
+            this.localCustomFieldGroups = orderBy(this.localCustomFieldGroups, 'groupOrder')
             this.snackbar = getSnackbar('SUCCESS', 'Group Order Saved')
+            // ok ok i know this is a bad hack but i couldn't get draggable row sorting to work and keep the expanded item in the correct index without this!!!! dont hate
+            this.showTable = false
+            this.$nextTick(() => {
+              this.showTable = true
+            })
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)

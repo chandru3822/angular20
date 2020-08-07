@@ -6,8 +6,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.RebateBatchDetail;
 import com.albatross.api.v1.company.blueraven.models.RebatePayment;
 import com.albatross.api.v1.company.blueraven.models.RebatePaymentState;
-import com.albatross.api.v1.flow.model.CustomFieldGroup;
-import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -117,24 +115,15 @@ public class RebateService {
 
   public void createRecurringPayment(RebatePayment rebatePayment){
     User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", rebatePayment.getProjectId());
 
-    List<CustomFieldGroup> projectCfgs = customFieldValueService.getProjectCustomValues(rebatePayment.getProjectId());
-    for (CustomFieldGroup cfg: projectCfgs) {
-      if (cfg.getGroupName().equals("Project Details")) {
-        List<CustomFieldValue> projectCfvs = cfg.getCustomFieldValues();
-        for (CustomFieldValue cfv: projectCfvs) {
-          if (cfv.getFieldName().equals("Entered into Payment System Date")) {
-            Calendar calendar = Calendar.getInstance();
-            java.util.Date now = calendar.getTime();
-            java.sql.Timestamp currentTimestamp = new java.sql.Timestamp(now.getTime());
-            cfv.setDateValue(currentTimestamp);
-            break;
-          }
-        }
-      }
-    }
+    Calendar calendar = Calendar.getInstance();
+    java.util.Date now = calendar.getTime();
+    java.sql.Timestamp currentTimestamp = new java.sql.Timestamp(now.getTime());
 
-    customFieldValueService.updateProjectCustomFieldValues(rebatePayment.getProjectId(), projectCfgs);
+    params.put("dateValue", currentTimestamp);
+    sqlCache.update("rebate.updateEnteredIntoSystemDate", params);
 
     String sqlQuery = "select brs.create_rebate_payments(:projectId::integer, :createdById::integer, :totalAmount::numeric , :promotionPayments::integer)";
 

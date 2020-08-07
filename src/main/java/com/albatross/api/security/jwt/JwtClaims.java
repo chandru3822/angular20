@@ -52,7 +52,7 @@ public class JwtClaims {
    * since epoch</a>.
    */
   @JsonProperty("iat")
-  @JsonSerialize(  using = JacksonUnixTimestamp.Serializer.class)
+  @JsonSerialize(using = JacksonUnixTimestamp.Serializer.class)
   @JsonDeserialize(using = JacksonUnixTimestamp.Deserializer.class)
   @NonNull
   private Instant issuedAt;
@@ -65,4 +65,8 @@ public class JwtClaims {
   @JsonSerialize(using = ToStringSerializer.class)
   private Long masqueradeId;
 
+  @JsonProperty("exp")
+  @JsonSerialize(using = JacksonUnixTimestamp.Serializer.class)
+  @JsonDeserialize(using = JacksonUnixTimestamp.Deserializer.class)
+  private Instant expiresAt;
 }

@@ -26,31 +26,30 @@
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
             <!-- if it is a process step custom field -->
-            <v-select
-                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
-                v-model="parent"
-                :items="parentObjects"
-                label="Parent Object"
-                item-text="processStepName"
-                return-object
-                @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
+            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
+                            v-model="parent"
+                            :items="parentObjects"
+                            label="Parent Object"
+                            return-object
+                            item-text="processStepName"
+                            @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-select>
+            ></v-autocomplete>
             <!-- if it is a process step custom field it needs parent, other custom fields do not-->
-            <v-select v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
-                      v-model="selectedCustomField"
-                      :items="customFields"
-                      label="Custom Field"
-                      item-text="fieldName"
-                      return-object
-                      @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
+            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
+                            v-model="selectedCustomField"
+                            :items="customFields"
+                            label="Custom Field"
+                            return-object
+                            item-text="fieldName"
+                            @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
                               selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-select>
+            ></v-autocomplete>
             <!-- if it is a function -->
             <v-select
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"

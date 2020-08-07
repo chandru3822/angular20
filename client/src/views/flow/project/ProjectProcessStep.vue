@@ -93,6 +93,7 @@
         <CustomValueInput
           v-for="(field, idx) in cfg.customFieldValues"
           :key="idx"
+          :callback="populateDirtyCfvs"
           :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null || field.readonly"
           :field="field"
         />
@@ -173,6 +174,7 @@ export default {
       processStep: {},
       customFieldGroups: [],
       isProcessStepLoading: true,
+      dirtyCfvs: [],
       notes: [],
       contact: {},
       displayChangeOwner: false,
@@ -201,9 +203,7 @@ export default {
       //@TODO: @humes, make this use local loading so entire screen isn't blocked waiting
       //this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep`, { params: {
-            projectProcessStepId: this.projectProcessStepId
-          }})
+        const {data} = await getRequestWithParams(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`)
         this.customFieldGroups = data
         // this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -264,9 +264,12 @@ export default {
     },
     async updateFieldGroups() {
       this.$store.commit(AppMutations.SET_LOADING, true)
-      this.processStep.customFieldGroups = this.customFieldGroups
+      // this.processStep.customFieldGroups = this.customFieldGroups
       try {
-        const {data} = await putRequest(`/projectProcessStep`, this.processStep)
+        // const {data} = await putRequest(`/projectProcessStep`, this.processStep)
+        // save dirty custom field values
+        const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
+        this.dirtyCfvs = []
         this.customFieldGroups = data
         this.$root.$emit('projectProcessStep:checkAction')
       } catch (e) {
@@ -274,6 +277,12 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Fields')
       } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    populateDirtyCfvs(field) {
+      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+      if(!match) {
+        this.dirtyCfvs.push(field)
       }
     },
     async updateOwner() {
