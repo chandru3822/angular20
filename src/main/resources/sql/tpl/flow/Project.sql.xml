@@ -236,7 +236,7 @@
     where
       p.id = :projectId and
       pps.archived is not true
-    order by last_updated;
+    order by ps.process_step_name;
   ]]></project.getProcessStepsByProjectId>
 
   <project.getAttachments><![CDATA[
