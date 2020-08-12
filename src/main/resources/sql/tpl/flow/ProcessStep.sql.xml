@@ -2,6 +2,7 @@
   <processStep.getAllForCompany><![CDATA[
       select ps.id,
        ps.process_step_name,
+       ps.non_admin_add,
        ps.company_id,
        ps.archived,
        ps.date_created,
@@ -17,6 +18,7 @@
   <processStep.get><![CDATA[
       select ps.id,
              ps.process_step_name,
+             ps.non_admin_add,
              ps.company_id,
              ps.archived,
              ps.date_created,
@@ -115,20 +117,21 @@
       set archived = true,
           modified_by_id = :modifiedById,
           date_modified = now()
-      where id = :id
+      where id = :processStepId
   ]]></processStep.delete>
 
   <processStep.update><![CDATA[
       update flow.process_step
       set modified_by_id = :modifiedById,
           date_modified = now(),
-          process_step_name = :name
+          process_step_name = :name,
+          non_admin_add = :nonAdminAdd
       where id = :id;
   ]]></processStep.update>
 
   <processStep.insert><![CDATA[
-      insert into flow.process_step (company_id, process_step_name, created_by_id)
-        values (:companyId, :name, :createdById)
+      insert into flow.process_step (company_id, process_step_name, created_by_id, non_admin_add)
+        values (:companyId, :name, :createdById, :nonAdminAdd)
   ]]></processStep.insert>
 
   <processStep.updateWorkQueueType><![CDATA[

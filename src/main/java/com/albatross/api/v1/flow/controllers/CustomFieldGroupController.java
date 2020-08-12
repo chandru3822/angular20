@@ -1,10 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldGroup;
-import com.albatross.api.v1.flow.model.CustomFieldObjectType;
-import com.albatross.api.v1.flow.model.ScheduleFieldType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -94,8 +91,8 @@ public class CustomFieldGroupController {
   }
 
   @PutMapping(value = "/deleteWithRequirementChecks", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteWithRequirementChecks(@RequestBody DeleteWithRequirementParams params) {
-    customFieldGroupService.deleteWithRequirementChecks(params);
+  public List<FieldInUse> deleteWithRequirementChecks(@RequestBody DeleteWithRequirementParams params) {
+    return customFieldGroupService.deleteWithRequirementChecks(params);
   }
 
   // to update just one:

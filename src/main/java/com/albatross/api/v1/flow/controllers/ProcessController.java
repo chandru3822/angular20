@@ -69,6 +69,11 @@ public class ProcessController {
         return processService.availableProcessSteps(processId);
     }
 
+  @GetMapping(value = "/{processId}/nonAdminProcessStepsForProcess", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStep> nonAdminProcessStepsForProcess(@PathVariable Long processId) {
+    return processService.nonAdminProcessStepsForProcess(processId);
+  }
+
     @PostMapping(value = "/{processId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
     public Optional<ProcessStepProcess> insertProcessStepProcess(@PathVariable Long processId, @RequestBody ProcessStepProcess processStepProcess) {
         return processService.insertProcessStepProcess(processId, processStepProcess);

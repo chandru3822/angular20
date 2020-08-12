@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
+import com.albatross.api.v1.flow.model.FieldInUse;
 import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.model.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.services.ProcessStepService;
@@ -36,9 +37,9 @@ public class ProcessStepController {
     return processStepService.getProcessStep(id);
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteStep(@PathVariable Long id) {
-    processStepService.deleteStep(id);
+  @PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<FieldInUse> deleteStep(@PathVariable Long id) {
+    return processStepService.deleteStep(id);
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)

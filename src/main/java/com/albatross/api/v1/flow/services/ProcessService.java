@@ -102,6 +102,15 @@ public class ProcessService {
         return results;
     }
 
+    public List<ProcessStep> nonAdminProcessStepsForProcess(Long processId) {
+        User user = securityService.getCurrentUser();
+        List<ProcessStep> results = sqlCache.query("process.nonAdminProcessStepsForProcess",
+          ImmutableMap.of("processId", processId,
+            "companyId", user.getCompanyId()), ProcessStep.class);
+
+        return results;
+    }
+
     public Optional<ProcessStepProcess> getOneProcessStepProcess(Long id) {
         Optional<ProcessStepProcess> result = sqlCache.get("process.getOneProcessStepProcess",
             ImmutableMap.of("id", id), new ProcessStepProcessMapper<>(ProcessStepProcess.class, om));

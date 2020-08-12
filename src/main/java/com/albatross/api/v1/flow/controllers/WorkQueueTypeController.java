@@ -24,8 +24,8 @@ public class WorkQueueTypeController {
   private WorkQueueTypeService workQueueTypeService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<WorkQueueType> getWorkQueueTypes () {
-    return workQueueTypeService.getWorkQueueTypes();
+  public List<WorkQueueType> getWorkQueueTypes (@RequestParam(required = false) Boolean sortByName) {
+    return workQueueTypeService.getWorkQueueTypes(sortByName);
   }
 
   @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)

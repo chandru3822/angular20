@@ -112,8 +112,8 @@
       </v-toolbar>
       <v-card class="pa-4 text-left">
         <CustomValueInput
-          v-for="field in group.customFieldValues"
-          :key="field.fieldName"
+          v-for="(field, idx) in group.customFieldValues"
+          :key="idx"
           :callback="populateDirtyCfvs"
           :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null || field.readonly"
           :showFieldName="false"
