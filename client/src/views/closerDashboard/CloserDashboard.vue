@@ -927,7 +927,7 @@
             :search="funnelDrilldownSearch"
             @current-items="filteredFunnelDrilldownItems"
             fixed-header
-            :height="funnelDrilldownData.length > 0 ? 'calc(100vh - 300px)' : '100px'"
+            :height="funnelDrilldownData.length > 0 ? 'calc(100vh - 350px)' : '100px'"
             dense
             hide-default-footer
             class="elevation-1"
@@ -936,54 +936,54 @@
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
                   :style="{'text-decoration': item.cancelled_date_formatted ? 'line-through' : ''}">
-                <td class="text-left">{{ index + 1 }}</td>
-                <td class="text-left">{{ item.owner_name ? item.owner_name : '' }}</td>
-                <td class="text-left">{{ item.employee_id ? item.employee_id : '' }}</td>
-                <td class="text-left">{{ item.state ? item.state : '' }}</td>
-                <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td class="text-left">{{ item.deal_id ? item.deal_id : '' }}</td>
-                <td class="text-left">{{ item.source_name ? item.source_name : '' }}</td>
-                <td class="text-left">{{ item.system_size ? item.system_size : '' }}</td>
-                <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
-                <td class="text-left">{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
-                <td class="text-left">{{ item.cancelled_date_formatted ? item.cancelled_date_formatted : '' }}</td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[11].show">
+                <td style="text-align: center">{{ index + 1 }}</td>
+                <td>{{ item.owner_name ? item.owner_name : '' }}</td>
+                <td>{{ item.employee_id ? item.employee_id : '' }}</td>
+                <td>{{ item.state ? item.state : '' }}</td>
+                <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
+                <td>{{ item.deal_id ? item.deal_id : '' }}</td>
+                <td>{{ item.source_name ? item.source_name : '' }}</td>
+                <td>{{ item.system_size ? item.system_size : '' }}</td>
+                <td>{{ item.financier ? item.financier : '' }}</td>
+                <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td>{{ item.cancelled_date_formatted ? item.cancelled_date_formatted : '' }}</td>
+                <td v-if="funnelDrilldownHeaders[11].show">
                     {{ item.added_on_date_formatted ? item.added_on_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[12].show">
+                <td v-if="funnelDrilldownHeaders[12].show">
                     {{ item.appointment_outcome ? item.appointment_outcome : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[13].show">
+                <td v-if="funnelDrilldownHeaders[13].show">
                     {{ item.credit_decision_date_formatted ? item.credit_decision_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[14].show">
+                <td v-if="funnelDrilldownHeaders[14].show">
                     {{ item.credit_check ? item.credit_check : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[15].show">
+                <td v-if="funnelDrilldownHeaders[15].show">
                   {{ item.installation_agreement_signed_date_formatted ? item.installation_agreement_signed_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[16].show">
+                <td v-if="funnelDrilldownHeaders[16].show">
                   {{ item.site_survey_verified_date_formatted ? item.site_survey_verified_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[17].show">
+                <td v-if="funnelDrilldownHeaders[17].show">
                   {{ item.final_design_sent_to_customer_date_formatted ? item.final_design_sent_to_customer_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[18].show">
+                <td v-if="funnelDrilldownHeaders[18].show">
                   {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[19].show">
+                <td v-if="funnelDrilldownHeaders[19].show">
                   {{ item.proof_of_homeowners_insurance_obtained_date_formatted ? item.proof_of_homeowners_insurance_obtained_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[20].show">
+                <td v-if="funnelDrilldownHeaders[20].show">
                   {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[21].show">
+                <td v-if="funnelDrilldownHeaders[21].show">
                   {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[22].show">
+                <td v-if="funnelDrilldownHeaders[22].show">
                   {{ item.cash_down_payment_date_formatted ? item.cash_down_payment_date_formatted : '' }}
                 </td>
-                <td class="text-left" v-if="funnelDrilldownHeaders[23].show">
+                <td v-if="funnelDrilldownHeaders[23].show">
                   {{ item.substantial_completion_date_formatted ? item.substantial_completion_date_formatted : '' }}
                 </td>
               </tr>
@@ -2137,30 +2137,30 @@
         let datesMatch = false
 
         this.funnelDrilldownHeaders = [
-          { text: '', value: '', show: true, sortable: false },
-          { text: 'Owner', value: 'owner_name', show: true, class: 'funnel-drilldown-th' },
-          { text: 'Employee ID', value: 'employee_id', show: true, class: 'funnel-drilldown-th' },
-          { text: 'State', value: 'state', show: true, class: 'funnel-drilldown-th' },
-          { text: 'Name', value: 'customer_name', show: true, class: 'funnel-drilldown-th' },
-          { text: 'Deal ID', value: 'deal_id', show: true, class: 'funnel-drilldown-th' },
-          { text: 'Source', value: 'source_name', show: true, class: 'funnel-drilldown-th' },
-          { text: 'System Size', value: 'system_size', show: true, class: 'funnel-drilldown-th' },
-          { text: 'Financier', value: 'financier', show: true, class: 'funnel-drilldown-th' },
-          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, class: 'funnel-drilldown-th' },
-          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, class: 'funnel-drilldown-th' },
-          { text: 'Added On', value: 'added_on', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Credit Check', value: 'credit_check', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, class: 'funnel-drilldown-th' },
-          { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, class: 'funnel-drilldown-th' },
-          { text: 'FD Signed Date', value: 'final_design_signed_date_formatted', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, class: 'funnel-drilldown-th' },
-          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, class: 'funnel-drilldown-th' }
+          { text: '', value: '', show: true, sortable: false, width: 25 },
+          { text: 'Owner', value: 'owner_name', show: true, width: 90 },
+          { text: 'Employee ID', value: 'employee_id', show: true, width: 100 },
+          { text: 'State', value: 'state', show: true, width: 60 },
+          { text: 'Name', value: 'customer_name', show: true, width: 90 },
+          { text: 'Deal ID', value: 'deal_id', show: true, width: 75 },
+          { text: 'Source', value: 'source_name', show: true, width: 75 },
+          { text: 'System Size', value: 'system_size', show: true, width: 90 },
+          { text: 'Financier', value: 'financier', show: true, width: 80 },
+          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 130 },
+          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 115 },
+          { text: 'Added On', value: 'added_on', show: false, width: 100 },
+          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 140 },
+          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 130 },
+          { text: 'Credit Check', value: 'credit_check', show: false, width: 90 },
+          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 175 },
+          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 150 },
+          { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
+          { text: 'FD Signed Date', value: 'final_design_signed_date_formatted', show: false, width: 110 },
+          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 180 },
+          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 155 },
+          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 175 },
+          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 150 },
+          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 150 }
         ]
 
         if (pipelineName === 'apptsCreatedPipeline') {
@@ -3407,13 +3407,12 @@
 
       ::v-deep th {
         line-height: 14px;
-      }
 
-      // TODO: Fix this
-      //::v-deep .funnel-drilldown-th {
-      //  display: flex;
-      //  flex-flow: row nowrap;
-      //}
+        .v-data-table-header__icon {
+          font-size: 12px !important;
+          padding-bottom: 2px;
+        }
+      }
 
       .customer-name {
         text-transform: capitalize;
@@ -4030,6 +4029,11 @@
 
         ::v-deep th {
           line-height: 16px;
+
+          .v-data-table-header__icon {
+            font-size: 14px !important;
+            padding-bottom: 3px;
+          }
         }
 
         .funnel-drilldown-no-data-msg {
@@ -4606,6 +4610,10 @@
 
         ::v-deep th {
           line-height: 18px;
+
+          .v-data-table-header__icon {
+            font-size: 16px !important;
+          }
         }
       }
     }
