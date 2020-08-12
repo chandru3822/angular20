@@ -56,6 +56,7 @@
 
     <v-col cols="12" class="text-left">
       <v-menu
+        v-model="displayDropdown"
         bottom
         offset-y
         :close-on-content-click="false"
@@ -170,6 +171,7 @@ export default {
       process: {},
       contact: {},
       snackbar: {},
+      displayDropdown: false,
       displayChangeOwner: false,
       availableOwners: [],
       availableProcessStepStatuses: [],
@@ -310,6 +312,7 @@ export default {
         this.selectedNewProjectProcessStep = null
 
         this.getProjectProcessSteps()
+        this.displayDropdown = false
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')
