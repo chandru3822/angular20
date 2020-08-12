@@ -135,7 +135,8 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving User')
+          let errorMsg = e?.data?.message ? 'Error Saving User: ' + e.data.message : 'Error Saving User'
+          this.snackbar = getSnackbar('ERROR', errorMsg)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
