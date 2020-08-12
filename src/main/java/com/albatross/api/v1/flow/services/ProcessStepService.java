@@ -86,7 +86,7 @@ public class ProcessStepService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("createdById", currentUser.getId());
     params.put("name", processStep.getProcessStepName());
-    params.put("nonAdminAdd", processStep.getNonAdminAdd());
+    params.put("nonAdminAdd", processStep.getNonAdminAdd() != null && processStep.getNonAdminAdd());
     Long id = sqlCache.updateReturningId("processStep.insert", params, "id").longValue();
 
     return getProcessStep(id);

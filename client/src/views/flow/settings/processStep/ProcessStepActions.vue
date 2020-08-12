@@ -427,6 +427,10 @@
                       item-text="processStepStatusType"
                       item-value="id"
             ></v-select>
+            <v-checkbox
+              v-model="newAction.triggerAutomatically"
+              label="Trigger Automatically"
+            />
             <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                    @click="saveNewAction">
               <v-icon>save</v-icon>
@@ -474,6 +478,10 @@
                               item-text="processStepStatusType"
                               item-value="id"
                     ></v-select>
+                    <v-checkbox
+                        v-model="item.triggerAutomatically"
+                        label="Trigger Automatically"
+                    />
 
                     <!-- LINK -->
                     <div v-if="item.actionTypeId === 1">
@@ -583,8 +591,6 @@
                               item-text="processStepName"
                               return-object
                     ></v-select>
-                    <input type="checkbox" v-model="selectedProcessStep.triggerAutomatically">
-                    Trigger Automatically
                     <div class="mt-3">
                       <v-btn :disabled="!selectedProcessStep.id"
                              @click="saveProcessStepToAction(item)">
@@ -607,11 +613,6 @@
                         <v-list-item>
                           <v-list-item-content class="text-left">
                             <v-list-item-title>{{cp.processStepName}}</v-list-item-title>
-                            <v-list-item-subtitle>
-                              <input type="checkbox" v-model="cp.triggerAutomatically"
-                                     @change="updateChildStep(item.id, cp)">
-                              Trigger Automatically
-                            </v-list-item-subtitle>
                           </v-list-item-content>
                           <v-dialog
                             v-model="cp.deleteConfirm"
@@ -1415,6 +1416,7 @@
           action.processStepActionChildProcesses = data.processStepActionChildProcesses
           action.processStepActionLinks = data.processStepActionLinks
           action.processStepLogicList = data.processStepLogicList
+          action.triggerAutomatically = data.triggerAutomatically
           this.actionExpanded = []
 
           //update the necessary psr's to immutable
@@ -1480,8 +1482,7 @@
         try {
           const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
             processStepId: this.selectedProcessStep.id,
-            displayOrder: 0,
-            triggerAutomatically: !!this.selectedProcessStep.triggerAutomatically
+            displayOrder: 0
           })
           action.processStepActionChildProcesses.push(data)
           this.selectedProcessStep = {}
@@ -1506,18 +1507,18 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async updateChildStep(actionId, childStep) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
-          this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+      // async updateChildStep(actionId, childStep) {
+      //   this.$store.commit(AppMutations.SET_LOADING, true)
+      //   try {
+      //     await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
+      //     this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   } catch (e) {
+      //     console.error('*** ERROR ***', e)
+      //     this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // },
       async saveFunctionToAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

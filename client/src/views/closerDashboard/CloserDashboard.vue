@@ -920,18 +920,21 @@
         <v-card-text>
           <v-data-table
             id="funnel-drilldown-table"
-            :headers="visibleFunnelDrilldownHeaders"
-            :items="funnelDrilldownData"
-            :items-per-page="-1"
-            :mobile-breakpoint="0"
-            :search="funnelDrilldownSearch"
-            @current-items="filteredFunnelDrilldownItems"
-            fixed-header
-            :height="funnelDrilldownData.length > 0 ? 'calc(100vh - 350px)' : '100px'"
-            dense
-            hide-default-footer
             class="elevation-1"
             :class="{'mt-6': funnelDrilldownData.length === 0}"
+            :mobile-breakpoint="0"
+            :headers="visibleFunnelDrilldownHeaders"
+            fixed-header
+            :items="funnelDrilldownData"
+            @current-items="filteredFunnelDrilldownItems"
+            :search="funnelDrilldownSearch"
+            :height="funnelDrilldownData.length > 0 ? 'calc(100vh - 350px)' : '100px'"
+            dense
+            multi-sort
+            :sort-by="[]"
+            :sort-desc="[]"
+            hide-default-footer
+            disable-pagination
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
@@ -2139,28 +2142,28 @@
         this.funnelDrilldownHeaders = [
           { text: '', value: '', show: true, sortable: false, width: 25 },
           { text: 'Owner', value: 'owner_name', show: true, width: 90 },
-          { text: 'Employee ID', value: 'employee_id', show: true, width: 100 },
-          { text: 'State', value: 'state', show: true, width: 60 },
+          { text: 'Employee ID', value: 'employee_id', show: true, width: 115 },
+          { text: 'State', value: 'state', show: true, width: 75 },
           { text: 'Name', value: 'customer_name', show: true, width: 90 },
-          { text: 'Deal ID', value: 'deal_id', show: true, width: 75 },
-          { text: 'Source', value: 'source_name', show: true, width: 75 },
-          { text: 'System Size', value: 'system_size', show: true, width: 90 },
-          { text: 'Financier', value: 'financier', show: true, width: 80 },
-          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 130 },
-          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 115 },
+          { text: 'Deal ID', value: 'deal_id', show: true, width: 85 },
+          { text: 'Source', value: 'source_name', show: true, width: 85 },
+          { text: 'System Size', value: 'system_size', show: true, width: 110 },
+          { text: 'Financier', value: 'financier', show: true, width: 95 },
+          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145 },
+          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130 },
           { text: 'Added On', value: 'added_on', show: false, width: 100 },
-          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 140 },
-          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 130 },
-          { text: 'Credit Check', value: 'credit_check', show: false, width: 90 },
-          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 175 },
-          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 150 },
+          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
+          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
+          { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
+          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 210 },
+          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
           { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
-          { text: 'FD Signed Date', value: 'final_design_signed_date_formatted', show: false, width: 110 },
-          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 180 },
-          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 155 },
-          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 175 },
-          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 150 },
-          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 150 }
+          { text: 'FD Signed Date', value: 'final_design_signed_date_formatted', show: false, width: 130 },
+          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
+          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
+          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
+          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160 },
+          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175 }
         ]
 
         if (pipelineName === 'apptsCreatedPipeline') {
@@ -3420,7 +3423,7 @@
 
       .funnel-drilldown-no-data-msg {
         text-align: left;
-        margin-left: 10px;
+        margin-left: 25px;
       }
     }
   }
@@ -4034,11 +4037,6 @@
             font-size: 14px !important;
             padding-bottom: 3px;
           }
-        }
-
-        .funnel-drilldown-no-data-msg {
-          text-align: center;
-          margin-left: 0;
         }
       }
     }
