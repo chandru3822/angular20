@@ -1,5 +1,40 @@
 <template>
   <v-container class="">
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">
+          {{deleteHeader}}
+        </v-card-title>
+
+        <v-card-text>
+          {{deleteText}}
+          <v-list v-for="(item, index) in fieldsInUse" :key="index">
+            <v-list-item-content>
+              {{ item.objectType }}
+              <div v-if="item.processStepName">{{item.processStepName}}</div>
+              <div v-if="item.groupName">{{ item.groupName }}<span v-if="item.fieldName"> - {{ item.fieldName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12" class="pt-0">
         <v-toolbar flat>
@@ -126,9 +161,9 @@
                         </v-card-title>
 
                         <v-card-text class="pt-4">
-                          <div class="error-text">
-                            WARNING: Any requirements currently using a field from this group will also be archived and any action logic currently using those requirements will be reset.
-                          </div>
+                          <span class="error--text">WARNING:</span>
+                          By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+
                           Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
                         </v-card-text>
 
@@ -143,7 +178,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="[item.archived = true, deleteWithChecks(item.id, null)]">
+                              @click="deleteWithChecks(item, item.id, null)">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -261,10 +296,6 @@
                               </v-card-title>
 
                               <v-card-text class="mt-2">
-                                <div class="error-text mb-3">
-                                  WARNING: Any requirements currently using this field will also be archived and any action logic currently using those requirements will be reset.
-                                </div>
-
                                 <span class="error--text">WARNING:</span>
                                 By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
 
@@ -282,7 +313,7 @@
                                 <v-btn
                                     color="primary"
                                     text
-                                    @click="[cf.archived = true, deleteWithChecks(null, cf.id)]">
+                                    @click="deleteWithChecks(cf, null, cf.id)">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -359,6 +390,10 @@
       return {
         snackbar: {},
         showTable: true,
+        deleteError: false,
+        deleteHeader: null,
+        deleteText: null,
+        fieldsInUse: [],
         constants,
         newGroup: {
           schedulingFields: [],
@@ -440,14 +475,32 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteWithChecks(customFieldGroupId, customFieldGroupAssignmentId) {
+      async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
             customFieldGroupId, customFieldGroupAssignmentId
           }
-          await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
-          this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+          const {data} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
+          if (data?.length > 0) {
+            this.deleteError = true
+            item.deleteConfirm = false
+            this.fieldsInUse = data
+            let errorMsg = 'Group Cannot Be Deleted'
+            this.deleteHeader = 'Error Deleting Custom Field Group'
+            this.deleteText = 'You cannot delete a group that has a field in use by other groups or requirements.'
+            if(null !== customFieldGroupAssignmentId) {
+              errorMsg = 'Field Cannot Be Deleted'
+              this.deleteHeader = 'Error Deleting Custom Field from Group'
+              this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
+            }
+            this.snackbar = getSnackbar('ERROR', errorMsg)
+          } else {
+            this.fieldsInUse = []
+            item.archived = true
+            this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

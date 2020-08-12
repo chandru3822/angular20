@@ -1,8 +1,11 @@
-import {getRequest} from '@/helpers/helpers'
+import {getRequest, getRequestWithParams} from '@/helpers/helpers'
 
-export async function getWorkQueueTypes() {
+export async function getWorkQueueTypes(sortByName) {
   try {
-    const {data, status} = await getRequest(`/workQueueType`)
+    let params = {
+      sortByName
+    }
+    const {data, status} = await getRequestWithParams(`/workQueueType`, {params})
     return {data, status}
   } catch (e) {
     throw e

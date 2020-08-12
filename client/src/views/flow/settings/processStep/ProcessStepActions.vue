@@ -1,5 +1,39 @@
 <template>
   <v-container>
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">
+          Error Deleting Requirement
+        </v-card-title>
+
+        <v-card-text>
+          You cannot delete a requirement that is being used in action logic.<br/><br/>
+          Actions using this requirement:
+          <v-list v-for="(item, index) in actionsUsingLogic" :key="index">
+            <v-list-item-content>
+              {{item.actionName}}
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat>
@@ -334,9 +368,6 @@
                           </v-card-title>
 
                           <v-card-text class="pt-4">
-                            <div class="error-text">
-                              WARNING: Any actions currently using this requirement will be reset.
-                            </div>
                             Are you sure you want to delete this requirement?
                           </v-card-text>
 
@@ -351,7 +382,7 @@
                             <v-btn
                                 color="primary"
                                 text
-                                @click="[item.archived = true, deleteRequirement(item.id)]">
+                                @click="deleteRequirement(item)">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -946,6 +977,8 @@
     data() {
       return {
         snackbar: {},
+        deleteError: false,
+        actionsUsingLogic: [],
         invalidRequirement: true,
         headers: [
           {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
@@ -1308,15 +1341,20 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteRequirement(id) {
+      async deleteRequirement(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/${this.processStepId}/requirement/${id}`)
-          //have to reload actions here as deleting a requirement could have affected the current logic
-          this.actionExpanded = []
-          this.selectedActionIndex = null
-          this.getActions()
-          this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
+          const {data} = await putRequest(`/processStep/${this.processStepId}/requirement/${item.id}`)
+          console.log('randaLogger', data)
+          if (data?.length > 0) {
+            this.deleteError = true
+            item.deleteConfirm = false
+            this.actionsUsingLogic = data
+            this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
+          } else {
+            item.archived = true
+            this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

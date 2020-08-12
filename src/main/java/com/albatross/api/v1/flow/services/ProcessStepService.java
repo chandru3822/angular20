@@ -34,6 +34,9 @@ public class ProcessStepService {
   SecurityService securityService;
 
   @Autowired
+  CustomFieldGroupService customFieldGroupService;
+
+  @Autowired
   ObjectMapper om;
 
   public List<ProcessStep> getProcessStepsForCompany() {
@@ -51,12 +54,20 @@ public class ProcessStepService {
     return result.orElse(null);
   }
 
-  public void deleteStep(Long id) {
+  public List<FieldInUse> deleteStep(Long id) {
     User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
+    params.put("processStepId", id);
     params.put("modifiedById", currentUser.getId());
-    sqlCache.update("processStep.delete", params);
+
+    List<FieldInUse> fields = customFieldGroupService.getFieldsInUse(id, null, null);
+    if(!fields.isEmpty()) {
+      return fields;
+    } else {
+      sqlCache.update("processStep.delete", params);
+      return null;
+    }
   }
 
   public List<ProcessStepWorkQueueType> saveWorkQueueTypesToStep(ProcessStep processStep) {
@@ -93,6 +104,7 @@ public class ProcessStepService {
     params.put("id", processStep.getId());
     params.put("modifiedById", currentUser.getId());
     params.put("name", processStep.getProcessStepName());
+    params.put("nonAdminAdd", processStep.getNonAdminAdd());
     sqlCache.update("processStep.update", params);
   }
 
@@ -102,6 +114,7 @@ public class ProcessStepService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("createdById", currentUser.getId());
     params.put("name", processStep.getProcessStepName());
+    params.put("nonAdminAdd", processStep.getNonAdminAdd());
     Long id = sqlCache.updateReturningId("processStep.insert", params, "id").longValue();
 
     return getProcessStep(id);

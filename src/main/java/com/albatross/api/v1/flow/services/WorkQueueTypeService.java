@@ -29,12 +29,16 @@ public class WorkQueueTypeService {
   @Autowired
   SecurityService securityService;
 
-  public List<WorkQueueType> getWorkQueueTypes() {
+  public List<WorkQueueType> getWorkQueueTypes(Boolean sortByName) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getHighestParentCompanyId());
+    params.put("orderByName", null != sortByName ? sortByName : false);
+    String orderBy = Boolean.TRUE.equals(sortByName) ? "order by wqt.work_queue_type" : "order by wqc.display_order, wqt.display_order, wqt.work_queue_type";
 
-    List<WorkQueueType> results = sqlCache.query("workQueueType.getTypesForCompany", params, WorkQueueType.class);
+    String sql = sqlCache.getByKey("workQueueType.getTypesForCompany");
+    sql += orderBy;
+    List<WorkQueueType> results = sqlCache.queryBySql(sql, params, WorkQueueType.class);
     return results;
   }
 
