@@ -82,7 +82,7 @@ public class LoanPalService {
 
     Optional<Long> dealId = sqlCache.get("installAgreement.getDealId", params, new SingleColumnRowMapper<>(Long.class));
     if (dealId.isPresent()) {
-        refNum = dealId.toString();
+        refNum = dealId.get().toString();
     }
     else {
         refNum = projectId.toString();
