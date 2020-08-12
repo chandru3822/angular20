@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.WorkQueueType;
 import com.google.common.collect.ImmutableMap;
@@ -92,5 +93,40 @@ public class WorkQueueTypeService {
     return getType(id);
   }
 
+  public void deleteProcessStepWorkQueueType(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
+    sqlCache.update("workQueueType.deleteProcessStepWorkQueueType",
+      ImmutableMap.of("id", id,
+        "modifiedById", currentUser.getId()));
+  }
+
+  public Optional<ProcessStepWorkQueueType> getProcessStepWorkQueueType(Long id) {
+    Optional<ProcessStepWorkQueueType> result = sqlCache.get("workQueueType.getProcessStepWorkQueueType",
+      ImmutableMap.of("id", id), ProcessStepWorkQueueType.class);
+
+    return result;
+  }
+
+  public Optional<ProcessStepWorkQueueType> insertProcessStepWorkQueueType(ProcessStepWorkQueueType wqt) {
+    User currentUser = securityService.getCurrentUser();
+
+    Long id = sqlCache.updateReturningId("workQueueType.insertProcessStepWorkQueueType",
+      ImmutableMap.of("createdById", currentUser.getId(),
+        "workQueueTypeId", wqt.getWorkQueueTypeId(),
+        "processStepId", wqt.getProcessStepId()), "id").longValue();
+
+    return getProcessStepWorkQueueType(id);
+  }
+
+  public List<WorkQueueType> getAvailableWorkQueueTypesForStep(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getHighestParentCompanyId());
+    params.put("id", id);
+
+    List<WorkQueueType> links = sqlCache.query("workQueueType.getAvailableWorkQueueTypesForStep", params, WorkQueueType.class);
+    return links;
+  }
 
 }
