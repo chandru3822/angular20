@@ -1,19 +1,25 @@
 <template>
   <v-container class="custom-field-group-container py-0">
     <v-row>
-      <v-col cols="12" class="py-0">
+      <v-col cols="12">
         <v-row class="mb-2">
-          <v-col cols="12" class="py-0">
-            <v-select
-                v-model="selectedOptions"
-                :items="workQueueTypes"
-                multiple
-                label="Work Queue Types"
-                item-text="workQueueType"
-                return-object
-            ></v-select>
-            <v-btn @click="saveWorkQueueTypes">Save</v-btn>
-            <ProcessStepCustomFieldGroups :customFieldGroups="processStep.customFieldGroups"></ProcessStepCustomFieldGroups>
+          <v-col cols="12">
+            <v-text-field color="primary"
+                          v-model="processStep.processStepName"
+                          label="Process Step Name"></v-text-field>
+            <label class="mt-4">Allow Non-Admin to Add to Project:</label>
+            <input class="ml-3" type="checkbox" v-model="processStep.nonAdminAdd">
+            <v-autocomplete class="mt-4"
+                            v-model="selectedOptions"
+                            :items="workQueueTypes"
+                            multiple
+                            label="Work Queue Types"
+                            item-text="workQueueType"
+                            return-object/>
+            <v-btn color="primaryCustom" dark class="white--text"
+                   @click="saveProcessStep">
+              Save Process Step
+            </v-btn>
           </v-col>
         </v-row>
         <v-divider></v-divider>
@@ -226,6 +232,8 @@
         }
       },
       async saveProcessStep () {
+        //handle everything that can happen in save
+        this.saveWorkQueueTypes()
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await putRequest(`/processStep`, this.processStep)
@@ -333,7 +341,7 @@
       async getWorkQueueTypes() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getWorkQueueTypes()
+          const {data} = await getWorkQueueTypes(true)
           // this makes the multi-select work
           data.forEach(d => {
             let match = this.processStep.workQueueTypes.find(wqt => wqt.workQueueTypeId === d.id)
@@ -377,12 +385,9 @@
 
           const {data} = await putRequest(`/processStep/saveWorkQueueTypesToStep`, this.processStep)
           this.processStep.workQueueTypes = data
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Types Updated')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Updating Work Queue Types')
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
     }

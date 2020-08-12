@@ -903,6 +903,19 @@
           <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
           <a class="close-modal-x pb-3" title="Close" @click="funnelDrilldownDialog = false">×</a>
         </v-card-title>
+        <v-divider></v-divider>
+        <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
+          <v-text-field v-model="funnelDrilldownSearch"
+                        placeholder="Type to filter..."
+                        single-line
+                        hide-details
+                        outlined
+                        dense
+          ></v-text-field>
+          <span id="funnel-drilldown-row-count">
+            Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
+          </span>
+        </v-card-title>
 
         <v-card-text>
           <v-data-table
@@ -911,37 +924,73 @@
             :items="funnelDrilldownData"
             :items-per-page="-1"
             :mobile-breakpoint="0"
+            :search="funnelDrilldownSearch"
+            @current-items="filteredFunnelDrilldownItems"
             fixed-header
+            :height="funnelDrilldownData.length > 0 ? 'calc(100vh - 300px)' : '100px'"
             dense
             hide-default-footer
             class="elevation-1"
+            :class="{'mt-6': funnelDrilldownData.length === 0}"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
-                  :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
+                  :style="{'text-decoration': item.cancelled_date_formatted ? 'line-through' : ''}">
                 <td class="text-left">{{ index + 1 }}</td>
+                <td class="text-left">{{ item.owner_name ? item.owner_name : '' }}</td>
+                <td class="text-left">{{ item.employee_id ? item.employee_id : '' }}</td>
+                <td class="text-left">{{ item.state ? item.state : '' }}</td>
                 <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
-                <td class="text-left">{{ item.id ? item.id : '' }}</td>
+                <td class="text-left">{{ item.deal_id ? item.deal_id : '' }}</td>
                 <td class="text-left">{{ item.source_name ? item.source_name : '' }}</td>
                 <td class="text-left">{{ item.system_size ? item.system_size : '' }}</td>
-                <td class="text-left">
+                <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
+                <td class="text-left">{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td class="text-left">{{ item.cancelled_date_formatted ? item.cancelled_date_formatted : '' }}</td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[11].show">
+                    {{ item.added_on_date_formatted ? item.added_on_date_formatted : '' }}
+                </td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[12].show">
+                    {{ item.appointment_outcome ? item.appointment_outcome : '' }}
+                </td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[13].show">
+                    {{ item.credit_decision_date_formatted ? item.credit_decision_date_formatted : '' }}
+                </td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[14].show">
+                    {{ item.credit_check ? item.credit_check : '' }}
+                </td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[15].show">
+                  {{ item.installation_agreement_signed_date_formatted ? item.installation_agreement_signed_date_formatted : '' }}
+                </td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[16].show">
+                  {{ item.site_survey_verified_date_formatted ? item.site_survey_verified_date_formatted : '' }}
+                </td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[17].show">
+                  {{ item.final_design_sent_to_customer_date_formatted ? item.final_design_sent_to_customer_date_formatted : '' }}
+                </td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[18].show">
                   {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
                 </td>
-                <td class="text-left">
-                  {{ item.financial_agreement_signed_date_formatted ? item.financial_agreement_signed_date_formatted : '' }}
+                <td class="text-left" v-if="funnelDrilldownHeaders[19].show">
+                  {{ item.proof_of_homeowners_insurance_obtained_date_formatted ? item.proof_of_homeowners_insurance_obtained_date_formatted : '' }}
                 </td>
-                <td class="text-left">
+                <td class="text-left" v-if="funnelDrilldownHeaders[20].show">
                   {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
-                <td class="text-left">
-                  {{ item.first_cash_payment_paid_date_formatted ? item.first_cash_payment_paid_date_formatted : '' }}
+                <td class="text-left" v-if="funnelDrilldownHeaders[21].show">
+                  {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
                 </td>
-                <td class="text-left">{{ item.financier ? item.financier : '' }}</td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[22].show">
+                  {{ item.cash_down_payment_date_formatted ? item.cash_down_payment_date_formatted : '' }}
+                </td>
+                <td class="text-left" v-if="funnelDrilldownHeaders[23].show">
+                  {{ item.substantial_completion_date_formatted ? item.substantial_completion_date_formatted : '' }}
+                </td>
               </tr>
             </template>
 
             <template #no-data>
-              <div class="my-3">
+              <div class="my-3 funnel-drilldown-no-data-msg">
                 No data is available for the selected date range.
               </div>
             </template>
@@ -1175,7 +1224,9 @@
       appts_to_fdc_pipeline_menu2: false,
       funnelDrilldownTitle: '',
       funnelDrilldownHeaders: [],
-      funnelDrilldownData: []
+      funnelDrilldownData: [],
+      funnelDrilldownSearch: '',
+      funnelDrilldownRowCount: 0
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -1227,6 +1278,9 @@
       },
       appts_to_fdc_pipeline_dt2 () {
         this.appts_to_fdc_pipeline_dt2_formatted = this.formatFunnelDate(this.appts_to_fdc_pipeline_dt2)
+      },
+      funnelDrilldownDialog () {
+        this.funnelDrilldownSearch = ''
       }
     },
     methods: {
@@ -1445,7 +1499,7 @@
           this.drilldownData = cloneDeep(data)
 
           if (this.drilldownData.length > 0) {
-            this.reformatDates()
+            this.reformatMilestoneDrilldownDates()
             this.drilldownData.forEach(row => {
               if (row.customer_name) {
                 row.customer_name = row.customer_name.toLowerCase()
@@ -1465,7 +1519,7 @@
         }
       },
 
-      reformatDates () {
+      reformatMilestoneDrilldownDates () {
         this.drilldownData.forEach(row => {
           if (row.final_design_signed_date) {
             row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
@@ -2084,29 +2138,29 @@
 
         this.funnelDrilldownHeaders = [
           { text: '', value: '', show: true, sortable: false },
-          { text: 'Owner', value: 'owner_name', show: true },
-          { text: 'Employee ID', value: 'employee_id', show: true },
-          { text: 'State', value: 'state', show: true },
-          { text: 'Name', value: 'customer_name', show: true },
-          { text: 'Deal ID', value: 'id', show: true },
-          { text: 'Source', value: 'source_name', show: true },
-          { text: 'System Size', value: 'system_size', show: true },
-          { text: 'Financier', value: 'financier', show: true },
-          { text: 'Appointment Date', value: 'appointment_date', show: true },
-          { text: 'Cancelled Date', value: 'cancelled_date', show: true },
-          { text: 'Added On', value: 'added_on', show: false },
-          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false },
-          { text: 'Credit Decision Date', value: 'credit_decision_date', show: false },
-          { text: 'Credit Check', value: 'credit_check', show: false },
-          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false },
-          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date', show: false },
-          { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date', show: false },
-          { text: 'FD Signed Date', value: 'final_design_signed_date', show: false },
-          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date', show: false },
-          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date', show: false },
-          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date', show: false },
-          { text: 'Cash Down Payment', value: 'cash_down_payment', show: false },
-          { text: 'Substantial Completion Date', value: 'substantial_completion_date', show: false }
+          { text: 'Owner', value: 'owner_name', show: true, class: 'funnel-drilldown-th' },
+          { text: 'Employee ID', value: 'employee_id', show: true, class: 'funnel-drilldown-th' },
+          { text: 'State', value: 'state', show: true, class: 'funnel-drilldown-th' },
+          { text: 'Name', value: 'customer_name', show: true, class: 'funnel-drilldown-th' },
+          { text: 'Deal ID', value: 'deal_id', show: true, class: 'funnel-drilldown-th' },
+          { text: 'Source', value: 'source_name', show: true, class: 'funnel-drilldown-th' },
+          { text: 'System Size', value: 'system_size', show: true, class: 'funnel-drilldown-th' },
+          { text: 'Financier', value: 'financier', show: true, class: 'funnel-drilldown-th' },
+          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, class: 'funnel-drilldown-th' },
+          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, class: 'funnel-drilldown-th' },
+          { text: 'Added On', value: 'added_on', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Credit Check', value: 'credit_check', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, class: 'funnel-drilldown-th' },
+          { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, class: 'funnel-drilldown-th' },
+          { text: 'FD Signed Date', value: 'final_design_signed_date_formatted', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, class: 'funnel-drilldown-th' },
+          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, class: 'funnel-drilldown-th' }
         ]
 
         if (pipelineName === 'apptsCreatedPipeline') {
@@ -2236,7 +2290,68 @@
             break
         }
 
+        this.reformatFunnelDrilldownDates()
         this.funnelDrilldownDialog = true
+      },
+
+      filteredFunnelDrilldownItems (filteredItems) {
+        this.funnelDrilldownRowCount = filteredItems.length
+      },
+
+      reformatFunnelDrilldownDates () {
+        this.funnelDrilldownData.forEach(row => {
+          if (row.appointment_date) {
+            row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
+          }
+
+          if (row.cancelled_date) {
+            row.cancelled_date_formatted = moment(row.cancelled_date).format('MMM D, YYYY')
+          }
+
+          if (row.added_on) {
+            row.added_on_date_formatted = moment(row.added_on).format('MMM D, YYYY')
+          }
+
+          if (row.credit_decision_date) {
+            row.credit_decision_date_formatted = moment(row.credit_decision_date).format('MMM D, YYYY')
+          }
+
+          if (row.installation_agreement_signed_date) {
+            row.installation_agreement_signed_date_formatted = moment(row.installation_agreement_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.site_survey_verified_date) {
+            row.site_survey_verified_date_formatted = moment(row.site_survey_verified_date).format('MMM D, YYYY')
+          }
+
+          if (row.final_design_sent_to_customer_date) {
+            row.final_design_sent_to_customer_date_formatted = moment(row.final_design_sent_to_customer_date).format('MMM D, YYYY')
+          }
+
+          if (row.final_design_signed_date) {
+            row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.proof_of_homeowners_insurance_obtained_date) {
+            row.proof_of_homeowners_insurance_obtained_date_formatted = moment(row.proof_of_homeowners_insurance_obtained_date).format('MMM D, YYYY')
+          }
+
+          if (row.utility_bill_verified_date) {
+            row.utility_bill_verified_date_formatted = moment(row.utility_bill_verified_date).format('MMM D, YYYY')
+          }
+
+          if (row.financial_agreement_signed_date) {
+            row.agreement_signed_date_formatted = moment(row.financial_agreement_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.cash_down_payment) {
+            row.cash_down_payment_date_formatted = moment(row.cash_down_payment).format('MMM D, YYYY')
+          }
+
+          if (row.substantial_completion_date) {
+            row.substantial_completion_date_formatted = moment(row.substantial_completion_date).format('MMM D, YYYY')
+          }
+        })
       },
 
       toggle () {
@@ -3268,6 +3383,22 @@
       }
     }
 
+    #funnel-drilldown-search {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: center;
+
+      ::v-deep input,
+      #funnel-drilldown-row-count {
+        font-size: 11px;
+      }
+
+      ::v-deep .v-input {
+        width: 100%;
+      }
+    }
+
     #funnel-drilldown-table {
       ::v-deep th, ::v-deep td {
         font-size: 10px;
@@ -3278,8 +3409,19 @@
         line-height: 14px;
       }
 
+      // TODO: Fix this
+      //::v-deep .funnel-drilldown-th {
+      //  display: flex;
+      //  flex-flow: row nowrap;
+      //}
+
       .customer-name {
         text-transform: capitalize;
+      }
+
+      .funnel-drilldown-no-data-msg {
+        text-align: left;
+        margin-left: 10px;
       }
     }
   }
@@ -3865,6 +4007,22 @@
         font-size: 24px;
       }
 
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 12px;
+        }
+
+        ::v-deep .v-input {
+          width: 80%;
+        }
+
+        #funnel-drilldown-row-count {
+          text-align: right;
+          width: 20%;
+        }
+      }
+
       #funnel-drilldown-table {
         ::v-deep th, ::v-deep td {
           font-size: 11px;
@@ -3872,6 +4030,11 @@
 
         ::v-deep th {
           line-height: 16px;
+        }
+
+        .funnel-drilldown-no-data-msg {
+          text-align: center;
+          margin-left: 0;
         }
       }
     }
@@ -4211,6 +4374,13 @@
           font-size: 20px;
         }
       }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 12px;
+        }
+      }
     }
   }
 
@@ -4419,6 +4589,13 @@
       .v-card__title {
         #funnel-drilldown-title {
           font-size: 24px;
+        }
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 14px;
         }
       }
 

@@ -206,21 +206,36 @@ public class CustomFieldGroupService {
     return cfg;
   }
 
-  public void deleteWithRequirementChecks(CustomFieldGroupController.DeleteWithRequirementParams requirementParams) {
-    User user = securityService.getCurrentUser();
+  public List<FieldInUse> getFieldsInUse(Long processStepId, Long customFieldGroupId, Long customFieldGroupAssignmentId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("processStepId", processStepId);
+    params.put("customFieldGroupAssignmentId", customFieldGroupAssignmentId);
+    params.put("customFieldGroupId", customFieldGroupId);
+    List<FieldInUse> fields = sqlCache.query("customFieldGroup.checkForFieldsInUse", params, FieldInUse.class);
+    return fields;
+  }
 
+  public List<FieldInUse> deleteWithRequirementChecks(CustomFieldGroupController.DeleteWithRequirementParams requirementParams) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", user.getId());
 
-    if(null != requirementParams.getCustomFieldGroupId()) {
-      params.put("id", requirementParams.getCustomFieldGroupId());
-      sqlCache.update("customFieldGroup.deleteCustomFieldGroup", params);
-    } else {
+    List<FieldInUse> fields = getFieldsInUse(null, requirementParams.getCustomFieldGroupId(), requirementParams.getCustomFieldGroupAssignmentId());
+    if(!fields.isEmpty()) {
+      return fields;
+    } else if(null != requirementParams.getCustomFieldGroupAssignmentId()) {
+      //handle custom field group assignment stuff
       params.put("id", requirementParams.getCustomFieldGroupAssignmentId());
       sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
+      return null;
+    } else {
+      //if the field or a field in the field group is deleted, check if used in requirement and block if necessary
+      //this means they are deleting a custom field group not an assignment
+      params.put("id", requirementParams.getCustomFieldGroupId());
+      sqlCache.update("customFieldGroup.deleteCustomFieldGroup", params);
+      return null;
     }
 
-    processStepRequirementService.deleteRequirementIfUsingItem(requirementParams.getCustomFieldGroupId(), requirementParams.getCustomFieldGroupAssignmentId());
   }
 
   public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {

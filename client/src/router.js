@@ -349,7 +349,7 @@ export default new Router({
             props: true,
             component: () => {
               if(store.getters.userHasFeature('SETTINGS')) {
-                return import (/* webpackChunkName: "processStep" */ './views/flow/settings/ProcessStep.vue')
+                return import (/* webpackChunkName: "processStep" */ './views/flow/settings/processStep/ProcessStep.vue')
               } else  {
                 return accessDenied()
               }
@@ -357,10 +357,13 @@ export default new Router({
             children: [
               {
                 path: 'components',
-                component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/ProcessStepComponents.vue'),
+                component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/processStep/ProcessStepComponents.vue'),
+              }, {
+                path: 'customFieldGroups',
+                component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/processStep/ProcessStepCFG.vue'),
               }, {
                 path: 'actions',
-                component: () => import (/* webpackChunkName: "processStepActions" */ './views/flow/settings/ProcessStepActions.vue'),
+                component: () => import (/* webpackChunkName: "processStepActions" */ './views/flow/settings/processStep/ProcessStepActions.vue'),
               }
             ]
           }, {
