@@ -1,0 +1,1 @@
+alter table if exists  flow.process_step_action rename column automatic_completion to trigger_automatically;
