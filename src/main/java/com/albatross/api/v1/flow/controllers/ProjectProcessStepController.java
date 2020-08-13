@@ -64,7 +64,7 @@ public class ProjectProcessStepController {
   }
 
   @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<ProjectProcessStep> createProjectProcessStep(@RequestBody ProjectProcessStep projectProcessStep) {
+  public ResponseEntity<Long> createProjectProcessStep(@RequestBody ProjectProcessStep projectProcessStep) {
     return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), projectProcessStep.getCompanyProcessStepStatusTypeId(), null, projectProcessStep.getMain()), HttpStatus.OK);
   }
 
