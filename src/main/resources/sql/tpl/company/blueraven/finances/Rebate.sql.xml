@@ -6,6 +6,16 @@
         ]]>
   </rebate.getPaymentStates>
 
+  <rebate.updateEnteredIntoSystemDate><![CDATA[
+      update flow.project_custom_field_value
+          set date_value = :dateValue
+      from flow.project_custom_field_value pcfv
+            inner join flow.custom_field_group_assignment cfga on cfga.id = pcfv.custom_field_group_assignment_id
+            inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+      where pcfv.project_id = :projectId
+      and cf.id = 578;
+  ]]></rebate.updateEnteredIntoSystemDate>
+
   <rebate.updateTotalPromotionAmount>
     <![CDATA[
             update flow.project_process_step_custom_field_value

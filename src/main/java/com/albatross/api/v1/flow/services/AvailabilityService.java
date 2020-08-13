@@ -80,18 +80,22 @@ public class AvailabilityService {
     params.put("companyId", user.getCompanyId());
     params.put("orgId", ra.getOrgId());
     params.put("userId", ra.getUserId());
+    params.put("modifiedById", user.getId());
+    params.put("createdById", user.getId());
 
     Long id = null;
 
     if(null != ra.getId()) {
       id = ra.getId();
       params.put("id", id);
-      params.put("modifiedById", user.getId());
-//      todo
       sqlCache.update("availability.updateSchedule", params);
     } else {
-      params.put("createdById", user.getId());
       id = sqlCache.updateReturningId("availability.insertSchedule", params, "id").longValue();
+    }
+
+    if(null == ra.getEndDate()) {
+      params.put("id", id);
+      sqlCache.update("availability.updateScheduleWithoutEndDate", params);
     }
 
     // handle saving each day's working hours

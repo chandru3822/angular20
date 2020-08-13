@@ -8,14 +8,9 @@
               (select lov.name
                 from flow.list_of_value lov
                 where lov.id = pd.primary_financier) as financier,
-              c.first_name            AS closer_first_name,
-              c.last_name             AS closer_last_name,
-              (select email from flow.user
-                where id = (select user_id from flow.user_position
-                                where id = (select user_position_id from flow.project_process_step
-                                                where project_id = :projectId and process_step_id = 2)
-                            )
-              ) AS closer_email,
+              (select first_name from flow.user where id = pd.closer_user_id)            AS closer_first_name,
+              (select last_name from flow.user where id = pd.closer_user_id)             AS closer_last_name,
+              (select email from flow.user where id = pd.closer_user_id) AS closer_email,
               c.first_name            AS customer_first_name,
               c.last_name             AS customer_last_name,
               c.email                 AS customer_email,

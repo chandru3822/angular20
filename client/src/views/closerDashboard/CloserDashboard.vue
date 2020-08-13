@@ -13,8 +13,9 @@
       </v-col>
     </v-row>
 
-    <v-row id="closer-dash-tabs" class="mb-2" :style="{'padding-top': showDashboard ? '60px' : ''}"
-           justify="center" no-gutters>
+    <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters
+           :class="{'dashboard-tab-max-width': showDashboard, 'funnel-tab-max-width': !showDashboard}"
+           :style="{'padding-top': showDashboard ? '60px' : ''}">
       <v-col cols="12">
         <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(1)">
           Dashboard
@@ -404,7 +405,8 @@
 
       <!-- FUNNEL -->
       <div class="funnel-container">
-        <div v-show="apptsCreatedPipelineData.length > 0" id="appts-created-pipeline-funnel-background"></div>
+        <div v-show="apptsCreatedPipelineData.length > 0"
+             id="appts-created-pipeline-funnel-background"></div>
         <table class="funnel-table">
           <tr class="funnel-tr">
             <th class="funnel-th"></th>
@@ -413,18 +415,24 @@
             <th class="funnel-th">WEEK TO DATE</th>
             <th class="funnel-th">
               <div v-show="showApptsCreatedPipelineCustomDates" class="custom-dates-container">
-                <v-menu v-model="appts_created_pipeline_menu1" transition="scale-transition" offset-y min-width="290px">
+                <v-menu v-model="appts_created_pipeline_menu1" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1" readonly outlined dense v-on="on"></v-text-field>
+                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
+                                  readonly outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt1" @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
+                  <v-date-picker v-model="appts_created_pipeline_dt1"
+                                 @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
-                <v-menu v-model="appts_created_pipeline_menu2" transition="scale-transition" offset-y min-width="290px">
+                <v-menu v-model="appts_created_pipeline_menu2" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2" readonly outlined dense v-on="on"></v-text-field>
+                    <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
+                                  readonly outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt2" @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
+                  <v-date-picker v-model="appts_created_pipeline_dt2"
+                                 @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
 
@@ -511,13 +519,13 @@
                 </template>
               </v-select>
             </td>
-            <td class="funnel-td" @click="drillDown(line.id, 'today', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line.id, 'today', line.name, 'apptsCreatedPipeline', false)">
               {{line.today_count}}
             </td>
-            <td class="funnel-td" @click="drillDown(line.id, 'wtd', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsCreatedPipeline', false)">
               {{line.week_to_date_count}}
             </td>
-            <td class="funnel-td" @click="drillDown(line.id, 'custom', line.name, 'apptsCreatedPipeline', false)">
+            <td class="funnel-td" @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsCreatedPipeline', false)">
               {{line.custom_date_range_count}}
             </td>
           </tr>
@@ -660,35 +668,41 @@
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
             <th class="funnel-th view-btns">
-              <v-btn class="funnel-btn" @click="viewSelected('standard')"
-                     :class="{'white--text': viewSelect === 'standard', 'elevation-2': viewSelect !== 'standard'}"
-                     :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
-                Standard View
-              </v-btn>
-              <v-btn class="funnel-btn" @click="viewSelected('apptDateCohort')"
-                     :class="{'white--text': viewSelect === 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
-                     :color="viewSelect === 'apptDateCohort' ? 'primaryCustom' : 'secondaryCustom'">
-                Appt Date Cohort
-              </v-btn>
+              <div class="view-btns-container">
+                <v-btn class="funnel-btn" @click="viewSelected('standard')"
+                       :class="{'white--text': viewSelect === 'standard', 'elevation-2': viewSelect !== 'standard'}"
+                       :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
+                  Standard View
+                </v-btn>
+                <v-btn class="funnel-btn" @click="viewSelected('apptDateCohort')"
+                       :class="{'white--text': viewSelect === 'apptDateCohort', 'elevation-2': viewSelect !== 'apptDateCohort'}"
+                       :color="viewSelect === 'apptDateCohort' ? 'primaryCustom' : 'secondaryCustom'">
+                  Appt Date Cohort
+                </v-btn>
+              </div>
             </th>
             <th class="funnel-th">TODAY</th>
-<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; Today percentages &ndash;&gt;-->
             <th class="funnel-th">WEEK TO DATE</th>
-<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; WTD percentages &ndash;&gt;-->
             <th class="funnel-th">
               <div v-show="showApptsToFdcPipelineCustomDates" class="custom-dates-container">
-                <v-menu v-model="appts_to_fdc_pipeline_menu1" transition="scale-transition" offset-y min-width="290px">
+                <v-menu v-model="appts_to_fdc_pipeline_menu1" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1" readonly outlined dense v-on="on"></v-text-field>
+                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
+                                  outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1" @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1"
+                                 @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
-                <v-menu v-model="appts_to_fdc_pipeline_menu2" transition="scale-transition" offset-y min-width="290px">
+                <v-menu v-model="appts_to_fdc_pipeline_menu2" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
                   <template v-slot:activator="{ on }">
-                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2" readonly outlined dense v-on="on"></v-text-field>
+                    <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
+                                  outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2" @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2"
+                                 @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
 
@@ -708,11 +722,10 @@
                 </v-list>
               </v-menu>
             </th>
-<!--            <th v-if="viewSelect === 'apptDateCohort'" class="funnel-th"></th> &lt;!&ndash; Custom date range percentages &ndash;&gt;-->
           </tr>
           <!-- FUNNEL ROWS -->
           <tr class="funnel-tr" v-for="line in apptsToFdcPipelineData" :key="line.id"
-              :class="{'main-row': [14,17,11,4,21,8].indexOf(line.id) !== -1, 'blue-sub-row': [16,19,3,6].indexOf(line.id) !== -1}">
+              :class="{'main-row': [14,17,11,4,21,8].indexOf(line.id) !== -1, 'blue-sub-row': [16,19,22,24,3,6].indexOf(line.id) !== -1}">
             <!-- FUNNEL NAME -->
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
 
@@ -721,20 +734,20 @@
               <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
                 <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
-                <div v-if="[18,19,20,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
+                <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                     @click="drillDown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
                   {{line.id === 21 ? '' : line.checked_in_today_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="drillDown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
                   {{line.checked_in_today_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="drillDown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+                <div @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
                   {{line.today_count}}
                 </div>
 
@@ -742,15 +755,15 @@
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [18,20,9,3,4,6,7].indexOf(line.id) !== -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [18,19,20,23,24,9,3,4,6,7].indexOf(line.id) !== -1"
                     class="percentage-column-segment">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [19,5].indexOf(line.id) !== -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [22,5].indexOf(line.id) !== -1"
                     class="percentage-column-segment-with-percentage">
                   <div class="percentage-line"></div>
                   <span class="funnel-percentage">
-                    {{line.id === 19 ? todayUpperPercentage : todayLowerPercentage}}%
+                    {{line.id === 22 ? todayUpperPercentage : todayLowerPercentage}}%
                   </span>
                 </div>
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
@@ -760,12 +773,12 @@
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,22,23,24,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
                     class="funnel-td">
                 </div>
               </div>
               <div v-else class="funnel-count"
-                   @click="drillDown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+                   @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
                 {{line.today_count}}
               </div>
             </td>
@@ -775,20 +788,20 @@
               <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
                 <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
-                <div v-if="[18,19,20,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
+                <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
-                     @click="drillDown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', true)">
                   {{line.id === 21 ? '' : line.checked_in_week_to_date_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="drillDown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', true)">
                   {{line.checked_in_week_to_date_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="drillDown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
+                <div @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
                   {{line.week_to_date_count}}
                 </div>
 
@@ -796,15 +809,15 @@
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [18,20,9,3,4,6,7].indexOf(line.id) !== -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [18,19,20,23,24,9,3,4,6,7].indexOf(line.id) !== -1"
                     class="percentage-column-segment">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [19,5].indexOf(line.id) !== -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [22,5].indexOf(line.id) !== -1"
                     class="percentage-column-segment-with-percentage">
                   <div class="percentage-line"></div>
                   <span class="funnel-percentage">
-                    {{line.id === 19 ? wtdUpperPercentage : wtdLowerPercentage}}%
+                    {{line.id === 22 ? wtdUpperPercentage : wtdLowerPercentage}}%
                   </span>
                 </div>
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
@@ -814,12 +827,12 @@
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,22,23,24,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
                      class="funnel-td">
                 </div>
               </div>
               <div v-else class="funnel-count"
-                   @click="drillDown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
+                   @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
                 {{line.week_to_date_count}}
               </div>
             </td>
@@ -830,20 +843,20 @@
               <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
                 <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
-                <div v-if="[18,19,20,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
+                <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
-                     @click="drillDown(line.id, 'custom', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', true)">
                   {{line.id === 21 ? '' : line.checked_in_custom_date_range_count}}
                 </div>
                 <div v-if="line.id === 21"
                      class="checked-in-column-bottom checked-in-column-line-overlap"
-                     @click="drillDown(line.id, 'custom', line.name, 'apptsToFdcPipeline', true)">
+                     @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', true)">
                   {{line.checked_in_custom_date_range_count}}
                 </div>
 
                 <!-- COUNT -->
-                <div @click="drillDown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
+                <div @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
                   {{line.custom_date_range_count}}
                 </div>
 
@@ -851,15 +864,15 @@
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [18,20,9,3,4,6,7].indexOf(line.id) !== -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [18,19,20,23,24,9,3,4,6,7].indexOf(line.id) !== -1"
                     class="percentage-column-segment">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [19,5].indexOf(line.id) !== -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [22,5].indexOf(line.id) !== -1"
                     class="percentage-column-segment-with-percentage">
                   <div class="percentage-line"></div>
                   <span class="funnel-percentage">
-                    {{line.id === 19 ? customDateRangeUpperPercentage : customDateRangeLowerPercentage}}%
+                    {{line.id === 22 ? customDateRangeUpperPercentage : customDateRangeLowerPercentage}}%
                   </span>
                 </div>
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
@@ -869,12 +882,12 @@
                 <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
                   <div class="percentage-line"></div>
                 </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
+                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,22,23,24,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
                     class="funnel-td">
                 </div>
               </div>
               <div v-else class="funnel-count"
-                   @click="drillDown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
+                   @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
                 {{line.custom_date_range_count}}
               </div>
             </td>
@@ -883,6 +896,119 @@
       </div>
     </div>
     <!-- APPOINTMENTS TO FDC PIPELINE END -->
+
+    <v-dialog v-model="funnelDrilldownDialog">
+      <v-card id="funnel-drilldown">
+        <v-card-title class="mb-1">
+          <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="funnelDrilldownDialog = false">×</a>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
+          <v-text-field v-model="funnelDrilldownSearch"
+                        placeholder="Type to filter..."
+                        single-line
+                        hide-details
+                        outlined
+                        dense
+          ></v-text-field>
+          <span id="funnel-drilldown-row-count">
+            Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
+          </span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-data-table
+            id="funnel-drilldown-table"
+            class="elevation-1"
+            :class="{'mt-6': funnelDrilldownData.length === 0}"
+            :mobile-breakpoint="0"
+            :headers="visibleFunnelDrilldownHeaders"
+            fixed-header
+            :items="funnelDrilldownData"
+            @current-items="filteredFunnelDrilldownItems"
+            :search="funnelDrilldownSearch"
+            :height="funnelDrilldownData.length > 0 ? 'calc(100vh - 350px)' : '100px'"
+            dense
+            multi-sort
+            :sort-by="[]"
+            :sort-desc="[]"
+            hide-default-footer
+            disable-pagination
+          >
+            <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
+              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
+                  :style="{'text-decoration': item.cancelled_date_formatted ? 'line-through' : ''}">
+                <td style="text-align: center">{{ index + 1 }}</td>
+                <td>{{ item.owner_name ? item.owner_name : '' }}</td>
+                <td>{{ item.employee_id ? item.employee_id : '' }}</td>
+                <td>{{ item.state ? item.state : '' }}</td>
+                <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
+                <td>{{ item.deal_id ? item.deal_id : '' }}</td>
+                <td>{{ item.source_name ? item.source_name : '' }}</td>
+                <td>{{ item.system_size ? item.system_size : '' }}</td>
+                <td>{{ item.financier ? item.financier : '' }}</td>
+                <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td>{{ item.cancelled_date_formatted ? item.cancelled_date_formatted : '' }}</td>
+                <td v-if="funnelDrilldownHeaders[11].show">
+                    {{ item.added_on_date_formatted ? item.added_on_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[12].show">
+                    {{ item.appointment_outcome ? item.appointment_outcome : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[13].show">
+                    {{ item.credit_decision_date_formatted ? item.credit_decision_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[14].show">
+                    {{ item.credit_check ? item.credit_check : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[15].show">
+                  {{ item.installation_agreement_signed_date_formatted ? item.installation_agreement_signed_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[16].show">
+                  {{ item.site_survey_verified_date_formatted ? item.site_survey_verified_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[17].show">
+                  {{ item.final_design_sent_to_customer_date_formatted ? item.final_design_sent_to_customer_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[18].show">
+                  {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[19].show">
+                  {{ item.proof_of_homeowners_insurance_obtained_date_formatted ? item.proof_of_homeowners_insurance_obtained_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[20].show">
+                  {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[21].show">
+                  {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[22].show">
+                  {{ item.cash_down_payment_date_formatted ? item.cash_down_payment_date_formatted : '' }}
+                </td>
+                <td v-if="funnelDrilldownHeaders[23].show">
+                  {{ item.substantial_completion_date_formatted ? item.substantial_completion_date_formatted : '' }}
+                </td>
+              </tr>
+            </template>
+
+            <template #no-data>
+              <div class="my-3 funnel-drilldown-no-data-msg">
+                No data is available for the selected date range.
+              </div>
+            </template>
+          </v-data-table>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
+                 @click="funnelDrilldownDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <!----------------------------------- PIPELINE TAB END ----------------------------------->
 
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -908,6 +1034,7 @@
     data: () => ({
       snackbar: {},
       milestoneDialog: false,
+      funnelDrilldownDialog: false,
       currentUserId: null,
       selectedQuarter: 1,
       headers: [
@@ -976,15 +1103,18 @@
           {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
           {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
           {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
-          {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
-          {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
-          {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
-          {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
-          {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
-          {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
-          {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
-          {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
-          {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 19}
+          {id: 22, name: 'No utility bill', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
+          {id: 23, name: 'Future Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
+          {id: 24, name: 'Un-dispositioned past appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
+          {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
+          {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
+          {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
+          {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
+          {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
+          {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 19},
+          {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 20},
+          {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 21},
+          {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 22}
       ],
       apptsCreatedPipelineCustomSelectorIsOpen: false,
       apptsToFdcPipelineCustomSelectorIsOpen: false,
@@ -1082,16 +1212,24 @@
         value: 'MTD'
       },
       showApptsToFdcPipelineCustomDates: false,
-      // viewSelect: 'standard',
-      viewSelect: 'apptDateCohort',
+      viewSelect: 'standard',
       appts_created_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
+      appts_created_pipeline_dt1_formatted: moment().startOf('month').format('M/D/YY'),
       appts_created_pipeline_menu1: false,
       appts_created_pipeline_dt2: moment().format('YYYY-MM-DD'),
+      appts_created_pipeline_dt2_formatted: moment().format('M/D/YY'),
       appts_created_pipeline_menu2: false,
       appts_to_fdc_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
+      appts_to_fdc_pipeline_dt1_formatted: moment().startOf('month').format('M/D/YY'),
       appts_to_fdc_pipeline_menu1: false,
       appts_to_fdc_pipeline_dt2: moment().format('YYYY-MM-DD'),
-      appts_to_fdc_pipeline_menu2: false
+      appts_to_fdc_pipeline_dt2_formatted: moment().format('M/D/YY'),
+      appts_to_fdc_pipeline_menu2: false,
+      funnelDrilldownTitle: '',
+      funnelDrilldownHeaders: [],
+      funnelDrilldownData: [],
+      funnelDrilldownSearch: '',
+      funnelDrilldownRowCount: 0
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -1120,7 +1258,10 @@
         if (this.allDistrictsSelected) return 'mdi-close-box'
         if (this.someDistrictsSelected) return 'mdi-minus-box'
         return 'mdi-checkbox-blank-outline'
-      }
+      },
+      visibleFunnelDrilldownHeaders () {
+        return this.funnelDrilldownHeaders.filter(header => header.show === true)
+      },
     },
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
@@ -1128,6 +1269,21 @@
         if (!this.ironmanLoaded || !this.rankingTablesLoaded) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
+      },
+      appts_created_pipeline_dt1 () {
+        this.appts_created_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt1)
+      },
+      appts_created_pipeline_dt2 () {
+        this.appts_created_pipeline_dt2_formatted = this.formatFunnelDate(this.appts_created_pipeline_dt2)
+      },
+      appts_to_fdc_pipeline_dt1 () {
+        this.appts_to_fdc_pipeline_dt1_formatted = this.formatFunnelDate(this.appts_to_fdc_pipeline_dt1)
+      },
+      appts_to_fdc_pipeline_dt2 () {
+        this.appts_to_fdc_pipeline_dt2_formatted = this.formatFunnelDate(this.appts_to_fdc_pipeline_dt2)
+      },
+      funnelDrilldownDialog () {
+        this.funnelDrilldownSearch = ''
       }
     },
     methods: {
@@ -1346,7 +1502,7 @@
           this.drilldownData = cloneDeep(data)
 
           if (this.drilldownData.length > 0) {
-            this.reformatDates()
+            this.reformatMilestoneDrilldownDates()
             this.drilldownData.forEach(row => {
               if (row.customer_name) {
                 row.customer_name = row.customer_name.toLowerCase()
@@ -1366,7 +1522,7 @@
         }
       },
 
-      reformatDates () {
+      reformatMilestoneDrilldownDates () {
         this.drilldownData.forEach(row => {
           if (row.final_design_signed_date) {
             row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
@@ -1543,7 +1699,11 @@
       chooseApptsCreatedPipelineDateRange (dateRange) {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        this.showApptsCreatedPipelineCustomDates = false
+        if (this.showApptsCreatedPipelineCustomDates) {
+          this.showApptsCreatedPipelineCustomDates = false
+          this.fixApptsCreatedFunnelTopMargin()
+        }
+
         this.apptsCreatedPipelineDateRange = dateRange
 
         switch (dateRange.value) {
@@ -1561,6 +1721,7 @@
             break
           case 'Custom':
             this.showApptsCreatedPipelineCustomDates = true
+            this.fixApptsCreatedFunnelTopMargin()
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
           default:
@@ -1572,7 +1733,11 @@
       chooseApptsToFdcPipelineDateRange (dateRange) {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        this.showApptsToFdcPipelineCustomDates = false
+        if (this.showApptsToFdcPipelineCustomDates) {
+          this.showApptsToFdcPipelineCustomDates = false
+          this.fixApptsToFdcFunnelTopMargin()
+        }
+
         this.apptsToFdcPipelineDateRange = dateRange
 
         switch (dateRange.value) {
@@ -1590,6 +1755,7 @@
             break
           case 'Custom':
             this.showApptsToFdcPipelineCustomDates = true
+            this.fixApptsToFdcFunnelTopMargin()
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
           default:
@@ -1604,6 +1770,52 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
         }
+      },
+
+      fixApptsCreatedFunnelTopMargin () {
+        if (this.showApptsCreatedPipelineCustomDates) {
+          if (window.innerWidth >= 737 && window.innerWidth < 1070) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '76px')
+          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '78px')
+          } else if (window.innerWidth >= 1135) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '83px')
+          }
+        } else {
+          if (window.innerWidth >= 737 && window.innerWidth < 1070) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '58px')
+          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '60px')
+          } else if (window.innerWidth >= 1135) {
+            $('#appts-created-pipeline-funnel-background').css('margin-top', '59px')
+          }
+        }
+      },
+
+      fixApptsToFdcFunnelTopMargin () {
+        if (this.showApptsToFdcPipelineCustomDates) {
+          if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '82px')
+          } else if (window.innerWidth >= 1135) {
+            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '87px')
+          }
+        } else {
+          if (window.innerWidth <= 1070) {
+            $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '60px')
+          }
+        }
+      },
+
+      formatFunnelDate (date) {
+        if (!date) return null
+
+        return moment(date).format('M/D/YY')
+      },
+
+      parseFunnelDate (date) {
+        if (!date) return null
+
+        return moment(date, 'M/D/YY').format('YYYY-MM-DD')
       },
 
       loadFunnels () {
@@ -1680,7 +1892,6 @@
           this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
         })
 
-        // TODO: @Joe -- Is this necessary?
         if (this.isCloser) {
           if (this.apptsToFdcPipelineData.length > 0) {
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1712,7 +1923,18 @@
         getRequestWithParams('/closerDashboard/funnel/' + this.viewSelect, {params}, 'blueraven').then(res => {
           this.apptsToFdcPipelineData = orderBy(res.data, row => row.display_order)
 
-          let todayUpperNumerator, todayUpperDenominator, wtdUpperNumerator, wtdUpperDenominator, customDateRangeUpperNumerator, customDateRangeUpperDenominator, todayLowerNumerator, todayLowerDenominator, wtdLowerNumerator, wtdLowerDenominator, customDateRangeLowerNumerator, customDateRangeLowerDenominator
+          let todayUpperNumerator = 0
+          let todayUpperDenominator = 0
+          let wtdUpperNumerator = 0
+          let wtdUpperDenominator = 0
+          let customDateRangeUpperNumerator = 0
+          let customDateRangeUpperDenominator = 0
+          let todayLowerNumerator = 0
+          let todayLowerDenominator = 0
+          let wtdLowerNumerator = 0
+          let wtdLowerDenominator = 0
+          let customDateRangeLowerNumerator = 0
+          let customDateRangeLowerDenominator = 0
 
           this.apptsToFdcPipelineData.forEach(row => {
             if (row.id === 17) {
@@ -1737,29 +1959,12 @@
             }
           })
 
-          if (todayUpperNumerator && todayUpperDenominator && todayUpperDenominator !== 0) {
-            this.todayUpperPercentage = this.getPercentage(todayUpperNumerator, todayUpperDenominator)
-          }
-
-          if (wtdUpperNumerator && wtdUpperDenominator && wtdUpperDenominator !== 0) {
-            this.wtdUpperPercentage = this.getPercentage(wtdUpperNumerator, wtdUpperDenominator)
-          }
-
-          if (customDateRangeUpperNumerator && customDateRangeUpperDenominator && customDateRangeUpperDenominator !== 0) {
-            this.customDateRangeUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
-          }
-
-          if (todayLowerNumerator && todayLowerDenominator && todayLowerDenominator !== 0) {
-            this.todayLowerPercentage = this.getPercentage(todayLowerNumerator, todayLowerDenominator)
-          }
-
-          if (wtdLowerNumerator && wtdLowerDenominator && wtdLowerDenominator !== 0) {
-            this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
-          }
-
-          if (customDateRangeLowerNumerator && customDateRangeLowerDenominator && customDateRangeLowerDenominator !== 0) {
-            this.customDateRangeLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
-          }
+          this.todayUpperPercentage = this.getPercentage(todayUpperNumerator, todayUpperDenominator)
+          this.wtdUpperPercentage = this.getPercentage(wtdUpperNumerator, wtdUpperDenominator)
+          this.customDateRangeUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
+          this.todayLowerPercentage = this.getPercentage(todayLowerNumerator, todayLowerDenominator)
+          this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
+          this.customDateRangeLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
 
           if (this.apptsCreatedPipelineData.length > 0) {
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -1768,7 +1973,11 @@
       },
 
       getPercentage (numerator, denominator) {
-        return Math.round((numerator / denominator) * 100)
+        if (denominator !== 0) {
+          return Math.round((numerator / denominator) * 100)
+        } else {
+          return 0
+        }
       },
 
       async districtLoad (preSelectLists) {
@@ -1923,11 +2132,39 @@
         }
       },
 
-      drillDown (funnelId, dateRange, funnelName, pipelineName, isCheckedInColumn) {
+      funnelDrilldown (funnelId, dateRange, funnelName, pipelineName, isCheckedInColumn) {
         let sourceIds = []
         let reps = []
         let orgs = []
         let start, end
+        let datesMatch = false
+
+        this.funnelDrilldownHeaders = [
+          { text: '', value: '', show: true, sortable: false, width: 25 },
+          { text: 'Owner', value: 'owner_name', show: true, width: 90 },
+          { text: 'Employee ID', value: 'employee_id', show: true, width: 115 },
+          { text: 'State', value: 'state', show: true, width: 75 },
+          { text: 'Name', value: 'customer_name', show: true, width: 90 },
+          { text: 'Deal ID', value: 'deal_id', show: true, width: 85 },
+          { text: 'Source', value: 'source_name', show: true, width: 85 },
+          { text: 'System Size', value: 'system_size', show: true, width: 110 },
+          { text: 'Financier', value: 'financier', show: true, width: 95 },
+          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145 },
+          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130 },
+          { text: 'Added On', value: 'added_on', show: false, width: 100 },
+          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
+          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
+          { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
+          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 210 },
+          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
+          { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
+          { text: 'FD Signed Date', value: 'final_design_signed_date_formatted', show: false, width: 130 },
+          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
+          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
+          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
+          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160 },
+          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175 }
+        ]
 
         if (pipelineName === 'apptsCreatedPipeline') {
           if (funnelId === 12) { // BRS-provided sources
@@ -1970,7 +2207,154 @@
           }
         }
 
-        // TODO: Implement drilldown window and queries
+        if (moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')) {
+          datesMatch = true
+          this.funnelDrilldownTitle = funnelName + ' on ' + moment(start).format('M/D/YYYY')
+        } else {
+          this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
+        }
+
+        switch (funnelId) {
+          // Appointments Created Pipeline
+          case 12: // BRS-provided appointments created
+            this.funnelDrilldownHeaders[11].show = true // added_on
+            break
+          case 13: // Self-gen appointments created
+            this.funnelDrilldownHeaders[11].show = true // added_on
+            break
+          case 10: // Total Appointments Created
+            this.funnelDrilldownHeaders[11].show = true // added_on
+            break
+        // Appointments to FDC Pipeline
+          case 14: // Total Planned Appointments
+            break
+          case 15: // Cancelled in advance
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 16: // Ineligible for solar
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 17: // Total Eligible Planned Appointments
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 18: // Homeowner no show
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 19: // Closer missed appointment
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 20: // Turned away at the door
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 22: // No utility bill
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 23: // Future Appointments
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 24: // Un-dispositioned past appointments
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 11: // Pitched
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 9: // Credits run
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            this.funnelDrilldownHeaders[13].show = true // credit_decision_date
+            break
+        case 3: // Credits passed
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            this.funnelDrilldownHeaders[13].show = true // credit_decision_date
+            this.funnelDrilldownHeaders[14].show = true // credit_check
+            break
+          case 4: // Bookings Complete
+            this.funnelDrilldownHeaders[15].show = true // installation_agreement_signed_date
+            break
+          case 5: // Site Surveys Verified
+            this.funnelDrilldownHeaders[16].show = true // site_survey_verified_date
+            break
+          case 6: // Final Designs sent to Homeowner
+            this.funnelDrilldownHeaders[17].show = true // final_design_sent_to_customer_date
+            break
+          case 7: // Final Designs Approved
+            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
+            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
+            break
+          case 21: // Final Designs Completed
+            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[21].show = true // financial_agreement_signed_date
+            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
+            this.funnelDrilldownHeaders[22].show = true // cash_down_payment
+            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
+            break
+          case 8: // Installations Completed
+            this.funnelDrilldownHeaders[23].show = true // substantial_completion_date
+            break
+        }
+
+        this.reformatFunnelDrilldownDates()
+        this.funnelDrilldownDialog = true
+      },
+
+      filteredFunnelDrilldownItems (filteredItems) {
+        this.funnelDrilldownRowCount = filteredItems.length
+      },
+
+      reformatFunnelDrilldownDates () {
+        this.funnelDrilldownData.forEach(row => {
+          if (row.appointment_date) {
+            row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
+          }
+
+          if (row.cancelled_date) {
+            row.cancelled_date_formatted = moment(row.cancelled_date).format('MMM D, YYYY')
+          }
+
+          if (row.added_on) {
+            row.added_on_date_formatted = moment(row.added_on).format('MMM D, YYYY')
+          }
+
+          if (row.credit_decision_date) {
+            row.credit_decision_date_formatted = moment(row.credit_decision_date).format('MMM D, YYYY')
+          }
+
+          if (row.installation_agreement_signed_date) {
+            row.installation_agreement_signed_date_formatted = moment(row.installation_agreement_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.site_survey_verified_date) {
+            row.site_survey_verified_date_formatted = moment(row.site_survey_verified_date).format('MMM D, YYYY')
+          }
+
+          if (row.final_design_sent_to_customer_date) {
+            row.final_design_sent_to_customer_date_formatted = moment(row.final_design_sent_to_customer_date).format('MMM D, YYYY')
+          }
+
+          if (row.final_design_signed_date) {
+            row.final_design_signed_date_formatted = moment(row.final_design_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.proof_of_homeowners_insurance_obtained_date) {
+            row.proof_of_homeowners_insurance_obtained_date_formatted = moment(row.proof_of_homeowners_insurance_obtained_date).format('MMM D, YYYY')
+          }
+
+          if (row.utility_bill_verified_date) {
+            row.utility_bill_verified_date_formatted = moment(row.utility_bill_verified_date).format('MMM D, YYYY')
+          }
+
+          if (row.financial_agreement_signed_date) {
+            row.agreement_signed_date_formatted = moment(row.financial_agreement_signed_date).format('MMM D, YYYY')
+          }
+
+          if (row.cash_down_payment) {
+            row.cash_down_payment_date_formatted = moment(row.cash_down_payment).format('MMM D, YYYY')
+          }
+
+          if (row.substantial_completion_date) {
+            row.substantial_completion_date_formatted = moment(row.substantial_completion_date).format('MMM D, YYYY')
+          }
+        })
       },
 
       toggle () {
@@ -1991,9 +2375,11 @@
     mounted () {
       $(window).bind('resize', this.checkWindowWidth)
       this.checkWindowWidth()
+      $(window).bind('resize', this.fixApptsCreatedFunnelTopMargin)
+      $(window).bind('resize', this.fixApptsToFdcFunnelTopMargin)
     },
     beforeDestroy () {
-      $(window).unbind('resize', this.checkWindowWidth)
+      $(window).unbind('resize')
     }
   }
 </script>
@@ -2567,26 +2953,38 @@
           display: flex;
           flex-flow: row wrap;
           justify-content: center;
-          align-items: flex-end;
+          margin: 0 auto;
+          max-width: 65px;
 
           .custom-date-input {
-            font-size: 10px;
-            text-align: center;
-            border: 1px solid #aaa;
-            box-shadow: none;
-            margin: 0 0 3px 0;
-            padding: 6px 4px 6px 6px;
-            width: 55px;
-            height: 15px;
+            font-size: 8px;
+            margin-bottom: 2px;
+            max-width: 40px;
+            height: 12px;
 
-            .v-input__control .v-input__slot {
-              width: 55px !important;
-              height: 15px !important;
+            ::v-deep .v-input__control {
+              max-width: 40px;
+              height: 14px;
+            }
+
+            ::v-deep .v-input__slot {
+              padding: 0;
+              width: 40px;
+              height: 12px;
+              min-height: 12px;
+            }
+
+            ::v-deep .v-text-field__slot input {
+              text-align: center;
+            }
+
+            ::v-deep .v-text-field__details {
+              display: none;
             }
           }
 
           .custom-date-span {
-            margin: 0 5px;
+            margin: 0 2px 3px 2px;
           }
         }
 
@@ -2623,7 +3021,7 @@
           position: relative;
           z-index: 7;
           text-align: left !important;
-          padding-left: 5px;
+          padding-left: 5px !important;
           height: 35px;
         }
 
@@ -2739,10 +3137,10 @@
           background-color: #e9f2ff;
         }
 
-        .view-btns {
+        .view-btns-container {
           display: flex;
           flex-flow: row wrap;
-          justify-content: flex-start;
+          align-items: center;
 
           .funnel-btn {
             text-transform: capitalize;
@@ -2763,21 +3161,38 @@
           display: flex;
           flex-flow: row wrap;
           justify-content: center;
-          align-items: flex-end;
+          margin: 0 auto;
+          max-width: 65px;
 
           .custom-date-input {
-            font-size: 10px;
-            text-align: center;
-            border: 1px solid #aaa;
-            box-shadow: none;
-            margin: 0 0 3px 0;
-            padding: 6px 4px 6px 6px;
-            width: 55px;
-            height: 15px;
+            font-size: 8px;
+            margin-bottom: 2px;
+            max-width: 40px;
+            height: 12px;
+
+            ::v-deep .v-input__control {
+              max-width: 40px;
+              height: 14px;
+            }
+
+            ::v-deep .v-input__slot {
+              padding: 0;
+              width: 40px;
+              height: 12px;
+              min-height: 12px;
+            }
+
+            ::v-deep .v-text-field__slot input {
+              text-align: center;
+            }
+
+            ::v-deep .v-text-field__details {
+              display: none;
+            }
           }
 
           .custom-date-span {
-            margin: 0 5px;
+            margin: 0 2px 3px 2px;
           }
         }
 
@@ -2824,13 +3239,16 @@
           font-size: 7px;
         }
 
+        .funnel-count {
+          cursor: pointer;
+        }
+
         .funnel-data-container {
           cursor: pointer;
           display: flex;
           flex-flow: row nowrap;
           align-items: center;
           padding: 0 5px;
-          margin-left: 15%;
         }
 
         .checked-in-column-top,
@@ -2856,7 +3274,7 @@
         .checked-in-column-center {
           border-top: none;
           border-bottom: none;
-          padding: 11.3px 2px;
+          padding: 11.4px 2px;
         }
 
         .checked-in-column-bottom {
@@ -2868,7 +3286,7 @@
         }
 
         .checked-in-column-line-overlap {
-          padding: 11.8px 2px;
+          padding: 12.9px 2px 10.9px 2px;
           margin-top: -1px;
         }
 
@@ -2946,6 +3364,70 @@
     }
   }
 
+  #funnel-drilldown {
+    .v-card__title {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      #funnel-drilldown-title {
+        font-family: "Roboto Condensed", sans-serif;
+        font-size: 14px;
+      }
+    }
+
+    .close-modal-x {
+      font-size: 20px;
+      margin-left: 15px;
+
+      &:hover {
+        font-weight: bolder;
+      }
+    }
+
+    #funnel-drilldown-search {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: center;
+
+      ::v-deep input,
+      #funnel-drilldown-row-count {
+        font-size: 11px;
+      }
+
+      ::v-deep .v-input {
+        width: 100%;
+      }
+    }
+
+    #funnel-drilldown-table {
+      ::v-deep th, ::v-deep td {
+        font-size: 10px;
+        padding: 5px;
+      }
+
+      ::v-deep th {
+        line-height: 14px;
+
+        .v-data-table-header__icon {
+          font-size: 12px !important;
+          padding-bottom: 2px;
+        }
+      }
+
+      .customer-name {
+        text-transform: capitalize;
+      }
+
+      .funnel-drilldown-no-data-msg {
+        text-align: left;
+        margin-left: 25px;
+      }
+    }
+  }
+
   @media (min-width: 500px) {
     #progress-bar-container {
       span {
@@ -2966,12 +3448,21 @@
       }
     }
 
+    #appts-created-pipeline-container {
+     .funnel-container {
+       .funnel-table {
+         .custom-dates-container {
+           max-width: 120px;
+         }
+       }
+     }
+    }
+
     #appts-to-fdc-pipeline-container {
       .funnel-container {
         .funnel-table {
-          .view-btns {
+          .view-btns-container {
             flex-flow: row nowrap;
-            align-items: center;
 
             .funnel-btn {
               font-size: 7px;
@@ -2980,10 +3471,20 @@
             }
           }
 
+          .custom-dates-container {
+            max-width: 120px;
+          }
+
           .funnel-data-container {
             margin-left: 20%;
           }
         }
+      }
+    }
+
+    #funnel-drilldown {
+      .v-card__title {
+        align-items: center;
       }
     }
   }
@@ -3000,11 +3501,15 @@
 
     #closer-dash-tabs {
       margin: 0 auto;
-      max-width: calc(100% - 50px);
 
       .col-12 span {
         font-size: 12px;
       }
+    }
+
+    .dashboard-tab-max-width,
+    .funnel-tab-max-width {
+      max-width: calc(100% - 50px);
     }
 
     #ironman-component {
@@ -3193,7 +3698,7 @@
     #appts-created-pipeline-funnel-background {
       display: block;
       position: absolute;
-      z-index: 250;
+      z-index: 200;
       border-top-style: solid;
       border-top-color: rgba(0, 110, 200, 0.05);
       border-top-width: 137px;
@@ -3238,6 +3743,33 @@
             padding: 5px;
           }
 
+          .custom-dates-container {
+            justify-content: space-between;
+            max-width: 110px;
+
+            .custom-date-input {
+              font-size: 10px;
+              margin-bottom: 3px;
+              max-width: 50px;
+              height: 15px;
+
+              ::v-deep .v-input__control {
+                max-width: 50px;
+                height: 15px;
+              }
+
+              ::v-deep .v-input__slot {
+                width: 50px;
+                height: 15px;
+                min-height: 15px;
+              }
+            }
+
+            .custom-date-span {
+              margin: -2px 2px 0 2px;
+            }
+          }
+
           .funnel-th,
           .funnel-td {
             font-size: 12px;
@@ -3259,7 +3791,7 @@
           }
 
           .funnel-line-name {
-            padding-left: 50px;
+            padding-left: 50px !important;
           }
         }
       }
@@ -3320,7 +3852,7 @@
             }
           }
 
-          .view-btns {
+          .view-btns-container {
             .funnel-btn {
               font-size: 10px;
               margin: 0 10px 0 2px;
@@ -3329,28 +3861,33 @@
             }
           }
 
-          // TODO: Set this up
-          /*.custom-dates-container {*/
-          /*  display: flex;*/
-          /*  flex-flow: row wrap;*/
-          /*  justify-content: center;*/
-          /*  align-items: flex-end;*/
+          .custom-dates-container {
+            justify-content: space-between;
+            margin-bottom: 3px;
+            max-width: 110px;
 
-          /*  .custom-date-input {*/
-          /*    font-size: 10px;*/
-          /*    text-align: center;*/
-          /*    border: 1px solid #aaa;*/
-          /*    box-shadow: none;*/
-          /*    margin: 0 0 3px 0;*/
-          /*    padding: 6px 4px 6px 6px;*/
-          /*    width: 55px;*/
-          /*    height: 15px;*/
-          /*  }*/
-          /*  */
-          /*  .custom-date-span {*/
-          /*    margin: 0 5px;*/
-          /*  }*/
-          /*}*/
+            .custom-date-input {
+              font-size: 10px;
+              margin-bottom: 3px;
+              max-width: 50px;
+              height: 15px;
+
+              ::v-deep .v-input__control {
+                max-width: 50px;
+                height: 15px;
+              }
+
+              ::v-deep .v-input__slot {
+                width: 50px;
+                height: 15px;
+                min-height: 15px;
+              }
+            }
+
+            .custom-date-span {
+              margin: -2px 2px 0 2px;
+            }
+          }
 
           .funnel-th {
             font-size: 12px;
@@ -3380,7 +3917,7 @@
           }
 
           .funnel-data-container {
-            margin-left: 5%;
+            margin-left: 3%;
           }
 
           .checked-in-column-td {
@@ -3410,7 +3947,7 @@
 
           .checked-in-column-line-overlap {
             margin-top: -2px;
-            padding: 12px 2px;
+            padding: 13px 2px 11px 2px;
           }
 
           .percentage-column-top {
@@ -3456,6 +3993,61 @@
               width: 10px;
               height: 24px;
             }
+          }
+        }
+      }
+    }
+
+    #funnel-drilldown {
+      .v-card__title {
+        #funnel-drilldown-title {
+          font-size: 18px;
+        }
+      }
+
+      .close-modal-x {
+        font-size: 24px;
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 12px;
+        }
+
+        ::v-deep .v-input {
+          width: 80%;
+        }
+
+        #funnel-drilldown-row-count {
+          text-align: right;
+          width: 20%;
+        }
+      }
+
+      #funnel-drilldown-table {
+        ::v-deep th, ::v-deep td {
+          font-size: 11px;
+        }
+
+        ::v-deep th {
+          line-height: 16px;
+
+          .v-data-table-header__icon {
+            font-size: 14px !important;
+            padding-bottom: 3px;
+          }
+        }
+      }
+    }
+  }
+
+  @media (min-width: 900px) {
+    #appts-to-fdc-pipeline-container {
+      .funnel-container {
+        .funnel-table {
+          .funnel-data-container {
+            margin-left: 25%;
           }
         }
       }
@@ -3571,6 +4163,14 @@
             padding: 10px;
           }
 
+          .custom-dates-container {
+            max-width: 125px;
+
+            .custom-date-span {
+              margin: -3px 2px 0 2px;
+            }
+          }
+
           .funnel-th,
           .funnel-td {
             font-size: 14px;
@@ -3592,12 +4192,12 @@
             }
           }
 
-          .funnel-td {
-            padding: 10px;
+          .funnel-line-name {
+            padding-left: 112px !important;
           }
 
-          .funnel-line-name {
-            padding-left: 112px;
+          .funnel-td {
+            padding: 10px;
           }
         }
       }
@@ -3606,13 +4206,13 @@
     #appts-to-fdc-pipeline-funnel-background {
       display: block;
       position: absolute;
-      z-index: 250;
+      z-index: 200;
       border-top-style: solid;
       border-top-color: rgba(0, 110, 200, 0.05);
-      border-top-width: 712px;
+      border-top-width: 848px;
       border-right: 60px solid transparent;
       border-left: 60px solid transparent;
-      margin-top: 62px;
+      margin-top: 60px;
       margin-left: 15px;
       width: 385px;
       height: 0;
@@ -3641,12 +4241,20 @@
             }
           }
 
-          .view-btns {
+          .view-btns-container {
             .funnel-btn {
               font-size: 12px;
               margin: 0 5px;
               width: 175px;
               max-width: none;
+            }
+          }
+
+          .custom-dates-container {
+            max-width: 125px;
+
+            .custom-date-span {
+              margin: -3px 2px 0 2px;
             }
           }
 
@@ -3679,6 +4287,10 @@
             padding: 0 10px;
           }
 
+          .funnel-data-container {
+            margin-left: 3%;
+          }
+
           .checked-in-column-td {
             font-size: 14px;
           }
@@ -3705,7 +4317,8 @@
 
           .checked-in-column-line-overlap {
             margin-top: -2.5px !important;
-            padding-bottom: 14.5px;
+            padding-top: 15px;
+            padding-bottom: 11.5px;
           }
 
           .percentage-column-top {
@@ -3756,10 +4369,28 @@
         }
       }
     }
+
+    #funnel-drilldown {
+      .v-card__title {
+        #funnel-drilldown-title {
+          font-size: 20px;
+        }
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 12px;
+        }
+      }
+    }
   }
 
   @media (min-width: 1135px) {
-    #closer-dash-tabs,
+    .dashboard-tab-max-width {
+      max-width: 1130px;
+    }
+
     #ironman-component {
       max-width: 1130px;
     }
@@ -3784,20 +4415,44 @@
     }
 
     #appts-created-pipeline-funnel-background {
+      border-top-width: 163px;
       width: 440px;
     }
 
     #appts-created-pipeline-container {
-      max-width: 1130px;
-
       .appts-created-pipeline-dropdown {
         width: 175px;
       }
 
       .funnel-container {
         .funnel-table {
+          .custom-dates-container {
+            max-width: 143px;
+
+            .custom-date-input {
+              font-size: 12px;
+              max-width: 60px;
+              height: 20px;
+
+              ::v-deep .v-input__control {
+                max-width: 60px;
+                height: 20px;
+              }
+
+              ::v-deep .v-input__slot {
+                width: 60px;
+                height: 20px;
+                min-height: 20px;
+              }
+            }
+
+            .custom-date-span {
+              margin: -1px 4px 0 4px;
+            }
+          }
+
           .funnel-line-name {
-            padding-left: 135px;
+            padding-left: 135px !important;
           }
 
           .funnel-th {
@@ -3812,13 +4467,11 @@
     }
 
     #appts-to-fdc-pipeline-funnel-background {
-      border-top-width: 723px;
+      border-top-width: 860px;
       width: 425px;
     }
 
     #appts-to-fdc-pipeline-container {
-      max-width: 1130px;
-
       .pipeline-header-container {
         #pipeline-header-right-side {
           justify-content: flex-end;
@@ -3834,10 +4487,35 @@
             }
           }
 
-          .view-btns {
+          .view-btns-container {
             .funnel-btn {
               font-size: 14px;
               width: 200px;
+            }
+          }
+
+          .custom-dates-container {
+            max-width: 143px;
+
+            .custom-date-input {
+              font-size: 12px;
+              max-width: 60px;
+              height: 20px;
+
+              ::v-deep .v-input__control {
+                max-width: 60px;
+                height: 20px;
+              }
+
+              ::v-deep .v-input__slot {
+                width: 60px;
+                height: 20px;
+                min-height: 20px;
+              }
+            }
+
+            .custom-date-span {
+              margin: -1px 4px 0 4px;
             }
           }
 
@@ -3908,11 +4586,40 @@
         }
       }
     }
+
+    #funnel-drilldown {
+      .v-card__title {
+        #funnel-drilldown-title {
+          font-size: 24px;
+        }
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 14px;
+        }
+      }
+
+      #funnel-drilldown-table {
+        ::v-deep th, ::v-deep td {
+          font-size: 12px;
+        }
+
+        ::v-deep th {
+          line-height: 18px;
+
+          .v-data-table-header__icon {
+            font-size: 16px !important;
+          }
+        }
+      }
+    }
   }
 
   @media (min-width: 1187px) {
     #appts-to-fdc-pipeline-funnel-background {
-      border-top-width: 724px;
+      border-top-width: 861px;
     }
 
     #appts-to-fdc-pipeline-container {
@@ -3953,9 +4660,9 @@
     }
 
     #appts-to-fdc-pipeline-funnel-background {
-      border-top-width: 726px;
-      margin-top: 60px;
-      width: 450px;
+      border-left-width: 120px;
+      border-right-width: 120px;
+      width: 520px;
     }
 
     #appts-to-fdc-pipeline-container {
@@ -3963,18 +4670,22 @@
         .funnel-table {
           .main-row {
             .funnel-line-name {
-              padding-left: 152px !important;
+              padding-left: 187px !important;
             }
           }
 
-          .view-btns {
-            .v-btn {
+          .view-btns-container {
+            .funnel-btn {
               margin: 0 10px;
             }
           }
 
           .funnel-line-name {
-            padding-left: 172px !important;
+            padding-left: 207px !important;
+          }
+
+          .funnel-data-container {
+            margin-left: 35%;
           }
         }
       }

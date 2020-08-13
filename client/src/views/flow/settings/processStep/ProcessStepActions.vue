@@ -1,5 +1,39 @@
 <template>
   <v-container>
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">
+          Error Deleting Requirement
+        </v-card-title>
+
+        <v-card-text>
+          You cannot delete a requirement that is being used in action logic.<br/><br/>
+          Actions using this requirement:
+          <v-list v-for="(item, index) in actionsUsingLogic" :key="index">
+            <v-list-item-content>
+              {{item.actionName}}
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat>
@@ -26,31 +60,30 @@
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
             <!-- if it is a process step custom field -->
-            <v-select
-                v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
-                v-model="parent"
-                :items="parentObjects"
-                label="Parent Object"
-                item-text="processStepName"
-                return-object
-                @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
+            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 1"
+                            v-model="parent"
+                            :items="parentObjects"
+                            label="Parent Object"
+                            return-object
+                            item-text="processStepName"
+                            @input="[loadFieldsByParent(parent), selectedCustomField = {}, selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-select>
+            ></v-autocomplete>
             <!-- if it is a process step custom field it needs parent, other custom fields do not-->
-            <v-select v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
-                      v-model="selectedCustomField"
-                      :items="customFields"
-                      label="Custom Field"
-                      item-text="fieldName"
-                      return-object
-                      @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
+            <v-autocomplete v-if="newRequirement.processStepRequirementTypeId && ((newRequirement.processStepRequirementTypeId === 1 && parent.id) || newRequirement.processStepRequirementTypeId === 3 || newRequirement.processStepRequirementTypeId === 4)"
+                            v-model="selectedCustomField"
+                            :items="customFields"
+                            label="Custom Field"
+                            return-object
+                            item-text="fieldName"
+                            @input="[loadOperatorTypes(selectedCustomField.dataTypeId), loadDataTypeRequirements(selectedCustomField.dataTypeId),
                               selectedDataTypeRequirement = {},
                               validateRequirementForm(),
                               selectedFunction = {}, requirementParamDynamicValues = [], newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
-            ></v-select>
+            ></v-autocomplete>
             <!-- if it is a function -->
             <v-select
                 v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
@@ -335,9 +368,6 @@
                           </v-card-title>
 
                           <v-card-text class="pt-4">
-                            <div class="error-text">
-                              WARNING: Any actions currently using this requirement will be reset.
-                            </div>
                             Are you sure you want to delete this requirement?
                           </v-card-text>
 
@@ -352,7 +382,7 @@
                             <v-btn
                                 color="primary"
                                 text
-                                @click="[item.archived = true, deleteRequirement(item.id)]">
+                                @click="deleteRequirement(item)">
                               Yes
                             </v-btn>
                           </v-card-actions>
@@ -397,6 +427,10 @@
                       item-text="processStepStatusType"
                       item-value="id"
             ></v-select>
+            <v-checkbox
+              v-model="newAction.triggerAutomatically"
+              label="Trigger Automatically"
+            />
             <v-btn v-if="newAction.actionName && newAction.actionTypeId"
                    @click="saveNewAction">
               <v-icon>save</v-icon>
@@ -444,6 +478,10 @@
                               item-text="processStepStatusType"
                               item-value="id"
                     ></v-select>
+                    <v-checkbox
+                        v-model="item.triggerAutomatically"
+                        label="Trigger Automatically"
+                    />
 
                     <!-- LINK -->
                     <div v-if="item.actionTypeId === 1">
@@ -553,8 +591,6 @@
                               item-text="processStepName"
                               return-object
                     ></v-select>
-                    <input type="checkbox" v-model="selectedProcessStep.triggerAutomatically">
-                    Trigger Automatically
                     <div class="mt-3">
                       <v-btn :disabled="!selectedProcessStep.id"
                              @click="saveProcessStepToAction(item)">
@@ -577,11 +613,6 @@
                         <v-list-item>
                           <v-list-item-content class="text-left">
                             <v-list-item-title>{{cp.processStepName}}</v-list-item-title>
-                            <v-list-item-subtitle>
-                              <input type="checkbox" v-model="cp.triggerAutomatically"
-                                     @change="updateChildStep(item.id, cp)">
-                              Trigger Automatically
-                            </v-list-item-subtitle>
                           </v-list-item-content>
                           <v-dialog
                             v-model="cp.deleteConfirm"
@@ -947,6 +978,8 @@
     data() {
       return {
         snackbar: {},
+        deleteError: false,
+        actionsUsingLogic: [],
         invalidRequirement: true,
         headers: [
           {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
@@ -1309,15 +1342,20 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteRequirement(id) {
+      async deleteRequirement(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/${this.processStepId}/requirement/${id}`)
-          //have to reload actions here as deleting a requirement could have affected the current logic
-          this.actionExpanded = []
-          this.selectedActionIndex = null
-          this.getActions()
-          this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
+          const {data} = await putRequest(`/processStep/${this.processStepId}/requirement/${item.id}`)
+          console.log('randaLogger', data)
+          if (data?.length > 0) {
+            this.deleteError = true
+            item.deleteConfirm = false
+            this.actionsUsingLogic = data
+            this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
+          } else {
+            item.archived = true
+            this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1378,6 +1416,7 @@
           action.processStepActionChildProcesses = data.processStepActionChildProcesses
           action.processStepActionLinks = data.processStepActionLinks
           action.processStepLogicList = data.processStepLogicList
+          action.triggerAutomatically = data.triggerAutomatically
           this.actionExpanded = []
 
           //update the necessary psr's to immutable
@@ -1443,8 +1482,7 @@
         try {
           const {data} = await postRequest(`/processStep/${this.processStepId}/action/${action.id}/addChildStepToAction`, {
             processStepId: this.selectedProcessStep.id,
-            displayOrder: 0,
-            triggerAutomatically: !!this.selectedProcessStep.triggerAutomatically
+            displayOrder: 0
           })
           action.processStepActionChildProcesses.push(data)
           this.selectedProcessStep = {}
@@ -1469,18 +1507,18 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async updateChildStep(actionId, childStep) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
-          this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+      // async updateChildStep(actionId, childStep) {
+      //   this.$store.commit(AppMutations.SET_LOADING, true)
+      //   try {
+      //     await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateActionChildStep`, childStep)
+      //     this.snackbar = getSnackbar('SUCCESS', 'Child Process Updated')
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   } catch (e) {
+      //     console.error('*** ERROR ***', e)
+      //     this.snackbar = getSnackbar('ERROR', 'Error Updating Child Process')
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // },
       async saveFunctionToAction(action) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {

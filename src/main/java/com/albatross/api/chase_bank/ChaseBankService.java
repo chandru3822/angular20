@@ -64,7 +64,7 @@ public class ChaseBankService {
                         //need to save the check number to the payment so we have a record of it and can export it
                         Map<String, Object> params = ImmutableMap.of("checkNumber", checkNumber,
                                                                      "paymentId", payment.getId());
-                        sqlCache.update("rebate.saveCheckNumberToPayment", params);
+                        sqlCache.update("chasebank.saveCheckNumberToPayment", params);
                     }
                     records.add(paymentToAp6DelimitedSingleLine(payment, checkNumber));
                 } catch (RebatePaymentValidationException failure) {

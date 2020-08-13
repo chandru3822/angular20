@@ -127,6 +127,19 @@
       order by ps.process_step_name
     ]]>
   </process.availableProcessSteps>
+
+  <process.nonAdminProcessStepsForProcess>
+    <![CDATA[
+      select ps.*
+      from flow.process_step ps
+          inner join flow.process_step_process psp on psp.process_step_id = ps.id
+      where ps.archived is not true
+        and ps.company_id = :companyId
+        and ps.non_admin_add is true
+        and psp.process_id = :processId
+      order by ps.process_step_name
+    ]]>
+  </process.nonAdminProcessStepsForProcess>
   <process.insertProcessStepProcess>
     <![CDATA[
       insert into flow.process_step_process (process_id, process_step_id, created_by_id, date_created, display_order)

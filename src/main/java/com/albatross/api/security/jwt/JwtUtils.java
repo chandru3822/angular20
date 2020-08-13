@@ -24,9 +24,11 @@ import java.util.function.Predicate;
 @SuppressWarnings("serial")
 @Slf4j
 public class JwtUtils {
-    public static final Duration JWT_EXPIRATION = Duration.ofDays(7);
     public static final String HEADER = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
+
+    @Value("${security.jwt.expireDuration}")
+    private Long jwtExpireDuration;
 
     @Value("${security.jwt.phrase}")
     private String jwtPhrase;
@@ -64,7 +66,7 @@ public class JwtUtils {
 
         Instant now    = Instant.now(),
                 expiry = claims.getIssuedAt()
-                               .plus(JWT_EXPIRATION);
+                               .plus(Duration.ofDays(jwtExpireDuration));
         if (now.isAfter(expiry)) {
             Duration d = Duration.between(expiry, now);
             throw new JwtTokenExpiredException("Your token expired " + d.toMinutes()

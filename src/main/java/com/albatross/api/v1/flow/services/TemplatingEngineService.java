@@ -1,4 +1,4 @@
-package com.albatross.api.v1.company.blueraven.services;
+package com.albatross.api.v1.flow.services;
 
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
@@ -6,6 +6,7 @@ import freemarker.template.Template;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.script.ScriptEngineManager;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -15,7 +16,7 @@ import java.util.Map;
 @Slf4j
 public class TemplatingEngineService {
 
-//	ScriptEngineManager engineManager = new ScriptEngineManager();
+	ScriptEngineManager engineManager = new ScriptEngineManager();
 
 //	public void applyJavascriptTemplate(String templateContent, Map<String, Object> contextMap, OutputStream output) throws Exception {
 //
@@ -48,7 +49,8 @@ public class TemplatingEngineService {
 		    return output.toString();
         } catch (Exception ex) {
 			log.error("TEMPLATE_ERROR: unable to create output stream: {}", ex);
-			throw ex;
 		}
+
+		return "fail fail fail";
 	}
 }

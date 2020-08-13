@@ -56,6 +56,7 @@
 
     <v-col cols="12" class="text-left">
       <v-menu
+        v-model="displayDropdown"
         bottom
         offset-y
         :close-on-content-click="false"
@@ -68,7 +69,6 @@
         </template>
 
         <v-card class="pa-5">
-          Select a process step
           <v-select
             v-model="selectedNewProjectProcessStep"
             :items="process.processStepProcesses"
@@ -79,25 +79,9 @@
             return-object
           />
 
-          Select a status
-          <v-select
-            v-model="selectedNewStatus"
-            :items="availableProcessStepStatuses"
-            item-text="processStepStatusType"
-            item-value="companyProcessStepStatusTypeId"
-            label="Status"
-            placeholder="Select one..."
-            return-object
-          />
-
-          Primary
-          <v-checkbox
-              v-model="selectedNewMain"
-          />
-
           <v-btn
             class="project-admin-btn primary"
-            :disabled="selectedNewProjectProcessStep === null || selectedNewStatus === null"
+            :disabled="selectedNewProjectProcessStep === null"
             @click="createProjectProcessStep"
           >
             Create
@@ -187,13 +171,12 @@ export default {
       process: {},
       contact: {},
       snackbar: {},
+      displayDropdown: false,
       displayChangeOwner: false,
       availableOwners: [],
       availableProcessStepStatuses: [],
       isProjectProcessStepsLoading: false,
       selectedNewProjectProcessStep: null,
-      selectedNewStatus: null,
-      selectedNewMain: false,
       headers: [
         {text: 'ID', value: 'projectProcessStepId'},
         {text: 'Type', value: 'processStepName'},
@@ -296,6 +279,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, selectedStep.selectedProcessStepStatusType)
+        await this.getProjectProcessSteps()
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating process step status')
@@ -315,20 +299,20 @@ export default {
     createProjectProcessStep: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        // Status is 1 (active) because current business logic says new project process steps must be active and primary
         const {data} = await postRequest(`/projectProcessStep/`, {
           projectId: this.projectId,
           processStepId: this.selectedNewProjectProcessStep.processStepId,
-          companyProcessStepStatusTypeId: this.selectedNewStatus.id,
-          main: this.selectedNewMain
+          companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.id === 1)?.processStepStatusTypeId,
+          main: true
         })
 
         const newStep = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
         this.projectProcessSteps.push(newStep)
         this.selectedNewProjectProcessStep = null
-        this.selectedNewStatus = null
-        this.selectedNewMain = false
 
         this.getProjectProcessSteps()
+        this.displayDropdown = false
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')

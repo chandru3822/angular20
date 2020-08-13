@@ -1,5 +1,40 @@
 <template>
   <v-container class="custom-field-group-container">
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">
+          {{deleteHeader}}
+        </v-card-title>
+
+        <v-card-text>
+          {{deleteText}}
+          <v-list v-for="(item, index) in fieldsInUse" :key="index">
+            <v-list-item-content>
+              {{ item.objectType }}
+              <div v-if="item.processStepName">{{item.processStepName}}</div>
+              <div v-if="item.groupName">{{ item.groupName }}<span v-if="item.fieldName"> - {{ item.fieldName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -88,10 +123,6 @@
                         </v-card-title>
 
                         <v-card-text>
-                          <div class="error-text">
-                            WARNING: Any process step requirements currently using a field from this group will also be archived and any action logic currently using those requirements will be reset.
-                          </div>
-
                           Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
                         </v-card-text>
 
@@ -106,7 +137,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="[item.archived = true, deleteWithChecks(item.id, null)]">
+                              @click="deleteWithChecks(item, item.id, null)">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -129,7 +160,6 @@
                   <v-autocomplete v-if="newFieldType === 'native' || $route.params.id !== '1'"
                                   v-model="newField"
                                   :items="availableCustomFields"
-                                  cache-items
                                   label="New Custom Field"
                                   item-text="fieldName"
                                   return-object
@@ -143,21 +173,19 @@
                   <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
                                   v-model="parent"
                                   :items="parentObjects"
-                                  cache-items
                                   label="Parent Object"
-                                  item-text="name"
+                                  item-text="processStepName"
                                   return-object
                                   autocomplete="off"
                                   @input="loadFieldsByParent"
                   >
                     <template slot='item' slot-scope='{ item }'>
-                      {{ item.name }}
+                      {{ item.processStepName }}
                     </template>
                   </v-autocomplete>
                   <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
                                   v-model="selectedAncillaryField"
                                   :items="ancillaryCustomFields"
-                                  cache-items
                                   label="Custom Field"
                                   item-text="fieldName"
                                   return-object
@@ -180,7 +208,12 @@
                           <v-icon>drag_handle</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
-                          {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
+                          <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
+                            {{cf.fieldName}}
+                          </div>
+                          <div v-else>
+                            {{ cf.processStepName }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                          </div>
                           <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
                             <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
                             Show On Insert
@@ -218,10 +251,6 @@
                             </v-card-title>
 
                             <v-card-text class="mt-2">
-                              <div class="error-text mb-3">
-                                WARNING: Any process step requirements currently using this field will also be archived and any action logic currently using those requirements will be reset.
-                              </div>
-
                               <span class="error--text">WARNING:</span>
                               By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
                               Are you sure you want to delete <strong>{{ cf.fieldName }}</strong> from <strong>{{
@@ -239,7 +268,7 @@
                               <v-btn
                                   color="primary"
                                   text
-                                  @click="[cf.archived = true, deleteWithChecks(null, cf.id)]">
+                                  @click="deleteWithChecks(cf, null, cf.id)">
                                 Yes
                               </v-btn>
                             </v-card-actions>
@@ -351,6 +380,10 @@ export default {
       snackbar: {},
       constants,
       addNew: false,
+      deleteError: false,
+      deleteHeader: null,
+      deleteText: null,
+      fieldsInUse: [],
       newFieldType: 'native',
       selectedIndex: null,
       fieldOrderChanged: false,
@@ -479,6 +512,10 @@ export default {
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
         item.customFields.unshift(data)
         this.newField = {}
+        this.selectedAncillaryField = {}
+        this.parent = {}
+        this.addField = false
+        this.snackbar = getSnackbar
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -512,6 +549,9 @@ export default {
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
         item.customFields.unshift(data)
         this.newField = {}
+        this.selectedAncillaryField = {}
+        this.parent = {}
+        this.addField = false
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -548,14 +588,32 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteWithChecks(customFieldGroupId, customFieldGroupAssignmentId) {
+    async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
           customFieldGroupId, customFieldGroupAssignmentId
         }
-        await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
-        this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+        const {data} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
+        if (data?.length > 0) {
+          this.deleteError = true
+          item.deleteConfirm = false
+          this.fieldsInUse = data
+          let errorMsg = 'Group Cannot Be Deleted'
+          this.deleteHeader = 'Error Deleting Custom Field Group'
+          this.deleteText = 'You cannot delete a group that has a field in use by other groups or requirements.'
+          if(null !== customFieldGroupAssignmentId) {
+            errorMsg = 'Field Cannot Be Deleted'
+            this.deleteHeader = 'Error Deleting Custom Field from Group'
+            this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
+          }
+          this.snackbar = getSnackbar('ERROR', errorMsg)
+        } else {
+          this.fieldsInUse = []
+          item.archived = true
+          this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -563,18 +621,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    // async deleteFieldFromGroup (fieldGroupId) {
-    //   this.$store.commit(AppMutations.SET_LOADING, true)
-    //   try {
-    //     await deleteRequest(`/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
-    //     this.snackbar = getSnackbar('SUCCESS', 'Field Removed From Group')
-    //     this.$store.commit(AppMutations.SET_LOADING, false)
-    //   } catch (e) {
-    //     console.error('*** ERROR ***', e)
-    //     this.snackbar = getSnackbar('ERROR', 'Error Removing Field from Group')
-    //     this.$store.commit(AppMutations.SET_LOADING, false)
-    //   }
-    // },
     async saveFieldChanges (fields) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

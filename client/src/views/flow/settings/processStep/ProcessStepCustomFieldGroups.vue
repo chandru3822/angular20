@@ -1,5 +1,40 @@
 <template>
   <v-container class="">
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">
+          {{deleteHeader}}
+        </v-card-title>
+
+        <v-card-text>
+          {{deleteText}}
+          <v-list v-for="(item, index) in fieldsInUse" :key="index">
+            <v-list-item-content>
+              {{ item.objectType }}
+              <div v-if="item.processStepName">{{item.processStepName}}</div>
+              <div v-if="item.groupName">{{ item.groupName }}<span v-if="item.fieldName"> - {{ item.fieldName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12" class="pt-0">
         <v-toolbar flat>
@@ -61,6 +96,7 @@
         <v-row>
           <v-col cols="12">
             <v-data-table
+                v-if="showTable"
                 :headers="headers"
                 :items="filterCustomFieldGroups()"
                 :items-per-page="-1"
@@ -81,7 +117,7 @@
               </template>
 
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
+                <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
                     <v-btn text icon small class="handle">
                       <v-icon>drag_handle</v-icon>
@@ -125,9 +161,9 @@
                         </v-card-title>
 
                         <v-card-text class="pt-4">
-                          <div class="error-text">
-                            WARNING: Any requirements currently using a field from this group will also be archived and any action logic currently using those requirements will be reset.
-                          </div>
+                          <span class="error--text">WARNING:</span>
+                          By deleting a Custom Field Group you will lose all data associated with fields in the group.<br/><br/>
+
                           Are you sure you want to delete this Custom Field Group: <strong>{{ item.groupName }}</strong>?
                         </v-card-text>
 
@@ -142,7 +178,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="[item.archived = true, deleteWithChecks(item.id, null)]">
+                              @click="deleteWithChecks(item, item.id, null)">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -235,7 +271,7 @@
                             </template>
                               <v-list>
                                 <v-list-item
-                                  v-for="(cfg, index) in filterBy(customFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"
+                                  v-for="(cfg, index) in filterBy(localCustomFieldGroups, (g) => { return g.id !== cf.customFieldGroupId && !g.eventTypeId })"
                                   :key="index" @click="moveFieldToOtherGroup(cf, cfg)">
                                   <v-list-item-title>{{ cfg.groupName }}</v-list-item-title>
                                 </v-list-item>
@@ -260,10 +296,6 @@
                               </v-card-title>
 
                               <v-card-text class="mt-2">
-                                <div class="error-text mb-3">
-                                  WARNING: Any requirements currently using this field will also be archived and any action logic currently using those requirements will be reset.
-                                </div>
-
                                 <span class="error--text">WARNING:</span>
                                 By deleting a field you will lose all data associated with the field. If you meant to "move" the field to another group please cancel and move the field. <br/><br/>
 
@@ -281,7 +313,7 @@
                                 <v-btn
                                     color="primary"
                                     text
-                                    @click="[cf.archived = true, deleteWithChecks(null, cf.id)]">
+                                    @click="deleteWithChecks(cf, null, cf.id)">
                                   Yes
                                 </v-btn>
                               </v-card-actions>
@@ -312,6 +344,8 @@
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import cloneDeep from 'lodash.clonedeep'
+  import orderBy from "lodash.orderby"
+
 
   export default {
     name: 'ProcessStepCustomFieldGroups',
@@ -329,10 +363,10 @@
       Sortable.create(table, {
         handle: '.handle',
         onEnd({ newIndex, oldIndex }) {
-          if(_self.customFieldGroups?.length > 0) {
-            const rowSelected = _self.customFieldGroups.splice(oldIndex, 1)[0]
-            _self.customFieldGroups.splice(newIndex, 0, rowSelected)
-            let rowsClone = cloneDeep(_self.customFieldGroups)
+          if(_self.localCustomFieldGroups?.length > 0) {
+            const rowSelected = _self.localCustomFieldGroups.splice(oldIndex, 1)[0]
+            _self.localCustomFieldGroups.splice(newIndex, 0, rowSelected)
+            let rowsClone = cloneDeep(_self.localCustomFieldGroups)
 
             let rowsToSave = []
             rowsClone.forEach((r, idx) => {
@@ -343,7 +377,7 @@
               r.groupOrder = idx
               //save only rows that changed
               if(save) {
-                _self.customFieldGroups[idx].newGroupOrder = idx
+                _self.localCustomFieldGroups[idx].newGroupOrder = idx
                 rowsToSave.push(r)
               }
             })
@@ -355,6 +389,11 @@
     data() {
       return {
         snackbar: {},
+        showTable: true,
+        deleteError: false,
+        deleteHeader: null,
+        deleteText: null,
+        fieldsInUse: [],
         constants,
         newGroup: {
           schedulingFields: [],
@@ -384,7 +423,19 @@
         eventTypes: []
       }
     },
-    computed: {},
+    computed: {
+      localCustomFieldGroups: {
+        get: function() {
+          return this.customFieldGroups
+        },
+        set: function(val) {
+          val.forEach(v => {
+            v.groupOrder = v.newGroupOrder ?? v.groupOrder
+          })
+          return orderBy(val, v => v.groupOrder)
+        }
+      }
+    },
     methods: {
       async saveFieldGroup() {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -396,7 +447,7 @@
           this.newGroup.eventTypeId = this.newGroup.schedulable ? this.newGroup.eventTypeId : null
 
           const {data} = await postRequest(`/customFieldGroup/addProcessStepCustomFieldGroup`, this.newGroup)
-          this.customFieldGroups.push(data)
+          this.localCustomFieldGroups.push(data)
           this.newGroup = {
             schedulingFields: [],
             schedulable: false,
@@ -424,14 +475,32 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteWithChecks(customFieldGroupId, customFieldGroupAssignmentId) {
+      async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
             customFieldGroupId, customFieldGroupAssignmentId
           }
-          await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
-          this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+          const {data} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
+          if (data?.length > 0) {
+            this.deleteError = true
+            item.deleteConfirm = false
+            this.fieldsInUse = data
+            let errorMsg = 'Group Cannot Be Deleted'
+            this.deleteHeader = 'Error Deleting Custom Field Group'
+            this.deleteText = 'You cannot delete a group that has a field in use by other groups or requirements.'
+            if(null !== customFieldGroupAssignmentId) {
+              errorMsg = 'Field Cannot Be Deleted'
+              this.deleteHeader = 'Error Deleting Custom Field from Group'
+              this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
+            }
+            this.snackbar = getSnackbar('ERROR', errorMsg)
+          } else {
+            this.fieldsInUse = []
+            item.archived = true
+            this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -589,7 +658,7 @@
         }
       },
       filterCustomFieldGroups () {
-        return this.customFieldGroups?.filter(cfg => { return !cfg.archived})
+        return this.localCustomFieldGroups?.filter(cfg => { return !cfg.archived})
       },
       async getSchedulingFields () {
         if(this.newGroup.schedulable) {
@@ -620,7 +689,7 @@
         }
       },
       showScheduleGroupCheckbox () {
-        let tempGroups = this.customFieldGroups.filter(cfg => !cfg.archived)
+        let tempGroups = this.localCustomFieldGroups.filter(cfg => !cfg.archived)
         return tempGroups?.length === 0 ||
           tempGroups.find(cfg => cfg.eventTypeId) === undefined
       },
@@ -629,7 +698,13 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
+            this.localCustomFieldGroups = orderBy(this.localCustomFieldGroups, 'groupOrder')
             this.snackbar = getSnackbar('SUCCESS', 'Group Order Saved')
+            // ok ok i know this is a bad hack but i couldn't get draggable row sorting to work and keep the expanded item in the correct index without this!!!! dont hate
+            this.showTable = false
+            this.$nextTick(() => {
+              this.showTable = true
+            })
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)

@@ -112,8 +112,9 @@
       </v-toolbar>
       <v-card class="pa-4 text-left">
         <CustomValueInput
-          v-for="field in group.customFieldValues"
-          :key="field.fieldName"
+          v-for="(field, idx) in group.customFieldValues"
+          :key="idx"
+          :callback="populateDirtyCfvs"
           :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null || field.readonly"
           :showFieldName="false"
           :field="field"
@@ -257,6 +258,7 @@ export default {
       isProcessStepsLoading: true,
       isFieldsLoading: true,
       notes: [],
+      dirtyCfvs: [],
       snackbar: {},
       editAddress: false,
       isProcessStepsExpanded: false,
@@ -335,13 +337,20 @@ export default {
     updateFieldGroups: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.customFieldGroups)
+        const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs)
+        this.dirtyCfvs = []
         this.customFieldGroups = data
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Update Project Fields')
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Project Fields')
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    populateDirtyCfvs(field) {
+      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+      if(!match) {
+        this.dirtyCfvs.push(field)
       }
     },
     getNotes: async function () {

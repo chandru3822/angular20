@@ -63,36 +63,20 @@ public class ProcessStepRequirementService {
     return results;
   }
 
-  public void deleteRequirement(Long requirementId) {
+  public List<ProcessStepAction> deleteRequirement(Long requirementId) {
     User currentUser = securityService.getCurrentUser();
-
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.getId());
     params.put("requirementId", requirementId);
-    sqlCache.update("processStepRequirement.deleteRequirement", params);
+    List<ProcessStepAction> actionsUsingRequirement = sqlCache.query("processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
 
-    processStepActionService.deleteLogicIfActionsUseRequirement(requirementId);
-  }
-
-  public void deleteRequirementIfUsingItem(Long customFieldGroupId, Long customFieldGroupAssignmentId) {
-    User currentUser = securityService.getCurrentUser();
-    // this method is called when a customFieldGroup gets archived. if a requirement is using a field from that group the requirement will also be archived
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("modifiedById", currentUser.getId());
-    List<ProcessStepRequirement> results = null;
-
-    if (null != customFieldGroupId) {
-      params.put("customFieldGroupId", customFieldGroupId);
-      results = sqlCache.query("processStepRequirement.requirementsUsingCustomFieldGroup", params, ProcessStepRequirement.class);
+    if(!actionsUsingRequirement.isEmpty()) {
+      return actionsUsingRequirement;
     } else {
-      params.put("customFieldGroupAssignmentId", customFieldGroupAssignmentId);
-      results = sqlCache.query("processStepRequirement.requirementsUsingCustomFieldGroupAssignment", params, ProcessStepRequirement.class);
+      sqlCache.update("processStepRequirement.deleteRequirement", params);
+      return null;
     }
 
-    for(ProcessStepRequirement requirement : results) {
-      //archive any requirements using that custom field group
-      deleteRequirement(requirement.getId());
-    }
   }
 
   public List<ProcessStepRequirementType> getRequirementTypes() {

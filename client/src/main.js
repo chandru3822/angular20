@@ -57,7 +57,8 @@ Vue.filter('formatDate', function (value, type, format, inputFormat) {
 
   // default format if none provided
   if (!format) {
-    format = (type === 'date') ? 'M/D/YYYY' : 'M/D/YYYY h:mm a'
+    // timestampAsDate means do the timezone conversion but then only display the date
+    format = (type === 'date') || (type === 'timestampAsDate') ? 'M/D/YYYY' : 'M/D/YYYY h:mm a'
   }
 
   if (value) {

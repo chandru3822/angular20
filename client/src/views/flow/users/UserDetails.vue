@@ -1,8 +1,8 @@
 <template>
-  <v-container>
+  <v-container py-0>
     <div v-if="user.id">
       <v-row>
-        <v-col cols="12" md="6" class="text-left">
+        <v-col cols="12" md="6" class="text-left" style="padding-top: 0">
           <div>
             <v-toolbar color="transparent" class="elevation-0">
               <v-toolbar-title>Summary</v-toolbar-title>
@@ -12,6 +12,14 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
+              <v-select v-model="user.companyUserStatusTypeId"
+                        :items="companyUserStatusTypes"
+                        label="User Status"
+                        placeholder="Select a status..."
+                        item-text="userStatusType"
+                        item-value="id"
+                        autocomplete="off">
+              </v-select>
               <v-text-field text
                             label="Phone"
                             placeholder=" "
@@ -50,11 +58,11 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
-              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="!userCanEdit || cf.readonly" :field="cf"></CustomValueInput>
+              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="!userCanEdit || cf.readonly" :callback="populateDirtyCfvs" :field="cf"></CustomValueInput>
             </v-card>
           </div>
         </v-col>
-        <v-col cols="12" md="6" class="text-left">
+        <v-col cols="12" md="6" class="text-left" style="padding-top: 0">
           <NotesAndActivity :showNotes="true" :showActivity="false"
                             :notes="notes" :primaryId="parseInt(userId)"
                             type="User"
@@ -72,6 +80,7 @@
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+  import cloneDeep from 'lodash.clonedeep'
 
   export default {
     name: 'User',
@@ -93,13 +102,15 @@
         snackbar: {},
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
         companies: [],
+        dirtyCfvs: [],
         user: {},
         customFieldGroups: [],
         notes: [],
         owners: [],
         userId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
-        changeOwner: false
+        changeOwner: false,
+        companyUserStatusTypes: [],
       }
     },
     created () {
@@ -107,26 +118,38 @@
       this.getCompanies()
       this.getCustomFieldGroups()
       this.getNotes()
+      this.getCompanyUserStatusTypes()
     },
     methods: {
       async saveUser() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        this.user.customFieldGroups = this.customFieldGroups
+        // this.user.customFieldGroups = this.customFieldGroups
+
         try {
+          //save user
           await putRequest(`/user`, this.user)
+          // save dirty custom field values
+          const {data} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
+          this.dirtyCfvs = []
+          this.customFieldGroups = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving User')
+          let errorMsg = e?.data?.message ? 'Error Saving User: ' + e.data.message : 'Error Saving User'
+          this.snackbar = getSnackbar('ERROR', errorMsg)
           this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      populateDirtyCfvs(field) {
+        let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+        if(!match) {
+          this.dirtyCfvs.push(field)
         }
       },
       async getCustomFieldGroups() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequestWithParams(`/customFieldValues/user`, { params: {
-              primaryId: this.userId
-            }})
+          const {data} = await getRequestWithParams(`/customFieldValues/user/${this.userId}`)
           this.customFieldGroups = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -174,7 +197,31 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
+      async getCompanyUserStatusTypes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest(`/user/statuses`)
+          this.companyUserStatusTypes = data
+
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async saveUserStatus () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await postRequest(`/user/${this.userId}/status/${this.user.companyUserStatusTypeId}`)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving User Status')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
   }
 </script>

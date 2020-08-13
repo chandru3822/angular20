@@ -15,6 +15,7 @@
       :format="'MMMM DD, YYYY'"
       :label="field.fieldName"
       :readonly="readonly"
+      @input="callback(field)"
     />
 
     <DatetimePickerInput
@@ -25,6 +26,7 @@
       :format="'MMMM DD, YYYY, h:mm A'"
       :label="field.fieldName"
       :readonly="readonly"
+      @input="callback(field)"
     />
 
     <v-checkbox
@@ -33,6 +35,7 @@
       :label="field.fieldName"
       :disabled="readonly"
       :ripple="false"
+      @change="callback(field)"
     />
 
     <v-text-field
@@ -41,7 +44,9 @@
       :readonly="readonly"
       placeholder=" "
       :label="field.fieldName"
-      v-model="field.numericValue"
+      type="number"
+      v-model.number="field.numericValue"
+      @change="callback(field)"
     />
 
     <v-text-field
@@ -51,6 +56,7 @@
       placeholder=" "
       :label="field.fieldName"
       v-model="field.textValue"
+      @change="callback(field)"
     />
 
     <v-text-field
@@ -59,20 +65,24 @@
       :readonly="readonly"
       :label="field.fieldName"
       placeholder=" "
-      v-model="field.intValue"
+      type="number"
+      v-model.number="field.intValue"
+      @change="callback(field)"
     />
 
     <v-select
       v-if="field.dataTypeId === 6 && field.hasListValues"
       v-model="field.intValue"
       text
-      clearable
+      :clearable="!readonly"
       :readonly="readonly"
+      :disabled="readonly"
       placeholder=" "
       :items="field.listOfValues"
       :label="field.fieldName"
       item-value="id"
       item-text="name"
+      @input="callback(field)"
    />
 
     <v-select
@@ -81,37 +91,43 @@
       multiple
       placeholder=" "
       :items="field.listOfValues"
-      clearable
+      :clearable="!readonly"
       :readonly="readonly"
+      :disabled="readonly"
       :label="field.fieldName"
       v-model="field.intArrayValue"
       item-value="id"
       item-text="name"
+      @input="callback(field)"
     />
 
     <v-select
       v-if="field.dataTypeId === 8"
       v-model="field.intValue"
       text
-      clearable
+      :clearable="!readonly"
+      :readonly="readonly"
+      :disabled="readonly"
       :items="field.listOfValues"
       :label="field.fieldName"
-      :readonly="readonly"
       placeholder=" "
       item-value="id"
       item-text="name"
+      @input="callback(field)"
     />
 
     <v-select
       v-if="field.dataTypeId === 9"
       v-model="field.intValue"
       text
-      clearable
+      :clearable="!readonly"
       :items="field.listOfValues"
       :readonly="readonly"
+      :disabled="readonly"
       placeholder=" "
       item-value="id"
       item-text="name"
+      @input="callback(field)"
     />
   </v-col>
 </v-row>
@@ -132,7 +148,8 @@ export default {
     showFieldName: {
       type: Boolean,
       default: true
-    }
+    },
+    callback: Function
   },
   components: {
     DatetimePickerInput

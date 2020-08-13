@@ -314,6 +314,20 @@
     limit 1
   ]]></user.findByUsernameIgnoreCase>
 
+  <user.findByUsernameOrEmailIgnoreCase><![CDATA[
+    select u.id,
+       u.first_name,
+       u.last_name,
+       u.password,
+       u.email,
+       u.username,
+       u.first_name || ' ' || u.last_name as full_name
+    from flow.user u
+    where lower(:usernameOrEmail::text) = lower(username)
+          OR lower(:usernameOrEmail::text) = lower(email)
+    limit 1
+  ]]></user.findByUsernameOrEmailIgnoreCase>
+
   <user.findUserById><![CDATA[
     select u.id,
            u.first_name,
@@ -414,4 +428,32 @@
       where email ILIKE :email
       and case when :userId::int is not null then :userId::int != id else 1=1 end
   ]]></user.checkEmailExists>
+
+  <user.saveForgotPasswordFields><![CDATA[
+      update flow."user"
+      set uuid = :uuid,
+          expiry_date = :expiryDate
+      where id = :id
+  ]]></user.saveForgotPasswordFields>
+
+  <user.saveUserPassword><![CDATA[
+      update flow."user"
+      set password = :password
+      where id = :id
+  ]]></user.saveUserPassword>
+
+  <user.findByUserUuid><![CDATA[
+    select u.id,
+       u.first_name,
+       u.last_name,
+       u.password,
+       u.email,
+       u.username,
+       u.first_name || ' ' || u.last_name as full_name,
+       u.uuid,
+       u.expiry_date
+    from flow.user u
+    where u.uuid = :uuid
+    limit 1
+  ]]></user.findByUserUuid>
 </sql>

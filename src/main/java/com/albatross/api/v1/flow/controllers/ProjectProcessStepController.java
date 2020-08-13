@@ -1,18 +1,18 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
+import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.ProjectProcessStep;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import retrofit2.Response;
 
 import java.io.IOException;
 import java.util.List;
@@ -68,10 +68,10 @@ public class ProjectProcessStepController {
     return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), projectProcessStep.getCompanyProcessStepStatusTypeId(), null, projectProcessStep.getMain()), HttpStatus.OK);
   }
 
-  @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CustomFieldGroup>> saveProjectProcessStep(@RequestBody ProjectProcessStep pps) {
-    return new ResponseEntity<>(projectProcessStepService.saveProjectProcessStep(pps), HttpStatus.OK);
-  }
+//  @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+//  public ResponseEntity<List<CustomFieldGroup>> saveProjectProcessStep(@RequestBody ProjectProcessStep pps) {
+//    return new ResponseEntity<>(projectProcessStepService.saveProjectProcessStep(pps), HttpStatus.OK);
+//  }
 
   @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Attachment>> getProjectProcessStepAttachments(@PathVariable Long projectProcessStepId,
@@ -105,9 +105,13 @@ public class ProjectProcessStepController {
   }
 
   @PostMapping(value = "/{projectProcessStepId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
-    projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId());
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  public ResponseEntity<?> updateProjectProcessStepStatus(@PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
+    try {
+        projectProcessStepService.setStatus(projectProcessStepId, status.getProcessStepStatusTypeId(), status.getId());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    } catch (RuntimeException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
   }
 
     @PutMapping(value = "/{projectProcessStepId}/main")
