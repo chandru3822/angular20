@@ -70,34 +70,6 @@ public class ProcessStepService {
     }
   }
 
-  public List<ProcessStepWorkQueueType> saveWorkQueueTypesToStep(ProcessStep processStep) {
-    User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("processStepId", processStep.getId());
-    params.put("userId", currentUser.getId());
-
-    for(ProcessStepWorkQueueType wqt : processStep.getWorkQueueTypes()) {
-      if(null != wqt.getId() && wqt.getArchived()) {
-        params.put("archived", wqt.getArchived());
-        params.put("id", wqt.getId());
-        sqlCache.update("processStep.updateWorkQueueType", params);
-      } else if (null == wqt.getId()) {
-        params.put("workQueueTypeId", wqt.getWorkQueueTypeId());
-        sqlCache.update("processStep.insertWorkQueueType", params);
-      }
-    }
-
-    return getWorkQueueTypesForStep(processStep.getId());
-  }
-
-  public List<ProcessStepWorkQueueType> getWorkQueueTypesForStep (Long processStepId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("processStepId", processStepId);
-
-    List<ProcessStepWorkQueueType> results = sqlCache.query("processStep.getWorkQueueTypesForStep", params, ProcessStepWorkQueueType.class);
-    return results;
-  }
-
   public void updateStep(ProcessStep processStep) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -114,7 +86,7 @@ public class ProcessStepService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("createdById", currentUser.getId());
     params.put("name", processStep.getProcessStepName());
-    params.put("nonAdminAdd", processStep.getNonAdminAdd());
+    params.put("nonAdminAdd", processStep.getNonAdminAdd() != null && processStep.getNonAdminAdd());
     Long id = sqlCache.updateReturningId("processStep.insert", params, "id").longValue();
 
     return getProcessStep(id);

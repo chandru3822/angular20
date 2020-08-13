@@ -1,5 +1,5 @@
-DROP MATERIALIZED VIEW if EXISTS flow.user_position_hierarchy_vw;
-CREATE MATERIALIZED VIEW flow.user_position_hierarchy_vw AS
+DROP MATERIALIZED VIEW if EXISTS flow.user_position_hierarchy_materialized_vw;
+CREATE MATERIALIZED VIEW flow.user_position_hierarchy_materialized_vw AS
 select up.user_id,
        up.org_id,
        up.id  as user_position_id,
@@ -17,14 +17,14 @@ from flow.user_position up
 WITH DATA;
 
 
-CREATE INDEX uphv_user_position_id_idx
-    ON flow.user_position_hierarchy_vw (user_position_id);
+CREATE INDEX uphmv_user_position_id_idx
+    ON flow.user_position_hierarchy_materialized_vw (user_position_id);
 
-CREATE INDEX uphv_user_id_idx
-    ON flow.user_position_hierarchy_vw (user_id);
+CREATE INDEX uphmv_user_id_idx
+    ON flow.user_position_hierarchy_materialized_vw (user_id);
 
-CREATE INDEX uphv_position_id_idx
-    ON flow.user_position_hierarchy_vw (position_id);
+CREATE INDEX uphmv_position_id_idx
+    ON flow.user_position_hierarchy_materialized_vw (position_id);
 
-CREATE INDEX uphv_org_id_idx
-    ON flow.user_position_hierarchy_vw (org_id);
+CREATE INDEX uphmv_org_id_idx
+    ON flow.user_position_hierarchy_materialized_vw (org_id);

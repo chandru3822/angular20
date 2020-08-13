@@ -9,5 +9,6 @@ import lombok.Data;
 @Data
 public class ProcessStepWorkQueueType {
     private Long id, processStepId, workQueueTypeId;
+    private String workQueueType;
     private Boolean archived;
 }
