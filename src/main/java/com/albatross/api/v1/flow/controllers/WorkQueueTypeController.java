@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.WorkQueueType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.WorkQueueTypeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +46,26 @@ public class WorkQueueTypeController {
   @PostMapping(value = "/type", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<WorkQueueType> insertType(@RequestBody WorkQueueType type) {
     return workQueueTypeService.insertType(type);
+  }
+
+  @GetMapping(value = "/processStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueType> getAvailableWorkQueueTypesForStep (@PathVariable Long id) {
+    return workQueueTypeService.getAvailableWorkQueueTypesForStep(id);
+  }
+
+  @DeleteMapping(value = "/processStep/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteProcessStepWorkQueueType(@PathVariable Long id) {
+    workQueueTypeService.deleteProcessStepWorkQueueType(id);
+  }
+
+  @PostMapping(value = "/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProcessStepWorkQueueType> insertProcessStepLink(@RequestBody ProcessStepWorkQueueType workQueueType) {
+    return workQueueTypeService.insertProcessStepWorkQueueType(workQueueType);
+  }
+
+  @PutMapping(value = "/saveProjectStatusTypesToWorkQueueType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueTypeProjectStatus> saveProjectStatusTypesToWorkQueueType(@RequestBody ProcessStepWorkQueueType processStepWorkQueueType) {
+    return workQueueTypeService.saveProjectStatusTypesToWorkQueueType(processStepWorkQueueType);
   }
 
 }

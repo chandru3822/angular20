@@ -88,7 +88,7 @@ INSERT INTO flow.custom_field_object_type (custom_field_id, company_object_type_
 
 -- CONTACTS (for mobile testing)
 -- create custom field group (for mobile testing)
-INSERT INTO flow.custom_field_group (group_name, company_object_type_id, group_order, archived, process_step_id, event_type_id) VALUES ('Kory Test Contact Group DONT DELETE PLEASE', 2, 0, true, null, null);
+INSERT INTO flow.custom_field_group (group_name, company_object_type_id, group_order, archived, process_step_id, event_type_id,created_by_id,date_created) VALUES ('Kory Test Contact Group DONT DELETE PLEASE', 2, 0, true, null, null,2350555,now());
 
 -- create custom field group assignment (for mobile testing)
 INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, archived, date_created, date_modified, created_by_id, modified_by_id, schedule_field_type_id) VALUES ((select id from flow.custom_field_group where group_name = 'Kory Test Contact Group DONT DELETE PLEASE'), 565, null, 0, false, '2020-05-04 20:56:50.619427', null, 2350555, null, null);
@@ -104,7 +104,7 @@ INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_fi
 
 -- PROJECTS (for mobile testing)
 -- create custom field group (for mobile testing)
-INSERT INTO flow.custom_field_group (group_name, company_object_type_id, group_order, archived, process_step_id, event_type_id) VALUES ('Kory Test Project Group DONT DELETE PLEASE', 1, 0, true, null, null);
+INSERT INTO flow.custom_field_group (group_name, company_object_type_id, group_order, archived, process_step_id, event_type_id,created_by_id,date_created) VALUES ('Kory Test Project Group DONT DELETE PLEASE', 1, 0, true, null, null,2350555,now());
 
 -- create custom field group assignment (for mobile testing)
 INSERT INTO flow.custom_field_group_assignment (custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, archived, date_created, date_modified, created_by_id, modified_by_id, schedule_field_type_id) VALUES ((select id from flow.custom_field_group where group_name = 'Kory Test Project Group DONT DELETE PLEASE'), 565, null, 0, false, '2020-05-04 20:56:50.619427', null, 2350555, null, null);

@@ -17,6 +17,16 @@
                 and case when :unassigned is true then pps.user_position_id is null
                     when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
                 and cpsst.process_step_status_type_id = :processStepStatusTypeId
+                and p.company_project_status_type_id in (
+                      select cpst.id
+                      from flow.company_project_status_type cpst
+                               inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+                               inner join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.project_status_type_id = pst.id
+                      where pswqtpst.archived is not true
+                        and pswqtpst.process_step_work_queue_type_id = wqt.id
+                        and cpst.company_id = :companyId
+                  )
+
         ) as work_queue_count
       from flow.work_queue_type wqt
       inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id

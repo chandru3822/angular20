@@ -3,7 +3,6 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import com.albatross.api.v1.flow.model.FieldInUse;
 import com.albatross.api.v1.flow.model.ProcessStep;
-import com.albatross.api.v1.flow.model.ProcessStepWorkQueueType;
 import com.albatross.api.v1.flow.services.ProcessStepService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,11 +49,6 @@ public class ProcessStepController {
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStep insertStep(@RequestBody ProcessStep processStep) {
     return processStepService.insertStep(processStep);
-  }
-
-  @PutMapping(value = "/saveWorkQueueTypesToStep", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepWorkQueueType> saveWorkQueueTypesToStep(@RequestBody ProcessStep processStep) {
-    return processStepService.saveWorkQueueTypesToStep(processStep);
   }
 
   @GetMapping(value = "/getParentObjects", produces = MediaType.APPLICATION_JSON_VALUE)

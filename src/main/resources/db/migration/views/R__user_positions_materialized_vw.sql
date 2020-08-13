@@ -1,5 +1,5 @@
-DROP MATERIALIZED VIEW if EXISTS flow.user_positions_vw;
-CREATE MATERIALIZED VIEW flow.user_positions_vw AS
+DROP MATERIALIZED VIEW if EXISTS flow.user_positions_materialized_vw;
+CREATE MATERIALIZED VIEW flow.user_positions_materialized_vw AS
 select u.id                                      as user_id,
        u.first_name,
        u.last_name,
@@ -41,20 +41,20 @@ from flow."user" u
 WITH DATA;
 
 
-CREATE INDEX upv_user_position_id_idx
-    ON flow.user_positions_vw (user_position_id);
+CREATE INDEX upmv_user_position_id_idx
+    ON flow.user_positions_materialized_vw (user_position_id);
 
-CREATE INDEX upv_user_id_idx
-    ON flow.user_positions_vw (user_id);
+CREATE INDEX upmv_user_id_idx
+    ON flow.user_positions_materialized_vw (user_id);
 
-CREATE INDEX upv_position_id_idx
-    ON flow.user_positions_vw (position_id);
+CREATE INDEX upmv_position_id_idx
+    ON flow.user_positions_materialized_vw (position_id);
 
-CREATE INDEX upv_company_id_idx
-    ON flow.user_positions_vw (company_id);
+CREATE INDEX upmv_company_id_idx
+    ON flow.user_positions_materialized_vw (company_id);
 
-CREATE INDEX upv_start_date_idx
-    ON flow.user_positions_vw (start_date);
+CREATE INDEX upmv_start_date_idx
+    ON flow.user_positions_materialized_vw (start_date);
 
-CREATE INDEX upv_end_date_idx
-    ON flow.user_positions_vw (end_date);
+CREATE INDEX upmv_end_date_idx
+    ON flow.user_positions_materialized_vw (end_date);

@@ -50,4 +50,47 @@
     insert into flow.work_queue_type(company_id, work_queue_type, created_by_id, work_queue_category_id)
     values (:companyId, :workQueueType, :createdById, :workQueueCategoryId)
   ]]></workQueueType.insertType>
+
+  <workQueueType.getAvailableWorkQueueTypesForStep><![CDATA[
+    select wqt.*
+    from flow.work_queue_type wqt
+    where wqt.archived is not true
+      and wqt.company_id = :companyId
+      and not exists (
+            select process_step_id
+            from flow.process_step_work_queue_type pswqt
+            where pswqt.work_queue_type_id = wqt.id
+              and pswqt.process_step_id = :id
+              and archived is not true
+        )
+    order by wqt.work_queue_type
+  ]]></workQueueType.getAvailableWorkQueueTypesForStep>
+
+  <workQueueType.getProcessStepWorkQueueType><![CDATA[
+    SELECT pswqt.id,
+       pswqt.work_queue_type_id,
+       pswqt.created_by_id,
+       pswqt.process_step_id,
+       pswqt.modified_by_id,
+       wqt.work_queue_type,
+       pswqt.archived
+    FROM flow.process_step_work_queue_type pswqt
+             inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+    where pswqt.id = :id
+  ]]></workQueueType.getProcessStepWorkQueueType>
+
+  <workQueueType.insertProcessStepWorkQueueType><![CDATA[
+      insert into flow.process_step_work_queue_type (process_step_id, work_queue_type_id, created_by_id)
+        values (:processStepId, :workQueueTypeId, :createdById)
+  ]]></workQueueType.insertProcessStepWorkQueueType>
+
+  <workQueueType.deleteProcessStepWorkQueueType>
+    <![CDATA[
+        update flow.process_step_work_queue_type
+        set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+        where id = :id
+    ]]>
+  </workQueueType.deleteProcessStepWorkQueueType>
 </sql>
