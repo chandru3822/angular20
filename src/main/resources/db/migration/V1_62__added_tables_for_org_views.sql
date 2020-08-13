@@ -27,22 +27,22 @@ create table if not exists flow.user_positions_vw
     has_access                   boolean
 );
 
-CREATE INDEX upv_user_position_id_idx
+CREATE INDEX if not exists upv_user_position_id_idx
     ON flow.user_positions_vw (user_position_id);
 
-CREATE INDEX upv_user_id_idx
+CREATE INDEX if not exists upv_user_id_idx
     ON flow.user_positions_vw (user_id);
 
-CREATE INDEX upv_position_id_idx
+CREATE INDEX if not exists upv_position_id_idx
     ON flow.user_positions_vw (position_id);
 
-CREATE INDEX upv_company_id_idx
+CREATE INDEX  if not exists upv_company_id_idx
     ON flow.user_positions_vw (company_id);
 
-CREATE INDEX upv_start_date_idx
+CREATE INDEX if not exists upv_start_date_idx
     ON flow.user_positions_vw (start_date);
 
-CREATE INDEX upv_end_date_idx
+CREATE INDEX if not exists upv_end_date_idx
     ON flow.user_positions_vw (end_date);
 
 
@@ -55,20 +55,19 @@ create table if not exists flow.user_position_hierarchy_vw
     hierarchy                    jsonb
 );
 
-CREATE INDEX uphv_user_position_id_idx
+CREATE INDEX if not exists uphv_user_position_id_idx
     ON flow.user_position_hierarchy_vw (user_position_id);
 
-CREATE INDEX uphv_user_id_idx
+CREATE INDEX if not exists uphv_user_id_idx
     ON flow.user_position_hierarchy_vw (user_id);
 
-CREATE INDEX uphv_position_id_idx
+CREATE INDEX if not exists uphv_position_id_idx
     ON flow.user_position_hierarchy_vw (position_id);
 
-CREATE INDEX uphv_org_id_idx
+CREATE INDEX if not exists uphv_org_id_idx
     ON flow.user_position_hierarchy_vw (org_id);
 
 
-insert into flow.user_position_hierarchy_vw
-select * from flow.user_position_hierarchy_materialized_vw;
+
 
 
