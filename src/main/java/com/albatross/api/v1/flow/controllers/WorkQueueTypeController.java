@@ -63,4 +63,9 @@ public class WorkQueueTypeController {
     return workQueueTypeService.insertProcessStepWorkQueueType(workQueueType);
   }
 
+  @PutMapping(value = "/saveProjectStatusTypesToWorkQueueType", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<WorkQueueTypeProjectStatus> saveProjectStatusTypesToWorkQueueType(@RequestBody ProcessStepWorkQueueType processStepWorkQueueType) {
+    return workQueueTypeService.saveProjectStatusTypesToWorkQueueType(processStepWorkQueueType);
+  }
+
 }

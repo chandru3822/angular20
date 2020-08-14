@@ -1,0 +1,11 @@
+Hello ${customerFirstName},
+
+Please review and sign the attached documents for your solar energy system. This is a very important step towards going solar and starting the installation process.
+
+Once you sign these documents, we can schedule a site survey to take images of your roof and prepare for your solar panel layout design. If you have any questions please feel free to discuss them with your sales representative or you can also contact support at (855) 205-2530 or support@blueravensolar.com
+
+Thank you,
+Support
+(855) 205-2530
+Support@blueravensolar.com
+Blue Raven Solar

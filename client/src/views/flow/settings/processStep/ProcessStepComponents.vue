@@ -40,51 +40,139 @@
                         @input="assignNewWorkQueueType"
               ></v-autocomplete>
               <v-card flat v-if="processStep.workQueueTypes && processStep.workQueueTypes.length > 0">
-                <v-list v-for="(a, index) in filterBy(processStep.workQueueTypes, false, 'archived')"
-                        :key="index">
-                  <v-list-item :class="{'shaded-row': index % 2}">
-                    <v-list-item-content>
-                      {{a.workQueueType}}
-                    </v-list-item-content>
-                    <v-dialog
-                      v-model="a.deleteConfirm"
-                      width="500">
-                      <template v-slot:activator="{ on }">
-                        <v-list-item-action class="clickable" v-on="on">
-                          <v-icon>delete</v-icon>
-                        </v-list-item-action>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="headline grey lighten-2"
-                          primary-title
-                        >
-                          Confirm
-                        </v-card-title>
+                <v-data-table
+                  :headers="headers"
+                  :items="filterWorkQueueTypes()"
+                  single-expand
+                  :expanded.sync="expanded"
+                  hide-default-footer
+                  hide-default-header
+                  disable-sort
+                  class="elevation-1"
+                >
+                  <template #no-data>
+                    No available work queue types
+                  </template>
 
-                        <v-card-text>
-                          Are you sure you want to delete this Work Queue Type: <strong>{{ a.workQueueType }}</strong>?
-                        </v-card-text>
+                  <template #no-results>
+                    No available work queue types
+                  </template>
 
-                        <v-divider></v-divider>
+                  <template #expanded-item="{ headers, item }">
+                    <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': processStep.workQueueTypes.indexOf(item) % 2}">
+                      <v-select
+                        v-model="item.selectedOptions"
+                        :items="projectStatusTypes"
+                        multiple
+                        persistent-hint
+                        hint="Active Status will be used if none selected"
+                        label="Project Status Types"
+                        item-text="projectStatusType"
+                        return-object
+                      ></v-select>
+                      <v-btn dark class="white--text mt-3" color="primaryCustom" @click="saveProjectStatusesToWorkQueueType(item)">
+                        Save
+                      </v-btn>
+                    </td>
+                  </template>
 
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="a.deleteConfirm = false">
-                            No
-                          </v-btn>
-                          <v-btn
-                            color="primary"
-                            text
-                            @click="[a.archived = true, deleteWorkQueueTypeFromStep(a.id)]">
-                            Yes
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </v-list-item>
-                </v-list>
+                  <template #item="{ item, index }">
+                    <tr class="clickable" :class="{'shaded-row': index % 2}">
+                      <td class="text-left">{{item.workQueueType}}</td>
+                      <td class="text-right">
+                        <v-btn small text @click="[expanded = [item], getProjectStatusTypes(item)]"
+                               v-if="!expanded.includes(item)">
+                          <v-icon>edit</v-icon>
+                        </v-btn>
+                        <v-btn small text @click="expanded = []"
+                               v-else>cancel
+                        </v-btn>
+                        <v-dialog
+                          v-model="item.deleteConfirm"
+                          width="500">
+                          <template v-slot:activator="{ on }">
+                            <v-btn text v-on="on">
+                              <v-icon>delete</v-icon>
+                            </v-btn>
+                          </template>
+                          <v-card>
+                            <v-card-title
+                              class="headline grey lighten-2"
+                              primary-title
+                            >
+                              Confirm
+                            </v-card-title>
+
+                            <v-card-text>
+                              Are you sure you want to delete <strong>{{ item.workQueueType }}</strong>?
+                            </v-card-text>
+
+                            <v-divider></v-divider>
+
+                            <v-card-actions>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                @click="item.deleteConfirm = false">
+                                No
+                              </v-btn>
+                              <v-btn
+                                color="primary"
+                                text
+                                @click="deleteWorkQueueTypeFromStep(item)">
+                                Yes
+                              </v-btn>
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
+                      </td>
+                    </tr>
+                  </template>
+                </v-data-table>
+<!--                <v-list v-for="(a, index) in filterBy(processStep.workQueueTypes, false, 'archived')"-->
+<!--                        :key="index">-->
+<!--                  <v-list-item :class="{'shaded-row': index % 2}">-->
+<!--                    <v-list-item-content>-->
+<!--                      {{a.workQueueType}}-->
+<!--                    </v-list-item-content>-->
+<!--                    <v-dialog-->
+<!--                      v-model="a.deleteConfirm"-->
+<!--                      width="500">-->
+<!--                      <template v-slot:activator="{ on }">-->
+<!--                        <v-list-item-action class="clickable" v-on="on">-->
+<!--                          <v-icon>delete</v-icon>-->
+<!--                        </v-list-item-action>-->
+<!--                      </template>-->
+<!--                      <v-card>-->
+<!--                        <v-card-title-->
+<!--                          class="headline grey lighten-2"-->
+<!--                          primary-title-->
+<!--                        >-->
+<!--                          Confirm-->
+<!--                        </v-card-title>-->
+
+<!--                        <v-card-text>-->
+<!--                          Are you sure you want to delete this Work Queue Type: <strong>{{ a.workQueueType }}</strong>?-->
+<!--                        </v-card-text>-->
+
+<!--                        <v-divider></v-divider>-->
+
+<!--                        <v-card-actions>-->
+<!--                          <v-spacer></v-spacer>-->
+<!--                          <v-btn-->
+<!--                            @click="a.deleteConfirm = false">-->
+<!--                            No-->
+<!--                          </v-btn>-->
+<!--                          <v-btn-->
+<!--                            color="primary"-->
+<!--                            text-->
+<!--                            @click="[a.archived = true, deleteWorkQueueTypeFromStep(a.id)]">-->
+<!--                            Yes-->
+<!--                          </v-btn>-->
+<!--                        </v-card-actions>-->
+<!--                      </v-card>-->
+<!--                    </v-dialog>-->
+<!--                  </v-list-item>-->
+<!--                </v-list>-->
               </v-card>
             </div>
           </v-col>
@@ -256,6 +344,12 @@
     data () {
       return {
         snackbar: {},
+        expanded: [],
+        projectStatusTypes: [],
+        headers: [
+          {text: 'Work Queue Types', value: 'workQueueType', show: true},
+          {text: '', value: 'icons', show: false, width: '100px'},
+        ],
         addNewCustomFieldGroup: false,
         changesMade: false,
         addNewType: false,
@@ -288,6 +382,37 @@
       await this.getProcessStepDetails()
     },
     methods: {
+      async getProjectStatusTypes (item) {
+        item.selectedOptions = []
+        if(this.projectStatusTypes?.length === 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            const {data} = await getRequest(`/project/status`)
+            this.projectStatusTypes = data
+            // this makes the multi-select work
+            this.projectStatusTypes.forEach(d => {
+              let match = item.projectStatuses.find(pst => pst.projectStatusTypeId === d.id)
+              if(match) {
+                item.selectedOptions.push(d)
+              }
+            })
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Project Status Types')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
+          this.projectStatusTypes.forEach(d => {
+            let match = item.projectStatuses.find(pst => pst.projectStatusTypeId === d.id)
+            if(match) {
+              item.selectedOptions.push(d)
+            }
+          })
+        }
+
+      },
       async getProcessStepDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -303,8 +428,6 @@
         }
       },
       async saveProcessStep () {
-        //handle everything that can happen in save
-        // this.saveWorkQueueTypes()
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await putRequest(`/processStep`, this.processStep)
@@ -354,7 +477,6 @@
         try {
           this.addNewType = false
           await deleteRequest(`/attachmentType/processStepType/${id}`)
-          // this.availableAttachmentTypes = data
           this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -400,7 +522,6 @@
         try {
           this.addNewLink = false
           await deleteRequest(`/links/processStep/${id}`)
-          // this.availableAttachmentTypes = data
           this.snackbar = getSnackbar('SUCCESS', 'Link Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -441,12 +562,49 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteWorkQueueTypeFromStep (id) {
+      async saveProjectStatusesToWorkQueueType(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          //check each projectStatusTypes, if not exists in selectedOptions then it got archived
+          console.log('randaLogger', item.selectedOptions)
+          item.projectStatuses?.forEach(s => {
+            let match = item.selectedOptions.find(o => o.id === s.projectStatusTypeId)
+            if (!match) {
+              s.archived = true
+            }
+          })
+
+          //check each selectedOptions, if not exists in item.projectStatuses already then it needs to be added
+          item.selectedOptions?.forEach(o => {
+            let match = item.projectStatuses.find(pst => pst.projectStatusTypeId === o.id)
+            if (!match) {
+              let object = {
+                id: null,
+                projectStatusTypeId: o.id,
+                processStepWorkQueueTypeId: item.id,
+                archived: false
+              }
+              item.projectStatuses.push(object)
+            }
+          })
+
+          const {data} = await putRequest(`/workQueueType/saveProjectStatusTypesToWorkQueueType`, item)
+          item.projectStatuses = data
+          this.expanded = []
+          this.snackbar = getSnackbar('SUCCESS', 'Project Status Types Saved')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Project Status Types')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async deleteWorkQueueTypeFromStep (item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.addNewWorkQueueType = false
-          await deleteRequest(`/workQueueType/processStep/${id}`)
-          // this.availableAttachmentTypes = data
+          await deleteRequest(`/workQueueType/processStep/${item.id}`)
+          item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Deleted')
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -454,6 +612,11 @@
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Link')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      filterWorkQueueTypes() {
+        return this.processStep?.workQueueTypes.filter(u => {
+          return !u.archived
+        })
       },
     }
 
