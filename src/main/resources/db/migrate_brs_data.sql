@@ -13,6 +13,10 @@ drop trigger if exists organization_audit_trg ON flow.organization_custom_field_
 drop trigger if exists contact_audit_trg ON flow.contact_custom_field_value;
 drop trigger if exists user_audit_trg ON flow.user_custom_field_value;
 drop trigger if exists project_audit_trg ON flow.project_custom_field_value;
+drop trigger if exists user_view_trg on flow.user;
+drop trigger if exists org_view_trg on flow.org;
+drop trigger if exists user_position_trg on flow.user_position;
+
 
 /*
 INSERT INTO flow.org_level (company_id, level,level_name)

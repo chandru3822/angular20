@@ -1,5 +1,5 @@
 DROP FUNCTION IF EXISTS brs.get_commission_account_details(integer,BIGINT [],INTEGER,INTEGER,DATE,DATE,INTEGER,INTEGER);
-/*MILESTONE 1 9 MILESTONE 2 35*/
+/*MILESTONE 1 175 MILESTONE 2 35*/
 CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id         integer,
                                                               p_project_ids         BIGINT [],
                                                               p_contact_id   INTEGER,
@@ -140,7 +140,7 @@ BEGIN
                                                0)  total,
                                        1 as milestone_id
                                 FROM flow.project p1
-                                         inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 9 and
+                                         inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 175 and
                                                                                      pps.process_step_complete_date is not null
                                          inner join brs.project_override po on po.project_id = p1.id
                                          INNER JOIN brs.override_plan_receiving_user opru
@@ -221,7 +221,7 @@ BEGIN
                                                                                                                          else 0 end,2),
                                                            0) end total
                                  FROM flow.project p1
-                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id  =9  and pps.process_step_complete_date is not null
+                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id  =175  and pps.process_step_complete_date is not null
                                           inner join brs.project_commission pc on pc.project_id = p1.id
                                           inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
                                           inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
@@ -248,7 +248,7 @@ BEGIN
                                                                                                      from brs.override_plan_receiving_user opru
                                                                                                      where opru.override_plan_id = op.id),2),0) end total
                                  FROM flow.project p1
-                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 9 and pps.process_step_complete_date is not null
+                                          inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 175 and pps.process_step_complete_date is not null
                                           inner join brs.project_override po on po.project_id = p1.id
                                           inner join brs.override_plan op on op.id = po.override_plan_id
                                  WHERE p1.id = p.id),0) + coalesce(
@@ -286,7 +286,7 @@ BEGIN
                             AS overrides_paid_to_date
                  FROM flow.project p
                           inner join brs.project_details pd on pd.project_id = p.id
-                          inner join flow.project_process_step pps on pps.project_id = p.id and process_step_id = 9 and pps.process_step_complete_date is not null
+                          inner join flow.project_process_step pps on pps.project_id = p.id and process_step_id = 175 and pps.process_step_complete_date is not null
                           inner join flow.contact c on c.id = p.contact_id
                           INNER JOIN flow.user u ON u.id = pd.closer_user_id
                           inner join flow.user_status_type ust  on ust.user_id = u.id
