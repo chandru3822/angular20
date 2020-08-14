@@ -928,7 +928,7 @@
             :items="funnelDrilldownData"
             @current-items="filteredFunnelDrilldownItems"
             :search="funnelDrilldownSearch"
-            :height="funnelDrilldownData.length > 0 ? 'calc(100vh - 350px)' : '100px'"
+            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 355px)') : '105px'"
             dense
             multi-sort
             :sort-by="[]"
@@ -945,56 +945,83 @@
                 <td>{{ item.state ? item.state : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
                 <td>{{ item.deal_id ? item.deal_id : '' }}</td>
-                <td>{{ item.source_name ? item.source_name : '' }}</td>
-                <td>{{ item.system_size ? item.system_size : '' }}</td>
-                <td>{{ item.financier ? item.financier : '' }}</td>
+                <td :class="item.source_name_class">{{ item.source_name ? item.source_name : '' }}</td>
+                <td :class="item.system_size_class">{{ item.system_size ? item.system_size : '' }}</td>
+                <td :class="item.financier_class">{{ item.financier ? item.financier : '' }}</td>
                 <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
                 <td>{{ item.cancelled_date_formatted ? item.cancelled_date_formatted : '' }}</td>
                 <td v-if="funnelDrilldownHeaders[11].show">
-                    {{ item.added_on_date_formatted ? item.added_on_date_formatted : '' }}
+                  {{ item.added_on_date_formatted ? item.added_on_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[12].show">
-                    {{ item.appointment_outcome ? item.appointment_outcome : '' }}
+                <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[12].show">
+                  {{ item.appointment_outcome ? item.appointment_outcome : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[13].show">
-                    {{ item.credit_decision_date_formatted ? item.credit_decision_date_formatted : '' }}
+                <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[13].show">
+                  {{ item.credit_decision_date_formatted ? item.credit_decision_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[14].show">
-                    {{ item.credit_check ? item.credit_check : '' }}
+                <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[14].show">
+                  {{ item.credit_check ? item.credit_check : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[15].show">
+                <td :class="item.installation_agreement_signed_date_class"
+                    v-if="funnelDrilldownHeaders[15].show">
                   {{ item.installation_agreement_signed_date_formatted ? item.installation_agreement_signed_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[16].show">
+                <td :class="item.site_survey_verified_date_class"
+                    v-if="funnelDrilldownHeaders[16].show">
                   {{ item.site_survey_verified_date_formatted ? item.site_survey_verified_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[17].show">
+                <td :class="item.final_design_sent_to_customer_date_class"
+                    v-if="funnelDrilldownHeaders[17].show">
                   {{ item.final_design_sent_to_customer_date_formatted ? item.final_design_sent_to_customer_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[18].show">
+                <td :class="item.final_design_signed_date_class"
+                    v-if="funnelDrilldownHeaders[18].show">
                   {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[19].show">
+                <td :class="item.proof_of_homeowners_insurance_obtained_date_class"
+                    v-if="funnelDrilldownHeaders[19].show">
                   {{ item.proof_of_homeowners_insurance_obtained_date_formatted ? item.proof_of_homeowners_insurance_obtained_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[20].show">
+                <td :class="item.utility_bill_verified_date_class"
+                    v-if="funnelDrilldownHeaders[20].show">
                   {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[21].show">
+                <td :class="item.financial_agreement_signed_date_class"
+                    v-if="funnelDrilldownHeaders[21].show">
                   {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[22].show">
+                <td :class="item.cash_down_payment_class"
+                    v-if="funnelDrilldownHeaders[22].show">
                   {{ item.cash_down_payment_date_formatted ? item.cash_down_payment_date_formatted : '' }}
                 </td>
-                <td v-if="funnelDrilldownHeaders[23].show">
+                <td :class="item.substantial_completion_date_class"
+                    v-if="funnelDrilldownHeaders[23].show">
                   {{ item.substantial_completion_date_formatted ? item.substantial_completion_date_formatted : '' }}
                 </td>
+              </tr>
+            </template>
+            <template v-if="showTotalSystemSize" #footer="{ props: {} }">
+              <tr id="total-system-size-row">
+                <td style="width: 25px"></td>
+                <td style="width: 90px"></td>
+                <td style="width: 115px"></td>
+                <td style="width: 75px"></td>
+                <td style="width: 90px"></td>
+                <td style="width: 40px"></td>
+                <td id="total-system-size-label">Total Size:</td>
+                <td style="width: 110px">{{ totalSystemSize ? totalSystemSize : 0 }}</td>
               </tr>
             </template>
 
             <template #no-data>
               <div class="my-3 funnel-drilldown-no-data-msg">
                 No data is available for the selected date range.
+              </div>
+            </template>
+
+            <template #no-results>
+              <div class="my-3 funnel-drilldown-no-data-msg">
+                No matching records found.
               </div>
             </template>
           </v-data-table>
@@ -1022,6 +1049,7 @@
   import $ from 'jquery'
   import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
+  import constants from '@/helpers/constants'
   import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import { getDistricts, getRegions, getOffices, getReps } from '@/services/dashboardService'
@@ -1033,6 +1061,7 @@
     },
     data: () => ({
       snackbar: {},
+      constants,
       milestoneDialog: false,
       funnelDrilldownDialog: false,
       currentUserId: null,
@@ -1229,7 +1258,9 @@
       funnelDrilldownHeaders: [],
       funnelDrilldownData: [],
       funnelDrilldownSearch: '',
-      funnelDrilldownRowCount: 0
+      filteredFunnelDrilldownData: [],
+      funnelDrilldownRowCount: 0,
+      totalSystemSize: 0
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -1262,6 +1293,9 @@
       visibleFunnelDrilldownHeaders () {
         return this.funnelDrilldownHeaders.filter(header => header.show === true)
       },
+      showTotalSystemSize () {
+        return this.funnelDrilldownRowCount > 0
+      }
     },
     watch: {
       // the loading animation kept going away before it was supposed to, so this makes sure that it doesn't do that anymore
@@ -1284,6 +1318,9 @@
       },
       funnelDrilldownDialog () {
         this.funnelDrilldownSearch = ''
+      },
+      filteredFunnelDrilldownData () {
+        this.calcTotalSystemSize()
       }
     },
     methods: {
@@ -2293,12 +2330,35 @@
             break
         }
 
+        this.markMissingDrilldownData()
         this.reformatFunnelDrilldownDates()
         this.funnelDrilldownDialog = true
       },
 
-      filteredFunnelDrilldownItems (filteredItems) {
-        this.funnelDrilldownRowCount = filteredItems.length
+      markMissingDrilldownData() {
+        this.funnelDrilldownData = this.funnelDrilldownData.map(function (line) {
+          let newLine = {}
+
+          Object.keys(line).forEach(function (key) {
+            newLine[key] = line[key]
+            if (key === 'cash_down_payment') {
+              if (line.financier && line.financier.includes("Cash")) {
+                newLine[key + '_class'] = line[key] == null ? 'missing' : ''
+              }
+            } else if (key === 'credit_decision_date') {
+              if (line.financier && !line.financier.includes("Cash")) {
+                newLine[key + '_class'] = line[key] == null ? 'missing' : ''
+              }
+            } else {
+              newLine[key + '_class'] = !line[key] ? 'missing' : ''
+            }
+
+            if (key === 'credit_check' && line[key] && line[key] !== 'Pass' && line[key] !== 'Pending Review') {
+              newLine.strike = true
+            }
+          })
+          return newLine
+        })
       },
 
       reformatFunnelDrilldownDates () {
@@ -2355,6 +2415,27 @@
             row.substantial_completion_date_formatted = moment(row.substantial_completion_date).format('MMM D, YYYY')
           }
         })
+      },
+
+      calcTotalSystemSize () {
+        if (this.funnelDrilldownData.length > 0 && this.filteredFunnelDrilldownData.length > 0) {
+          let total = 0
+
+          this.filteredFunnelDrilldownData.forEach(row => {
+            if (row.system_size) {
+              total += row.system_size
+            }
+          })
+
+          this.totalSystemSize = +total.toFixed(2)
+        } else {
+          this.totalSystemSize = 0
+        }
+      },
+
+      filteredFunnelDrilldownItems (filteredItems) {
+        this.filteredFunnelDrilldownData = filteredItems
+        this.funnelDrilldownRowCount = filteredItems.length
       },
 
       toggle () {
@@ -3365,15 +3446,24 @@
   }
 
   #funnel-drilldown {
+    .missing {
+      background-color: rgba(204, 0, 0, 0.5);
+    }
+
     .v-card__title {
       display: flex;
       flex-flow: row nowrap;
       justify-content: space-between;
       align-items: flex-start;
+      margin-bottom: 10px;
+      padding: 0 24px;
 
       #funnel-drilldown-title {
         font-family: "Roboto Condensed", sans-serif;
         font-size: 14px;
+        line-height: 24px;
+        word-break: normal;
+        padding-top: 5px;
       }
     }
 
@@ -3388,17 +3478,17 @@
 
     #funnel-drilldown-search {
       display: flex;
-      flex-flow: row wrap;
+      flex-flow: row nowrap;
       justify-content: space-between;
       align-items: center;
+
+      ::v-deep .v-input {
+        max-width: 70%;
+      }
 
       ::v-deep input,
       #funnel-drilldown-row-count {
         font-size: 11px;
-      }
-
-      ::v-deep .v-input {
-        width: 100%;
       }
     }
 
@@ -3417,6 +3507,16 @@
         }
       }
 
+      #total-system-size-row:hover {
+        background-color: transparent !important;
+      }
+
+      #total-system-size-label {
+        font-weight: bold;
+        text-align: right;
+        min-width: 130px;
+      }
+
       .customer-name {
         text-transform: capitalize;
       }
@@ -3425,6 +3525,17 @@
         text-align: left;
         margin-left: 25px;
       }
+    }
+
+    .v-card__text {
+      padding-bottom: 0;
+    }
+
+    .v-btn {
+      font-size: 10px;
+      width: 50px;
+      min-width: 50px;
+      height: 25px;
     }
   }
 
@@ -3485,6 +3596,12 @@
     #funnel-drilldown {
       .v-card__title {
         align-items: center;
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep .v-input {
+          max-width: 75%;
+        }
       }
     }
   }
@@ -4000,8 +4117,11 @@
 
     #funnel-drilldown {
       .v-card__title {
+        padding: 10px 24px 0 24px;
+
         #funnel-drilldown-title {
           font-size: 18px;
+          padding-bottom: 10px;
         }
       }
 
@@ -4038,6 +4158,16 @@
             padding-bottom: 3px;
           }
         }
+      }
+
+      .v-card__text {
+        padding-bottom: 10px;
+      }
+
+      .v-btn {
+        font-size: 12px;
+        width: 75px;
+        height: 30px;
       }
     }
   }
@@ -4374,6 +4504,7 @@
       .v-card__title {
         #funnel-drilldown-title {
           font-size: 20px;
+          line-height: 26px;
         }
       }
 
@@ -4382,6 +4513,12 @@
         #funnel-drilldown-row-count {
           font-size: 12px;
         }
+      }
+
+      .v-btn {
+        font-size: 14px;
+        width: 80px;
+        height: 35px;
       }
     }
   }
@@ -4591,6 +4728,7 @@
       .v-card__title {
         #funnel-drilldown-title {
           font-size: 24px;
+          line-height: 32px;
         }
       }
 
