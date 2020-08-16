@@ -21,7 +21,7 @@ BEGIN
                                                         0) end total
                                FROM flow.project p1
                                         inner join flow.project_process_step pps
-                                                   on pps.project_id = p1.id and pps.process_step_id = 9 and
+                                                   on pps.project_id = p1.id and pps.process_step_id = 175 and
                                                       pps.process_step_complete_date is not null
                                         inner join brs.project_commission pc on pc.project_id = p1.id
                                         inner join brs.commission_plan cp on cp.id = pc.commission_plan_id
