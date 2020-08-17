@@ -93,4 +93,33 @@
         where id = :id
     ]]>
   </workQueueType.deleteProcessStepWorkQueueType>
+
+  <workQueueType.insertProjectStatusType>
+    <![CDATA[
+      insert into flow.process_step_work_queue_type_project_status_type(project_status_type_id, process_step_work_queue_type_id, created_by_id)
+      values (:projectStatusTypeId, :processStepWorkQueueTypeId, :userId)
+    ]]>
+  </workQueueType.insertProjectStatusType>
+
+  <workQueueType.updateProjectStatusType>
+    <![CDATA[
+      update flow.process_step_work_queue_type_project_status_type
+      set archived = true,
+          modified_by_id = :userId,
+          date_modified = now()
+      where id = :id
+    ]]>
+  </workQueueType.updateProjectStatusType>
+
+  <workQueueType.getProjectStatusesForWorkQueueType>
+    <![CDATA[
+      SELECT pswqtpst.id,
+       pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
+       pswqtpst.project_status_type_id as "projectStatusTypeId",
+       pswqtpst.archived
+      FROM flow.process_step_work_queue_type_project_status_type pswqtpst
+      WHERE pswqtpst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
+        AND pswqtpst.archived is not true
+    ]]>
+  </workQueueType.getProjectStatusesForWorkQueueType>
 </sql>

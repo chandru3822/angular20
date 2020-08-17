@@ -16,7 +16,7 @@
                 and case when :isParent then true else ps.company_id = :companyId end
                 and case when :unassigned is true then pps.user_position_id is null
                     when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
-                and cpsst.process_step_status_type_id = :processStepStatusTypeId
+                and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
                 and p.company_project_status_type_id in (
                       select cpst.id
                       from flow.company_project_status_type cpst
@@ -85,8 +85,27 @@
         and case when :unassigned is true then pps.user_position_id is null
                  when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
         and cpsst.process_step_status_type_id = :processStepStatusTypeId
-    order by last_updated;
+    order by last_updated
+    limit :limit
+    offset :offset;
   ]]></workQueue.getProcessStepsByTypeId>
+
+  <workQueue.getProcessStepsByTypeIdCount><![CDATA[
+    select count(*)
+    from flow.project p
+             inner join flow.project_process_step pps on pps.project_id = p.id
+             inner join flow.process_step ps on ps.id = pps.process_step_id
+             inner join flow.process_step_work_queue_type pswqt on pswqt.process_step_id = ps.id
+             inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+             inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+             left join flow.user_position up on up.id = pps.user_position_id
+             left join flow.user u on u.id = up.user_id
+    where pswqt.work_queue_type_id = :workQueueTypeId
+        and case when :isParent then true else ps.company_id = :companyId end
+        and case when :unassigned is true then pps.user_position_id is null
+                 when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId else true end
+        and cpsst.process_step_status_type_id = :processStepStatusTypeId;
+  ]]></workQueue.getProcessStepsByTypeIdCount>
 
   <workQueue.getWorkQueueOwners><![CDATA[
     select distinct pps.user_position_id,

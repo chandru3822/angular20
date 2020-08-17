@@ -107,19 +107,21 @@
         if(reset) {
           this.selectedWorkQueueCategory = c && c.id !== this.selectedWorkQueueCategory.id ? c : {}
         }
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getRequestWithParams(`/workQueue`, { params: {
-              workQueueCategoryId: this.selectedWorkQueueCategory.id,
-              userPositionId: this.selectedUserPosition.userPositionId,
-              unassigned: this.selectedUserPosition.unassigned
-            }})
-          this.workQueues = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        if(this.selectedWorkQueueCategory?.id) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data} = await getRequestWithParams(`/workQueue`, { params: {
+                workQueueCategoryId: this.selectedWorkQueueCategory.id,
+                userPositionId: this.selectedUserPosition.userPositionId,
+                unassigned: this.selectedUserPosition.unassigned
+              }})
+            this.workQueues = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       loadDrilldown(wq) {
