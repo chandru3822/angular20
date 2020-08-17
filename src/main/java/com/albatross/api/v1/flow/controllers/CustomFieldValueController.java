@@ -1,10 +1,14 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
+import com.albatross.api.v1.flow.model.ProcessStepAction;
+import com.albatross.api.v1.flow.services.AsyncProjectProcessStepService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
+import com.albatross.api.v1.flow.services.ProcessStepActionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,12 @@ import java.util.List;
 public class CustomFieldValueController {
 
   private final CustomFieldValueService customFieldValueService;
+
+  private final ProcessStepActionService processStepActionService;
+
+  private final AsyncProjectProcessStepService asyncProjectProcessStepService;
+
+  private final SecurityService securityService;
 
   // gets for all types
   @GetMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -79,6 +89,13 @@ public class CustomFieldValueController {
   public List<CustomFieldGroup> updateProjectProcessStepCustomFieldValues(@RequestBody List<CustomFieldValue> values,
                                                                           @PathVariable Long projectId,
                                                                           @PathVariable Long projectProcessStepId) {
-    return customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
+    List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
+
+
+    Long processStepId = groups.get(0).getProcessStepId();
+    List<ProcessStepAction> actions = processStepActionService.getActionsForStep(processStepId);
+    asyncProjectProcessStepService.asyncPerformAutoTriggerActions(actions, projectProcessStepId, securityService.getCurrentUserDetails());
+
+    return groups;
   }
 }

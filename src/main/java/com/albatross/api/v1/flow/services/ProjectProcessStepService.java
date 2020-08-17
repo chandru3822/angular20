@@ -283,7 +283,7 @@ public class ProjectProcessStepService {
                       this.performAction(action.getId(), ppsId);
                   }
               } catch (Exception e) {
-                  log.error(String.format("Unable to automatically trigger action ID: %s, with project process step ID: "));
+                      log.error(String.format("Unable to automatically trigger action ID: %s, with project process step ID: %s",  action.getId(), ppsId));
               }
           }
       });
@@ -345,6 +345,14 @@ public class ProjectProcessStepService {
   }
 
   public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
+
+
+    ProjectProcessStep pps = this.getProjectProcessStep(projectProcessStepId);
+
+    // Only perform actions on active project process steps
+    if (pps.getProcessStepStatusTypeId() != 1) {
+        return false;
+    }
 
     ProcessStepAction action = processStepActionService.getActionById(actionId);
 
