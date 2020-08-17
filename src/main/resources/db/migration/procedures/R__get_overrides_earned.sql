@@ -13,7 +13,7 @@ BEGIN
                                            0) end total
                   FROM flow.project p1
                            inner join brs.project_details pd on pd.project_id = p1.id
-                           inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 9 and pps.process_step_complete_date is not null
+                           inner join flow.project_process_step pps on pps.project_id = p1.id and pps.process_step_id = 175 and pps.process_step_complete_date is not null
                            inner join brs.project_override po on po.project_id = p1.id
                            inner join brs.override_plan op on op.id = po.override_plan_id
                            inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id

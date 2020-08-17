@@ -121,6 +121,7 @@
         else cfga1.custom_field_group_id = :customFieldGroupId end
         and cfga1.archived is not true
         and cfg.archived is not true
+        and cfga.archived is not true
         order by object_type, process_step_name, group_name, field_name
   ]]></customFieldGroup.checkForFieldsInUse>
 </sql>
