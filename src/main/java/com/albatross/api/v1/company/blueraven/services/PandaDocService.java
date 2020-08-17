@@ -391,7 +391,7 @@ public class PandaDocService {
     String template = loadEmailTemplate();
 
     HashMap<String, Object> ctx = new HashMap<>();
-    ctx.put("customerFirstName", tokens.get("Deal.Contact.First Name"));
+    ctx.put("customerFirstName", tokens.getString("Deal.Name").split(" ")[0]);
 
     return templateService.renderFreemarkerTemplate(template, ctx);
   }
@@ -404,8 +404,7 @@ public class PandaDocService {
    * @throws IOException
    */
   private String loadEmailTemplate() throws IOException {
-    String tplPath = "/communication/templates/pandadoc-email.ftl.txt";
-    try (InputStream in = PandaDocService.class.getResourceAsStream(tplPath)) {
+    try (InputStream in = PandaDocService.class.getResourceAsStream("/communication/templates/pandadoc-email.ftl.txt")) {
       return new Scanner(in, "UTF-8").useDelimiter("\\A").next();
     }
   }

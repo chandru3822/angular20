@@ -8835,6 +8835,51 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
     );
 
 
+/*Final Design Completion*/
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created)
+        (SELECT project.id,
+                175,
+                (SELECT id FROM flow.company_process_step_status_type WHERE case when d.cancelled_date is null then
+                                                                                         process_step_status_type = 'Active' else
+                                                                                         process_step_status_type = 'Cancelled' end
+                                                                        and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
+                2350555 as created_by_id,
+                now()
+         FROM flow.project
+                  INNER JOIN blueraven.deal d
+                             ON project.id = d.id
+         where d.current_stage_id NOT IN(2,3) AND
+             (d.financier IS NULL OR d.financier !='["One Roof Energy"]') AND
+             (d.on_hold IS NULL OR d.on_hold=FALSE) AND
+                 d.originator_id = 1 and
+             d.final_design_signed_date is not null and
+             d.final_design_complete_date is null and
+             (d.agreement_signed_date is null OR
+              (d.financier = 'Cash' AND d.first_cash_payment_paid_date is null) OR
+              (d.proof_of_howmeowners_insurance_required = 'Yes' AND
+               d.proof_of_homeowners_insurance_obtained_date IS NULL) OR
+              d.utility_bill_verified_date IS NULL));
+
+
+    INSERT INTO flow.project_process_step (project_id, process_step_id, company_process_step_status_type_id, created_by_id,date_created,process_step_complete_date)
+        (SELECT project.id,
+                175,
+                (SELECT id FROM flow.company_process_step_status_type WHERE process_step_status_type = 'Complete'
+                                                                        and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
+                2350555 as created_by_id,
+                now(),
+                final_design_complete_date
+         FROM flow.project
+                  INNER JOIN blueraven.deal d
+                             ON project.id = d.id
+         where
+             final_design_complete_date is not null
+           and originator_id = 1);
+
+
+
+
+
 
 with update_main as(
     select project_id,process_step_id
@@ -8906,6 +8951,28 @@ CREATE TRIGGER update_project_details_trg
     ON flow.project_process_step_custom_field_value
     FOR EACH ROW
 EXECUTE PROCEDURE flow.update_project_details_process_steps();
+
+CREATE TRIGGER user_view_trg
+    AFTER INSERT OR UPDATE OR DELETE
+    ON flow.user
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.refresh_user_records();
+
+
+CREATE TRIGGER org_view_trg
+    AFTER UPDATE
+    ON flow.org
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.refresh_org_records();
+
+
+CREATE TRIGGER user_position_trg
+    AFTER INSERT OR UPDATE OR DELETE
+    ON flow.user_position
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.refresh_user_position_records();
+
+
 
 -- with ids as(
 --     select ppscfv.id
