@@ -181,7 +181,7 @@ public class CustomFieldService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("archived", cfot.getArchived());
     params.put("customFieldId", customFieldId);
-    params.put("userId", userId);
+    params.put("userId", currentUser.getId());
     params.put("companyObjectTypeId", cfot.getCompanyObjectTypeId());
 
     // if it is a new field the cfot.getId() is actually the objectTypeId so do 2 checks here
