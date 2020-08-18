@@ -199,13 +199,12 @@ public class ProjectProcessStepService {
   }
 
   @Transactional
-  public ProjectProcessStep insertProjectProcessStep(Long projectId, Long processStepId, Long statusTypeId, Long userPositionId, Boolean main) {
+  public ProjectProcessStep insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Boolean main) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("processStepId", processStepId);
-    params.put("statusTypeId", statusTypeId);
     params.put("userPositionId", userPositionId);
     params.put("userId", user.getId());
     params.put("main", main);
@@ -335,10 +334,6 @@ public class ProjectProcessStepService {
      * recursively check if child processes have children and auto-triggered until all auto-triggered child process steps have been created with active statuses
      */
 
-    List<CompanyProcessStepStatusType> companyStatusTypes = processStepStatusService.getStatusTypesForCompany();
-    Optional<CompanyProcessStepStatusType> activeStatusType = companyStatusTypes.stream().filter(type -> type.getProcessStepStatusTypeId() == 1).findFirst();
-    final Long activeStatusTypeId = activeStatusType.map(CompanyProcessStepStatusType::getProcessStepStatusTypeId).orElse(null);
-
     ProjectProcessStep projectProcessStep = this.getProjectProcessStep(projectProcessStepId);
     ProcessStepAction action = processStepActionService.getActionById(actionId);
     if (action.getCompanyProcessStepStatusTypeId() != null) {
@@ -350,7 +345,7 @@ public class ProjectProcessStepService {
     Long ownerUserPositionId = (projectProcessStep.getOwner() != null) ? projectProcessStep.getOwner().getUserPositionId() : null;
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), activeStatusTypeId, ownerUserPositionId, true));
+      newSteps.add(this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId, true));
     });
 
     //@TODO: @humes (or anybody ;-)) use newSteps to recursively check for auto-triggered process step actions on child process steps (recursive to perform auto-triggers for each generation of child process steps)
