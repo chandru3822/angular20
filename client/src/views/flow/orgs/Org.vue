@@ -64,7 +64,7 @@
             <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
                               :key="cf.id"
                               :callback="populateDirtyCfvs"
-                              :readonly="cf.readonly"
+                              :readonly="getReadOnly(cf)"
                               :field="cf"></CustomValueInput>
           </v-card>
         </div>
@@ -81,6 +81,7 @@
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
+  import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
   export default {
     name: 'Org',
@@ -202,6 +203,9 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      getReadOnly: function (field) {
+        return getCustomFieldReadOnly(this.$store, field)
+      }
     }
   }
 </script>

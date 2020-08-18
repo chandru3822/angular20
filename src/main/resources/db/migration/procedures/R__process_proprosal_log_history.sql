@@ -380,3 +380,10 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+drop trigger if exists process_proposal_log_history on brs.proposal_log;
+create trigger process_proposal_log_history
+    after insert
+    on brs.proposal_log
+    for each row
+execute procedure brs.process_proposal_log_history();

@@ -176,9 +176,12 @@ public class CustomFieldService {
   }
 
   public void handleCustomFieldObjectTypes(Long customFieldId, CustomFieldObjectType cfot) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("archived", cfot.getArchived());
     params.put("customFieldId", customFieldId);
+    params.put("userId", currentUser.getId());
     params.put("companyObjectTypeId", cfot.getCompanyObjectTypeId());
 
     // if it is a new field the cfot.getId() is actually the objectTypeId so do 2 checks here
@@ -279,17 +282,21 @@ public class CustomFieldService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
 
-      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<List<CustomFieldObjectType>>() {};
+      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "customFieldObjectTypes",
           new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
-      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<List<ListOfValue>>() {};
+      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValues",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
 
       TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "systemListOptionIds",
           new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "whiteListedPositions",
+        new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
     }
   }
 }

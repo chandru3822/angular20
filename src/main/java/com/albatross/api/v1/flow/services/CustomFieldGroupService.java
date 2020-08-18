@@ -104,6 +104,34 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
   }
 
+  public void saveReadOnlyAndWhiteList(CustomField customField, Boolean savePositions) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.getId());
+    params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
+    params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+
+    sqlCache.update("customFieldGroupAssignment.saveReadOnly", params);
+
+    if(!customField.getCustomFieldGroupAssignmentReadOnly()) {
+      // if field is not readonly archive any white listed positions for it
+      sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositions", params);
+    } else if(null != savePositions && savePositions) {
+      // if field IS read_only archive any white listed positions no longer in the body sent in
+      List<Long> positionIdsUsed = customField.getWhiteListedPositions().stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
+      params.put("positionIdsUsed", positionIdsUsed);
+      sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
+
+      for(WhiteListedPosition wlp : customField.getWhiteListedPositions()) {
+        params.put("positionId", wlp.getPositionId());
+        //this insert checks if there is already a non-archived row with the same values
+        sqlCache.update("customFieldGroupAssignment.insertWhiteListPosition", params);
+      }
+    }
+
+  }
+
   public void updateFieldInGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 
@@ -276,8 +304,10 @@ public class CustomFieldGroupService {
   }
 
   public void updateFieldShowOnInsert(CustomFieldObjectType customFieldObjectType) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customFieldObjectType.getId());
+    params.put("modifiedById", user.getId());
     params.put("showOnInsert", customFieldObjectType.getShowOnInsert());
 
     sqlCache.update("customFieldGroup.updateFieldShowOnInsert", params);

@@ -31,11 +31,6 @@ public class ContactController {
         return new ResponseEntity<>(contactService.searchContacts(query, pageable), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/exportContacts", produces = "text/csv")
-    public ResponseEntity exportContactList(@RequestParam String query) {
-        return contactService.exportContacts(query);
-    }
-
     @GetMapping(value = "/{contactId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Contact getContact(@PathVariable Long contactId) {
         return contactService.getContact(contactId);

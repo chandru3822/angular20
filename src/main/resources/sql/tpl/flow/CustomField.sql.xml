@@ -186,13 +186,15 @@
 
   <customField.updateCustomFieldObjectType><![CDATA[
     update flow.custom_field_object_type
-    set archived = :archived
+    set archived = :archived,
+      modified_by_id = :userId,
+      date_modified = now()
     where id = :id
   ]]></customField.updateCustomFieldObjectType>
 
   <customField.insertCustomFieldObjectType><![CDATA[
-    insert into flow.custom_field_object_type(custom_field_id, company_object_type_id)
-    values (:customFieldId, :companyObjectTypeId)
+    insert into flow.custom_field_object_type(custom_field_id, company_object_type_id, created_by_id)
+    values (:customFieldId, :companyObjectTypeId, :userId)
     ON CONFLICT do nothing;
   ]]></customField.insertCustomFieldObjectType>
 

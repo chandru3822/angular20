@@ -66,7 +66,8 @@ public class WorkQueueService {
     params.put("companyId", user.getCompanyId());
     params.put("userPositionId", userPositionId);
     params.put("unassigned", null == unassigned ? false : unassigned);
-    params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
+    //currently we only show active process steps. but sending in as a list in case that changes
+    params.put("processStepStatusTypeIds", new ArrayList<>(Arrays.asList(ProcessStepStatusType.ACTIVE.id)));
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
