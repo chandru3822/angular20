@@ -58,7 +58,10 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
-              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues" :key="index" :readonly="!userCanEdit || cf.readonly" :callback="populateDirtyCfvs" :field="cf"></CustomValueInput>
+              <CustomValueInput v-for="(cf, index) in cfg.customFieldValues"
+                                :key="index"
+                                :readonly="getReadOnly(cf)"
+                                :callback="populateDirtyCfvs" :field="cf"></CustomValueInput>
             </v-card>
           </div>
         </v-col>
@@ -80,7 +83,7 @@
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-  import cloneDeep from 'lodash.clonedeep'
+  import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
   export default {
     name: 'User',
@@ -221,6 +224,9 @@
           this.snackbar = getSnackbar('ERROR', 'Error Saving User Status')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      getReadOnly: function (field) {
+        return this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
       },
     }
   }

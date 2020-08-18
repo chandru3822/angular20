@@ -41,13 +41,13 @@ public class CustomFieldGroupController {
     customFieldGroupService.deleteFieldFromGroup(id);
   }
 
-  // to update just one:
-  @PutMapping(value = "/updateFieldInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateFieldInGroup(@RequestBody CustomField customField) {
-    customFieldGroupService.updateFieldInGroup(customField);
+  @PutMapping(value = "/saveReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateFieldInGroup(@RequestParam(required = false) Boolean savePositions,
+                                 @RequestBody CustomField customField) {
+    customFieldGroupService.saveReadOnlyAndWhiteList(customField, savePositions);
   }
 
-  // to update a list of them:
+  // to update a list of them - (currently used when updating field order):
   @PutMapping(value = "/updateFieldsInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateFieldsInGroup(@RequestBody List<CustomField> customFields) {
     customFieldGroupService.updateFieldsInGroup(customFields);

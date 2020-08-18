@@ -201,6 +201,8 @@ insert into flow.postal_code_zone(company_id, zone_name, created_by_id, distribu
 values (3, 'Scott Fakes It', 2350555, 5);
 insert into flow.postal_code(postal_code_zone_id, postal_code, created_by_id)
 values (1, '97006', 2350555);
+insert into flow.postal_code(postal_code_zone_id, postal_code, created_by_id)
+values (1, '84115', 2350555);
 -- mike falls
 insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
 values (1, 2353957, 2350555);
