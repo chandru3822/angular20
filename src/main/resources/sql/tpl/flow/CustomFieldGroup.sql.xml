@@ -80,7 +80,9 @@
 
   <customFieldGroup.updateFieldShowOnInsert><![CDATA[
     update flow.custom_field_object_type
-      set show_on_insert = :showOnInsert
+      set show_on_insert = :showOnInsert,
+        modified_by_id = :modifiedById,
+        date_modified = now()
     where id = :id
   ]]></customFieldGroup.updateFieldShowOnInsert>
 

@@ -9,6 +9,8 @@ BEGIN
         reference_nbr ,
         system_size ,
         annual_production ,
+    --    system_offset,
+     --   total_number_of_modules,
         number_of_modules_mp1 ,
         azimuth_mp1 ,
         pitch_mp1 ,
@@ -34,6 +36,7 @@ BEGIN
         pitch_mp6 ,
         tsrf_mp6 ,
         adder_amount,
+        date_created,
         design_log_date,
         bom
     )
@@ -41,6 +44,8 @@ BEGIN
             new.design_nbr,
             new.design->>'System Size (w)',
             new.design->>'Year 1 kWh Output',
+         --   system_offset,
+         --   total_number_of_modules,
             new.design->>'Number of Modules_mp1',
             new.design->>'Azimuth_mp1',
             new.design->>'Pitch_mp1',
@@ -67,8 +72,19 @@ BEGIN
             new.design->>'TSRF_mp6',
             new.design->>'Adder Amount',
             new.design_date,
+            new.design_date,
             new.bom
            );
     RETURN NEW;
 END;
 $$;
+
+
+drop trigger if exists design_log_history on brs.design_log;
+create trigger design_log_history
+    after insert
+    on brs.design_log
+    for each row
+execute procedure brs.process_design_log_history();
+
+
