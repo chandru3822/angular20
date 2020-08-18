@@ -304,8 +304,10 @@ public class CustomFieldGroupService {
   }
 
   public void updateFieldShowOnInsert(CustomFieldObjectType customFieldObjectType) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customFieldObjectType.getId());
+    params.put("modifiedById", user.getId());
     params.put("showOnInsert", customFieldObjectType.getShowOnInsert());
 
     sqlCache.update("customFieldGroup.updateFieldShowOnInsert", params);

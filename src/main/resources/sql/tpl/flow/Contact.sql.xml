@@ -38,6 +38,7 @@
           left join flow.state s on s.id = c.state_id
           left join flow.user_position up on up.id = c.owner_user_position_id
           left join flow."user" u on u.id = up.user_id
+          where case when :viewAll is not true then u.id = :userId else 1=1 end
       where case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
             else c.company_id = :companyId end
