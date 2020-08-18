@@ -279,17 +279,21 @@ public class CustomFieldService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
 
-      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<List<CustomFieldObjectType>>() {};
+      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "customFieldObjectTypes",
           new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
-      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<List<ListOfValue>>() {};
+      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValues",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
 
       TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "systemListOptionIds",
           new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "whiteListedPositions",
+        new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
     }
   }
 }

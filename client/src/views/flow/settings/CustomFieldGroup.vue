@@ -209,16 +209,69 @@
                         </v-list-item-action>
                         <v-list-item-content>
                           <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
-                            {{cf.fieldName}}
+                            {{cf.fieldName}} <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
+                            <div class="text-left mt-3" v-if="cf.edit">
+                              <div>
+                                <input type="checkbox" v-model="cf.customFieldGroupAssignmentReadOnly">
+                                Read Only
+                              </div>
+                              <v-select
+                                v-if="cf.customFieldGroupAssignmentReadOnly"
+                                v-model="cf.whiteListedPositions"
+                                :items="positions"
+                                :loading="positionsLoading"
+                                multiple
+                                label="White Listed Positions"
+                                item-text="position"
+                                item-value="positionId"
+                                return-object
+                                height="35px"
+                                class="mt-2"
+                                @change="cf.positionsChanged = true"
+                              >
+                                <v-list-item
+                                  slot="prepend-item"
+                                  ripple
+                                  @click="toggleSelectAllPositions(cf)"
+                                >
+                                  <v-list-item-action>
+                                    <v-icon>{{ icon(cf) }}</v-icon>
+                                  </v-list-item-action>
+                                  <v-list-item-title>Select All</v-list-item-title>
+                                </v-list-item>
+                                <v-divider
+                                  slot="prepend-item"
+                                  class="mt-2"
+                                ></v-divider>
+                                <template
+                                  slot="selection"
+                                  slot-scope="{ item, index }"
+                                >
+                                  <v-chip small v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
+                                    <span>{{ item.position }}</span>
+                                  </v-chip>
+                                  <span
+                                    v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
+                                    class="primary--text caption"
+                                  >{{ cf.whiteListedPositions.length }} selected</span>
+                                </template>
+                              </v-select>
+                              <v-btn color="primaryCustom" dark class="mt-2 white--text" @click="saveReadOnlyAndWhiteList(cf)">
+                                Save
+                              </v-btn>
+                            </div>
                           </div>
                           <div v-else>
-                            {{ cf.processStepName }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                            {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                           </div>
-                          <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
+                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
                             <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
                             Show On Insert
                           </div>
                         </v-list-item-content>
+                        <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                          <v-icon>edit</v-icon>
+                        </v-btn>
                         <v-menu offset-y v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
                             <v-btn text small v-on="on">
@@ -384,6 +437,8 @@ export default {
       deleteHeader: null,
       deleteText: null,
       fieldsInUse: [],
+      positions: [],
+      positionsLoading: false,
       newFieldType: 'native',
       selectedIndex: null,
       fieldOrderChanged: false,
@@ -444,6 +499,21 @@ export default {
     this.getProjectAttachmentTypes()
   },
   methods: {
+    selectAll (f) {
+      return f.whiteListedPositions?.length === this.positions?.length
+    },
+    selectSome (f) {
+      return f.whiteListedPositions?.length > 0 && !this.selectAll(f)
+    },
+    icon (f) {
+      if (this.selectAll(f)) {
+        return 'check_box'
+      }
+      if (this.selectSome(f)) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -617,6 +687,21 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async saveReadOnlyAndWhiteList (field) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
+        field.positionsChanged = false
+        if(!field.customFieldGroupAssignmentReadOnly) {
+          this.$set(field, 'whiteListedPositions', [])
+        }
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async saveFieldChanges (fields) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -732,6 +817,31 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async getPositions() {
+      if(this.positions?.length === 0) {
+        try {
+          this.positionsLoading = true
+          const {data} = await getRequest(`/position`)
+          this.positions = data
+          this.positionsLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          this.positionsLoading = false
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    toggleSelectAllPositions (field) {
+      this.$nextTick(() => {
+        if (this.selectAll(field)) {
+          field.whiteListedPositions = []
+        } else {
+          this.$set(field, 'whiteListedPositions', this.positions.map(p => p.id))
+        }
+      })
     },
   }
 }

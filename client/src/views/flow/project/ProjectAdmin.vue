@@ -55,40 +55,15 @@
     </v-col>
 
     <v-col cols="12" class="text-left">
-      <v-menu
-        v-model="displayDropdown"
-        bottom
-        offset-y
-        :close-on-content-click="false"
-      >
 
-        <template #activator="{on}">
-          <v-btn class="project-admin-btn primary" v-on="on">
-            Add Process Step
-          </v-btn>
-        </template>
-
-        <v-card class="pa-5">
-          <v-select
-            v-model="selectedNewProjectProcessStep"
-            :items="process.processStepProcesses"
-            item-text="processStepName"
-            item-value="id"
-            label="Process Steps"
-            placeholder="Select one..."
-            return-object
-          />
-
-          <v-btn
-            class="project-admin-btn primary"
-            :disabled="selectedNewProjectProcessStep === null"
-            @click="createProjectProcessStep"
-          >
-            Create
-          </v-btn>
-        </v-card>
-      </v-menu>
-    </v-col>
+    <AddProcessStep
+        v-if="process.id"
+        :admin="true"
+        :project-id="projectId"
+        :process-id="process.id"
+        @step-added="getProjectProcessSteps"
+    />
+  </v-col>
 
     <v-col cols="12">
 
@@ -160,6 +135,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {getRequest, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
 import { v4 as uuid } from 'uuid'
+import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
 export default {
   name: 'ProjectAdmin.vue',
@@ -190,7 +166,8 @@ export default {
     }
   },
   components: {
-    Snackbar
+    Snackbar,
+    AddProcessStep
   },
   async created () {
     this.getContact()

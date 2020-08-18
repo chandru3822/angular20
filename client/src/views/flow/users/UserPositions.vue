@@ -157,6 +157,7 @@
   import Snackbar from '@/components/Snackbar.vue'
   import keyBy from 'lodash.keyby'
   import {getOrgFilters} from '@/services/orgService'
+  import cloneDeep from 'lodash.clonedeep'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
@@ -283,7 +284,8 @@
         }
       },
       async savePosition (item) {
-        //todo: updating a position is not updating the materialized view so it is returning old data
+        let itemIndex = this.userPositions.indexOf(item)
+
         let lowestHierarchy = item.hierarchy.reduce((prev, current) => {
           return (prev.level > current.level) ? prev : current
         })
@@ -296,10 +298,13 @@
 
         const {data} = await postRequest(`/userPosition`, params)
         item = data
+        this.$set(item, 'hierarchy', data.hierarchy)
         if(item && item.hierarchy) {
-          item.keyedHierarchy = keyBy(item.hierarchy, 'orgLevelId')
+          this.$set(item, 'keyedHierarchy', keyBy(item.hierarchy, 'orgLevelId'))
           if(!itemId) {
             this.userPositions.push(item)
+          } else {
+            this.$set(this.userPositions, itemIndex, item)
           }
         }
         this.addNew = false

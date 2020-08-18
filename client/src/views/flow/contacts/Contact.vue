@@ -148,7 +148,11 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
-            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="(!userCanEdit || cf.readonly)" :callback="populateDirtyCfvs" :field="cf"></CustomValueInput>
+            <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                              :key="idx"
+                              :readonly="getReadOnly(cf)"
+                              :callback="populateDirtyCfvs"
+                              :field="cf"></CustomValueInput>
           </v-card>
         </div>
       </v-col>
@@ -171,7 +175,7 @@ import NotesAndActivity from '@/views/flow/components/NotesAndActivity.vue'
 import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getStates} from '@/services/stateService'
-import cloneDeep from 'lodash.clonedeep'
+import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
 export default {
   name: 'Contact',
@@ -334,6 +338,9 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    getReadOnly: function (field) {
+      return !this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
+    }
   }
 }
 </script>
