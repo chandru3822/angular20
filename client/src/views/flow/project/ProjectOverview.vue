@@ -124,11 +124,19 @@
 
     <v-col>
       <v-row>
-        <v-col cols="9">
+        <v-col cols="6">
           <h3 class="text-left">Active Process Steps</h3>
         </v-col>
 
-        <v-col cols="3">
+        <v-col cols="6" class="text-right">
+
+          <AddProcessStep
+            v-if="project.processId"
+            :project-id="projectId"
+            :process-id="project.processId"
+            @step-added="getProcessSteps"
+          />
+
           <v-btn
             v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
             class="manage-btn warning"
@@ -238,6 +246,7 @@ import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
+import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
 export default {
   name: 'ProjectOverview',
@@ -248,7 +257,8 @@ export default {
     Attachments,
     NotesAndActivity,
     Snackbar,
-    CustomValueInput
+    CustomValueInput,
+    AddProcessStep
   },
   data () {
     return {
@@ -469,7 +479,12 @@ export default {
 </style>
 
 <style lang="scss">
-.manage-btn > .v-btn__content {
-  color: white !important;
+.manage-btn {
+
+  margin-left: 12px;
+
+  & > .v-btn__content {
+    color: white !important;
+  }
 }
 </style>
