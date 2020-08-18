@@ -94,7 +94,7 @@
           v-for="(field, idx) in cfg.customFieldValues"
           :key="idx"
           :callback="populateDirtyCfvs"
-          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null || field.readonly"
+          :readonly="getReadOnly(field)"
           :field="field"
         />
       </v-card>
@@ -155,6 +155,7 @@ import Snackbar from '@/components/Snackbar.vue'
 import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
+import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
 export default {
   name: 'ProjectProcessStep',
@@ -309,6 +310,9 @@ export default {
               this.$store.commit(AppMutations.SET_LOADING, false)
           }
       },
+    getReadOnly: function (field) {
+      return getCustomFieldReadOnly(this.$store, field)
+    },
     handleActionCompleted () {
       this.$router.push({name: 'projectOverview', params: {projectId: this.projectId}})
     },

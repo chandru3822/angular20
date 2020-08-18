@@ -44,7 +44,10 @@
       </v-form>
       <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
         <h3>{{cfg.groupName}}</h3>
-        <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="cf.readonly" :field="cf"></CustomValueInput>
+        <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                          :key="idx"
+                          :readonly="getReadOnly(cf)"
+                          :field="cf"></CustomValueInput>
       </v-container>
     </v-card>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -58,6 +61,7 @@
   import constants from '@/helpers/constants'
   import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
   import {getOrgTypes, getOrgsByType} from '@/services/orgService'
+  import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
   const { VUE_APP_ENV } = process.env
 
@@ -141,6 +145,9 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Parent Orgs')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      getReadOnly: function (field) {
+        return getCustomFieldReadOnly(this.$store, field)
       },
       setFakeOrg () {
         this.org = {

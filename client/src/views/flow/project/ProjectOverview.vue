@@ -115,7 +115,7 @@
           v-for="(field, idx) in group.customFieldValues"
           :key="idx"
           :callback="populateDirtyCfvs"
-          :readonly="field.ancillaryCustomFieldGroupAssignmentId !== null || field.readonly"
+          :readonly="getReadOnly(field)"
           :showFieldName="false"
           :field="field"
         />
@@ -238,6 +238,7 @@ import Snackbar from '@/components/Snackbar.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
+import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
 export default {
   name: 'ProjectOverview',
@@ -439,6 +440,9 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    getReadOnly: function (field) {
+      return getCustomFieldReadOnly(this.$store, field)
+    }
   }
 }
 </script>

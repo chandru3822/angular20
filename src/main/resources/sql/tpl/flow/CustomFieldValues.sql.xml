@@ -19,6 +19,7 @@
             coalesce(pcv.int_array_value, ppscfv.int_array_value) as "intArrayValue",
             cfga.custom_field_group_id as "customFieldGroupId",
             cfga.id as "customFieldGroupAssignmentId",
+            cfga.read_only as "customFieldGroupAssignmentReadOnly",
             coalesce(cfga.custom_field_id, cfga1.custom_field_id) as "customFieldId",
             cfga.field_order as "fieldOrder",
             cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
@@ -44,7 +45,19 @@
                                     and lov.parent_id = cf.list_of_value_id
                                     and lov.archived is not true
                                   order by lov.display_order
-                              ) listOfValues), '[]') AS "listOfValues"
+                              ) listOfValues), '[]') AS "listOfValues",
+              coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                        FROM (
+                                 SELECT cfgawlp.id,
+                                        cfgawlp.position_id as "positionId",
+                                        cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                        cfgawlp.created_by_id as "createdById",
+                                        cfgawlp.modified_by_id as "modifiedById",
+                                        cfgawlp.archived
+                                 FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                                    WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
+                                      AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
         from flow.custom_field_group_assignment cfga
                  left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
                  inner join flow.custom_field cf on cf.id = cfga.custom_field_id or cf.id = cfga1.custom_field_id
@@ -86,6 +99,7 @@
                                     ccv.int_array_value as "intArrayValue",
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.id as "customFieldGroupAssignmentId",
+                                    cfga.read_only as "customFieldGroupAssignmentReadOnly",
                                     cfga.custom_field_id as "customFieldId",
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
@@ -110,7 +124,19 @@
                                                             and lov.parent_id = cf.list_of_value_id
                                                             and lov.archived is not true
                                                         order by lov.display_order
-                                                      ) listOfValues), '[]') AS "listOfValues"
+                                                      ) listOfValues), '[]') AS "listOfValues",
+                                    coalesce((
+                                      SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                      FROM (
+                                               SELECT cfgawlp.id,
+                                                      cfgawlp.position_id as "positionId",
+                                                      cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                      cfgawlp.created_by_id as "createdById",
+                                                      cfgawlp.modified_by_id as "modifiedById",
+                                                      cfgawlp.archived
+                                               FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                                                  WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
+                                                    AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
                              from flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
@@ -148,6 +174,7 @@
                                     ocv.int_array_value as "intArrayValue",
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.id as "customFieldGroupAssignmentId",
+                                    cfga.read_only as "customFieldGroupAssignmentReadOnly",
                                     cfga.custom_field_id as "customFieldId",
                                     cfga.field_order as "fieldOrder",
                                     cf.list_of_value_id as "listOfValueId",
@@ -172,7 +199,19 @@
                                                             and lov.parent_id = cf.list_of_value_id
                                                             and lov.archived is not true
                                                           order by lov.display_order
-                                                      ) listOfValues), '[]') AS "listOfValues"
+                                                      ) listOfValues), '[]') AS "listOfValues",
+                                      coalesce((
+                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                        FROM (
+                                                 SELECT cfgawlp.id,
+                                                        cfgawlp.position_id as "positionId",
+                                                        cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                        cfgawlp.created_by_id as "createdById",
+                                                        cfgawlp.modified_by_id as "modifiedById",
+                                                        cfgawlp.archived
+                                                 FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                                                    WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
+                                                      AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
                              from flow.custom_field_group_assignment cfga
                                       inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                       inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id and cfot.company_object_type_id = cot.id
@@ -249,6 +288,7 @@ select
                               end as "intArrayValue",
                               cfga.custom_field_group_id as "customFieldGroupId",
                               cfga.id as "customFieldGroupAssignmentId",
+                              cfga.read_only as "customFieldGroupAssignmentReadOnly",
                               cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                               cfga.custom_field_id as "customFieldId",
                               cfga.field_order as "fieldOrder",
@@ -275,7 +315,19 @@ select
                                                       and lov.parent_id = cf.list_of_value_id
                                                       and lov.archived is not true
                                                     order by lov.display_order
-                                                ) listOfValues), '[]') AS "listOfValues"
+                                                ) listOfValues), '[]') AS "listOfValues",
+                              coalesce((
+                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                        FROM (
+                                                 SELECT cfgawlp.id,
+                                                        cfgawlp.position_id as "positionId",
+                                                        cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                        cfgawlp.created_by_id as "createdById",
+                                                        cfgawlp.modified_by_id as "modifiedById",
+                                                        cfgawlp.archived
+                                                 FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                                                    WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
+                                                      AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
                           from flow.custom_field_group_assignment cfga
                                    left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
                                    left join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
@@ -304,6 +356,83 @@ where cot.object_type_id = :objectTypeId
   and cot.company_id = :companyId
 order by cfg.group_order
   ]]></customFieldValues.process_step.getCustomFieldGroupsAndValues>
+
+  <customFieldValues.user.getCustomFieldGroupsAndValues><![CDATA[
+    select cfg.id,
+       cfg.group_name as "groupName",
+       cfg.group_order as "groupOrder",
+       coalesce((
+                    SELECT array_to_json(array_agg(row_to_json(fields)))
+                    FROM (
+                             select ucv.id,
+                                    ucv.user_id as "userId",
+                                    ucv.date_value as "dateValue",
+                                    ucv.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                    ucv.timestamp_value as "timestampValue",
+                                    ucv.boolean_value as "booleanValue",
+                                    ucv.text_value as "textValue",
+                                    ucv.numeric_value as "numericValue",
+                                    ucv.int_value as "intValue",
+                                    ucv.int_array_value as "intArrayValue",
+                                    cfga.custom_field_group_id as "customFieldGroupId",
+                                    cfga.id as "customFieldGroupAssignmentId",
+                                    cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.custom_field_id as "customFieldId",
+                                    cfga.field_order as "fieldOrder",
+                                    cf.list_of_value_id as "listOfValueId",
+                                    cf.field_name as "fieldName",
+                                    cf.readonly,
+                                    cf.custom_field_sql_key as "customFieldSqlKey",
+                                    cf.company_system_list_id as "companySystemListId",
+                                    cf.system_list_option_ids as "systemListOptionIds",
+                                    cf.custom_field_sql_key as "customFieldSqlKey",
+                                    cf.company_data_type_id as "companyDataTypeId",
+                                    cdt.data_type_id as "dataTypeId",
+                                    cdt.has_list_values as "hasListValues",
+                                    coalesce((
+                                                 SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                                 FROM (
+                                                          select lov.id,
+                                                                 lov.name,
+                                                                 lov.code,
+                                                                 lov.parent_id,
+                                                                 lov.display_order
+                                                          from flow.list_of_value lov
+                                                          where lov.parent_id is not null
+                                                            and lov.parent_id = cf.list_of_value_id
+                                                            and lov.archived is not true
+                                                          order by lov.display_order
+                                                      ) listOfValues), '[]') AS "listOfValues",
+                                     coalesce((
+                                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                        FROM (
+                                                 SELECT cfgawlp.id,
+                                                        cfgawlp.position_id as "positionId",
+                                                        cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                        cfgawlp.created_by_id as "createdById",
+                                                        cfgawlp.modified_by_id as "modifiedById",
+                                                        cfgawlp.archived
+                                                 FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                                                    WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
+                                                      AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
+                             from flow.custom_field_group_assignment cfga
+                                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
+                                      inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                      left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :sourceId
+                             where cfga.custom_field_group_id = cfg.id
+                               and cfga.archived is not true
+                               and cfot.archived is not true
+                             order by cfga.field_order
+                         ) fields), '[]') AS "customFieldValues"
+        from flow.custom_field_group cfg
+          inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    where cot.object_type_id = :objectTypeId
+          and cfg.archived is not true
+          and cot.company_id = :companyId
+        order by cfg.group_order
+  ]]></customFieldValues.user.getCustomFieldGroupsAndValues>
+
 
   <customFieldValues.contact.updateCustomFieldValue><![CDATA[
     update flow.contact_custom_field_value
@@ -362,72 +491,7 @@ order by cfg.group_order
     values (:sourceId, :dateValue::date, :customFieldGroupAssignmentId, :timestampValue::timestamp, :booleanValue, :textValue, :numericValue, :intValue, :intArrayValue, :createdById)
   ]]></customFieldValues.user.insertCustomFieldValue>
 
-  <customFieldValues.user.getCustomFieldGroupsAndValues><![CDATA[
-    select cfg.id,
-       cfg.group_name as "groupName",
-       cfg.group_order as "groupOrder",
-       coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(fields)))
-                    FROM (
-                             select ucv.id,
-                                    ucv.user_id as "userId",
-                                    ucv.date_value as "dateValue",
-                                    ucv.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
-                                    ucv.timestamp_value as "timestampValue",
-                                    ucv.boolean_value as "booleanValue",
-                                    ucv.text_value as "textValue",
-                                    ucv.numeric_value as "numericValue",
-                                    ucv.int_value as "intValue",
-                                    ucv.int_array_value as "intArrayValue",
-                                    cfga.custom_field_group_id as "customFieldGroupId",
-                                    cfga.id as "customFieldGroupAssignmentId",
-                                    cfga.custom_field_id as "customFieldId",
-                                    cfga.field_order as "fieldOrder",
-                                    cf.list_of_value_id as "listOfValueId",
-                                    cf.field_name as "fieldName",
-                                    cf.readonly,
-                                    cf.custom_field_sql_key as "customFieldSqlKey",
-                                    cf.company_system_list_id as "companySystemListId",
-                                    cf.system_list_option_ids as "systemListOptionIds",
-                                    cf.custom_field_sql_key as "customFieldSqlKey",
-                                    cf.company_data_type_id as "companyDataTypeId",
-                                    cdt.data_type_id as "dataTypeId",
-                                    cdt.has_list_values as "hasListValues",
-                                    coalesce((
-                                                 SELECT array_to_json(array_agg(row_to_json(listOfValues)))
-                                                 FROM (
-                                                          select lov.id,
-                                                                 lov.name,
-                                                                 lov.code,
-                                                                 lov.parent_id,
-                                                                 lov.display_order
-                                                          from flow.list_of_value lov
-                                                          where lov.parent_id is not null
-                                                            and lov.parent_id = cf.list_of_value_id
-                                                            and lov.archived is not true
-                                                          order by lov.display_order
-                                                      ) listOfValues), '[]') AS "listOfValues"
-                             from flow.custom_field_group_assignment cfga
-                                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                      inner join flow.custom_field_object_type cfot on cfot.custom_field_id = cf.id
-                                      inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                      left join flow.user_custom_field_value ucv on ucv.custom_field_group_assignment_id = cfga.id and ucv.user_id = :sourceId
-                             where cfga.custom_field_group_id = cfg.id
-                               and cfga.archived is not true
-                               and cfot.archived is not true
-                             order by cfga.field_order
-                         ) fields), '[]') AS "customFieldValues"
-        from flow.custom_field_group cfg
-          inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-    where cot.object_type_id = :objectTypeId
-          and cfg.archived is not true
-          and cot.company_id = :companyId
-        order by cfg.group_order
-  ]]></customFieldValues.user.getCustomFieldGroupsAndValues>
-
-
-
-  <customFieldValues.process_step.updateCustomFieldValue><![CDATA[
+   <customFieldValues.process_step.updateCustomFieldValue><![CDATA[
     update flow.project_process_step_custom_field_value
     set date_value = :dateValue::date,
         timestamp_value = :timestampValue::timestamp,
