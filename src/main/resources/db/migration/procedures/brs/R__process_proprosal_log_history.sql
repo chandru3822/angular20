@@ -191,7 +191,7 @@ BEGIN
                                         twenty_year_payoff
   )
   VALUES (new.proposal->>'_filename',
-    new.proposal->>'Base Deal ID',
+    new.project_id,
     new.proposal->>'Full Name',
     new.proposal->>'Address',
     new.proposal->>'City',
