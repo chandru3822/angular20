@@ -5,6 +5,7 @@ $$
 BEGIN
 
     INSERT INTO brs.design_log_history(
+        design_log_id,
         project_id ,
         reference_nbr ,
         system_size ,
@@ -40,7 +41,8 @@ BEGIN
         design_log_date,
         bom
     )
-    VALUES (new.project_id,
+    VALUES (new.id,
+            new.project_id,
             new.design_nbr,
             new.design->>'System Size (w)',
             new.design->>'Year 1 kWh Output',
