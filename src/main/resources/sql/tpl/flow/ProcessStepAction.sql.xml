@@ -118,6 +118,7 @@
           inner join flow.process_step ps on ps.id = psa.process_step_id
       where psl.process_step_requirement_id = :requirementId
         and psl.archived is not true
+        and psa.archived is not true
   ]]></processStepAction.actionsUsingRequirement>
 
   <processStepAction.updateActionDisplayOrder><![CDATA[

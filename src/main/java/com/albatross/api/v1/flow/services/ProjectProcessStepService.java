@@ -30,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -780,7 +781,7 @@ public class ProjectProcessStepService {
           params.put(param.getDisplayOrder(), systemValue != null ? systemValue.toString() : null);
           break;
         case 2:
-          params.put(param.getDisplayOrder(), param.getDynamicValue());
+          params.put(param.getDisplayOrder(), getTypedDynamicValue(param).toString());
           break;
         case 3:
           try {
@@ -798,38 +799,38 @@ public class ProjectProcessStepService {
     return params.values().toArray(String[]::new);
   }
 
-//  public Object getTypedDynamicValue(CompanyFunctionParam param) {
-//
-//    String startingValue = param.getDynamicValue();
-//    Object typedValue = null;
-//
-//    try {
-//      switch (param.getDataTypeId().intValue()) {
-//        case 1:
-//        case 2:
-//          typedValue = Timestamp.valueOf(startingValue);
-//          break;
-//        case 3:
-//          typedValue = Boolean.parseBoolean(startingValue);
-//          break;
-//        case 4:
-//          typedValue = Double.parseDouble(startingValue);
-//          break;
-//        case 5:
-//          typedValue = startingValue;
-//          break;
-//        case 6:
-//          typedValue = Long.parseLong(startingValue);
-//          break;
-//        default:
-//
-//      }
-//    } catch (Exception e) {
-//      //@TODO: die here
-//    }
-//
-//    return typedValue;
-//  }
+  public Object getTypedDynamicValue(CompanyFunctionParam param) {
+
+    String startingValue = param.getDynamicValue();
+    Object typedValue = null;
+
+    try {
+      switch (param.getDataTypeId().intValue()) {
+        case 1:
+        case 2:
+          typedValue = Timestamp.valueOf(startingValue);
+          break;
+        case 3:
+          typedValue = Boolean.parseBoolean(startingValue);
+          break;
+        case 4:
+          typedValue = Double.parseDouble(startingValue);
+          break;
+        case 5:
+          typedValue = "'" + startingValue + "'";
+          break;
+        case 6:
+          typedValue = Long.parseLong(startingValue);
+          break;
+        default:
+
+      }
+    } catch (Exception e) {
+      //@TODO: die here
+    }
+
+    return typedValue;
+  }
 
   public Object getParamValueByDataType(CompanyFunctionParam param) throws Exception {
 
