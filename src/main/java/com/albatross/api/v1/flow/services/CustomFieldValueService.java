@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,15 +32,25 @@ public class CustomFieldValueService {
   SystemListService systemListService;
 
   @Autowired
+  ProjectService projectService;
+
+  @Autowired
   ObjectMapper om;
 
   public void handleCustomListOfValue (List<CustomFieldGroup> results) {
+    handleCustomListOfValue(results, null, null);
+  }
+
+  public void handleCustomListOfValue (List<CustomFieldGroup> results, Long projectId, Long userId) {
     for(CustomFieldGroup cfg : results) {
       for(CustomFieldValue cv : cfg.getCustomFieldValues()){
         if(null != cv.getCustomFieldSqlKey()) {
           String sql = sqlCache.getByKey(cv.getCustomFieldSqlKey());
           if(null != sql) {
-            List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("projectId", projectId);
+            params.put("userId", userId);
+            List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params, ListOfValue.class);
             cv.setListOfValues(listOfValues);
           }
         } else if (null != cv.getCompanySystemListId()) {
@@ -99,7 +108,15 @@ public class CustomFieldValueService {
 
     List<CustomFieldGroup> fieldGroups = sqlCache.query(sqlPrefix + ".getCustomFieldGroupsAndValues", params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
 
-    handleCustomListOfValue(fieldGroups);
+    // this allows us to pass project_id and user_id to custom sql queries
+    if(objectType.equals("project")) {
+      handleCustomListOfValue(fieldGroups, id, user.getId());
+    } else if (objectType.equals("process_step")) {
+      Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
+      handleCustomListOfValue(fieldGroups, projectId, user.getId());
+    } else {
+      handleCustomListOfValue(fieldGroups);
+    }
 
     return fieldGroups;
   }

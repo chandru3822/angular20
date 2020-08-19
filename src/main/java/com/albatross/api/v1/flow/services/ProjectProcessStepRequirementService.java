@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class ProjectProcessStepRequirementService {
 
   private final SqlCache sqlCache;
+  private final SecurityService securityService;
 
   private final ObjectMapper om;
 
@@ -36,7 +37,12 @@ public class ProjectProcessStepRequirementService {
       if(null != req.getCustomFieldSqlKey()) {
         String sql = sqlCache.getByKey(req.getCustomFieldSqlKey());
         if(null != sql) {
-          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          User user = securityService.getCurrentUser();
+          //i think we can get away with not passing project_id here because they can never set up a requirement for a specific value for a specific project they can only check null/not null etc
+          HashMap<String, Object> params2 = new HashMap<>();
+          params2.put("projectId", null);
+          params2.put("userId", user.getId());
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params2, ListOfValue.class);
           req.setAvailableListOfValues(listOfValues);
         }
       }

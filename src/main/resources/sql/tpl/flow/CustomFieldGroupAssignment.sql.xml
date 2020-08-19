@@ -119,7 +119,7 @@
     where cfg.id = :groupId
       and cfga.archived is not true
       and cf.archived is not true
-    order by cfga.field_order
+    order by cfga.field_order, cf.field_name
   ]]></customFieldGroupAssignment.getCustomFieldsInGroup>
 
   <customFieldGroupAssignment.getEventTypesAndFields><![CDATA[

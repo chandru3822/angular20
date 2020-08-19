@@ -59,6 +59,13 @@ public class ProjectService {
     return sqlCache.query("project.getAllForCompanyProcess", ImmutableMap.of("companyId", user.getCompanyId() , "processId", processId), Project.class);
   }
 
+  public Long getProjectIdByProjectProcessStepId(Long projectProcessStepId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectProcessStepId", projectProcessStepId);
+    Long projectId = sqlCache.queryForObject("project.getProjectIdByProjectProcessStepId", params, Long.class);
+    return projectId;
+  }
+
   public Page<Project> searchProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", "VIEW_ALL");

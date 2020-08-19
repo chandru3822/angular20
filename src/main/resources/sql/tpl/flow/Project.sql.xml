@@ -11,6 +11,12 @@
       and cp.process_id = :processId;
   ]]></project.getAllForCompanyProcess>
 
+  <project.getProjectIdByProjectProcessStepId><![CDATA[
+    select project_id
+    from flow.project_process_step pps
+    where pps.id = :projectProcessStepId
+  ]]></project.getProjectIdByProjectProcessStepId>
+
   <project.search><![CDATA[
     select
       p.id,
