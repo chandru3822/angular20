@@ -1,105 +1,11 @@
 <sql>
-  <contact.getAllByCompany><![CDATA[
-    select
-      id,
-      first_name,
-      last_name,
-      first_name || ' ' || last_name as full_name,
-      email,
-      phone,
-      company_id
-    from flow.contact
-    where company_id = :companyId;
-  ]]></contact.getAllByCompany>
-
   <contact.searchContacts><![CDATA[
-      select
-          c.id,
-          c.first_name,
-          c.last_name,
-          c.first_name || ' ' || c.last_name as full_name,
-          c.email,
-          c.phone,
-          c.company_id,
-          c.contact_type_id,
-          ct.contact_type,
-          c.state_id,
-          s.state,
-          s.abbreviation,
-          c.date_created,
-          (select json_build_object(
-           'userId', u.id,
-           'firstName', u.first_name,
-           'lastName', u.last_name,
-           'fullName', u.first_name || ' ' || u.last_name
-          )) as owner
-      from flow.contact c
-          inner join flow.contact_type ct on ct.id = c.contact_type_id
-          left join flow.state s on s.id = c.state_id
-          left join flow.user_position up on up.id = c.owner_user_position_id
-          left join flow."user" u on u.id = up.user_id
-      where case when :isParent
-            then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-            else c.company_id = :companyId end
-          and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
-            OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
-            OR s.state ILIKE '%' || :query || '%'
-          )
-          and case when :viewAll is not true then u.id = :userId else 1=1 end
-      order by c.date_created desc
-      limit :limit
-      offset :offset ;
+      select * from flow.search_contacts(:query, :companyId::int, :isParent::boolean, :viewAll::boolean, :userId::int, :limit::int, :offset::int)
   ]]></contact.searchContacts>
 
-  <contact.searchContactCount><![CDATA[
-      select
-        count(*)
-      from flow.contact c
-         inner join flow.contact_type ct on ct.id = c.contact_type_id
-         left join flow.state s on s.id = c.state_id
-         left join flow.user_position up on up.id = c.owner_user_position_id
-         left join flow."user" u on u.id = up.user_id
-      where case when :isParent
-          then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-          else c.company_id = :companyId end
-        and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
-        OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
-        OR s.state ILIKE '%' || :query || '%' )
-        and case when :viewAll is not true then u.id = :userId else 1=1 end
-  ]]></contact.searchContactCount>
-
-  <contact.exportContacts><![CDATA[
-      select
-          c.first_name,
-          c.last_name,
-          c.first_name || ' ' || c.last_name as full_name,
-          c.street1,
-          c.email,
-          c.phone,
-          c.company_id,
-          c.city,
-          c.postal_code,
-          c.state_id,
-          s.state,
-          s.abbreviation,
-          c.date_created,
-          (select json_build_object(
-           'userId', u.id,
-           'firstName', u.first_name,
-           'lastName', u.last_name,
-           'fullName', u.first_name || ' ' || u.last_name
-          )) as owner
-      from flow.contact c
-          left join flow.state s on s.id = c.state_id
-          left join flow.user_position up on up.id = c.owner_user_position_id
-         left join flow."user" u on u.id = up.user_id
-      where c.company_id = :companyId
-          and (c.first_name || ' ' || c.last_name ILIKE '%' || :query || '%'
-                OR u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
-                OR s.state ILIKE '%' || :query || '%'
-              )
-      order by c.date_created desc;
-  ]]></contact.exportContacts>
+  <contact.searchContactsCount><![CDATA[
+      select count from flow.search_contacts_count(:query, :companyId::int, :isParent::boolean, :viewAll::boolean, :userId::int)
+  ]]></contact.searchContactsCount>
 
   <contact.getById><![CDATA[
     select c.id,

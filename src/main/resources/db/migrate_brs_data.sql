@@ -8659,18 +8659,18 @@ SELECT setval('brs.payroll_id_seq',
                         FROM brs.payroll), 1), false);
 
 
-insert into flow.db_function(function_name, return_data_type_id)
-values('brs.insert_commissions_on_project',6);
-
-insert into  flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id)
-    (select (select id from flow.db_function where function_name = 'brs.insert_commissions_on_project'),'project_id',1,6,1);
-
-
-insert into flow.company_function(company_function_name, db_function_id, company_id)
-    (select 'Insert Commissions on Project',(select id from flow.db_function where function_name = 'brs.insert_commissions_on_project'),(select id from flow.company where company_name = 'Blue Raven Solar'));
-
-insert into flow.company_function_param(company_function_id, system_value_id, db_function_param_id, created_by_id, modified_by_id, date_modified)
-    (select (select id from flow.company_function where company_function_name = 'Insert Commissions on Project'),2,(select id from flow.db_function_param where parameter_name = 'project_id'),2350555,2350555,now());
+-- insert into flow.db_function(function_name, return_data_type_id)
+-- values('brs.insert_commissions_on_project',6);
+--
+-- insert into  flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id)
+--     (select (select id from flow.db_function where function_name = 'brs.insert_commissions_on_project'),'project_id',1,6,1);
+--
+--
+-- insert into flow.company_function(company_function_name, db_function_id, company_id)
+--     (select 'Insert Commissions on Project',(select id from flow.db_function where function_name = 'brs.insert_commissions_on_project'),(select id from flow.company where company_name = 'Blue Raven Solar'));
+--
+-- insert into flow.company_function_param(company_function_id, system_value_id, db_function_param_id, created_by_id, modified_by_id, date_modified)
+--     (select (select id from flow.company_function where company_function_name = 'Insert Commissions on Project'),2,(select id from flow.db_function_param where parameter_name = 'project_id'),2350555,2350555,now());
 
 
 
@@ -8865,12 +8865,31 @@ from blueraven.ahj_utility a
 where a.id = au.id;
 
 
-INSERT INTO brs.proposal_log (id, proposal_date, source, proposal, project_id, proposal_nbr)
-    (SELECT pl.id, pl.proposal_date, pl.source, pl.proposal, d.id, pl.proposal_nbr
-    FROM blueraven.proposal_log pl
-    inner join blueraven.deal d on d.deal_base_oid = pl.deal_base_oid);
 
-SELECT setval('brs.proposal_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.proposal_log), 1), false);
+
+-- INSERT INTO brs.proposal_log (id, proposal_date, source, proposal, project_id, proposal_nbr)
+--     (SELECT pl.id, pl.proposal_date, pl.source, pl.proposal, d.id, pl.proposal_nbr
+--     FROM blueraven.proposal_log pl
+--     inner join blueraven.deal d on d.deal_base_oid = pl.deal_base_oid);
+--
+-- SELECT setval('brs.proposal_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.proposal_log), 1), false);
+
+
+
+-- insert into brs.design_log_bom(id,project_id, reference_nbr, bom, note, created_by, time_submitted, delivery_time, email_sent)
+-- (select dlb.id ,dlb.deal_id,dlb.reference_nbr, bom, note, created_by, time_submitted, delivery_time, email_sent
+--     from blueraven.design_log_bom dlb);
+--
+--  SELECT setval('brs.design_log_bom_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.design_log_bom), 1), false);
+--
+--
+--
+-- INSERT INTO brs.design_log (id, design_date, design, source, project_id, design_nbr,bom)
+--     (SELECT dl.id, dl.design_date, dl.design,dl.source, d.id, dl.design_nbr,dl.bom
+--     FROM blueraven.design_log dl
+--     inner join blueraven.deal d on d.deal_base_oid = dl.deal_base_oid);
+--
+--  SELECT setval('brs.design_log_id_seq', COALESCE((SELECT MAX(id) + 1 FROM brs.design_log), 1), false);
 
 -- populate the project address fields.  this requires that v1_49 runs first to add the columns
 update flow.project p set

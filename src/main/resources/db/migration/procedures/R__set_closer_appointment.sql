@@ -8,6 +8,7 @@ declare
     v_user_id                                    integer;
     v_project_process_step_id                    integer;
     v_project_process_step_custom_field_value_id integer;
+    v_default_appointment_length                 integer;
 BEGIN
 
     if array_length(p_users, 1) < 2 then
@@ -154,6 +155,15 @@ BEGIN
         limit 1;
     end if;
     if v_user_id is not null then
+
+        select uc.default_appointment_length
+        into v_default_appointment_length
+        from flow.project p
+                 inner join flow.company_process cp on cp.id = p.company_process_id
+                 inner join flow.user_company uc on uc.company_id = cp.company_id
+        where p.id = p_project_id
+          and uc.user_id = v_user_id;
+
         select pps.id, ppscfv.id
         into v_project_process_step_id,v_project_process_step_custom_field_value_id
         from flow.project_process_step_custom_field_value ppscfv
@@ -174,6 +184,50 @@ BEGIN
                                                                       date_created, created_by_id, archived)
             VALUES (v_project_process_step_id, 7, v_user_id, now(), 2350555, false);
         end if;
+
+        v_project_process_step_id = null;
+        v_project_process_step_custom_field_value_id = null;
+        select pps.id, ppscfv.id
+        into v_project_process_step_id,v_project_process_step_custom_field_value_id
+        from flow.project_process_step_custom_field_value ppscfv
+                 inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
+        where pps.project_id = p_project_id
+          and ppscfv.custom_field_group_assignment_id = 5
+        limit 1;
+
+        if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
+            update flow.project_process_step_custom_field_value
+            set timestamp_value = now()
+            where id = v_project_process_step_custom_field_value_id;
+        else
+            INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
+                                                                      custom_field_group_assignment_id, timestamp_value,
+                                                                      date_created, created_by_id, archived)
+            VALUES (v_project_process_step_id, 5, now(), now(), 2350555, false);
+        end if;
+
+        v_project_process_step_id = null;
+        v_project_process_step_custom_field_value_id = null;
+        select pps.id, ppscfv.id
+        into v_project_process_step_id,v_project_process_step_custom_field_value_id
+        from flow.project_process_step_custom_field_value ppscfv
+                 inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
+        where pps.project_id = p_project_id
+          and ppscfv.custom_field_group_assignment_id = 6
+        limit 1;
+
+        if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
+            update flow.project_process_step_custom_field_value
+            set timestamp_value = now() - (v_default_appointment_length || 'days')::interval
+            where id = v_project_process_step_custom_field_value_id;
+        else
+            INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
+                                                                      custom_field_group_assignment_id, timestamp_value,
+                                                                      date_created, created_by_id, archived)
+            VALUES (v_project_process_step_id, 6, now() - (v_default_appointment_length || 'days')::interval, now(), 2350555, false);
+        end if;
+
+
     else
         --TODO throw an error that Randa is building.
     end if;
@@ -181,4 +235,3 @@ END
 $BODY$
     LANGUAGE plpgsql VOLATILE
                      COST 100;
-
