@@ -73,10 +73,10 @@ export default {
   methods: {
     getSteps: async function () {
       try {
-        const url = (this.admin) ? `/project/${this.projectId}/processSteps` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
+        const url = (this.admin) ? `/processes/${this.processId}` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
         this.fetchingSteps = true
         const {data} = await getRequest(url)
-        this.steps = data
+        this.steps = data.processStepProcesses
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
