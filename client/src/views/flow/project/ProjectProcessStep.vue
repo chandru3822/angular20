@@ -93,6 +93,11 @@
                    v-if="!closerAppointmentDetails.userId">
               {{ closerApptOverride ? 'Back' : 'Override' }}
             </v-btn>
+<!--            todo: change to this button after they finish testing. this will make the override button only available to closers -->
+<!--            <v-btn text @click="closerApptOverride = !closerApptOverride"-->
+<!--                   v-if="!closerAppointmentDetails.userId && $store.getters.userHasPosition(1)">-->
+<!--              {{ closerApptOverride ? 'Back' : 'Override' }}-->
+<!--            </v-btn>-->
           </v-toolbar-items>
         </v-toolbar-items>
       </v-toolbar>
