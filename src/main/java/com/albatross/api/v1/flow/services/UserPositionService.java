@@ -56,6 +56,15 @@ public class UserPositionService {
     return result.orElse(null);
   }
 
+  public UserPosition getUserPrimaryPosition(Long userId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+
+    Optional<UserPosition> result = sqlCache.get("userPosition.getUserPrimaryPosition", params, new UserPositionMapper<>(UserPosition.class, om));
+
+    return result.orElse(null);
+  }
+
   public UserPosition saveUserPosition(UserPosition userPosition) {
     User user = securityService.getCurrentUser();
     Boolean primaryFlag = null != userPosition.getPrimaryFlag() ? userPosition.getPrimaryFlag() : false;

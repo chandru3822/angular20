@@ -33,6 +33,21 @@
       where upv.user_position_id = :id
   ]]></userPosition.getOne>
 
+  <userPosition.getUserPrimaryPosition><![CDATA[
+    select distinct upv.user_position_id as id,
+                    upv.user_id,
+                    upv.archived,
+                    upv.primary_flag,
+                    upv.start_date,
+                    upv.end_date,
+                    upv.position,
+                    upv.position_id,
+                    upv.company_id
+    from flow.user_positions_vw upv
+    where upv.user_id = :userId
+    and upv.primary_flag is true
+  ]]></userPosition.getUserPrimaryPosition>
+
   <userPosition.updateUserPosition><![CDATA[
     update flow.user_position
         set position_id = :positionId,
