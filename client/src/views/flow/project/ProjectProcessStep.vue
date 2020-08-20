@@ -248,7 +248,7 @@ export default {
   data () {
     return {
       snackbar: {},
-      availabilityDateField: { fieldName: 'Select a Date', dataTypeId: 1, dateValue: '2020-08-20' },
+      availabilityDateField: { fieldName: 'Select a Date', dataTypeId: 1, dateValue: null },
       timeSlots: [],
       selectedTimeSlot: {},
       closerApptOverride: false,
@@ -454,7 +454,6 @@ export default {
     },
     displayUniqueView(cfg) {
       // return true
-      console.log('randaLogger', cfg)
       if(cfg.uniqueBehaviorTypeId !== 1) {
         return false
       } else {

@@ -56,7 +56,6 @@
     methods: {
       async validate () {
         if (this.$refs.resetForm.validate()) {
-          console.log('randaLogger', this.email)
             this.$store.commit(AppMutations.SET_LOADING, true)
             try {
               let params = {

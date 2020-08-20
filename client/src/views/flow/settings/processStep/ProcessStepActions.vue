@@ -1346,7 +1346,6 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await putRequest(`/processStep/${this.processStepId}/requirement/${item.id}`)
-          console.log('randaLogger', data)
           if (data?.length > 0) {
             this.deleteError = true
             item.deleteConfirm = false
