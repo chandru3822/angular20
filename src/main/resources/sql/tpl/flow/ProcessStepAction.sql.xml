@@ -1,5 +1,6 @@
 <sql>
   <processStepAction.getActionsForStep><![CDATA[
+--   This query is duplicated in "projectProcessStep.getProjectProcessStep". Keep then in sync (or eventually combine them)
     select psa.*,
        cpsst.id as company_process_step_status_type_id,
        cpsst.process_step_status_type_id,

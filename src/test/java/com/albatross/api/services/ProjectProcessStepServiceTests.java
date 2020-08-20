@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,12 +97,12 @@ public class ProjectProcessStepServiceTests {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProcessStepStatusTypeId(1L);
     action.setAlwaysEnabled(true);
-    boolean passed = projectProcessStepService.canPerformAction(action, pps);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     assertThat(passed).isTrue();
     verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
     action.setAlwaysEnabled(false);
-    projectProcessStepService.canPerformAction(action, pps);
+    projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
   }
 
@@ -110,13 +111,13 @@ public class ProjectProcessStepServiceTests {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProcessStepStatusTypeId(1L);
     action.setProcessStepLogicList(List.of());
-    boolean passed = projectProcessStepService.canPerformAction(action, pps);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     assertThat(passed).isFalse();
     verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
     List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<List<ProcessStepLogic>>() {});
     action.setProcessStepLogicList(processStepLogicList);
-    projectProcessStepService.canPerformAction(action, pps);
+    projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
   }
 
@@ -125,7 +126,7 @@ public class ProjectProcessStepServiceTests {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProcessStepStatusTypeId(1L);
     when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(List.of());
-    boolean passed = projectProcessStepService.canPerformAction(action, pps);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     assertThat(passed).isTrue();
 
     // @TODO: Would be nice to verify that r.setFulfilled isn't ever called (meaning the code returns early when it should),
