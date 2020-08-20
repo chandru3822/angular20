@@ -62,8 +62,6 @@ public class ProjectProcessStepService {
 
   private final AsyncProjectProcessStepService asyncProjectProcessStepService;
 
-  private final CustomFieldValueService customFieldValueService;
-
   private final ObjectMapper om;
 
   @Value("${aws.storageBucket}")
@@ -199,7 +197,7 @@ public class ProjectProcessStepService {
   }
 
   @Transactional
-  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId, Boolean main) {
+  public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -207,17 +205,9 @@ public class ProjectProcessStepService {
     params.put("processStepId", processStepId);
     params.put("userPositionId", userPositionId);
     params.put("userId", user.getId());
-    params.put("main", main);
     params.put("companyId", user.getCompanyId());
 
-    if (main) {
-        sqlCache.update("projectProcessStep.clearMain", params);
-    }
-
-    // New project process steps are defaulted to active. Cancel any existing active steps so there is only 1
-    sqlCache.update("projectProcessStep.cancelActive", params);
-
-    return sqlCache.updateReturningId("projectProcessStep.insertProjectProcessStep", params, "id").longValue();
+    return sqlCache.queryForObject("projectProcessStep.insertProjectProcessStep", params, Long.class);
   }
 
   @Transactional
@@ -274,22 +264,38 @@ public class ProjectProcessStepService {
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
   @Transactional
-  public void performAutoTriggerActions(List<ProcessStepAction> actions, Long ppsId) {
-      actions.forEach(action -> {
-          if (action.getTriggerAutomatically()) {
-              try {
-                  if (this.canPerformAction(action.getId(), ppsId)) {
-                      this.performAction(action.getId(), ppsId);
-                  }
-              } catch (Exception e) {
+  public void performAutoTriggerActions(Long processStepId, Long ppsId) {
+
+      ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
+      log.info("fetch query: pps");
+
+      if (pps.getProcessStepStatusTypeId() == 1) {
+          List<ProcessStepAction> actions = processStepActionService.getActionsForStep(processStepId);
+          log.info("fetch query: actions");
+
+          List<Long> actionIds = new ArrayList<>();
+
+          actions.forEach(action -> {
+              if (action.getTriggerAutomatically()) {
+                  try {
+                      if (this.canPerformAction(action, pps)) {
+                          this.performAction(action, pps);
+                          actionIds.add(action.getId());
+                      }
+                  } catch (Exception e) {
                       log.error(String.format("Unable to automatically trigger action ID: %s, with project process step ID: %s",  action.getId(), ppsId));
+                  }
               }
+          });
+
+          if (!actionIds.isEmpty()) {
+              //bulk insert performed actions
           }
-      });
+      }
   }
 
   @Transactional
-  public void performAction(Long actionId, Long projectProcessStepId) {
+  public void performAction(ProcessStepAction action, ProjectProcessStep pps) {
     /*
      **High level pseudo logic:**
 
@@ -302,54 +308,56 @@ public class ProjectProcessStepService {
      * recursively check if child processes have children and auto-triggered until all auto-triggered child process steps have been created with active statuses
      */
 
-    ProjectProcessStep projectProcessStep = this.getProjectProcessStep(projectProcessStepId);
-    ProcessStepAction action = processStepActionService.getActionById(actionId);
+//    ProjectProcessStep projectProcessStep = this.getProjectProcessStep(projectProcessStepId);
+//    ProcessStepAction action = processStepActionService.getActionById(actionId);
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(projectProcessStepId, action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
+      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
     }
 
-    Long ownerUserPositionId = (projectProcessStep.getOwner() != null) ? projectProcessStep.getOwner().getUserPositionId() : null;
+    Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;
 
-    asyncProjectProcessStepService.asyncRunChildFunctions(actionId, projectProcessStepId, securityService.getCurrentUser().getId());
+    asyncProjectProcessStepService.asyncRunChildFunctions(action.getId(), pps.getProjectProcessStepId(), securityService.getCurrentUser().getId());
 
-    HashMap<Long, List<ProcessStepAction>> newStepChildActions = new HashMap<>();
+    HashMap<Long, Long> newStepChildActions = new HashMap<>();
 
     action.getProcessStepActionChildProcesses().forEach(childStep -> {
-      Long ppsId = this.insertProjectProcessStep(projectProcessStep.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId, true);
-      List<ProcessStepAction> actions = processStepActionService.getActionsForStep(childStep.getProcessStepId());
-      if (!actions.isEmpty()) {
-          newStepChildActions.put(ppsId, actions);
+      Long ppsId = this.insertProjectProcessStep(pps.getProjectId(), childStep.getProcessStepId(), ownerUserPositionId);
+        log.info("insert query: pps");
+//      List<ProcessStepAction> actions = processStepActionService.getActionsForStep(childStep.getProcessStepId());
+      if (childStep.getAutoTriggerActionCount() > 0) {
+          newStepChildActions.put(ppsId, childStep.getProcessStepId());
       }
     });
 
     // Save off the performed action
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectProcessStepId", projectProcessStepId);
-    params.put("processStepActionId", actionId);
-    params.put("triggeredAutomatically", action.getTriggerAutomatically());
-    params.put("createdById", securityService.getCurrentUser().getId());
-    sqlCache.update("projectProcessStep.insertPerformedAction", params);
+//    HashMap<String, Object> params = new HashMap<>();
+//    params.put("projectProcessStepId", pps.getProjectProcessStepId());
+//    params.put("processStepActionId", action.getId());
+//    params.put("triggeredAutomatically", action.getTriggerAutomatically());
+//    params.put("createdById", securityService.getCurrentUser().getId());
+//    sqlCache.update("projectProcessStep.insertPerformedAction", params);
 
       // Attempt to perform all auto trigger actions
-      for (Map.Entry<Long, List<ProcessStepAction>> entry : newStepChildActions.entrySet()) {
+      for (Map.Entry<Long, Long> entry : newStepChildActions.entrySet()) {
           final Long ppsId = entry.getKey();
-          List<ProcessStepAction> actions = entry.getValue();
+          final Long processStepId = entry.getValue();
 
-          this.performAutoTriggerActions(actions, ppsId);
+          log.info("going recursive");
+          this.performAutoTriggerActions(processStepId, ppsId);
       }
   }
 
-  public boolean canPerformAction(Long actionId, Long projectProcessStepId) throws Exception {
+  public boolean canPerformAction(ProcessStepAction action, ProjectProcessStep pps) throws Exception {
 
 
-    ProjectProcessStep pps = this.getProjectProcessStep(projectProcessStepId);
+//    ProjectProcessStep pps = this.getProjectProcessStep(projectProcessStepId);
 
     // Only perform actions on active project process steps
     if (pps.getProcessStepStatusTypeId() != 1) {
         return false;
     }
 
-    ProcessStepAction action = processStepActionService.getActionById(actionId);
+//    ProcessStepAction action = processStepActionService.getActionById(actionId);
 
     if (action.getAlwaysEnabled()) {
       return true;
@@ -364,7 +372,8 @@ public class ProjectProcessStepService {
       .map(ProcessStepLogic::getProcessStepRequirementId)
       .collect(Collectors.toList());
 
-    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(projectProcessStepId, requirementIds);
+    List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
+      log.info("fetch query: requirements");
 
     // If there are not any requirements, then it can be completed
     if (requirements.isEmpty()) {

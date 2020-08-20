@@ -3,7 +3,6 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
-import com.albatross.api.v1.flow.model.ProcessStepAction;
 import com.albatross.api.v1.flow.model.ProcessStepActionChildFunction;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +12,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -54,10 +55,16 @@ public class AsyncProjectProcessStepService {
   }
 
   @Async
-  public void asyncPerformAutoTriggerActions (List<ProcessStepAction> actions, Long ppsId, UserAccountDetails userDetails) {
+  public void asyncPerformAutoTriggerActions (Long processStepId, Long ppsId, UserAccountDetails userDetails) {
       // Set the security context so we have user details in the async downline
       securityService.setCurrentUserDetails(userDetails);
-      projectProcessStepService.performAutoTriggerActions(actions, ppsId);
+      Instant start = Instant.now();
+      projectProcessStepService.performAutoTriggerActions(processStepId, ppsId);
+      Instant end = Instant.now();
+      log.info("");
+      log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+      log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+      log.info("");
   }
 
   //@TODO: getParamValueByDataType is annoyingly copied from projectProcessStepService. Fix it

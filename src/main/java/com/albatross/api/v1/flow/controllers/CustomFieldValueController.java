@@ -93,8 +93,7 @@ public class CustomFieldValueController {
 
 
     Long processStepId = groups.get(0).getProcessStepId();
-    List<ProcessStepAction> actions = processStepActionService.getActionsForStep(processStepId);
-    asyncProjectProcessStepService.asyncPerformAutoTriggerActions(actions, projectProcessStepId, securityService.getCurrentUserDetails());
+    asyncProjectProcessStepService.asyncPerformAutoTriggerActions(processStepId, projectProcessStepId, securityService.getCurrentUserDetails());
 
     return groups;
   }
