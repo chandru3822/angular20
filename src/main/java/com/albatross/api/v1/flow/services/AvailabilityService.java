@@ -15,6 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -29,14 +33,10 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AvailabilityService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  ObjectMapper om;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final DataSource dataSource;
+  private final ObjectMapper om;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -242,23 +242,44 @@ public class AvailabilityService {
     return results;
   }
 
-  public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) {
+  public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws SQLException {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", request.getProjectId());
-    params.put("appointmentTime", request.getAppointmentTime());
+    params.put("projectProcessStepId", request.getProjectProcessStepId());
     params.put("startTime", request.getStartTime());
     params.put("endTime", request.getEndTime());
-    params.put("users", request.getUsers());
+    params.put("appointmentTime", request.getAppointmentTime());
+    params.put("users", createSqlArrayOfType("int", request.getUsers()));
 
 
-    Boolean appointmentSaved = sqlCache.queryForObject("availability.setCloserAppointment", params, Boolean.class);
+    List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
 
-    if(appointmentSaved) {
-      return ResponseEntity.ok("Appointment Saved");
+    if(!results.isEmpty()) {
+      if(null != results.get(0) && results.get(0).getSuccess()) {
+        return ResponseEntity.ok(results.get(0));
+      } else {
+        return ResponseEntity.badRequest().body("Appointment no longer available. Please select another time.");
+      }
     } else {
-      return ResponseEntity.badRequest().body("Selected appointment is not available.");
+      return ResponseEntity.badRequest().body("Unknown Error Occurred");
     }
+    //todo: error handling
+    //todo: if successful return the full cfg/cfv stuff so we can display it
+//    if(appointmentSaved) {
+//      return ResponseEntity.ok("Appointment Saved");
+//    } else {
+//      return ResponseEntity.badRequest().body("Selected appointment is not available.");
+//    }
+  }
+
+  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+    if (array != null && !array.isEmpty()) {
+      try (Connection connection = dataSource.getConnection()) {
+        return connection.createArrayOf(typeName, array.toArray());
+      }
+    }
+    return null;
   }
 
   public ResourceAppointment getOneResourceAppointment(Long id) {
