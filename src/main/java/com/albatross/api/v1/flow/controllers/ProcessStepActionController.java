@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.ProcessStepActionService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -16,11 +17,11 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RequestMapping(value = "/api/v1/flow/processStep/{stepId}/action")
 public class ProcessStepActionController {
 
-  @Autowired
-  private ProcessStepActionService processStepActionService;
+  private final ProcessStepActionService processStepActionService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepAction> getActionsForStep (@PathVariable Long stepId) {

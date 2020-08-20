@@ -72,7 +72,7 @@
     <v-col
       class="mt-4"
       v-for="(cfg, index) in customFieldGroups"
-      :key="cfg.id"
+      :key="index"
     >
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>
@@ -83,13 +83,89 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-btn
-            v-if="index === 0"
+            v-if="index === 0 && (cfg.uniqueBehaviorTypeId !== 1 || (cfg.uniqueBehaviorTypeId === 1 && closerApptOverride))"
             text
             @click="updateFieldGroups"
           >Save Process Fields</v-btn>
+          <v-spacer></v-spacer>
+          <v-toolbar-items v-if="displayUniqueView(cfg)">
+            <v-btn text @click="closerApptOverride = !closerApptOverride"
+                   v-if="!closerAppointmentDetails.userId">
+              {{ closerApptOverride ? 'Back' : 'Override' }}
+            </v-btn>
+<!--            todo: change to this button after they finish testing. this will make the override button only available to closers -->
+<!--            <v-btn text @click="closerApptOverride = !closerApptOverride"-->
+<!--                   v-if="!closerAppointmentDetails.userId && $store.getters.userHasPosition(1)">-->
+<!--              {{ closerApptOverride ? 'Back' : 'Override' }}-->
+<!--            </v-btn>-->
+          </v-toolbar-items>
         </v-toolbar-items>
       </v-toolbar>
-      <v-card class="pa-4">
+      <v-card v-if="displayUniqueView(cfg) && !closerApptOverride">
+        <v-toolbar flat color="transparent">
+          <v-toolbar-title>Lead Allocation</v-toolbar-title>
+          <v-spacer></v-spacer>
+        </v-toolbar>
+        <v-card-text>
+          <div v-if="!closerAppointmentDetails.userId">
+            <CustomValueInput
+                :readonly="false"
+                :callback="populateDirtyCfvs"
+                :field="availabilityDateField"
+            />
+            <div class="text-right" v-if="availabilityDateField.dateValue">
+              <v-btn color="primaryCustom" dark class="white--text"
+                @click="getAvailableTimeSlots">
+                Search
+              </v-btn>
+            </div>
+            <v-select v-if="timeSlots.length > 0"
+              v-model="selectedTimeSlot"
+              :items="timeSlots"
+              label="Select an Available Time Slot"
+              return-object
+            >
+              <template slot="selection" slot-scope="data">
+                {{ data.item.scheduledStartTime | formatDate('timestamp')}}
+              </template>
+              <template slot="item" slot-scope="data">
+                {{ data.item.scheduledStartTime | formatDate('timestamp')}}
+              </template>
+            </v-select>
+            <div v-else-if="searchedTimeSlots">No Times Available for the Selected Date</div>
+            <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime">
+              <v-btn color="primaryCustom" dark class="white--text"
+                     @click="saveCloserAppointment">
+                Save Appointment
+              </v-btn>
+            </div>
+          </div>
+          <div v-else>
+            Appointment has been saved.
+            <DatetimePickerInput
+              v-model="closerAppointmentDetails.appointmentStartTime"
+              :timezone="timezone"
+              :type="'timestamp'"
+              :readonly="true"
+              :format="'MMMM DD, YYYY, h:mm A'"
+              label="Start Time"
+            />
+            <DatetimePickerInput
+              v-model="closerAppointmentDetails.appointmentEndTime"
+              :timezone="timezone"
+              :type="'timestamp'"
+              :readonly="true"
+              :format="'MMMM DD, YYYY, h:mm A'"
+              label="End Time"
+            />
+            <v-text-field color="primary"
+                          v-model="closerAppointmentDetails.userFullName"
+                          readonly
+                          label="Resource"></v-text-field>
+          </div>
+        </v-card-text>
+      </v-card>
+      <v-card class="pa-4" v-if="!displayUniqueView(cfg) || closerApptOverride">
         <CustomValueInput
           v-for="(field, idx) in cfg.customFieldValues"
           :key="idx"
@@ -156,6 +232,8 @@ import Attachments from '@/views/flow/components/Attachments'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
+import moment from 'moment-timezone'
 
 export default {
   name: 'ProjectProcessStep',
@@ -164,11 +242,20 @@ export default {
     Snackbar,
     Attachments,
     NotesAndActivity,
-    CustomValueInput
+    CustomValueInput,
+    DatetimePickerInput
   },
   data () {
     return {
       snackbar: {},
+      availabilityDateField: { fieldName: 'Select a Date', dataTypeId: 1, dateValue: '2020-08-20' },
+      timeSlots: [],
+      selectedTimeSlot: {},
+      closerApptOverride: false,
+      closerApptSaved: false,
+      searchedTimeSlots: false,
+      timezone: this.$store.state.user.details.timezone.value,
+      closerAppointmentDetails: {},
       projectId: this.$route.params.projectId,
       projectProcessStepId: this.$route.params.processStepId,
       processStepId: this.$route.query.processStepId,
@@ -272,6 +359,8 @@ export default {
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}/processStep/${this.projectProcessStepId}`, this.dirtyCfvs)
         this.dirtyCfvs = []
         this.customFieldGroups = data
+        //only the uniqueBehaviorTypeId = 1 uses this field but i'm just setting it every time since i don't have the data here that i need to check and it should matter if it always gets updated. hows this for the longest comment ever?
+        this.closerApptSaved = true
         this.$root.$emit('projectProcessStep:checkAction')
       } catch (e) {
         logError(e)
@@ -311,7 +400,7 @@ export default {
           }
       },
     getReadOnly: function (field) {
-      return getCustomFieldReadOnly(this.$store, field)
+      return !this.closerApptOverride ? getCustomFieldReadOnly(this.$store, field) : this.closerApptSaved
     },
     handleActionCompleted () {
       this.$router.push({name: 'projectOverview', params: {projectId: this.projectId}})
@@ -319,6 +408,68 @@ export default {
     handleOnCompleteError (actionId) {
       logError(`Failed to complete action with actionId: ${actionId}`)
       this.snackbar = getSnackbar('ERROR', 'Unable to Complete Action')
+    },
+    async getAvailableTimeSlots () {
+      try {
+        this.searchedTimeSlots = false
+
+        let params = {
+          projectId: this.projectId,
+          startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          availableDate: this.availabilityDateField.dateValue
+        }
+        const {data} = await getRequestWithParams(`/availability/timeSlots`, {params})
+        this.searchedTimeSlots = true
+        this.timeSlots = data
+
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Time Slots')
+      }
+    },
+    async saveCloserAppointment() {
+      try {
+        let body = {
+          projectId: this.projectId,
+          projectProcessStepId: this.projectProcessStepId,
+          startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          appointmentTime: this.selectedTimeSlot.scheduledStartTime,
+          users: this.selectedTimeSlot.users
+        }
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data} = await postRequest(`/availability/setCloserAppointment`, body)
+        if(data) {
+          this.closerAppointmentDetails = data
+          this.closerApptSaved = true
+        }
+      } catch (e) {
+        logError(e)
+        let msg = e?.data?.message ?? 'Unable to Set Closer Appointment'
+        this.snackbar = getSnackbar('ERROR', msg)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    displayUniqueView(cfg) {
+      // return true
+      console.log('randaLogger', cfg)
+      if(cfg.uniqueBehaviorTypeId !== 1) {
+        return false
+      } else {
+        let hasTime, hasResource = false
+        //we should only hit this for a schedule closer appt group. and it should always have 3 fields (start, end, resource)
+        cfg.customFieldValues.forEach(cfv => {
+          if(cfv.intValue) {
+            hasResource = true
+          }
+          if(cfv.timestampValue) {
+            hasTime = true
+          }
+        })
+        return !hasTime && !hasResource
+      }
     }
   }
 }

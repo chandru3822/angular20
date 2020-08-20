@@ -11,6 +11,7 @@
 <script>
 
 import {getRequest, logError, postRequest} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
 
 export default {
   name: 'ActionButton',
@@ -41,6 +42,7 @@ export default {
     },
     completeAction: async function () {
       try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         const {status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/action/${this.actionId}`, {})
         if (status === 204) {
           this.handleOnComplete()
@@ -49,6 +51,8 @@ export default {
         }
       } catch (e) {
         this.handleOnCompleteError(this.$props.actionId)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     }
   },
