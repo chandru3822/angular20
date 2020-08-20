@@ -14,7 +14,7 @@ import java.util.List;
 public class CustomFieldValue {
 
   private Long id, contactId, customFieldGroupAssignmentId, customFieldGroupId,
-      customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId,
+      customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId, uniqueBehaviorTypeId,
       companySystemListId, projectProcessStepId, scheduleFieldTypeId, ancillaryCustomFieldGroupAssignmentId;
 
   private String fieldName, fieldValue, textValue, customFieldSqlKey;

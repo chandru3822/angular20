@@ -566,7 +566,6 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           //check each projectStatusTypes, if not exists in selectedOptions then it got archived
-          console.log('randaLogger', item.selectedOptions)
           item.projectStatuses?.forEach(s => {
             let match = item.selectedOptions.find(o => o.id === s.projectStatusTypeId)
             if (!match) {

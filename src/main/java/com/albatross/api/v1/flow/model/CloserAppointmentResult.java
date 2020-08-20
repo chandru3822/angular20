@@ -5,14 +5,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
 @NoArgsConstructor
-public class CloserAppointmentRequest {
+public class CloserAppointmentResult {
 
-  private Long projectId, projectProcessStepId;
-  private Date appointmentTime, startTime, endTime;
-  private List<Integer> users;
+  private Long userId;
+  private String userFirstName, userLastName, userFullName;
+  private Date appointmentStartTime, appointmentEndTime;
+  private Boolean success;
 }
