@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class ProcessStepActionChildProcess {
 
-  private Long id, processStepActionId, processStepId, createdById, modifiedById, displayOrder;
+  private Long id, processStepActionId, processStepId, createdById, modifiedById, displayOrder, autoTriggerActionCount;
   private String processStepName;
   private Boolean archived, triggerAutomatically;
 }

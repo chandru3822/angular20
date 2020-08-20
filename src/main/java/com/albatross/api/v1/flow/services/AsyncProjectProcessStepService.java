@@ -1,29 +1,44 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.ProcessStepActionChildFunction;
-import lombok.RequiredArgsConstructor;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
+@Component
 public class AsyncProjectProcessStepService {
 
   private final SqlCache sqlCache;
 
   private final ProcessStepActionService processStepActionService;
 
-  @Async
+  private final ProjectProcessStepService projectProcessStepService;
+
+  private final SecurityService securityService;
+
+    public AsyncProjectProcessStepService(SqlCache sqlCache, ProcessStepActionService processStepActionService, @Lazy ProjectProcessStepService projectProcessStepService, SecurityService securityService) {
+        this.sqlCache = sqlCache;
+        this.processStepActionService = processStepActionService;
+        this.projectProcessStepService = projectProcessStepService;
+        this.securityService = securityService;
+    }
+
+    @Async
   public void asyncRunChildFunctions(Long actionId, Long projectProcessStepId, Long userId) {
     List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, projectProcessStepId);
     childFunctions.forEach(childFunction -> {
@@ -39,7 +54,20 @@ public class AsyncProjectProcessStepService {
     });
   }
 
-  //@TODO: prepareFunctionParams and getParamValueByDataType are annoyingly copied from getParamValueByDataType. Fix it
+  @Async
+  public void asyncPerformAutoTriggerActions (Long processStepId, Long ppsId, UserAccountDetails userDetails) {
+      // Set the security context so we have user details in the async downline
+      securityService.setCurrentUserDetails(userDetails);
+      Instant start = Instant.now();
+      projectProcessStepService.performAutoTriggerActions(processStepId, ppsId);
+      Instant end = Instant.now();
+      log.info("");
+      log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+      log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+      log.info("");
+  }
+
+  //@TODO: getParamValueByDataType is annoyingly copied from projectProcessStepService. Fix it
   private String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long userId) throws Exception {
     Map<Long, String> params = new TreeMap<>();
 
@@ -64,7 +92,7 @@ public class AsyncProjectProcessStepService {
           break;
         case 3:
           try {
-            Object paramValue = getParamValueByDataType(param);
+            Object paramValue = projectProcessStepService.getParamValueByDataType(param);
             params.put(param.getDisplayOrder(), (paramValue != null) ? paramValue.toString() : null);
           } catch (Exception e) {
             ///@TODO: throw ex
@@ -76,38 +104,5 @@ public class AsyncProjectProcessStepService {
     });
 
     return params.values().toArray(String[]::new);
-  }
-
-  private Object getParamValueByDataType(CompanyFunctionParam param) throws Exception {
-
-    Object paramValue = null;
-
-    switch (param.getDataTypeId().intValue()) {
-      case 1:
-        paramValue = param.getDateValue();
-        break;
-      case 2:
-        paramValue = param.getTimestampValue();
-        break;
-      case 3:
-        paramValue = param.getBooleanValue();
-        break;
-      case 4:
-        paramValue = param.getNumericValue();
-        break;
-      case 5:
-        paramValue = param.getTextValue();
-        break;
-      case 6:
-        paramValue = param.getIntValue();
-        break;
-      case 7:
-        paramValue = param.getIntArrayValue();
-        break;
-      default:
-        //@TODO: throw nasty exception
-    }
-
-    return paramValue;
   }
 }
