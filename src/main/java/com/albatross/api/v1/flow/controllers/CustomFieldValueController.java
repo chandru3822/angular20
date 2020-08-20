@@ -91,9 +91,12 @@ public class CustomFieldValueController {
                                                                           @PathVariable Long projectProcessStepId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
 
-
-    Long processStepId = groups.get(0).getProcessStepId();
-    asyncProjectProcessStepService.asyncPerformAutoTriggerActions(processStepId, projectProcessStepId, securityService.getCurrentUserDetails());
+//    @TODO: humes, this is hardcoded to my user only. Remove after testing
+//    ************** This is temporary for testing in AWS rather than locally *********************
+    if (securityService.getCurrentUser().getId() == 99999994) {
+        Long processStepId = groups.get(0).getProcessStepId();
+        asyncProjectProcessStepService.asyncPerformAutoTriggerActions(processStepId, projectProcessStepId, securityService.getCurrentUserDetails());
+    }
 
     return groups;
   }
