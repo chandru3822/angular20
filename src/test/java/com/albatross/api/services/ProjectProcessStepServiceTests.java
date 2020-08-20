@@ -2,6 +2,7 @@ package com.albatross.api.services;
 
 import com.albatross.api.v1.flow.model.ProcessStepAction;
 import com.albatross.api.v1.flow.model.ProcessStepLogic;
+import com.albatross.api.v1.flow.model.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.ProjectProcessStepRequirement;
 import com.albatross.api.v1.flow.services.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -60,12 +61,10 @@ public class ProjectProcessStepServiceTests {
 
   private List<ProjectProcessStepRequirement> projectProcessStepRequirements;
 
-  private CustomFieldValueService customFieldValueService = mock(CustomFieldValueService.class);
-
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, null, processStepActionService, projectProcessStepRequirementService, asyncProjectProcessStepService, customFieldValueService, null));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, null, processStepActionService, projectProcessStepRequirementService, asyncProjectProcessStepService, null));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");
@@ -94,33 +93,39 @@ public class ProjectProcessStepServiceTests {
 
   @Test
   public void alwaysEnabled() throws Exception {
+    ProjectProcessStep pps = new ProjectProcessStep();
+    pps.setProcessStepStatusTypeId(1L);
     action.setAlwaysEnabled(true);
-    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps);
     assertThat(passed).isTrue();
     verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
     action.setAlwaysEnabled(false);
-    projectProcessStepService.canPerformAction(1L, 1L);
+    projectProcessStepService.canPerformAction(action, pps);
     verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
   }
 
   @Test
   public void noLogicSteps() throws Exception {
+    ProjectProcessStep pps = new ProjectProcessStep();
+    pps.setProcessStepStatusTypeId(1L);
     action.setProcessStepLogicList(List.of());
-    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps);
     assertThat(passed).isFalse();
     verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
     List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<List<ProcessStepLogic>>() {});
     action.setProcessStepLogicList(processStepLogicList);
-    projectProcessStepService.canPerformAction(1L, 1L);
+    projectProcessStepService.canPerformAction(action, pps);
     verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
   }
 
   @Test
   public void noRequirements() throws Exception {
+    ProjectProcessStep pps = new ProjectProcessStep();
+    pps.setProcessStepStatusTypeId(1L);
     when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(List.of());
-    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps);
     assertThat(passed).isTrue();
 
     // @TODO: Would be nice to verify that r.setFulfilled isn't ever called (meaning the code returns early when it should),

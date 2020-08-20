@@ -283,11 +283,7 @@ export default {
           companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.id === 1)?.processStepStatusTypeId,
           main: true
         })
-
-        const newStep = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
-        this.projectProcessSteps.push(newStep)
         this.selectedNewProjectProcessStep = null
-
         this.getProjectProcessSteps()
         this.displayDropdown = false
       } catch (e) {

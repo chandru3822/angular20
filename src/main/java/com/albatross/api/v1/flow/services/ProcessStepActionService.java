@@ -37,9 +37,7 @@ public class ProcessStepActionService {
   ObjectMapper om;
 
   public List<ProcessStepAction> getActionsForStep(Long processStepId) {
-    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
     params.put("processStepId", processStepId);
     params.put("id", null);
     //@randa come back to this. i was annoyed to have to keep 2 queries up-to-date when they were basically doing the same thing. (single select by id, vs list select by process_step_id) but this requires both calls to pass in a null param, not sure i like this

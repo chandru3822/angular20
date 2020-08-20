@@ -237,7 +237,7 @@
           cfg.group_name as "groupName",
           cfg.group_order as "groupOrder",
           cfg.event_type_id as "eventTypeId",
-          coalesce((
+          cfg.process_step_id,coalesce((
                        SELECT array_to_json(array_agg(row_to_json(fields)))
                        FROM (
                                 select
