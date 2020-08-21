@@ -23,7 +23,7 @@
                     </v-btn>
                   </div>
                 </template>
-                <span>Requires Owner</span>
+                <span v-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
               </v-tooltip>
             </template>
             <v-card class="pa-5">
