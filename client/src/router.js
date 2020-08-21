@@ -497,6 +497,16 @@ export default new Router({
           }
         }
       }, {
+        name: 'projectProcessStep',
+        path: '/project/:projectId/processStep/:processStepId',
+        component: () => {
+          if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+            return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
+          } else {
+            return accessDenied()
+          }
+        }
+      }, {
         path: '/project/:projectId',
         name: 'project',
         component: () => {
@@ -514,10 +524,6 @@ export default new Router({
             path: 'notes',
             name: 'projectNotes',
             component: () => import (/*webpackChunkName: "projectNotes" */ './views/flow/project/ProjectNotes.vue')
-          },{
-            name: 'projectProcessStep',
-            path: 'processStep/:processStepId',
-            component: () => import (/*webpackChunkName: "projectProcessStep" */ './views/flow/project/ProjectProcessStep.vue')
           }
         ]
       }, {
