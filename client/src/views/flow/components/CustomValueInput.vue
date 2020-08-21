@@ -122,6 +122,7 @@
       text
       :clearable="!readonly"
       :items="field.listOfValues"
+      :label="field.fieldName"
       :readonly="readonly"
       :disabled="readonly"
       placeholder=" "
