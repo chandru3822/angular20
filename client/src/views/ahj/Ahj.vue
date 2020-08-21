@@ -22,19 +22,17 @@
       <v-data-table
         :headers="headers"
         :items="filteredAhjs"
-        :options="pagination"
-        :items-per-page="-1"
+        :loading="dataLoading"
+        :items-per-page="100"
         :mobile-breakpoint="0"
         fixed-header
-        dense
-        hide-default-footer
+        :footer-props="footerProps"
         class="elevation-1 ahj-table"
       >
         <template #header="{ props: { headers } }">
           <tr>
-            <th v-for="header in headers" :key="header.text" @click="changeSort(header.value)"
+            <th v-for="header in headers" :key="header.text"
                 :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
-                :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
             >
               <div v-if="ahjFilters[header.value]" class="pt-2 table-filter">
                 <v-text-field v-if="ahjFilters[header.value].type === 'text'"
@@ -163,6 +161,7 @@
     data: () => ({
       snackbar: {},
       constants,
+      dataLoading: true,
       tabs: [
         {
           label: 'AHJ',
@@ -191,9 +190,15 @@
       addMode: false,
       ahjFilters: [],
       states: [],
+      metroAreas: [],
       ahjToDelete: {},
-      pagination: {},
-      metroAreas: []
+      footerProps: {
+        showFirstLastPage: !constants.IS_MOBILE,
+        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+        'items-per-page-options': [25, 50, 100, 1000]
+      }
     }),
     computed: {
       filteredAhjs () {
@@ -237,10 +242,12 @@
         try {
           const {data} = await getRequest('/ahj', 'blueraven')
           this.ahjs = cloneDeep(data)
+          this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
@@ -341,14 +348,6 @@
             this.states.push(ahj.state)
           }
         })
-      },
-      changeSort (column) {
-        if (this.pagination.sortBy === column) {
-          this.pagination.descending = !this.pagination.descending
-        } else {
-          this.pagination.sortBy = column
-          this.pagination.descending = false
-        }
       }
     },
     created () {
@@ -384,7 +383,7 @@
     margin-top: 2px;
   }
   .v-data-table ::v-deep .v-data-table__wrapper {
-    max-height: calc(100vh - 160px);
+    max-height: calc(100vh - 200px);
   }
   .table-filter {
     font-weight: normal;
