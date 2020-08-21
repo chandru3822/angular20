@@ -26,16 +26,13 @@
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
-                            :rules="requiredRules"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
                             label="City"
-                            :rules="requiredRules"
                             v-model="contact.city"></v-text-field>
               <v-select v-model="contact.stateId"
                         :items="states"
                         label="State"
-                        :rules="requiredRules"
                         item-text="state"
                         item-value="id"
               ></v-select>
@@ -47,7 +44,6 @@
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
-                            :rules="requiredRules"
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
@@ -55,11 +51,9 @@
                             v-model="contact.email"></v-text-field>
               <v-text-field text
                             label="Zip Code"
-                            :rules="requiredRules"
                             v-model="contact.postalCode"></v-text-field>
               <v-select v-model="contact.countryId"
                         :items="countries"
-                        :rules="requiredRules"
                         label="Country"
                         item-text="country"
                         item-value="id"
