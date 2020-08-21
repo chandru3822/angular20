@@ -403,7 +403,7 @@ export default {
       return !this.closerApptOverride ? getCustomFieldReadOnly(this.$store, field) : this.closerApptSaved
     },
     handleActionCompleted () {
-      this.$router.push({name: 'projectOverview', params: {projectId: this.projectId}})
+      this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
     },
     handleOnCompleteError (actionId) {
       logError(`Failed to complete action with actionId: ${actionId}`)

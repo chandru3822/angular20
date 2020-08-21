@@ -7,8 +7,8 @@
 >
 
   <template #activator="{on}">
-    <v-btn class="add-process-step-btn primary" v-on="on">
-      Add Process Step
+    <v-btn text class="" small v-on="on">
+      <v-icon>add</v-icon>
     </v-btn>
   </template>
 

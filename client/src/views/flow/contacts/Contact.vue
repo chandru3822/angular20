@@ -330,7 +330,7 @@ export default {
       try {
         const {data} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
-        this.$router.push({name: 'projectOverview', params: {projectId: data.id}})
+        this.$router.push({name: 'projectDetails', params: {projectId: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
