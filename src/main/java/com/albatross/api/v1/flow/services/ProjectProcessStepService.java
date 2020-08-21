@@ -188,7 +188,14 @@ public class ProjectProcessStepService {
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
 //    HashMap<String, Object> params = new HashMap<>();
 //    params.put("stepId", stepId);
-    return sqlCache.get("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId), new ProjectProcessStepMapper<>(ProjectProcessStep.class, om)).orElse(null);
+    try {
+        String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId), String.class);
+
+        ProjectProcessStep step = om.readValue(json, new TypeReference<ProjectProcessStep>(){});
+        return step;
+    } catch (Exception e) {
+        return null;
+    }
 
 //    if (step != null) {
 //      step.setActions(processStepActionService.getActionsForStep(step.getProcessStepId()));
