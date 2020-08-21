@@ -66,6 +66,7 @@
         <h3>{{cfg.groupName}}</h3>
         <CustomValueInput v-for="cf in cfg.customFieldValues"
                           :readonly="getReadOnly(cf)"
+                          :callback="populateDirtyCfvs"
                           :field="cf"></CustomValueInput>
       </v-container>
     </v-card>
@@ -98,6 +99,7 @@ export default {
       contact: {},
       states: [],
       countries: [],
+      dirtyCfvs: [],
       customFieldGroups: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
@@ -160,12 +162,21 @@ export default {
       this.contact.customFieldGroups = this.customFieldGroups
       try {
         const {data} = await postRequest(`/contact`, this.contact)
-        this.$router.push({name: 'contact', params: {id: data.id}})
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        if(data && data.id) {
+          await postRequest(`/customFieldValues/contact/${data.id}`, this.dirtyCfvs)
+          this.$router.push({name: 'contact', params: {id: data.id}})
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Contact')
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    populateDirtyCfvs(field) {
+      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+      if(!match) {
+        this.dirtyCfvs.push(field)
       }
     },
     getReadOnly: function (field) {
