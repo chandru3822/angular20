@@ -3,9 +3,10 @@
 
 name: Java CI with Maven
 
-#on:
-#    push:
-#        branches: [ $default-branch ]
+on:
+    push:
+        branches:
+            - "github-action-testing"
 
 jobs:
     build:
