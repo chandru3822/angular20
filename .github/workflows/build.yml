@@ -1,7 +1,7 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: Java CI with Maven
+name: Albatross Build
 
 on:
     push:
@@ -12,7 +12,6 @@ jobs:
     build:
         name: Package
         runs-on: ubuntu-latest
-
         steps:
             -   uses: actions/checkout@v2
             -   name: Set up JDK 11
@@ -27,5 +26,44 @@ jobs:
                     key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
                     restore-keys: ${{ runner.os }}-m2
 
-            -   name: Build with Maven
+            -   name: Maven Package
                 run: mvn -B package -DskipTests
+
+            -   uses: actions/upload-artifact@v2
+                with:
+                    name: albatross-jar
+                    path: target/*.jar
+
+    dockerize:
+        name: Build, tag and push to Amazon ECR
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Configure AWS credentials
+                uses: aws-actions/configure-aws-credentials@v1
+                with:
+                    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                    aws-region: us-east-2
+
+            -   name: Login to Amazon ECR
+                id: login-ecr
+                uses: aws-actions/amazon-ecr-login@v1
+
+            -   name: set env
+                run: |
+                    echo ::set-env name=GITHUB_SHA_SHORT::$(echo ${GITHUB_SHA:0:7})
+
+            -   uses: actions/download-artifact@v2
+                with:
+                    name: albatross-jar
+                    path: target/
+
+            -   name: Build & Push Image
+                env:
+                    ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                    ECR_REPOSITORY: my-ecr-repo
+                    IMAGE_TAG: ${{ env.GITHUB_SHA_SHORT }}
+                run: |
+                    docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+                    docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
