@@ -43,7 +43,7 @@ jobs:
             -   name: set env
                 id: vars
                 run: |
-                    echo ::set-env name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
+                    echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
 
             -   name: Build & Push Image
                 id: build-image
