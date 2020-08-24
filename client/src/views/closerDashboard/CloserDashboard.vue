@@ -970,32 +970,36 @@
                     v-if="funnelDrilldownHeaders[16].show">
                   {{ item.site_survey_verified_date_formatted ? item.site_survey_verified_date_formatted : '' }}
                 </td>
-                <td :class="item.final_design_sent_to_customer_date_class"
+                <td :class="item.site_survey_completed_date_class"
                     v-if="funnelDrilldownHeaders[17].show">
+                  {{ item.site_survey_completed_date_formatted ? item.site_survey_completed_date_formatted : '' }}
+                </td>
+                <td :class="item.final_design_sent_to_customer_date_class"
+                    v-if="funnelDrilldownHeaders[18].show">
                   {{ item.final_design_sent_to_customer_date_formatted ? item.final_design_sent_to_customer_date_formatted : '' }}
                 </td>
                 <td :class="item.final_design_signed_date_class"
-                    v-if="funnelDrilldownHeaders[18].show">
+                    v-if="funnelDrilldownHeaders[19].show">
                   {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
                 </td>
                 <td :class="item.proof_of_homeowners_insurance_obtained_date_class"
-                    v-if="funnelDrilldownHeaders[19].show">
+                    v-if="funnelDrilldownHeaders[20].show">
                   {{ item.proof_of_homeowners_insurance_obtained_date_formatted ? item.proof_of_homeowners_insurance_obtained_date_formatted : '' }}
                 </td>
                 <td :class="item.utility_bill_verified_date_class"
-                    v-if="funnelDrilldownHeaders[20].show">
+                    v-if="funnelDrilldownHeaders[21].show">
                   {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
                 <td :class="item.financial_agreement_signed_date_class"
-                    v-if="funnelDrilldownHeaders[21].show">
+                    v-if="funnelDrilldownHeaders[22].show">
                   {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
                 </td>
                 <td :class="item.cash_down_payment_class"
-                    v-if="funnelDrilldownHeaders[22].show">
+                    v-if="funnelDrilldownHeaders[23].show">
                   {{ item.cash_down_payment_date_formatted ? item.cash_down_payment_date_formatted : '' }}
                 </td>
                 <td :class="item.substantial_completion_date_class"
-                    v-if="funnelDrilldownHeaders[23].show">
+                    v-if="funnelDrilldownHeaders[24].show">
                   {{ item.substantial_completion_date_formatted ? item.substantial_completion_date_formatted : '' }}
                 </td>
               </tr>
@@ -2193,10 +2197,11 @@
           { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
           { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
           { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
-          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 210 },
+          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215 },
           { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
+          { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155 },
           { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
-          { text: 'FD Signed Date', value: 'final_design_signed_date_formatted', show: false, width: 130 },
+          { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 140 },
           { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
           { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
           { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
@@ -2311,29 +2316,31 @@
             break
           case 4: // Bookings Complete
             this.funnelDrilldownHeaders[15].show = true // installation_agreement_signed_date
+            this.funnelDrilldownHeaders[17].show = true // site_survey_completed_date
             break
           case 5: // Site Surveys Verified
             this.funnelDrilldownHeaders[16].show = true // site_survey_verified_date
             break
           case 6: // Final Designs sent to Homeowner
-            this.funnelDrilldownHeaders[17].show = true // final_design_sent_to_customer_date
+            this.funnelDrilldownHeaders[18].show = true // final_design_sent_to_customer_date
+            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
             break
           case 7: // Final Designs Approved
-            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
-            this.funnelDrilldownHeaders[21].show = true // financial_agreement_signed_date
-            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
-            this.funnelDrilldownHeaders[22].show = true // cash_down_payment
-            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
+            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[22].show = true // financial_agreement_signed_date
+            this.funnelDrilldownHeaders[20].show = true // proof_of_homeowners_insurance_obtained_date
+            this.funnelDrilldownHeaders[23].show = true // cash_down_payment
+            this.funnelDrilldownHeaders[21].show = true // utility_bill_verified_date
             break
           case 21: // Final Designs Completed
-            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
-            this.funnelDrilldownHeaders[21].show = true // financial_agreement_signed_date
-            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
-            this.funnelDrilldownHeaders[22].show = true // cash_down_payment
-            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
+            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[22].show = true // financial_agreement_signed_date
+            this.funnelDrilldownHeaders[20].show = true // proof_of_homeowners_insurance_obtained_date
+            this.funnelDrilldownHeaders[23].show = true // cash_down_payment
+            this.funnelDrilldownHeaders[21].show = true // utility_bill_verified_date
             break
           case 8: // Installations Completed
-            this.funnelDrilldownHeaders[23].show = true // substantial_completion_date
+            this.funnelDrilldownHeaders[24].show = true // substantial_completion_date
             break
         }
 
@@ -2392,6 +2399,10 @@
 
           if (row.site_survey_verified_date) {
             row.site_survey_verified_date_formatted = moment(row.site_survey_verified_date).format('MMM D, YYYY')
+          }
+
+          if (row.site_survey_completed_date) {
+            row.site_survey_completed_date_formatted = moment(row.site_survey_completed_date).format('MMM D, YYYY')
           }
 
           if (row.final_design_sent_to_customer_date) {
