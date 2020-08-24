@@ -3,7 +3,6 @@ WORKDIR build
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
-RUN ls -alh
 
 FROM openjdk:11-jdk-slim
 WORKDIR application

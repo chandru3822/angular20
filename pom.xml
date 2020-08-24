@@ -16,9 +16,24 @@
 
     <properties>
         <java.version>11</java.version>
+        <spring-cloud.version>2.2.3.RELEASE</spring-cloud.version>
+        <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate-validator.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-aws-secrets-manager-config</artifactId>
+            <version>${spring-cloud.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
