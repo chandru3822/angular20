@@ -25,4 +25,6 @@ public class ProjectProcessStep {
   //so far this is only used for saving
   // @TODO: Move saving this to the CustomFieldValue controller so this prop can be killed (like how the project level fields are updated)
   List<CustomFieldGroup> customFieldGroups;
+
+  private List<ProjectProcessStepRequirement> autoTriggeredActionRequirements;
 }

@@ -35,7 +35,7 @@
                     v-for="field in headers"
                     :key="field.id"
                     class="text-left"
-                    @click="$router.push({name: 'projectOverview', params: {projectId: field.id}})"
+                    @click="$router.push({name: 'projectDetails', params: {projectId: field.id}})"
                 >
                     {{row[field.text]}}
                 </td>

@@ -98,7 +98,7 @@ export default {
           display: this.$store.getters.userHasFeature('CONTACTS')
       }, {
         label: 'Projects',
-        path: '/project/search',
+        path: '/projects',
         display: this.$store.getters.userHasFeature('PROJECTS')
       },
       // {

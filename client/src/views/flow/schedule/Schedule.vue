@@ -389,7 +389,7 @@
       },
       goTo (ps, isProject, isProcessStep) {
         if (isProject) {
-          this.$router.push({name: 'projectOverview', params: {projectId: ps.projectId}})
+          this.$router.push({name: 'projectDetails', params: {projectId: ps.projectId}})
         } else if (isProcessStep) {
           this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}})
         }
