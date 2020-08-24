@@ -10,7 +10,7 @@ on:
 
 jobs:
     build:
-        name: Package
+        name: Package & Deploy
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
