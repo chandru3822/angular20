@@ -29,16 +29,6 @@ jobs:
             -   name: Maven Package
                 run: mvn -B package -DskipTests
 
-            -   uses: actions/upload-artifact@v2
-                with:
-                    name: albatross-jar
-                    path: target/*.jar
-
-    dockerize:
-        name: Build, tag and push to Amazon ECR
-        needs: build
-        runs-on: ubuntu-latest
-        steps:
             -   name: Configure AWS credentials
                 uses: aws-actions/configure-aws-credentials@v1
                 with:
@@ -51,19 +41,33 @@ jobs:
                 uses: aws-actions/amazon-ecr-login@v1
 
             -   name: set env
+                id: vars
                 run: |
-                    echo ::set-env name=GITHUB_SHA_SHORT::$(echo ${GITHUB_SHA:0:7})
-
-            -   uses: actions/download-artifact@v2
-                with:
-                    name: albatross-jar
-                    path: target/
+                    echo ::set-env name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
 
             -   name: Build & Push Image
+                id: build-image
                 env:
                     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-                    ECR_REPOSITORY: my-ecr-repo
-                    IMAGE_TAG: ${{ env.GITHUB_SHA_SHORT }}
+                    ECR_REPOSITORY: br-stage-repo
+                    IMAGE_TAG: ${{ steps.vars.outputs.github_short_sha }}
                 run: |
                     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
                     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                    echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+            -   name: Fill in the new image ID in the Amazon ECS task definition
+                id: task-def
+                uses: aws-actions/amazon-ecs-render-task-definition@v1
+                with:
+                    task-definition: .aws/task-definition.json
+                    container-name: albatross-stage
+                    image: ${{ steps.build-image.outputs.image }}
+
+            -   name: Deploy Amazon ECS task definition
+                uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+                with:
+                    task-definition: ${{ steps.task-def.outputs.task-definition }}
+                    service: br-stage-service
+                    cluster: br-stage-cluster
+                    wait-for-service-stability: true
