@@ -21,7 +21,8 @@ FROM (
                      pps.id = p_project_process_step_id and
                  psl.process_step_requirement_id is not null and
                  psa.archived is not true and
-                 psa.trigger_automatically is true
+                 psa.trigger_automatically is true and
+                 psa.action_type_id = 2
          )
          select
              ps.id as "processStepId",
