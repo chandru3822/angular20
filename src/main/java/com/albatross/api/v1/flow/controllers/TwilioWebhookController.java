@@ -1,0 +1,47 @@
+package com.albatross.api.v1.flow.controllers;
+
+import com.albatross.api.v1.flow.model.TwilioMessageRequest;
+import com.albatross.api.v1.flow.model.TwilioSMSResponse;
+import com.albatross.api.v1.flow.services.SMSService;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.twilio.twiml.MessagingResponse;
+import com.twilio.twiml.TwiMLException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping(value = "/webhook/twilio")
+public class TwilioWebhookController {
+
+    @Autowired
+    private SMSService smsService;
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(value = "/sms", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
+    public String updateSmsInfo(TwilioSMSResponse twilioSMS) throws TwiMLException, JsonProcessingException {
+        smsService.saveTwilioStatusUpdate(twilioSMS);
+
+        return new MessagingResponse.Builder()
+                .build()
+                .toXml();
+    }
+
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PostMapping(value = "/inbound", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
+    public String receiveInboundMessage(TwilioMessageRequest twilioSMS) throws TwiMLException {
+        smsService.saveReply(twilioSMS);
+
+        return new MessagingResponse.Builder()
+                .build()
+                .toXml();
+    }
+
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PostMapping(value = "/process")
+    public void processPayloads() {
+        smsService.processTwilioWebhookPayloads();
+    }
+}
