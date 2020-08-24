@@ -86,7 +86,7 @@ public class CustomFieldValueController {
 
 //    @TODO: humes, this is hardcoded to my user only. Remove after testing
 //    ************** This is temporary for testing in AWS rather than locally *********************
-      if (!values.isEmpty() && securityService.getCurrentUser().getId() == 99999994) {
+      if (!values.isEmpty() && List.of(99999994L, 2350555L, 2410143L).contains(securityService.getCurrentUser().getId())) {
           // grab all PPS where the updated fields are ancillary and perform auto triggers there
           List<Long> cfgaIds = values.stream()
               .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
