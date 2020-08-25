@@ -29,4 +29,9 @@ public class UserPositionController {
         return userPositionService.saveUserPosition(userPosition);
     }
 
+    @DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteUserPosition(@PathVariable Long id) {
+        userPositionService.deleteUserPosition(id);
+    }
+
 }
