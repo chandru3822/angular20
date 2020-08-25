@@ -10,7 +10,7 @@
                 <router-link :to="`/contact/${project.contactId}`">{{ project.projectName}}</router-link>
               </div>
               <div class="project-subtitle">
-                <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }}</span>
+                <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
                 <div v-else>
                   <v-text-field
                     v-model="project.street1"
