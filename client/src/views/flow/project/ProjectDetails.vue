@@ -167,7 +167,7 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
       customFieldGroups: [],
-      isProcessStepsLoading: true,
+      isProcessStepsLoading: false,
       isFieldsLoading: true,
       dirtyCfvs: [],
       snackbar: {},
@@ -204,6 +204,7 @@ export default {
     },
     getProcessSteps: async function () {
       try {
+      this.isProcessStepsLoading = true
        const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
        this.processSteps = data
      } catch (e) {
@@ -240,6 +241,9 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs)
+        if (this.dirtyCfvs.length > 0) {
+          this.getProcessSteps()
+        }
         this.dirtyCfvs = []
         this.customFieldGroups = data
       } catch (e) {

@@ -275,10 +275,19 @@ public class ProjectProcessStepService {
   public List<Owner> getOwners(Long processStepProcessId) {
     return sqlCache.query("projectProcessStep.getOwners", Map.of("processStepProcessId", processStepProcessId), Owner.class);
   }
+
+  public List<Long> getIdsForAutoTriggerByCfgaIds(Long projectId, Long contactId, List<Long> cfgaIds) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("contactId", contactId);
+      params.put("cfgaIds", cfgaIds);
+      return sqlCache.query("projectProcessStep.getIdsByAutoTriggerActionsAndReqs", params, new SingleColumnRowMapper<>(Long.class));
+  }
   /************************************************************* ACTION LOGIC ********************************************************************************/
 
+
   @Transactional
-  public void performAutoTriggerActions(Long processStepId, Long ppsId) {
+  public void performAutoTriggerActions(Long ppsId) {
 
       ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
       log.info("fetch query: pps");
@@ -287,7 +296,7 @@ public class ProjectProcessStepService {
 //          List<ProcessStepAction> actions = processStepActionService.getActionsForStep(processStepId);
 //          log.info("fetch query: actions");
 
-          List<Long> actionIds = new ArrayList<>();
+//          List<ArrayList> peformedActions = new ArrayList<>();
 
           pps.getActions().forEach(action -> {
               if (action.getTriggerAutomatically()) {
@@ -302,7 +311,7 @@ public class ProjectProcessStepService {
                           .collect(Collectors.toList());
                       if (this.canPerformAction(action, pps, reqs)) {
                           this.performAction(action, pps);
-                          actionIds.add(action.getId());
+//                          peformedActions.add();
                       }
                   } catch (Exception e) {
                       log.error(String.format("Unable to automatically trigger action ID: %s, with project process step ID: %s",  action.getId(), ppsId));
@@ -310,9 +319,9 @@ public class ProjectProcessStepService {
               }
           });
 
-          if (!actionIds.isEmpty()) {
+//          if (!peformedActions.isEmpty()) {
               //bulk insert performed actions
-          }
+//          }
       }
   }
 
@@ -348,7 +357,7 @@ public class ProjectProcessStepService {
 //      List<ProcessStepAction> actions = processStepActionService.getActionsForStep(childStep.getProcessStepId());
       if (childStep.getAutoTriggerActionCount() > 0) {
           log.info("going recursive");
-          this.performAutoTriggerActions(childStep.getProcessStepId(), ppsId);
+          this.performAutoTriggerActions(ppsId);
 //          newStepChildActions.put(ppsId, childStep.getProcessStepId());
       }
     });

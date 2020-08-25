@@ -302,7 +302,22 @@
                                   cf.system_list_option_ids as "systemListOptionIds",
                                   cf.company_data_type_id as "companyDataTypeId",
                                   cdt.data_type_id as "dataTypeId",
-                                  cdt.has_list_values as "hasListValues"
+                                  cdt.has_list_values as "hasListValues",
+                                  coalesce((
+                                     SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                                     FROM (
+                                              select
+                                                  lov.id,
+                                                  lov.name,
+                                                  lov.code,
+                                                  lov.parent_id,
+                                                  lov.display_order
+                                              from flow.list_of_value lov
+                                              where lov.parent_id is not null
+                                                and lov.parent_id = cf.list_of_value_id
+                                                and lov.archived is not true
+                                              order by lov.display_order
+                                          ) listOfValues), '[]') AS "listOfValues"
                               from flow.custom_field_group_assignment cfga
                                        left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
                                        left join flow.custom_field_group cfg1 on cfg1.id = cfga.custom_field_group_id

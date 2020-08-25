@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
@@ -259,7 +260,7 @@ public class AvailabilityService {
       if(null != results.get(0) && results.get(0).getSuccess()) {
         return ResponseEntity.ok(results.get(0));
       } else {
-        return ResponseEntity.badRequest().body("Appointment no longer available. Please select another time.");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Appointment no longer available. Please select another time.");
       }
     } else {
       return ResponseEntity.badRequest().body("Unknown Error Occurred");
