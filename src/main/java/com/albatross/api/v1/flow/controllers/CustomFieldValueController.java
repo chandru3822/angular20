@@ -64,7 +64,24 @@ public class CustomFieldValueController {
   @PostMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CustomFieldGroup> updateContactCustomFieldValues(@RequestBody List<CustomFieldValue> values,
                                       @PathVariable Long id) {
-    return customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT.toString());
+      List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT.toString());
+
+      //    @TODO: humes, this is hardcoded to my user only. Remove after testing
+//    ************** This is temporary for testing in AWS rather than locally *********************
+      if (!values.isEmpty() && List.of(99999994L, 2350555L, 2410143L).contains(securityService.getCurrentUser().getId())) {
+          // grab all PPS where the updated fields are ancillary and perform auto triggers there
+          List<Long> cfgaIds = values.stream()
+              .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+              .collect(Collectors.toList());
+          if (!cfgaIds.isEmpty()) {
+              List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
+              for (Long ppsId : ppsIds) {
+                  asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+              }
+          }
+      }
+
+      return groups;
   }
 
   @PostMapping(value = "/org/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -86,7 +103,7 @@ public class CustomFieldValueController {
 
 //    @TODO: humes, this is hardcoded to my user only. Remove after testing
 //    ************** This is temporary for testing in AWS rather than locally *********************
-      if (!values.isEmpty() && securityService.getCurrentUser().getId() == 99999994) {
+      if (!values.isEmpty() && List.of(99999994L, 2350555L, 2410143L).contains(securityService.getCurrentUser().getId())) {
           // grab all PPS where the updated fields are ancillary and perform auto triggers there
           List<Long> cfgaIds = values.stream()
               .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
@@ -110,7 +127,7 @@ public class CustomFieldValueController {
 
 //    @TODO: humes, this is hardcoded to my user only. Remove after testing
 //    ************** This is temporary for testing in AWS rather than locally *********************
-    if (!values.isEmpty() && securityService.getCurrentUser().getId() == 99999994) {
+    if (!values.isEmpty() && List.of(99999994L, 2350555L, 2410143L).contains(securityService.getCurrentUser().getId())) {
         asyncProjectProcessStepService.asyncPerformAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
 
         // grab all PPS where the updated fields are ancillary and perform auto triggers there

@@ -76,7 +76,7 @@ export default {
         const url = (this.admin) ? `/processes/${this.processId}` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
         this.fetchingSteps = true
         const {data} = await getRequest(url)
-        this.steps = data.processStepProcesses
+        this.steps = (this.admin) ? data.processStepProcesses : data
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')
