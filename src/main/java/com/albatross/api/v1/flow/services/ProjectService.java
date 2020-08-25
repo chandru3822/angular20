@@ -80,7 +80,7 @@ public class ProjectService {
     String searchSqlKey = viewAll ? "project.search" : "project.searchByOwner";
     String countSqlKey = viewAll ? "project.searchCount" : "project.searchCountByOwner";
 
-    List<Project> projects = sqlCache.query(searchSqlKey, params, Project.class);
+    List<Project> projects = sqlCache.query(searchSqlKey, params, new ProjectMapper<>(Project.class, om));
     Integer total = sqlCache.queryForObject(countSqlKey, params, Integer.class);
     return new PageImpl<>(projects, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
@@ -185,14 +185,6 @@ public class ProjectService {
     return sqlCache.query("project.getAllForContact", ImmutableMap.of("companyId", user.getCompanyId(), "contactId", contactId), Project.class);
   }
 
-  public void updateOwner(Long projectId, Owner owner) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("userPositionId", (owner == null) ? null : owner.getUserPositionId());
-    params.put("projectId", projectId);
-    params.put("userId", securityService.getCurrentUser().getId());
-    sqlCache.update("project.updateOwner", params);
-  }
-
   public void updateStatus(Long projectId, Long companyProjectStatusTypeId) {
       sqlCache.update("project.updateStatus", Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
   }
@@ -248,8 +240,8 @@ public class ProjectService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<Owner> ownerRef = new TypeReference<>() {};
-      bw.registerCustomEditor(Object.class, "owner", new JsonCollectionDeserializer(ownerRef, objectMapper));
+        TypeReference<Contact> contactRef = new TypeReference<>() {};
+        bw.registerCustomEditor(Object.class, "contact", new JsonCollectionDeserializer(contactRef, objectMapper));
     }
   }
 }

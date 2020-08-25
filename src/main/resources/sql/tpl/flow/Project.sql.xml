@@ -25,11 +25,18 @@
       p.date_created,
       cp.status_type_id,
       st.status_type,
-      pr.process_name
+      pr.process_name,
+      (select row_to_json(contact) from (
+        select
+            c.id,
+            c.phone,
+            c.mobile
+      ) contact) as contact
     from flow.project p
     inner join flow.company_process cp on cp.id = p.company_process_id
     inner join flow.process pr on pr.id = cp.process_id
     inner join flow.status_type st on st.id = cp.status_type_id
+    inner join flow.contact c on c.id = p.contact_id
     where
       cp.company_id = :companyId and
       p.project_name ilike '%' || :query || '%'
@@ -57,12 +64,19 @@
       p.date_created,
       cp.status_type_id,
       st.status_type,
-      pr.process_name
+      pr.process_name,
+      (select row_to_json(contact) from (
+        select
+            c.id,
+            c.phone,
+            c.mobile
+      ) contact) as contact
     from flow.project p
        inner join flow.project_process_step pps on pps.project_id = p.id
        inner join flow.company_process cp on cp.id = p.company_process_id
        inner join flow.process pr on pr.id = cp.process_id
        inner join flow.status_type st on st.id = cp.status_type_id
+       inner join flow.contact c on c.id = p.contact_id
        left join flow.user_position up on up.id = pps.user_position_id
        left join flow."user" u on u.id = up.user_id
     where
@@ -149,21 +163,7 @@
         p.contact_id,
         p.project_name,
         p.company_project_status_type_id,
-        cpst.project_status_type,
-        (
-        select row_to_json(o) from (
-          select
-            u.id as "userId",
-            u.first_name as "firstName",
-            u.last_name as "lastName",
-            u.first_name || ' ' || u.last_name AS "fullName",
-            po.position
-          from blueraven.user u
-          inner join flow.user_position up on up.user_id = u.id
-          inner join flow.position po on po.id = up.position_id
-          where up.id = p.user_position_id
-          ) o
-        ) AS owner
+        cpst.project_status_type
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id
       inner join flow.process pro on pro.id = cp.process_id
@@ -267,15 +267,6 @@
     insert into flow.project_attachment(attachment_id, project_id, created_by_id)
     values (:attachmentId, :projectId, :createdById)
   ]]></project.addAttachment>
-
-  <project.updateOwner><![CDATA[
-    update flow.project
-    set
-      user_position_id = :userPositionId,
-      modified_by_id = :userId,
-      date_modified = now()
-    where id = :projectId
-  ]]></project.updateOwner>
 
   <project.getActiveProjectStatusTypeByCompanyId><![CDATA[
     select
