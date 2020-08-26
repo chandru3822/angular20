@@ -30,7 +30,12 @@
         select
             c.id,
             c.phone,
-            c.mobile
+            c.mobile,
+            c.street1,
+            c.street2,
+            c.city,
+            c.state,
+            c.postal_code as "postalCode"
       ) contact) as contact
     from flow.project p
     inner join flow.company_process cp on cp.id = p.company_process_id
@@ -69,7 +74,12 @@
         select
             c.id,
             c.phone,
-            c.mobile
+            c.mobile,
+            c.street1,
+            c.street2,
+            c.city,
+            c.state,
+            c.postal_code as "postalCode"
       ) contact) as contact
     from flow.project p
        inner join flow.project_process_step pps on pps.project_id = p.id
