@@ -73,7 +73,7 @@ BEGIN
 
         v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_project_id;
-        --raise notice 'in if %',v_sql;
+        raise notice 'in if %',v_sql;
         execute v_sql;
 
 
