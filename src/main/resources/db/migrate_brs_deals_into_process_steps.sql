@@ -44,7 +44,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 5 then coalesce(ad.start_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
                  when p.custom_field_group_assignment_id = 6 then coalesce(ad.end_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
                  when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 7 then d2.closer_user_id else null end,
+            case when p.custom_field_group_assignment_id = 7 then blueraven.get_user_position_for_closer(d2.id,d2.added_on::date) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
               left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
@@ -84,7 +84,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
             case when p.custom_field_group_assignment_id = 5 then coalesce(ad.start_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
                  when p.custom_field_group_assignment_id = 6 then coalesce(ad.end_date,((d2.appointment_date AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC'))
                 when p.custom_field_group_assignment_id = 25 then ((proposal_appointment_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
-            case when p.custom_field_group_assignment_id = 7 then d2.closer_user_id else null end,
+            case when p.custom_field_group_assignment_id = 7 then blueraven.get_user_position_for_closer(d2.id,d2.added_on::date) else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
           left join appointment_dates ad on ad.resource_id = d2.deal_base_oid
