@@ -22,19 +22,17 @@
       <v-data-table
         :headers="headers"
         :items="filteredAhjUtilities"
-        :options="pagination"
+        :loading="dataLoading"
         :items-per-page="-1"
         :mobile-breakpoint="0"
         fixed-header
-        dense
         hide-default-footer
         class="elevation-1 ahj-utility-table"
       >
         <template #header="{ props: { headers } }">
           <tr>
-            <th v-for="header in headers" :key="header.text" @click="changeSort(header.value)"
+            <th v-for="header in headers" :key="header.text"
                 :style="{'min-width': header.text === 'Metro Area' ? '120px' : ''}"
-                :class="['column sortable', pagination.descending ? 'desc' : 'asc', header.value === pagination.sortBy ? 'active' : '']"
             >
               <v-text-field v-if="ahjUtilityFilters[header.value]"
                             v-model="ahjUtilityFilters[header.value].value"
@@ -134,6 +132,7 @@
     data: () => ({
       snackbar: {},
       constants,
+      dataLoading: true,
       tabs: [
         {
           label: 'AHJ',
@@ -161,7 +160,6 @@
       ahjUtilityDialog: false,
       addMode: false,
       ahjUtilityFilters: [],
-      pagination: {},
       metroAreas: []
     }),
     computed: {
@@ -200,18 +198,36 @@
     },
     methods: {
       async fetchAhjUtilities () {
-        const {data} = await getRequest('/ahjUtility/list/all', 'blueraven')
-        this.ahjUtilities = cloneDeep(data)
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest('/ahjUtility/list/all', 'blueraven')
+          this.ahjUtilities = cloneDeep(data)
+          this.dataLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.dataLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getActiveMetroAreas () {
-        const {data} = await getRequest('/metro/getActive', 'blueraven')
-        data.forEach(item => {
-          let option = {
-            text: item.metroArea,
-            value: item.id
-          }
-          this.metroAreas.push(option)
-        })
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data} = await getRequest('/metro/getActive', 'blueraven')
+          data.forEach(item => {
+            let option = {
+              text: item.metroArea,
+              value: item.id
+            }
+            this.metroAreas.push(option)
+          })
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       initFilters () {
         this.ahjUtilityFilters = cloneDeep(FILTER_DEFAULTS)
@@ -259,14 +275,6 @@
         this.initFilters()
         await this.fetchAhjUtilities()
         this.editedItem = {}
-      },
-      changeSort (column) {
-        if (this.pagination.sortBy === column) {
-          this.pagination.descending = !this.pagination.descending
-        } else {
-          this.pagination.sortBy = column
-          this.pagination.descending = false
-        }
       }
     },
     created () {

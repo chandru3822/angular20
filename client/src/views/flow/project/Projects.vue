@@ -65,7 +65,7 @@
 
                 <template #item="{item: project}">
                     <tr class="clickable"
-                        @click="$router.push({name: 'projectOverview', params: {projectId: project.id}})">
+                        @click="$router.push({name: 'projectDetails', params: {projectId: project.id}})">
                         <td class="text-left">{{project.id}}</td>
                         <td class="text-left">{{project.projectName}}</td>
                         <td class="text-left">{{project.processName}}</td>

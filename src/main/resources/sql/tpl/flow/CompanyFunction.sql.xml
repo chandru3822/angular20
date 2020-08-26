@@ -73,6 +73,7 @@
     where dfp.db_function_id = :dbFunctionId
       and dfp.archived is not true
       and dfp.parameter_type_id = :parameterTypeId
+    order by dfp.display_order
   ]]></companyFunction.getFunctionDynamicParams>
 
   <companyFunction.getSystemValues><![CDATA[

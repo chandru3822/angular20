@@ -11,47 +11,13 @@
         </div>
       </v-col>
 
-      <v-col
-        cols="4"
-        class="lead-owner pb-2 text-right">
-        <div v-if="!displayChangeOwner">
-          <div v-if="project.owner && project.owner.userId">
-            <v-avatar
-              :tile="false"
-              :size="25"
-              color="grey lighten-4"
-              class="account-img mr-2"
-            >
-              <img name="accountImg" src="../../../assets/user_img_placeholder.png">
-            </v-avatar>
-            {{project.owner.fullName}}<br/>
-            {{project.owner.position}}
-          </div>
-        </div>
-        <div v-if="displayChangeOwner">
-          <v-autocomplete v-model="project.owner"
-                          :items="availableOwners"
-                          label="Select Owner"
-                          item-text="fullName"
-                          return-object
-                          autocomplete="off"
-                          @change="updateOwner"
-          >
-          </v-autocomplete>
-        </div>
-        <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
-          <span v-if="displayChangeOwner">cancel</span>
-          <span v-else-if="contact.owner && contact.owner.userId">change</span>
-          <span v-else>add owner</span>
-        </v-btn>
-      </v-col>
     </v-row>
   </v-col>
 
   <v-col cols="12">
 
     <v-col cols="12" class="text-left">
-      <router-link :to="`/project/${projectId}`">Back</router-link>
+      <router-link :to="`/project/${projectId}/details`">Back</router-link>
     </v-col>
 
     <v-col cols="12" class="text-left">
@@ -283,11 +249,7 @@ export default {
           companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.id === 1)?.processStepStatusTypeId,
           main: true
         })
-
-        const newStep = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
-        this.projectProcessSteps.push(newStep)
         this.selectedNewProjectProcessStep = null
-
         this.getProjectProcessSteps()
         this.displayDropdown = false
       } catch (e) {

@@ -1,9 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
-import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.ProjectProcessStep;
+import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.ProcessStepActionService;
+import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -23,6 +23,10 @@ import java.util.List;
 public class ProjectProcessStepController {
 
   private final ProjectProcessStepService projectProcessStepService;
+
+  private final ProcessStepActionService processStepActionService;
+
+  private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
   @GetMapping(value = "/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(@PathVariable Long projectProcessStepId) {
@@ -39,24 +43,47 @@ public class ProjectProcessStepController {
     }
   }
 
-  @GetMapping(value = "/{projectProcessStepId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<String> getActionResult(@PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
+  @GetMapping(value = "/{ppsId}/actionResult/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<String> getActionResult(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
-      boolean canPerform = projectProcessStepService.canPerformAction(actionId, projectProcessStepId);
+      ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
+
+      if (pps.getProcessStepStatusTypeId() != 1) {
+          return new ResponseEntity<>(String.format("{\"canPerform\": %s}", false), HttpStatus.OK);
+      }
+
+      ProcessStepAction action = processStepActionService.getActionById(actionId);
+      List<Long> requirementIds = action.getProcessStepLogicList().stream()
+          .filter(step -> step.getProcessStepRequirementId() != null)
+          .map(ProcessStepLogic::getProcessStepRequirementId)
+          .collect(Collectors.toList());
+      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
+      boolean canPerform = projectProcessStepService.canPerformAction(action, pps, requirements);
       return new ResponseEntity<>(String.format("{\"canPerform\": %s}", canPerform), HttpStatus.OK);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
   }
-  @PostMapping(value = "/{projectProcessStepId}/action/{actionId}")
-  public ResponseEntity<Void> performAction(@PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
+  @PostMapping(value = "/{ppsId}/action/{actionId}")
+  public ResponseEntity<Void> performAction(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
-      boolean canPerform = projectProcessStepService.canPerformAction(actionId, projectProcessStepId);
-      if (!canPerform) {
-        //@TODO: Better error here
-        throw new RuntimeException("Can't do it");
+      ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
+
+      if (pps.getProcessStepStatusTypeId() != 1) {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-      projectProcessStepService.performAction(actionId, projectProcessStepId);
+
+      ProcessStepAction action = processStepActionService.getActionById(actionId);
+      List<Long> requirementIds = action.getProcessStepLogicList().stream()
+          .filter(step -> step.getProcessStepRequirementId() != null)
+          .map(ProcessStepLogic::getProcessStepRequirementId)
+          .collect(Collectors.toList());
+      List<ProjectProcessStepRequirement> requirements = projectProcessStepRequirementService.getByProjectProcessStepId(pps.getProjectProcessStepId(), requirementIds);
+      boolean canPerform = projectProcessStepService.canPerformAction(action, pps, requirements);
+      if (!canPerform) {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      }
+      projectProcessStepService.performAction(action, pps);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
@@ -64,8 +91,8 @@ public class ProjectProcessStepController {
   }
 
   @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<ProjectProcessStep> createProjectProcessStep(@RequestBody ProjectProcessStep projectProcessStep) {
-    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null, projectProcessStep.getMain()), HttpStatus.OK);
+  public ResponseEntity<Long> createProjectProcessStep(@RequestBody ProjectProcessStep projectProcessStep) {
+    return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null), HttpStatus.OK);
   }
 
 //  @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

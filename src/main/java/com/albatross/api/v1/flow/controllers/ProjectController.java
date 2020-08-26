@@ -69,12 +69,6 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.getOwners(), HttpStatus.OK);
   }
 
-  @PostMapping(value = "/{projectId}/owner")
-  public ResponseEntity<Void> updateProjectProcessStepOwner(@PathVariable Long projectId, @RequestBody Owner owner) {
-    projectService.updateOwner(projectId, owner);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-  }
-
   @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<ProjectStatus>> getProjectStatuses() {
       return new ResponseEntity<>(projectService.getStatuses(), HttpStatus.OK);

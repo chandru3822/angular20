@@ -32,26 +32,21 @@ import java.util.function.ObjLongConsumer;
 @Service
 public class ContactService {
 
-  @Autowired
-  SqlCache sqlCache;
+  private final SqlCache sqlCache;
 
-  @Autowired
-  LocationUtils locationUtils;
+  private final LocationUtils locationUtils;
 
-  @Autowired
-  SecurityService securityService;
+  private final SecurityService securityService;
 
-  @Autowired
-  ProjectService projectService;
+  private final ProjectService projectService;
 
-  @Autowired
-  ProcessService processService;
+  private final ProcessService processService;
 
-  @Autowired
-  ProjectProcessStepService projectProcessStepService;
+  private final UserPositionService userPositionService;
 
-  @Autowired
-  ObjectMapper om;
+  private final ProjectProcessStepService projectProcessStepService;
+
+  private final ObjectMapper om;
 
   public Page<Contact> searchContacts(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
@@ -105,18 +100,20 @@ public class ContactService {
     params.put("email", contact.getEmail());
     params.put("mobile", contact.getMobile());
     params.put("companyId", currentUser.getCompanyId());
-    params.put("ownerUserPositionId", contact.getOwner() != null ? contact.getOwner().getUserPositionId() : null);
 
     Long id;
 
     if(null != contact.getId()) {
       id = contact.getId();
+      params.put("ownerUserPositionId", contact.getOwner() != null ? contact.getOwner().getUserPositionId() : null);
       params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
       //add update when we add that to the UI
        sqlCache.update("contact.updateContact", params);
     } else {
+      UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
+      params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
       params.put("contactTypeId", ContactType.LEAD.id);
       params.put("createdById", currentUser.getId());
       id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
@@ -205,7 +202,7 @@ public class ContactService {
     if(project.isPresent()) {
       //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId, true);
+        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId);
       }
     }
 

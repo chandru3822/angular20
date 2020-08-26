@@ -477,7 +477,37 @@ export default new Router({
           }
         },
       }, {
-        path: '/project',
+        path: '/projects',
+        name: 'projects',
+        component: () => {
+          if (store.getters.userHasFeature('PROJECTS')) {
+            return import (/*webpackChunkName: "projects" */ './views/flow/project/Projects.vue')
+          } else {
+            return accessDenied()
+          }
+        },
+      }, {
+        name: 'projectAdmin',
+        path: '/projectAdmin/:projectId',
+        component: () => {
+          if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+            return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
+          } else {
+            return accessDenied()
+          }
+        }
+      }, {
+        name: 'projectProcessStep',
+        path: '/project/:projectId/processStep/:processStepId',
+        component: () => {
+          if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+            return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
+          } else {
+            return accessDenied()
+          }
+        }
+      }, {
+        path: '/project/:projectId',
         name: 'project',
         component: () => {
           if(store.getters.userHasFeature('PROJECTS')) {
@@ -487,28 +517,14 @@ export default new Router({
           }
         },
         children: [{
-            path: 'search',
-            name: 'projects',
-            component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/Projects.vue')
+            path: 'details',
+            name: 'projectDetails',
+            component: () => import (/*webpackChunkName: "projectDetails" */ './views/flow/project/ProjectDetails.vue')
           }, {
-            path: ':projectId',
-            name: 'projectOverview',
-            component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/ProjectOverview.vue')
-          }, {
-            name: 'projectProcessStep',
-            path: ':projectId/processStep/:processStepId',
-            component: () => import (/*webpackChunkName: "projectProcessStep" */ './views/flow/project/ProjectProcessStep.vue')
-          }, {
-            name: 'projectAdmin',
-            path: ':projectId/admin',
-            component: () => {
-              if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
-                return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
-              } else {
-                return accessDenied()
-              }
-            }
-        }
+            path: 'notes',
+            name: 'projectNotes',
+            component: () => import (/*webpackChunkName: "projectNotes" */ './views/flow/project/ProjectNotes.vue')
+          }
         ]
       }, {
         path: '/contacts',

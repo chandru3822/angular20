@@ -10,10 +10,21 @@
               offset-y
               :close-on-content-click="false"
           >
-            <template v-slot:activator="{ on }">
-              <v-btn v-on="on" dark color="primary" class="white--text"  @click="getAvailableProcesses">
-                Add Project
-              </v-btn>
+            <template v-slot:activator="{ on: menu }">
+              <v-tooltip top>
+                <template v-slot:activator="{ on: tooltip }">
+                  <div v-on="{ ...tooltip }" class="d-inline-block">
+                    <v-btn v-on="{ ...menu }"
+                           color="primary"
+                           :disabled="!contact.owner || !contact.owner.userId"
+                           class="white--text"
+                           @click="getAvailableProcesses">
+                      Add Project
+                    </v-btn>
+                  </div>
+                </template>
+                <span v-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+              </v-tooltip>
             </template>
             <v-card class="pa-5">
               Select a process to be used
@@ -70,7 +81,7 @@
       <v-col cols="2" class="contact-owner pb-2">
         Associated Projects<br/>
         <div v-for="p in contact.projects" :key="p.id">
-          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}`">{{p.projectName}} <span v-if="contact.projects && contact.projects.length > 1">- {{p.id}}</span></router-link>
+          <router-link v-if="$store.getters.userHasFeature('PROJECTS')" :to="`/project/${p.id}/details`">{{p.projectName}} <span v-if="contact.projects && contact.projects.length > 1">- {{p.id}}</span></router-link>
           <span v-else>{{p.projectName}}</span>
         </div>
       </v-col>
@@ -295,6 +306,7 @@ export default {
         const {data} = await putRequest(`/contact/${this.contact.id}/updateOwner`, this.contact.owner)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
+        this.contact.owner = {}
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -318,7 +330,7 @@ export default {
       try {
         const {data} = await putRequest(`/contact/${this.contact.id}/convert`, this.selectedProcess)
         this.snackbar = getSnackbar('SUCCESS', 'Successfully Converted')
-        this.$router.push({name: 'projectOverview', params: {projectId: data.id}})
+        this.$router.push({name: 'projectDetails', params: {projectId: data.id}})
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

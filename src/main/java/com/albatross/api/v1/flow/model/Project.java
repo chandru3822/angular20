@@ -14,5 +14,5 @@ public class Project {
 
   private LocalDate dateCreated;
 
-  private Owner owner;
+  private Contact contact;
 }

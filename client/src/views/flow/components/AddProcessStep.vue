@@ -7,8 +7,8 @@
 >
 
   <template #activator="{on}">
-    <v-btn class="add-process-step-btn primary" v-on="on">
-      Add Process Step
+    <v-btn text class="" small v-on="on">
+      <v-icon>add</v-icon>
     </v-btn>
   </template>
 
@@ -73,10 +73,10 @@ export default {
   methods: {
     getSteps: async function () {
       try {
-        const url = (this.admin) ? `/project/${this.projectId}/processSteps` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
+        const url = (this.admin) ? `/processes/${this.processId}` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
         this.fetchingSteps = true
         const {data} = await getRequest(url)
-        this.steps = data
+        this.steps = (this.admin) ? data.processStepProcesses : data
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')

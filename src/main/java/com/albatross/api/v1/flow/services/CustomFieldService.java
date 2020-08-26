@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -227,7 +226,11 @@ public class CustomFieldService {
       if(null != cf.getCustomFieldSqlKey()) {
         String sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
         if(null != sql) {
-          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          HashMap<String, Object> params2 = new HashMap<>();
+          //i think we can get away with not actually loading project_id here
+          params2.put("projectId", null);
+          params2.put("userId", user.getId());
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params2, ListOfValue.class);
           cf.setListOfValues(listOfValues);
         }
       } else if (null != cf.getCompanySystemListId()) {
@@ -250,7 +253,11 @@ public class CustomFieldService {
       if(null != cf.getCustomFieldSqlKey()) {
         String sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
         if(null != sql) {
-          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          // i'm not sure if we need to be able to load project Id from here or not
+          HashMap<String, Object> params2 = new HashMap<>();
+          params2.put("projectId", null);
+          params2.put("userId", user.getId());
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params2, ListOfValue.class);
           cf.setListOfValues(listOfValues);
         }
       } else if (null != cf.getCompanySystemListId()) {

@@ -725,13 +725,13 @@
           </tr>
           <!-- FUNNEL ROWS -->
           <tr class="funnel-tr" v-for="line in apptsToFdcPipelineData" :key="line.id"
-              :class="{'main-row': [14,17,11,4,21,8].indexOf(line.id) !== -1, 'blue-sub-row': [16,19,22,24,3,6].indexOf(line.id) !== -1}">
+              :class="{'main-row': [14,17,11,4,21,8].indexOf(line.id) !== -1, 'blue-sub-row': [16,19,22,23,3,6].indexOf(line.id) !== -1}">
             <!-- FUNNEL NAME -->
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
 
             <!-- TODAY COUNT -->
             <td class="funnel-td">
-              <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
+              <div v-if="[14,15,16,25,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
                 <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
@@ -785,7 +785,7 @@
 
             <!-- WTD COUNT -->
             <td class="funnel-td">
-              <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
+              <div v-if="[14,15,16,25,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
                 <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
@@ -840,7 +840,7 @@
 
             <!-- CUSTOM DATE RANGE COUNT -->
             <td class="funnel-td">
-              <div v-if="[14,15,16,8].indexOf(line.id) === -1" class="funnel-data-container">
+              <div v-if="[14,15,16,25,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
                 <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
@@ -970,32 +970,36 @@
                     v-if="funnelDrilldownHeaders[16].show">
                   {{ item.site_survey_verified_date_formatted ? item.site_survey_verified_date_formatted : '' }}
                 </td>
-                <td :class="item.final_design_sent_to_customer_date_class"
+                <td :class="item.site_survey_completed_date_class"
                     v-if="funnelDrilldownHeaders[17].show">
+                  {{ item.site_survey_completed_date_formatted ? item.site_survey_completed_date_formatted : '' }}
+                </td>
+                <td :class="item.final_design_sent_to_customer_date_class"
+                    v-if="funnelDrilldownHeaders[18].show">
                   {{ item.final_design_sent_to_customer_date_formatted ? item.final_design_sent_to_customer_date_formatted : '' }}
                 </td>
                 <td :class="item.final_design_signed_date_class"
-                    v-if="funnelDrilldownHeaders[18].show">
+                    v-if="funnelDrilldownHeaders[19].show">
                   {{ item.final_design_signed_date_formatted ? item.final_design_signed_date_formatted : '' }}
                 </td>
                 <td :class="item.proof_of_homeowners_insurance_obtained_date_class"
-                    v-if="funnelDrilldownHeaders[19].show">
+                    v-if="funnelDrilldownHeaders[20].show">
                   {{ item.proof_of_homeowners_insurance_obtained_date_formatted ? item.proof_of_homeowners_insurance_obtained_date_formatted : '' }}
                 </td>
                 <td :class="item.utility_bill_verified_date_class"
-                    v-if="funnelDrilldownHeaders[20].show">
+                    v-if="funnelDrilldownHeaders[21].show">
                   {{ item.utility_bill_verified_date_formatted ? item.utility_bill_verified_date_formatted : '' }}
                 </td>
                 <td :class="item.financial_agreement_signed_date_class"
-                    v-if="funnelDrilldownHeaders[21].show">
+                    v-if="funnelDrilldownHeaders[22].show">
                   {{ item.agreement_signed_date_formatted ? item.agreement_signed_date_formatted : '' }}
                 </td>
                 <td :class="item.cash_down_payment_class"
-                    v-if="funnelDrilldownHeaders[22].show">
+                    v-if="funnelDrilldownHeaders[23].show">
                   {{ item.cash_down_payment_date_formatted ? item.cash_down_payment_date_formatted : '' }}
                 </td>
                 <td :class="item.substantial_completion_date_class"
-                    v-if="funnelDrilldownHeaders[23].show">
+                    v-if="funnelDrilldownHeaders[24].show">
                   {{ item.substantial_completion_date_formatted ? item.substantial_completion_date_formatted : '' }}
                 </td>
               </tr>
@@ -1128,22 +1132,23 @@
           {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
           {id: 15, name: 'Cancelled in advance', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 5},
           {id: 16, name: 'Ineligible for solar', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 6},
-          {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 7},
-          {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
-          {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
-          {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
-          {id: 22, name: 'No utility bill', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
-          {id: 23, name: 'Future Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
-          {id: 24, name: 'Un-dispositioned past appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
-          {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
-          {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
-          {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
-          {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
-          {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
-          {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 19},
-          {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 20},
-          {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 21},
-          {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 22}
+          {id: 25, name: 'Rescheduled', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 7},
+          {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
+          {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
+          {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
+          {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
+          {id: 22, name: 'No utility bill', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
+          {id: 24, name: 'Non-dispositioned appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
+          {id: 23, name: 'Yet to occur', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
+          {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
+          {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
+          {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
+          {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
+          {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 19},
+          {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 20},
+          {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 21},
+          {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 22},
+          {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 23}
       ],
       apptsCreatedPipelineCustomSelectorIsOpen: false,
       apptsToFdcPipelineCustomSelectorIsOpen: false,
@@ -2192,10 +2197,11 @@
           { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
           { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
           { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
-          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 210 },
+          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215 },
           { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
+          { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155 },
           { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
-          { text: 'FD Signed Date', value: 'final_design_signed_date_formatted', show: false, width: 130 },
+          { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 140 },
           { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
           { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
           { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
@@ -2262,13 +2268,17 @@
           case 10: // Total Appointments Created
             this.funnelDrilldownHeaders[11].show = true // added_on
             break
-        // Appointments to FDC Pipeline
+
+          // Appointments to FDC Pipeline
           case 14: // Total Planned Appointments
             break
           case 15: // Cancelled in advance
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
           case 16: // Ineligible for solar
+            this.funnelDrilldownHeaders[12].show = true // appointment_outcome
+            break
+          case 25: // Rescheduled
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
           case 17: // Total Eligible Planned Appointments
@@ -2286,10 +2296,10 @@
           case 22: // No utility bill
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
-          case 23: // Future Appointments
+          case 24: // Non-dispositioned appointments
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
-          case 24: // Un-dispositioned past appointments
+          case 23: // Yet to occur
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
           case 11: // Pitched
@@ -2306,27 +2316,31 @@
             break
           case 4: // Bookings Complete
             this.funnelDrilldownHeaders[15].show = true // installation_agreement_signed_date
+            this.funnelDrilldownHeaders[17].show = true // site_survey_completed_date
             break
           case 5: // Site Surveys Verified
             this.funnelDrilldownHeaders[16].show = true // site_survey_verified_date
             break
           case 6: // Final Designs sent to Homeowner
-            this.funnelDrilldownHeaders[17].show = true // final_design_sent_to_customer_date
+            this.funnelDrilldownHeaders[18].show = true // final_design_sent_to_customer_date
+            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
             break
           case 7: // Final Designs Approved
-            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
-            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
-            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
+            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[22].show = true // financial_agreement_signed_date
+            this.funnelDrilldownHeaders[20].show = true // proof_of_homeowners_insurance_obtained_date
+            this.funnelDrilldownHeaders[23].show = true // cash_down_payment
+            this.funnelDrilldownHeaders[21].show = true // utility_bill_verified_date
             break
           case 21: // Final Designs Completed
-            this.funnelDrilldownHeaders[18].show = true // final_design_signed_date
-            this.funnelDrilldownHeaders[21].show = true // financial_agreement_signed_date
-            this.funnelDrilldownHeaders[19].show = true // proof_of_homeowners_insurance_obtained_date
-            this.funnelDrilldownHeaders[22].show = true // cash_down_payment
-            this.funnelDrilldownHeaders[20].show = true // utility_bill_verified_date
+            this.funnelDrilldownHeaders[19].show = true // final_design_signed_date
+            this.funnelDrilldownHeaders[22].show = true // financial_agreement_signed_date
+            this.funnelDrilldownHeaders[20].show = true // proof_of_homeowners_insurance_obtained_date
+            this.funnelDrilldownHeaders[23].show = true // cash_down_payment
+            this.funnelDrilldownHeaders[21].show = true // utility_bill_verified_date
             break
           case 8: // Installations Completed
-            this.funnelDrilldownHeaders[23].show = true // substantial_completion_date
+            this.funnelDrilldownHeaders[24].show = true // substantial_completion_date
             break
         }
 
@@ -2385,6 +2399,10 @@
 
           if (row.site_survey_verified_date) {
             row.site_survey_verified_date_formatted = moment(row.site_survey_verified_date).format('MMM D, YYYY')
+          }
+
+          if (row.site_survey_completed_date) {
+            row.site_survey_completed_date_formatted = moment(row.site_survey_completed_date).format('MMM D, YYYY')
           }
 
           if (row.final_design_sent_to_customer_date) {
@@ -4339,7 +4357,7 @@
       z-index: 200;
       border-top-style: solid;
       border-top-color: rgba(0, 110, 200, 0.05);
-      border-top-width: 848px;
+      border-top-width: 886px;
       border-right: 60px solid transparent;
       border-left: 60px solid transparent;
       margin-top: 60px;
@@ -4604,7 +4622,7 @@
     }
 
     #appts-to-fdc-pipeline-funnel-background {
-      border-top-width: 860px;
+      border-top-width: 899px;
       width: 425px;
     }
 
@@ -4757,7 +4775,7 @@
 
   @media (min-width: 1187px) {
     #appts-to-fdc-pipeline-funnel-background {
-      border-top-width: 861px;
+      border-top-width: 900px;
     }
 
     #appts-to-fdc-pipeline-container {

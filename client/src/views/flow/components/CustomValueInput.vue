@@ -70,7 +70,7 @@
       @change="callback(field)"
     />
 
-    <v-select
+    <v-autocomplete
       v-if="field.dataTypeId === 6 && field.hasListValues"
       v-model="field.intValue"
       text
@@ -85,7 +85,7 @@
       @input="callback(field)"
    />
 
-    <v-select
+    <v-autocomplete
       v-if="field.dataTypeId === 7"
       text
       multiple
@@ -101,7 +101,7 @@
       @input="callback(field)"
     />
 
-    <v-select
+    <v-autocomplete
       v-if="field.dataTypeId === 8"
       v-model="field.intValue"
       text
@@ -116,12 +116,13 @@
       @input="callback(field)"
     />
 
-    <v-select
+    <v-autocomplete
       v-if="field.dataTypeId === 9"
       v-model="field.intValue"
       text
       :clearable="!readonly"
       :items="field.listOfValues"
+      :label="field.fieldName"
       :readonly="readonly"
       :disabled="readonly"
       placeholder=" "
