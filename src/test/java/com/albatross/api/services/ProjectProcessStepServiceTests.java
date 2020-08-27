@@ -1,9 +1,6 @@
 package com.albatross.api.services;
 
-import com.albatross.api.v1.flow.model.ProcessStepAction;
-import com.albatross.api.v1.flow.model.ProcessStepLogic;
-import com.albatross.api.v1.flow.model.ProjectProcessStep;
-import com.albatross.api.v1.flow.model.ProjectProcessStepRequirement;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,7 +53,7 @@ public class ProjectProcessStepServiceTests {
 
   private AsyncProjectProcessStepService asyncProjectProcessStepService = mock(AsyncProjectProcessStepService.class);
 
-  private ProcessStepAction action;
+  private ProjectProcessStepAction action;
 
   private List<ProcessStepLogic> processStepLogicList;
 
@@ -80,7 +77,7 @@ public class ProjectProcessStepServiceTests {
       jsonObjects.putAll(converted);
     }
 
-    action = om.readValue(jsonObjects.get("processStepAction.action"), ProcessStepAction.class);
+    action = om.readValue(jsonObjects.get("processStepAction.action"), ProjectProcessStepAction.class);
     processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<List<ProcessStepLogic>>() {});
     projectProcessStepRequirements = om.readValue(jsonObjects.get("projectProcessStepRequirement.scheduleWithSystemList"), new TypeReference<List<ProjectProcessStepRequirement>>() {});
   }
