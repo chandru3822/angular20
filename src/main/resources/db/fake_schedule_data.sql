@@ -224,3 +224,9 @@ update flow.user_company
 set default_appointment_length = 90
 where user_id = 2390155
   and company_id = 3;
+
+
+-- reset the brsadmin password so mobile has a user to log in with
+update flow."user"
+set password = '$2a$10$SD380/.K.90kkNIPSDhim.uPhxaOcW6dW54Yd4MUI2mytO4zQTevm'
+where email = 'brsadmin@blueravensolar.com'
