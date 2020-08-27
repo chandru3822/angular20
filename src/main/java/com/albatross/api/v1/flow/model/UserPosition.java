@@ -10,7 +10,7 @@ import java.util.List;
 public class UserPosition {
 
     private Long id, userId, positionId, orgId, stateId;
-    private String position;
+    private String position, orgName;
     private String startDate, endDate;
     private Boolean archived, primaryFlag;
     private List<UserOrgHierarchy> hierarchy;
