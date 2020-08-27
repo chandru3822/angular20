@@ -47,12 +47,12 @@ public class ProjectProcessStepController {
   public ResponseEntity<String> getActionResult(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
       ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
+      ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
 
-      if (pps.getProcessStepStatusTypeId() != 1) {
+      if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
           return new ResponseEntity<>(String.format("{\"canPerform\": %s}", false), HttpStatus.OK);
       }
 
-      ProcessStepAction action = processStepActionService.getActionById(actionId);
       List<Long> requirementIds = action.getProcessStepLogicList().stream()
           .filter(step -> step.getProcessStepRequirementId() != null)
           .map(ProcessStepLogic::getProcessStepRequirementId)
@@ -68,12 +68,12 @@ public class ProjectProcessStepController {
   public ResponseEntity<Void> performAction(@PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
       ProjectProcessStep pps = projectProcessStepService.getProjectProcessStep(ppsId);
+      ProjectProcessStepAction action = pps.getActions().stream().filter(a -> a.getId().equals(actionId)).findFirst().orElse(null);
 
-      if (pps.getProcessStepStatusTypeId() != 1) {
+      if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
 
-      ProcessStepAction action = processStepActionService.getActionById(actionId);
       List<Long> requirementIds = action.getProcessStepLogicList().stream()
           .filter(step -> step.getProcessStepRequirementId() != null)
           .map(ProcessStepLogic::getProcessStepRequirementId)
