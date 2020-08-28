@@ -1,7 +1,7 @@
 -- drop function if exists flow.insert_project_process_step(integer, integer, integer, integer, integer);
 
 CREATE OR REPLACE FUNCTION flow.insert_project_process_step(p_project_id integer, p_process_step_id integer, p_user_position_id integer, p_user_id integer, p_company_id integer)
-
+-- i am leaving p_user_position_id as a param in case they ask us to put it back. just needs added to the insert at the bottom
 RETURNS integer
 LANGUAGE plpgsql AS
 $$
@@ -51,11 +51,10 @@ with cpsst as (
         company_id = p_company_id and
         process_step_status_type_id = 1
 )
-insert into flow.project_process_step(project_id, process_step_id, user_position_id, company_process_step_status_type_id, created_by_id, main)
+insert into flow.project_process_step(project_id, process_step_id, company_process_step_status_type_id, created_by_id, main)
 select
     p_project_id,
     p_process_step_id,
-    p_user_position_id,
     cpsst.id,
     p_user_id,
     true
