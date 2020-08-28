@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Future;
 
 @Slf4j
 @Service
@@ -56,11 +57,14 @@ public class AsyncProjectProcessStepService {
 
   // @TODO humes, Removing async for now for testing in UAT
 //  @Async
-  public void asyncPerformAutoTriggerActions (Long ppsId, UserAccountDetails userDetails) {
-      // Set the security context so we have user details in the async downline
-      securityService.setCurrentUserDetails(userDetails);
+  public void asyncPerformAutoTriggerActions (Long ppsId) {
       Instant start = Instant.now();
-      projectProcessStepService.performAutoTriggerActions(ppsId);
+      Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+      try {
+          future.get();
+      } catch (Exception e) {
+          log.error(e.getMessage());
+      }
       Instant end = Instant.now();
       log.info("");
       log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));

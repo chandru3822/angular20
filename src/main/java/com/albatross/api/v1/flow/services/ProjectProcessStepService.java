@@ -21,6 +21,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -36,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 
@@ -285,7 +288,10 @@ public class ProjectProcessStepService {
 
 
   @Transactional
-  public void performAutoTriggerActions(Long ppsId) {
+  @Async
+  public Future<Void> performAutoTriggerActions(Long ppsId, UserAccountDetails userDetails) {
+      // Set the security context so we have user details in the async downline
+      securityService.setCurrentUserDetails(userDetails);
 
       ProjectProcessStep pps = this.getProjectProcessStep(ppsId);
       log.info("fetch query: pps");
@@ -317,11 +323,11 @@ public class ProjectProcessStepService {
                   }
               }
           });
-
 //          if (!peformedActions.isEmpty()) {
 ////              bulk insert performed actions
 //          }
       }
+      return new AsyncResult<>(null);
   }
 
   @Transactional
@@ -357,7 +363,12 @@ public class ProjectProcessStepService {
 //      List<ProcessStepAction> actions = processStepActionService.getActionsForStep(childStep.getProcessStepId());
       if (childStep.getAutoTriggerActionCount() > 0) {
           log.info("going recursive");
-          this.performAutoTriggerActions(ppsId);
+          Future<Void> future = this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+          try {
+              future.get();
+          } catch (Exception e) {
+              log.error(e.getMessage());
+          }
 //          newStepChildActions.put(ppsId, childStep.getProcessStepId());
       }
     });
