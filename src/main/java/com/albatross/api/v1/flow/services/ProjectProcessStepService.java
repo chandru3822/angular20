@@ -363,13 +363,13 @@ public class ProjectProcessStepService {
 //      List<ProcessStepAction> actions = processStepActionService.getActionsForStep(childStep.getProcessStepId());
       if (childStep.getAutoTriggerActionCount() > 0) {
           log.info("going recursive");
-          Future<Void> future = this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
-          try {
-              future.get();
-          } catch (Exception e) {
-              log.error(e.getMessage());
-          }
-//          newStepChildActions.put(ppsId, childStep.getProcessStepId());
+          this.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+//          try {
+//              future.get();
+//          } catch (Exception e) {
+//              log.error(e.getMessage());
+//          }
+////          newStepChildActions.put(ppsId, childStep.getProcessStepId());
       }
     });
 
