@@ -317,7 +317,19 @@
                                                 and lov.parent_id = cf.list_of_value_id
                                                 and lov.archived is not true
                                               order by lov.display_order
-                                          ) listOfValues), '[]') AS "listOfValues"
+                                          ) listOfValues), '[]') AS "listOfValues",
+                                coalesce((
+                                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                  FROM (
+                                           SELECT cfgawlp.id,
+                                                  cfgawlp.position_id as "positionId",
+                                                  cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                  cfgawlp.created_by_id as "createdById",
+                                                  cfgawlp.modified_by_id as "modifiedById",
+                                                  cfgawlp.archived
+                                           FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                                              WHERE cfgawlp.custom_field_group_assignment_id = cfga.id
+                                                AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
                               from flow.custom_field_group_assignment cfga
                                        left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
                                        left join flow.custom_field_group cfg1 on cfg1.id = cfga.custom_field_group_id
@@ -547,4 +559,6 @@
     from flow.contact
     where id = :sourceId
   ]]></customFieldValues.contact.getCompanyId>
+
+
 </sql>

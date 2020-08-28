@@ -6,10 +6,10 @@
     <v-row class="process-step-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/contact/${contact.id}`">{{ contact.fullName}}</router-link>
+          <router-link :to="`/contact/${project.contactId}`">{{ project.projectName}}</router-link>
         </div>
         <div class="project-subtitle">
-          {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
+          {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
         </div>
       </v-col>
 
@@ -41,7 +41,7 @@
         </div>
         <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
           <span v-if="displayChangeOwner">cancel</span>
-          <span v-else-if="contact.owner && contact.owner.userId">change</span>
+          <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
           <span v-else>add owner</span>
         </v-btn>
       </v-col>
@@ -101,7 +101,7 @@
           </v-toolbar-items>
         </v-toolbar-items>
       </v-toolbar>
-      <v-card v-if="displayUniqueView(cfg) && !closerApptOverride">
+      <v-card v-if="displayUniqueView(cfg) && !closerApptOverride && project.postalCode">
         <v-toolbar flat color="transparent">
           <v-toolbar-title>Lead Allocation</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -164,6 +164,9 @@
                           label="Resource"></v-text-field>
           </div>
         </v-card-text>
+      </v-card>
+      <v-card class="pa-4" v-if="displayUniqueView(cfg) && !closerApptOverride && !project.postalCode">
+        A postal code is required on the project to continue with scheduling.  Please return to the project screen and add a postal code.
       </v-card>
       <v-card class="pa-4" v-if="!displayUniqueView(cfg) || closerApptOverride">
         <CustomValueInput
@@ -264,7 +267,7 @@ export default {
       isProcessStepLoading: true,
       dirtyCfvs: [],
       notes: [],
-      contact: {},
+      project: {},
       displayChangeOwner: false,
       availableOwners: []
     }
@@ -272,7 +275,7 @@ export default {
   async created () {
     this.getCustomFieldGroups()
     this.getNotes()
-    this.getContact()
+    this.getProject()
     await this.getProcessStep()
     this.getAvailableOwners()
   },
@@ -313,16 +316,12 @@ export default {
 
       }
     },
-    async getContact () {
-      // this.$store.commit(AppMutations.SET_LOADING, true)
+    getProject: async function () {
       try {
-        const {data} = await getRequest(`/contact/${this.$route.query.contactId}`)
-        this.contact = data
-        // this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data} = await getRequest(`/project/${this.projectId}`)
+        this.project = data
       } catch (e) {
         logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Contact')
-        // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getAvailableOwners () {

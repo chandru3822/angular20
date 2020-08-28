@@ -52,7 +52,7 @@
         <v-data-table
             v-if="!addNew"
             :headers="headers"
-            :items="userPositions"
+            :items="filterUserPositions()"
             :fixed-header="true"
             :items-per-page="-1"
             hide-default-footer
@@ -136,11 +136,48 @@
               <td class="text-left user-column" v-for="(f, index) in filters" :key="index">
                 {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
-              <td>
-                <v-btn text v-if="!expanded.includes(item)" @click="[handleExpand(item, true), item.primary = item.primaryFlag]">
+              <td width="150">
+                <v-btn class="d-inline-block" text v-if="!expanded.includes(item)" @click="[handleExpand(item, true), item.primary = item.primaryFlag]">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
+                <v-btn class="d-inline-block" text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
+                <v-dialog
+                  class="d-inline-block"
+                  v-model="item.deleteConfirm"
+                  width="500">
+                  <template #activator="{ on }">
+                    <v-btn small text v-on="on">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title
+                      class="headline grey lighten-2"
+                      primary-title>
+                      Confirm
+                    </v-card-title>
+
+                    <v-card-text>
+                      Are you sure you want to delete this User Position: <strong>{{ item.position }}</strong>?
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        @click="item.deleteConfirm = false">
+                        No
+                      </v-btn>
+                      <v-btn
+                        color="primary"
+                        text
+                        @click="deleteUserPosition(item)">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
               </td>
             </tr>
           </template>
@@ -321,6 +358,18 @@
           return (prev.level > current.level) ? prev : current
         })
         return lowestHierarchy.orgId == null
+      },
+      filterUserPositions () {
+        return this.userPositions.filter(wqc => { return !wqc.archived})
+      },
+      async deleteUserPosition(item) {
+        try {
+          await deleteRequest(`/userPosition/${item.id}`)
+          item.archived = true
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error deleting user position')
+        }
       }
     },
 

@@ -65,6 +65,17 @@ public class UserPositionService {
     return result.orElse(null);
   }
 
+  public void deleteUserPosition(Long userPositionId) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+    params.put("userPositionId", userPositionId);
+
+    sqlCache.update("userPosition.delete", params);
+
+  }
+
   public UserPosition saveUserPosition(UserPosition userPosition) {
     User user = securityService.getCurrentUser();
     Boolean primaryFlag = null != userPosition.getPrimaryFlag() ? userPosition.getPrimaryFlag() : false;

@@ -8012,7 +8012,7 @@ INSERT INTO flow.project (id,
                  else (select id from flow.company_project_status_type where project_status_type = 'Active' and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) end
 
      FROM blueraven.deal where deal.customer_id IS NOT NULl
-        and originator_id !=5);  -- TODO Add all the other companies projects
+        and originator_id !=5 and originator_id !=15);  -- TODO Add all the other companies projects
 
 update flow.project set contact_id = (select id from flow.contact where first_name = 'Robert' and last_name = 'Earl' and city = 'Pahrump' and state = 'Nevada' and company_id = 7)
 where id =153066;

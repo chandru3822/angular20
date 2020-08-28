@@ -111,11 +111,18 @@
                 v-model="newRequirement.operatorTypeId"
                 :items="operatorTypes"
                 label="Operator"
-                @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]"
+                @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm(), operatorDataTypeCheck()]"
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
-            <v-switch v-if="newRequirement.operatorTypeId" v-model="newRequirement.customValue" @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]" class="mx-2" label="Custom"></v-switch>
+            <v-switch
+                v-if="newRequirement.operatorTypeId"
+                v-model="newRequirement.customValue"
+                :readonly="newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7"
+                @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]"
+                class="mx-2"
+                label="Custom"
+            ></v-switch>
             <v-text-field v-if="newRequirement.operatorTypeId && newRequirement.customValue && selectedCustomField.listOfValueId === null && selectedCustomField.customFieldSqlKey === null && selectedCustomField.companySystemListId === null"
                           v-model="newRequirement.requirementValue"
                           placeholder="Enter a value"
@@ -230,16 +237,21 @@
                     </v-card>
                   </div>
                   <v-select v-model="item.operatorTypeId"
+                            :readonly="newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7"
                             :items="operatorTypes"
                             class="one-hunned"
                             label="Operator"
                             :disabled="item.immutable"
                             item-text="operatorType"
+                            @change="operatorDataTypeCheck(item)"
                             item-value="id"
                   ></v-select>
-                  <v-switch v-model="item.customValue" class="mx-2"
+                  <v-switch v-model="item.customValue"
+                            class="mx-2"
+                            :readonly="item.operatorTypeId === 5 && item.dataTypeId === 7"
                             :disabled="item.immutable"
-                            label="Custom"></v-switch>
+                            label="Custom"
+                  ></v-switch>
                   <!-- single text field for non list custom values -->
                   <v-text-field v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
                                 v-model="item.requirementValue"
@@ -1624,6 +1636,17 @@
           }
         }
       },
+      operatorDataTypeCheck(item) {
+        if (item) {
+          if (item.operatorTypeId === 5 && item.dataTypeId === 7) {
+            item.customValue = true
+          }
+        } else {
+          if (this.newRequirement.operatorTypeId === 5 && this.selectedCustomField.dataTypeId === 7) {
+            this.newRequirement.customValue = true
+          }
+        }
+      }
     }
 
   }

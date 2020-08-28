@@ -1,14 +1,26 @@
 CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
+                                                       p_project_process_step_id integer,
                                                        p_start_date timestamp,
                                                        p_end_date timestamp,
+                                                       p_appointment_start_time timestamp,
                                                        p_users integer array)
-    RETURNS void AS
+    RETURNS table
+            (
+                success                boolean,
+                user_id                integer,
+                appointment_start_time timestamp,
+                appointment_end_time   timestamp,
+                user_full_name         text
+            )
+AS
 $BODY$
 declare
     v_user_id                                    integer;
     v_project_process_step_id                    integer;
     v_project_process_step_custom_field_value_id integer;
     v_default_appointment_length                 integer;
+    v_user_already_assigned                      bigint;
+    v_user_full_name                             text;
 BEGIN
 
     if array_length(p_users, 1) < 2 then
@@ -27,7 +39,8 @@ BEGIN
                  from brs.project_details pd
                           inner join flow.project p on p.id = pd.project_id
                           inner join flow.project_status_type pst on pst.id = p.company_project_status_type_id
-                          inner join round_robin_users rru on rru.user_id = pd.closer_user_id
+                          inner join flow.user_position up on up.id = pd.closer_user_id
+                          inner join round_robin_users rru on rru.user_id = up.user_id
                  where closer_appointment_start >= now() - interval '21 days'
                    and pd.source not in (7, 8, 484)
                    and final_design_signed_date is not null
@@ -54,7 +67,8 @@ BEGIN
                  select rru.user_id, count(1) as lead_gen_den
                  from brs.project_details pd
                           inner join flow.project p on p.id = pd.project_id
-                          inner join round_robin_users rru on rru.user_id = pd.closer_user_id
+                          inner join flow.user_position up on up.id = pd.closer_user_id
+                          inner join round_robin_users rru on rru.user_id = up.user_id
                  where closer_appointment_start >= now() - interval '21 days'
                    and pd.source not in (7, 8, 484)
                  group by rru.user_id),
@@ -63,7 +77,8 @@ BEGIN
                  from brs.project_details pd
                           inner join flow.project p on p.id = pd.project_id
                           inner join flow.project_status_type pst on pst.id = p.company_project_status_type_id
-                          inner join round_robin_users rru on rru.user_id = pd.closer_user_id
+                          inner join flow.user_position up on up.id = pd.closer_user_id
+                          inner join round_robin_users rru on rru.user_id = up.user_id
                  where greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
                                 utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >=
                        now() - interval '21 days'
@@ -85,13 +100,15 @@ BEGIN
              appointment_count as (
                  select rru.user_id, count(1) as appointment_count
                  from brs.project_details pd2
-                          inner join round_robin_users rru on rru.user_id = pd2.closer_user_id
+                          inner join flow.user_position up on up.id = pd2.closer_user_id
+                          inner join round_robin_users rru on rru.user_id = up.user_id
                  where closer_appointment_start between now() - interval '21 days' and now()
-                 group by rru.user_id),
+                 group by rru.user_id),--TODO add appointments in the future 100 days
              appointment_count_with_interval as (
                  select rru.user_id, count(1) as appointment_count_with_interval
                  from brs.project_details pd2
-                          inner join round_robin_users rru on rru.user_id = pd2.closer_user_id
+                          inner join flow.user_position up on up.id = pd2.closer_user_id
+                          inner join round_robin_users rru on rru.user_id = up.user_id
                  where closer_appointment_start between now() - (rru.distribution_time_frame_days || 'days')::interval and now()
                  group by rru.user_id),
              total_avail as (
@@ -109,7 +126,7 @@ BEGIN
                                         on true) as foo
                  group by foo.user
              )
-        select user_id
+        select foo3.user_id
         into v_user_id
         from (
                  select foo2.user_id, acutal_lead_allocation - total_lead_allocation as distance_from_actual_to_target
@@ -118,7 +135,7 @@ BEGIN
                                  round(score / sum(score) over (), 2) as total_lead_allocation,
                                  round(acutal_lead_allocation, 2)     as acutal_lead_allocation
                           from (
-                                   select user_id,
+                                   select foo.user_id,
                                           lead_gen_num / lead_gen_den::numeric * 1000 + self_gen +
                                           ((appointment_count + avail) / 3)            as score,
                                           appointment_count_with_interval /
@@ -156,81 +173,111 @@ BEGIN
     end if;
     if v_user_id is not null then
 
-        select uc.default_appointment_length
-        into v_default_appointment_length
-        from flow.project p
-                 inner join flow.company_process cp on cp.id = p.company_process_id
-                 inner join flow.user_company uc on uc.company_id = cp.company_id
-        where p.id = p_project_id
-          and uc.user_id = v_user_id;
+        select first_name||' '||last_name
+        into v_user_full_name
+        from flow."user"
+        where id = v_user_id;
 
-        select pps.id, ppscfv.id
-        into v_project_process_step_id,v_project_process_step_custom_field_value_id
-        from flow.project_process_step_custom_field_value ppscfv
-                 inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
-        where pps.project_id = p_project_id
-          and ppscfv.custom_field_group_assignment_id = 7
-        limit 1;
-        --         raise notice 'this is v_project_process_step_id %',v_project_process_step_id;
+        select count(1)
+        into v_user_already_assigned
+        from flow.project_process_step_custom_field_value ppscfv2
+        where ppscfv2.project_process_step_id = p_project_process_step_id
+          and ppscfv2.custom_field_group_assignment_id = 7
+          and int_value is not null;
+
+        if v_user_already_assigned < 1 then
+
+
+            select uc.default_appointment_length
+            into v_default_appointment_length
+            from flow.project p
+                     inner join flow.company_process cp on cp.id = p.company_process_id
+                     inner join flow.user_company uc on uc.company_id = cp.company_id
+            where p.id = p_project_id
+              and uc.user_id = v_user_id;
+
+            select ppscfv.project_process_step_id, ppscfv.id
+            into v_project_process_step_id,v_project_process_step_custom_field_value_id
+            from flow.project_process_step_custom_field_value ppscfv
+            where ppscfv.project_process_step_id = p_project_process_step_id
+              and ppscfv.custom_field_group_assignment_id = 7
+            limit 1;
+            --         raise notice 'this is v_project_process_step_id %',v_project_process_step_id;
 --         raise notice 'this is v_project_process_step_custom_field_value_id %',v_project_process_step_custom_field_value_id;
 --         raise notice 'this is v_user_idd %',v_user_id;
-        if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
-            update flow.project_process_step_custom_field_value
-            set int_value = v_user_id
-            where id = v_project_process_step_custom_field_value_id;
+            if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
+                update flow.project_process_step_custom_field_value
+                set int_value = v_user_id
+                where id = v_project_process_step_custom_field_value_id;
+            else
+                INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
+                                                                          custom_field_group_assignment_id, int_value,
+                                                                          date_created, created_by_id, archived)
+                VALUES (p_project_process_step_id, 7, v_user_id, now(), 2350555, false);
+            end if;
+
+            v_project_process_step_id = null;
+            v_project_process_step_custom_field_value_id = null;
+            select ppscfv.project_process_step_id, ppscfv.id
+            into v_project_process_step_id,v_project_process_step_custom_field_value_id
+            from flow.project_process_step_custom_field_value ppscfv
+            where ppscfv.project_process_step_id = p_project_process_step_id
+              and ppscfv.custom_field_group_assignment_id = 5
+            limit 1;
+
+            if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
+                update flow.project_process_step_custom_field_value
+                set timestamp_value = p_appointment_start_time
+                where id = v_project_process_step_custom_field_value_id;
+            else
+                INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
+                                                                          custom_field_group_assignment_id,
+                                                                          timestamp_value,
+                                                                          date_created, created_by_id, archived)
+                VALUES (p_project_process_step_id, 5, p_appointment_start_time, now(), 2350555, false);
+            end if;
+
+            v_project_process_step_id = null;
+            v_project_process_step_custom_field_value_id = null;
+            select ppscfv.project_process_step_id, ppscfv.id
+            into v_project_process_step_id,v_project_process_step_custom_field_value_id
+            from flow.project_process_step_custom_field_value ppscfv
+            where ppscfv.project_process_step_id = p_project_process_step_id
+              and ppscfv.custom_field_group_assignment_id = 6
+            limit 1;
+
+            if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
+                update flow.project_process_step_custom_field_value
+                set timestamp_value = p_appointment_start_time + (v_default_appointment_length || 'minutes')::interval
+                where id = v_project_process_step_custom_field_value_id;
+            else
+                INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
+                                                                          custom_field_group_assignment_id,
+                                                                          timestamp_value,
+                                                                          date_created, created_by_id, archived)
+                VALUES (p_project_process_step_id, 6, p_appointment_start_time +
+                                                      (v_default_appointment_length || 'minutes')::interval, now(),
+                        2350555, false);
+            end if;
+           -- raise notice 'user id %',v_user_id;
+           -- raise notice 'p_appointment_start_time %',p_appointment_start_time;
+           -- raise notice 'v_default_appointment_length %',v_default_appointment_length;
+           -- raise notice 'end %',(p_appointment_start_time +
+             --                     (v_default_appointment_length || 'minutes')::interval)::timestamp;
+            return query select true::boolean,
+                                v_user_id::integer,
+                                p_appointment_start_time::timestamp,
+                                (p_appointment_start_time +
+                                 (v_default_appointment_length || 'minutes')::interval)::timestamp,
+                                    v_user_full_name;
         else
-            INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
-                                                                      custom_field_group_assignment_id, int_value,
-                                                                      date_created, created_by_id, archived)
-            VALUES (v_project_process_step_id, 7, v_user_id, now(), 2350555, false);
+            return query select false::boolean, null::integer, null::timestamp, null::timestamp,null::text;
         end if;
-
-        v_project_process_step_id = null;
-        v_project_process_step_custom_field_value_id = null;
-        select pps.id, ppscfv.id
-        into v_project_process_step_id,v_project_process_step_custom_field_value_id
-        from flow.project_process_step_custom_field_value ppscfv
-                 inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
-        where pps.project_id = p_project_id
-          and ppscfv.custom_field_group_assignment_id = 5
-        limit 1;
-
-        if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
-            update flow.project_process_step_custom_field_value
-            set timestamp_value = now()
-            where id = v_project_process_step_custom_field_value_id;
-        else
-            INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
-                                                                      custom_field_group_assignment_id, timestamp_value,
-                                                                      date_created, created_by_id, archived)
-            VALUES (v_project_process_step_id, 5, now(), now(), 2350555, false);
-        end if;
-
-        v_project_process_step_id = null;
-        v_project_process_step_custom_field_value_id = null;
-        select pps.id, ppscfv.id
-        into v_project_process_step_id,v_project_process_step_custom_field_value_id
-        from flow.project_process_step_custom_field_value ppscfv
-                 inner join flow.project_process_step pps on pps.id = ppscfv.project_process_step_id
-        where pps.project_id = p_project_id
-          and ppscfv.custom_field_group_assignment_id = 6
-        limit 1;
-
-        if v_project_process_step_id is not null and v_project_process_step_custom_field_value_id is not null then
-            update flow.project_process_step_custom_field_value
-            set timestamp_value = now() - (v_default_appointment_length || 'days')::interval
-            where id = v_project_process_step_custom_field_value_id;
-        else
-            INSERT INTO flow.project_process_step_custom_field_value (project_process_step_id,
-                                                                      custom_field_group_assignment_id, timestamp_value,
-                                                                      date_created, created_by_id, archived)
-            VALUES (v_project_process_step_id, 6, now() - (v_default_appointment_length || 'days')::interval, now(), 2350555, false);
-        end if;
-
-
     else
-        --TODO throw an error that Randa is building.
+        return query select false::boolean, null::integer, null::timestamp, null::timestamp,null::text;
     end if;
+
+
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

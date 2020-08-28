@@ -1,0 +1,287 @@
+<sql>
+    <sms.queue.fetch>
+        <![CDATA[
+            SELECT
+              sms.id,
+              sms.user_id,
+              u.first_name,
+              u.last_name,
+              u.email,
+              sms.message,
+              array_to_json(sms.media_urls) AS media_urls,
+              sms.recipient_type_id,
+              sms.error_message,
+              sms.message_group,
+              sms.message_sid,
+              sms.message_status,
+              sms.from_phone,
+              sms.to_phone,
+              sms.twilio_created,
+              sms.twilio_sent,
+              sms.twilio_delivered,
+              sms.created,
+              sms.updated
+            FROM flow.sms_queue sms
+              INNER JOIN flow.user u
+                ON sms.user_id = u.id
+            WHERE %s
+        ]]>
+    </sms.queue.fetch>
+
+    <sms.queue.fetchByProjectId>
+        <![CDATA[
+            SELECT
+              sms.id,
+              sms.user_id,
+              u.first_name,
+              u.last_name,
+              u.email,
+              sms.message,
+              array_to_json(sms.media_urls) AS media_urls,
+              sms.recipient_type_id,
+              sms.error_message,
+              sms.message_group,
+              sms.message_sid,
+              sms.message_status,
+              sms.from_phone,
+              sms.to_phone,
+              sms.twilio_created,
+              sms.twilio_sent,
+              sms.twilio_delivered,
+              sms.created,
+              sms.updated
+            FROM flow.sms_queue sms
+              INNER JOIN flow.user u
+                ON sms.user_id = u.id
+            WHERE
+                sms.to_phone = (select phone_number from flow.project where id = :projectId)
+            AND (
+                error_message IS NULL OR
+                   (LOWER(error_message) IN
+                     ('api.twilio.com:443 failed to respond') AND
+                    -- so we don't retry very very old texts
+                    created >= '2017-11-08'
+                    )
+                )
+            ORDER BY sms.created ASC
+        ]]>
+    </sms.queue.fetchByProjectId>
+
+    <sms.queue.exportAll>
+        <![CDATA[
+            SELECT
+                u.first_name || ' ' || u.last_name as full_name,
+                u.email,
+                sms.to_phone,
+                sms.message,
+                sms.message_status,
+                sms.created,
+                sms.twilio_sent,
+                sms.twilio_delivered
+            FROM flow.sms_queue sms
+                INNER JOIN flow.user u
+                    ON sms.user_id = u.id
+            ORDER BY sms.created DESC
+        ]]>
+    </sms.queue.exportAll>
+
+    <sms.queue.fetch_page>
+        <![CDATA[
+            WITH summary AS (
+                SELECT
+                  count(1)                    AS item_count,
+                  ceil(count(1) / :page_size) AS pages
+                FROM flow.sms_queue
+                WHERE %s
+            ), data AS (
+                SELECT
+                  sms.id,
+                  sms.user_id AS "userId",
+                  u.first_name AS "firstName",
+                  u.last_name AS "lastName",
+                  u.email,
+                  sms.message,
+                  array_to_json(sms.media_urls) AS "mediaUrls",
+                  sms.recipient_type_id,
+                  sms.error_message AS "errorMessage",
+                  sms.message_group AS "messageGroup",
+                  sms.message_sid AS "messageSid",
+                  sms.message_status AS "messageStatus",
+                  sms.from_phone AS "fromPhone",
+                  sms.to_phone AS "toPhone",
+                  sms.twilio_created AS "twilioCreated",
+                  sms.twilio_sent AS "twilioSent",
+                  sms.twilio_delivered AS "twilioDelivered",
+                  sms.created,
+                  sms.updated
+                FROM flow.sms_queue sms
+                  INNER JOIN flow.user u
+                    ON sms.user_id = u.id
+                WHERE %s
+                ORDER BY id DESC
+                LIMIT :page_size
+                OFFSET :offset
+            ), agg AS (
+                SELECT array_to_json(array_agg(e), TRUE) AS items
+                FROM data e
+            )
+            SELECT
+              :page_size   AS page_size,
+              :page_number AS page_number,
+              *
+            FROM summary
+              CROSS JOIN agg
+        ]]>
+    </sms.queue.fetch_page>
+
+    <sms.queue.insert>
+        <![CDATA[
+            WITH sq AS (INSERT INTO flow.sms_queue (
+              message_group,user_id,message,media_urls,to_phone,recipient_type_id
+            ) VALUES (
+              :messageGroup,:userId,:message,:mediaUrls,:toPhone,:recipientTypeId
+            )
+            RETURNING id,user_id,message,media_urls,
+              message_group,message_sid,message_status,error_message,
+              from_phone,to_phone,twilio_created,twilio_sent,twilio_delivered,
+              updated,created,recipient_type_id)
+            SELECT sq.id,
+                   sq.user_id,
+                   sq.message,
+                   array_to_json(sq.media_urls)       AS media_urls,
+                   sq.message_group,
+                   sq.message_sid,
+                   sq.message_status,
+                   sq.error_message,
+                   sq.from_phone,
+                   sq.to_phone,
+                   sq.twilio_created,
+                   sq.twilio_sent,
+                   sq.twilio_delivered,
+                   sq.updated,
+                   sq.created,
+                   sq.recipient_type_id,
+                   u.first_name,
+                   u.last_name,
+                   u.first_name || ' ' || u.last_name AS fullname
+            FROM sq
+                   INNER JOIN flow.user u ON u.id = sq.user_id;
+        ]]>
+    </sms.queue.insert>
+
+    <sms.queue.next>
+        <![CDATA[
+            SELECT
+              sms.id,
+              sms.user_id,
+              u.first_name,
+              u.last_name,
+              u.email,
+              sms.message,
+              array_to_json(sms.media_urls) AS media_urls,
+              sms.recipient_type_id,
+              sms.error_message,
+              sms.message_group,
+              sms.message_sid,
+              sms.message_status,
+              sms.from_phone,
+              sms.to_phone,
+              sms.twilio_created,
+              sms.twilio_sent,
+              sms.twilio_delivered,
+              sms.updated,
+              sms.created
+            FROM flow.sms_queue sms
+              INNER JOIN flow.user u ON sms.user_id = u.id
+            WHERE message_sid IS NULL
+                  AND sms.to_phone IS NOT NULL
+                  AND (
+                    error_message IS NULL OR (
+                      LOWER(error_message) IN (
+                        'api.twilio.com:443 failed to respond'
+                      ) AND
+
+                      -- so we don't retry very very old texts
+                      created >= '2017-11-08'
+                    )
+                  )
+            ORDER BY sms.created ASC
+            LIMIT 10
+            FOR UPDATE SKIP LOCKED
+        ]]>
+    </sms.queue.next>
+
+    <sms.queue.updateById>
+        <![CDATA[
+            UPDATE flow.sms_queue
+            SET
+                message_sid = :messageSid,
+                message_status = :messageStatus,
+                from_phone = :fromPhone,
+                error_message = :errorMessage,
+                twilio_created = :created,
+                updated = now()
+            WHERE id = :id
+        ]]>
+    </sms.queue.updateById>
+
+    <sms.queue.updateByMessageSid>
+        <![CDATA[
+            UPDATE flow.sms_queue SET
+              updated          = now(),
+              from_phone       = :fromPhone,
+              message_status   = (
+                -- don't set the message status to a previous state (for updates that
+                -- arrive out of order)
+                CASE
+                WHEN :messageStatus = 'queued' AND message_status IN ('sent', 'delivered')
+                  THEN message_status
+                WHEN :messageStatus = 'sent' AND message_status = 'delivered'
+                  THEN message_status
+                ELSE :messageStatus
+                END
+              ),
+              twilio_sent      = (
+                CASE WHEN :messageStatus = 'sent'
+                  THEN :dateReceived
+                ELSE twilio_sent
+                END
+              ),
+              twilio_delivered = (
+                CASE WHEN :messageStatus = 'delivered'
+                  THEN :dateReceived
+                ELSE twilio_delivered
+                END
+              )
+            WHERE message_sid = :messageSid
+        ]]>
+    </sms.queue.updateByMessageSid>
+
+    <sms.reply.save>
+        <![CDATA[
+        INSERT INTO flow.sms_reply (
+            message_sid, account_sid, messaging_service_sid,
+            from_phone, to_phone, body, num_media
+        ) VALUES (
+            :messageSid,
+            :accountSid,
+            :messagingServiceSid,
+            :from,
+            :to,
+            :body,
+            :numMedia
+        )
+        ]]>
+    </sms.reply.save>
+
+    <sms.reply.fetch>
+        <![CDATA[
+        SELECT *
+        FROM flow.sms_reply
+        WHERE from_phone = :phone
+          AND date_received > :since
+        ORDER BY date_received DESC
+        LIMIT 1
+        ]]>
+    </sms.reply.fetch>
+</sql>

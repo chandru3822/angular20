@@ -34,7 +34,7 @@ public class AuthController {
     @Value("${security.jwt.expireDuration}")
     private Long jwtExpireDuration;
 
-  @GetMapping(value = "/heartbeat", consumes = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/heartbeat")
   public ResponseEntity getHeartbeat() {
     return ResponseEntity.noContent().build();
   }
