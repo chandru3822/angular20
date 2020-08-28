@@ -137,9 +137,9 @@ public class ScheduleService {
       params.put("customFieldGroupAssignmentId", ev.getStartCustomFieldGroupAssignmentId());
       if(null != ev.getStartCustomFieldValueId()) {
         params.put("id", ev.getStartCustomFieldValueId());
-        sqlCache.update("customFieldValues.updateProjectProcessStepCustomFieldValue", params);
+        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
       } else {
-        sqlCache.update("customFieldValues.insertProjectProcessStepCustomFieldValue", params);
+        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
       }
 
       // reset the params - although i dont think this is actually necessary
@@ -152,9 +152,9 @@ public class ScheduleService {
       params.put("customFieldGroupAssignmentId", ev.getEndCustomFieldGroupAssignmentId());
       if(null != ev.getEndCustomFieldValueId()) {
         params.put("id", ev.getEndCustomFieldValueId());
-        sqlCache.update("customFieldValues.updateProjectProcessStepCustomFieldValue", params);
+        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
       } else {
-        sqlCache.update("customFieldValues.insertProjectProcessStepCustomFieldValue", params);
+        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
       }
 
       // reset the params - although i dont think this is actually necessary
@@ -167,9 +167,9 @@ public class ScheduleService {
       params.put("customFieldGroupAssignmentId", ev.getResourceCustomFieldGroupAssignmentId());
       if(null != ev.getResourceCustomFieldValueId()) {
         params.put("id", ev.getResourceCustomFieldValueId());
-        sqlCache.update("customFieldValues.updateProjectProcessStepCustomFieldValue", params);
+        sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
       } else {
-        sqlCache.update("customFieldValues.insertProjectProcessStepCustomFieldValue", params);
+        sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
       }
     }
 
