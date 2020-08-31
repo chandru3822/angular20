@@ -34,6 +34,7 @@
         st.timestamp_value as start,
         et.timestamp_value as end,
         r.int_value as resource_id,
+        c.id as contact_id,
         c.first_name as contact_first_name,
         c.last_name as contact_last_name,
         c.latitude,
