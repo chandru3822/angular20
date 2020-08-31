@@ -6,7 +6,7 @@ name: Albatross Build
 on:
     push:
         branches:
-            - "github-action-testing"
+            - "stage"
 
 jobs:
     build:
