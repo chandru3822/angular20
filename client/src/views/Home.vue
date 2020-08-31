@@ -91,7 +91,7 @@ export default {
       menuOpen: false,
       companies: [],
       model: '',
-      headerColor: VUE_APP_ENV === 'local' ? 'blue' :
+      headerColor: VUE_APP_ENV === 'local' ? 'pink' :
                    VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
                    VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
       tabs: [ {

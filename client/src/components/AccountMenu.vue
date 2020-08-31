@@ -93,7 +93,7 @@
         attachmentTypeId: 9,
         userId: this.$store.state.user.details.id,
         userFirstName: this.getFirstName(),
-        headerColor: VUE_APP_ENV === 'local' ? 'blue' :
+        headerColor: VUE_APP_ENV === 'local' ? 'pink' :
                      VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
                      VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
         menuOpen: false,
