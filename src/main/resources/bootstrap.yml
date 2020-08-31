@@ -1,0 +1,5 @@
+aws:
+    secretsmanager:
+        enabled: true
+        name: albatross-api
+        region: us-east-1
