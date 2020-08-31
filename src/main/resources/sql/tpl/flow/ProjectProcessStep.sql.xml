@@ -121,7 +121,7 @@ where
 
 <projectProcessStep.insertPerformedAction><![CDATA[
 insert into flow.project_process_step_action (project_process_step_id, process_step_action_id, triggered_automatically, created_by_id)
-values (:projectProcessStepId, :processStepActionId, :triggeredAutomatically, :createdById)
+values (:ppsId, :psaId, :autoTriggered, :createdById)
 ]]></projectProcessStep.insertPerformedAction>
 
 <projectProcessStep.getActiveCountInProject><![CDATA[

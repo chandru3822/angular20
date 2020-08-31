@@ -54,7 +54,8 @@ public class CustomFieldValueService {
             cv.setListOfValues(listOfValues);
           }
         } else if (null != cv.getCompanySystemListId()) {
-          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds());
+//          cv.getIntValue() is passed so we can add to the sub option list any option already selected but no longer available in the list
+          List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue());
           cv.setListOfValues(listOfValues);
         }
       }

@@ -1,5 +1,5 @@
 --DROP FUNCTION IF EXISTS flow.get_system_list_options(integer, integer, boolean, integer[]);
-CREATE OR REPLACE FUNCTION flow.get_system_list_options(p_company_id INTEGER, p_company_system_list_id integer, p_sub_options BOOLEAN, p_system_list_option_ids integer[] default null)
+CREATE OR REPLACE FUNCTION flow.get_system_list_options(p_company_id INTEGER, p_company_system_list_id integer, p_sub_options BOOLEAN, p_system_list_option_ids integer[] default null, p_int_value int default null)
 
 RETURNS TABLE(id int, name text) AS
 
@@ -30,12 +30,12 @@ BEGIN
             order by name;
     when v_system_list_id = 1 and p_sub_options is true then
         RETURN QUERY
-            select distinct upv.user_id::integer as id,
-                            upv.first_name || ' ' || upv.last_name::text as name
---             select distinct upv.user_position_id::integer as id,
---                     case when  ARRAY_LENGTH( p_system_list_option_ids::INTEGER[], 1 ) > 1
---                              then upv.first_name || ' ' || upv.last_name::text || ' - ' || upv.org_name
---                          else upv.first_name || ' ' || upv.last_name::text end as name
+--             select distinct upv.user_id::integer as id,
+--                             upv.first_name || ' ' || upv.last_name::text as name
+            select distinct upv.user_position_id::integer as id,
+                    case when  ARRAY_LENGTH( p_system_list_option_ids::INTEGER[], 1 ) > 1
+                             then upv.first_name || ' ' || upv.last_name::text || ' - ' || upv.org_name
+                         else upv.first_name || ' ' || upv.last_name::text end as name
             from flow.user_positions_vw upv
             where ( upv.company_id = p_company_id OR upv.company_id = (select parent_company_id
                                                                        from flow.company c
@@ -44,6 +44,11 @@ BEGIN
               and upv.has_access is true
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
+            union
+                select upv.user_position_id::integer as id,
+                       upv.first_name || ' ' || upv.last_name::text as name
+                from flow.user_positions_vw upv
+                where upv.user_position_id = p_int_value
             order by name;
     -- 2 = users by position
     when v_system_list_id = 2 and p_sub_options is not true then
@@ -60,12 +65,12 @@ BEGIN
             order by name;
     when v_system_list_id = 2 and p_sub_options is true then
         RETURN QUERY
-            select distinct upv.user_id::integer as id,
-                            upv.first_name || ' ' || upv.last_name::text as name
---             select distinct upv.user_position_id::integer as id,
---                 case when ARRAY_LENGTH( p_system_list_option_ids::INTEGER[], 1 ) > 1
---                          then upv.first_name || ' ' || upv.last_name::text || ' - ' || upv.position
---                          else upv.first_name || ' ' || upv.last_name::text end as name
+--             select distinct upv.user_id::integer as id,
+--                             upv.first_name || ' ' || upv.last_name::text as name
+            select distinct upv.user_position_id::integer as id,
+                case when ARRAY_LENGTH( p_system_list_option_ids::INTEGER[], 1 ) > 1
+                         then upv.first_name || ' ' || upv.last_name::text || ' - ' || upv.position
+                         else upv.first_name || ' ' || upv.last_name::text end as name
             from flow.user_positions_vw upv
             where ( upv.company_id = p_company_id OR upv.company_id = (select parent_company_id
                                                                      from flow.company c
@@ -74,6 +79,11 @@ BEGIN
               and ARRAY[upv.position_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
               and (upv.start_date <= now() and
                    (upv.end_date IS NULL OR upv.end_date > now()))
+            union
+                select upv.user_position_id,
+                       upv.first_name || ' ' || upv.last_name::text || ' - ' || upv.position as name
+                from flow.user_positions_vw upv
+                where user_position_id = p_int_value
             order by name;
     -- 3 = orgs by org_type
     when v_system_list_id = 3 and p_sub_options is not true then
@@ -97,6 +107,11 @@ BEGIN
                                                                       where c.id = p_company_id) )
                and ARRAY[o.org_type_id] <@ ARRAY[ p_system_list_option_ids ]::INTEGER[]
                and o.active_flag is true
+             union
+                select o.id,
+                       o.org_name::text as name
+                from flow.org o
+                where o.id = p_int_value
              order by name;
      -- = All users
      when v_system_list_id = 4 then
@@ -108,6 +123,11 @@ BEGIN
                and upv.has_access is true
                and (upv.start_date <= now() and
                     (upv.end_date IS NULL OR upv.end_date > now()))
+             union
+                select upv.user_id::integer as id,
+                       upv.first_name || ' ' || upv.last_name::text as name
+                from flow.user_positions_vw upv
+                where upv.user_id = p_int_value
              order by name;
     end case;
 

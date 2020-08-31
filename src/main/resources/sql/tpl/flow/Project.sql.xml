@@ -23,6 +23,11 @@
       p.project_name,
       p.contact_id,
       p.date_created,
+      p.street1,
+      p.street2,
+      p.city,
+      s.state,
+      p.postal_code as "postalCode",
       cp.status_type_id,
       st.status_type,
       pr.process_name,
@@ -30,18 +35,14 @@
         select
             c.id,
             c.phone,
-            c.mobile,
-            c.street1,
-            c.street2,
-            c.city,
-            c.state,
-            c.postal_code as "postalCode"
+            c.mobile
       ) contact) as contact
     from flow.project p
     inner join flow.company_process cp on cp.id = p.company_process_id
     inner join flow.process pr on pr.id = cp.process_id
     inner join flow.status_type st on st.id = cp.status_type_id
     inner join flow.contact c on c.id = p.contact_id
+    inner join flow.state s on s.id = p.state_id
     where
       cp.company_id = :companyId and
       p.project_name ilike '%' || :query || '%'
@@ -67,6 +68,11 @@
       p.project_name,
       p.contact_id,
       p.date_created,
+      p.street1,
+      p.street2,
+      p.city,
+      s.state,
+      p.postal_code as "postalCode",
       cp.status_type_id,
       st.status_type,
       pr.process_name,
@@ -74,12 +80,7 @@
         select
             c.id,
             c.phone,
-            c.mobile,
-            c.street1,
-            c.street2,
-            c.city,
-            c.state,
-            c.postal_code as "postalCode"
+            c.mobile
       ) contact) as contact
     from flow.project p
        inner join flow.project_process_step pps on pps.project_id = p.id
@@ -87,6 +88,7 @@
        inner join flow.process pr on pr.id = cp.process_id
        inner join flow.status_type st on st.id = cp.status_type_id
        inner join flow.contact c on c.id = p.contact_id
+       inner join flow.state s on s.id = p.state_id
        left join flow.user_position up on up.id = pps.user_position_id
        left join flow."user" u on u.id = up.user_id
     where
@@ -240,7 +242,7 @@
             u.last_name as "lastName",
             u.first_name || ' ' || u.last_name AS "fullName",
             p.position
-        from blueraven.user u
+        from flow.user u
         inner join flow.user_position up on up.user_id = u.id
         inner join flow.position p on p.id = up.position_id
         where up.id = pps.user_position_id

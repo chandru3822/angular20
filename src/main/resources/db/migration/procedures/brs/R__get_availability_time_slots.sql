@@ -18,8 +18,7 @@ BEGIN
         with user_ids as (
             select pczu.user_id
             from flow.project p
-                     inner join flow.contact c on c.id = p.contact_id
-                     inner join flow.postal_code pc on pc.postal_code = c.postal_code
+                     inner join flow.postal_code pc on pc.postal_code = p.postal_code
                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
                      inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
             where p.id = p_project_id
@@ -42,8 +41,7 @@ BEGIN
                  inner join flow.postal_code_zone_user pczu on pczu.user_id = ra.user_id
                  inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id
                  inner join flow.postal_code pc on pc.postal_code_zone_id = pcz.id
-                 inner join flow.contact c on c.postal_code = pc.postal_code
-                 inner join flow.project p on p.contact_id = c.id
+                 inner join flow.project p on p.postal_code = pc.postal_code
         where p.id = p_project_id
           and start_time >= p_start_time
           and end_time <= p_end_time
@@ -79,8 +77,7 @@ BEGIN
                                           uc.default_appointment_length,
                                           (rsa.end_time - (default_appointment_length || ' minutes')::interval) closer_end_time
                                    from flow.project p
-                                            inner join flow.contact c on c.id = p.contact_id
-                                            inner join flow.postal_code pc on pc.postal_code = c.postal_code
+                                            inner join flow.postal_code pc on pc.postal_code = p.postal_code
                                             inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
                                             inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id
                                             inner join flow.resource_schedule rs on rs.user_id = pczu.user_id

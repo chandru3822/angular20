@@ -44,7 +44,7 @@ FROM (
                         up.id as "userPositionId",
                         u.first_name || ' ' || u.last_name AS "fullName",
                         p.position
-                    from blueraven.user u
+                    from flow.user u
                              inner join flow.user_position up on up.user_id = u.id
                              inner join flow.position p on p.id = up.position_id
                     where up.id = pps.user_position_id
@@ -117,6 +117,7 @@ FROM (
                     cpsst.process_step_status_type_id as "processStepStatusTypeId",
                     cpsst.process_step_status_type as "processStepStatusType",
                     at.action_type as "actionType",
+                    case when ppsa.id is null then false else true end as "alreadyTriggered",
                     coalesce((
                                  SELECT array_to_json(array_agg(row_to_json(logic)))
                                  FROM (
@@ -215,6 +216,7 @@ FROM (
                                       ) links), '[]') AS "processStepActionLinks"
                 from flow.process_step_action psa
                          left join flow.company_process_step_status_type cpsst on cpsst.id = psa.company_process_step_status_type_id
+                         left join flow.project_process_step_action ppsa on ppsa.project_process_step_id = pps.id and ppsa.process_step_action_id = psa.id
                          inner join flow.action_type at on at.id = psa.action_type_id
                 where psa.process_step_id = ps.id and
                     psa.archived is not true

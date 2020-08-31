@@ -38,12 +38,17 @@ public class SystemListService {
   }
 
   public List<ListOfValue> getSystemListOptionsForCompany(Long listId, Boolean subOptions, List<Long> systemListOptionIds) {
+    return getSystemListOptionsForCompany(listId, subOptions, systemListOptionIds, null);
+  }
+
+  public List<ListOfValue> getSystemListOptionsForCompany(Long listId, Boolean subOptions, List<Long> systemListOptionIds, Long intValue) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("systemListId", listId);
     params.put("subOptions", subOptions);
     params.put("systemListOptionIds", systemListOptionIds);
+    params.put("intValue", intValue);
     String sqlKey = "systemList.getSystemListOptionsForCompany";
 
     List<ListOfValue> results = sqlCache.query(sqlKey, params, ListOfValue.class);
