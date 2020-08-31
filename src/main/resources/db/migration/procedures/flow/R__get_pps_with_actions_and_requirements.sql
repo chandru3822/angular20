@@ -44,7 +44,7 @@ FROM (
                         up.id as "userPositionId",
                         u.first_name || ' ' || u.last_name AS "fullName",
                         p.position
-                    from blueraven.user u
+                    from flow.user u
                              inner join flow.user_position up on up.user_id = u.id
                              inner join flow.position p on p.id = up.position_id
                     where up.id = pps.user_position_id

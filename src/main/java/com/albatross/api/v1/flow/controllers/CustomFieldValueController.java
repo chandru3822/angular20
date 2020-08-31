@@ -76,7 +76,7 @@ public class CustomFieldValueController {
           if (!cfgaIds.isEmpty()) {
               List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
               for (Long ppsId : ppsIds) {
-                  asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+                  asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId);
               }
           }
       }
@@ -111,7 +111,7 @@ public class CustomFieldValueController {
           if (!cfgaIds.isEmpty()) {
               List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
               for (Long ppsId : ppsIds) {
-                  asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+                  asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId);
               }
           }
       }
@@ -128,7 +128,7 @@ public class CustomFieldValueController {
 //    @TODO: humes, this is hardcoded to my user only. Remove after testing
 //    ************** This is temporary for testing in AWS rather than locally *********************
     if (!values.isEmpty() && List.of(99999994L, 2350555L, 2410143L).contains(securityService.getCurrentUser().getId())) {
-        asyncProjectProcessStepService.asyncPerformAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+        asyncProjectProcessStepService.asyncPerformAutoTriggerActions(projectProcessStepId);
 
         // grab all PPS where the updated fields are ancillary and perform auto triggers there
         List<Long> cfgaIds = values.stream()
@@ -139,7 +139,7 @@ public class CustomFieldValueController {
             for (Long ppsId : ppsIds) {
 //            Don't re-check the ppsId we just previously did
                 if (!ppsId.equals(projectProcessStepId)) {
-                    asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+                    asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId);
                 }
             }
         }
