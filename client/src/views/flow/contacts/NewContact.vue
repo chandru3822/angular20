@@ -192,7 +192,7 @@ export default {
         city: 'Salt Lake City',
         stateId: 44,
         countryId: 1,
-        postalCode: '87654',
+        postalCode: '84115',
         email: 'randa@randa.com'
       }
     }
