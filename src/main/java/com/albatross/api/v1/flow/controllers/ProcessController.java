@@ -33,9 +33,10 @@ public class ProcessController {
     }
 
     @GetMapping(value = "/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Process> getProcess(@PathVariable Long processId) {
+    public ResponseEntity<Process> getProcess(@PathVariable Long processId,
+                                              @RequestParam(required = false) Boolean orderByDisplay) {
       User user = securityService.getCurrentUser();
-        return processService.getProcess(user.getCompanyId(), processId)
+        return processService.getProcess(user.getCompanyId(), processId, orderByDisplay)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }

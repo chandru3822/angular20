@@ -13,15 +13,13 @@
   </template>
 
   <v-card class="pa-5">
-    <v-select
-        v-model="selectedStep"
-        :items="steps"
-        item-text="processStepName"
-        item-value="id"
-        label="Process Steps"
-        placeholder="Select one..."
-        return-object
-    />
+    <v-autocomplete v-model="selectedStep"
+                    :items="steps"
+                    label="Process Steps"
+                    item-text="processStepName"
+                    item-value="id"
+                    placeholder="Select one..."
+                    return-object/>
 
     <v-btn
         class="add-process-step-btn primary"
