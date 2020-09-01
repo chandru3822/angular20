@@ -392,7 +392,7 @@
             this.projectStatusTypes = data
             // this makes the multi-select work
             this.projectStatusTypes.forEach(d => {
-              let match = item.projectStatuses.find(pst => pst.projectStatusTypeId === d.id)
+              let match = item.projectStatuses?.find(pst => pst.companyProjectStatusTypeId === d.id)
               if(match) {
                 item.selectedOptions.push(d)
               }
@@ -405,7 +405,7 @@
           }
         } else {
           this.projectStatusTypes.forEach(d => {
-            let match = item.projectStatuses.find(pst => pst.projectStatusTypeId === d.id)
+            let match = item.projectStatuses.find(pst => pst.companyProjectStatusTypeId === d.id)
             if(match) {
               item.selectedOptions.push(d)
             }
@@ -579,7 +579,7 @@
             if (!match) {
               let object = {
                 id: null,
-                projectStatusTypeId: o.id,
+                companyProjectStatusTypeId: o.id,
                 processStepWorkQueueTypeId: item.id,
                 archived: false
               }

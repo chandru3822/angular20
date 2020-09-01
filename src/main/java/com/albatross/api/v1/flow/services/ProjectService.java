@@ -205,6 +205,7 @@ public class ProjectService {
   }
 
   public List<ProjectStatus> getStatuses() {
+      // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
       return sqlCache.query("project.getStatuses", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), ProjectStatus.class);
   }
 

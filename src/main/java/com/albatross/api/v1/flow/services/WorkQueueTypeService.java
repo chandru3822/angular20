@@ -139,7 +139,7 @@ public class WorkQueueTypeService {
         params.put("id", ps.getId());
         sqlCache.update("workQueueType.updateProjectStatusType", params);
       } else if (null == ps.getId()) {
-        params.put("projectStatusTypeId", ps.getProjectStatusTypeId());
+        params.put("companyProjectStatusTypeId", ps.getCompanyProjectStatusTypeId());
         sqlCache.update("workQueueType.insertProjectStatusType", params);
       }
     }
