@@ -151,7 +151,7 @@ public class UserService {
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
       //save user status
-      saveUserStatus(id, user.getCompanyUserStatusTypeId());
+      saveUserStatus(true, id, user.getCompanyUserStatusTypeId());
       //save user companies
       handleSavingUserCompanies(user.getCompanies(), user.getId());
     } else {
@@ -161,7 +161,7 @@ public class UserService {
       Optional<Company> c = sqlCache.get("company.getById", p2, Company.class);
       params.put("createdById", currentUser.getId());
       String newPwd = null;
-      if(c.isPresent()) {
+      if(c.isPresent() && null != c.get().getDefaultPassword()) {
         newPwd = BCrypt.hashpw(c.get().getDefaultPassword(), BCrypt.gensalt(10));
       }
       params.put("defaultPassword", newPwd);
@@ -172,7 +172,7 @@ public class UserService {
       params.put("isDefault", true);
       sqlCache.update("user.insertUserCompany", params);
       //insert a row into user_status
-      saveUserStatus(id, user.getCompanyUserStatusTypeId());
+      saveUserStatus(false, id, user.getCompanyUserStatusTypeId());
     }
 
 
@@ -263,14 +263,19 @@ public class UserService {
     return results;
   }
 
-  public void saveUserStatus(Long userId, Long companyUserStatusTypeId) {
+  public void saveUserStatus(Boolean update, Long userId, Long companyUserStatusTypeId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
+    params.put("currentUserId", user.getId());
     params.put("userId", userId);
     params.put("companyUserStatusTypeId", companyUserStatusTypeId);
 
-    sqlCache.update("user.saveUserStatus", params);
+    if(update) {
+      sqlCache.update("user.updateUserStatus", params);
+    } else {
+      sqlCache.update("user.insertUserStatus", params);
+    }
   }
 
   public ResponseEntity changeContext(Long companyId) {
