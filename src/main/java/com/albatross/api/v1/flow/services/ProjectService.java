@@ -68,11 +68,14 @@ public class ProjectService {
 
   public Page<Project> searchProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "PROJECTS", "VIEW_ALL");
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("query", query);
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
     params.put("userId", user.getId());
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
