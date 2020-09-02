@@ -30,3 +30,6 @@ ALTER TABLE flow.process_step_work_queue_type_project_status_type
     ADD CONSTRAINT flow_pswqtpst_company_project_status_type_id_fk FOREIGN KEY (company_project_status_type_id)
         REFERENCES flow.company_project_status_type (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT;
+
+alter table flow.process_step_work_queue_type_project_status_type
+rename column project_status_type_id to company_project_status_type_id;
