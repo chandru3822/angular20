@@ -50,7 +50,7 @@
     inner join flow.process pr on pr.id = cp.process_id
     inner join flow.status_type st on st.id = cp.status_type_id
     inner join flow.contact c on c.id = p.contact_id
-    inner join flow.state s on s.id = p.state_id
+    left join flow.state s on s.id = p.state_id
     where
     case when :isParent
              then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
@@ -67,6 +67,8 @@
       inner join flow.company_process cp on cp.id = p.company_process_id
       inner join flow.process pr on pr.id = cp.process_id
       inner join flow.status_type st on st.id = cp.status_type_id
+      inner join flow.contact c on c.id = p.contact_id
+      left join flow.state s on s.id = p.state_id
     where
     case when :isParent
              then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
