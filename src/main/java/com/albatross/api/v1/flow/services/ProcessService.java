@@ -37,7 +37,12 @@ public class ProcessService {
         return sqlCache.query("process.getAllForCompany", ImmutableMap.of("companyId", user.getCompanyId()), Process.class);
     }
 
-    public Optional<Process> getProcess(Long companyId, Long processId, Boolean orderByDisplay) {
+    public Optional<Process> getProcess(Long companyId, Long processId, Long projectId, Boolean orderByDisplay) {
+        if(null != projectId) {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("projectId", projectId);
+            companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+        }
         Optional<Process> result = sqlCache.get("process.get",
           ImmutableMap.of("companyId", companyId,
                           "processId", processId,
@@ -84,7 +89,7 @@ public class ProcessService {
                 "companyId", process.getCompanyId(),
                 "statusTypeId", StatusType.ACTIVE.id));
 
-        return getProcess(process.getCompanyId(), id, true);
+        return getProcess(process.getCompanyId(), id, null, true);
     }
 
     // process step process stuff, put in other service??
@@ -106,11 +111,19 @@ public class ProcessService {
         return results;
     }
 
-    public List<ProcessStep> nonAdminProcessStepsForProcess(Long processId) {
-        User user = securityService.getCurrentUser();
+    public List<ProcessStep> nonAdminProcessStepsForProcess(Long processId, Long projectId) {
+        Long companyId;
+        if(null != projectId) {
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("projectId", projectId);
+            companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+        } else {
+            User user = securityService.getCurrentUser();
+            companyId = user.getCompanyId();
+        }
         List<ProcessStep> results = sqlCache.query("process.nonAdminProcessStepsForProcess",
           ImmutableMap.of("processId", processId,
-            "companyId", user.getCompanyId()), ProcessStep.class);
+            "companyId", companyId), ProcessStep.class);
 
         return results;
     }
@@ -149,7 +162,7 @@ public class ProcessService {
             updateProcessStepProcess(processId, psp);
         }
 
-        return getProcess(user.getCompanyId(), processId, true);
+        return getProcess(user.getCompanyId(), processId, null, true);
     }
 
     public Optional<ProcessStepProcess> updateProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {
