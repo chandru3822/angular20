@@ -517,7 +517,6 @@
       async saveFieldGroup() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          this.newGroup.groupOrder = 0
           this.newGroup.processStepId = this.$route.params.id
 
           this.newGroup.schedulingFields = this.newGroup.schedulable ? this.newGroup.schedulingFields : []
@@ -685,7 +684,6 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.addField = false
-          this.newField.fieldOrder = 0
           this.newField.customFieldGroupId = cfg.id
           //this line makes pushing it to the list work
           this.newField.archived = false

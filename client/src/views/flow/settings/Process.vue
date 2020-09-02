@@ -47,16 +47,28 @@
           ></v-select>
 <!--          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.orgId" @click="assignProcessStep">Save</v-btn>-->
           <!--  per scott: temporarily removing requirement for orgId        -->
-          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0" @click="assignProcessStep">Save</v-btn>
+          <v-btn :disabled="!newProcessStep.processStepId || !newProcessStep.owningPositions || newProcessStep.owningPositions.length === 0"
+                 @click="assignProcessStep">
+            Save
+          </v-btn>
         </v-container>
+        <v-text-field
+          v-model="search"
+          class="mb-3 px-3"
+          style="width: 250px;"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
         <v-data-table
             :headers="headers"
             :items="filterProcesses()"
-            :items-per-page="-1"
-            :sort-desc="[false]"
-            :sort-by="['displayOrder']"
-            hide-default-footer
+            :items-per-page="100"
+            :footer-props="footerProps"
             single-expand
+            :search="search"
+            fixed-header
             :expanded.sync="expanded"
             class="elevation-1"
         >
@@ -107,11 +119,6 @@
 
           <template #item="{ item, index }">
             <tr :class="{ 'shaded-row': process.processStepProcesses.indexOf(item) % 2 }">
-              <td style="width: 50px">
-                <v-btn text icon small class="handle">
-                  <v-icon>drag_handle</v-icon>
-                </v-btn>
-              </td>
               <td class="text-left">{{ item.processStepName }}</td>
               <td class="text-left">
                 <span v-for="(op,idx) in item.owningPositions" :key="idx">{{op.position}}<br/></span>
@@ -181,10 +188,9 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
 import cloneDeep from 'lodash.clonedeep'
-import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
 import {getStatusTypes} from '@/services/processStepStatusTypeService'
-import { getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'Process',
@@ -196,6 +202,7 @@ export default {
     return {
       snackbar: {},
       addNew: false,
+      search: '',
       editName: false,
       newProcessStep: {},
       availableProcessSteps: [],
@@ -216,7 +223,6 @@ export default {
         },
       ],
       headers: [
-        { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
         { text: 'Name', value: 'processStepName', sortable: false},
         { text: 'Owning Positions', value: 'positionName', sortable: false},
         { text: 'Last Modified', value: 'dateModified', sortable: false},
@@ -224,36 +230,13 @@ export default {
         { text: 'Status Type', value: 'statusType', sortable: false},
         { text: null, value: null},
       ],
+      footerProps: {
+        'items-per-page-text': 'Rows per page:',
+        'items-per-page-options': [25, 50, 100, 1000]
+      },
       expanded: [],
       selectedIndex: null
     }
-  },
-  mounted() {
-    let table = document.querySelector('tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({ newIndex, oldIndex }) {
-        const rowSelected = _self.process.processStepProcesses.splice(oldIndex, 1)[0]
-        _self.process.processStepProcesses.splice(newIndex, 0, rowSelected)
-        let rowsClone = cloneDeep(_self.process.processStepProcesses)
-
-        let rowsToSave = []
-        rowsClone.forEach((r, idx) => {
-          //check if the row needs to be saved before updating display order
-          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-          //update display order
-          r.displayOrder = idx
-          //save only rows that changed
-          if(save) {
-            _self.process.processStepProcesses[idx].newDisplayOrder = idx
-            rowsToSave.push(r)
-          }
-        })
-        _self.saveRowChanges(rowsToSave)
-      }
-    })
   },
   created () {
     this.getPositions()
@@ -270,11 +253,7 @@ export default {
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequestWithParams(`/processes/${this.processId}`, {
-          params: {
-            orderByDisplay: true,
-          }
-        })
+        const {data} = await getRequest(`/processes/${this.processId}`)
         this.process = cloneDeep(data)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -375,7 +354,8 @@ export default {
       try {
         const {data} = await postRequest(`/processes/${this.processId}/processStep`, this.newProcessStep)
         this.process.processStepProcesses.push(data)
-        this.process.processStepProcesses = orderBy(this.process.processStepProcesses, p => p.processStepName.toLowerCase())
+        this.process.processStepProcesses = orderBy(this.process.processStepProcesses, 'processStepName')
+
         this.addNew = false
         this.newProcessStep = {}
         this.snackbar = getSnackbar('SUCCESS', 'Process Step Assigned')
@@ -405,6 +385,10 @@ export default {
 <style scoped lang="scss">
 .handle {
   cursor: move !important;
+}
+
+.v-data-table ::v-deep .v-data-table__wrapper {
+  max-height: calc(100vh - 350px);
 }
 
 </style>

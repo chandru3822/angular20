@@ -119,7 +119,6 @@ public class CustomFieldService {
         lovParent.put("name", customField.getFieldName());
         lovParent.put("parentId", null);
         lovParent.put("createdById", customField.getCreatedById());
-        lovParent.put("displayOrder", null);
         parentId = sqlCache.updateReturningId("customField.insertListOfValue", lovParent, "id").longValue();
       } else {
         parentId = customField.getListOfValueId();

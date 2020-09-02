@@ -37,7 +37,7 @@ public class ProcessService {
         return sqlCache.query("process.getAllForCompany", ImmutableMap.of("companyId", user.getCompanyId()), Process.class);
     }
 
-    public Optional<Process> getProcess(Long companyId, Long processId, Long projectId, Boolean orderByDisplay) {
+    public Optional<Process> getProcess(Long companyId, Long processId, Long projectId) {
         if(null != projectId) {
             HashMap<String, Object> params = new HashMap<>();
             params.put("projectId", projectId);
@@ -45,8 +45,7 @@ public class ProcessService {
         }
         Optional<Process> result = sqlCache.get("process.get",
           ImmutableMap.of("companyId", companyId,
-                          "processId", processId,
-                          "orderByDisplay", null != orderByDisplay ? orderByDisplay : false),
+                          "processId", processId),
           new ProcessMapper<>(Process.class, om));
         return result;
     }
@@ -89,7 +88,7 @@ public class ProcessService {
                 "companyId", process.getCompanyId(),
                 "statusTypeId", StatusType.ACTIVE.id));
 
-        return getProcess(process.getCompanyId(), id, null, true);
+        return getProcess(process.getCompanyId(), id, null);
     }
 
     // process step process stuff, put in other service??
@@ -162,7 +161,7 @@ public class ProcessService {
             updateProcessStepProcess(processId, psp);
         }
 
-        return getProcess(user.getCompanyId(), processId, null, true);
+        return getProcess(user.getCompanyId(), processId, null);
     }
 
     public Optional<ProcessStepProcess> updateProcessStepProcess(Long processId, ProcessStepProcess processStepProcess) {

@@ -1,7 +1,9 @@
 <sql>
   <customFieldGroup.insertCustomFieldGroup><![CDATA[
     insert into flow.custom_field_group(group_name, company_object_type_id, group_order, process_step_id, event_type_id, created_by_id)
-    values (:groupName, :companyObjectTypeId, :groupOrder, :processStepId, :eventTypeId, :createdById);
+    values (:groupName, :companyObjectTypeId,
+    (select max(group_order) + 1 from flow.custom_field_group where case when :processStepId::int is not null then process_step_id = :processStepId::int else company_object_type_id = :companyObjectTypeId end),
+    :processStepId, :eventTypeId, :createdById)
   ]]></customFieldGroup.insertCustomFieldGroup>
 
   <customFieldGroup.getCompanyObjectTypeId><![CDATA[
