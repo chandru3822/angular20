@@ -50,7 +50,7 @@
     from flow.contact c
              inner join flow.contact_type ct on ct.id = c.contact_type_id
              left join flow.state s on s.id = c.state_id
-             inner join flow.country ctr on ctr.id = c.country_id
+             left join flow.country ctr on ctr.id = c.country_id
     where c.id = :contactId
 
   ]]></contact.getById>
