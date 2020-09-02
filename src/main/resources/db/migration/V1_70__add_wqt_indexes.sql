@@ -21,6 +21,9 @@ create index if not exists pswqt_process_step_id_pk
 create index if not exists pswqt_work_queue_type_id_pk
     on flow.process_step_work_queue_type (work_queue_type_id);
 
+alter table flow.process_step_work_queue_type_project_status_type
+rename column project_status_type_id to company_project_status_type_id;
+
 ALTER TABLE flow.process_step_work_queue_type_project_status_type
     DROP CONSTRAINT if exists flow_pswqtpst_project_status_type_id_fk;
 -- dropping it so re-adding it doesn't throw an error
@@ -31,5 +34,3 @@ ALTER TABLE flow.process_step_work_queue_type_project_status_type
         REFERENCES flow.company_project_status_type (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT;
 
-alter table flow.process_step_work_queue_type_project_status_type
-rename column project_status_type_id to company_project_status_type_id;
