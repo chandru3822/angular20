@@ -142,7 +142,7 @@
                                       FROM (
                                                SELECT pswqtpst.id,
                                                       pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
-                                                      pswqtpst.project_status_type_id as "projectStatusTypeId",
+                                                      pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
                                                       pswqtpst.archived
                                                FROM flow.process_step_work_queue_type_project_status_type pswqtpst
                                                WHERE pswqtpst.process_step_work_queue_type_id = pswqt.id AND pswqtpst.archived is not true

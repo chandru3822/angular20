@@ -13,15 +13,13 @@
   </template>
 
   <v-card class="pa-5">
-    <v-select
-        v-model="selectedStep"
-        :items="steps"
-        item-text="processStepName"
-        item-value="id"
-        label="Process Steps"
-        placeholder="Select one..."
-        return-object
-    />
+    <v-autocomplete v-model="selectedStep"
+                    :items="steps"
+                    label="Process Steps"
+                    item-text="processStepName"
+                    item-value="id"
+                    placeholder="Select one..."
+                    return-object/>
 
     <v-btn
         class="add-process-step-btn primary"
@@ -37,7 +35,7 @@
 </template>
 
 <script>
-import {getRequest, getSnackbar, logError, postRequest} from '@/helpers/helpers'
+import {getRequest, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
 
@@ -75,7 +73,11 @@ export default {
       try {
         const url = (this.admin) ? `/processes/${this.processId}` : `/processes/${this.processId}/nonAdminProcessStepsForProcess`
         this.fetchingSteps = true
-        const {data} = await getRequest(url)
+        const {data} = await getRequestWithParams(url, {
+          params: {
+            projectId: this.projectId,
+          }
+        })
         this.steps = (this.admin) ? data.processStepProcesses : data
       } catch (e) {
         logError(e)

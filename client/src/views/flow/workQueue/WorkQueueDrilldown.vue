@@ -12,12 +12,11 @@
             :headers="headers"
             :items="results"
             :fixed-header="true"
-            :items-per-page="-1"
             disable-sort
             :loading="dataLoading"
             :options.sync="options"
-            :footer-props="footerProps"
             :server-items-length="totalItems"
+            :footer-props="footerProps"
             class="elevation-1 mt-1"
             @click:row="clickRow"
         >
@@ -102,7 +101,6 @@
     },
     computed: {},
     async created() {
-      this.getWorkDetails()
     },
     methods: {
       async getWorkDetails() {
@@ -112,7 +110,7 @@
           const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`, { params: {
               userPositionId: this.userPositionId,
               unassigned: this.unassigned,
-              page: page,
+              page: page - 1,
               size: itemsPerPage
             }})
           this.results = data.content

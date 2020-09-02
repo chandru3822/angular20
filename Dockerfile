@@ -1,5 +1,16 @@
+FROM openjdk:11-jdk-slim as builder
+WORKDIR build
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} application.jar
+RUN java -Djarmode=layertools -jar application.jar extract
+
 FROM openjdk:11-jdk-slim
-VOLUME /tmp
-ADD target/api*.jar app.jar
-ENV JAVA_OPTS=""
-ENTRYPOINT exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar
+WORKDIR application
+COPY --from=builder build/dependencies/ ./
+COPY --from=builder build/spring-boot-loader ./
+COPY --from=builder build/snapshot-dependencies/ ./
+RUN true
+COPY --from=builder build/application/ ./
+RUN true
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+

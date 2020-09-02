@@ -184,7 +184,7 @@ import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
 import Snackbar from '@/components/Snackbar.vue'
 import {getStatusTypes} from '@/services/processStepStatusTypeService'
-import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+import { getRequest, deleteRequest, getRequestWithParams, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 
 export default {
   name: 'Process',
@@ -270,7 +270,11 @@ export default {
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/processes/${this.processId}`)
+        const {data} = await getRequestWithParams(`/processes/${this.processId}`, {
+          params: {
+            orderByDisplay: true,
+          }
+        })
         this.process = cloneDeep(data)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

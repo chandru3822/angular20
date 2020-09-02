@@ -8,24 +8,24 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.TimeZone;
 
-@OpenAPIDefinition (info =
-	@Info(
-		title = "Albatross API",
-		version = "1.0",
-		description = "A collection of endpoints for korriej :)"
-	)
+@OpenAPIDefinition(info =
+@Info(
+    title = "Albatross API",
+    version = "1.0",
+    description = "A collection of endpoints for korriej :)"
+)
 )
 
 
 @SpringBootApplication
 public class ApiApplication {
 
-	public static TimeZone TIMEZONE = TimeZone.getTimeZone("UTC");
+    public static TimeZone TIMEZONE = TimeZone.getTimeZone("UTC");
 
-	public static void main(String[] args) {
-		TimeZone.setDefault(TIMEZONE);
-		DateTimeZone.setDefault(DateTimeZone.forTimeZone(TIMEZONE));
-		SpringApplication.run(ApiApplication.class, args);
-	}
+    public static void main(String[] args) {
+        TimeZone.setDefault(TIMEZONE);
+        DateTimeZone.setDefault(DateTimeZone.forTimeZone(TIMEZONE));
+        SpringApplication.run(ApiApplication.class, args);
+    }
 
 }
