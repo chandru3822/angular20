@@ -32,15 +32,16 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
   ]]></projectProcessStep.addAttachment>
 
   <projectProcessStep.setStatus><![CDATA[
-    update flow.project_process_step
-      set
-        company_process_step_status_type_id = :companyProcessStepStatusTypeId,
-        main = :main,
-        modified_by_id = :userId,
-        date_modified = now(),
-        process_step_complete_date = (
-            case when :processStepStatusTypeId = 2 then now() end)
-      where id = :projectProcessStepId;
+  select from flow.update_project_process_step_status(:projectId::integer, :processStepId::integer, :projectProcessStepId::integer, :main::boolean, :companyProcessStepStatusTypeId::integer, :processStepStatusTypeId::integer, :userId::integer)
+--     update flow.project_process_step
+--       set
+--         company_process_step_status_type_id = :companyProcessStepStatusTypeId,
+--         main = :main,
+--         modified_by_id = :userId,
+--         date_modified = now(),
+--         process_step_complete_date = (
+--             case when :processStepStatusTypeId = 2 then now() end)
+--       where id = :projectProcessStepId;
   ]]></projectProcessStep.setStatus>
 
   <projectProcessStep.getOwners><![CDATA[
@@ -86,16 +87,16 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
     where id = :projectProcessStepId
   ]]></projectProcessStep.getOwner>
 
-<projectProcessStep.clearMain><![CDATA[
-    update flow.project_process_step
-    set
-        main = false,
-        date_modified = now(),
-        modified_by_id = :userId
-    where
-        project_id = :projectId and
-        process_step_id = :processStepId
-]]></projectProcessStep.clearMain>
+<!--<projectProcessStep.clearMain><![CDATA[-->
+<!--    update flow.project_process_step-->
+<!--    set-->
+<!--        main = false,-->
+<!--        date_modified = now(),-->
+<!--        modified_by_id = :userId-->
+<!--    where-->
+<!--        project_id = :projectId and-->
+<!--        process_step_id = :processStepId-->
+<!--]]></projectProcessStep.clearMain>-->
 
 -- Had to break up this into 2 queries. Still not sure why the single query stopped working
 <projectProcessStep.updateMain><![CDATA[

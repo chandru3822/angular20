@@ -123,42 +123,40 @@ public class ProjectProcessStepService {
     return attachmentService.findById(storageBucket, attachmentId);
   }
 
-  @Transactional
-  public void setStatus(Long projectProcessStepId, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
+  public void setStatus(ProjectProcessStep pps, Long processStepStatusTypeId, Long companyProcessStepStatusTypeId) {
     User user = securityService.getCurrentUser();
-    ProjectProcessStep currentStep = this.getProjectProcessStep(projectProcessStepId);
 
-    if (currentStep == null) {
+    if (pps == null) {
         throw new RuntimeException("The given process step does not exist");
     }
 
-    if (currentStep.getProcessStepStatusTypeId().equals(processStepStatusTypeId)) {
+    if (pps.getProcessStepStatusTypeId().equals(processStepStatusTypeId)) {
         return;
     }
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("projectProcessStepId", projectProcessStepId);
+    params.put("projectProcessStepId", pps.getProjectProcessStepId());
     params.put("processStepStatusTypeId", processStepStatusTypeId);
     params.put("companyProcessStepStatusTypeId", companyProcessStepStatusTypeId);
     params.put("userId", user.getId());
-    params.put("projectId", currentStep.getProjectId());
-    params.put("processStepId", currentStep.getProcessStepId());
-    params.put("main", currentStep.getMain());
+    params.put("projectId", pps.getProjectId());
+    params.put("processStepId", pps.getProcessStepId());
+    params.put("main", pps.getMain());
 
     // If setting status to active, verify no other steps on this project are active
-    if (processStepStatusTypeId == 1) {
-        Long activeIdCount = sqlCache.queryForObject("projectProcessStep.getActiveCountInProject", params, Long.class);
-        if (activeIdCount > 0) {
-            throw new RuntimeException("Can have only 1 active process step of this type");
-        }
+//    if (processStepStatusTypeId == 1) {
+//        Long activeIdCount = sqlCache.queryForObject("projectProcessStep.getActiveCountInProject", params, Long.class);
+//        if (activeIdCount > 0) {
+//            throw new RuntimeException("Can have only 1 active process step of this type");
+//        }
+//
+//        sqlCache.update("projectProcessStep.clearMain", params);
+//
+//        // Active PPS are primary by default
+//        params.put("main", true);
+//    }
 
-        sqlCache.update("projectProcessStep.clearMain", params);
-
-        // Active PPS are primary by default
-        params.put("main", true);
-    }
-
-    sqlCache.update("projectProcessStep.setStatus", params);
+    sqlCache.query("projectProcessStep.setStatus", params, String.class);
   }
 
   public ResponseEntity updateOwner(Long projectProcessStepId, Owner owner, Boolean blockOverride) {
@@ -205,7 +203,6 @@ public class ProjectProcessStepService {
 //    return step;
   }
 
-  @Transactional
   public Long insertProjectProcessStep(Long projectId, Long processStepId, Long userPositionId) {
     User user = securityService.getCurrentUser();
 
@@ -348,7 +345,7 @@ public class ProjectProcessStepService {
 //    ProcessStepAction action = processStepActionService.getActionById(actionId);
     User user = securityService.getCurrentUser();
     if (action.getCompanyProcessStepStatusTypeId() != null) {
-      this.setStatus(pps.getProjectProcessStepId(), action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
+      this.setStatus(pps, action.getProcessStepStatusTypeId(), action.getCompanyProcessStepStatusTypeId());
     }
 
     Long ownerUserPositionId = (pps.getOwner() != null) ? pps.getOwner().getUserPositionId() : null;
