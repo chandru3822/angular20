@@ -5,7 +5,6 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
-import com.albatross.api.v1.flow.services.AsyncProjectProcessStepService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,8 +30,6 @@ public class CustomFieldValueController {
   private final CustomFieldValueService customFieldValueService;
 
   private final ProjectProcessStepService projectProcessStepService;
-
-  private final AsyncProjectProcessStepService asyncProjectProcessStepService;
 
   private final SecurityService securityService;
 
@@ -66,18 +66,25 @@ public class CustomFieldValueController {
                                       @PathVariable Long id) {
       List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT.toString());
 
-      //    @TODO: humes, this is hardcoded to my user only. Remove after testing
-//    ************** This is temporary for testing in AWS rather than locally *********************
-      if (!values.isEmpty() && List.of(99999994L, 2350555L, 2410143L).contains(securityService.getCurrentUser().getId())) {
-          // grab all PPS where the updated fields are ancillary and perform auto triggers there
-          List<Long> cfgaIds = values.stream()
-              .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
-              .collect(Collectors.toList());
-          if (!cfgaIds.isEmpty()) {
-              List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
-              for (Long ppsId : ppsIds) {
-                  asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId);
+      // grab all PPS where the updated fields are ancillary and perform auto triggers there
+      List<Long> cfgaIds = values.stream()
+          .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+          .collect(Collectors.toList());
+      if (!cfgaIds.isEmpty()) {
+          List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
+          for (Long ppsId : ppsIds) {
+              Instant start = Instant.now();
+              Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+              try {
+                  future.get();
+              } catch (Exception e) {
+                  log.error(e.getMessage());
               }
+              Instant end = Instant.now();
+              log.info("");
+              log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+              log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+              log.info("");
           }
       }
 
@@ -101,18 +108,25 @@ public class CustomFieldValueController {
                                                                                @PathVariable Long projectId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectId, ObjectType.PROJECT.toString());
 
-//    @TODO: humes, this is hardcoded to my user only. Remove after testing
-//    ************** This is temporary for testing in AWS rather than locally *********************
-      if (!values.isEmpty() && List.of(99999994L, 2350555L, 2410143L).contains(securityService.getCurrentUser().getId())) {
-          // grab all PPS where the updated fields are ancillary and perform auto triggers there
-          List<Long> cfgaIds = values.stream()
-              .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
-              .collect(Collectors.toList());
-          if (!cfgaIds.isEmpty()) {
-              List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
-              for (Long ppsId : ppsIds) {
-                  asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId);
+      // grab all PPS where the updated fields are ancillary and perform auto triggers there
+      List<Long> cfgaIds = values.stream()
+          .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+          .collect(Collectors.toList());
+      if (!cfgaIds.isEmpty()) {
+          List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
+          for (Long ppsId : ppsIds) {
+              Instant start = Instant.now();
+              Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+              try {
+                  future.get();
+              } catch (Exception e) {
+                  log.error(e.getMessage());
               }
+              Instant end = Instant.now();
+              log.info("");
+              log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+              log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+              log.info("");
           }
       }
 
@@ -125,22 +139,41 @@ public class CustomFieldValueController {
                                                                           @PathVariable Long projectProcessStepId) {
     List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
 
-//    @TODO: humes, this is hardcoded to my user only. Remove after testing
-//    ************** This is temporary for testing in AWS rather than locally *********************
-    if (!values.isEmpty() && List.of(99999994L, 2350555L, 2410143L).contains(securityService.getCurrentUser().getId())) {
-        asyncProjectProcessStepService.asyncPerformAutoTriggerActions(projectProcessStepId);
+    Instant start = Instant.now();
+    Future<Void> future = projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+    try {
+        future.get();
+    } catch (Exception e) {
+        log.error(e.getMessage());
+    }
+    Instant end = Instant.now();
+    log.info("");
+    log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+    log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+    log.info("");
 
-        // grab all PPS where the updated fields are ancillary and perform auto triggers there
-        List<Long> cfgaIds = values.stream()
-            .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
-            .collect(Collectors.toList());
-        if (!cfgaIds.isEmpty()) {
-            List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
-            for (Long ppsId : ppsIds) {
+
+    // grab all PPS where the updated fields are ancillary and perform auto triggers there
+    List<Long> cfgaIds = values.stream()
+        .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+        .collect(Collectors.toList());
+    if (!cfgaIds.isEmpty()) {
+        List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
+        for (Long ppsId : ppsIds) {
 //            Don't re-check the ppsId we just previously did
-                if (!ppsId.equals(projectProcessStepId)) {
-                    asyncProjectProcessStepService.asyncPerformAutoTriggerActions(ppsId);
+            if (!ppsId.equals(projectProcessStepId)) {
+                start = Instant.now();
+                future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    log.error(e.getMessage());
                 }
+                end = Instant.now();
+                log.info("");
+                log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+                log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+                log.info("");
             }
         }
     }
