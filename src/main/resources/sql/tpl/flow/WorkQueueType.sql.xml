@@ -49,7 +49,7 @@
 
   <workQueueType.insertType><![CDATA[
     insert into flow.work_queue_type(company_id, work_queue_type, created_by_id, work_queue_category_id, display_order)
-    values (:companyId, :workQueueType, :createdById, :workQueueCategoryId, (select max(display_order) + 1 from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true))
+    values (:companyId, :workQueueType, :createdById, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true))
   ]]></workQueueType.insertType>
 
   <workQueueType.getAvailableWorkQueueTypesForStep><![CDATA[

@@ -43,6 +43,6 @@
 
   <workQueueCategory.insertCategory><![CDATA[
     insert into flow.work_queue_category(company_id, work_queue_category, created_by_id, color, display_order)
-    values (:companyId, :workQueueCategory, :createdById, :color, (select max(display_order) + 1 from flow.work_queue_category where archived is not true))
+    values (:companyId, :workQueueCategory, :createdById, :color, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_category where archived is not true))
   ]]></workQueueCategory.insertCategory>
 </sql>

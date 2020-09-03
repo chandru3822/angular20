@@ -36,6 +36,9 @@ public class ProcessStepRequirement {
   private DataTypeRequirement dataTypeRequirement;
   private List<RequirementParamDynamicValue> requirementParamDynamicValues;
 
+  //i need this so i can determine what type of field is being used when EDITING a custom field
+  private CustomField customField;
+
   private Boolean archived, fulfilled, secondaryRequirement, customValue, immutable;
 }
 
