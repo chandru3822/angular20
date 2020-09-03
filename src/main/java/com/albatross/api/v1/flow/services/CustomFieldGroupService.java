@@ -198,7 +198,6 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
-    params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("eventTypeId", customFieldGroup.getEventTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
     params.put("createdById", user.getId());

@@ -33,7 +33,7 @@ with pps1 as (
 cpsst as (
     select status.id
     from flow.company_process_step_status_type status
-    where status.company_id = 3 and status.process_step_status_type_id = 3
+    where status.company_id = p_company_id and status.process_step_status_type_id = 3
 )
 update flow.project_process_step pps
 set

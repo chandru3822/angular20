@@ -200,7 +200,9 @@
            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
            cfga.field_order as "fieldOrder",
            cfga.archived,
-           cf.field_name as "fieldName"
+           cf.field_name as "fieldName",
+           null as "processStepName",
+           null as "groupName"
     FROM flow.custom_field_group_assignment cfga
              inner join flow.custom_field cf on cf.id = cfga.custom_field_id
     WHERE cfga.id = :id
@@ -211,16 +213,20 @@
            cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
            cfga.field_order as "fieldOrder",
            cfga.archived,
-           cf.field_name as "fieldName"
+           cf.field_name as "fieldName",
+           ps.process_step_name as "processStepName",
+           cfg2.group_name as "groupName"
     FROM flow.custom_field_group_assignment cfga
              inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
              inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+             inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
+             left join flow.process_step ps on cfg2.process_step_id = ps.id
     WHERE cfga.id = :id
   ]]></customFieldGroupAssignment.getCustomField>
 
   <customFieldGroupAssignment.addFieldToGroup><![CDATA[
     insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, schedule_field_type_id)
-    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, :fieldOrder, :createdById, :scheduleFieldTypeId)
+    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, :scheduleFieldTypeId)
   ]]></customFieldGroupAssignment.addFieldToGroup>
 
   <customFieldGroupAssignment.moveFieldToOtherGroup><![CDATA[

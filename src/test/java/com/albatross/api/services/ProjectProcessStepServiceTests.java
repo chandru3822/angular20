@@ -47,11 +47,9 @@ public class ProjectProcessStepServiceTests {
 
   private final Map<String, String> jsonObjects = new HashMap<>();
 
-  private ProcessStepActionService processStepActionService = mock(ProcessStepActionService.class);
+  private final ProcessStepActionService processStepActionService = mock(ProcessStepActionService.class);
 
   ProjectProcessStepRequirementService projectProcessStepRequirementService = mock(ProjectProcessStepRequirementService.class);
-
-  private AsyncProjectProcessStepService asyncProjectProcessStepService = mock(AsyncProjectProcessStepService.class);
 
   private ProjectProcessStepAction action;
 
@@ -62,7 +60,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, null, processStepActionService, projectProcessStepRequirementService, asyncProjectProcessStepService, null));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, processStepActionService, om));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");

@@ -34,12 +34,11 @@ public class ProcessController {
 
     @GetMapping(value = "/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Process> getProcess(@PathVariable Long processId,
-                                              @RequestParam(required = false) Long projectId,
-                                              @RequestParam(required = false) Boolean orderByDisplay) {
+                                              @RequestParam(required = false) Long projectId) {
       User user = securityService.getCurrentUser();
-        return processService.getProcess(user.getCompanyId(), processId, projectId, orderByDisplay)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+      return processService.getProcess(user.getCompanyId(), processId, projectId)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping(value = "/{processId}")

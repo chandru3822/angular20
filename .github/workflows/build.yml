@@ -5,6 +5,8 @@ name: Albatross Build
 
 on:
     push:
+        paths-ignore:
+            - "client/**"
         branches:
             - "stage"
 
@@ -12,6 +14,7 @@ jobs:
     build:
         name: Package & Deploy
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         steps:
             -   uses: actions/checkout@v2
             -   name: Set up JDK 11

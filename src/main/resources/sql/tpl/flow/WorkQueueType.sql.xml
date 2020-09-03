@@ -12,6 +12,7 @@
       inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
     where wqt.company_id = :companyId
       and wqt.archived is not true
+    order by wqt.work_queue_type, display_order
   ]]></workQueueType.getTypesForCompany>
 
   <workQueueType.getType><![CDATA[
@@ -47,8 +48,8 @@
   ]]></workQueueType.updateType>
 
   <workQueueType.insertType><![CDATA[
-    insert into flow.work_queue_type(company_id, work_queue_type, created_by_id, work_queue_category_id)
-    values (:companyId, :workQueueType, :createdById, :workQueueCategoryId)
+    insert into flow.work_queue_type(company_id, work_queue_type, created_by_id, work_queue_category_id, display_order)
+    values (:companyId, :workQueueType, :createdById, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true))
   ]]></workQueueType.insertType>
 
   <workQueueType.getAvailableWorkQueueTypesForStep><![CDATA[
