@@ -28,15 +28,28 @@
                             label="City"
                             :rules="requiredRules"
                             v-model="user.city"></v-text-field>
-              <v-select v-model="user.stateId"
-                        :items="states"
-                        label="State"
+              <v-autocomplete v-model="user.stateId"
+                              :items="states"
+                              label="State"
+                              :rules="requiredRules"
+                              item-text="state"
+                              item-value="id"/>
+              <v-select v-model="user.countryId"
+                        :items="countries"
                         :rules="requiredRules"
-                        item-text="state"
+                        label="Country"
+                        item-text="country"
                         item-value="id"
               ></v-select>
             </v-col>
             <v-col cols="12" sm="6">
+              <v-select v-model="user.companyUserStatusTypeId"
+                        :items="companyUserStatusTypes"
+                        label="User Status"
+                        :rules="requiredRules"
+                        item-text="userStatusType"
+                        item-value="id"
+              ></v-select>
               <v-text-field text
                             label="Phone"
                             :rules="requiredRules"
@@ -53,20 +66,17 @@
                             label="Zip Code"
                             :rules="requiredRules"
                             v-model="user.postalCode"></v-text-field>
-              <v-select v-model="user.countryId"
-                        :items="countries"
-                        :rules="requiredRules"
-                        label="Country"
-                        item-text="country"
-                        item-value="id"
-              ></v-select>
+
             </v-col>
           </v-row>
         </v-container>
       </v-form>
       <v-container class="text-left" v-for="(cfg, index) in customFieldGroups" :key="index" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
         <h3>{{cfg.groupName}}</h3>
-        <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues" :key="idx" :readonly="cf.readonly" :field="cf"></CustomValueInput>
+        <CustomValueInput v-for="(cf, idx) in cfg.customFieldValues"
+                          :key="idx"
+                          :readonly="getReadOnly(cf)"
+                          :field="cf"></CustomValueInput>
       </v-container>
     </v-card>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -81,6 +91,8 @@ import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import {getCustomFieldReadOnly} from '@/services/customFieldService'
+import {getCompanyUserStatusTypes} from '@/services/userService'
 
 const { VUE_APP_ENV } = process.env
 
@@ -97,6 +109,7 @@ export default {
       states: [],
       countries: [],
       customFieldGroups: [],
+      companyUserStatusTypes: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
       companyId: this.$store.state.user.details.companyId,
@@ -107,6 +120,7 @@ export default {
     if(VUE_APP_ENV === 'local') {
       this.setFakeUser()
     }
+    this.getCompanyUserStatusTypes()
     this.getStates()
     this.getCountries()
     this.getCustomFieldGroups()
@@ -126,6 +140,19 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getCompanyUserStatusTypes () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getCompanyUserStatusTypes()
+        this.companyUserStatusTypes = data
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving User Statuses')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -183,7 +210,10 @@ export default {
         postalCode: '87654',
         email: 'randa@randa.com'
       }
-    }
+    },
+    getReadOnly: function (field) {
+      return getCustomFieldReadOnly(this.$store, field)
+    },
   }
 
 }

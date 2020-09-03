@@ -47,7 +47,7 @@
                                             left join brs.custom_field_value ccv on ccv.custom_field_group_assignment_id = cfga.id and ccv.source_id = :sourceId
                                    where cfga.custom_field_group_id = cfg.id
                                      and cfga.archived is not true
-                                   order by cfga.field_order
+                                   order by cfga.field_order, cf.field_name
                                ) fields), '[]') AS "customFieldValues"
       from brs.custom_field_group cfg
                inner join brs.object_type cot on cot.id = cfg.object_type_id

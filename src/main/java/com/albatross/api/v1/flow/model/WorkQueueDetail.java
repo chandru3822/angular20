@@ -13,4 +13,5 @@ public class WorkQueueDetail {
     private Long processStepId, companyId, projectProcessStepId, projectId, contactId;
     private String projectName, workQueueType, processStepName, owner, lastUpdated;
     private List<OwningPosition> owningPositions;
+    private List<ProjectProcessStep> activeProcessSteps;
 }

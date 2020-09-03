@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.ProcessStepAction;
 import com.albatross.api.v1.flow.model.ProcessStepRequirement;
 import com.albatross.api.v1.flow.model.ProcessStepRequirementType;
 import com.albatross.api.v1.flow.services.ProcessStepRequirementService;
@@ -33,9 +34,9 @@ public class ProcessStepRequirementController {
     return processStepRequirementService.getRequirementTypes();
   }
 
-  @DeleteMapping(value = "/{requirementId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteType(@PathVariable Long requirementId) {
-    processStepRequirementService.deleteRequirement(requirementId);
+  @PutMapping(value = "/{requirementId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepAction> deleteRequirement(@PathVariable Long requirementId) {
+    return processStepRequirementService.deleteRequirement(requirementId);
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)

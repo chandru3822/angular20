@@ -91,14 +91,16 @@ export default {
       menuOpen: false,
       companies: [],
       model: '',
-      headerColor: VUE_APP_ENV === 'local' ? 'pink' : VUE_APP_ENV === 'uat' || VUE_APP_ENV === 'dev' ? 'orange' : 'primaryCustom',
+      headerColor: VUE_APP_ENV === 'local' ? 'pink' :
+                   VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
+                   VUE_APP_ENV === 'uat' ? 'blue' : 'primaryCustom',
       tabs: [ {
         label: 'Contacts',
         path: '/contacts',
           display: this.$store.getters.userHasFeature('CONTACTS')
       }, {
         label: 'Projects',
-        path: '/project/search',
+        path: '/projects',
         display: this.$store.getters.userHasFeature('PROJECTS')
       },
       // {

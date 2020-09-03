@@ -1,5 +1,40 @@
 <template>
   <v-container class="custom-field-group-container">
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">
+          {{deleteHeader}}
+        </v-card-title>
+
+        <v-card-text>
+          {{deleteText}}
+          <v-list v-for="(item, index) in fieldsInUse" :key="index">
+            <v-list-item-content>
+              {{ item.objectType }}
+              <div v-if="item.processStepName">{{item.processStepName}}</div>
+              <div v-if="item.groupName">{{ item.groupName }}<span v-if="item.fieldName"> - {{ item.fieldName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -42,7 +77,7 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr  :class="{'shaded-row': index % 2}">
+              <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
                 <td style="width: 50px">
                   <v-btn text icon small class="handle">
                     <v-icon>drag_handle</v-icon>
@@ -102,7 +137,7 @@
                           <v-btn
                               color="primary"
                               text
-                              @click="[item.archived = true, deleteGroup(item.id)]">
+                              @click="deleteWithChecks(item, item.id, null)">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -122,30 +157,45 @@
                     <v-radio label="Reference Field: from Process Step"
                              value="ancillary"></v-radio>
                   </v-radio-group>
-                  <v-select v-if="newFieldType === 'native' || $route.params.id !== '1'"
-                            v-model="newField"
-                            :items="availableCustomFields"
-                            label="Select Custom Field to Add"
-                            item-text="fieldName"
-                            return-object
-                            @input="assignCustomField(item)"
-                  ></v-select>
-                  <v-select v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
-                            v-model="parent"
-                            :items="parentObjects"
-                            label="Process Step"
-                            item-text="processStepName"
-                            return-object
-                            @input="loadFieldsByParent"
-                  ></v-select>
-                  <v-select v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
-                            v-model="selectedAncillaryField"
-                            :items="ancillaryCustomFields"
-                            label="Custom Field"
-                            item-text="fieldName"
-                            return-object
-                            @input="assignAncillaryCustomField(item)"
-                  ></v-select>
+                  <v-autocomplete v-if="newFieldType === 'native' || $route.params.id !== '1'"
+                                  v-model="newField"
+                                  :items="availableCustomFields"
+                                  label="New Custom Field"
+                                  item-text="fieldName"
+                                  return-object
+                                  autocomplete="off"
+                                  @input="assignCustomField(item)"
+                  >
+                    <template slot='item' slot-scope='{ item }'>
+                      {{ item.fieldName }}
+                    </template>
+                  </v-autocomplete>
+                  <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
+                                  v-model="parent"
+                                  :items="parentObjects"
+                                  label="Parent Object"
+                                  item-text="processStepName"
+                                  return-object
+                                  autocomplete="off"
+                                  @input="loadFieldsByParent"
+                  >
+                    <template slot='item' slot-scope='{ item }'>
+                      {{ item.processStepName }}
+                    </template>
+                  </v-autocomplete>
+                  <v-autocomplete v-if="newFieldType === 'ancillary' && $route.params.id === '1'"
+                                  v-model="selectedAncillaryField"
+                                  :items="ancillaryCustomFields"
+                                  label="Custom Field"
+                                  item-text="fieldName"
+                                  return-object
+                                  autocomplete="off"
+                                  @input="assignAncillaryCustomField(item)"
+                  >
+                    <template slot='item' slot-scope='{ item }'>
+                      {{ item.fieldName }}
+                    </template>
+                  </v-autocomplete>
                 </v-col>
                 <v-col  cols="12" justify="center"  class="px-3 py-0" >
 <!--                  <h3 class="text-left">Assigned Custom Fields</h3>-->
@@ -158,12 +208,70 @@
                           <v-icon>drag_handle</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
-                          {{cf.fieldName}} {{ cf.ancillaryCustomFieldGroupAssignmentId == null ? '' : '(Ancillary)' }}
-                          <div class="text-left" v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
+                          <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
+                            {{cf.fieldName}} <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
+                            <div class="text-left mt-3" v-if="cf.edit">
+                              <div>
+                                <input type="checkbox" v-model="cf.customFieldGroupAssignmentReadOnly">
+                                Read Only
+                              </div>
+                              <v-select
+                                v-if="cf.customFieldGroupAssignmentReadOnly"
+                                v-model="cf.whiteListedPositions"
+                                :items="positions"
+                                :loading="positionsLoading"
+                                multiple
+                                label="White Listed Positions"
+                                item-text="position"
+                                item-value="positionId"
+                                return-object
+                                height="35px"
+                                class="mt-2"
+                                @change="cf.positionsChanged = true"
+                              >
+                                <v-list-item
+                                  slot="prepend-item"
+                                  ripple
+                                  @click="toggleSelectAllPositions(cf)"
+                                >
+                                  <v-list-item-action>
+                                    <v-icon>{{ icon(cf) }}</v-icon>
+                                  </v-list-item-action>
+                                  <v-list-item-title>Select All</v-list-item-title>
+                                </v-list-item>
+                                <v-divider
+                                  slot="prepend-item"
+                                  class="mt-2"
+                                ></v-divider>
+                                <template
+                                  slot="selection"
+                                  slot-scope="{ item, index }"
+                                >
+                                  <v-chip small v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
+                                    <span>{{ item.position }}</span>
+                                  </v-chip>
+                                  <span
+                                    v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
+                                    class="primary--text caption"
+                                  >{{ cf.whiteListedPositions.length }} selected</span>
+                                </template>
+                              </v-select>
+                              <v-btn color="primaryCustom" dark class="mt-2 white--text" @click="saveReadOnlyAndWhiteList(cf)">
+                                Save
+                              </v-btn>
+                            </div>
+                          </div>
+                          <div v-else>
+                            {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                          </div>
+                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
                             <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
                             Show On Insert
                           </div>
                         </v-list-item-content>
+                        <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                          <v-icon>edit</v-icon>
+                        </v-btn>
                         <v-menu offset-y v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                           <template v-slot:activator="{ on }">
                             <v-btn text small v-on="on">
@@ -213,7 +321,7 @@
                               <v-btn
                                   color="primary"
                                   text
-                                  @click="[cf.archived = true, deleteFieldFromGroup(cf.id)]">
+                                  @click="deleteWithChecks(cf, null, cf.id)">
                                 Yes
                               </v-btn>
                             </v-card-actions>
@@ -325,6 +433,12 @@ export default {
       snackbar: {},
       constants,
       addNew: false,
+      deleteError: false,
+      deleteHeader: null,
+      deleteText: null,
+      fieldsInUse: [],
+      positions: [],
+      positionsLoading: false,
       newFieldType: 'native',
       selectedIndex: null,
       fieldOrderChanged: false,
@@ -385,6 +499,21 @@ export default {
     this.getProjectAttachmentTypes()
   },
   methods: {
+    selectAll (f) {
+      return f.whiteListedPositions?.length === this.positions?.length
+    },
+    selectSome (f) {
+      return f.whiteListedPositions?.length > 0 && !this.selectAll(f)
+    },
+    icon (f) {
+      if (this.selectAll(f)) {
+        return 'check_box'
+      }
+      if (this.selectSome(f)) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
     async getCustomFieldGroups () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -429,8 +558,6 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newGroup.companyObjectTypeId = this.$route.params.id
-        // setting groupOrder to 0, then they can sort later
-        this.newGroup.groupOrder = 0
         const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
         this.newGroup = {}
         this.addNew = false
@@ -448,10 +575,9 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addField = false
-        this.newField.fieldOrder = 0
         this.newField.customFieldGroupId = item.id
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
-        item.customFields.unshift(data)
+        item.customFields.push(data)
         this.newField = {}
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -480,12 +606,14 @@ export default {
         const params = {
           customFieldGroupId: item.id,
           id: null,
-          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
-          fieldOrder: 0
+          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId
         }
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
-        item.customFields.unshift(data)
+        item.customFields.push(data)
         this.newField = {}
+        this.selectedAncillaryField = {}
+        this.parent = {}
+        this.addField = false
         this.snackbar = getSnackbar('SUCCESS', 'Field Added to Group')
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -497,10 +625,6 @@ export default {
     async saveGroupChanges (groups) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        // debugger
-        // groups.forEach((g, idx) => {
-        //   g.groupOrder = idx
-        // })
         await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups)
         this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)
@@ -522,27 +646,51 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteGroup (groupId) {
+    async deleteWithChecks(item, customFieldGroupId, customFieldGroupAssignmentId) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/customFieldGroup/deleteCustomFieldGroup/${groupId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Deleted')
+        let params = {
+          customFieldGroupId, customFieldGroupAssignmentId
+        }
+        const {data} = await putRequest(`/customFieldGroup/deleteWithRequirementChecks`, params)
+        if (data?.length > 0) {
+          this.deleteError = true
+          item.deleteConfirm = false
+          this.fieldsInUse = data
+          let errorMsg = 'Group Cannot Be Deleted'
+          this.deleteHeader = 'Error Deleting Custom Field Group'
+          this.deleteText = 'You cannot delete a group that has a field in use by other groups or requirements.'
+          if(null !== customFieldGroupAssignmentId) {
+            errorMsg = 'Field Cannot Be Deleted'
+            this.deleteHeader = 'Error Deleting Custom Field from Group'
+            this.deleteText = 'You cannot delete a field from a group that is in use by other groups or requirements.'
+          }
+          this.snackbar = getSnackbar('ERROR', errorMsg)
+        } else {
+          this.fieldsInUse = []
+          item.archived = true
+          this.snackbar = getSnackbar('SUCCESS', 'Item Deleted')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Group')
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteFieldFromGroup (fieldGroupId) {
+    async saveReadOnlyAndWhiteList (field) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await deleteRequest(`/customFieldGroup/deleteFieldFromGroup/${fieldGroupId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Field Removed From Group')
+        const {data} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
+        field.positionsChanged = false
+        if(!field.customFieldGroupAssignmentReadOnly) {
+          this.$set(field, 'whiteListedPositions', [])
+        }
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Removing Field from Group')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -661,6 +809,31 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Deleting Attachment Type')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async getPositions() {
+      if(this.positions?.length === 0) {
+        try {
+          this.positionsLoading = true
+          const {data} = await getRequest(`/position`)
+          this.positions = data
+          this.positionsLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          this.positionsLoading = false
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
+    toggleSelectAllPositions (field) {
+      this.$nextTick(() => {
+        if (this.selectAll(field)) {
+          field.whiteListedPositions = []
+        } else {
+          this.$set(field, 'whiteListedPositions', this.positions.map(p => p.id))
+        }
+      })
     },
   }
 }

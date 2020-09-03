@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Login from './views/Login.vue'
+import ForgotPassword from './views/ForgotPassword.vue'
+import PasswordReset from './views/PasswordReset.vue'
 import store from './store'
 import { UserMutations } from './stores/UserStore'
 import { getRequest } from '@/helpers/helpers'
@@ -15,6 +17,19 @@ export default new Router({
       path: '/login',
       name: 'login',
       component: Login,
+      props: true
+    },
+    {
+      path: '/forgotPassword',
+      name: 'forgotPassword',
+      component: ForgotPassword,
+      props: true
+    },
+    {
+      path: '/passwordReset/:uuid?',
+      // path: 'passwordReset',
+      name: 'passwordReset',
+      component: PasswordReset,
       props: true
     },
     {
@@ -334,7 +349,7 @@ export default new Router({
             props: true,
             component: () => {
               if(store.getters.userHasFeature('SETTINGS')) {
-                return import (/* webpackChunkName: "processStep" */ './views/flow/settings/ProcessStep.vue')
+                return import (/* webpackChunkName: "processStep" */ './views/flow/settings/processStep/ProcessStep.vue')
               } else  {
                 return accessDenied()
               }
@@ -342,10 +357,13 @@ export default new Router({
             children: [
               {
                 path: 'components',
-                component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/ProcessStepComponents.vue'),
+                component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/processStep/ProcessStepComponents.vue'),
+              }, {
+                path: 'customFieldGroups',
+                component: () => import (/* webpackChunkName: "processStepComponents" */ './views/flow/settings/processStep/ProcessStepCFG.vue'),
               }, {
                 path: 'actions',
-                component: () => import (/* webpackChunkName: "processStepActions" */ './views/flow/settings/ProcessStepActions.vue'),
+                component: () => import (/* webpackChunkName: "processStepActions" */ './views/flow/settings/processStep/ProcessStepActions.vue'),
               }
             ]
           }, {
@@ -459,7 +477,37 @@ export default new Router({
           }
         },
       }, {
-        path: '/project',
+        path: '/projects',
+        name: 'projects',
+        component: () => {
+          if (store.getters.userHasFeature('PROJECTS')) {
+            return import (/*webpackChunkName: "projects" */ './views/flow/project/Projects.vue')
+          } else {
+            return accessDenied()
+          }
+        },
+      }, {
+        name: 'projectAdmin',
+        path: '/projectAdmin/:projectId',
+        component: () => {
+          if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+            return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
+          } else {
+            return accessDenied()
+          }
+        }
+      }, {
+        name: 'projectProcessStep',
+        path: '/project/:projectId/processStep/:processStepId',
+        component: () => {
+          if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+            return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
+          } else {
+            return accessDenied()
+          }
+        }
+      }, {
+        path: '/project/:projectId',
         name: 'project',
         component: () => {
           if(store.getters.userHasFeature('PROJECTS')) {
@@ -469,28 +517,14 @@ export default new Router({
           }
         },
         children: [{
-            path: 'search',
-            name: 'projects',
-            component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/Projects.vue')
+            path: 'details',
+            name: 'projectDetails',
+            component: () => import (/*webpackChunkName: "projectDetails" */ './views/flow/project/ProjectDetails.vue')
           }, {
-            path: ':projectId',
-            name: 'projectOverview',
-            component: () => import (/*webpackChunkName: "projectOverview" */ './views/flow/project/ProjectOverview.vue')
-          }, {
-            name: 'projectProcessStep',
-            path: ':projectId/processStep/:processStepId',
-            component: () => import (/*webpackChunkName: "projectProcessStep" */ './views/flow/project/ProjectProcessStep.vue')
-          }, {
-            name: 'projectAdmin',
-            path: ':projectId/admin',
-            component: () => {
-              if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
-                return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
-              } else {
-                return accessDenied()
-              }
-            }
-        }
+            path: 'notes',
+            name: 'projectNotes',
+            component: () => import (/*webpackChunkName: "projectNotes" */ './views/flow/project/ProjectNotes.vue')
+          }
         ]
       }, {
         path: '/contacts',

@@ -1,8 +1,6 @@
 package com.albatross.api.services;
 
-import com.albatross.api.v1.flow.model.ProcessStepAction;
-import com.albatross.api.v1.flow.model.ProcessStepLogic;
-import com.albatross.api.v1.flow.model.ProjectProcessStepRequirement;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +27,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,24 +47,20 @@ public class ProjectProcessStepServiceTests {
 
   private final Map<String, String> jsonObjects = new HashMap<>();
 
-  private ProcessStepActionService processStepActionService = mock(ProcessStepActionService.class);
+  private final ProcessStepActionService processStepActionService = mock(ProcessStepActionService.class);
 
   ProjectProcessStepRequirementService projectProcessStepRequirementService = mock(ProjectProcessStepRequirementService.class);
 
-  private AsyncProjectProcessStepService asyncProjectProcessStepService = mock(AsyncProjectProcessStepService.class);
-
-  private ProcessStepAction action;
+  private ProjectProcessStepAction action;
 
   private List<ProcessStepLogic> processStepLogicList;
 
   private List<ProjectProcessStepRequirement> projectProcessStepRequirements;
 
-  private CustomFieldValueService customFieldValueService = mock(CustomFieldValueService.class);
-
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, null, processStepActionService, projectProcessStepRequirementService, asyncProjectProcessStepService, customFieldValueService, null));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, null, null, processStepActionService, om));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");
@@ -80,7 +75,7 @@ public class ProjectProcessStepServiceTests {
       jsonObjects.putAll(converted);
     }
 
-    action = om.readValue(jsonObjects.get("processStepAction.action"), ProcessStepAction.class);
+    action = om.readValue(jsonObjects.get("processStepAction.action"), ProjectProcessStepAction.class);
     processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<List<ProcessStepLogic>>() {});
     projectProcessStepRequirements = om.readValue(jsonObjects.get("projectProcessStepRequirement.scheduleWithSystemList"), new TypeReference<List<ProjectProcessStepRequirement>>() {});
   }
@@ -94,33 +89,39 @@ public class ProjectProcessStepServiceTests {
 
   @Test
   public void alwaysEnabled() throws Exception {
+    ProjectProcessStep pps = new ProjectProcessStep();
+    pps.setProcessStepStatusTypeId(1L);
     action.setAlwaysEnabled(true);
-    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     assertThat(passed).isTrue();
     verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
     action.setAlwaysEnabled(false);
-    projectProcessStepService.canPerformAction(1L, 1L);
+    projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
   }
 
   @Test
   public void noLogicSteps() throws Exception {
+    ProjectProcessStep pps = new ProjectProcessStep();
+    pps.setProcessStepStatusTypeId(1L);
     action.setProcessStepLogicList(List.of());
-    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     assertThat(passed).isFalse();
     verify(projectProcessStepRequirementService, never()).getByProjectProcessStepId(anyLong(), anyList());
 
     List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<List<ProcessStepLogic>>() {});
     action.setProcessStepLogicList(processStepLogicList);
-    projectProcessStepService.canPerformAction(1L, 1L);
+    projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     verify(projectProcessStepRequirementService).getByProjectProcessStepId(anyLong(), anyList());
   }
 
   @Test
   public void noRequirements() throws Exception {
+    ProjectProcessStep pps = new ProjectProcessStep();
+    pps.setProcessStepStatusTypeId(1L);
     when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(List.of());
-    boolean passed = projectProcessStepService.canPerformAction(1L, 1L);
+    boolean passed = projectProcessStepService.canPerformAction(action, pps, new ArrayList<>());
     assertThat(passed).isTrue();
 
     // @TODO: Would be nice to verify that r.setFulfilled isn't ever called (meaning the code returns early when it should),

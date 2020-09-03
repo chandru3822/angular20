@@ -29,6 +29,13 @@
        psr.system_list_option_id,
        psr.custom_sql_option_id,
        array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+      (select json_build_object(
+               'id', cf.id,
+               'listOfValueId', cf.list_of_value_id,
+               'customFieldSqlKey', cf.custom_field_sql_key,
+               'companySystemListId', cf.company_system_list_id,
+               'allowMultiple', cdt.allow_multiple
+           ))                                     as custom_field,
        (select json_build_object(
                        'id', dtr.id,
                        'dataTypeValue', dtr.data_type_value,
@@ -218,6 +225,14 @@
       where cfga.custom_field_group_id = :customFieldGroupId
         and psr.archived is not true
   ]]></processStepRequirement.requirementsUsingCustomFieldGroup>
+
+  <processStepRequirement.requirementsUsingCustomFieldGroupAssignment><![CDATA[
+      select psr.id
+      from flow.process_step_requirement psr
+        inner join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+      where cfga.id = :customFieldGroupAssignmentId
+        and psr.archived is not true
+  ]]></processStepRequirement.requirementsUsingCustomFieldGroupAssignment>
 
   <processStepRequirement.getRequirementTypes><![CDATA[
     select *

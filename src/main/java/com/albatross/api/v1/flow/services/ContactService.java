@@ -9,11 +9,6 @@ import com.albatross.api.v1.flow.model.Process;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SequenceWriter;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.google.common.collect.Collections2;
 import com.mapbox.geojson.Point;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,14 +18,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.function.ObjLongConsumer;
 
 @Slf4j
@@ -38,26 +32,21 @@ import java.util.function.ObjLongConsumer;
 @Service
 public class ContactService {
 
-  @Autowired
-  SqlCache sqlCache;
+  private final SqlCache sqlCache;
 
-  @Autowired
-  LocationUtils locationUtils;
+  private final LocationUtils locationUtils;
 
-  @Autowired
-  SecurityService securityService;
+  private final SecurityService securityService;
 
-  @Autowired
-  ProjectService projectService;
+  private final ProjectService projectService;
 
-  @Autowired
-  ProcessService processService;
+  private final ProcessService processService;
 
-  @Autowired
-  ProjectProcessStepService projectProcessStepService;
+  private final UserPositionService userPositionService;
 
-  @Autowired
-  ObjectMapper om;
+  private final ProjectProcessStepService projectProcessStepService;
+
+  private final ObjectMapper om;
 
   public Page<Contact> searchContacts(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
@@ -75,53 +64,11 @@ public class ContactService {
     params.put("limit", pageable.getPageSize());
     params.put("offset", pageable.getOffset());
 
-    /* TODO: if we have to enable server-side sorting, this was my first attempt that kinda worked
-    --  order by case :orderBy is not null
-    --     when :orderBy = 'date_created' then c.date_created::text
-    --     when :orderBy = 'first_name' then nullif(c.first_name) else c.date_created::text end desc nulls last
-     */
-
     List<Contact> results = sqlCache.query("contact.searchContacts", params, new ContactMapper<>(Contact.class, om));
-    Integer count = sqlCache.queryForObject("contact.searchContactCount", params, Integer.class);
+    Integer count = sqlCache.queryForObject("contact.searchContactsCount", params, Integer.class);
 
     Page<Contact> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
     return page;
-  }
-
-
-  public ResponseEntity exportContacts(String query) {
-    User user = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    params.put("query", query);
-
-    List<Contact> results = sqlCache.query("contact.exportContacts", params, new ContactMapper<>(Contact.class, om));
-
-    // set up CSV writing
-    CsvMapper mapper = new CsvMapper();
-    CsvSchema schema = mapper.typedSchemaFor(ContactExportTemplate.class).withHeader();
-    ObjectWriter writer = mapper.writer(schema);
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-    // get contact deets and write to CSV
-    try (SequenceWriter outToBuffer = writer.writeValues(buffer)) {
-      // first, get deets
-      Collection<ContactExportTemplate> details = Collections2.transform(
-          results,
-          ContactExportTemplate::from);
-
-      // next, write them to a buffer so we can identify errors before writing across the network
-      outToBuffer.writeAll(details);
-      outToBuffer.flush();
-
-      // finally, write to network because no errors were encountered
-      return ResponseEntity.ok(buffer.toString(StandardCharsets.UTF_8));
-    } catch (IOException e) {
-      log.error("Encountered error while writing contact export to CSV", e);
-      return ResponseEntity.status(500)
-          .body("Encountered error while writing contact export to CSV");
-    }
   }
 
   public Contact getContact(Long contactId) {
@@ -153,29 +100,29 @@ public class ContactService {
     params.put("email", contact.getEmail());
     params.put("mobile", contact.getMobile());
     params.put("companyId", currentUser.getCompanyId());
-    params.put("ownerUserPositionId", contact.getOwner() != null ? contact.getOwner().getUserPositionId() : null);
 
     Long id;
 
     if(null != contact.getId()) {
       id = contact.getId();
+      params.put("ownerUserPositionId", contact.getOwner() != null ? contact.getOwner().getUserPositionId() : null);
       params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
       //add update when we add that to the UI
        sqlCache.update("contact.updateContact", params);
     } else {
+      UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(currentUser.getId());
+      params.put("ownerUserPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId() ? null : userPrimaryPosition.getId());
       params.put("contactTypeId", ContactType.LEAD.id);
       params.put("createdById", currentUser.getId());
       id = sqlCache.updateReturningId("contact.insertContact", params, "id").longValue();
     }
 
-    if(null == contact.getId() || contact.getReloadCoordinates()) {
+    if(null == contact.getId() || (null != contact.getReloadCoordinates() && contact.getReloadCoordinates())) {
       // if new contact or address changed, reload the coordinates
       getContactCoordinates(contact, id);
     }
-
-    handleSavingCustomFieldValues(contact.getCustomFieldGroups(), id);
 
     return getContact(id);
   }
@@ -255,47 +202,12 @@ public class ContactService {
     if(project.isPresent()) {
       //create all initial project_process_steps - these wont have a userPositionId
       for(ProcessStepProcess step : initialProcessSteps) {
-        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), step.getCompanyProcessStepStatusTypeId(), ownerUserPositionId, true);
+        projectProcessStepService.insertProjectProcessStep(project.get().getId(), step.getProcessStepId(), ownerUserPositionId);
       }
     }
 
     //return project data so the frontend can navigate to project/{id}
     return project.orElse(null);
-  }
-
-  public Boolean fieldHasValue (CustomFieldValue cv) {
-    return null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
-        || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
-  }
-
-  public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long primaryId){
-    User currentUser = securityService.getCurrentUser();
-    for(CustomFieldGroup group : groups) {
-      for(CustomFieldValue cfv : group.getCustomFieldValues()){
-        //todo: only save if something changed
-        if(fieldHasValue(cfv)) {
-          HashMap<String, Object> params = new HashMap<>();
-          params.put("dateValue", cfv.getDateValue());
-          params.put("timestampValue", cfv.getTimestampValue());
-          params.put("booleanValue", cfv.getBooleanValue());
-          params.put("textValue", cfv.getTextValue());
-          params.put("numericValue", cfv.getNumericValue());
-          params.put("intValue", cfv.getIntValue());
-          params.put("intArrayValue", cfv.getIntArrayValue());
-          params.put("contactId", primaryId);
-          params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-
-          if(null != cfv.getId()){
-            params.put("id", cfv.getId());
-            params.put("modifiedById", currentUser.getId());
-            sqlCache.update("customFieldValues.updateContactCustomFieldValue", params);
-          } else {
-            params.put("createdById", currentUser.getId());
-            sqlCache.update("customFieldValues.insertContactCustomFieldValue", params);
-          }
-        }
-      }
-    }
   }
 
   public static class ContactMapper<T> extends BeanPropertyRowMapper<T> {

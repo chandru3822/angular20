@@ -56,7 +56,7 @@
 
             <template #item="{ item, index }">
 
-              <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <tr class="clickable" :class="{'shaded-row': workQueueTypes.indexOf(item) % 2}">
                 <td style="width: 50px">
                   <v-btn v-if="selectedWorkQueueCategoryId !== -1" text icon small class="handle">
                     <v-icon>drag_handle</v-icon>
@@ -254,9 +254,9 @@
 
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
 
-          // add it to the records already on the screen
+          // add it to the master list too
+          this.masterWorkQueueTypes.push(data)
           this.workQueueTypes.push(data)
-          this.workQueueTypes = orderBy(this.workQueueTypes, [wt => wt.workQueueType.toLowerCase()])
 
           // reset the new process fields
           this.addNew = false

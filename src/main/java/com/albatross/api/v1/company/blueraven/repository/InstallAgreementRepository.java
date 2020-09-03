@@ -4,18 +4,21 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
+import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
 import com.albatross.api.v1.company.blueraven.services.LoanPalService;
 import com.albatross.api.v1.company.blueraven.services.PandaDocService;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.UserAccountDetails;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.net.URISyntaxException;
 import java.util.*;
 
 @Repository
@@ -32,6 +35,9 @@ public class InstallAgreementRepository {
 
   @Autowired
   private PandaDocService pandaDocService;
+
+  @Value(value = "${app.loanpal.baseUrl}")
+  private String baseUrl;
 
   public List<InstallAgreementProject> getProjects() {
     User user = securityService.getCurrentUser();
@@ -72,7 +78,7 @@ public class InstallAgreementRepository {
           HashMap<String, Object> params = new HashMap<>();
           params.put("projectId", request.getProject_id());
           params.put("proposalNbr", request.getProposal_nbr());
-          Optional<PropLogDetail> propLogDetail = sqlCache.get("proposalLog.getLoanDetailFromLog", params, PropLogDetail.class);
+          Optional<PropLogDetail> propLogDetail = sqlCache.get("installAgreement.getLoanAmountFromLog", params, PropLogDetail.class);
           if (propLogDetail.isPresent() && null != selectedLoanOption) {
             loanPalService.saveLoanFields(loanPalId, propLogDetail.get().getLoanAmount(), selectedLoanOption);
           }
@@ -178,6 +184,71 @@ public class InstallAgreementRepository {
       params
     );
   }
+
+  public String generateLoanPal(Long projectId, Long proposalNbr) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("proposalNbr", proposalNbr);
+
+      Optional<PandaDocProjectDetails> deets = sqlCache.get(
+          "pandaDoc.getProjectDetails",
+          params,
+          PandaDocProjectDetails.class
+      );
+
+      if (deets.isPresent()) {
+          PandaDocProjectDetails pd = deets.get();
+
+          String bothStreets = "";
+          if (pd.getMailingStreet1() != null) {
+              bothStreets += pd.getMailingStreet1();
+          }
+          if (pd.getMailingStreet2() != null) {
+              bothStreets += " " + pd.getMailingStreet2();
+          }
+
+          bothStreets = bothStreets.trim();
+          String phoneNumber = "";
+          if (pd.getPhone() != null) {
+              phoneNumber = pd.getPhone().replaceAll("[^\\d]+", "");
+              if (phoneNumber.length() > 10 && phoneNumber.charAt(0) == '1') {
+                  phoneNumber = phoneNumber.substring(1);
+              }
+          }
+
+          try {
+              URIBuilder b = new URIBuilder(baseUrl);
+              b.addParameter("fname", s(pd.getCustomerFirstName()));
+              b.addParameter("lname", s(pd.getCustomerLastName()));
+              b.addParameter("street", bothStreets);
+              b.addParameter("city", s(pd.getCity()));
+              b.addParameter("state", s(pd.getMailingState()));
+              b.addParameter("zip", s(pd.getPostalCode()));
+              b.addParameter("email", s(pd.getCustomerEmail()));
+              b.addParameter("phone", phoneNumber);
+              b.addParameter("srfn", s(pd.getCloserFirstName()));
+              b.addParameter("srln", s(pd.getCloserLastName()));
+              b.addParameter("sre", s(pd.getCloserEmail()));
+              b.addParameter("cost", s(pd.getTotalSystemPrice()));
+              b.addParameter("refnum", s(pd.getProjectId()));
+              return b.build().toString().replaceAll("\\+", "%20");
+          } catch (URISyntaxException e) {
+              e.printStackTrace();
+          }
+      }
+      return baseUrl;
+  }
+
+    /**
+     * Return the string form of the specified object, or an empty string if the specified
+     * object is null.
+     *
+     * @param in
+     * @return
+     */
+    private String s(Object in) {
+        return in != null ? in.toString() : "";
+    }
 
   @Data
   public static class ProposalNumber {

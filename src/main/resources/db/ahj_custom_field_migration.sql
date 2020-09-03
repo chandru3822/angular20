@@ -4,37 +4,37 @@
 -- alter table blueraven.custom_dropdown_field
 --     add column custom_field_group_id integer;
 --
--- update blueraven.custom_dropdown_field set custom_field_group_id = 12 where id = 1;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 12 where id = 2;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 3;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 4;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 5;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 6;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 7;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 8;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 9;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 10;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 11;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 12;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 13;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 14;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 15;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 16;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 17;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 18;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 19;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 20;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 21;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 22;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 23;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 24;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 25;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 26;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 17 where id = 27;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 28;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 29;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 30;
--- update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 31;
+update blueraven.custom_dropdown_field set custom_field_group_id = 12 where id = 1;
+update blueraven.custom_dropdown_field set custom_field_group_id = 12 where id = 2;
+update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 3;
+update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 4;
+update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 5;
+update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 6;
+update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 7;
+update blueraven.custom_dropdown_field set custom_field_group_id = 14 where id = 8;
+update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 9;
+update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 10;
+update blueraven.custom_dropdown_field set custom_field_group_id = 15 where id = 11;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 12;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 13;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 14;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 15;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 16;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 17;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 18;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 19;
+update blueraven.custom_dropdown_field set custom_field_group_id = 16 where id = 20;
+update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 21;
+update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 22;
+update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 23;
+update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 24;
+update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 25;
+update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 26;
+update blueraven.custom_dropdown_field set custom_field_group_id = 17 where id = 27;
+update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 28;
+update blueraven.custom_dropdown_field set custom_field_group_id = 22 where id = 29;
+update blueraven.custom_dropdown_field set custom_field_group_id = 9 where id = 30;
+update blueraven.custom_dropdown_field set custom_field_group_id = 13 where id = 31;
 
 
 -- create the data types

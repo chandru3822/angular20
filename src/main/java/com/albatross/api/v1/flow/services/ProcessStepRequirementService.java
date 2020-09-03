@@ -63,29 +63,20 @@ public class ProcessStepRequirementService {
     return results;
   }
 
-  public void deleteRequirement(Long requirementId) {
+  public List<ProcessStepAction> deleteRequirement(Long requirementId) {
     User currentUser = securityService.getCurrentUser();
-
     HashMap<String, Object> params = new HashMap<>();
     params.put("modifiedById", currentUser.getId());
     params.put("requirementId", requirementId);
-    sqlCache.update("processStepRequirement.deleteRequirement", params);
+    List<ProcessStepAction> actionsUsingRequirement = sqlCache.query("processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
 
-    processStepActionService.deleteLogicIfActionsUseRequirement(requirementId);
-  }
-
-  public void deleteRequirementIfUsingCustomFieldGroup(Long customFieldGroupId) {
-    User currentUser = securityService.getCurrentUser();
-    // this method is called when a customFieldGroup gets archived. if a requirement is using a field from that group the requirement will also be archived
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("customFieldGroupId", customFieldGroupId);
-    params.put("modifiedById", currentUser.getId());
-    List<ProcessStepRequirement> results = sqlCache.query("processStepRequirement.requirementsUsingCustomFieldGroup", params, ProcessStepRequirement.class);
-
-    for(ProcessStepRequirement requirement : results) {
-      //archive any requirements using that custom field group
-      deleteRequirement(requirement.getId());
+    if(!actionsUsingRequirement.isEmpty()) {
+      return actionsUsingRequirement;
+    } else {
+      sqlCache.update("processStepRequirement.deleteRequirement", params);
+      return null;
     }
+
   }
 
   public List<ProcessStepRequirementType> getRequirementTypes() {
@@ -188,6 +179,10 @@ public class ProcessStepRequirementService {
       TypeReference<DataTypeRequirement> dataTypeRequirementRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "dataTypeRequirement",
           new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
+
+      TypeReference<CustomField> customFieldRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "customField",
+        new JsonCollectionDeserializer(customFieldRef, objectMapper));
 
       TypeReference<ListOfValue> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "listOfValue",

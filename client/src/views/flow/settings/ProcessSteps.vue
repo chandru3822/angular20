@@ -1,5 +1,40 @@
 <template>
   <v-container class="custom-field-group-container">
+    <v-dialog
+      v-model="deleteError"
+    >
+      <v-card>
+        <v-card-title class="headline error--text">
+          Error Deleting Process Step
+        </v-card-title>
+
+        <v-card-text>
+          You cannot delete a process step with fields that are currently in use.  Please remove any field from the following locations before deleting.
+          <v-list v-for="(item, index) in fieldsInUse" :key="index">
+            <v-list-item-content>
+              {{ item.objectType }}
+              <div v-if="item.processStepName">{{item.processStepName}}</div>
+              <div v-if="item.groupName">{{ item.groupName }}<span v-if="item.fieldName"> - {{ item.fieldName }}</span></div>
+            </v-list-item-content>
+          </v-list>
+
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="primaryCustom"
+            text
+            dark
+            class="white--text"
+            @click="deleteError = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -81,7 +116,7 @@
                           <v-btn
                             color="primary"
                             text
-                            @click="[item.archived = true, deleteProcessStep(item.id)]">
+                            @click="deleteProcessStep(item)">
                             Yes
                           </v-btn>
                         </v-card-actions>
@@ -116,6 +151,8 @@
       return {
         snackbar: {},
         addNew: false,
+        deleteError: false,
+        fieldsInUse: [],
         search: '',
         newStep: {},
         selectedProcessStepId: null,
@@ -146,11 +183,21 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteProcessStep (processStepId) {
+      async deleteProcessStep (processStep) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await deleteRequest(`/processStep/${processStepId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Process Step Deleted')
+          const {data} = await putRequest(`/processStep/delete/${processStep.id}`)
+          if (data?.length > 0) {
+            this.deleteError = true
+            processStep.deleteConfirm = false
+            this.fieldsInUse = data
+            this.snackbar = getSnackbar('ERROR', 'Process Step Cannot Be Deleted')
+          } else {
+            this.fieldsInUse = []
+            processStep.archived = true
+            this.snackbar = getSnackbar('SUCCESS', 'Process Step Deleted')
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

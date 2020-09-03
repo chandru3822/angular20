@@ -57,7 +57,8 @@ Vue.filter('formatDate', function (value, type, format, inputFormat) {
 
   // default format if none provided
   if (!format) {
-    format = (type === 'date') ? 'M/D/YYYY' : 'M/D/YYYY h:mm a'
+    // timestampAsDate means do the timezone conversion but then only display the date
+    format = (type === 'date') || (type === 'timestampAsDate') ? 'M/D/YYYY' : 'M/D/YYYY h:mm a'
   }
 
   if (value) {
@@ -82,13 +83,14 @@ axios.interceptors.request.use(config => {
 axios.interceptors.response.use((response) => {
   return response
 }, ({ response }) => {
-  if (response && response.data) {
-    const { message, status } = response.data
+  if (response) {
+    const { message } = response?.data
+    const { status } = response
     console.error('*** Request Error ***', response)
     // if the jwt token expired, or 401 unauthorized, or 403 Forbidden
     if ((message && message.toLowerCase().indexOf(JWT_EXPIRED) > -1)
         || status === 401  || status === 403) {
-      const msg = response.status === 401  || response.status === 403 ? 'User Unauthorized' : 'Session Expired'
+      const msg = response.status === 401  ? 'Session Expired' : response.status === 403 ? 'User Unauthorized' : 'Unknown Error'
       localStorage.removeItem('store')
       store.commit(UserMutations.LOGIN_ERROR, msg)
       router.push({ name: 'login' })

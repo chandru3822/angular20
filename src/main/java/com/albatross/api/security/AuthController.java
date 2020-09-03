@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -28,6 +30,14 @@ public class AuthController {
 
   @Autowired
   private SecurityService securityService;
+
+    @Value("${security.jwt.expireDuration}")
+    private Long jwtExpireDuration;
+
+  @GetMapping(value = "/heartbeat")
+  public ResponseEntity getHeartbeat() {
+    return ResponseEntity.noContent().build();
+  }
 
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
@@ -64,7 +74,8 @@ public class AuthController {
     Long userId = user.getId();
     Instant issuedAt = Instant.now();
     return new JwtClaims().setUserId(userId)
-        .setIssuedAt(issuedAt);
+        .setIssuedAt(issuedAt)
+        .setExpiresAt(issuedAt.plus(Duration.ofDays(jwtExpireDuration)));
   }
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST,

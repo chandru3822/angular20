@@ -108,7 +108,7 @@
             <v-card-actions>
               <v-btn color="secondary" @click="[newSchedule = {}, addNew = false]">Cancel</v-btn>
               <v-btn color="primaryCustom"  @click="saveSchedule(newSchedule, true)" class="white--text"
-                     :disabled="!newSchedule.startDate || !newSchedule.endDate">
+                     :disabled="!newSchedule.startDate">
                 Save
               </v-btn>
             </v-card-actions>
@@ -399,13 +399,15 @@
 
 
         // do validations: todo: add the rest of them (make sure dates of schedules can't overlap)
-        if(s.startDate >= s.endDate) {
+        if(new Date(s.startDate) > new Date(s.endDate)) {
           this.saveError = true
           this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
-        } else if (!s.resourceScheduleAvailability || s.resourceScheduleAvailability.length === 0) {
-          this.saveError = true
-          this.saveErrorMsg = '* Schedule must include at least one day of availability'
-        } else {
+        }
+        // else if (!s.resourceScheduleAvailability || s.resourceScheduleAvailability.length === 0) {
+        //   this.saveError = true
+        //   this.saveErrorMsg = '* Schedule must include at least one day of availability'
+        // }
+        else {
           //check that no end times are before start times
           let timeOverlap = false
           s.resourceScheduleAvailability.forEach(rsa => {
@@ -423,11 +425,19 @@
             this.saveError = true
             this.saveErrorMsg = '* End times must be after start times'
           } else {
+
+            //if there is not an end date, update any other's without an end date (there should only ever be one) - backend will handle actual save
+            if(!s.endDate) {
+              let match = this.schedules.find(sc => !sc.endDate)
+              if (match) {
+                match.endDate = moment.utc(s.startDate).subtract(1, 'd').format("YYYY-MM-DD")
+              }
+            }
             //check that no other schedules overlap this one
             let scheduleOverlap = false
             this.schedules.forEach(sd => {
-              if(s.id !== sd.id && ((s.startDate >= sd.startDate && s.startDate <= sd.endDate) ||
-                 (s.endDate >= sd.startDate && s.endDate <= sd.endDate))) {
+              if(s.id !== sd.id && ((new Date(s.startDate) >= new Date(sd.startDate) && new Date(s.startDate) <= new Date(sd.endDate)) ||
+                 (new Date(s.endDate) >= new Date(sd.startDate) && new Date(s.endDate) <= new Date(sd.endDate)))) {
                 scheduleOverlap = true
               }
             })
@@ -441,7 +451,7 @@
               this.$store.commit(AppMutations.SET_LOADING, true)
               try {
                 let formattedTimestamps = cloneDeep(s.resourceScheduleAvailability)
-                console.log('randaLogger', formattedTimestamps)
+                // console.log('randaLogger', formattedTimestamps)
                 formattedTimestamps.forEach(ft => {
                   ft.startTime = ft.startTime != null ? moment.utc(ft.startTime, 'hh:mm:ss').format('HH:mm:ss') : null
                   ft.endTime = ft.endTime != null ? moment.utc(ft.endTime, 'hh:mm:ss').format('HH:mm:ss') : null

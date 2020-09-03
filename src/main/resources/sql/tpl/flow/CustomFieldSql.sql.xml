@@ -14,4 +14,13 @@
     where archived is not true
     order by a.name;
   ]]></customFieldSql.brs.utilityCompanyList>
+
+  <customFieldSql.brs.proposalLogNumbers><![CDATA[
+    select plh.id,
+           plh.proposal_nbr as name
+    from brs.proposal_log_history plh
+    where plh.project_id = :projectId
+    order by plh.proposal_nbr
+  ]]></customFieldSql.brs.proposalLogNumbers>
+
 </sql>

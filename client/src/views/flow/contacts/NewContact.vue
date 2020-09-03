@@ -26,16 +26,13 @@
                             v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
-                            :rules="requiredRules"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text
                             label="City"
-                            :rules="requiredRules"
                             v-model="contact.city"></v-text-field>
               <v-select v-model="contact.stateId"
                         :items="states"
                         label="State"
-                        :rules="requiredRules"
                         item-text="state"
                         item-value="id"
               ></v-select>
@@ -47,7 +44,6 @@
                             v-model="contact.phone"></v-text-field>
               <v-text-field text
                             label="Mobile"
-                            :rules="requiredRules"
                             v-model="contact.mobile"></v-text-field>
               <v-text-field text
                             label="E-Mail"
@@ -55,11 +51,9 @@
                             v-model="contact.email"></v-text-field>
               <v-text-field text
                             label="Zip Code"
-                            :rules="requiredRules"
                             v-model="contact.postalCode"></v-text-field>
               <v-select v-model="contact.countryId"
                         :items="countries"
-                        :rules="requiredRules"
                         label="Country"
                         item-text="country"
                         item-value="id"
@@ -70,7 +64,10 @@
       </v-form>
       <v-container class="text-left" v-for="cfg in customFieldGroups" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
         <h3>{{cfg.groupName}}</h3>
-        <CustomValueInput v-for="cf in cfg.customFieldValues" :readonly="cf.readonly" :field="cf"></CustomValueInput>
+        <CustomValueInput v-for="cf in cfg.customFieldValues"
+                          :readonly="getReadOnly(cf)"
+                          :callback="populateDirtyCfvs"
+                          :field="cf"></CustomValueInput>
       </v-container>
     </v-card>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -85,6 +82,7 @@ import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
+import {getCustomFieldReadOnly} from '@/services/customFieldService'
 
 const { VUE_APP_ENV } = process.env
 
@@ -101,6 +99,7 @@ export default {
       contact: {},
       states: [],
       countries: [],
+      dirtyCfvs: [],
       customFieldGroups: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
@@ -163,13 +162,25 @@ export default {
       this.contact.customFieldGroups = this.customFieldGroups
       try {
         const {data} = await postRequest(`/contact`, this.contact)
-        this.$router.push({name: 'contact', params: {id: data.id}})
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        if(data && data.id) {
+          await postRequest(`/customFieldValues/contact/${data.id}`, this.dirtyCfvs)
+          this.$router.push({name: 'contact', params: {id: data.id}})
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Contact')
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    populateDirtyCfvs(field) {
+      let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
+      if(!match) {
+        this.dirtyCfvs.push(field)
+      }
+    },
+    getReadOnly: function (field) {
+      return getCustomFieldReadOnly(this.$store, field)
     },
     setFakeContact () {
       this.contact = {
@@ -181,7 +192,7 @@ export default {
         city: 'Salt Lake City',
         stateId: 44,
         countryId: 1,
-        postalCode: '87654',
+        postalCode: '84115',
         email: 'randa@randa.com'
       }
     }

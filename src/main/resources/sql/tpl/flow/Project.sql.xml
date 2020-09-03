@@ -11,22 +11,51 @@
       and cp.process_id = :processId;
   ]]></project.getAllForCompanyProcess>
 
+  <project.getProjectIdByProjectProcessStepId><![CDATA[
+    select project_id
+    from flow.project_process_step pps
+    where pps.id = :projectProcessStepId
+  ]]></project.getProjectIdByProjectProcessStepId>
+
+
+  <project.getCompanyId><![CDATA[
+    select cp.company_id
+    from flow.project p
+        inner join flow.company_process cp on cp.id = p.company_process_id
+    where p.id = :projectId
+  ]]></project.getCompanyId>
+
   <project.search><![CDATA[
     select
       p.id,
       p.project_name,
       p.contact_id,
       p.date_created,
+      p.street1,
+      p.street2,
+      p.city,
+      s.state,
+      p.postal_code as "postalCode",
       cp.status_type_id,
       st.status_type,
-      pr.process_name
+      pr.process_name,
+      (select row_to_json(contact) from (
+        select
+            c.id,
+            c.phone,
+            c.mobile
+      ) contact) as contact
     from flow.project p
     inner join flow.company_process cp on cp.id = p.company_process_id
     inner join flow.process pr on pr.id = cp.process_id
     inner join flow.status_type st on st.id = cp.status_type_id
+    inner join flow.contact c on c.id = p.contact_id
+    left join flow.state s on s.id = p.state_id
     where
-      cp.company_id = :companyId and
-      p.project_name ilike '%' || :query || '%'
+    case when :isParent
+             then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+         else cp.company_id = :companyId end
+        and p.project_name ilike '%' || :query || '%'
     order by p.date_created desc
     limit :limit
     offset :offset
@@ -38,9 +67,13 @@
       inner join flow.company_process cp on cp.id = p.company_process_id
       inner join flow.process pr on pr.id = cp.process_id
       inner join flow.status_type st on st.id = cp.status_type_id
+      inner join flow.contact c on c.id = p.contact_id
+      left join flow.state s on s.id = p.state_id
     where
-      cp.company_id = :companyId and
-      p.project_name ilike '%' || :query || '%'
+    case when :isParent
+             then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+         else cp.company_id = :companyId end
+        and p.project_name ilike '%' || :query || '%'
   ]]></project.searchCount>
 
   <project.searchByOwner><![CDATA[
@@ -49,14 +82,27 @@
       p.project_name,
       p.contact_id,
       p.date_created,
+      p.street1,
+      p.street2,
+      p.city,
+      s.state,
+      p.postal_code as "postalCode",
       cp.status_type_id,
       st.status_type,
-      pr.process_name
+      pr.process_name,
+      (select row_to_json(contact) from (
+        select
+            c.id,
+            c.phone,
+            c.mobile
+      ) contact) as contact
     from flow.project p
        inner join flow.project_process_step pps on pps.project_id = p.id
        inner join flow.company_process cp on cp.id = p.company_process_id
        inner join flow.process pr on pr.id = cp.process_id
        inner join flow.status_type st on st.id = cp.status_type_id
+       inner join flow.contact c on c.id = p.contact_id
+       inner join flow.state s on s.id = p.state_id
        left join flow.user_position up on up.id = pps.user_position_id
        left join flow."user" u on u.id = up.user_id
     where
@@ -136,28 +182,17 @@
         p.postal_code,
         p.country_id,
         c.country,
+        p.date_created,
         cp.company_id,
         cp.process_id,
+        pro.process_name,
         p.contact_id,
         p.project_name,
         p.company_project_status_type_id,
-        cpst.project_status_type,
-        (
-        select row_to_json(o) from (
-          select
-            u.id as "userId",
-            u.first_name as "firstName",
-            u.last_name as "lastName",
-            u.first_name || ' ' || u.last_name AS "fullName",
-            po.position
-          from blueraven.user u
-          inner join flow.user_position up on up.user_id = u.id
-          inner join flow.position po on po.id = up.position_id
-          where up.id = p.user_position_id
-          ) o
-        ) AS owner
+        cpst.project_status_type
       from flow.company_process cp
       inner join flow.project p on cp.id = p.company_process_id
+      inner join flow.process pro on pro.id = cp.process_id
       left join flow.state s on s.id = p.state_id
       left join flow.country c on c.id = p.country_id
       inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
@@ -208,6 +243,7 @@
       pps.project_id,
       pps.main,
       ps.process_step_name,
+      ps.unique_behavior_type_id,
       coalesce(pps.date_modified, pps.date_created) as last_updated,
       cpsst.process_step_status_type,
       cpsst.process_step_status_type_id,
@@ -220,7 +256,7 @@
             u.last_name as "lastName",
             u.first_name || ' ' || u.last_name AS "fullName",
             p.position
-        from blueraven.user u
+        from flow.user u
         inner join flow.user_position up on up.user_id = u.id
         inner join flow.position p on p.id = up.position_id
         where up.id = pps.user_position_id
@@ -235,7 +271,7 @@
     where
       p.id = :projectId and
       pps.archived is not true
-    order by last_updated;
+    order by ps.process_step_name;
   ]]></project.getProcessStepsByProjectId>
 
   <project.getAttachments><![CDATA[
@@ -257,15 +293,6 @@
     insert into flow.project_attachment(attachment_id, project_id, created_by_id)
     values (:attachmentId, :projectId, :createdById)
   ]]></project.addAttachment>
-
-  <project.updateOwner><![CDATA[
-    update flow.project
-    set
-      user_position_id = :userPositionId,
-      modified_by_id = :userId,
-      date_modified = now()
-    where id = :projectId
-  ]]></project.updateOwner>
 
   <project.getActiveProjectStatusTypeByCompanyId><![CDATA[
     select

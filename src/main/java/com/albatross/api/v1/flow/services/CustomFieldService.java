@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -120,7 +119,6 @@ public class CustomFieldService {
         lovParent.put("name", customField.getFieldName());
         lovParent.put("parentId", null);
         lovParent.put("createdById", customField.getCreatedById());
-        lovParent.put("displayOrder", null);
         parentId = sqlCache.updateReturningId("customField.insertListOfValue", lovParent, "id").longValue();
       } else {
         parentId = customField.getListOfValueId();
@@ -176,9 +174,12 @@ public class CustomFieldService {
   }
 
   public void handleCustomFieldObjectTypes(Long customFieldId, CustomFieldObjectType cfot) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("archived", cfot.getArchived());
     params.put("customFieldId", customFieldId);
+    params.put("userId", currentUser.getId());
     params.put("companyObjectTypeId", cfot.getCompanyObjectTypeId());
 
     // if it is a new field the cfot.getId() is actually the objectTypeId so do 2 checks here
@@ -191,16 +192,25 @@ public class CustomFieldService {
     }
   }
 
-  public void deleteField(Long id) {
+  public List<CustomField> deleteField(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldId", id);
     params.put("modifiedById", currentUser.getId());
 
-    // archive single custom field
-    sqlCache.update("customField.deleteField", params);
+    //check if field is in use by a custom field group
+    List <CustomField> fields = sqlCache.query("customField.getGroupsUsingField", params, CustomField.class);
 
-    //todo: is there more that needs to be archived when they delete a custom field?
+    //if the field is assigned somewhere, return those values to frontend
+    if(!fields.isEmpty()) {
+      return fields;
+    } else {
+      // archive single custom field
+      sqlCache.update("customField.deleteField", params);
+      return null;
+    }
+
+
   }
 
   public List<CustomField> getByParentProcessStep(Long id) {
@@ -215,7 +225,11 @@ public class CustomFieldService {
       if(null != cf.getCustomFieldSqlKey()) {
         String sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
         if(null != sql) {
-          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          HashMap<String, Object> params2 = new HashMap<>();
+          //i think we can get away with not actually loading project_id here
+          params2.put("projectId", null);
+          params2.put("userId", user.getId());
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params2, ListOfValue.class);
           cf.setListOfValues(listOfValues);
         }
       } else if (null != cf.getCompanySystemListId()) {
@@ -238,7 +252,11 @@ public class CustomFieldService {
       if(null != cf.getCustomFieldSqlKey()) {
         String sql = sqlCache.getByKey(cf.getCustomFieldSqlKey());
         if(null != sql) {
-          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class);
+          // i'm not sure if we need to be able to load project Id from here or not
+          HashMap<String, Object> params2 = new HashMap<>();
+          params2.put("projectId", null);
+          params2.put("userId", user.getId());
+          List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params2, ListOfValue.class);
           cf.setListOfValues(listOfValues);
         }
       } else if (null != cf.getCompanySystemListId()) {
@@ -270,17 +288,21 @@ public class CustomFieldService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
 
-      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<List<CustomFieldObjectType>>() {};
+      TypeReference<List<CustomFieldObjectType>> customFieldObjectTypeRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "customFieldObjectTypes",
           new JsonCollectionDeserializer(customFieldObjectTypeRef, objectMapper));
 
-      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<List<ListOfValue>>() {};
+      TypeReference<List<ListOfValue>> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "listOfValues",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
 
       TypeReference<List<Long>> systemListOptionIdsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "systemListOptionIds",
           new JsonCollectionDeserializer(systemListOptionIdsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> whiteListedPositionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "whiteListedPositions",
+        new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
     }
   }
 }

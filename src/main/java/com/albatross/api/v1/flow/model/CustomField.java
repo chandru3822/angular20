@@ -18,10 +18,11 @@ public class CustomField {
       customFieldGroupId, ancillaryCustomFieldGroupAssignmentId, customFieldGroupAssignmentId,
       customFieldObjectTypeId, dataTypeId, companySystemListId, scheduleFieldTypeId;
   private List<Long> systemListOptionIds;
-  private String fieldName, objectType, groupName, customFieldSqlKey, customFieldSqlReferenceTable;
-  private Boolean archived, showOnInsert, hasListValues, allowMultiple, readonly;
+  private String fieldName, objectType, groupName, customFieldSqlKey, customFieldSqlReferenceTable, processStepName;
+  private Boolean archived, showOnInsert, hasListValues, allowMultiple, readonly, customFieldGroupAssignmentReadOnly;
   private List<CustomFieldObjectType> customFieldObjectTypes;
   private List<ListOfValue> listOfValues;
+  private List<WhiteListedPosition> whiteListedPositions;
   private Date dateCreated, dateModified;
 }
 

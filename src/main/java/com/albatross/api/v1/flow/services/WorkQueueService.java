@@ -10,9 +10,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -44,13 +50,14 @@ public class WorkQueueService {
     params.put("companyId", user.getCompanyId());
     params.put("userPositionId", userPositionId);
     params.put("unassigned", null == unassigned ? false : unassigned);
-    params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
+    //currently we only show active process steps. but sending in as a list in case that changes
+    params.put("processStepStatusTypeIds", new ArrayList<>(Arrays.asList(ProcessStepStatusType.ACTIVE.id)));
 
     List<WorkQueue> results = sqlCache.query("workQueue.getWorkQueues", params, WorkQueue.class);
     return results;
   }
 
-  public List<WorkQueueDetail> getWorkQueueDetails(Long workQueueTypeId, Long userPositionId, Boolean unassigned) {
+  public Page<WorkQueueDetail> getWorkQueueDetails(Long workQueueTypeId, Long userPositionId, Boolean unassigned, Pageable pageable) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueTypeId", workQueueTypeId);
@@ -59,10 +66,16 @@ public class WorkQueueService {
     params.put("companyId", user.getCompanyId());
     params.put("userPositionId", userPositionId);
     params.put("unassigned", null == unassigned ? false : unassigned);
-    params.put("processStepStatusTypeId", ProcessStepStatusType.ACTIVE.id);
+    //currently we only show active process steps. but sending in as a list in case that changes
+    params.put("processStepStatusTypeIds", new ArrayList<>(Arrays.asList(ProcessStepStatusType.ACTIVE.id)));
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
 
     List<WorkQueueDetail> results = sqlCache.query("workQueue.getProcessStepsByTypeId", params, new WorkQueueDetailMapper<>(WorkQueueDetail.class, om));
-    return results;
+    Integer count = sqlCache.queryForObject("workQueue.getProcessStepsByTypeIdCount", params, Integer.class);
+
+    Page<WorkQueueDetail> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    return page;
   }
 
   public List<WorkQueueOwner> getWorkQueueOwners() {
@@ -90,6 +103,10 @@ public class WorkQueueService {
       TypeReference<List<OwningPosition>> owningPositionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "owningPositions",
           new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
+
+      TypeReference<List<ProjectProcessStep>> activeProcessStepsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "activeProcessSteps",
+        new JsonCollectionDeserializer(activeProcessStepsRef, objectMapper));
 
     }
   }

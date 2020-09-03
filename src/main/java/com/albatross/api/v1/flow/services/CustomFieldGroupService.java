@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.CustomFieldGroupController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -103,6 +104,34 @@ public class CustomFieldGroupService {
     sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
   }
 
+  public void saveReadOnlyAndWhiteList(CustomField customField, Boolean savePositions) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.getId());
+    params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
+    params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
+
+    sqlCache.update("customFieldGroupAssignment.saveReadOnly", params);
+
+    if(!customField.getCustomFieldGroupAssignmentReadOnly()) {
+      // if field is not readonly archive any white listed positions for it
+      sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositions", params);
+    } else if(null != savePositions && savePositions) {
+      // if field IS read_only archive any white listed positions no longer in the body sent in
+      List<Long> positionIdsUsed = customField.getWhiteListedPositions().stream().map(WhiteListedPosition::getPositionId).collect(Collectors.toList());
+      params.put("positionIdsUsed", positionIdsUsed);
+      sqlCache.update("customFieldGroupAssignment.archiveWhiteListPositionsNoLongerUsed", params);
+
+      for(WhiteListedPosition wlp : customField.getWhiteListedPositions()) {
+        params.put("positionId", wlp.getPositionId());
+        //this insert checks if there is already a non-archived row with the same values
+        sqlCache.update("customFieldGroupAssignment.insertWhiteListPosition", params);
+      }
+    }
+
+  }
+
   public void updateFieldInGroup(CustomField customField) {
     User currentUser = securityService.getCurrentUser();
 
@@ -164,12 +193,14 @@ public class CustomFieldGroupService {
   }
 
   public CustomFieldGroup addCustomFieldGroup(CustomFieldGroup customFieldGroup, Long companyObjectTypeId) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("groupName", customFieldGroup.getGroupName());
     params.put("companyObjectTypeId", companyObjectTypeId);
-    params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("eventTypeId", customFieldGroup.getEventTypeId());
     params.put("processStepId", customFieldGroup.getProcessStepId());
+    params.put("createdById", user.getId());
 
     Long id = sqlCache.updateReturningId("customFieldGroup.insertCustomFieldGroup", params, "id").longValue();
     params.put("id", id);
@@ -202,20 +233,46 @@ public class CustomFieldGroupService {
     return cfg;
   }
 
-  public void deleteCustomFieldGroup(Long id) {
+  public List<FieldInUse> getFieldsInUse(Long processStepId, Long customFieldGroupId, Long customFieldGroupAssignmentId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
+    params.put("processStepId", processStepId);
+    params.put("customFieldGroupAssignmentId", customFieldGroupAssignmentId);
+    params.put("customFieldGroupId", customFieldGroupId);
+    List<FieldInUse> fields = sqlCache.query("customFieldGroup.checkForFieldsInUse", params, FieldInUse.class);
+    return fields;
+  }
 
-    sqlCache.update("customFieldGroup.deleteCustomFieldGroup", params);
+  public List<FieldInUse> deleteWithRequirementChecks(CustomFieldGroupController.DeleteWithRequirementParams requirementParams) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", user.getId());
 
-    processStepRequirementService.deleteRequirementIfUsingCustomFieldGroup(id);
+    List<FieldInUse> fields = getFieldsInUse(null, requirementParams.getCustomFieldGroupId(), requirementParams.getCustomFieldGroupAssignmentId());
+    if(!fields.isEmpty()) {
+      return fields;
+    } else if(null != requirementParams.getCustomFieldGroupAssignmentId()) {
+      //handle custom field group assignment stuff
+      params.put("id", requirementParams.getCustomFieldGroupAssignmentId());
+      sqlCache.update("customFieldGroupAssignment.deleteFieldFromGroup", params);
+      return null;
+    } else {
+      //if the field or a field in the field group is deleted, check if used in requirement and block if necessary
+      //this means they are deleting a custom field group not an assignment
+      params.put("id", requirementParams.getCustomFieldGroupId());
+      sqlCache.update("customFieldGroup.deleteCustomFieldGroup", params);
+      return null;
+    }
+
   }
 
   public CustomFieldGroup updateCustomFieldGroup(CustomFieldGroup customFieldGroup) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customFieldGroup.getId());
     params.put("groupOrder", customFieldGroup.getGroupOrder());
     params.put("groupName", customFieldGroup.getGroupName());
+    params.put("modifiedById", user.getId());
 
     sqlCache.update("customFieldGroup.updateCustomFieldGroup", params);
 
@@ -246,8 +303,10 @@ public class CustomFieldGroupService {
   }
 
   public void updateFieldShowOnInsert(CustomFieldObjectType customFieldObjectType) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", customFieldObjectType.getId());
+    params.put("modifiedById", user.getId());
     params.put("showOnInsert", customFieldObjectType.getShowOnInsert());
 
     sqlCache.update("customFieldGroup.updateFieldShowOnInsert", params);

@@ -166,20 +166,8 @@
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="Start Time"
+                @input="validateSaveEvent()"
               />
-<!--              <datetime-->
-<!--                  type="datetime"-->
-<!--                  v-model="selectedProject.start"-->
-<!--                  class="theme-datetime"-->
-<!--                  input-class="one-hunned map-field-input"-->
-<!--                  :zone="timezone.value"-->
-<!--                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"-->
-<!--                  :phrases="{ok: 'Ok', cancel: 'Close'}"-->
-<!--                  :hour-step="1"-->
-<!--                  :minute-step="15"-->
-<!--                  use12-hour-->
-<!--                  auto-->
-<!--              ></datetime>-->
               <div class="map-field-label mt-3">{{selectedProject.endFieldName || 'End Time'}}</div>
               <DatetimePickerInput
                 v-model="selectedProject.end"
@@ -188,35 +176,24 @@
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="End Time"
+                @input="validateSaveEvent()"
               />
-<!--              <datetime-->
-<!--                  type="datetime"-->
-<!--                  v-model="selectedProject.end"-->
-<!--                  input-class="one-hunned map-field-input"-->
-<!--                  class="theme-datetime"-->
-<!--                  :zone="timezone.value"-->
-<!--                  :format="{ year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }"-->
-<!--                  :phrases="{ok: 'Ok', cancel: 'Close'}"-->
-<!--                  :hour-step="1"-->
-<!--                  :minute-step="15"-->
-<!--                  use12-hour-->
-<!--                  auto-->
-<!--              ></datetime>-->
               <v-select v-model="selectedProject.resource"
                         :items="selectedProject.resources"
                         :label="selectedProject.resourceFieldName  || 'Resource'"
                         placeholder=" "
+                        return-object
                         item-text="name"
                         :readonly="selectedProject.resourceFieldReadOnly"
                         :disabled="selectedProject.resourceFieldReadOnly"
                         item-value="id"
                         class="mt-3"
+                        @input="validateSaveEvent()"
               />
               <v-btn color="primary"
                      class="white--text"
-                     :disabled="validateSaveEvent()"
+                     :disabled="saveInvalid"
                      @click="scheduleProject">Save</v-btn>
-<!--              <br/><br/>Hello: {{selectedProject}}-->
             </div>
           </v-card-text>
         </v-card>
@@ -294,6 +271,7 @@
         snackbar: {},
         showFilters: true,
         listLoading: false,
+        saveInvalid: true,
         timezone: this.$store.state.user.details.timezone.value,
         // showFilters: false,
         defaultZoom: 2.0,
@@ -362,6 +340,9 @@
           this.getProjectsSearchedFor(val);
         }
       },
+      selectedProject() {
+        this.validateSaveEvent()
+      },
       startTime () {
         // this.getProjects()
       },
@@ -381,10 +362,14 @@
     },
     methods: {
       validateSaveEvent () {
-        return !this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
-          || !this.selectedProject.resource || !this.selectedProject.resource.id  || (this.selectedProject.start >= this.selectedProject.end) ||
+        if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
+          || !this.selectedProject.resource || !this.selectedProject.resource.id || (this.selectedProject.start >= this.selectedProject.end) ||
           //if all 3 fields are read only, dont let them save
-          (this.selectedProject.startFieldReadOnly && this.selectedProject.endFieldReadOnly && this.selectedProject.resourceFieldReadOnly)
+          (this.selectedProject.startFieldReadOnly && this.selectedProject.endFieldReadOnly && this.selectedProject.resourceFieldReadOnly)) {
+          this.saveInvalid = true
+        } else {
+          this.saveInvalid = false
+        }
       },
       async scheduleProject() {
         this.selectedProject.resourceId = this.selectedProject.resource.id
@@ -404,7 +389,7 @@
       },
       goTo (ps, isProject, isProcessStep) {
         if (isProject) {
-          this.$router.push({name: 'projectOverview', params: {projectId: ps.projectId}})
+          this.$router.push({name: 'projectDetails', params: {projectId: ps.projectId}})
         } else if (isProcessStep) {
           this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}})
         }

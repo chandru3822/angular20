@@ -96,6 +96,17 @@ export const UserStore = {
         hasFeatureAccessLevel = featureMatch !== null && featureMatch !== undefined
       }
       return getters.isSystemAdmin(state.details.highestCompanyId) || hasFeatureAccessLevel
+    },
+    userHasPosition: (state, getters) => positionId => {
+      // this function returns true if the any of the user's positions match the id sent in
+      // or if the user is a system admin??? maybe take this out later?
+      return getters.isSystemAdmin(state.details.highestCompanyId) || state.details.userPositions?.some(p => p.positionId === positionId)
+    },
+    userHasAnyPosition: (state, getters) => positionIds => {
+      // this function returns true if the any of the user's positions match any of the ids sent in
+      return getters.isSystemAdmin(state.details.highestCompanyId) || state.details.userPositions?.some(p => {
+        return positionIds.includes(p.positionId)
+      })
     }
   }
 }

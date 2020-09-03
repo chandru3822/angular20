@@ -109,7 +109,7 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.startTime | formatDate(item.allDay ? 'date' : 'timestamp')}} - {{item.endTime | formatDate(item.allDay ? 'date' : 'timestamp')}}</td>
+              <td class="text-left">{{item.startTime | formatDate(item.allDay ? 'timestampAsDate' : 'timestamp')}} - {{item.endTime | formatDate(item.allDay ? 'timestampAsDate' : 'timestamp')}}</td>
               <td class="text-left">{{item.description}}</td>
               <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
               <td class="text-left">
@@ -158,6 +158,7 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby"
+  import moment from 'moment-timezone'
 
   export default {
     name: 'Appointments',
@@ -235,6 +236,12 @@
           this.saveErrorMsg = '* Appointment End must be after Appointment Start'
         } else {
           try {
+            if( appt.allDay) {
+              appt.startTime = moment(appt.startTime).startOf('day').utc().format()
+              appt.endTime = moment(appt.endTime).endOf('day').utc().format()
+            }
+
+
             let params = {
               orgId: this.orgId,
               userId: this.userId,
@@ -246,6 +253,7 @@
             if(!appt.id) {
               this.appointments.push(data)
             }
+            this.newAppt = {}
             this.appointments = orderBy(this.appointments, [s => s.startDate])
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {

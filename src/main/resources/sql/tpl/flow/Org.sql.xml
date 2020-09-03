@@ -118,6 +118,7 @@
   <org.getOrgFiltersForCompany><![CDATA[
     select of.id,
            of.org_level_id,
+           ol.level,
            ol.level_name,
            of.rank,
            ol.company_id,
@@ -173,12 +174,15 @@
            org_type_id,
            active_flag,
            ot.org_type,
-           ot.org_level_id
+           ot.org_level_id,
+           of.show_type
     from flow.org o
-             inner join flow.org_type ot on ot.id = o.org_type_id
+         inner join flow.org_type ot on ot.id = o.org_type_id
+         inner join flow.org_level ol on ol.id = ot.org_level_id
+         inner join flow.org_filter of on of.org_level_id = ol.id
     where o.company_id = :companyId
       and ot.org_level_id = :orgLevelId
-    order by o.org_name
+    order by o.org_name;
   ]]></org.getOrgsForLevel>
 
 </sql>

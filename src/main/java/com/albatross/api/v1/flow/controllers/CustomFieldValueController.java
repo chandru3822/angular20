@@ -1,8 +1,12 @@
 package com.albatross.api.v1.flow.controllers;
 
 
+import com.albatross.api.security.SecurityService;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
+import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +15,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -21,34 +29,155 @@ public class CustomFieldValueController {
 
   private final CustomFieldValueService customFieldValueService;
 
-  @GetMapping(value = "/contact", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getCustomFieldValues(@RequestParam Long primaryId) {
-    return customFieldValueService.getContactCustomValues(primaryId);
+  private final ProjectProcessStepService projectProcessStepService;
+
+  private final SecurityService securityService;
+
+  // gets for all types
+  @GetMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getCustomFieldValues(@PathVariable Long id) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.CONTACT.toString(), id);
   }
 
-  @GetMapping(value = "/org", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getOrgCustomValues(@RequestParam Long primaryId) {
-    return customFieldValueService.getOrgCustomValues(primaryId);
+  @GetMapping(value = "/org/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getOrgCustomValues(@PathVariable Long id) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.ORGANIZATION.toString(), id);
   }
 
-  @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CustomFieldGroup> getUserCustomValues(@RequestParam Long primaryId) {
-    return customFieldValueService.getUserCustomValues(primaryId);
+  @GetMapping(value = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> getUserCustomValues(@PathVariable Long id) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.USER.toString(), id);
   }
 
   @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectId(@PathVariable Long projectId) {
-    return new ResponseEntity<>(customFieldValueService.getProjectCustomValues(projectId), HttpStatus.OK);
+  public List<CustomFieldGroup> getFieldsByProjectId(@PathVariable Long projectId) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROJECT.toString(), projectId);
+  }
+
+  @GetMapping(value = "/project/{projectId}/processStep/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectProcessStepId(@PathVariable Long projectId,
+                                                                                @PathVariable Long projectProcessStepId) {
+    return new ResponseEntity<>(customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.PROCESS_STEP.textValue(), projectProcessStepId), HttpStatus.OK);
+  }
+
+  // updates for all object types
+  @PostMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> updateContactCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                      @PathVariable Long id) {
+      List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT.toString());
+
+      // grab all PPS where the updated fields are ancillary and perform auto triggers there
+      List<Long> cfgaIds = values.stream()
+          .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+          .collect(Collectors.toList());
+      if (!cfgaIds.isEmpty()) {
+          List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
+          for (Long ppsId : ppsIds) {
+              Instant start = Instant.now();
+              Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+              try {
+                  future.get();
+              } catch (Exception e) {
+                  log.error(e.getMessage());
+              }
+              Instant end = Instant.now();
+              log.info("");
+              log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+              log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+              log.info("");
+          }
+      }
+
+      return groups;
+  }
+
+  @PostMapping(value = "/org/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> updateOrgCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                                           @PathVariable Long id) {
+    return customFieldValueService.updateCustomFieldValues(values, id, ObjectType.ORGANIZATION.toString());
+  }
+
+  @PostMapping(value = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> updateUserCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                          @PathVariable Long id) {
+    return customFieldValueService.updateCustomFieldValues(values, id, ObjectType.USER.toString());
   }
 
   @PostMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CustomFieldGroup>> updateProjectCustomFieldValues(@RequestBody List<CustomFieldGroup> groups, @PathVariable Long projectId) {
-    return new ResponseEntity<>(customFieldValueService.updateProjectCustomFieldValues(projectId, groups), HttpStatus.OK);
+  public List<CustomFieldGroup> updateProjectCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                                                               @PathVariable Long projectId) {
+    List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectId, ObjectType.PROJECT.toString());
+
+      // grab all PPS where the updated fields are ancillary and perform auto triggers there
+      List<Long> cfgaIds = values.stream()
+          .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+          .collect(Collectors.toList());
+      if (!cfgaIds.isEmpty()) {
+          List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
+          for (Long ppsId : ppsIds) {
+              Instant start = Instant.now();
+              Future<Void> future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+              try {
+                  future.get();
+              } catch (Exception e) {
+                  log.error(e.getMessage());
+              }
+              Instant end = Instant.now();
+              log.info("");
+              log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+              log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+              log.info("");
+          }
+      }
+
+    return groups;
   }
 
-  @GetMapping(value = "/project/{projectId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectProcessStepId(@PathVariable Long projectId,
-                                                                                @RequestParam Long projectProcessStepId) {
-    return new ResponseEntity<>(customFieldValueService.getProjectProcessStepCustomValues(projectProcessStepId), HttpStatus.OK);
+  @PostMapping(value = "/project/{projectId}/processStep/{projectProcessStepId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CustomFieldGroup> updateProjectProcessStepCustomFieldValues(@RequestBody List<CustomFieldValue> values,
+                                                                          @PathVariable Long projectId,
+                                                                          @PathVariable Long projectProcessStepId) {
+    List<CustomFieldGroup> groups = customFieldValueService.updateCustomFieldValues(values, projectProcessStepId, ObjectType.PROCESS_STEP.textValue());
+
+    Instant start = Instant.now();
+    Future<Void> future = projectProcessStepService.performAutoTriggerActions(projectProcessStepId, securityService.getCurrentUserDetails());
+    try {
+        future.get();
+    } catch (Exception e) {
+        log.error(e.getMessage());
+    }
+    Instant end = Instant.now();
+    log.info("");
+    log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+    log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+    log.info("");
+
+
+    // grab all PPS where the updated fields are ancillary and perform auto triggers there
+    List<Long> cfgaIds = values.stream()
+        .map(CustomFieldValue::getCustomFieldGroupAssignmentId)
+        .collect(Collectors.toList());
+    if (!cfgaIds.isEmpty()) {
+        List<Long> ppsIds = projectProcessStepService.getIdsForAutoTriggerByCfgaIds(projectId, null, cfgaIds);
+        for (Long ppsId : ppsIds) {
+//            Don't re-check the ppsId we just previously did
+            if (!ppsId.equals(projectProcessStepId)) {
+                start = Instant.now();
+                future = projectProcessStepService.performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+                end = Instant.now();
+                log.info("");
+                log.info(String.format("*** DURATION MILLI: %s ***", Duration.between(start, end).toMillis()));
+                log.info(String.format("*** DURATIONS SECS: %s ***", Duration.between(start, end).toSeconds()));
+                log.info("");
+            }
+        }
+    }
+
+    return groups;
   }
 }

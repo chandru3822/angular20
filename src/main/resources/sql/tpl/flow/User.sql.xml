@@ -183,8 +183,8 @@
                    ) companies), '[]') as companies
       from flow."user" u
         inner join flow.user_company uc on uc.user_id = u.id
-        inner join flow.user_status_type ust on ust.user_id = u.id
-         inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.company_id = uc.company_id
+        left join flow.user_status_type ust on ust.user_id = u.id
+         left join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.company_id = uc.company_id
       where u.id = :id
         and uc.company_id = :companyId
         and uc.archived is not true
@@ -290,6 +290,7 @@
                                 p.position,
                                 up.position_id as "positionId",
                                 up.org_id as "orgId",
+                                o.org_name as "orgName",
                                 up.start_date as "startDate",
                                 up.end_date as "endDate",
                                 up.primary_flag as "primaryFlag",
@@ -303,6 +304,7 @@
                                  from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
                          FROM flow.user_position up
                             inner join flow.position p on p.id = up.position_id
+                            inner join flow.org o on o.id = up.org_id
                          WHERE up.user_id = u.id
                            and up.archived is not true
                            and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
@@ -313,6 +315,20 @@
       and uc.is_default = true
     limit 1
   ]]></user.findByUsernameIgnoreCase>
+
+  <user.findByUsernameOrEmailIgnoreCase><![CDATA[
+    select u.id,
+       u.first_name,
+       u.last_name,
+       u.password,
+       u.email,
+       u.username,
+       u.first_name || ' ' || u.last_name as full_name
+    from flow.user u
+    where lower(:usernameOrEmail::text) = lower(username)
+          OR lower(:usernameOrEmail::text) = lower(email)
+    limit 1
+  ]]></user.findByUsernameOrEmailIgnoreCase>
 
   <user.findUserById><![CDATA[
     select u.id,
@@ -363,14 +379,21 @@
       order by user_status_type
   ]]></user.getCompanyUserStatuses>
 
-  <user.saveUserStatus><![CDATA[
+  <user.updateUserStatus><![CDATA[
     update flow.user_status_type ust
-    set company_user_status_type_id = :companyUserStatusTypeId
+      set company_user_status_type_id = :companyUserStatusTypeId,
+          date_modified = now(),
+          modified_by_id = :currentUserId
     from flow.company_user_status_type cust
     where cust.id = ust.company_user_status_type_id
       and ust.user_id = :userId
       and cust.company_id = :companyId
-  ]]></user.saveUserStatus>
+  ]]></user.updateUserStatus>
+
+  <user.insertUserStatus><![CDATA[
+    insert into flow.user_status_type(user_id, company_user_status_type_id, created_by_id)
+    values (:userId, :companyUserStatusTypeId, :currentUserId)
+  ]]></user.insertUserStatus>
 
   <user.updateDefault><![CDATA[
       update flow.user_company
@@ -414,4 +437,32 @@
       where email ILIKE :email
       and case when :userId::int is not null then :userId::int != id else 1=1 end
   ]]></user.checkEmailExists>
+
+  <user.saveForgotPasswordFields><![CDATA[
+      update flow."user"
+      set uuid = :uuid,
+          expiry_date = :expiryDate
+      where id = :id
+  ]]></user.saveForgotPasswordFields>
+
+  <user.saveUserPassword><![CDATA[
+      update flow."user"
+      set password = :password
+      where id = :id
+  ]]></user.saveUserPassword>
+
+  <user.findByUserUuid><![CDATA[
+    select u.id,
+       u.first_name,
+       u.last_name,
+       u.password,
+       u.email,
+       u.username,
+       u.first_name || ' ' || u.last_name as full_name,
+       u.uuid,
+       u.expiry_date
+    from flow.user u
+    where u.uuid = :uuid
+    limit 1
+  ]]></user.findByUserUuid>
 </sql>

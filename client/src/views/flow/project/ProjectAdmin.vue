@@ -11,100 +11,25 @@
         </div>
       </v-col>
 
-      <v-col
-        cols="4"
-        class="lead-owner pb-2 text-right">
-        <div v-if="!displayChangeOwner">
-          <div v-if="project.owner && project.owner.userId">
-            <v-avatar
-              :tile="false"
-              :size="25"
-              color="grey lighten-4"
-              class="account-img mr-2"
-            >
-              <img name="accountImg" src="../../../assets/user_img_placeholder.png">
-            </v-avatar>
-            {{project.owner.fullName}}<br/>
-            {{project.owner.position}}
-          </div>
-        </div>
-        <div v-if="displayChangeOwner">
-          <v-autocomplete v-model="project.owner"
-                          :items="availableOwners"
-                          label="Select Owner"
-                          item-text="fullName"
-                          return-object
-                          autocomplete="off"
-                          @change="updateOwner"
-          >
-          </v-autocomplete>
-        </div>
-        <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
-          <span v-if="displayChangeOwner">cancel</span>
-          <span v-else-if="contact.owner && contact.owner.userId">change</span>
-          <span v-else>add owner</span>
-        </v-btn>
-      </v-col>
     </v-row>
   </v-col>
 
   <v-col cols="12">
 
     <v-col cols="12" class="text-left">
-      <router-link :to="`/project/${projectId}`">Back</router-link>
+      <router-link :to="`/project/${projectId}/details`">Back</router-link>
     </v-col>
 
     <v-col cols="12" class="text-left">
-      <v-menu
-        bottom
-        offset-y
-        :close-on-content-click="false"
-      >
 
-        <template #activator="{on}">
-          <v-btn class="project-admin-btn primary" v-on="on">
-            Add Process Step
-          </v-btn>
-        </template>
-
-        <v-card class="pa-5">
-          Select a process step
-          <v-select
-            v-model="selectedNewProjectProcessStep"
-            :items="process.processStepProcesses"
-            item-text="processStepName"
-            item-value="id"
-            label="Process Steps"
-            placeholder="Select one..."
-            return-object
-          />
-
-          Select a status
-          <v-select
-            v-model="selectedNewStatus"
-            :items="availableProcessStepStatuses"
-            item-text="processStepStatusType"
-            item-value="companyProcessStepStatusTypeId"
-            label="Status"
-            placeholder="Select one..."
-            return-object
-          />
-
-          Primary
-          <v-checkbox
-              v-model="selectedNewMain"
-          />
-
-          <v-btn
-            class="project-admin-btn primary"
-            :disabled="selectedNewProjectProcessStep === null || selectedNewStatus === null"
-            @click="createProjectProcessStep"
-          >
-            Create
-          </v-btn>
-        </v-card>
-      </v-menu>
-    </v-col>
+    <AddProcessStep
+        v-if="process.id"
+        :admin="true"
+        :project-id="projectId"
+        :process-id="process.id"
+        @step-added="getProjectProcessSteps"
+    />
+  </v-col>
 
     <v-col cols="12">
 
@@ -173,9 +98,10 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
 import { v4 as uuid } from 'uuid'
+import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
 export default {
   name: 'ProjectAdmin.vue',
@@ -187,13 +113,12 @@ export default {
       process: {},
       contact: {},
       snackbar: {},
+      displayDropdown: false,
       displayChangeOwner: false,
       availableOwners: [],
       availableProcessStepStatuses: [],
       isProjectProcessStepsLoading: false,
       selectedNewProjectProcessStep: null,
-      selectedNewStatus: null,
-      selectedNewMain: false,
       headers: [
         {text: 'ID', value: 'projectProcessStepId'},
         {text: 'Type', value: 'processStepName'},
@@ -207,7 +132,8 @@ export default {
     }
   },
   components: {
-    Snackbar
+    Snackbar,
+    AddProcessStep
   },
   async created () {
     this.getContact()
@@ -244,7 +170,11 @@ export default {
     },
     getProcess: async function () {
       try {
-        const {data} = await getRequest(`/processes/${this.project.processId}`)
+        const {data} = await getRequestWithParams(`/processes/${this.project.processId}`, {
+          params: {
+            projectId: this.projectId
+          }
+        })
         this.process = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')
@@ -296,6 +226,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, selectedStep.selectedProcessStepStatusType)
+        await this.getProjectProcessSteps()
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error updating process step status')
@@ -315,20 +246,16 @@ export default {
     createProjectProcessStep: async function () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        // Status is 1 (active) because current business logic says new project process steps must be active and primary
         const {data} = await postRequest(`/projectProcessStep/`, {
           projectId: this.projectId,
           processStepId: this.selectedNewProjectProcessStep.processStepId,
-          companyProcessStepStatusTypeId: this.selectedNewStatus.id,
-          main: this.selectedNewMain
+          companyProcessStepStatusTypeId: this.availableProcessStepStatuses.find(status => status.id === 1)?.processStepStatusTypeId,
+          main: true
         })
-
-        const newStep = {...data, selectedProcessStepStatusType: this.availableProcessStepStatuses.find(status => status.id === data.companyProcessStepStatusTypeId)}
-        this.projectProcessSteps.push(newStep)
         this.selectedNewProjectProcessStep = null
-        this.selectedNewStatus = null
-        this.selectedNewMain = false
-
         this.getProjectProcessSteps()
+        this.displayDropdown = false
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error creating new process step')

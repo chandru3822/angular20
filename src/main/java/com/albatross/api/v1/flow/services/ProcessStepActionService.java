@@ -37,9 +37,7 @@ public class ProcessStepActionService {
   ObjectMapper om;
 
   public List<ProcessStepAction> getActionsForStep(Long processStepId) {
-    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
     params.put("processStepId", processStepId);
     params.put("id", null);
     //@randa come back to this. i was annoyed to have to keep 2 queries up-to-date when they were basically doing the same thing. (single select by id, vs list select by process_step_id) but this requires both calls to pass in a null param, not sure i like this
@@ -54,21 +52,6 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.getId());
     params.put("actionId", actionId);
     sqlCache.update("processStepAction.deleteAction", params);
-  }
-
-  public void deleteLogicIfActionsUseRequirement(Long requirementId) {
-    User currentUser = securityService.getCurrentUser();
-    // this method is called when a requirement gets archived. if an action is using that requirement in its current logic we wipe out ALL current logic
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("requirementId", requirementId);
-    params.put("modifiedById", currentUser.getId());
-    List<ProcessStepAction> results = sqlCache.query("processStepAction.actionsUsingRequirement", params, ProcessStepAction.class);
-
-    for(ProcessStepAction action : results) {
-      //archive any current logic using that action id
-      params.put("id", action.getId());
-      sqlCache.update("processStepAction.archiveOldLogic", params);
-    }
   }
 
   public ProcessStepAction getActionById(Long id) {
@@ -104,6 +87,7 @@ public class ProcessStepActionService {
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
     params.put("modifiedById", currentUser.getId());
     params.put("id", action.getId());
+    params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
 
     Long id = sqlCache.updateReturningId("processStepAction.updateAction", params, "id").longValue();
 
@@ -157,6 +141,7 @@ public class ProcessStepActionService {
     params.put("createdById", currentUser.getId());
     params.put("processStepId", action.getProcessStepId());
     params.put("companyProcessStepStatusTypeId", action.getCompanyProcessStepStatusTypeId());
+    params.put("triggerAutomatically", action.getTriggerAutomatically() != null && action.getTriggerAutomatically());
 
     Long id = sqlCache.updateReturningId("processStepAction.insertAction", params, "id").longValue();
     return getActionById(id);
@@ -179,7 +164,7 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", child.getProcessStepId());
     params.put("processStepActionId", actionId);
-    params.put("triggerAutomatically", child.getTriggerAutomatically());
+    params.put("triggerAutomatically", child.getTriggerAutomatically() != null && child.getTriggerAutomatically());
     params.put("displayOrder", child.getDisplayOrder());
     params.put("createdById", currentUser.getId());
 
@@ -211,7 +196,7 @@ public class ProcessStepActionService {
     params.put("modifiedById", currentUser.getId());
     params.put("id", child.getId());
     params.put("displayOrder", child.getDisplayOrder());
-    params.put("triggerAutomatically", child.getTriggerAutomatically());
+    params.put("triggerAutomatically", child.getTriggerAutomatically() != null && child.getTriggerAutomatically());
     sqlCache.update("processStepAction.updateActionChildStep", params);
   }
 

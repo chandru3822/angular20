@@ -1,5 +1,5 @@
 <template>
-  <v-container class="app-container">
+  <v-container id="work-queue-drilldown-container">
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -12,9 +12,11 @@
             :headers="headers"
             :items="results"
             :fixed-header="true"
-            :items-per-page="-1"
-            hide-default-footer
             disable-sort
+            :loading="dataLoading"
+            :options.sync="options"
+            :server-items-length="totalItems"
+            :footer-props="footerProps"
             class="elevation-1 mt-1"
             @click:row="clickRow"
         >
@@ -36,6 +38,11 @@
                   <a @click="assignToUser(item)">Assign to me</a>
                 </v-btn>
               </td>
+              <td class="text-left">
+                <div v-for="aps in item.activeProcessSteps">
+                  {{ aps.processStepName }}
+                </div>
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -50,6 +57,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
+  import constants from '@/helpers/constants'
   import {getRequest, getRequestWithParams, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   export default {
@@ -60,31 +68,54 @@
     data() {
       return {
         snackbar: {},
+        constants,
+        dataLoading: true,
         workQueueTypeId: this.$route.params.id,
         userPositionId: this.$route.query.upId,
         unassigned: this.$route.query.unassigned,
         results: [],
+        totalItems: 0,
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
+        options: {
+          itemsPerPage: 100
+        },
         userPositions: this.$store.state.user.details.userPositions,
         headers: [
           { text: 'Project', value: 'projectName', show: true },
           { text: 'Process Step', value: 'processStepName', show: true },
           { text: 'Owner', value: 'owner', show: true },
+          { text: 'Active Process Steps', value: 'activeProcessSteps', show: true },
         ],
       }
     },
+    watch: {
+      options: {
+        handler () {
+          this.getWorkDetails()
+        },
+        deep: true,
+      },
+    },
     computed: {},
     async created() {
-      this.getWorkDetails()
     },
     methods: {
       async getWorkDetails() {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        const { page, itemsPerPage } = this.options
         try {
           const {data} = await getRequestWithParams(`/workQueue/${this.workQueueTypeId}`, { params: {
               userPositionId: this.userPositionId,
-              unassigned: this.unassigned
+              unassigned: this.unassigned,
+              page: page - 1,
+              size: itemsPerPage
             }})
-          this.results = data
+          this.results = data.content
+          this.totalItems = data.totalElements
+          this.dataLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -125,6 +156,13 @@
   }
 </script>
 
+<style lang="scss">
+  #work-queue-drilldown-container .v-data-table__wrapper {
+    height: calc(100vh - 200px);
+    min-height: 300px;
+  }
+</style>
+
 <style scoped lang="scss">
 
 .card-main {
@@ -144,5 +182,12 @@
   bottom: 0;
   right: 0;
   left: 0;
+}
+
+#work-queue-drilldown-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
 }
 </style>

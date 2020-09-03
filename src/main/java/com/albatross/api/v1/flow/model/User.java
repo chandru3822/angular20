@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -22,6 +24,8 @@ public class User {
     private List<FeatureAccessControl> featureAccess;
     private List<UserPosition> userPositions;
     private Boolean hasAccess;
+    private UUID uuid;
+    private Timestamp expiryDate;
 
     private List<UserOrgHierarchy> hierarchy;
 

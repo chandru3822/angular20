@@ -14,7 +14,7 @@ import java.util.List;
 public class CustomFieldValue {
 
   private Long id, contactId, customFieldGroupAssignmentId, customFieldGroupId,
-      customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId,
+      customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId, uniqueBehaviorTypeId,
       companySystemListId, projectProcessStepId, scheduleFieldTypeId, ancillaryCustomFieldGroupAssignmentId;
 
   private String fieldName, fieldValue, textValue, customFieldSqlKey;
@@ -23,10 +23,11 @@ public class CustomFieldValue {
   private List<Integer> intArrayValue;
 
   private BigDecimal numericValue;
-  private Boolean booleanValue, hasListValues, readonly;
+  private Boolean booleanValue, hasListValues, readonly, customFieldGroupAssignmentReadOnly;
 
   private Timestamp dateValue, timestampValue;
 
+  private List<WhiteListedPosition> whiteListedPositions;
   private List<ListOfValue> listOfValues;
   private List<Long> systemListOptionIds;
 

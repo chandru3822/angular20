@@ -43,4 +43,9 @@ public class InstallAgreementController {
   public List<InstallAgreementRepository.ProposalNumber> getProposalNumbers(@PathVariable Long projectId) {
       return installAgreementRepository.getProposalNumbers(projectId);
   }
+
+  @GetMapping(value = "/generate/{projectId}/{proposalNbr}")
+  public String generate(@PathVariable Long projectId, @PathVariable Long proposalNbr) {
+      return installAgreementRepository.generateLoanPal(projectId, proposalNbr);
+  }
 }

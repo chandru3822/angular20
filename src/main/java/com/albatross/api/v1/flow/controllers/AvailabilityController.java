@@ -1,14 +1,14 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.ResourceAppointment;
-import com.albatross.api.v1.flow.model.ResourceSchedule;
-import com.albatross.api.v1.flow.model.WorkDay;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.AvailabilityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -72,5 +72,18 @@ public class AvailabilityController {
   @DeleteMapping(value = "/appointment/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteAppointment(@PathVariable Long id) {
     availabilityService.deleteAppointment(id);
+  }
+
+  @GetMapping(value = "/timeSlots", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<TimeSlot> getTimeSlots(@RequestParam Long projectId,
+                                     @RequestParam String startTime,
+                                     @RequestParam String endTime,
+                                     @RequestParam String availableDate) {
+    return availabilityService.getTimeSlots(projectId, startTime, endTime, availableDate);
+  }
+
+  @PostMapping(value = "/setCloserAppointment", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Object> setCloserAppointment(@RequestBody CloserAppointmentRequest request) throws SQLException {
+    return availabilityService.setCloserAppointment(request);
   }
 }

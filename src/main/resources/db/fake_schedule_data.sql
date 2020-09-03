@@ -130,70 +130,70 @@
  -- this adds all day appointments + and - 8 weeks to get a full 3 month coverage without having to determine what week number we are on
     all_day_appointments_sub_8 as (
          insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                    (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '8 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '8 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                    (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' - '8 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' - '8 weeks'::interval), true, 'Test Data', 2350555 from users u)
              ),
          all_day_appointments_sub_7 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '7 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '7 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' - '7 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' - '7 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_sub_6 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '6 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '6 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' - '6 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' - '6 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_sub_5 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '5 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '5 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' - '5 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' - '5 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_sub_4 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '4 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '4 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' - '4 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' - '4 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_sub_3 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '3 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '3 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' - '3 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' - '3 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_sub_2 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '2 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '2 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' - '2 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' - '2 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_sub_1 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '1 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end - '1 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' - '1 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' - '1 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00'), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59'), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_add_1 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '1 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '1 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' + '1 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' + '1 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_add_2 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '2 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '2 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' + '2 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' + '2 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_add_3 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '3 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '3 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' + '3 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' + '3 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_add_4 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '4 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '4 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' + '4 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' + '4 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_add_5 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '5 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '5 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' + '5 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' + '5 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_add_6 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '6 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '6 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' + '6 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' + '6 weeks'::interval), true, 'Test Data', 2350555 from users u)
          ),
          all_day_appointments_add_7 as (
              insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '7 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '7 weeks'::interval), true, 'Test Data', 2350555 from users u)
+                 (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' + '7 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' + '7 weeks'::interval), true, 'Test Data', 2350555 from users u)
          )
          insert into flow.resource_appointment(company_id, user_id, start_time, end_time, all_day, description, created_by_id)
-            (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '8 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '8 weeks'::interval), true, 'Test Data', 2350555 from users u)
+            (select 3, u.id, (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '0 days'::interval else '1 days'::interval end + '06:00' + '8 weeks'::interval), (select date_trunc('week', now()::date) + case when u.id % 2 = 0 then '1 days'::interval else '2 days'::interval end + '05:59:59' + '8 weeks'::interval), true, 'Test Data', 2350555 from users u)
 ;
 
 -- insert postal code zone stuff
@@ -201,6 +201,8 @@ insert into flow.postal_code_zone(company_id, zone_name, created_by_id, distribu
 values (3, 'Scott Fakes It', 2350555, 5);
 insert into flow.postal_code(postal_code_zone_id, postal_code, created_by_id)
 values (1, '97006', 2350555);
+insert into flow.postal_code(postal_code_zone_id, postal_code, created_by_id)
+values (1, '84115', 2350555);
 -- mike falls
 insert into flow.postal_code_zone_user(postal_code_zone_id, user_id, created_by_id)
 values (1, 2353957, 2350555);
@@ -222,3 +224,9 @@ update flow.user_company
 set default_appointment_length = 90
 where user_id = 2390155
   and company_id = 3;
+
+
+-- reset the brsadmin password so mobile has a user to log in with
+update flow."user"
+set password = '$2a$10$SD380/.K.90kkNIPSDhim.uPhxaOcW6dW54Yd4MUI2mytO4zQTevm'
+where email = 'brsadmin@blueravensolar.com'

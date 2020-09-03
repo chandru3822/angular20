@@ -1,11 +1,9 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.CustomField;
-import com.albatross.api.v1.flow.model.CustomFieldGroup;
-import com.albatross.api.v1.flow.model.CustomFieldObjectType;
-import com.albatross.api.v1.flow.model.ScheduleFieldType;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.CustomFieldGroupService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -43,13 +41,13 @@ public class CustomFieldGroupController {
     customFieldGroupService.deleteFieldFromGroup(id);
   }
 
-  // to update just one:
-  @PutMapping(value = "/updateFieldInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateFieldInGroup(@RequestBody CustomField customField) {
-    customFieldGroupService.updateFieldInGroup(customField);
+  @PutMapping(value = "/saveReadOnlyAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateFieldInGroup(@RequestParam(required = false) Boolean savePositions,
+                                 @RequestBody CustomField customField) {
+    customFieldGroupService.saveReadOnlyAndWhiteList(customField, savePositions);
   }
 
-  // to update a list of them:
+  // to update a list of them - (currently used when updating field order):
   @PutMapping(value = "/updateFieldsInGroup", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateFieldsInGroup(@RequestBody List<CustomField> customFields) {
     customFieldGroupService.updateFieldsInGroup(customFields);
@@ -87,9 +85,14 @@ public class CustomFieldGroupController {
     return customFieldGroupService.addProcessStepCustomFieldGroup(customFieldGroup);
   }
 
-  @DeleteMapping(value = "/deleteCustomFieldGroup/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteCustomFieldGroup(@PathVariable Long id) {
-    customFieldGroupService.deleteCustomFieldGroup(id);
+  @Data
+  public static class DeleteWithRequirementParams {
+    private Long customFieldGroupId, customFieldGroupAssignmentId;
+  }
+
+  @PutMapping(value = "/deleteWithRequirementChecks", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<FieldInUse> deleteWithRequirementChecks(@RequestBody DeleteWithRequirementParams params) {
+    return customFieldGroupService.deleteWithRequirementChecks(params);
   }
 
   // to update just one:

@@ -62,6 +62,10 @@
                                         v-model="requestItem.email"
                                         disabled
                           ></v-text-field>
+
+                          <v-btn color="primaryButton" raised @click="openLoanpalApp()" class="white--text">
+                              LoanPal Application
+                          </v-btn>
                       </v-col>
                       <v-col>
                           <v-select label="Proposal Number"
@@ -213,15 +217,30 @@
                   return
               }
 
-              this.$store.commit(AppMutations.SET_LOADING, false)
               const {data} = await postRequest('/install-agreement/create', this.requestItem, 'blueraven')
               this.requestDialog = false;
+              this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('SUCCESS', 'Installation agreement request submitted')
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
               this.requestDialog = false;
               console.error('*** ERROR ***', e)
+          }
+      },
+      async openLoanpalApp() {
+          try {
+              if (!this.requestItem.proposal_nbr) {
+                  console.error('*** ERROR ***', 'Error: Unable to generate LonaPal application without Proposal Number')
+                  this.snackbar = getSnackbar('ERROR', 'Unable to generate LonaPal application without Proposal Number')
+                  return
+              }
+              const {data} = await getRequest('/install-agreement/generate/'+this.requestItem.project_id+'/'+this.requestItem.proposal_nbr, 'blueraven')
+              window.open(data);
+          } catch (e) {
+              this.$store.commit(AppMutations.SET_LOADING, false)
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error generating LoanPal Application')
           }
       }
     }

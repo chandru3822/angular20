@@ -121,7 +121,20 @@ public class UserService {
     return null != results && !results.isEmpty();
   }
 
-  public ResponseEntity saveUser(User user) {
+  public void saveForgotPasswordFields(User user, Boolean updatePassword) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", user.getId());
+    params.put("uuid", user.getUuid());
+    params.put("expiryDate", user.getExpiryDate());
+
+    sqlCache.update("user.saveForgotPasswordFields", params);
+    if(updatePassword) {
+      params.put("password", user.getPassword());
+      sqlCache.update("user.saveUserPassword", params);
+    }
+  }
+
+  public Optional<User> saveUser(User user) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("firstName", user.getFirstName());
@@ -137,7 +150,9 @@ public class UserService {
       params.put("modifiedById", currentUser.getId());
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
-      //todo: handle saving user_companies here as well
+      //save user status
+      saveUserStatus(true, id, user.getCompanyUserStatusTypeId());
+      //save user companies
       handleSavingUserCompanies(user.getCompanies(), user.getId());
     } else {
       //get the default password
@@ -146,7 +161,7 @@ public class UserService {
       Optional<Company> c = sqlCache.get("company.getById", p2, Company.class);
       params.put("createdById", currentUser.getId());
       String newPwd = null;
-      if(c.isPresent()) {
+      if(c.isPresent() && null != c.get().getDefaultPassword()) {
         newPwd = BCrypt.hashpw(c.get().getDefaultPassword(), BCrypt.gensalt(10));
       }
       params.put("defaultPassword", newPwd);
@@ -156,14 +171,16 @@ public class UserService {
       params.put("id", id);
       params.put("isDefault", true);
       sqlCache.update("user.insertUserCompany", params);
+      //insert a row into user_status
+      saveUserStatus(false, id, user.getCompanyUserStatusTypeId());
     }
 
-    handleSavingCustomFieldValues(user.getCustomFieldGroups(), id);
+
 
     return getUser(id);
   }
 
-  public ResponseEntity getUser(Long id) {
+  public Optional<User> getUser(Long id) {
     User currentUser = securityService.getCurrentUser();
     // using currentUser.companyId validates that the user requesting the info can actually access this user...i think
     HashMap<String, Object> params = new HashMap<>();
@@ -171,12 +188,7 @@ public class UserService {
     params.put("companyId", currentUser.getCompanyId());
     Optional<User> result = sqlCache.get("user.getOne", params, new UserMapper<>(User.class, om));
 
-
-    if(result.isEmpty()) {
-      return ResponseEntity.badRequest().body("Cannot Access User");
-    } else {
-      return ResponseEntity.ok(result);
-    }
+    return result;
   }
 
   public List<User> getSchedulingUsers(Long stateId, Boolean isSchedulingTool) {
@@ -193,12 +205,6 @@ public class UserService {
 
     List<User> results = sqlCache.query("user.getSchedulingUsers", params, new UserMapper<>(User.class, om));
     return results;
-  }
-
-
-  public Boolean fieldHasValue (CustomFieldValue cv) {
-    return null != cv.getDateValue() || null != cv.getTimestampValue() || null != cv.getBooleanValue() || null != cv.getTextValue()
-        || null != cv.getNumericValue() || null != cv.getIntValue() || null != cv.getIntArrayValue();
   }
 
   public void handleSavingUserCompanies(List<Company> companies, Long userId){
@@ -218,42 +224,20 @@ public class UserService {
     }
   }
 
-  public void handleSavingCustomFieldValues(List<CustomFieldGroup> groups, Long primaryId){
-    User currentUser = securityService.getCurrentUser();
-    for(CustomFieldGroup group : groups) {
-      for(CustomFieldValue cfv : group.getCustomFieldValues()){
-        //todo: only save if something changed
-        if(fieldHasValue(cfv)) {
-          HashMap<String, Object> params = new HashMap<>();
-          params.put("dateValue", cfv.getDateValue());
-          params.put("timestampValue", cfv.getTimestampValue());
-          params.put("booleanValue", cfv.getBooleanValue());
-          params.put("textValue", cfv.getTextValue());
-          params.put("numericValue", cfv.getNumericValue());
-          params.put("intValue", cfv.getIntValue());
-          params.put("intArrayValue", cfv.getIntArrayValue());
-          params.put("userId", primaryId);
-          params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-
-          if(null != cfv.getId()){
-            params.put("id", cfv.getId());
-            params.put("modifiedById", currentUser.getId());
-            sqlCache.update("customFieldValues.updateUserCustomFieldValue", params);
-          } else {
-            params.put("createdById", currentUser.getId());
-            sqlCache.update("customFieldValues.insertUserCustomFieldValue", params);
-          }
-        }
-      }
-    }
-  }
-
   public User findByUsernameIgnoreCase(String username, Long userId) {
     // i updated this to find by username or by userId so that we can call the same function on login AND on change context
     HashMap<String, Object> params = new HashMap<>();
     params.put("username", username);
     params.put("userId", userId);
     Optional<User> user = sqlCache.get("user.findByUsernameIgnoreCase", params, new UserMapper<>(User.class, om));
+    return user.orElse(null);
+  }
+
+  public User findByUsernameOrEmailIgnoreCase(String usernameOrEmail) {
+    // for forgot password they need to be able to enter username or email. this will find them either way
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("usernameOrEmail", usernameOrEmail);
+    Optional<User> user = sqlCache.get("user.findByUsernameOrEmailIgnoreCase", params, new UserMapper<>(User.class, om));
     return user.orElse(null);
   }
 
@@ -279,14 +263,19 @@ public class UserService {
     return results;
   }
 
-  public void saveUserStatus(Long userId, Long companyUserStatusTypeId) {
+  public void saveUserStatus(Boolean update, Long userId, Long companyUserStatusTypeId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
+    params.put("currentUserId", user.getId());
     params.put("userId", userId);
     params.put("companyUserStatusTypeId", companyUserStatusTypeId);
 
-    sqlCache.update("user.saveUserStatus", params);
+    if(update) {
+      sqlCache.update("user.updateUserStatus", params);
+    } else {
+      sqlCache.update("user.insertUserStatus", params);
+    }
   }
 
   public ResponseEntity changeContext(Long companyId) {
@@ -345,6 +334,23 @@ public class UserService {
     } else {
       return ResponseEntity.badRequest().body("No user found");
     }
+  }
+
+  public String updatePassword(PasswordResetRequest passwordResetRequest) {
+
+//    User user = findUserById(passwords.getUserId());
+//    String currentPwdHash = user.getPassword();
+//    if (!StringUtils.isEmpty(passwords.getCurrentPassword()) && !BCrypt.checkpw(passwords.getCurrentPassword(), currentPwdHash)) {
+//      return "{\"error\":\"Current password is incorrect\"}";
+//    }
+    String newPwd = BCrypt.hashpw(passwordResetRequest.getNewPassword(), BCrypt.gensalt(10));
+    User user = new User();
+    user.setPassword(newPwd);
+    user.setUuid(null);
+    user.setId(passwordResetRequest.getUserId());
+    user.setExpiryDate(null);
+    saveForgotPasswordFields(user, true);
+    return "{\"result\":\"Success\"}";
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

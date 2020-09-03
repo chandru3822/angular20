@@ -12,7 +12,7 @@
       inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
     where wqt.company_id = :companyId
       and wqt.archived is not true
-    order by wqc.display_order, wqt.display_order, wqt.work_queue_type
+    order by wqt.work_queue_type, display_order
   ]]></workQueueType.getTypesForCompany>
 
   <workQueueType.getType><![CDATA[
@@ -48,7 +48,79 @@
   ]]></workQueueType.updateType>
 
   <workQueueType.insertType><![CDATA[
-    insert into flow.work_queue_type(company_id, work_queue_type, created_by_id, work_queue_category_id)
-    values (:companyId, :workQueueType, :createdById, :workQueueCategoryId)
+    insert into flow.work_queue_type(company_id, work_queue_type, created_by_id, work_queue_category_id, display_order)
+    values (:companyId, :workQueueType, :createdById, :workQueueCategoryId, (select coalesce(max(display_order) + 1, 0) from flow.work_queue_type where work_queue_category_id = :workQueueCategoryId and archived is not true))
   ]]></workQueueType.insertType>
+
+  <workQueueType.getAvailableWorkQueueTypesForStep><![CDATA[
+    select wqt.*
+    from flow.work_queue_type wqt
+    where wqt.archived is not true
+      and wqt.company_id = :companyId
+      and not exists (
+            select process_step_id
+            from flow.process_step_work_queue_type pswqt
+            where pswqt.work_queue_type_id = wqt.id
+              and pswqt.process_step_id = :id
+              and archived is not true
+        )
+    order by wqt.work_queue_type
+  ]]></workQueueType.getAvailableWorkQueueTypesForStep>
+
+  <workQueueType.getProcessStepWorkQueueType><![CDATA[
+    SELECT pswqt.id,
+       pswqt.work_queue_type_id,
+       pswqt.created_by_id,
+       pswqt.process_step_id,
+       pswqt.modified_by_id,
+       wqt.work_queue_type,
+       pswqt.archived
+    FROM flow.process_step_work_queue_type pswqt
+             inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+    where pswqt.id = :id
+  ]]></workQueueType.getProcessStepWorkQueueType>
+
+  <workQueueType.insertProcessStepWorkQueueType><![CDATA[
+      insert into flow.process_step_work_queue_type (process_step_id, work_queue_type_id, created_by_id)
+        values (:processStepId, :workQueueTypeId, :createdById)
+  ]]></workQueueType.insertProcessStepWorkQueueType>
+
+  <workQueueType.deleteProcessStepWorkQueueType>
+    <![CDATA[
+        update flow.process_step_work_queue_type
+        set archived = true,
+          modified_by_id = :modifiedById,
+          date_modified = now()
+        where id = :id
+    ]]>
+  </workQueueType.deleteProcessStepWorkQueueType>
+
+  <workQueueType.insertProjectStatusType>
+    <![CDATA[
+      insert into flow.process_step_work_queue_type_project_status_type(company_project_status_type_id, process_step_work_queue_type_id, created_by_id)
+      values (:companyProjectStatusTypeId, :processStepWorkQueueTypeId, :userId)
+    ]]>
+  </workQueueType.insertProjectStatusType>
+
+  <workQueueType.updateProjectStatusType>
+    <![CDATA[
+      update flow.process_step_work_queue_type_project_status_type
+      set archived = true,
+          modified_by_id = :userId,
+          date_modified = now()
+      where id = :id
+    ]]>
+  </workQueueType.updateProjectStatusType>
+
+  <workQueueType.getProjectStatusesForWorkQueueType>
+    <![CDATA[
+      SELECT pswqtpst.id,
+       pswqtpst.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
+       pswqtpst.company_project_status_type_id as "companyProjectStatusTypeId",
+       pswqtpst.archived
+      FROM flow.process_step_work_queue_type_project_status_type pswqtpst
+      WHERE pswqtpst.process_step_work_queue_type_id = :processStepWorkQueueTypeId
+        AND pswqtpst.archived is not true
+    ]]>
+  </workQueueType.getProjectStatusesForWorkQueueType>
 </sql>

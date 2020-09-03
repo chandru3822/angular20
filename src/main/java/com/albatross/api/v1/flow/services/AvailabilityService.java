@@ -11,9 +11,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -28,14 +34,10 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AvailabilityService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
-
-  @Autowired
-  ObjectMapper om;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final DataSource dataSource;
+  private final ObjectMapper om;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -79,18 +81,22 @@ public class AvailabilityService {
     params.put("companyId", user.getCompanyId());
     params.put("orgId", ra.getOrgId());
     params.put("userId", ra.getUserId());
+    params.put("modifiedById", user.getId());
+    params.put("createdById", user.getId());
 
     Long id = null;
 
     if(null != ra.getId()) {
       id = ra.getId();
       params.put("id", id);
-      params.put("modifiedById", user.getId());
-//      todo
       sqlCache.update("availability.updateSchedule", params);
     } else {
-      params.put("createdById", user.getId());
       id = sqlCache.updateReturningId("availability.insertSchedule", params, "id").longValue();
+    }
+
+    if(null == ra.getEndDate()) {
+      params.put("id", id);
+      sqlCache.update("availability.updateScheduleWithoutEndDate", params);
     }
 
     // handle saving each day's working hours
@@ -225,6 +231,58 @@ public class AvailabilityService {
     sqlCache.update("availability.deleteAppointment", params);
   }
 
+  public List<TimeSlot> getTimeSlots(Long projectId, String startTime, String endTime, String availableDate) {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("startTime", startTime);
+    params.put("endTime", endTime);
+    params.put("availableDate", availableDate);
+
+    List<TimeSlot> results = sqlCache.query("availability.getTimeSlots", params, new TimeSlotMapper<>(TimeSlot.class, om));
+    return results;
+  }
+
+  public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws SQLException {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", request.getProjectId());
+    params.put("projectProcessStepId", request.getProjectProcessStepId());
+    params.put("startTime", request.getStartTime());
+    params.put("endTime", request.getEndTime());
+    params.put("appointmentTime", request.getAppointmentTime());
+    params.put("users", createSqlArrayOfType("int", request.getUsers()));
+
+
+    List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
+
+    if(!results.isEmpty()) {
+      if(null != results.get(0) && results.get(0).getSuccess()) {
+        return ResponseEntity.ok(results.get(0));
+      } else {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("Appointment no longer available. Please select another time.");
+      }
+    } else {
+      return ResponseEntity.badRequest().body("Unknown Error Occurred");
+    }
+    //todo: error handling
+    //todo: if successful return the full cfg/cfv stuff so we can display it
+//    if(appointmentSaved) {
+//      return ResponseEntity.ok("Appointment Saved");
+//    } else {
+//      return ResponseEntity.badRequest().body("Selected appointment is not available.");
+//    }
+  }
+
+  private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
+    if (array != null && !array.isEmpty()) {
+      try (Connection connection = dataSource.getConnection()) {
+        return connection.createArrayOf(typeName, array.toArray());
+      }
+    }
+    return null;
+  }
+
   public ResourceAppointment getOneResourceAppointment(Long id) {
     User user = securityService.getCurrentUser();
 
@@ -248,6 +306,22 @@ public class AvailabilityService {
       TypeReference<List<ResourceScheduleAvailability>> resourceScheduleAvailabilityRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "resourceScheduleAvailability",
         new JsonCollectionDeserializer(resourceScheduleAvailabilityRef, objectMapper));
+    }
+  }
+
+  public static class TimeSlotMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public TimeSlotMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Integer>> usersRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "users",
+        new JsonCollectionDeserializer(usersRef, objectMapper));
     }
   }
 
