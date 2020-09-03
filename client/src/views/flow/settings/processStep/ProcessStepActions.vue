@@ -261,7 +261,8 @@
                   </v-text-field>
                   <!-- single select for dropdown, custom sql list, or system list -->
                   <v-select
-                      v-else-if="item.customValue && item.listOfValueId"
+                      v-else-if="item.customValue && item.customField
+                            && ((item.customField.listOfValueId !== null || item.customField.customFieldSqlKey !== null || item.customField.companySystemListId !== null) && !item.customField.allowMultiple)"
                       v-model="item.listOfValueId"
                       :disabled="item.immutable"
                       :items="item.availableListOfValues"
@@ -290,7 +291,7 @@
                   ></v-select>
                   <!-- at this point it should only show for multiselects -->
                   <v-select
-                      v-else-if="item.customValue && item.listOfValues"
+                      v-else-if="item.customValue && item.customField && item.customField.allowMultiple"
                       v-model="item.listOfValues"
                       :disabled="item.immutable"
                       :items="item.availableListOfValues"

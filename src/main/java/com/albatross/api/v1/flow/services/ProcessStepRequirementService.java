@@ -180,6 +180,10 @@ public class ProcessStepRequirementService {
       bw.registerCustomEditor(Object.class, "dataTypeRequirement",
           new JsonCollectionDeserializer(dataTypeRequirementRef, objectMapper));
 
+      TypeReference<CustomField> customFieldRef = new TypeReference<>() {};
+      bw.registerCustomEditor(Object.class, "customField",
+        new JsonCollectionDeserializer(customFieldRef, objectMapper));
+
       TypeReference<ListOfValue> listOfValueRef = new TypeReference<>() {};
       bw.registerCustomEditor(Object.class, "listOfValue",
           new JsonCollectionDeserializer(listOfValueRef, objectMapper));
