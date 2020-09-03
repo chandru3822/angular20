@@ -399,7 +399,7 @@ export default {
           }
       },
     getReadOnly: function (field) {
-      return !this.closerApptOverride ? getCustomFieldReadOnly(this.$store, field) : this.closerApptSaved
+      return this?.processStep?.processStepStatusTypeId !== 1 || (!this.closerApptOverride ? getCustomFieldReadOnly(this.$store, field) : this.closerApptSaved)
     },
     handleActionCompleted () {
       this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
