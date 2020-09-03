@@ -1,5 +1,6 @@
 <template>
   <v-container class="">
+    {{localCustomFieldGroups}}
     <v-dialog
       v-model="deleteError"
     >

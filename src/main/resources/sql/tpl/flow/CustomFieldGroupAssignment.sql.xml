@@ -226,7 +226,7 @@
 
   <customFieldGroupAssignment.addFieldToGroup><![CDATA[
     insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, schedule_field_type_id)
-    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, (select max(field_order) + 1 from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, :scheduleFieldTypeId)
+    values (:customFieldGroupId, :customFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, :scheduleFieldTypeId)
   ]]></customFieldGroupAssignment.addFieldToGroup>
 
   <customFieldGroupAssignment.moveFieldToOtherGroup><![CDATA[
