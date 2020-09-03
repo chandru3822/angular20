@@ -96,7 +96,7 @@
         <v-row>
           <v-col cols="12">
             <v-data-table
-                v-if="showTable"
+                :key="componentKey"
                 :headers="headers"
                 :items="filterCustomFieldGroups()"
                 :items-per-page="-1"
@@ -416,7 +416,8 @@
     props: {
       customFieldGroups: Array,
     },
-    mounted() {
+    updated() {
+      // this had to be in updated vs mounted so that after the re-render the dragging still works
       let table = document.querySelector('.process-step-cfg-table tbody')
       const _self = this
       Sortable.create(table, {
@@ -448,7 +449,7 @@
     data() {
       return {
         snackbar: {},
-        showTable: true,
+        componentKey: 0,
         deleteError: false,
         deleteHeader: null,
         deleteText: null,
@@ -764,11 +765,8 @@
             await putRequest(`/customFieldGroup/updateCustomFieldGroups`, rows)
             this.localCustomFieldGroups = orderBy(this.localCustomFieldGroups, 'groupOrder')
             this.snackbar = getSnackbar('SUCCESS', 'Group Order Saved')
-            // ok ok i know this is a bad hack but i couldn't get draggable row sorting to work and keep the expanded item in the correct index without this!!!! dont hate
-            this.showTable = false
-            this.$nextTick(() => {
-              this.showTable = true
-            })
+            // this componentKey forces the data-table component to re-render
+            this.componentKey += 1
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
