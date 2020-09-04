@@ -57,6 +57,21 @@ BEGIN
                                                      where cf.id = 392 -- this is the id of the ahj custom field in flow
                                                        and pcfv.project_id = p_project_id ) -- this is the project id
                                          and bcf.id = p_brs_ahj_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
+        when lower(trim(p_brs_ahj_table)) = 'utility' then
+            -- gets the selected value for the ahj UTILITY custom field
+            return (select coalesce( ( select lov.name = p_expected_value
+                                         from brs.ahj_utility au
+                                         inner join brs.custom_field_value cfv on cfv.source_id = au.id
+                                         inner join brs.custom_field_group_assignment bcfga on bcfga.id = cfv.custom_field_group_assignment_id
+                                         inner join brs.custom_field bcf on bcf.id = bcfga.custom_field_id
+                                         inner join brs.list_of_value lov on lov.id = cfv.int_value
+                                         where au.id = (select int_value
+                                                        from flow.project_custom_field_value pcfv
+                                                                 inner join flow.custom_field_group_assignment cfga on cfga.id = pcfv.custom_field_group_assignment_id
+                                                                 inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                                        where cf.id = 592 -- this is the id of the ahj UTILITY custom field in flow
+                                                          and pcfv.project_id = p_project_id ) -- this is the project id
+                                             and bcf.id = p_brs_ahj_cf_id ), false) as result);  -- this is the brs.custom_field.id for whichever field you want
         else return null;
     end case;
 END
