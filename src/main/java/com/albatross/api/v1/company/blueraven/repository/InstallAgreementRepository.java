@@ -102,7 +102,7 @@ public class InstallAgreementRepository {
         }
 
         log.info("IARQ: create PandaDoc? {}; project {}", createPandaDoc, projectId);
-        if (createPandaDoc) {
+        if (createPandaDoc && (request.getSend_installation_agreement() || request.getIsSpanish())) {
             pandaDocService.createDocument(projectId, request.getProposal_nbr(), request.getIsSpanish());
         }
     } catch (Exception e) {

@@ -74,11 +74,14 @@
                                         item-text="proposalNbr"
                                         item-value="proposalNbr"
                           ></v-select>
+                          <v-checkbox label="Send English Installation Agreement"
+                                      v-model="requestItem.send_installation_agreement"
+                          ></v-checkbox>
+                          <v-checkbox label="Send Spanish Installation Agreement"
+                                      v-model="requestItem.isSpanish"
+                          ></v-checkbox>
                           <v-checkbox label="Send Loan Docs (LoanPal Only)"
                                       v-model="requestItem.send_loanpal_docs"
-                          ></v-checkbox>
-                          <v-checkbox label="Spanish Installation Agreement"
-                                      v-model="requestItem.isSpanish"
                           ></v-checkbox>
                       </v-col>
                   </v-row>
@@ -134,6 +137,7 @@
           proposal_nbr: '',
           proposal_nbrs: [],
           send_loanpal_docs: true,
+          send_installation_agreement: false,
           isSpanish: false,
           project_id: ''
       },
