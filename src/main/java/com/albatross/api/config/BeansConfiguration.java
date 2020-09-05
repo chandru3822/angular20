@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Slf4j
 @Configuration
@@ -20,6 +21,7 @@ public class BeansConfiguration {
     private String secretKey;
 
     @Bean
+    @Primary
     public AmazonS3 s3Client() {
         AWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
         AmazonS3 awsClientBuilder = AmazonS3ClientBuilder

@@ -33,11 +33,12 @@ public class ProcessController {
     }
 
     @GetMapping(value = "/{processId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Process> getProcess(@PathVariable Long processId) {
+    public ResponseEntity<Process> getProcess(@PathVariable Long processId,
+                                              @RequestParam(required = false) Long projectId) {
       User user = securityService.getCurrentUser();
-        return processService.getProcess(user.getCompanyId(), processId)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+      return processService.getProcess(user.getCompanyId(), processId, projectId)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping(value = "/{processId}")
@@ -70,8 +71,9 @@ public class ProcessController {
     }
 
   @GetMapping(value = "/{processId}/nonAdminProcessStepsForProcess", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStep> nonAdminProcessStepsForProcess(@PathVariable Long processId) {
-    return processService.nonAdminProcessStepsForProcess(processId);
+  public List<ProcessStep> nonAdminProcessStepsForProcess(@PathVariable Long processId,
+                                                          @RequestParam(required = false) Long projectId) {
+    return processService.nonAdminProcessStepsForProcess(processId, projectId);
   }
 
     @PostMapping(value = "/{processId}/processStep", produces = MediaType.APPLICATION_JSON_VALUE)

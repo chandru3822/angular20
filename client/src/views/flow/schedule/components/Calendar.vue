@@ -720,7 +720,8 @@
       handleEventClick (info) {
         if(info.event.title) {
           let props = info.event.extendedProps
-          this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
+          this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}?processStepId=${props.processStepId}&contactId=${props.contactId}`})
+          // this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
         }
       },
       handleEventRender (info) {

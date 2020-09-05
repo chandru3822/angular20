@@ -40,6 +40,7 @@
                                     lv.date_modified as "dateModified",
                                     lv.created_by_id as "createdById",
                                     lv.modified_by_id as "modifiedById",
+                                    lv.display_order as "displayOrder",
                                     lv.archived
                              from flow.list_of_value lv
                              where lv.parent_id = cf.list_of_value_id
@@ -163,7 +164,7 @@
 
   <customField.insertListOfValue><![CDATA[
     insert into flow.list_of_value(name, parent_id, date_created, created_by_id, display_order)
-    values (:name, :parentId, now(), :createdById, :displayOrder)
+    values (:name, :parentId, now(), :createdById, (select coalesce(max(display_order) + 1, 0) from flow.list_of_value where parent_id = :parentId and archived is not true))
   ]]></customField.insertListOfValue>
 
   <customField.updateListOfValue><![CDATA[

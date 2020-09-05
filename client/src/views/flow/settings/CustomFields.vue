@@ -477,6 +477,7 @@
 
           const {data} = await postRequest(`/customField`, object)
           data.companyDataType = this.dataTypes.find(dt => dt.id === data.companyDataTypeId)
+          this.$set(object, 'listOfValues', data.listOfValues)
 
           this.expanded = []
           // if it was a new field, reset the first index, then push it to both arrays

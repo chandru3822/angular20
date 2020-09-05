@@ -13,8 +13,9 @@
       </v-col>
     </v-row>
 
-    <v-row id="setter-dash-tabs" class="mb-2" :style="{'padding-top': showDashboard ? '60px' : ''}"
-           justify="center" no-gutters>
+    <v-row id="setter-dash-tabs" class="mb-2" justify="center" no-gutters
+           :class="{'dashboard-tab-max-width': showDashboard, 'funnel-tab-max-width': !showDashboard}"
+           :style="{'padding-top': showDashboard ? '60px' : ''}">
       <v-col cols="12">
         <span class="clickable" :class="{'font-weight-bold': showDashboard}" @click="switchTabs(1)">
           Dashboard
@@ -377,17 +378,341 @@
     <!-- RANKING TABLES SECTION END -->
     <!---------------------------------- DASHBOARD TAB END ---------------------------------->
 
+    <!---------------------------------- FUNNEL TAB START ---------------------------------->
+    <!-- FUNNEL -->
+    <div v-show="showFunnel" id="pipeline-container"
+         :class="{'mb-8': funnelStats.length > 0}">
+      <div class="pipeline-header-container">
+        <div id="pipeline-header-top">
+          <v-icon class="pipeline-icon">mdi-poll</v-icon>
+          <div class="pipeline-title">Pipeline</div>
+        </div>
+
+        <!-- PIPELINE CONTROLS -->
+        <div id="pipeline-header-controls">
+          <!-- VIEW BUTTONS -->
+          <div id="pipeline-header-left-side">
+            <v-radio-group v-model="viewSelect">
+              <v-radio label="Standard View" value="standard" class="funnel-radio-btn"
+                       @click="viewSelected('standard')"
+                       :class="{'white--text': viewSelect === 'standard'}"
+                       :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
+              </v-radio>
+              <v-radio label="Cohort View" value="cohort" class="funnel-radio-btn"
+                       @click="viewSelected('cohort')"
+                       :class="{'white--text': viewSelect === 'cohort'}"
+                       :color="viewSelect === 'cohort' ? 'primaryCustom' : 'secondaryCustom'">
+              </v-radio>
+            </v-radio-group>
+          </div>
+
+          <!-- DROPDOWNS -->
+          <div id="pipeline-header-right-side">
+            <v-select class="pipeline-dropdown"
+                      v-model="districtModel"
+                      :items="districtData"
+                      label="District"
+                      solo
+                      multiple
+                      dense>
+              <template v-slot:prepend-item>
+                <v-list-item ripple @click="toggle">
+                  <v-list-item-action>
+                    <v-icon :color="districtModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+              <template v-slot:append-item>
+                <v-divider class="mb-2"></v-divider>
+                <v-list-item disabled>
+                  <v-list-item-content>
+                    <v-list-item-title>{{ districtModel.length }} districts selected</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </v-select>
+
+            <v-select class="pipeline-dropdown"
+                      v-model="regionModel"
+                      :items="regionData"
+                      label="Region"
+                      solo
+                      multiple
+                      dense>
+              <template v-slot:prepend-item>
+                <v-list-item ripple @click="toggle">
+                  <v-list-item-action>
+                    <v-icon :color="regionModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+              <template v-slot:append-item>
+                <v-divider class="mb-2"></v-divider>
+                <v-list-item disabled>
+                  <v-list-item-content>
+                    <v-list-item-title>{{ regionModel.length }} regions selected</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </v-select>
+
+            <v-select class="pipeline-dropdown"
+                      v-model="officeModel"
+                      :items="officeData"
+                      label="Office"
+                      solo
+                      multiple
+                      dense>
+              <template v-slot:prepend-item>
+                <v-list-item ripple @click="toggle">
+                  <v-list-item-action>
+                    <v-icon :color="officeModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+              <template v-slot:append-item>
+                <v-divider class="mb-2"></v-divider>
+                <v-list-item disabled>
+                  <v-list-item-content>
+                    <v-list-item-title>{{ officeModel.length }} offices selected</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </v-select>
+
+            <v-select class="pipeline-dropdown"
+                      v-model="repModel"
+                      :items="repData"
+                      label="Rep"
+                      solo
+                      multiple
+                      dense>
+              <template v-slot:prepend-item>
+                <v-list-item ripple @click="toggle">
+                  <v-list-item-action>
+                    <v-icon :color="repModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Select All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
+              <template v-slot:append-item>
+                <v-divider class="mb-2"></v-divider>
+                <v-list-item disabled>
+                  <v-list-item-content>
+                    <v-list-item-title>{{ repModel.length }} reps selected</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </v-select>
+
+            <v-btn id="all-reps-btn" @click="funnelAllReps">All Reps</v-btn>
+          </div>
+        </div>
+      </div>
+
+      <!-- FUNNEL -->
+      <div class="funnel-container">
+        <div v-show="funnelStats.length > 0" id="funnel-background"></div>
+        <table class="funnel-table">
+          <!-- FUNNEL COLUMN HEADERS -->
+          <tr class="funnel-tr">
+            <th class="funnel-th">EXPECTATION</th>
+            <th class="funnel-th"></th>
+            <th class="funnel-th">TODAY</th>
+            <th class="funnel-th">LAST 7 DAYS</th>
+            <th class="funnel-th">LAST 30 DAYS</th>
+            <th class="funnel-th">
+              <div v-show="showPipelineCustomDates" class="custom-dates-container">
+                <v-menu v-model="pipeline_menu1" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
+                  <template v-slot:activator="{ on }">
+                    <v-text-field class="custom-date-input" v-model="pipeline_dt1_formatted" readonly
+                                  outlined dense v-on="on"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="pipeline_dt1"
+                                 @input="updatePipelineCalendar()"></v-date-picker>
+                </v-menu>
+                <span class="custom-date-span">-</span>
+                <v-menu v-model="pipeline_menu2" transition="scale-transition" offset-y
+                        min-width="290px" :close-on-content-click="false">
+                  <template v-slot:activator="{ on }">
+                    <v-text-field class="custom-date-input" v-model="pipeline_dt2_formatted" readonly
+                                  outlined dense v-on="on"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="pipeline_dt2"
+                                 @input="updatePipelineCalendar()"></v-date-picker>
+                </v-menu>
+              </div>
+
+              <v-menu v-model="customDateSelectorIsOpen"
+                      :close-on-content-click="true"
+                      transition="scale-transition"
+                      offset-y>
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on" class="custom-dates-btn">
+                    {{ pipelineDateRange.label }}<v-icon>mdi-menu-down</v-icon>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item v-for="(dateRange, index) in pipelineDateRanges"
+                               :key="index"
+                               @click="choosePipelineDateRange(dateRange)">
+                    <v-list-item-title>{{ dateRange.label }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </th>
+          </tr>
+          <!-- FUNNEL ROWS -->
+          <tr class="funnel-tr" :class="{'blue-sub-row': [3,2].indexOf(line.id) !== -1}"
+              v-for="(line, index) in funnelStats" :key="line.id">
+            <td v-if="showExpectationInput(index)" id="expectation-input"
+                class="funnel-td funnel-expectation">
+              <v-text-field @change="expectationChanged(this)"
+                            v-model="expectedInstalls"
+                            solo
+                            dense>
+              </v-text-field>
+            </td>
+
+            <!-- FUNNEL EXPECTATION -->
+            <td v-if="!showExpectationInput(index)" class="funnel-td funnel-expectation">
+              {{line.expectation}}
+            </td>
+
+            <!-- FUNNEL NAME -->
+            <td class="funnel-td funnel-line-name">{{line.name}}</td>
+
+            <!-- TODAY COUNT -->
+            <td class="funnel-td" style="cursor: pointer"
+                @click="drillDown(line.id, 'yesterday', line.name)">
+              <div class="dash_cell_contents funnel_data">
+                <div class="funnel_count" :style="{color: line.countTodayState}"
+                     :title="line.todayHover">
+                  {{line.today_day_count}}{{line.id === 4 ? '%' : ''}}
+                </div>
+
+                <div class="desktop funnel_percent">
+                  <span style="font-size:12px;font-weight:normal;"
+                        :style="{color: line.percentTodayState}"
+                        :title="line.percentTodayHover">
+                    {{line.percentToday}}
+                  </span>
+                </div>
+
+                <div :class="line.percentTodayState + '_arrow'" class="desktop funnel_arrow"></div>
+              </div>
+            </td>
+
+            <!-- LAST 7 DAYS COUNT -->
+            <td class="funnel-td" style="cursor: pointer"
+                @click="drillDown(line.id, '7days', line.name)">
+              <div class="dash_cell_contents funnel_data">
+                <div class="funnel_count" :style="{color: line.count7state}"
+                     :title="line.sevenDayHover">
+                  {{line.seven_day_count}}{{line.id === 4 ? '%' : ''}}
+                </div>
+
+                <div class="desktop funnel_percent">
+                  <span style="font-size:12px;font-weight:normal;"
+                        :style="{color: line.percent7state}"
+                        :title="line.percent7hover">
+                    {{line.percent7}}
+                  </span>
+                </div>
+
+                <div :class="line.percent7state + '_arrow'" class="desktop funnel_arrow"></div>
+              </div>
+            </td>
+
+            <!-- LAST 30 DAYS COUNT -->
+            <td class="funnel-td" style="cursor: pointer"
+                @click="drillDown(line.id, '30days', line.name)">
+              <div class="dash_cell_contents funnel_data">
+                <div class="funnel_count" :style="{color: line.count30state}"
+                     :title="line.thirtyDayHover">
+                  {{line.thirty_day_count}}{{line.id === 4 ? '%' : ''}}
+                </div>
+
+                <div class="desktop funnel_percent">
+                  <span style="font-size:12px;font-weight:normal;"
+                        :style="{color: line.percent30state}"
+                        :title="line.percent30hover">
+                    {{line.percent30}}
+                  </span>
+                </div>
+
+                <div :class="line.percent30state + '_arrow'" class="desktop funnel_arrow"></div>
+              </div>
+            </td>
+
+            <!-- CUSTOM DATE RANGE COUNT -->
+            <td v-show="!showCustomPercentage"
+                class="funnel-td"
+                :style="{color: line.customCountState}"
+                style="width:15%; cursor: pointer"
+                :title="line.customDayHover"
+                @click="drillDown(line.id, 'custom', line.name)">
+              {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
+            </td>
+
+            <td v-show="showCustomPercentage"
+                class="funnel-td"
+                :style="{color: line.customCountState}"
+                style="width: 15%; cursor: pointer"
+                @click="drillDown(line.id, 'custom', line.name)">
+              <div class="dash_cell_contents funnel_data">
+                <div class="funnel_count" :style="{color: line.count30state}"
+                     :title="line.customDayHover">
+                  {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
+                </div>
+
+                <div class="desktop funnel_percent">
+                  <span style="font-size:12px;font-weight:normal"
+                        :style="{color: line.percentCustomState}"
+                        :title="line.percentCustomHover">
+                    {{line.percentCustom}}
+                  </span>
+                </div>
+
+                <div :class="line.percentCustomState + '_arrow'" class="desktop funnel_arrow"
+                     :title="line.percentCustomHover"></div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <!----------------------------------- PIPELINE TAB END ----------------------------------->
+
     <Snackbar :snackbar="snackbar"></Snackbar>
   </v-container>
 </template>
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
+  import orderBy from 'lodash.orderby'
   import $ from 'jquery'
   import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
   import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
+  import { getDistricts, getRegions, getOffices, getReps } from '@/services/dashboardService'
 
   export default {
     name: 'setterDashboard',
@@ -449,7 +774,84 @@
       userOfficeId: null,
       userRow: [],
       userRowIndex: -1,
-      numOffices: 0
+      numOffices: 0,
+      districtModel: [],
+      districtData: [],
+      checkAllDistricts: false,
+      regionModel: [],
+      regionData: [],
+      checkAllRegions: false,
+      officeModel: [],
+      officeData: [],
+      checkAllOffices: false,
+      repModel: [],
+      repData: [],
+      checkAllReps: false,
+      pipelineDateRanges: [
+        {
+          label: 'Yesterday',
+          value: 'yesterday'
+        },
+        {
+          label: 'Last Week',
+          value: 'previousWeek'
+        },
+        {
+          label: 'Last Month',
+          value: 'previousMonth'
+        },
+        {
+          label: 'Last 90 days',
+          value: 90
+        },
+        {
+          label: 'Week to Date',
+          value: 'WTD'
+        },
+        {
+          label: 'Month to Date',
+          value: 'MTD'
+        },
+        {
+          label: 'Quarter to Date',
+          value: 'QTD'
+        },
+        {
+          label: 'Year to Date',
+          value: 'YTD'
+        },
+        {
+          label: 'Custom',
+          value: 'Custom'
+        }
+      ],
+      pipelineDateRange: {
+        label: 'Week to Date',
+        value: 'WTD'
+      },
+      showPipelineCustomDates: false,
+      customDateSelectorIsOpen: false,
+      viewSelect: 'standard',
+      pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
+      pipeline_dt1_formatted: moment().startOf('month').format('M/D/YY'),
+      pipeline_menu1: false,
+      pipeline_dt2: moment().format('YYYY-MM-DD'),
+      pipeline_dt2_formatted: moment().format('M/D/YY'),
+      pipeline_menu2: false,
+      showCustomPercentage: false,
+      expectedInstalls: 1,
+      expectationTimeout: 0,
+      funnelStats: [
+        {id: 3, name: 'Appointments Created', ratio: 4.17, expectation: 4.17, display_order: 1, today_day_count: 0, yesterday_day_count: 0, today_percent: 0, seven_day_count: 992, prev_seven_day_count: 1526, seven_percent: -35.00, thirty_day_count: 4644, prev_thirty_day_count: 4639, thirty_day_percent: 0.00, custom_date_range_count: 0},
+        {id: 1, name: 'Appointments Occurred', ratio: 1.67,expectation: 1.67,display_order: 2,today_day_count: 127,yesterday_day_count: 8,today_percent: 1488.00,seven_day_count: 1310,prev_seven_day_count: 1493,seven_percent: -12.00,thirty_day_count: 4836,prev_thirty_day_count: 4638,thirty_day_percent: 4.00,custom_date_range_count: 127},
+        {id: 2,name:  'Appointments Pitched',ratio: 1.00,expectation: 1.00,display_order: 3,today_day_count: 1,yesterday_day_count: 0,today_percent: 0,seven_day_count: 507,prev_seven_day_count: 866,seven_percent: -41.00,thirty_day_count: 2546,prev_thirty_day_count: 2463,thirty_day_percent: 3.00,custom_date_range_count: 1}
+      ],
+      funnelDrilldownTitle: '',
+      funnelDrilldownHeaders: [],
+      funnelDrilldownData: [],
+      funnelDrilldownSearch: '',
+      filteredFunnelDrilldownData: [],
+      funnelDrilldownRowCount: 0
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -458,6 +860,20 @@
       is_q4 () { return this.currentQuarter === 4 },
       milestoneDrilldownTitle () {
         return this.$store.state.user.details.firstName + ' ' + this.$store.state.user.details.lastName + ' | Pitches - Q' + this.selectedQuarter
+      },
+      allDistrictsSelected () {
+        return this.districtModel.length === this.districtData.length
+      },
+      someDistrictsSelected () {
+        return this.districtModel.length > 0 && !this.allDistrictsSelected
+      },
+      icon () {
+        if (this.allDistrictsSelected) return 'mdi-close-box'
+        if (this.someDistrictsSelected) return 'mdi-minus-box'
+        return 'mdi-checkbox-blank-outline'
+      },
+      visibleFunnelDrilldownHeaders () {
+        return this.funnelDrilldownHeaders.filter(header => header.show === true)
       }
     },
     watch: {
@@ -466,6 +882,15 @@
         if (!this.ironmanLoaded || !this.performanceDataLoaded || !this.rankingTablesLoaded) {
           this.$store.commit(AppMutations.SET_LOADING, true)
         }
+      },
+      pipeline_dt1 () {
+        this.pipeline_dt1_formatted = this.formatFunnelDate(this.pipeline_dt1)
+      },
+      pipeline_dt2 () {
+        this.pipeline_dt2_formatted = this.formatFunnelDate(this.pipeline_dt2)
+      },
+      funnelDrilldownDialog () {
+        this.funnelDrilldownSearch = ''
       }
     },
     methods: {
@@ -1001,11 +1426,249 @@
           this.rankingTablesLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      }
+      },
       /* RANKING TABLES-RELATED CODE END */
 
       /* FUNNEL-RELATED CODE START */
+      getPercentColor (percent) {
+        if (percent < 0) return 'red'
+        return 'green'
+      },
 
+      getPercentHover (percent, dayNum) {
+        let state = ''
+        if (percent < 0) state = 'worse'
+        else if (percent > 0) state = 'better'
+        else return ''
+        let previousTime = 'last ' + dayNum + ' days'
+        if (dayNum === 1) {
+          previousTime = 'yesterday'
+        }
+        return '% ' + state + ' than ' + previousTime
+      },
+
+      getCountHover (count, expectation) {
+        return count < expectation
+          ? 'Worse than Expectation'
+          : 'Better than Expectation'
+      },
+
+      funnelAllReps () {
+        this.repModel = [
+          {id: -1, label: 'All Reps'}
+        ]
+
+        this.repData = [
+          {id: -1, label: 'All Reps'}
+        ]
+
+        this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2)
+      },
+
+      pipelineLoad (start, end) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        let reps = this.repModel.map(rep => rep.id)
+        let orgs = this.officeModel.map(org => org.id)
+
+        if (!reps || reps.length === 0) {
+          this.funnelStats = []
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          return
+        }
+
+        const params = {
+          users: reps,
+          orgs: orgs,
+          start: moment(start).format('YYYY-MM-DD'),
+          end: moment(end).format('YYYY-MM-DD')
+        }
+
+        getRequestWithParams('/setterDashboard/funnel/' + this.viewSelect, {params}, 'blueraven').then(res => {
+          this.funnelStats = orderBy(res.data, row => row.display_order)
+        })
+      },
+
+      toggle () {
+        this.$nextTick(() => {
+          if (this.allDistrictsSelected) {
+            this.districtModel = []
+          } else {
+            this.districtModel = this.districtData.slice()
+          }
+        })
+      },
+
+      showExpectationInput (index) {
+        if (this.viewSelect === 'standard' && this.funnelStats.length - 1 === index) {
+          return true
+        }
+        if (this.viewSelect === 'cohort' && this.funnelStats.length - 2 === index) {
+          return true
+        }
+        return false
+      },
+
+      choosePipelineDateRange (dateRange) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        if (this.showPipelineCustomDates) {
+          this.showPipelineCustomDates = false
+          this.fixFunnelTopMargin()
+        }
+
+        this.pipelineDateRange = dateRange
+
+        switch (dateRange.value) {
+          case 'yesterday':
+            this.yesterday()
+            break
+          case 'WTD':
+            this.weekToDate()
+            break
+          case 'MTD':
+            this.monthToDate()
+            break
+          case 'QTD':
+            this.quarterToDate()
+            break
+          case 'YTD':
+            this.yearToDate()
+            break
+          case 'lastMonth':
+            this.lastMonth()
+            break
+          case 'lastWeek':
+            this.lastWeek()
+            break
+          case 'Custom':
+            this.showPipelineCustomDates = true
+            this.fixFunnelTopMargin()
+            this.$store.commit(AppMutations.SET_LOADING, false)
+            break
+          default:
+            this.previousNumberOfDays(dateRange.value)
+            break
+        }
+      },
+
+      updateInstalls (installs) {
+        this.expectedInstalls = installs
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+      },
+
+      updatePipelineCalendar (showCustom) {
+        this.showCustomPercentage = showCustom
+        this.pipeline_menu1 = false
+        this.pipeline_menu2 = false
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+      },
+
+      yesterday () {
+        this.pipeline_dt1 = moment().subtract(1, 'd').toDate()
+        this.pipeline_dt2 = moment().subtract(1, 'd').toDate()
+        this.updatePipelineCalendar(true)
+      },
+
+      weekToDate () {
+        this.timeFrame = 'WTD'
+        this.pipeline_dt1 = moment().startOf('isoWeek').toDate()
+        this.pipeline_dt2 = moment().toDate()
+        this.updatePipelineCalendar(true)
+      },
+
+      monthToDate () {
+        this.timeFrame = 'MTD'
+        this.pipeline_dt1 = moment().startOf('month').toDate()
+        this.pipeline_dt2 = moment().toDate()
+        this.updatePipelineCalendar(true)
+      },
+
+      quarterToDate () {
+        this.timeFrame = 'QTD'
+        let quarter = moment().quarter()
+        this.pipeline_dt1 = moment().startOf('year').quarter(quarter).toDate()
+        this.pipeline_dt2 = moment().toDate()
+        this.updatePipelineCalendar(true)
+      },
+
+      yearToDate () {
+        this.timeFrame = 'NTF'
+        this.pipeline_dt1 = moment().startOf('year').toDate()
+        this.pipeline_dt2 = moment().toDate()
+        this.updatePipelineCalendar()
+      },
+
+      lastMonth () {
+        this.timeFrame = 'LAST_MONTH'
+        this.pipeline_dt1 = moment().subtract(1, 'month').startOf('month').toDate()
+        this.pipeline_dt2 = moment().subtract(1, 'month').endOf('month').toDate()
+        this.updatePipelineCalendar(true)
+      },
+
+      lastWeek () {
+        this.timeFrame = 'LAST_WEEK'
+        this.pipeline_dt1 = moment().subtract(1, 'week').startOf('week').add(1, 'day').toDate()
+        this.pipeline_dt2 = moment().subtract(1, 'week').endOf('week').add(1, 'day').toDate()
+        this.updatePipelineCalendar(true)
+      },
+
+      previousNumberOfDays (days) {
+        this.timeFrame = 'NTF'
+        this.pipeline_dt1 = moment().subtract(days, 'days').toDate()
+        this.pipeline_dt2 = moment().subtract(1, 'days').toDate()
+        this.updatePipelineCalendar()
+      },
+
+      expectationChanged () {
+        clearTimeout(this.expectationTimeout)
+        let expectedInstalls = this.expectedInstalls
+        if (!/^(\d+|\d*(\.\d+){1})$/.test(expectedInstalls)) return
+        this.expectationTimeout = setTimeout(function () {
+          this.expectedInstalls = expectedInstalls
+          this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+        }, 500)
+      },
+
+      viewSelected (view) {
+        if (this.viewSelect !== view) {
+          this.viewSelect = view
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2)
+        }
+      },
+
+      fixFunnelTopMargin () {
+        if (this.showPipelineCustomDates) {
+          if (window.innerWidth >= 737 && window.innerWidth < 1070) {
+            $('#funnel-background').css('margin-top', '80px')
+          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('#funnel-background').css('margin-top', '82px')
+          } else if (window.innerWidth >= 1135) {
+            $('#funnel-background').css('margin-top', '84px')
+          }
+        } else {
+          if (window.innerWidth >= 737) {
+            $('#funnel-background').css('margin-top', '63px')
+          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('#funnel-background').css('margin-top', '63px')
+          } else if (window.innerWidth >= 1135) {
+            $('#funnel-background').css('margin-top', '69px')
+          }
+        }
+      },
+
+      formatFunnelDate (date) {
+        if (!date) return null
+
+        return moment(date).format('M/D/YY')
+      },
+
+      parseFunnelDate (date) {
+        if (!date) return null
+
+        return moment(date, 'M/D/YY').format('YYYY-MM-DD')
+      }
       /* FUNNEL-RELATED CODE END */
     },
     created () {
@@ -1023,9 +1686,10 @@
     mounted () {
       $(window).bind('resize', this.checkWindowWidth)
       this.checkWindowWidth()
+      $(window).bind('resize', this.fixFunnelTopMargin)
     },
     beforeDestroy () {
-      $(window).unbind('resize', this.checkWindowWidth)
+      $(window).unbind('resize')
     }
   }
 </script>
@@ -1645,6 +2309,257 @@
     border-radius: 50%;
   }
 
+  #funnel-background {
+    display: none;
+  }
+
+  #pipeline-container {
+    background-color: #fff;
+    box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
+    width: 100%;
+
+    .pipeline-header-container {
+      display: flex;
+      flex-flow: column nowrap;
+      border-bottom: 1px solid var(--v-primaryCustom-base);
+      width: 100%;
+
+      #pipeline-header-top {
+        display: flex;
+        flex-flow: row nowrap;
+        text-align: left;
+        border-bottom: 1px solid var(--v-primaryCustom-base);
+        padding: 5px;
+
+        .pipeline-icon {
+          color: var(--v-primaryText-base) !important;
+          font-size: 24px;
+        }
+
+        .pipeline-title {
+          font-size: 18px;
+          font-weight: bold;
+          color: var(--v-primaryCustom-base);
+          margin-left: 8px;
+        }
+      }
+
+      #pipeline-header-controls {
+        display: flex;
+        flex-flow: row wrap;
+        padding: 3px 5px;
+        width: 100%;
+
+        #pipeline-header-left-side {
+          display: flex;
+          flex-flow: row nowrap;
+          align-items: center;
+
+          .v-input {
+            padding-top: 0;
+            margin-top: 0;
+
+            ::v-deep {
+              .v-input__slot {
+                margin-bottom: 0;
+              }
+
+              .v-input--radio-group__input {
+                display: flex;
+                flex-flow: row nowrap;
+              }
+            }
+          }
+
+          .funnel-radio-btn {
+            margin: 3px 13px 3px 0;
+
+            ::v-deep {
+              .v-input--selection-controls__input {
+                transform: scale(0.75);
+                transform-origin: left;
+                margin-right: -3px;
+              }
+
+              .v-label {
+                font-size: 10px;
+              }
+            }
+          }
+
+          ::v-deep .v-messages {
+            display: none !important;
+          }
+        }
+
+        #pipeline-header-right-side {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: flex-start;
+          align-items: center;
+
+          .pipeline-dropdown {
+            transform: scale(0.875);
+            transform-origin: left;
+            margin: 2px 0;
+            max-width: 100px;
+
+            ::v-deep {
+              .v-input__slot {
+                margin: 0;
+              }
+
+              label {
+                color: #888 !important;
+                font-size: 10px;
+              }
+
+              i {
+                color: #888 !important;
+                font-size: 16px;
+              }
+
+              .v-text-field__details {
+                display: none;
+              }
+            }
+          }
+
+          #all-reps-btn {
+            text-transform: capitalize;
+            font-size: 10px;
+            margin: 2px;
+            width: 87px;
+            height: 33px;
+          }
+        }
+      }
+    }
+
+    .funnel-container {
+      position: relative;
+
+      .funnel-table {
+        border-collapse: collapse;
+        width: 100%;
+
+        .blue-sub-row {
+          background-color: #e9f2ff;
+        }
+
+        .custom-dates-container {
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: center;
+          align-items: center;
+          margin: 2px auto 0 auto;
+
+          .custom-date-input {
+            font-size: 8px;
+            margin-bottom: 2px;
+            max-width: 40px;
+            height: 12px;
+
+            ::v-deep {
+              .v-input__control {
+                max-width: 40px;
+                height: 14px;
+              }
+
+              .v-input__slot {
+                padding: 0;
+                width: 40px;
+                height: 12px;
+                min-height: 12px;
+              }
+
+              .v-text-field__slot input {
+                text-align: center;
+              }
+
+              .v-text-field__details {
+                display: none;
+              }
+            }
+          }
+
+          .custom-date-span {
+            font-size: 8px;
+            margin: 0 2px 3px 2px;
+          }
+        }
+
+        .funnel-th {
+          color: var(--v-primaryCustom-base);
+          font-size: 8px;
+          font-weight: normal;
+          text-align: center;
+          padding: 2px;
+
+          .custom-dates-btn {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 7px;
+            text-transform: capitalize;
+            padding: 4px 3px;
+            margin: 4px auto;
+            width: 100%;
+            min-width: 40px;
+            max-width: 70px;
+            height: 20px;
+
+            .v-icon {
+              font-size: 12px;
+              margin-left: 0;
+            }
+          }
+        }
+
+        .funnel-expectation {
+          width: 150px;
+        }
+
+        .funnel-line-name {
+          cursor: default !important;
+          position: relative;
+          z-index: 7;
+          height: 38px;
+        }
+
+        #expectation-input {
+          .v-input {
+            transform: scale(0.75);
+            transform-origin: center;
+            font-size: 10px;
+            margin: 0 auto;
+            max-width: 50px;
+
+            ::v-deep {
+              .v-input__slot {
+                margin-bottom: 0;
+              }
+
+              input {
+                text-align: center;
+              }
+
+              .v-text-field__details,
+              .v-messages {
+                display: none;
+              }
+            }
+          }
+        }
+
+        .funnel-td {
+          font-size: 7px;
+        }
+      }
+    }
+  }
+
   @media (min-width: 500px) {
     #progress-bar-container {
       span {
@@ -1678,11 +2593,15 @@
 
     #setter-dash-tabs {
       margin: 0 auto;
-      max-width: calc(100% - 50px);
 
       .col-12 span {
         font-size: 12px;
       }
+    }
+
+    .dashboard-tab-max-width,
+    .funnel-tab-max-width {
+      max-width: calc(100% - 50px);
     }
 
     #ironman-component {
@@ -1932,6 +2851,165 @@
       max-width: 250px;
       height: 30px;
     }
+
+    #funnel-background {
+      display: block;
+      position: absolute;
+      z-index: 200;
+      border-top-style: solid;
+      border-top-color: rgba(0, 110, 200, 0.05);
+      border-top-width: 120px;
+      border-right: 20px solid transparent;
+      border-left: 20px solid transparent;
+      margin-top: 63px;
+      margin-left: 110px;
+      width: 170px;
+      height: 0;
+    }
+
+    #pipeline-container {
+      margin: 0 auto;
+      max-width: calc(100% - 50px);
+
+      .pipeline-header-container {
+        border-bottom: 2px solid var(--v-primaryCustom-base);
+
+        #pipeline-header-top {
+          border-bottom: 2px solid var(--v-primaryCustom-base);
+          padding: 10px;
+
+          .pipeline-icon {
+            font-size: 32px;
+          }
+
+          .pipeline-title {
+            font-size: 24px;
+            margin-left: 10px;
+          }
+        }
+
+        #pipeline-header-controls {
+          #pipeline-header-left-side {
+            .v-input ::v-deep .v-input--radio-group__input {
+              flex-flow: column nowrap;
+            }
+
+            .funnel-radio-btn {
+              ::v-deep {
+                .v-input--selection-controls__input {
+                  transform: scale(0.8);
+                  margin-right: 0;
+                }
+
+                .v-label {
+                  font-size: 12px;
+                }
+              }
+            }
+          }
+
+          #pipeline-header-right-side {
+            flex-flow: row nowrap;
+            margin-bottom: 0;
+
+            .pipeline-dropdown {
+              transform: none;
+              margin: 3px;
+
+              ::v-deep {
+                label {
+                  font-size: 12px;
+                }
+
+                i {
+                  font-size: 20px;
+                }
+              }
+            }
+
+            #all-reps-btn {
+              font-size: 12px;
+              margin: 3px;
+              width: 100px;
+              height: 38px;
+            }
+          }
+        }
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .custom-dates-container {
+            flex-flow: row nowrap;
+            margin: 0 auto;
+
+            .custom-date-input {
+              font-size: 10px;
+              margin-bottom: 1px;
+              max-width: 45px;
+              height: 16px;
+
+              ::v-deep {
+                .v-input__control {
+                  max-width: 45px;
+                  height: 16px;
+                }
+
+                .v-input__slot {
+                  width: 45px;
+                  height: 16px;
+                  min-height: 16px;
+                }
+              }
+            }
+
+            .custom-date-span {
+              font-size: 12px;
+              margin: 0 3px;
+            }
+          }
+
+          .funnel-th {
+            font-size: 12px;
+            padding: 8px;
+
+            .custom-dates-btn {
+              font-size: 10px;
+              padding: 5px 5px 5px 8px;
+              margin: 4px auto;
+              min-width: 60px;
+              max-width: 100px;
+              height: 38px;
+
+              .v-icon {
+                font-size: 16px;
+              }
+            }
+          }
+
+          .funnel-expectation {
+            width: 120px;
+          }
+
+          .funnel-line-name {
+            width: 150px;
+            height: 40px;
+          }
+
+          #expectation-input {
+            .v-input {
+              transform: scale(0.8);
+              font-size: 15px;
+              max-width: 70px;
+            }
+          }
+
+          .funnel-td {
+            font-size: 12px;
+          }
+        }
+      }
+    }
   }
 
   @media (min-width: 1070px) {
@@ -2081,10 +3159,143 @@
     .ranking-tables-no-data {
       font-size: 12px;
     }
+
+    #funnel-background {
+      border-top-width: 180px;
+      border-right: 80px solid transparent;
+      border-left: 80px solid transparent;
+      margin-top: 63px;
+      margin-left: 140px;
+      width: 320px;
+    }
+
+    #pipeline-container {
+      .pipeline-header-container {
+        #pipeline-header-top {
+          .pipeline-icon {
+            font-size: 35px;
+          }
+
+          .pipeline-title {
+            margin-left: 15px;
+          }
+        }
+
+        #pipeline-header-controls {
+          padding: 5px 10px;
+
+          #pipeline-header-left-side {
+            .funnel-radio-btn {
+              ::v-deep {
+                .v-input--selection-controls__input {
+                  transform: none;
+                  margin-right: 4px;
+                }
+
+                .v-label {
+                  font-size: 14px;
+                }
+              }
+            }
+          }
+
+          #pipeline-header-right-side {
+            .pipeline-dropdown {
+              margin: 5px;
+
+              ::v-deep {
+                label {
+                  font-size: 14px;
+                }
+
+                i {
+                  font-size: 24px;
+                }
+              }
+            }
+
+            #all-reps-btn {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+
+      .funnel-container {
+        .funnel-table {
+          .custom-dates-container {
+            .custom-date-input {
+              font-size: 12px;
+              max-width: 55px;
+              height: 18px;
+
+              ::v-deep {
+                .v-input__control {
+                  max-width: 55px;
+                  height: 18px;
+                }
+
+                .v-input__slot {
+                  width: 55px;
+                  height: 18px;
+                  min-height: 18px;
+                }
+              }
+            }
+
+            .custom-date-span {
+              font-size: 13px;
+              margin: 0 5px;
+            }
+          }
+
+          .funnel-th {
+            font-size: 14px;
+            padding: 10px;
+
+            .custom-dates-btn {
+              font-size: 12px;
+              padding: 8px 10px;
+              margin: 5px auto 0 auto;
+              min-width: 80px;
+              max-width: 125px;
+
+              .v-icon {
+                font-size: 20px;
+              }
+            }
+          }
+
+          .funnel-expectation {
+            width: 150px;
+          }
+
+          .funnel-line-name {
+            width: 300px;
+          }
+
+          #expectation-input {
+            .v-input {
+              transform: none;
+              font-size: 14px;
+              max-width: 80px;
+            }
+          }
+
+          .funnel-td {
+            font-size: 14px;
+            height: 60px;
+          }
+        }
+      }
+    }
   }
 
   @media (min-width: 1135px) {
-    #setter-dash-tabs,
+    .dashboard-tab-max-width {
+      max-width: 1130px;
+    }
+
     #ironman-component {
       max-width: 1130px;
     }
@@ -2113,6 +3324,57 @@
 
     #setter-ranking-tables-section {
       max-width: 1130px;
+    }
+
+    #funnel-background {
+      width: 370px;
+    }
+
+    #pipeline-container {
+      .funnel-container {
+        .funnel-table {
+          .custom-dates-container {
+            .custom-date-input {
+              max-width: 60px;
+              height: 20px;
+
+              ::v-deep {
+                .v-input__control {
+                  max-width: 60px;
+                  height: 20px;
+                }
+
+                .v-input__slot {
+                  width: 60px;
+                  height: 20px;
+                  min-height: 20px;
+                }
+              }
+            }
+
+            .custom-date-span {
+              font-size: 14px;
+              margin: 0 10px;
+            }
+          }
+
+          .funnel-th {
+            .custom-dates-btn {
+              font-size: 14px;
+              min-width: 100px;
+              max-width: 143px;
+            }
+          }
+
+          .funnel-expectation {
+            width: 150px;
+          }
+
+          .funnel-line-name {
+            width: 350px;
+          }
+        }
+      }
     }
   }
 </style>

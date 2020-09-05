@@ -254,9 +254,9 @@
 
           this.snackbar = getSnackbar('SUCCESS', 'Work Queue Type Added')
 
-          // add it to the records already on the screen
+          // add it to the master list too
+          this.masterWorkQueueTypes.push(data)
           this.workQueueTypes.push(data)
-          this.workQueueTypes = orderBy(this.workQueueTypes, [wt => wt.workQueueType.toLowerCase()])
 
           // reset the new process fields
           this.addNew = false

@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class WorkQueueTypeProjectStatus {
 
-    private Long id, projectStatusTypeId, processStepWorkQueueTypeId;
+    private Long id, companyProjectStatusTypeId, processStepWorkQueueTypeId;
 
     private String projectStatusType;
 

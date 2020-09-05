@@ -79,7 +79,7 @@ public class UserController {
     @PostMapping(value = "/{userId}/status/{companyUserStatusTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void saveUserStatus(@PathVariable Long userId,
                                @PathVariable Long companyUserStatusTypeId) {
-        userService.saveUserStatus(userId, companyUserStatusTypeId);
+        userService.saveUserStatus(true, userId, companyUserStatusTypeId);
     }
 
     @PostMapping(value = "/changeContext/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

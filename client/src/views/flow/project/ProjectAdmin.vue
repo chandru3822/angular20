@@ -98,7 +98,7 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {getRequest, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
+import {getRequest, getRequestWithParams, postRequest, putRequest, deleteRequest, getSnackbar, logError} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
 import { v4 as uuid } from 'uuid'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
@@ -170,7 +170,11 @@ export default {
     },
     getProcess: async function () {
       try {
-        const {data} = await getRequest(`/processes/${this.project.processId}`)
+        const {data} = await getRequestWithParams(`/processes/${this.project.processId}`, {
+          params: {
+            projectId: this.projectId
+          }
+        })
         this.process = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')

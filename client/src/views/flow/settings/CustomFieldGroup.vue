@@ -558,8 +558,6 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newGroup.companyObjectTypeId = this.$route.params.id
-        // setting groupOrder to 0, then they can sort later
-        this.newGroup.groupOrder = 0
         const {data} = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup)
         this.newGroup = {}
         this.addNew = false
@@ -577,10 +575,9 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.addField = false
-        this.newField.fieldOrder = 0
         this.newField.customFieldGroupId = item.id
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, this.newField)
-        item.customFields.unshift(data)
+        item.customFields.push(data)
         this.newField = {}
         this.selectedAncillaryField = {}
         this.parent = {}
@@ -613,11 +610,10 @@ export default {
         const params = {
           customFieldGroupId: item.id,
           id: null,
-          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
-          fieldOrder: 0
+          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId
         }
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
-        item.customFields.unshift(data)
+        item.customFields.push(data)
         this.newField = {}
         this.selectedAncillaryField = {}
         this.parent = {}
@@ -633,10 +629,6 @@ export default {
     async saveGroupChanges (groups) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        // debugger
-        // groups.forEach((g, idx) => {
-        //   g.groupOrder = idx
-        // })
         await putRequest(`/customFieldGroup/updateCustomFieldGroups`, groups)
         this.snackbar = getSnackbar('SUCCESS', 'Groups Updated')
         this.$store.commit(AppMutations.SET_LOADING, false)

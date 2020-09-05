@@ -75,7 +75,7 @@
         <v-btn text x-small class="change-owner-button" @click="changeOwner = !changeOwner">
           <span v-if="changeOwner">cancel</span>
           <span v-else-if="contact.owner && contact.owner.userId">change</span>
-          <span v-else>add owner</span>
+          <span v-else style="font-size: 15px;">add owner</span>
         </v-btn>
       </v-col>
       <v-col cols="2" class="contact-owner pb-2">

@@ -17,6 +17,14 @@
     where pps.id = :projectProcessStepId
   ]]></project.getProjectIdByProjectProcessStepId>
 
+
+  <project.getCompanyId><![CDATA[
+    select cp.company_id
+    from flow.project p
+        inner join flow.company_process cp on cp.id = p.company_process_id
+    where p.id = :projectId
+  ]]></project.getCompanyId>
+
   <project.search><![CDATA[
     select
       p.id,
@@ -42,10 +50,12 @@
     inner join flow.process pr on pr.id = cp.process_id
     inner join flow.status_type st on st.id = cp.status_type_id
     inner join flow.contact c on c.id = p.contact_id
-    inner join flow.state s on s.id = p.state_id
+    left join flow.state s on s.id = p.state_id
     where
-      cp.company_id = :companyId and
-      p.project_name ilike '%' || :query || '%'
+    case when :isParent
+             then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+         else cp.company_id = :companyId end
+        and p.project_name ilike '%' || :query || '%'
     order by p.date_created desc
     limit :limit
     offset :offset
@@ -57,9 +67,13 @@
       inner join flow.company_process cp on cp.id = p.company_process_id
       inner join flow.process pr on pr.id = cp.process_id
       inner join flow.status_type st on st.id = cp.status_type_id
+      inner join flow.contact c on c.id = p.contact_id
+      left join flow.state s on s.id = p.state_id
     where
-      cp.company_id = :companyId and
-      p.project_name ilike '%' || :query || '%'
+    case when :isParent
+             then array[cp.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+         else cp.company_id = :companyId end
+        and p.project_name ilike '%' || :query || '%'
   ]]></project.searchCount>
 
   <project.searchByOwner><![CDATA[
