@@ -24,7 +24,7 @@
               <td class="text-left">
                 <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}?processStepId=${item.processStepId}&contactId=${contactId}`">{{ item.projectProcessStepId }}</router-link>
               </td>
-              <td class="text-center"><input type="checkbox" v-model="item.main"></td>
+              <td class="text-center"><input type="checkbox" disabled v-model="item.main"></td>
               <td class="text-left">{{item.processStepName}}</td>
               <td class="text-left">{{ item.owner && item.owner.fullName }}</td>
               <td class="text-left">{{ item.processStepStatusType }}</td>
