@@ -12,7 +12,6 @@
       inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
     where wqt.company_id = :companyId
       and wqt.archived is not true
-    order by wqt.work_queue_type, display_order
   ]]></workQueueType.getTypesForCompany>
 
   <workQueueType.getType><![CDATA[
