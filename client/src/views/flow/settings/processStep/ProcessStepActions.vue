@@ -36,6 +36,7 @@
     </v-dialog>
     <v-row>
       <v-col cols="12">
+        hi: {{requirements}}
         <v-toolbar flat>
           <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
@@ -1366,6 +1367,7 @@
             this.snackbar = getSnackbar('ERROR', 'Error Deleting Requirement')
           } else {
             item.archived = true
+            this.requirements = this.requirements.filter(r => !r.archived)
             this.snackbar = getSnackbar('SUCCESS', 'Requirement Deleted')
           }
           this.$store.commit(AppMutations.SET_LOADING, false)
