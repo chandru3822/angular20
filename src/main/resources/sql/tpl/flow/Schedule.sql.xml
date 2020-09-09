@@ -205,6 +205,7 @@
       then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
       else ps.company_id = :companyId end
       and ps.archived is not true
+      and cpsst.process_step_status_type_id = 1
       and c.state_id = :stateId
       and cfg.archived is not true
       and case when st.timestamp_value is not null then st.timestamp_value >= :startTime::date else 1=1 end
