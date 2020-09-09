@@ -16,6 +16,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.net.URISyntaxException;
@@ -39,14 +43,21 @@ public class InstallAgreementRepository {
   @Value(value = "${app.loanpal.baseUrl}")
   private String baseUrl;
 
-  public List<InstallAgreementProject> getProjects() {
+  public Page<InstallAgreementProject> getProjects(String query, Pageable pageable) {
     User user = securityService.getCurrentUser();
     Boolean viewAll = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "INSTALLATION_AGREEMENT", "VIEW_ALL");
     HashMap<String, Object> params = new HashMap<>();
     params.put("view_all", viewAll);
     params.put("user_id", user.getId());
+    params.put("query", query);
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
 
-    return sqlCache.query("installAgreement.getProjects", params, InstallAgreementProject.class);
+    List<InstallAgreementProject> results = sqlCache.query("installAgreement.getProjects", params, InstallAgreementProject.class);
+    Integer count = sqlCache.queryForObject("installAgreement.getProjectsCount", params, Integer.class);
+
+    Page<InstallAgreementProject> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    return page;
   }
 
   @Data
@@ -102,7 +113,7 @@ public class InstallAgreementRepository {
         }
 
         log.info("IARQ: create PandaDoc? {}; project {}", createPandaDoc, projectId);
-        if (createPandaDoc) {
+        if (createPandaDoc && (request.getSend_installation_agreement() || request.getIsSpanish())) {
             pandaDocService.createDocument(projectId, request.getProposal_nbr(), request.getIsSpanish());
         }
     } catch (Exception e) {

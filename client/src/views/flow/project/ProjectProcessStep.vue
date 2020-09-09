@@ -269,10 +269,12 @@ export default {
       notes: [],
       project: {},
       displayChangeOwner: false,
-      availableOwners: []
+      availableOwners: [],
+      availableProcessStepStatuses: []
     }
   },
   async created () {
+    this.getAvailableStatuses()
     this.getCustomFieldGroups()
     this.getNotes()
     this.getProject()
@@ -280,6 +282,15 @@ export default {
     this.getAvailableOwners()
   },
   methods: {
+    async getAvailableStatuses () {
+      try {
+        const {data} = await getRequest(`/processStep/status`)
+        this.availableProcessStepStatuses = data
+      } catch (e) {
+        this.snackbar = getSnackbar('ERROR', 'Error fetching available process step statuses')
+        logError(e)
+      }
+    },
     getProcessStep: async function() {
       try {
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
@@ -389,7 +400,7 @@ export default {
       async updateMain(projectProcessStepId) {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
-              await putRequest(`/projectProcessStep/${projectProcessStepId}/main`)
+              await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.id === 1))
           } catch (e) {
               logError(e)
               this.snackbar = getSnackbar('ERROR', 'Unable to update to primary process step')
@@ -432,8 +443,8 @@ export default {
         let body = {
           projectId: this.projectId,
           projectProcessStepId: this.projectProcessStepId,
-          startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-          endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           appointmentTime: this.selectedTimeSlot.scheduledStartTime,
           users: this.selectedTimeSlot.users
         }

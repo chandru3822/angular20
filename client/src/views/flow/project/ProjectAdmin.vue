@@ -14,6 +14,7 @@
     </v-row>
   </v-col>
 
+  
   <v-col cols="12">
 
     <v-col cols="12" class="text-left">
@@ -83,9 +84,9 @@
                     @change="updateMain(projectProcessStep.projectProcessStepId)"
                 />
             </td>
-            <td class="text-right">
-              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>
-            </td>
+<!--            <td class="text-right">-->
+<!--              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>-->
+<!--            </td>-->
           </tr>
         </template>
       </v-data-table>
@@ -126,7 +127,7 @@ export default {
         {text: 'Last Activity', value: 'lastUpdated'},
         {text: 'Status', value: 'processStepStatusType'},
         {text: 'Primary', value: 'main'},
-        {text: '', value: 'delete', sortable: false}
+        // {text: '', value: 'delete', sortable: false}
       ],
       uuid
     }
@@ -278,7 +279,7 @@ export default {
     updateMain: async function (projectProcessStepId) {
         try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            await putRequest(`/projectProcessStep/${projectProcessStepId}/main`)
+            await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.id === 1))
             await this.getProjectProcessSteps()
         } catch (e) {
             logError(e)

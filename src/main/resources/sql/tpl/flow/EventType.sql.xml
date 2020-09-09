@@ -4,6 +4,7 @@
     from flow.event_type
     where company_id = :companyId
       and archived is not true
+    order by event_type
   ]]></eventType.getTypesForCompany>
 
   <eventType.getType><![CDATA[
