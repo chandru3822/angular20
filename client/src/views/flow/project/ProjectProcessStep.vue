@@ -432,8 +432,8 @@ export default {
         let body = {
           projectId: this.projectId,
           projectProcessStepId: this.projectProcessStepId,
-          startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
-          endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          // startTime: moment(this.availabilityDateField.dateValue).startOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
+          // endTime: moment(this.availabilityDateField.dateValue).endOf('d').utc().format('YYYY-MM-DDTHH:mm:ssZ'),
           appointmentTime: this.selectedTimeSlot.scheduledStartTime,
           users: this.selectedTimeSlot.users
         }

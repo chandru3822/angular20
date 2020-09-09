@@ -244,35 +244,38 @@ public class AvailabilityService {
   }
 
   public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws SQLException {
+    HashMap<String, Object> errorObj = new HashMap<>();
+    if(null != request.getProjectId() && null != request.getAppointmentTime() && null != request.getProjectProcessStepId() && null != request.getUsers()) {
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", request.getProjectId());
-    params.put("projectProcessStepId", request.getProjectProcessStepId());
-    params.put("appointmentTime", request.getAppointmentTime());
-    params.put("users", createSqlArrayOfType("int", request.getUsers()));
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", request.getProjectId());
+      params.put("projectProcessStepId", request.getProjectProcessStepId());
+      params.put("appointmentTime", request.getAppointmentTime());
+      params.put("users", createSqlArrayOfType("int", request.getUsers()));
 
 
-    List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
+      List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
 
-    if(!results.isEmpty()) {
-      if(null != results.get(0) && results.get(0).getSuccess()) {
-        return ResponseEntity.ok(results.get(0));
+      if(!results.isEmpty()) {
+        if(null != results.get(0) && results.get(0).getSuccess()) {
+          return ResponseEntity.ok(results.get(0));
+        } else {
+          //todo: handle other types of errors from function
+          // Appointment no longer available. Please select another time.
+          // Appointment is already scheduled.
+          errorObj.put("message", "Appointment no longer available. Please select another time.");
+          return new ResponseEntity<>(errorObj, HttpStatus.CONFLICT);
+        }
       } else {
-        //todo: handle other types of errors from function
-        // Appointment no longer available. Please select another time.
-        // Appointment is already scheduled.
-        return new ResponseEntity<>("Appointment no longer available. Please select another time.", HttpStatus.CONFLICT);
+        errorObj.put("message", "Unknown Error Occurred");
+        return new ResponseEntity<>(errorObj, HttpStatus.BAD_REQUEST);
       }
+      //todo: error handling
     } else {
-      return ResponseEntity.badRequest().body("Unknown Error Occurred");
+      errorObj.put("message", "Missing Parameters");
+      return new ResponseEntity<>(errorObj, HttpStatus.UNPROCESSABLE_ENTITY);
     }
-    //todo: error handling
-    //todo: if successful return the full cfg/cfv stuff so we can display it
-//    if(appointmentSaved) {
-//      return ResponseEntity.ok("Appointment Saved");
-//    } else {
-//      return ResponseEntity.badRequest().body("Selected appointment is not available.");
-//    }
+
   }
 
   private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {
