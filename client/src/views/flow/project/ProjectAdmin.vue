@@ -83,9 +83,9 @@
                     @change="updateMain(projectProcessStep.projectProcessStepId)"
                 />
             </td>
-            <td class="text-right">
-              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>
-            </td>
+<!--            <td class="text-right">-->
+<!--              <v-icon @click="deleteProjectProcessStep(projectProcessStep.projectProcessStepId)">mdi-delete</v-icon>-->
+<!--            </td>-->
           </tr>
         </template>
       </v-data-table>
@@ -126,7 +126,7 @@ export default {
         {text: 'Last Activity', value: 'lastUpdated'},
         {text: 'Status', value: 'processStepStatusType'},
         {text: 'Primary', value: 'main'},
-        {text: '', value: 'delete', sortable: false}
+        // {text: '', value: 'delete', sortable: false}
       ],
       uuid
     }
