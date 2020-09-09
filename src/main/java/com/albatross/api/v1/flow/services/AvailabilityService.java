@@ -258,7 +258,10 @@ public class AvailabilityService {
       if(null != results.get(0) && results.get(0).getSuccess()) {
         return ResponseEntity.ok(results.get(0));
       } else {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("Appointment no longer available. Please select another time.");
+        //todo: handle other types of errors from function
+        // Appointment no longer available. Please select another time.
+        // Appointment is already scheduled.
+        return new ResponseEntity<>("Appointment no longer available. Please select another time.", HttpStatus.CONFLICT);
       }
     } else {
       return ResponseEntity.badRequest().body("Unknown Error Occurred");
