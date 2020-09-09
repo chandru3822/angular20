@@ -26,9 +26,16 @@
     <installAgreement.getProjects>
         <![CDATA[
             SELECT *
-            FROM brs.get_request_for_installation_agreements(:view_all, :user_id)
+            FROM brs.get_request_for_installation_agreements(:view_all, :user_id, :query, :limit, :offset)
         ]]>
     </installAgreement.getProjects>
+
+    <installAgreement.getProjectsCount>
+        <![CDATA[
+            SELECT *
+            FROM brs.get_request_for_installation_agreements_count(:view_all, :user_id, :query)
+        ]]>
+    </installAgreement.getProjectsCount>
 
     <installAgreement.setAgreementSent>
         <![CDATA[

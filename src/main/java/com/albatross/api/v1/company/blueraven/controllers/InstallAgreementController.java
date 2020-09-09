@@ -6,6 +6,8 @@ import com.albatross.api.v1.company.blueraven.repository.InstallAgreementReposit
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +21,8 @@ public class InstallAgreementController {
   InstallAgreementRepository installAgreementRepository;
 
   @GetMapping(value = "/projects")
-  public List<InstallAgreementProject> getProjects() {
-    return installAgreementRepository.getProjects();
+  public Page<InstallAgreementProject> getProjects(@RequestParam String query, Pageable pageable) {
+    return installAgreementRepository.getProjects(query, pageable);
   }
 
   @PostMapping(value = "/create")

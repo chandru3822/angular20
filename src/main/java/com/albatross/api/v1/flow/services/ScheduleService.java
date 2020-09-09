@@ -139,6 +139,7 @@ public class ScheduleService {
         params.put("id", ev.getStartCustomFieldValueId());
         sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
       } else {
+        params.put("sourceId", ev.getProjectProcessStepId());
         sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
       }
 

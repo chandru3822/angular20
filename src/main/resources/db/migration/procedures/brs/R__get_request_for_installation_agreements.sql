@@ -1,8 +1,11 @@
-DROP FUNCTION IF EXISTS brs.get_request_for_installation_agreements(boolean, bigint);
+DROP FUNCTION IF EXISTS brs.get_request_for_installation_agreements(boolean, bigint, character varying, integer, bigint);
 
 CREATE OR REPLACE FUNCTION brs.get_request_for_installation_agreements(
     p_view_all boolean,
-    p_platform_user_id bigint
+    p_platform_user_id bigint,
+    p_searchterm character varying,
+    p_limit integer,
+    p_offset bigint
 )
     RETURNS TABLE(
                      project_id    INTEGER,
@@ -12,8 +15,6 @@ CREATE OR REPLACE FUNCTION brs.get_request_for_installation_agreements(
                  )
     LANGUAGE plpgsql
 AS $function$
-
---select * from  brs.get_request_for_installation_agreements(false, 2294513);
 
 declare
 
@@ -29,7 +30,10 @@ BEGIN
                      left join brs.project_details pd on pd.project_id = p.id
                      INNER JOIN flow.contact c ON c.id = p.contact_id
                      INNER JOIN flow.state s ON s.id = p.state_id
-            WHERE pd.cancelled_date is null AND pd.energized_date is null;
+            WHERE pd.cancelled_date is null AND pd.energized_date is null
+                AND p.project_name ILIKE '%' || p_searchterm || '%'
+            limit p_limit
+            offset p_offset;
         ELSE
             RETURN QUERY
                 SELECT
@@ -42,8 +46,11 @@ BEGIN
                          INNER JOIN flow.contact c ON c.id = p.contact_id
                          INNER JOIN flow.state s ON s.id = p.state_id
                 where pd.closer_user_id = p_platform_user_id
-                AND pd.cancelled_date is null
-                AND pd.energized_date is null;
+                    AND pd.cancelled_date is null
+                    AND pd.energized_date is null
+                    AND p.project_name ILIKE '%' || p_searchterm || '%'
+                limit p_limit
+                offset p_offset;
         END CASE;
 END
 $function$
