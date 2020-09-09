@@ -278,7 +278,7 @@ export default {
     updateMain: async function (projectProcessStepId) {
         try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            await putRequest(`/projectProcessStep/${projectProcessStepId}/main`)
+            await postRequest(`/projectProcessStep/${projectProcessStepId}/status`, this.availableProcessStepStatuses.find(status => status.id === 1))
             await this.getProjectProcessSteps()
         } catch (e) {
             logError(e)
