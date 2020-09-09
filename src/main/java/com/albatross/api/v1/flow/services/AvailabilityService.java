@@ -248,8 +248,6 @@ public class AvailabilityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", request.getProjectId());
     params.put("projectProcessStepId", request.getProjectProcessStepId());
-    params.put("startTime", request.getStartTime());
-    params.put("endTime", request.getEndTime());
     params.put("appointmentTime", request.getAppointmentTime());
     params.put("users", createSqlArrayOfType("int", request.getUsers()));
 
