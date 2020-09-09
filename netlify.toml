@@ -3,9 +3,6 @@
   publish = "dist/"
   ignore = "git diff --quiet HEAD^ HEAD ."
 
-[context.stage]
-  publish = "client/dist/"
-
 [context.release]
   publish = "client/dist/"
 
