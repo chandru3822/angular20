@@ -181,7 +181,12 @@ label[for="adminOriginatorSelect"] {
 .hr-non-transparent {
   border-color: #e0e1e2 !important;
 }
-
+.app-pre-wrapper {
+  font-family: 'Lato', sans-serif;
+  letter-spacing: .4px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 .clickable {
   cursor: pointer !important;
 }
