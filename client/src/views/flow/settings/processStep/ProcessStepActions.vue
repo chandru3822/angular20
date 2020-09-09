@@ -36,7 +36,6 @@
     </v-dialog>
     <v-row>
       <v-col cols="12">
-        hi: {{requirements}}
         <v-toolbar flat>
           <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
