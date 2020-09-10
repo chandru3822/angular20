@@ -70,7 +70,7 @@
     <sms.queue.exportAll>
         <![CDATA[
             SELECT
-            concat(u.first_name, ' ', u.last_name) AS full_name
+            concat(u.first_name, ' ', u.last_name) AS full_name,
                 u.email,
                 sms.to_phone,
                 sms.message,

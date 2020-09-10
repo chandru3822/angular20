@@ -3,7 +3,7 @@
     <v-row class="contact-header elevation-0">
       <v-col cols="6" class="text-left pb-2">
         <div class="contact-title">
-          {{contact.fullName || contact.firstName + ' ' + contact.lastName}}
+          {{contact.fullName}}
           <v-menu
               v-if="userCanEdit"
               bottom
