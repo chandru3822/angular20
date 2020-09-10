@@ -9,7 +9,7 @@
                          from flow.company_project_status_type cpst1
                          where cpst1.project_status_type_id = 1
                            and cpst1.company_id = p.id
-                       ))) as company_project_status_type_ids
+                       ), -1)) as company_project_status_type_ids
         from  flow.work_queue_type wqt
                   inner join flow.company p on p.id = wqt.company_id or p.parent_company_id = wqt.company_id
                   left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = wqt.id and pswqtpst.archived is not true
@@ -56,7 +56,7 @@
                            from flow.company_project_status_type cpst1
                            where cpst1.project_status_type_id = 1
                              and cpst1.company_id = p.id
-                         ))) as company_project_status_type_ids
+                         ), -1)) as company_project_status_type_ids
           from  flow.work_queue_type wqt
                     inner join flow.company p on p.id = wqt.company_id or p.parent_company_id = wqt.company_id
                     left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = wqt.id and pswqtpst.archived is not true
@@ -118,10 +118,7 @@
                 when :isParent then array [ps.company_id] <@ (select array(select id
                                                                            from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
                 else ps.company_id = :companyId end
-        and case
-                when :unassigned is true then pps.user_position_id is null
-                when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId
-                else true end
+
         and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
         and array [p.company_project_status_type_id] <@ s.company_project_status_type_ids
       limit :limit
@@ -138,7 +135,7 @@
                          from flow.company_project_status_type cpst1
                          where cpst1.project_status_type_id = 1
                            and cpst1.company_id = p.id
-                       ))) as company_project_status_type_ids
+                       ), -1)) as company_project_status_type_ids
         from  flow.work_queue_type wqt
                   inner join flow.company p on p.id = wqt.company_id or p.parent_company_id = wqt.company_id
                   left join flow.process_step_work_queue_type_project_status_type pswqtpst on pswqtpst.process_step_work_queue_type_id = wqt.id and pswqtpst.archived is not true
@@ -163,10 +160,7 @@
           when :isParent then array [ps.company_id] <@ (select array(select id
                                                                      from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
           else ps.company_id = :companyId end
-    and case
-          when :unassigned is true then pps.user_position_id is null
-          when :unassigned is not true and :userPositionId::int is not null then pps.user_position_id = :userPositionId
-          else true end
+
     and cpsst.process_step_status_type_id in (:processStepStatusTypeIds)
     and array [p.company_project_status_type_id] <@ s.company_project_status_type_ids
   ]]></workQueue.getProcessStepsByTypeIdCount>
