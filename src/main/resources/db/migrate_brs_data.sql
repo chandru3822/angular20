@@ -2285,12 +2285,12 @@ SELECT setval('flow.user_position_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flo
 SELECT setval('flow.org_type_id_seq', COALESCE((SELECT MAX(id) + 1 FROM flow.org_type), 1), false);
 
 
-insert into flow.user_status_type(user_id, company_user_status_type_id, archived, date_created, date_modified, created_by_id, modified_by_id)
+insert into flow.company_user_status(user_id, company_user_status_id, archived, date_created, date_modified, created_by_id, modified_by_id)
     (select u.id,ust.id,false,now(),now(),2350555,2350555
      from blueraven.user u
               inner join blueraven.user_status_type ust2 on u.user_status_type_id = ust2.id
               inner join flow.user_company uc on uc.user_id = u.id
-              inner join flow.company_user_status_type ust  on ust.company_id = uc.company_id
+              inner join flow.user_status_type ust  on ust.company_id = uc.company_id
      where ust2.user_status_type = ust.user_status_type
         and u.id not in (2350555,99999999,2405363, 2356764, 2410143));
 

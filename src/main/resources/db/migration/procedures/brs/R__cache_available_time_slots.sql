@@ -24,7 +24,7 @@ BEGIN
                      and up.end_date is null
                      and up.primary_flag is true
                      and up.archived is false
-                     and cust.has_access is true
+                     and ust.has_access is true
              )
              select unnest(users) as user, scheduled_start_time
              from active_projects ap cross join generate_series(ap.start_time - interval '21 days',
