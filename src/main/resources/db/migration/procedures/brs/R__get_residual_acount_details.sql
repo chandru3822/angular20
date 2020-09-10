@@ -66,13 +66,13 @@ BEGIN
 
     RETURN QUERY
         with fdc as (
-        select up3.user_id,count(1) fdc
+        select flow.get_user_based_on_event_type(p.id,
+                                                 1) as user_id,
+               count(1) fdc
         from flow.project p
-                 inner join flow.user_project up on up.project_id = p.id and up.end_date is not null
-                 inner join flow.user_position up3  on up3.id = up.user_position_id and up3.position_id = 1
                  inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 4 and pps.process_step_complete_date is not null
             and pps.process_step_complete_date between v_month_start and v_month_end
-        group by up3.user_id)
+        group by user_id)
             select *,
                    case when cancelled_date is not null then 0 else coalesce(residual_earned,0) end as residual_earned,
                    case when cancelled_date is null then 0 else coalesce(residual_paid ,0) end as residual_paid,
@@ -104,14 +104,12 @@ BEGIN
                         rp.id  AS residual_plan,
                         (select sum(paid)
                             from brs.residual_ledger rl
-                            where rl.user_project_id = up.id) as residual_paid,
+                            where rl.user_id = f.user_id) as residual_paid,
                         rpa.total as residual_earned,
                         rpa.id as allocation_id
                  FROM flow.project p
                           inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_complete_date is not null and process_step_complete_date < p_date and  process_step_id in (4,9,35)
                           inner join flow.contact c on c.id = p.contact_id
-                          inner join flow.user_project up on up.project_id = p.id and up.end_date is null
-                          inner join flow.user_position up2  on up2.id = up.user_position_id and up2.position_id = 1
                           inner join fdc f on f.user_id = up2.user_id
                           INNER JOIN flow.user u ON u.id = up2.user_id
                           inner join brs.project_residual pr on pr.project_id = p.id
