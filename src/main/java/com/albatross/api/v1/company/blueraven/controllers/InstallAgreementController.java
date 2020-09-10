@@ -50,4 +50,14 @@ public class InstallAgreementController {
   public String generate(@PathVariable Long projectId, @PathVariable Long proposalNbr) {
       return installAgreementRepository.generateLoanPal(projectId, proposalNbr);
   }
+
+  @GetMapping(value = "/loanStatus/{projectId}")
+  public ResponseEntity<String> getLoanStatus(@PathVariable Long projectId) {
+      try {
+          String status = installAgreementRepository.getLoanStatus(projectId);
+          return status != null ? ResponseEntity.ok(status) : ResponseEntity.notFound().build();
+      } catch (Exception e) {
+          return ResponseEntity.notFound().build();
+      }
+  }
 }
