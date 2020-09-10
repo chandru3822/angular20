@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -46,6 +47,10 @@ public class ProcessStepStatusService {
     params.put("companyId", companyId);
     params.put("typeId", typeId);
     return sqlCache.get("processStepStatus.getType", params, CompanyProcessStepStatusType.class);
+  }
+
+  public Optional<CompanyProcessStepStatusType> getActiveType() {
+      return sqlCache.get("processStepStatus.getActiveTypeForCompany", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), CompanyProcessStepStatusType.class);
   }
 
   public void deleteType(Long typeId) {

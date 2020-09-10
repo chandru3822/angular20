@@ -202,25 +202,6 @@ public class ProjectProcessStepService {
       }
   }
 
-
-    public void updateMain(Long projectProcessStepId) {
-        ProjectProcessStep updatingStep = this.getProjectProcessStep(projectProcessStepId);
-
-        if (updatingStep != null) {
-
-            Map<String, Object> params = Map.of("projectProcessStepId", projectProcessStepId, "projectId", updatingStep.getProjectId(), "processStepId", updatingStep.getProcessStepId());
-
-            Long activeIdCount = sqlCache.queryForObject("projectProcessStep.getActiveCountInProject", params, Long.class);
-
-            if (activeIdCount > 0) {
-                throw new RuntimeException("An active primary process step already exists");
-            }
-
-            sqlCache.update("projectProcessStep.updateMain", params);
-        }
-    }
-
-
     public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;
 
