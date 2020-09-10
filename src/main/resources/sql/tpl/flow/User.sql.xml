@@ -392,7 +392,7 @@
 
   <user.insertUserStatus><![CDATA[
     insert into flow.company_user_status(user_id, user_status_type_id, created_by_id)
-    values (:userId, :serStatusTypeId, :currentUserId)
+    values (:userId, :userStatusTypeId, :currentUserId)
   ]]></user.insertUserStatus>
 
   <user.updateDefault><![CDATA[

@@ -77,7 +77,7 @@
               n.created_by_id                                      AS "createdById",
               concat(created_by.first_name, ' ', created_by.last_name) AS "createdBy",
               n.modified_by_id                                      AS "modifiedById",
-              concat(modified_by.first_name, ' ', modified_by.last_name) AS "modifiedBy",
+              concat(modified_by.first_name, ' ', modified_by.last_name) AS "modifiedBy"
             FROM brs.ahj_note n
               INNER JOIN flow."user" created_by ON n.created_by_id = created_by.id
               INNER JOIN flow."user" modified_by ON n.modified_by_id = modified_by.id
