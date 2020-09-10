@@ -5,13 +5,13 @@ declare
     v_company_id integer;
 BEGIN
     select company_id
-        into v_company_id
+    into v_company_id
     from flow.company_process cp
     where process_id = new.company_process_id
     limit 1;
 
     IF (TG_OP = 'INSERT') THEN
-        insert into brs.project_details(project_id,company_id) values (new.id,v_company_id);
+        insert into brs.project_details(project_id, company_id) values (new.id, v_company_id);
     elsif (TG_OP = 'DELETE') THEN
         DELETE FROM brs.project_details where project_id = old.id;
     end if;
@@ -39,19 +39,25 @@ declare
     v_project_id      integer;
     v_sql             character varying;
     v_value           character varying;
+    v_user_id         integer;
+    v_value1          integer;
 BEGIN
 
 
     select pdc.id, field_to_update, data_type_id
     into v_config_id,v_field_to_update,v_data_type_id
     from brs.project_details_config pdc
-    where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id;
+    where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
+      and case
+              when new.custom_field_group_assignment_id = 7 then
+                  field_to_update = 'closer_user_position_id'
+              else 1 = 1 end;
 
     select pps.project_id
     into v_project_id
-    from  flow.project_process_step pps
+    from flow.project_process_step pps
     where pps.id = new.project_process_step_id
-        and pps.main is true;
+      and pps.main is true;
 
     if v_config_id is not null and v_data_type_id in (1, 2, 3, 4, 6) and v_project_id is not null then
         if v_data_type_id = 1 then
@@ -73,11 +79,35 @@ BEGIN
 
         v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_value || $$
            where project_id = $$ || v_project_id;
-        raise notice 'in if %',v_sql;
+        --raise notice 'in if %',v_sql;
         execute v_sql;
 
+        if new.custom_field_group_assignment_id = 7 then
 
-   end if;
+            select pdc.id, field_to_update, data_type_id
+            into v_config_id,v_field_to_update,v_data_type_id
+            from brs.project_details_config pdc
+            where pdc.custom_field_group_assignment_id = new.custom_field_group_assignment_id
+              and case
+                      when new.custom_field_group_assignment_id = 7 then
+                          field_to_update = 'closer_user_id'
+                      else 1 = 1 end;
+
+            case when new.int_value is null then select 'null' into v_value1; else select new.int_value into v_value1; end case;
+            v_value = v_value || '::integer';
+
+            select user_id
+            into v_user_id
+            from flow.user_position
+            where id = v_value1;
+
+            v_sql = $$update brs.project_details set $$ || v_field_to_update || $$ = $$ || v_user_id || $$
+                    where project_id = $$ || v_project_id;
+            --raise notice 'in if %',v_sql;
+            execute v_sql;
+        end if;
+
+    end if;
 
     RETURN NULL;
 END

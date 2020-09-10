@@ -21,7 +21,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -104,7 +104,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -184,7 +184,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -268,7 +268,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -411,7 +411,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -510,7 +510,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -585,7 +585,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -714,7 +714,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -817,7 +817,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -897,7 +897,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -978,7 +978,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -1079,7 +1079,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -1162,7 +1162,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -1358,7 +1358,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -1441,7 +1441,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -1526,7 +1526,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -1611,7 +1611,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -1856,7 +1856,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2056,7 +2056,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+(now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2266,7 +2266,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2351,7 +2351,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2429,7 +2429,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2508,7 +2508,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2589,7 +2589,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2668,7 +2668,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2747,7 +2747,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2827,7 +2827,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2906,7 +2906,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -2985,7 +2985,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3068,7 +3068,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3147,7 +3147,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3226,7 +3226,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                                                                      process_step_status_type = 'Cancelled' end
                                                                     and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3458,7 +3458,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                              process_step_status_type = 'Cancelled' end
             and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3554,7 +3554,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3634,7 +3634,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3714,7 +3714,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3801,7 +3801,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3881,7 +3881,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -3965,7 +3965,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4045,7 +4045,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4162,7 +4162,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4282,7 +4282,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4362,7 +4362,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4548,7 +4548,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4628,7 +4628,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4790,7 +4790,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4870,7 +4870,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -4950,7 +4950,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -5032,7 +5032,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -5128,7 +5128,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -5269,7 +5269,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -5466,7 +5466,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -5663,7 +5663,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -5755,7 +5755,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -5837,7 +5837,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -5919,7 +5919,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -5999,7 +5999,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6083,7 +6083,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6167,7 +6167,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6255,7 +6255,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6466,7 +6466,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6554,7 +6554,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6636,7 +6636,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6724,7 +6724,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6806,7 +6806,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6891,7 +6891,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -6977,7 +6977,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -7059,7 +7059,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -7143,7 +7143,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -7224,7 +7224,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -7304,7 +7304,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -7390,7 +7390,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -7472,7 +7472,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -7558,7 +7558,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -7642,7 +7642,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -7726,7 +7726,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -7840,7 +7840,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -8063,7 +8063,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -8146,7 +8146,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -8230,7 +8230,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -8424,7 +8424,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -8501,7 +8501,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      FROM flow.project
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
@@ -8574,7 +8574,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -8654,7 +8654,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
                                 process_step_status_type = 'Cancelled' end
                and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
             2350555 as created_by_id,
-now()
+            (now() + interval '1 day')
      from flow.project p
               inner join blueraven.deal d on d.id = p.id
               inner join blueraven.deal_work_queue dwq on dwq.deal_id  = d.id
@@ -8844,7 +8844,7 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                                          process_step_status_type = 'Cancelled' end
                                                                         and company_id = (select id from flow.company where company_name = 'Blue Raven Solar')) AS process_step_status_id,
                 2350555 as created_by_id,
-                now()
+                (now() + interval '1 day')
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
@@ -8904,7 +8904,7 @@ declare
            group by project_id, process_step_id
            having count(1) >1),
                      max_day as (
-                         select max(date_created)as date_created,pp2.project_id,pp2.process_step_id
+                         select min(date_created)as date_created,pp2.project_id,pp2.process_step_id
                          from flow.project_process_step pp2
                                   inner join update_main um2 on um2.project_id = pp2.project_id and um2.process_step_id = pp2.process_step_id
                          group by pp2.project_id,pp2.process_step_id
