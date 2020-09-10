@@ -47,7 +47,7 @@ select insert_project_process_step as id from flow.insert_project_process_step(:
       u.id as user_id,
       u.first_name,
       u.last_name,
-      u.first_name || ' ' || u.last_name as full_name,
+      concat(u.first_name, ' ', u.last_name) AS full_name,
       up.id as user_position_id,
       p.position
     from positions

@@ -42,8 +42,8 @@
                      rp.name,
                      rp.description,
                      rp.residual_status_id as "residualStatusId",
-                     cu.first_name || ' ' || cu.last_name                        AS "createdName",
-                     au.first_name || ' ' || au.last_name                        AS "approvedName",
+                     concat(cu.first_name, ' ', cu.last_name) AS "createdName",
+                     concat(au.first_name, ' ', au.last_name) AS "approvedName",
                      rp.created_by as "createdBy",
                      rp.position_id as "positionId",
                      rp.approved                                                 AS "approvedDate",
@@ -62,7 +62,7 @@
                       ) AS allocations), '[]') AS "residualPlanAllocations",
                      coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
                                FROM (SELECT rpu.id,
-                                            u.first_name || ' ' || u.last_name AS name,
+                                            concat(u.first_name, ' ', u.last_name) AS name,
                                             string_agg(DISTINCT p.position, ', ') FILTER (WHERE
                                                 CASE WHEN rp.position_id = 1
                                                          THEN up.position_id IN (1,2,3,133)
@@ -150,7 +150,7 @@
     <residual.getResidualPlanUsers><![CDATA[
         SELECT coalesce(array_to_json(array_agg(row_to_json(users))), '[]')
         FROM (SELECT rpu.id,
-                     u.first_name || ' ' || u.last_name AS name,
+                     concat(u.first_name, ' ', u.last_name) AS name,
                      u.id                               AS "userId",
                      rpu.start_date                     AS "startDate",
                      rpu.end_date                       AS "endDate",

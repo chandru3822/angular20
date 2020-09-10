@@ -3,7 +3,7 @@
     <v-row class="contact-header elevation-0">
       <v-col cols="6" class="text-left pb-2">
         <div class="contact-title">
-          {{contact.fullName}}
+          {{contact.fullName || contact.firstName + ' ' + contact.lastName}}
           <v-menu
               v-if="userCanEdit"
               bottom
@@ -98,6 +98,16 @@
           </v-toolbar>
           <v-card class="pa-4">
             <v-form ref="address">
+              <v-text-field text
+                            label="First Name"
+                            placeholder=" "
+                            :readonly="!userCanEdit"
+                            v-model="contact.firstName"></v-text-field>
+              <v-text-field text
+                            label="Last Name"
+                            placeholder=" "
+                            :readonly="!userCanEdit"
+                            v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
                             placeholder=" "

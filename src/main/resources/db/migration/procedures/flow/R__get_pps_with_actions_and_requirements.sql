@@ -42,7 +42,7 @@ FROM (
                         u.first_name as "firstName",
                         u.last_name as "lastName",
                         up.id as "userPositionId",
-                        u.first_name || ' ' || u.last_name AS "fullName",
+                        concat(u.first_name, ' ', u.last_name) AS "fullName",
                         p.position
                     from flow.user u
                              inner join flow.user_position up on up.user_id = u.id

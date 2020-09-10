@@ -112,7 +112,7 @@
   <closerDashboard.getCloserTableScores>
     <![CDATA[
       SELECT u.id,
-             u.first_name || ' ' || u.last_name as name,
+            concat(u.first_name, ' ', u.last_name) AS name,
              cust.user_status_type,
              o.org_name as officeName,
              o2.org_name as region,

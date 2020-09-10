@@ -12,7 +12,7 @@
        c.first_name,
        c.last_name,
        c.date_created,
-       c.first_name || ' ' || c.last_name as full_name,
+       concat(c.first_name, ' ', c.last_name) as full_name
        c.email,
        c.phone,
        c.mobile,
@@ -40,7 +40,7 @@
             FROM (SELECT u.id as "userId",
                      u.first_name as "firstName",
                      u.last_name as "lastName",
-                     u.first_name || ' ' || u.last_name AS "fullName",
+                     concat(u.first_name, ' ', u.last_name) as full_name,
                      p.position,
                      up.id as "userPositionId"
                   FROM blueraven."user" u
@@ -67,7 +67,7 @@
       c.first_name,
       c.last_name,
       c.date_created,
-      c.first_name || ' ' || last_name as full_name,
+      concat(c.first_name, ' ', c.last_name) as full_name,
       c.email,
       c.phone,
       c.mobile,
@@ -114,7 +114,7 @@
     select u.id as "userId",
            u.first_name,
            u.last_name,
-           u.first_name || ' ' || u.last_name as full_name,
+           concat(u.first_name, ' ', u.last_name) as full_name,
            up.id as user_position_id,
            p.position
     from flow.owner_position_id op

@@ -9,7 +9,7 @@ BEGIN
   RETURN QUERY
     with top_reps as (
       select u.id as user_id,
-             u.first_name || ' ' || u.last_name as name,
+             concat(u.first_name, ' ', u.last_name) AS name,
              count(1) pitches,
              rank() over (order by count(1) desc) as rank
       from flow.project p

@@ -4,7 +4,7 @@
                 upv.first_name,
                 upv.last_name,
                 upv.company_id,
-                upv.first_name || ' ' || upv.last_name as full_name,
+                concat(upv.first_name, ' ', upv.last_name) AS full_name,
                 upv.email,
                 upv.primary_flag,
                 upv.start_date,
@@ -23,7 +23,7 @@
                                                      and uphv.org_id = upv.org_id
             inner join flow.company_user_status_type cust on cust.id = upv.company_user_status_type_id
       where upv.company_id = :companyId
-        and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
+        and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'
         and coalesce(upv.email, '') ILIKE '%' || :email || '%'
@@ -34,7 +34,7 @@
         and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
       union
       select u.id,u.first_name,u.last_name,uc.company_id,
-             u.first_name || ' ' || u.last_name as full_name,
+            concat(u.first_name, ' ', u.last_name) AS full_name,
              u.email,
              null,null,
              null,null,null,
@@ -49,7 +49,7 @@
                     inner join flow.position p on p.id = up2.position_id
                   where up2.user_id = u.id
                     and p.company_id = uc.company_id)
-        and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+        and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
         and u.first_name ILIKE '%' || :firstName || '%'
         and u.last_name ILIKE '%' || :lastName || '%'
         and coalesce(u.email, '') ILIKE '%' || :email || '%'
@@ -73,7 +73,7 @@
             inner join flow.company_user_status_type cust on cust.id = upv.company_user_status_type_id
         where upv.company_id = :companyId
           and upv.position_level = 0
-          and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
+          and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
           and upv.first_name ILIKE '%' || :firstName || '%'
           and upv.last_name ILIKE '%' || :lastName || '%'
           and coalesce(upv.email, '') ILIKE '%' || :email || '%'
@@ -93,7 +93,7 @@
                         inner join flow.position p on p.id = up2.position_id
                       where up2.user_id = u.id
                         and p.company_id = uc.company_id)
-            and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+            and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
             and u.first_name ILIKE '%' || :firstName || '%'
             and u.last_name ILIKE '%' || :lastName || '%'
             and coalesce(u.email, '') ILIKE '%' || :email || '%'
@@ -111,7 +111,7 @@
         u.id,
         u.first_name,
         u.last_name,
-        u.first_name || ' ' || u.last_name as full_name,
+        concat(u.first_name, ' ', u.last_name) AS full_name,
         u.email,
         u.phone_number,
         ust.company_user_status_type_id,
@@ -124,7 +124,7 @@
       left join flow.user_position up on up.user_id = u.id
       left join flow.position p on p.id = up.position_id
     where uc.company_id = :companyId
-       and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+       and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
        and u.first_name ILIKE '%' || :firstName || '%'
        and u.last_name ILIKE '%' || :lastName || '%'
        and u.email ILIKE '%' || :email || '%'
@@ -159,7 +159,7 @@
              u.created_by_id,
              u.first_name,
              u.last_name,
-             u.first_name || ' ' || u.last_name as full_name,
+             concat(u.first_name, ' ', u.last_name) AS full_name,
              uc.company_id,
              u.modified_by_id,
              u.date_modified,
@@ -195,8 +195,8 @@
           select distinct upv.user_id                            as id,
                           upv.first_name,
                           upv.last_name,
-                          upv.first_name || ' ' || upv.last_name as full_name,
-                          upv.first_name || ' ' || upv.last_name as title
+                          concat(upv.first_name, ' ', upv.last_name) AS full_name,
+                          concat(upv.first_name, ' ', upv.last_name) AS title
 
           from flow.user_positions_vw upv
           where upv.position_schedulable is true
@@ -273,7 +273,7 @@
                 from flow.company c
              where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
        null as "timezone",
-       u.first_name || ' ' || u.last_name as full_name,
+       concat(u.first_name, ' ', u.last_name) AS full_name,
        (
          select c.id from flow.company c
          inner join flow.user_company uc on uc.company_id = c.id
@@ -323,7 +323,7 @@
        u.password,
        u.email,
        u.username,
-       u.first_name || ' ' || u.last_name as full_name
+       concat(u.first_name, ' ', u.last_name) AS full_name
     from flow.user u
     where lower(:usernameOrEmail::text) = lower(username)
           OR lower(:usernameOrEmail::text) = lower(email)
@@ -334,7 +334,7 @@
     select u.id,
            u.first_name,
            u.last_name,
-           u.first_name || ' ' || u.last_name as full_name,
+           concat(u.first_name, ' ', u.last_name) AS full_name,
            u.password,
            coalesce(u.default_company_id, uc.company_id) as company_id,
            c.aws_bucket,
@@ -458,7 +458,7 @@
        u.password,
        u.email,
        u.username,
-       u.first_name || ' ' || u.last_name as full_name,
+       concat(u.first_name, ' ', u.last_name) AS full_name,
        u.uuid,
        u.expiry_date
     from flow.user u

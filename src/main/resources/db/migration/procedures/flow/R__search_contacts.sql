@@ -65,7 +65,7 @@ BEGIN
                      SELECT c.id,
                             c.first_name,
                             c.last_name,
-                            c.first_name || ' ' || c.last_name as full_name,
+                            concat(c.first_name, ' ', c.last_name) as full_name
                             c.email,
                             c.phone,
                             c.mobile,
@@ -80,7 +80,7 @@ BEGIN
                                             'userId', u.id,
                                             'firstName', u.first_name,
                                             'lastName', u.last_name,
-                                            'fullName', u.first_name || ' ' || u.last_name
+                                            'fullName', concat(u.first_name, ' ', u.last_name)
                                         ))::jsonb              as owner
                      FROM flow.contact c
                               inner join flow.contact_type ct on ct.id = c.contact_type_id
@@ -100,8 +100,8 @@ BEGIN
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
                       AND NOT v_clean_name_search_term ~ '^([0-9]+)$'
-                      AND lower(translate(coalesce(c.first_name, ''), '*,.& ', '')) || ' ' ||
-                          lower(translate(coalesce(c.last_name, ''), '*,.& ', '')) like
+                      AND concat(lower(translate(coalesce(c.first_name, ''), '*,.& ', '')) , ' ' ,
+                          lower(translate(coalesce(c.last_name, ''), '*,.& ', ''))) like
                           '%' || v_clean_name_search_term || '%'
                     union
                     SELECT c.id, 2 as rank
@@ -118,8 +118,8 @@ BEGIN
                     SELECT c.id, 4 as rank
                     FROM flow.contact c
                     WHERE c.company_id = ANY (v_company_ids)
-                      AND lower(trim(translate(coalesce(c.street1, ''), '.,', ''))) || ' ' ||
-                          lower(trim(translate(coalesce(c.street2, ''), '.,', '')))
+                      AND concat(lower(trim(translate(coalesce(c.street1, ''), '.,', ''))), ' ',
+                          lower(trim(translate(coalesce(c.street2, ''), '.,', ''))))
                         like '%' || v_clean_address_search_term || '%'),
                      ranked_contacts as (
                          select sc.id,
@@ -133,7 +133,7 @@ BEGIN
                 select c.id,
                        c.first_name,
                        c.last_name,
-                       c.first_name || ' ' || c.last_name as full_name,
+                       concat(c.first_name, ' ', c.last_name) as full_name,
                        c.email,
                        c.phone,
                        c.mobile,
@@ -148,7 +148,7 @@ BEGIN
                                        'userId', u.id,
                                        'firstName', u.first_name,
                                        'lastName', u.last_name,
-                                       'fullName', u.first_name || ' ' || u.last_name
+                                       'fullName', concat(u.first_name, ' ', u.last_name)
                                    ))::jsonb              as owner
                 from ranked_contacts ranked
                          inner join flow.contact c on c.id = ranked.id

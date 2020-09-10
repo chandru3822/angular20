@@ -7,7 +7,7 @@
                payment_numbers.total_num_payments,
                payment_numbers.payment_number,
                payment_amount as amount,
-               c.first_name || ' ' || c.last_name as customer_name,
+               concat(c.first_name, ' ', c.last_name) as customer_name,
                c.mailing_street1,
                c.mailing_street2,
                c.mailing_city,

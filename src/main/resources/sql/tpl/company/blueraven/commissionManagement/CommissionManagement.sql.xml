@@ -216,7 +216,7 @@
     <commissionManagement.getClosers><![CDATA[
        SELECT u.id                                      AS id,
             u.id                                         AS userId,
-            u.first_name || ' ' || u.last_name           AS name,
+            concat(u.first_name, ' ', u.last_name) AS name,
             cust.id                        AS userStatusTypeId,
             cp.name                                      AS commissionPlan,
             cp.description                               AS commissionDescription,
@@ -261,7 +261,7 @@
     <commissionManagement.getCloserDetails><![CDATA[
    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
 FROM (SELECT upv.user_id                                        AS "userId",
-             upv.first_name || ' ' || upv.last_name                 AS name,
+             concat(upv.first_name, ' ', upv.last_name) AS name,
              upv.start_date as "positionStartDate",
              upv.position,
              coalesce((SELECT array_to_json(array_agg(row_to_json(plans)))
@@ -313,8 +313,8 @@ FROM (SELECT cp.id,
              cp.total,
              cp.description,
              cp.status_id as "statusId",
-             cu.first_name || ' ' || cu.last_name                        AS "createdName",
-             au.first_name || ' ' || au.last_name                        AS "approvedName",
+             concat(cu.first_name, ' ', cu.last_name) AS "createdName",
+             concat(au.first_name, ' ', au.last_name) AS "approvedName",
              cp.created_by as "createdBy",
              cp.position_id as "positionId",
              cp.approved                                                 AS "approvedDate",
@@ -346,7 +346,8 @@ FROM (SELECT cp.id,
                     order by lov.name ) AS sources), '[]')    AS sources,
              coalesce((SELECT array_to_json(array_agg(row_to_json(users)))
               FROM (SELECT cpu.id,
-                           u.first_name || ' ' || u.last_name AS name,
+                            concat(u.first_name, ' ', u.last_name) AS name,
+
                            string_agg(DISTINCT p.position, ', ') FILTER (WHERE
                                CASE WHEN cp.position_id = 1
                                         THEN up.position_id IN (1,2,3,133)
@@ -374,7 +375,7 @@ FROM (SELECT cp.id,
     <commissionManagement.getCommissionPlanUsers><![CDATA[
     SELECT coalesce(array_to_json(array_agg(row_to_json(users))), '[]')
     FROM (SELECT cpu.id,
-             u.first_name || ' ' || u.last_name AS name,
+             concat(u.first_name, ' ', u.last_name) AS name,
              u.id                               AS "userId",
              cpu.start_date                     AS "startDate",
              cpu.end_date                       AS "endDate",
@@ -544,7 +545,7 @@ FROM (SELECT cp.id,
     <commissionManagement.findUsers><![CDATA[
     SELECT coalesce(array_to_json(array_agg(row_to_json(results))), '[]')
     FROM (SELECT DISTINCT u.id                               AS "userId",
-                      u.first_name || ' ' || u.last_name AS name,
+                      concat(u.first_name, ' ', u.last_name) AS name,
                       u.email,
                       (SELECT string_agg(distinct p1.position, ', ')
                        FROM flow.user_position up1
@@ -565,7 +566,7 @@ FROM (SELECT cp.id,
                                     WHEN :positions = 'setters'
                                          THEN p.id IN (4, 5, 6) END))
         AND (
-                lower(first_name) || ' ' || lower(last_name) LIKE lower(:search)
+                concat(lower(first_name), ' ', lower(last_name)) LIKE lower(:search)
                   OR lower(last_name) LIKE lower(:search)
                   OR lower(u.email) LIKE lower(:search)
                 )

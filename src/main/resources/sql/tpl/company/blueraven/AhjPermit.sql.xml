@@ -75,9 +75,9 @@
               n.date_created,
               n.date_modified,
               n.created_by_id                                      AS "createdById",
-              created_by.first_name || ' ' || created_by.last_name AS "createdBy",
+              concat(created_by.first_name, ' ', created_by.last_name) AS "createdBy",
               n.modified_by_id                                      AS "modifiedById",
-              modified_by.first_name || ' ' || modified_by.last_name AS "modifiedBy"
+              concat(modified_by.first_name, ' ', modified_by.last_name) AS "modifiedBy",
             FROM brs.ahj_note n
               INNER JOIN flow."user" created_by ON n.created_by_id = created_by.id
               INNER JOIN flow."user" modified_by ON n.modified_by_id = modified_by.id
@@ -171,7 +171,7 @@
               upv.user_id AS "id",
               upv.first_name AS "firstName",
               upv.last_name AS "lastName",
-              upv.first_name || ' ' || upv.last_name AS "fullName",
+              concat(upv.first_name,' ',upv.last_name) AS "fullName",
               (select array_to_json(array_agg(row_to_json(fots)))
                from (select o.id AS "orgId",
                             upv.org_level_id AS "orgLevelId",

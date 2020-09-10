@@ -31,7 +31,7 @@ BEGIN
                    ) as rank
               from (
                   select u.id as setter_user_id,
-                         u.first_name || ' ' || u.last_name as name,
+                         concat(u.first_name, ' ', u.last_name) AS name,
                          count(1)::bigint as pitches,
                          rank() over (order by count(1) desc) as rank
                   from flow.project p

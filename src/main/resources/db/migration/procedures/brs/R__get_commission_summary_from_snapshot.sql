@@ -12,7 +12,7 @@ BEGIN
    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                FROM (SELECT id,
                             --'1234' as employee_id,
-                            first_name || ' ' || last_name AS closer_user,
+                            concat(first_name, ' ', last_name) as closer_user,
                             total_commissions              AS total_commission,
                             total_overrides                AS total_overrides,
                             total_adjustments              AS commission_adjustments,
@@ -61,7 +61,7 @@ BEGIN
                      UNION
                      SELECT id,
                            -- employee_id,
-                            first_name || ' ' || last_name                            AS closer_user,
+                            concat(first_name, ' ', last_name) as closer_user,
                             total_commissions,
                             total_overrides,
                             total_adjustments,
@@ -117,7 +117,7 @@ BEGIN
                      UNION
                      SELECT id,
                             --employee_id,
-                            first_name || ' ' || last_name                            AS closer_user,
+                            concat(first_name, ' ', last_name) as closer_user,
                             total_commissions,
                             total_overrides,
                             total_adjustments,
