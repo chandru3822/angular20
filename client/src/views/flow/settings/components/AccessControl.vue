@@ -128,6 +128,7 @@
       alterEnabledFlagForRows () {
         this.companyFeatureList.forEach(cf => {
           let matchingRow = this.selectedRows.find(row => row.featureId === cf.featureId)
+          debugger
           let enabled = matchingRow !== null && matchingRow !== undefined
           cf.accessControl.forEach(acl => {
             acl.enabled = enabled
