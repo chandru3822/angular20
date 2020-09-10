@@ -62,8 +62,8 @@
       callback: Function,
     },
     watch: {
-      'selectedRows': function () {
-        this.alterEnabledFlagForRows()
+      'selectedRows': function (newVal, oldVal, blah) {
+        this.alterEnabledFlagForRows(newVal, oldVal, blah)
       }
     },
     data() {
@@ -125,14 +125,22 @@
         })
         this.callback(this.companyFeatureList)
       },
-      alterEnabledFlagForRows () {
-        this.companyFeatureList.forEach(cf => {
-          let matchingRow = this.selectedRows.find(row => row.featureId === cf.featureId)
-          let enabled = matchingRow !== null && matchingRow !== undefined
-          cf.accessControl.forEach(acl => {
-            acl.enabled = enabled
-          })
+      alterEnabledFlagForRows (newList, oldList, blah) {
+        // filter the new list and remove everything that was in old list.  this is the row that was clicked
+        let selectedRow, enable
+        if(newList?.length > oldList?.length) {
+          selectedRow = newList?.filter(e => !oldList?.includes(e))[0]
+          enable = true
+        } else {
+          selectedRow = oldList?.filter(e => !newList?.includes(e))[0]
+          enable = false
+        }
+
+        let selectedCfl = this.companyFeatureList.find(cfl => { return cfl.featureId === selectedRow.featureId})
+        selectedCfl?.accessControl?.forEach(acl => {
+          acl.enabled = enable
         })
+
         this.callback(this.companyFeatureList)
       },
       async getFeatures() {

@@ -663,7 +663,42 @@
 
       <!-- FUNNEL -->
       <div class="funnel-container">
+        <!-- FUNNEL BACKGROUND -->
         <div v-show="apptsToFdcPipelineData.length > 0" id="appts-to-fdc-pipeline-funnel-background"></div>
+
+        <!-- TODAY PERCENTAGE LINES -->
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="today-upper-percentage-line" class="upper-percentage-line"></div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="today-lower-percentage-line" class="lower-percentage-line"></div>
+        <!-- TODAY PERCENTAGES -->
+        <div v-show="viewSelect === 'apptDateCohort'" id="today-upper-percentage"
+             class="upper-percentage">{{todayUpperPercentage}}%</div>
+        <div v-show="viewSelect === 'apptDateCohort'" id="today-lower-percentage"
+             class="lower-percentage">{{todayLowerPercentage}}%</div>
+
+        <!-- WTD PERCENTAGE LINES -->
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="wtd-upper-percentage-line" class="upper-percentage-line"></div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="wtd-lower-percentage-line" class="lower-percentage-line"></div>
+        <!-- WTD PERCENTAGES -->
+        <div v-show="viewSelect === 'apptDateCohort'" id="wtd-upper-percentage"
+             class="upper-percentage">{{wtdUpperPercentage}}%</div>
+        <div v-show="viewSelect === 'apptDateCohort'" id="wtd-lower-percentage"
+             class="lower-percentage">{{wtdLowerPercentage}}%</div>
+
+        <!-- CUSTOM DATE RANGE PERCENTAGE LINES -->
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="cdr-upper-percentage-line" class="upper-percentage-line"></div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="cdr-lower-percentage-line" class="lower-percentage-line"></div>
+        <!-- CUSTOM DATE RANGE PERCENTAGES -->
+        <div v-show="viewSelect === 'apptDateCohort'" id="cdr-upper-percentage"
+             class="upper-percentage">{{cdrUpperPercentage}}%</div>
+        <div v-show="viewSelect === 'apptDateCohort'" id="cdr-lower-percentage"
+             class="lower-percentage">{{cdrLowerPercentage}}%</div>
+
         <table class="funnel-table">
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
@@ -725,16 +760,16 @@
           </tr>
           <!-- FUNNEL ROWS -->
           <tr class="funnel-tr" v-for="line in apptsToFdcPipelineData" :key="line.id"
-              :class="{'main-row': [14,17,11,4,21,8].indexOf(line.id) !== -1, 'blue-sub-row': [16,19,22,23,3,6].indexOf(line.id) !== -1}">
+              :class="{'main-row': [14,17,11,4,21,8].indexOf(line.id) !== -1, 'blue-sub-row': [16,18,20,24,3,6].indexOf(line.id) !== -1}">
             <!-- FUNNEL NAME -->
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
 
             <!-- TODAY COUNT -->
             <td class="funnel-td">
-              <div v-if="[14,15,16,25,8].indexOf(line.id) === -1" class="funnel-data-container">
+              <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
-                <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
-                <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
+                <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
+                <div v-if="[18,19,20,22,24,23,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
                      @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', true)">
@@ -750,44 +785,17 @@
                 <div @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
                   {{line.today_count}}
                 </div>
-
-                <!-- PERCENTAGE -->
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [18,19,20,23,24,9,3,4,6,7].indexOf(line.id) !== -1"
-                    class="percentage-column-segment">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [22,5].indexOf(line.id) !== -1"
-                    class="percentage-column-segment-with-percentage">
-                  <div class="percentage-line"></div>
-                  <span class="funnel-percentage">
-                    {{line.id === 22 ? todayUpperPercentage : todayLowerPercentage}}%
-                  </span>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
-                  <div class="top-percentage-line"></div>
-                  <div class="bottom-percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,22,23,24,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
-                    class="funnel-td">
-                </div>
               </div>
-              <div v-else class="funnel-count"
-                   @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
                 {{line.today_count}}
               </div>
             </td>
 
             <!-- WTD COUNT -->
             <td class="funnel-td">
-              <div v-if="[14,15,16,25,8].indexOf(line.id) === -1" class="funnel-data-container">
+              <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
-                <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
+                <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4].indexOf(line.id) !== -1}"
@@ -804,35 +812,8 @@
                 <div @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
                   {{line.week_to_date_count}}
                 </div>
-
-                <!-- PERCENTAGE -->
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [18,19,20,23,24,9,3,4,6,7].indexOf(line.id) !== -1"
-                    class="percentage-column-segment">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [22,5].indexOf(line.id) !== -1"
-                    class="percentage-column-segment-with-percentage">
-                  <div class="percentage-line"></div>
-                  <span class="funnel-percentage">
-                    {{line.id === 22 ? wtdUpperPercentage : wtdLowerPercentage}}%
-                  </span>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
-                  <div class="top-percentage-line"></div>
-                  <div class="bottom-percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,22,23,24,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
-                     class="funnel-td">
-                </div>
               </div>
-              <div v-else class="funnel-count"
-                   @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
                 {{line.week_to_date_count}}
               </div>
             </td>
@@ -840,9 +821,9 @@
 
             <!-- CUSTOM DATE RANGE COUNT -->
             <td class="funnel-td">
-              <div v-if="[14,15,16,25,8].indexOf(line.id) === -1" class="funnel-data-container">
+              <div v-if="[14,15,16,17,8].indexOf(line.id) === -1" class="funnel-data-container">
                 <!-- CHECKED-IN COUNT -->
-                <div v-if="line.id === 17" class="checked-in-column-top">Checked-in</div>
+                <div v-if="line.id === 25" class="checked-in-column-top">Checked-in</div>
                 <div v-if="[18,19,20,22,23,24,11,9,3,4,5,6,7].indexOf(line.id) !== -1"
                      class="checked-in-column-center"
                      :class="{'checked-in-column-line-overlap': [11,4,21].indexOf(line.id) !== -1}"
@@ -859,35 +840,8 @@
                 <div @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
                   {{line.custom_date_range_count}}
                 </div>
-
-                <!-- PERCENTAGE -->
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 17" class="percentage-column-top">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [18,19,20,23,24,9,3,4,6,7].indexOf(line.id) !== -1"
-                    class="percentage-column-segment">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [22,5].indexOf(line.id) !== -1"
-                    class="percentage-column-segment-with-percentage">
-                  <div class="percentage-line"></div>
-                  <span class="funnel-percentage">
-                    {{line.id === 22 ? customDateRangeUpperPercentage : customDateRangeLowerPercentage}}%
-                  </span>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 11" class="percentage-column-connector">
-                  <div class="top-percentage-line"></div>
-                  <div class="bottom-percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && line.id === 21" class="percentage-column-bottom">
-                  <div class="percentage-line"></div>
-                </div>
-                <div v-if="viewSelect === 'apptDateCohort' && [17,18,19,20,22,23,24,11,9,3,4,5,6,7,21].indexOf(line.id) === -1"
-                    class="funnel-td">
-                </div>
               </div>
-              <div v-else class="funnel-count"
-                   @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
                 {{line.custom_date_range_count}}
               </div>
             </td>
@@ -1132,8 +1086,8 @@
           {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
           {id: 15, name: 'Cancelled in advance', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 5},
           {id: 16, name: 'Ineligible for solar', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 6},
-          {id: 25, name: 'Rescheduled', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 7},
           {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
+          {id: 25, name: 'Rescheduled', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 7},
           {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
           {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
           {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
@@ -1156,8 +1110,8 @@
       todayLowerPercentage: 99,
       wtdUpperPercentage: 99,
       wtdLowerPercentage: 99,
-      customDateRangeUpperPercentage: 99,
-      customDateRangeLowerPercentage: 99,
+      cdrUpperPercentage: 99,
+      cdrLowerPercentage: 99,
       brsProvidedSourceModel: [],
       brsProvidedSourceData: [],
       checkAllBrsProvidedSources: false,
@@ -1246,7 +1200,7 @@
         value: 'MTD'
       },
       showApptsToFdcPipelineCustomDates: false,
-      viewSelect: 'standard',
+      viewSelect: 'apptDateCohort',
       appts_created_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
       appts_created_pipeline_dt1_formatted: moment().startOf('month').format('M/D/YY'),
       appts_created_pipeline_menu1: false,
@@ -2003,10 +1957,10 @@
 
           this.todayUpperPercentage = this.getPercentage(todayUpperNumerator, todayUpperDenominator)
           this.wtdUpperPercentage = this.getPercentage(wtdUpperNumerator, wtdUpperDenominator)
-          this.customDateRangeUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
+          this.cdrUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
           this.todayLowerPercentage = this.getPercentage(todayLowerNumerator, todayLowerDenominator)
           this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
-          this.customDateRangeLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
+          this.cdrLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
 
           if (this.apptsCreatedPipelineData.length > 0) {
             this.$store.commit(AppMutations.SET_LOADING, false)
@@ -2278,10 +2232,10 @@
           case 16: // Ineligible for solar
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
-          case 25: // Rescheduled
+          case 17: // Total Eligible Planned Appointments
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
-          case 17: // Total Eligible Planned Appointments
+          case 25: // Rescheduled
             this.funnelDrilldownHeaders[12].show = true // appointment_outcome
             break
           case 18: // Homeowner no show
@@ -2983,6 +2937,74 @@
     display: none;
   }
 
+  .upper-percentage-line,
+  .lower-percentage-line {
+    display: block;
+    position: absolute;
+    z-index: 200;
+    border-top: 1px solid blue;
+    border-right: 1px solid blue;
+    border-bottom: 1px solid blue;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    width: 8px;
+  }
+
+  .upper-percentage-line {
+    top: 151px;
+    height: 263px;
+  }
+
+  .lower-percentage-line {
+    top: 416px;
+    height: 230px;
+  }
+
+  #today-upper-percentage-line,
+  #today-lower-percentage-line {
+    left: 42%;
+  }
+
+  #wtd-upper-percentage-line,
+  #wtd-lower-percentage-line {
+    left: 68%;
+  }
+
+  #cdr-upper-percentage-line,
+  #cdr-lower-percentage-line {
+    left: 93%;
+  }
+
+  .upper-percentage,
+  .lower-percentage {
+    position: absolute;
+    font-size: 7px;
+    color: blue;
+  }
+
+  .upper-percentage {
+    top: 276px;
+  }
+
+  .lower-percentage {
+    top: 543px;
+  }
+
+  #today-upper-percentage,
+  #today-lower-percentage {
+    left: 45%;
+  }
+
+  #wtd-upper-percentage,
+  #wtd-lower-percentage {
+    left: 71%;
+  }
+
+  #cdr-upper-percentage,
+  #cdr-lower-percentage {
+    left: 96%;
+  }
+
   #appts-created-pipeline-container {
     background-color: #fff;
     box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
@@ -3336,6 +3358,7 @@
 
         .funnel-td {
           font-size: 7px;
+          width: 90px;
         }
 
         .funnel-count {
@@ -3348,6 +3371,7 @@
           flex-flow: row nowrap;
           align-items: center;
           padding: 0 5px;
+          width: 90px;
         }
 
         .checked-in-column-top,
@@ -3366,7 +3390,7 @@
           border-bottom: none;
           border-top-left-radius: 5px;
           border-top-right-radius: 5px;
-          padding: 3px 2px 5px 2px;
+          padding: 3px 2px 5.5px 2px;
           margin-top: 3px;
         }
 
@@ -3387,77 +3411,6 @@
         .checked-in-column-line-overlap {
           padding: 12.9px 2px 10.9px 2px;
           margin-top: -1px;
-        }
-
-        .percentage-column-top {
-          .percentage-line {
-            border-top: 1px solid blue;
-            border-right: 1px solid blue;
-            border-top-right-radius: 2px;
-            margin-top: 15.6px;
-            margin-left: 2px;
-            width: 8px;
-            height: 17.25px;
-          }
-        }
-
-        .percentage-column-segment {
-          .percentage-line {
-            border-right: 1px solid blue;
-            width: 10px;
-            height: 33px;
-          }
-        }
-
-        .percentage-column-segment-with-percentage {
-          .percentage-line {
-            border-right: 1px solid blue;
-            width: 10px;
-            height: 33px;
-            float: left;
-          }
-
-          .funnel-percentage {
-            color: blue;
-            font-size: 7px;
-            font-weight: bold;
-            float: right;
-            padding-top: 10.5px;
-            margin-right: -18px;
-          }
-        }
-
-        .percentage-column-connector {
-          .top-percentage-line {
-            border-bottom: 1px solid blue;
-            border-right: 1px solid blue;
-            border-bottom-right-radius: 2px;
-            margin-bottom: 2px;
-            margin-left: 2px;
-            width: 8px;
-            height: 15.5px;
-          }
-
-          .bottom-percentage-line {
-            border-top: 1px solid blue;
-            border-right: 1px solid blue;
-            border-top-right-radius: 2px;
-            margin-left: 2px;
-            width: 8px;
-            height: 15.5px;
-          }
-        }
-
-        .percentage-column-bottom {
-          .percentage-line {
-            border-bottom: 1px solid blue;
-            border-right: 1px solid blue;
-            border-bottom-right-radius: 2px;
-            margin-bottom: 12px;
-            margin-left: 2px;
-            width: 8px;
-            height: 14px;
-          }
         }
       }
     }
@@ -3577,6 +3530,52 @@
       }
     }
 
+    .upper-percentage-line {
+      top: 129px;
+    }
+
+    .lower-percentage-line {
+      top: 394px;
+    }
+
+    #today-upper-percentage-line,
+    #today-lower-percentage-line {
+      left: 56%;
+    }
+
+    #wtd-upper-percentage-line,
+    #wtd-lower-percentage-line {
+      left: 77%;
+    }
+
+    #cdr-upper-percentage-line,
+    #cdr-lower-percentage-line {
+      left: 95%;
+    }
+
+    .upper-percentage {
+      top: 254px;
+    }
+
+    .lower-percentage {
+      top: 521px;
+    }
+
+    #today-upper-percentage,
+    #today-lower-percentage {
+      left: 58%;
+    }
+
+    #wtd-upper-percentage,
+    #wtd-lower-percentage {
+      left: 79%;
+    }
+
+    #cdr-upper-percentage,
+    #cdr-lower-percentage {
+      left: 97%;
+    }
+
     #appts-created-pipeline-container {
      .funnel-container {
        .funnel-table {
@@ -3605,7 +3604,7 @@
           }
 
           .funnel-data-container {
-            margin-left: 20%;
+            margin-left: 8%;
           }
         }
       }
@@ -3619,6 +3618,18 @@
       #funnel-drilldown-search {
         ::v-deep .v-input {
           max-width: 75%;
+        }
+      }
+    }
+  }
+
+  @media (min-width: 650px) {
+    #appts-to-fdc-pipeline-container {
+      .funnel-container {
+        .funnel-table {
+          .funnel-data-container {
+            margin-left: 15%;
+          }
         }
       }
     }
@@ -3932,6 +3943,64 @@
       }
     }
 
+    .upper-percentage-line,
+    .lower-percentage-line {
+      width: 11px;
+    }
+
+    .upper-percentage-line {
+      top: 197px;
+      height: 334px;
+    }
+
+    .lower-percentage-line {
+      top: 534px;
+      height: 287px;
+    }
+
+    #today-upper-percentage-line,
+    #today-lower-percentage-line {
+      left: 55.5%;
+    }
+
+    #wtd-upper-percentage-line,
+    #wtd-lower-percentage-line {
+      left: 76%;
+    }
+
+    #cdr-upper-percentage-line,
+    #cdr-lower-percentage-line {
+      left: 94.5%;
+    }
+
+    .upper-percentage,
+    .lower-percentage {
+      font-size: 12px;
+    }
+
+    .upper-percentage {
+      top: 362px;
+    }
+
+    .lower-percentage {
+      top: 686px;
+    }
+
+    #today-upper-percentage,
+    #today-lower-percentage {
+      left: 57.5%;
+    }
+
+    #wtd-upper-percentage,
+    #wtd-lower-percentage {
+      left: 78%;
+    }
+
+    #cdr-upper-percentage,
+    #cdr-lower-percentage {
+      left: 96.5%;
+    }
+
     #appts-to-fdc-pipeline-container {
       margin: 0 auto;
       max-width: calc(100% - 50px);
@@ -3983,7 +4052,7 @@
             border-top: 2px solid #000;
 
             .funnel-line-name {
-              padding-left: 15px !important;
+              padding-left: 10px !important;
             }
           }
 
@@ -4042,21 +4111,19 @@
           }
 
           .funnel-line-name {
-            padding-left: 25px !important;
+            padding-left: 20px !important;
             height: 40px;
           }
 
           .funnel-td {
             font-size: 12px;
             padding: 0 10px;
+            width: 105px;
           }
 
           .funnel-data-container {
-            margin-left: 3%;
-          }
-
-          .checked-in-column-td {
-            font-size: 10px;
+            margin-left: 0;
+            width: 105px;
           }
 
           .checked-in-column-top,
@@ -4083,51 +4150,6 @@
           .checked-in-column-line-overlap {
             margin-top: -2px;
             padding: 13px 2px 11px 2px;
-          }
-
-          .percentage-column-top {
-            .percentage-line {
-              margin-top: 27px;
-              width: 10px;
-              height: 27px;
-            }
-          }
-
-          .percentage-column-segment {
-            .percentage-line {
-              margin-left: 2px;
-              width: 10px;
-              height: 40px;
-            }
-          }
-
-          .percentage-column-segment-with-percentage {
-            .percentage-line {
-              margin-left: 2px;
-              width: 10px;
-              height: 40px;
-            }
-
-            .funnel-percentage {
-              font-size: 12px;
-              padding-left: 3px;
-            }
-          }
-
-          .percentage-column-connector {
-            .top-percentage-line,
-            .bottom-percentage-line {
-              width: 10px;
-              height: 19px;
-            }
-          }
-
-          .percentage-column-bottom {
-            .percentage-line {
-              margin-bottom: 22px;
-              width: 10px;
-              height: 24px;
-            }
           }
         }
       }
@@ -4191,11 +4213,36 @@
   }
 
   @media (min-width: 900px) {
+    #today-upper-percentage-line,
+    #today-lower-percentage-line {
+      left: 49%;
+    }
+
+    #wtd-upper-percentage-line,
+    #wtd-lower-percentage-line {
+      left: 72%;
+    }
+
+    #today-upper-percentage,
+    #today-lower-percentage {
+      left: 51%;
+    }
+
+    #wtd-upper-percentage,
+    #wtd-lower-percentage {
+      left: 74%;
+    }
+
     #appts-to-fdc-pipeline-container {
       .funnel-container {
         .funnel-table {
+          .funnel-td {
+            width: 150px;
+          }
+
           .funnel-data-container {
-            margin-left: 25%;
+            margin-left: 15%;
+            width: 150px;
           }
         }
       }
@@ -4366,6 +4413,64 @@
       height: 0;
     }
 
+    .upper-percentage-line,
+    .lower-percentage-line {
+      width: 14px;
+    }
+
+    .upper-percentage-line {
+      top: 201px;
+      height: 357px;
+    }
+
+    .lower-percentage-line {
+      top: 564px;
+      height: 317px;
+    }
+
+    #today-upper-percentage-line,
+    #today-lower-percentage-line {
+      left: 58%;
+    }
+
+    #wtd-upper-percentage-line,
+    #wtd-lower-percentage-line {
+      left: 77%;
+    }
+
+    #cdr-upper-percentage-line,
+    #cdr-lower-percentage-line {
+      left: 95.4%;
+    }
+
+    .upper-percentage,
+    .lower-percentage {
+      font-size: 14px;
+    }
+
+    .upper-percentage {
+      top: 370px;
+    }
+
+    .lower-percentage {
+      top: 732px;
+    }
+
+    #today-upper-percentage,
+    #today-lower-percentage {
+      left: 60%;
+    }
+
+    #wtd-upper-percentage,
+    #wtd-lower-percentage {
+      left: 79%;
+    }
+
+    #cdr-upper-percentage,
+    #cdr-lower-percentage {
+      left: 97%;
+    }
+
     #appts-to-fdc-pipeline-container {
       .pipeline-header-container {
         .pipeline-icon {
@@ -4436,11 +4541,7 @@
           }
 
           .funnel-data-container {
-            margin-left: 3%;
-          }
-
-          .checked-in-column-td {
-            font-size: 14px;
+            margin-left: 0;
           }
 
           .checked-in-column-top,
@@ -4467,52 +4568,6 @@
             margin-top: -2.5px !important;
             padding-top: 15px;
             padding-bottom: 11.5px;
-          }
-
-          .percentage-column-top {
-            padding: 0 5px 0 0;
-
-            .percentage-line {
-              margin-top: 22px;
-              width: 20px;
-              height: 24px;
-            }
-          }
-
-          .percentage-column-segment {
-            .percentage-line {
-              width: 20px;
-              height: 44.8px;
-            }
-          }
-
-          .percentage-column-segment-with-percentage {
-            .percentage-line {
-              width: 20px;
-              height: 44.8px;
-            }
-
-            .funnel-percentage {
-              font-size: 14px;
-              padding-top: 12px;
-              padding-left: 6px;
-            }
-          }
-
-          .percentage-column-connector {
-            .top-percentage-line,
-            .bottom-percentage-line {
-              width: 20px;
-              height: 21.4px;
-            }
-          }
-
-          .percentage-column-bottom {
-            .percentage-line {
-              margin-bottom: 24px;
-              width: 20px;
-              height: 26px;
-            }
           }
         }
       }
@@ -4626,6 +4681,57 @@
       width: 425px;
     }
 
+    .upper-percentage-line,
+    .lower-percentage-line {
+      width: 15px;
+    }
+
+    .upper-percentage-line {
+      height: 370px;
+    }
+
+    .lower-percentage-line {
+      top: 576px;
+    }
+
+    #today-upper-percentage-line,
+    #today-lower-percentage-line {
+      left: 60.5%;
+    }
+
+    #wtd-upper-percentage-line,
+    #wtd-lower-percentage-line {
+      left: 78.5%;
+    }
+
+    #cdr-upper-percentage-line,
+    #cdr-lower-percentage-line {
+      left: 95.6%;
+    }
+
+    .upper-percentage {
+      top: 382px;
+    }
+
+    .lower-percentage {
+      top: 744px;
+    }
+
+    #today-upper-percentage,
+    #today-lower-percentage {
+      left: 62.5%;
+    }
+
+    #wtd-upper-percentage,
+    #wtd-lower-percentage {
+      left: 80.5%;
+    }
+
+    #cdr-upper-percentage,
+    #cdr-lower-percentage {
+      left: 97.2%;
+    }
+
     #appts-to-fdc-pipeline-container {
       .pipeline-header-container {
         #pipeline-header-right-side {
@@ -4699,45 +4805,6 @@
           .checked-in-column-bottom {
             padding-top: 22px;
           }
-
-          .percentage-column-top {
-            .percentage-line {
-              margin-top: 29px;
-              margin-left: 5px;
-              height: 31px;
-            }
-          }
-
-          .percentage-column-segment {
-            .percentage-line {
-              margin-left: 5px;
-            }
-          }
-
-          .percentage-column-segment-with-percentage {
-            .percentage-line {
-              margin-left: 5px;
-            }
-
-            .funnel-percentage {
-              padding-left: 8px;
-            }
-          }
-
-          .percentage-column-connector {
-            .top-percentage-line,
-            .bottom-percentage-line {
-              margin-left: 5px;
-            }
-          }
-
-          .percentage-column-bottom {
-            .percentage-line {
-              margin-bottom: 23px;
-              margin-left: 5px;
-              height: 25px;
-            }
-          }
         }
       }
     }
@@ -4784,13 +4851,6 @@
           .checked-in-column-top {
             padding: 17px 3px;
           }
-
-          .percentage-column-top {
-            .percentage-line {
-              margin-top: 28.5px;
-              height: 32px;
-            }
-          }
         }
       }
     }
@@ -4821,6 +4881,53 @@
       width: 520px;
     }
 
+    .upper-percentage-line,
+    .lower-percentage-line {
+      width: 20px;
+    }
+
+    .lower-percentage-line {
+      height: 318px;
+    }
+
+    #today-upper-percentage-line,
+    #today-lower-percentage-line {
+      left: 56%;
+    }
+
+    #wtd-upper-percentage-line,
+    #wtd-lower-percentage-line {
+      left: 76%;
+    }
+
+    #cdr-upper-percentage-line,
+    #cdr-lower-percentage-line {
+      left: 96%;
+    }
+
+    .upper-percentage {
+      top: 383px;
+    }
+
+    .lower-percentage {
+      top: 745px;
+    }
+
+    #today-upper-percentage,
+    #today-lower-percentage {
+      left: 58%;
+    }
+
+    #wtd-upper-percentage,
+    #wtd-lower-percentage {
+      left: 78%;
+    }
+
+    #cdr-upper-percentage,
+    #cdr-lower-percentage {
+      left: 97.7%;
+    }
+
     #appts-to-fdc-pipeline-container {
       .funnel-container {
         .funnel-table {
@@ -4840,8 +4947,13 @@
             padding-left: 207px !important;
           }
 
+          .funnel-td {
+            width: 200px;
+          }
+
           .funnel-data-container {
-            margin-left: 35%;
+            margin-left: 18%;
+            width: 200px;
           }
         }
       }
