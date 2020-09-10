@@ -18,8 +18,8 @@ BEGIN
                           inner join flow.user_position up on up.user_id = u.id
                           inner join flow.org o on o.id = up.org_id
                           inner join flow.state s on s.id = o.state_id
-                          inner join flow.user_status_type ust on ust.user_id = u.id
-                          inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.company_id = o.company_id
+                          inner join flow.company_user_status cus on cus.user_id = u.id
+                          inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = o.company_id
                      and up.position_id in (1,2,3)
                      and up.end_date is null
                      and up.primary_flag is true

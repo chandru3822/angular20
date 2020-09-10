@@ -12,8 +12,8 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
-              <v-select v-model="user.companyUserStatusTypeId"
-                        :items="companyUserStatusTypes"
+              <v-select v-model="user.userStatusTypeId"
+                        :items="userStatusTypes"
                         label="User Status"
                         placeholder="Select a status..."
                         item-text="userStatusType"
@@ -113,7 +113,7 @@
         userId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
         changeOwner: false,
-        companyUserStatusTypes: [],
+        userStatusTypes: [],
       }
     },
     created () {
@@ -121,7 +121,7 @@
       this.getCompanies()
       this.getCustomFieldGroups()
       this.getNotes()
-      this.getCompanyUserStatusTypes()
+      this.getUserStatusTypes()
     },
     methods: {
       async saveUser() {
@@ -201,11 +201,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getCompanyUserStatusTypes () {
+      async getUserStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/user/statuses`)
-          this.companyUserStatusTypes = data
+          this.userStatusTypes = data
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -217,7 +217,7 @@
       async saveUserStatus () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/user/${this.userId}/status/${this.user.companyUserStatusTypeId}`)
+          await postRequest(`/user/${this.userId}/status/${this.user.userStatusTypeId}`)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)

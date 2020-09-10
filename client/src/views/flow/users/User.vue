@@ -88,7 +88,7 @@
         companyId: this.$store.state.user.details.companyId,
         userImage: {},
         loadComplete: false,
-        companyUserStatusTypes: [],
+        userStatusTypes: [],
         attachmentTypeId: 9,
         imageFailed: false
       }

@@ -151,7 +151,7 @@ public class UserService {
       params.put("id", id);
       sqlCache.update("user.updateUser", params);
       //save user status
-      saveUserStatus(true, id, user.getCompanyUserStatusTypeId());
+      saveUserStatus(true, id, user.getUserStatusTypeId());
       //save user companies
       handleSavingUserCompanies(user.getCompanies(), user.getId());
     } else {
@@ -172,7 +172,7 @@ public class UserService {
       params.put("isDefault", true);
       sqlCache.update("user.insertUserCompany", params);
       //insert a row into user_status
-      saveUserStatus(false, id, user.getCompanyUserStatusTypeId());
+      saveUserStatus(false, id, user.getUserStatusTypeId());
     }
 
 
@@ -255,21 +255,21 @@ public class UserService {
     return user.orElse(null);
   }
 
-  public List<CompanyUserStatusType> getCompanyUserStatuses() {
+  public List<UserStatusType> getCompanyUserStatuses() {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<CompanyUserStatusType> results = sqlCache.query("user.getCompanyUserStatuses", params, CompanyUserStatusType.class);
+    List<UserStatusType> results = sqlCache.query("user.getCompanyUserStatuses", params, UserStatusType.class);
     return results;
   }
 
-  public void saveUserStatus(Boolean update, Long userId, Long companyUserStatusTypeId) {
+  public void saveUserStatus(Boolean update, Long userId, Long userStatusTypeId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
     params.put("currentUserId", user.getId());
     params.put("userId", userId);
-    params.put("companyUserStatusTypeId", companyUserStatusTypeId);
+    params.put("userStatusTypeId", userStatusTypeId);
 
     if(update) {
       sqlCache.update("user.updateUserStatus", params);
