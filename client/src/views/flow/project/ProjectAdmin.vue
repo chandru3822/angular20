@@ -4,7 +4,7 @@
     <v-row class="project-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/contact/${contact.id}`">{{ contact.fullName}}</router-link>
+          <router-link :to="`/projectId/${projectId}`">{{ contact.fullName}}</router-link>
         </div>
         <div class="project-subtitle">
           {{ contact.street1 }} - {{ contact.city }}, {{ contact.state }}
