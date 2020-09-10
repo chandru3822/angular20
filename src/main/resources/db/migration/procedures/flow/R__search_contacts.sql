@@ -65,7 +65,7 @@ BEGIN
                      SELECT c.id,
                             c.first_name,
                             c.last_name,
-                            concat(c.first_name, ' ', c.last_name) as full_name
+                            concat(c.first_name, ' ', c.last_name) as full_name,
                             c.email,
                             c.phone,
                             c.mobile,
