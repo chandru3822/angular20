@@ -40,7 +40,7 @@
             FROM (SELECT u.id as "userId",
                      u.first_name as "firstName",
                      u.last_name as "lastName",
-                     concat(u.first_name, ' ', u.last_name) as full_name,
+                     concat(u.first_name, ' ', u.last_name) as "fullName",
                      p.position,
                      up.id as "userPositionId"
                   FROM blueraven."user" u

@@ -16,14 +16,15 @@
                   <div v-on="{ ...tooltip }" class="d-inline-block">
                     <v-btn v-on="{ ...menu }"
                            color="primary"
-                           :disabled="!contact.owner || !contact.owner.userId"
+                           :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
                            class="white--text"
                            @click="getAvailableProcesses">
                       Add Project
                     </v-btn>
                   </div>
                 </template>
-                <span v-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+                <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
+                <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
               </v-tooltip>
             </template>
             <v-card class="pa-5">
