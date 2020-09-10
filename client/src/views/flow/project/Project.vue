@@ -7,7 +7,7 @@
             <v-col cols="10" class="text-left pl-5">
               <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
               <div class="project-title">
-                <router-link :to="`/project/${project.id}/details`">{{ project.projectName}}</router-link>
+                <router-link :to="`/contact/${project.contactId}`">{{ project.projectName}}</router-link>
               </div>
               <div class="project-subtitle">
                 <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
