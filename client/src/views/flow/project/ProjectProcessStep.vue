@@ -6,7 +6,7 @@
     <v-row class="process-step-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/contact/${project.contactId}`">{{ project.projectName}}</router-link>
+          <router-link :to="`/project/${project.id}`">{{ project.projectName}}</router-link>
         </div>
         <div class="project-subtitle">
           {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
