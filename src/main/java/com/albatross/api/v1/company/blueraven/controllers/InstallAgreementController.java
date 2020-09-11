@@ -4,7 +4,9 @@ import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
 import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 
+import com.albatross.api.v1.company.blueraven.services.LoanPalService;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,9 @@ public class InstallAgreementController {
 
   @Autowired
   InstallAgreementRepository installAgreementRepository;
+
+  @Autowired
+  private LoanPalService loanPalService;
 
   @GetMapping(value = "/projects")
   public Page<InstallAgreementProject> getProjects(@RequestParam String query, Pageable pageable) {
@@ -54,8 +59,13 @@ public class InstallAgreementController {
   @GetMapping(value = "/loanStatus/{projectId}")
   public ResponseEntity<String> getLoanStatus(@PathVariable Long projectId) {
       try {
-          String status = installAgreementRepository.getLoanStatus(projectId);
-          return status != null ? ResponseEntity.ok(status) : ResponseEntity.notFound().build();
+          JSONObject loanStatus = loanPalService.getApplicationByProjectId(projectId);
+          if (loanStatus == null) {
+              return ResponseEntity.notFound().build();
+          }
+          else {
+              return ResponseEntity.ok(loanStatus.toString());
+          }
       } catch (Exception e) {
           return ResponseEntity.notFound().build();
       }
