@@ -672,10 +672,10 @@
         <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
              id="today-lower-percentage-line" class="lower-percentage-line"></div>
         <!-- TODAY PERCENTAGES -->
-        <div v-show="viewSelect === 'apptDateCohort'" id="today-upper-percentage"
-             class="upper-percentage">{{todayUpperPercentage}}%</div>
-        <div v-show="viewSelect === 'apptDateCohort'" id="today-lower-percentage"
-             class="lower-percentage">{{todayLowerPercentage}}%</div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="today-upper-percentage" class="upper-percentage">{{todayUpperPercentage}}%</div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="today-lower-percentage" class="lower-percentage">{{todayLowerPercentage}}%</div>
 
         <!-- WTD PERCENTAGE LINES -->
         <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
@@ -683,10 +683,10 @@
         <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
              id="wtd-lower-percentage-line" class="lower-percentage-line"></div>
         <!-- WTD PERCENTAGES -->
-        <div v-show="viewSelect === 'apptDateCohort'" id="wtd-upper-percentage"
-             class="upper-percentage">{{wtdUpperPercentage}}%</div>
-        <div v-show="viewSelect === 'apptDateCohort'" id="wtd-lower-percentage"
-             class="lower-percentage">{{wtdLowerPercentage}}%</div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="wtd-upper-percentage" class="upper-percentage">{{wtdUpperPercentage}}%</div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="wtd-lower-percentage" class="lower-percentage">{{wtdLowerPercentage}}%</div>
 
         <!-- CUSTOM DATE RANGE PERCENTAGE LINES -->
         <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
@@ -694,10 +694,10 @@
         <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
              id="cdr-lower-percentage-line" class="lower-percentage-line"></div>
         <!-- CUSTOM DATE RANGE PERCENTAGES -->
-        <div v-show="viewSelect === 'apptDateCohort'" id="cdr-upper-percentage"
-             class="upper-percentage">{{cdrUpperPercentage}}%</div>
-        <div v-show="viewSelect === 'apptDateCohort'" id="cdr-lower-percentage"
-             class="lower-percentage">{{cdrLowerPercentage}}%</div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="cdr-upper-percentage" class="upper-percentage">{{cdrUpperPercentage}}%</div>
+        <div v-show="apptsToFdcPipelineData.length > 0 && viewSelect === 'apptDateCohort'"
+             id="cdr-lower-percentage" class="lower-percentage">{{cdrLowerPercentage}}%</div>
 
         <table class="funnel-table">
           <!-- FUNNEL COLUMN HEADERS -->
@@ -1732,6 +1732,10 @@
         if (this.showApptsToFdcPipelineCustomDates) {
           this.showApptsToFdcPipelineCustomDates = false
           this.fixApptsToFdcFunnelTopMargin()
+
+          if (this.viewSelect === 'apptDateCohort') {
+            this.fixApptDateCohortBlueLinePosition()
+          }
         }
 
         this.apptsToFdcPipelineDateRange = dateRange
@@ -1752,6 +1756,11 @@
           case 'Custom':
             this.showApptsToFdcPipelineCustomDates = true
             this.fixApptsToFdcFunnelTopMargin()
+
+            if (this.viewSelect === 'apptDateCohort') {
+              this.fixApptDateCohortBlueLinePosition()
+            }
+
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
           default:
@@ -1798,6 +1807,70 @@
         } else {
           if (window.innerWidth <= 1070) {
             $('#appts-to-fdc-pipeline-funnel-background').css('margin-top', '60px')
+          }
+        }
+      },
+
+      fixApptDateCohortBlueLinePosition () {
+        if (this.showApptsToFdcPipelineCustomDates) {
+          if (window.innerWidth < 500) {
+            $('.upper-percentage-line').css('top', '156px')
+            $('.lower-percentage-line').css('top', '421px')
+            $('.upper-percentage').css('top', '281px')
+            $('.lower-percentage').css('top', '548px')
+          } else if (window.innerWidth >= 500 && window.innerWidth < 737) {
+            $('.upper-percentage-line').css('top', '142px')
+            $('.lower-percentage-line').css('top', '407px')
+            $('.upper-percentage').css('top', '267px')
+            $('.lower-percentage').css('top', '534px')
+          } else if (window.innerWidth >= 737 && window.innerWidth < 1070) {
+            $('.upper-percentage-line').css('top', '218px')
+            $('.lower-percentage-line').css('top', '556px')
+            $('.upper-percentage').css('top', '383px')
+            $('.lower-percentage').css('top', '706px')
+          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('.upper-percentage-line').css('top', '222px')
+            $('.lower-percentage-line').css('top', '585px')
+            $('.upper-percentage').css('top', '390px')
+            $('.lower-percentage').css('top', '753px')
+          } else if (window.innerWidth >= 1135) {
+            $('.upper-percentage-line').css('top', '226px')
+            $('.lower-percentage-line').css('top', '602px')
+            $('.upper-percentage').css('top', '407px')
+            $('.lower-percentage').css('top', '770px')
+          }
+        } else {
+          if (window.innerWidth < 500) {
+            $('.upper-percentage-line').css('top', '151px')
+            $('.lower-percentage-line').css('top', '416px')
+            $('.upper-percentage').css('top', '276px')
+            $('.lower-percentage').css('top', '543px')
+          } else if (window.innerWidth >= 500 && window.innerWidth < 737) {
+            $('.upper-percentage-line').css('top', '129px')
+            $('.lower-percentage-line').css('top', '394px')
+            $('.upper-percentage').css('top', '254px')
+            $('.lower-percentage').css('top', '521px')
+          } else if (window.innerWidth >= 737 && window.innerWidth < 1070) {
+            $('.upper-percentage-line').css('top', '197px')
+            $('.lower-percentage-line').css('top', '534px')
+            $('.upper-percentage').css('top', '362px')
+            $('.lower-percentage').css('top', '686px')
+          } else if (window.innerWidth >= 1070 && window.innerWidth < 1135) {
+            $('.upper-percentage-line').css('top', '201px')
+            $('.lower-percentage-line').css('top', '564px')
+            $('.upper-percentage').css('top', '370px')
+            $('.lower-percentage').css('top', '732px')
+          } else if (window.innerWidth >= 1135) {
+            $('.upper-percentage-line').css('top', '201px')
+            $('.lower-percentage-line').css('top', '576px')
+
+            if (window.innerWidth >= 1410) {
+              $('.upper-percentage').css('top', '383px')
+              $('.lower-percentage').css('top', '745px')
+            } else {
+              $('.upper-percentage').css('top', '382px')
+              $('.lower-percentage').css('top', '744px')
+            }
           }
         }
       },
@@ -2941,7 +3014,7 @@
   .lower-percentage-line {
     display: block;
     position: absolute;
-    z-index: 200;
+    z-index: 8;
     border-top: 1px solid blue;
     border-right: 1px solid blue;
     border-bottom: 1px solid blue;
@@ -2978,6 +3051,7 @@
   .upper-percentage,
   .lower-percentage {
     position: absolute;
+    z-index: 8;
     font-size: 7px;
     color: blue;
   }

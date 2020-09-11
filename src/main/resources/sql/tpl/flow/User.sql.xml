@@ -4,7 +4,7 @@
                 upv.first_name,
                 upv.last_name,
                 upv.company_id,
-                upv.first_name || ' ' || upv.last_name as full_name,
+                concat(upv.first_name, ' ', upv.last_name) AS full_name,
                 upv.email,
                 upv.primary_flag,
                 upv.start_date,
@@ -13,50 +13,50 @@
                 upv.position_id,
                 upv.user_position_id,
                 upv.phone_number,
-                upv.company_user_status_type_id,
-                cust.user_status_type,
+                upv.user_status_type_id,
+                ust.user_status_type,
                 upv.has_access,
                 uphv.hierarchy
       from flow.user_positions_vw upv
             inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
                                                      and uphv.position_id = upv.position_id
                                                      and uphv.org_id = upv.org_id
-            inner join flow.company_user_status_type cust on cust.id = upv.company_user_status_type_id
+            inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
       where upv.company_id = :companyId
-        and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
+        and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
         and upv.first_name ILIKE '%' || :firstName || '%'
         and upv.last_name ILIKE '%' || :lastName || '%'
         and coalesce(upv.email, '') ILIKE '%' || :email || '%'
         and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-        and upv.company_user_status_type_id in (:statuses)
+        and upv.user_status_type_id in (:statuses)
         and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
         and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
       union
       select u.id,u.first_name,u.last_name,uc.company_id,
-             u.first_name || ' ' || u.last_name as full_name,
+            concat(u.first_name, ' ', u.last_name) AS full_name,
              u.email,
              null,null,
              null,null,null,
-             null,null,ust.company_user_status_type_id,
-             cust.user_status_type, cust.has_access,null
+             null,null,ust.id as user_status_type_id,
+             ust.user_status_type, ust.has_access,null
       from flow."user" u
                inner join flow.user_company uc on u.id = uc.user_id
-               inner join flow.company_user_status_type cust on cust.company_id = uc.company_id
-               inner join flow.user_status_type ust on ust.company_user_status_type_id = cust.id and ust.user_id = u.id
+               inner join flow.user_status_type ust on ust.company_id = uc.company_id
+               inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
       where uc.company_id = :companyId
           and not exists (select up2.id from flow.user_position up2
                     inner join flow.position p on p.id = up2.position_id
                   where up2.user_id = u.id
                     and p.company_id = uc.company_id)
-        and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+        and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
         and u.first_name ILIKE '%' || :firstName || '%'
         and u.last_name ILIKE '%' || :lastName || '%'
         and coalesce(u.email, '') ILIKE '%' || :email || '%'
         and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then false else 1=1 end
         and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then false else 1=1 end
         and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-          and ust.company_user_status_type_id in (:statuses)
+          and cus.user_status_type_id in (:statuses)
       order by last_name, first_name, start_date desc
       limit :limit
       offset :offset;
@@ -70,15 +70,15 @@
             inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
                                                      and uphv.position_id = upv.position_id
                                                      and uphv.org_id = upv.org_id
-            inner join flow.company_user_status_type cust on cust.id = upv.company_user_status_type_id
+            inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
         where upv.company_id = :companyId
           and upv.position_level = 0
-          and upv.first_name || ' ' || upv.last_name ILIKE '%' || :query || '%'
+          and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
           and upv.first_name ILIKE '%' || :firstName || '%'
           and upv.last_name ILIKE '%' || :lastName || '%'
           and coalesce(upv.email, '') ILIKE '%' || :email || '%'
           and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-          and upv.company_user_status_type_id in (:statuses)
+          and upv.user_status_type_id in (:statuses)
           and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
           and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[upv.position_id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
           and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then ARRAY[upv.org_id] <@ ARRAY[ :orgs ]::INTEGER[] else 1=1 end
@@ -86,21 +86,21 @@
          select u.id
           from flow."user" u
                    inner join flow.user_company uc on u.id = uc.user_id
-                   inner join flow.company_user_status_type cust on cust.company_id = uc.company_id
-                   inner join flow.user_status_type ust on ust.company_user_status_type_id = cust.id and ust.user_id = u.id
+                   inner join flow.user_status_type ust on ust.company_id = uc.company_id
+                    inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
           where uc.company_id = :companyId
               and not exists (select up2.id from flow.user_position up2
                         inner join flow.position p on p.id = up2.position_id
                       where up2.user_id = u.id
                         and p.company_id = uc.company_id)
-            and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+            and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
             and u.first_name ILIKE '%' || :firstName || '%'
             and u.last_name ILIKE '%' || :lastName || '%'
             and coalesce(u.email, '') ILIKE '%' || :email || '%'
             and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then false else 1=1 end
             and case when array_length(ARRAY[ :orgs ]::INTEGER[], 1) > 0 then false else 1=1 end
             and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-              and ust.company_user_status_type_id in (:statuses)
+              and ust.id in (:statuses)
       )
      select count(*)
       from t1
@@ -111,25 +111,25 @@
         u.id,
         u.first_name,
         u.last_name,
-        u.first_name || ' ' || u.last_name as full_name,
+        concat(u.first_name, ' ', u.last_name) AS full_name,
         u.email,
         u.phone_number,
-        ust.company_user_status_type_id,
-        cust.user_status_type,
+        ust.id as user_status_type_id,
+        ust.user_status_type,
         p.position
     from flow.user u
       inner join flow.user_company uc on uc.user_id = u.id
-      inner join flow.company_user_status_type cust on cust.company_id = uc.company_id
-      inner join flow.user_status_type ust on ust.company_user_status_type_id = cust.id and ust.user_id = u.id
+      inner join flow.user_status_type ust on ust.company_id = uc.company_id
+      inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
       left join flow.user_position up on up.user_id = u.id
       left join flow.position p on p.id = up.position_id
     where uc.company_id = :companyId
-       and u.first_name || ' ' || u.last_name ILIKE '%' || :query || '%'
+       and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
        and u.first_name ILIKE '%' || :firstName || '%'
        and u.last_name ILIKE '%' || :lastName || '%'
        and u.email ILIKE '%' || :email || '%'
        and u.phone_number ILIKE '%' || :phone || '%'
-       and ust.company_user_status_type_id in (:statuses)
+       and ust.id in (:statuses)
        and case when array_length(ARRAY[ :positions ]::INTEGER[], 1) > 0 then ARRAY[p.id] <@ ARRAY[ :positions ]::INTEGER[] else 1=1 end
     order by u.last_name, u.first_name, up.start_date desc
   ]]></user.exportUsers>
@@ -159,14 +159,14 @@
              u.created_by_id,
              u.first_name,
              u.last_name,
-             u.first_name || ' ' || u.last_name as full_name,
+             concat(u.first_name, ' ', u.last_name) AS full_name,
              uc.company_id,
              u.modified_by_id,
              u.date_modified,
              u.default_company_id,
-             cust.user_status_type,
-             ust.company_user_status_type_id,
-             cust.has_access,
+             ust.user_status_type,
+             ust.id as user_status_type_id,
+             ust.has_access,
              coalesce((
               SELECT array_to_json(array_agg(row_to_json(companies)))
               FROM (
@@ -183,8 +183,8 @@
                    ) companies), '[]') as companies
       from flow."user" u
         inner join flow.user_company uc on uc.user_id = u.id
-        left join flow.user_status_type ust on ust.user_id = u.id
-         left join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.company_id = uc.company_id
+        left join flow.company_user_status cus on cus.user_id = u.id
+        left join flow.user_status_type ust on ust.company_id = uc.company_id and ust.id = cus.user_status_type_id
       where u.id = :id
         and uc.company_id = :companyId
         and uc.archived is not true
@@ -195,8 +195,8 @@
           select distinct upv.user_id                            as id,
                           upv.first_name,
                           upv.last_name,
-                          upv.first_name || ' ' || upv.last_name as full_name,
-                          upv.first_name || ' ' || upv.last_name as title
+                          concat(upv.first_name, ' ', upv.last_name) AS full_name,
+                          concat(upv.first_name, ' ', upv.last_name) AS title
 
           from flow.user_positions_vw upv
           where upv.position_schedulable is true
@@ -258,10 +258,10 @@
        u.email,
        u.username,
        (select has_access
-           from flow.user_status_type ust
-           inner join flow.company_user_status_type cust on ust.company_user_status_type_id = cust.id
+          from flow.company_user_status cus
+               inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
            where user_id = u.id
-           and cust.company_id = uc.company_id
+           and ust.company_id = uc.company_id
            ) as has_access,
        coalesce(u.default_company_id, uc.company_id) as company_id,
        ( select parent_company_id
@@ -273,7 +273,7 @@
                 from flow.company c
              where c.id = coalesce(u.default_company_id, uc.company_id) ) as highest_parent_company_id,
        null as "timezone",
-       u.first_name || ' ' || u.last_name as full_name,
+       concat(u.first_name, ' ', u.last_name) AS full_name,
        (
          select c.id from flow.company c
          inner join flow.user_company uc on uc.company_id = c.id
@@ -323,7 +323,7 @@
        u.password,
        u.email,
        u.username,
-       u.first_name || ' ' || u.last_name as full_name
+       concat(u.first_name, ' ', u.last_name) AS full_name
     from flow.user u
     where lower(:usernameOrEmail::text) = lower(username)
           OR lower(:usernameOrEmail::text) = lower(email)
@@ -334,15 +334,15 @@
     select u.id,
            u.first_name,
            u.last_name,
-           u.first_name || ' ' || u.last_name as full_name,
+           concat(u.first_name, ' ', u.last_name) AS full_name,
            u.password,
            coalesce(u.default_company_id, uc.company_id) as company_id,
            c.aws_bucket,
            (select has_access
-             from flow.user_status_type ust
-             inner join flow.company_user_status_type cust on ust.company_user_status_type_id = cust.id
+           from flow.company_user_status cus
+                inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
              where user_id = u.id
-             and cust.company_id = uc.company_id
+             and ust.company_id = uc.company_id
            ) as has_access,
            ( select parent_company_id
                 from flow.company c
@@ -373,26 +373,26 @@
              company_id,
              has_access,
              archived
-      from flow.company_user_status_type
+      from flow.user_status_type
         where company_id = :companyId
          and archived is not true
       order by user_status_type
   ]]></user.getCompanyUserStatuses>
 
   <user.updateUserStatus><![CDATA[
-    update flow.user_status_type ust
-      set company_user_status_type_id = :companyUserStatusTypeId,
+    update flow.company_user_status cus
+      set user_status_type_id = :userStatusTypeId,
           date_modified = now(),
           modified_by_id = :currentUserId
-    from flow.company_user_status_type cust
-    where cust.id = ust.company_user_status_type_id
-      and ust.user_id = :userId
-      and cust.company_id = :companyId
+    from flow.user_status_type ust
+    where ust.id = cus.user_status_type_id
+      and cus.user_id = :userId
+      and ust.company_id = :companyId
   ]]></user.updateUserStatus>
 
   <user.insertUserStatus><![CDATA[
-    insert into flow.user_status_type(user_id, company_user_status_type_id, created_by_id)
-    values (:userId, :companyUserStatusTypeId, :currentUserId)
+    insert into flow.company_user_status(user_id, user_status_type_id, created_by_id)
+    values (:userId, :userStatusTypeId, :currentUserId)
   ]]></user.insertUserStatus>
 
   <user.updateDefault><![CDATA[
@@ -458,7 +458,7 @@
        u.password,
        u.email,
        u.username,
-       u.first_name || ' ' || u.last_name as full_name,
+       concat(u.first_name, ' ', u.last_name) AS full_name,
        u.uuid,
        u.expiry_date
     from flow.user u

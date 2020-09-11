@@ -39,7 +39,7 @@
         c.last_name as contact_last_name,
         c.latitude,
         c.longitude,
-        case when sl.system_list_type_id = 1 then o.org_name else u.first_name || ' ' || u.last_name end as resource_name,
+        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
         p.project_name,
         ps.process_step_name,
         c.state_id,
@@ -84,8 +84,8 @@
       where :startTime::date + d.date BETWEEN :startTime::date and :endTime::date - 1
   )
   select coalesce(rs.user_id, rs.org_id) as resource_id,
-         (d.date || ' ' || rsa.start_time)::timestamp as "start",
-         (d.date || ' ' || rsa.end_time)::timestamp as "end",
+         (concat(d.date, ' ', rsa.start_time))::timestamp as "start",
+         (concat(d.date, ' ', rsa.end_time))::timestamp as "end",
          rsa.day_of_week_id,
          false as all_day,
          null as title,
@@ -166,7 +166,7 @@
         c.last_name as contact_last_name,
         c.latitude,
         c.longitude,
-        case when sl.system_list_type_id = 1 then o.org_name else u.first_name || ' ' || u.last_name end as resource_name,
+        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
         p.project_name,
         ps.process_step_name,
         c.state_id,
@@ -259,7 +259,7 @@
           c.last_name as contact_last_name,
           c.latitude,
           c.longitude,
-          case when sl.system_list_type_id = 1 then o.org_name else u.first_name || ' ' || u.last_name end as resource_name,
+          case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
           p.project_name,
           ps.process_step_name,
           c.state_id,
@@ -305,7 +305,7 @@
   <schedule.searchProjectsByName><![CDATA[
         select c.first_name as contact_first_name,
                c.last_name as contact_last_name,
-               c.first_name || ' ' || c.last_name as contact_full_name,
+               concat(c.first_name, ' ', c.last_name) as contact_full_name
                p.project_name,
                p.id as project_id
         from flow.project p
@@ -314,7 +314,7 @@
           and case when :isParent
             then array[c.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
             else c.company_id = :companyId end
-          and c.first_name || ' ' || c.last_name ILIKE '%' || :search || '%'
+          and concat(c.first_name, ' ', c.last_name) ILIKE '%' || :search || '%'
         order by c.first_name, c.last_name
   ]]></schedule.searchProjectsByName>
 

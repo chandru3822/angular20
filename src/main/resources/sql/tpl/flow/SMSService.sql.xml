@@ -70,7 +70,7 @@
     <sms.queue.exportAll>
         <![CDATA[
             SELECT
-                u.first_name || ' ' || u.last_name as full_name,
+            concat(u.first_name, ' ', u.last_name) AS full_name,
                 u.email,
                 sms.to_phone,
                 sms.message,
@@ -163,7 +163,7 @@
                    sq.recipient_type_id,
                    u.first_name,
                    u.last_name,
-                   u.first_name || ' ' || u.last_name AS fullname
+                   concat(u.first_name, ' ', u.last_name) AS fullname
             FROM sq
                    INNER JOIN flow.user u ON u.id = sq.user_id;
         ]]>

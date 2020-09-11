@@ -100,7 +100,7 @@ BEGIN
                         pd.system_size,
                         u.id as closer_user_id,
                         u.first_name||' '||u.last_name                                  AS closer,
-                        (cust.user_status_type = 'Terminated')                           AS closer_is_terminated,
+                        (ust.user_status_type = 'Terminated')                           AS closer_is_terminated,
                         lov_source.name as source_name,
                         lov_stage.name as stage_name,
                         pd.cancelled_date as cancelled_date,
@@ -289,8 +289,8 @@ BEGIN
                           inner join flow.project_process_step pps on pps.project_id = p.id and process_step_id = 175 and pps.process_step_complete_date is not null
                           inner join flow.contact c on c.id = p.contact_id
                           INNER JOIN flow.user u ON u.id = pd.closer_user_id
-                          inner join flow.user_status_type ust  on ust.user_id = u.id
-                          inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id and cust.company_id = 3
+                          inner join flow.company_user_status cus  on cus.user_id = u.id
+                          inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
                           left join brs.exclude_commission ec on ec.project_id = p.id
                           left join flow.list_of_value lov_source on lov_source.id = pd.source
                           left join flow.list_of_value lov_stage on lov_stage.id = pd.stage

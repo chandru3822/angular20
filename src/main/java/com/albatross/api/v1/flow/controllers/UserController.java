@@ -4,7 +4,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.exceptions.EmailInUseException;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.flow.model.CompanyUserStatusType;
+import com.albatross.api.v1.flow.model.UserStatusType;
 import com.albatross.api.v1.flow.model.PasswordResetRequest;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserSearch;
@@ -72,14 +72,14 @@ public class UserController {
     }
 
     @GetMapping(value = "/statuses", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<CompanyUserStatusType> getCompanyUserStatuses() {
+    public List<UserStatusType> getCompanyUserStatuses() {
         return userService.getCompanyUserStatuses();
     }
 
-    @PostMapping(value = "/{userId}/status/{companyUserStatusTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{userId}/status/{userStatusTypeId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void saveUserStatus(@PathVariable Long userId,
-                               @PathVariable Long companyUserStatusTypeId) {
-        userService.saveUserStatus(true, userId, companyUserStatusTypeId);
+                               @PathVariable Long userStatusTypeId) {
+        userService.saveUserStatus(true, userId, userStatusTypeId);
     }
 
     @PostMapping(value = "/changeContext/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -6,6 +6,8 @@ import com.albatross.api.v1.flow.model.ProcessStep;
 import com.albatross.api.v1.flow.services.ProcessStepService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,11 @@ public class ProcessStepController {
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStep> getProcessStepsForCompany() {
     return processStepService.getProcessStepsForCompany();
+  }
+
+  @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Page<ProcessStep>> searchProcessStepsForCompany(@RequestParam(required = false) String query, Pageable pageable) {
+    return new ResponseEntity<>(processStepService.searchProcessStepsForCompany(query, pageable), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
