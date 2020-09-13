@@ -7,30 +7,35 @@
             Availability
           </v-toolbar-title>
         </v-toolbar>
-        <v-select v-model="orgId"
+        <v-autocomplete v-if="viewAll"
+                  v-model="orgId"
                   :items="orgs"
                   label="Select an Organization..."
                   item-text="orgName"
                   item-value="id"
                   autocomplete="off"
                   @input="[userId = null, getApptLength()]">
-        </v-select>
-        <v-select v-model="userId"
+        </v-autocomplete>
+        <v-autocomplete v-model="userId"
                   :items="users"
+                  :readonly="!viewAll"
+                  :disabled="!viewAll"
                   label="Select a User..."
                   item-text="fullName"
                   item-value="id"
                   autocomplete="off"
                   @input="[orgId = null, getApptLength()]">
-        </v-select>
+        </v-autocomplete>
         <v-toolbar flat class="app-toolbar mt-2" v-if="userId || orgId">
           <v-text-field
             class="d-inline-block"
             type="number"
+            :readonly="!userCanEdit"
+            :disabled="!userCanEdit"
             v-model="defaultAppointmentLength"
             label="Default Appointment Length (minutes)"
           ></v-text-field>
-          <v-btn class="d-inline-block" small text @click="saveApptLength()">
+          <v-btn class="d-inline-block" v-if="userCanEdit" small text @click="saveApptLength()">
             <v-icon>save</v-icon>
           </v-btn>
         </v-toolbar>
@@ -73,10 +78,12 @@
         defaultAppointmentLength: null,
         snackbar: {},
         orgs: [],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
         orgId: null,
         orgsLoading: false,
         users: [],
-        userId: null,
+        viewAll: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'),
+        userId: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : this.$store.state.user.details.id,
         usersLoading: false,
         model: '',
         tabs: [ {

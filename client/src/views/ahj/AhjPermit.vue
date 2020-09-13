@@ -8,6 +8,7 @@
          style="margin-right: 10px"
       >Cancel</a>
       <v-btn class="white--text mr-0 save-btn"
+             v-if="userCanEdit"
              color="primaryButton"
              @click="saveDialog = true"
       >Save</v-btn>
@@ -29,6 +30,8 @@
               <v-select v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-text="name"
                         item-value="id"
                         :label="item.fieldName"
@@ -36,6 +39,8 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
@@ -46,6 +51,8 @@
                           @change="dataWasChanged = true"
                           label="Deposit Amount"
                           filled
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <v-row>
@@ -53,11 +60,15 @@
                 <v-text-field v-model="ahjPermit.businessLicense"
                               @change="dataWasChanged = true"
                               label="Business License"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               filled
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-menu v-model="businessLicenseMenu"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         :close-on-content-click="false"
                         :nudge-right="40"
                         transition="scale-transition"
@@ -75,6 +86,8 @@
                   </template>
                   <v-date-picker v-model="ahjPermit.businessLicenseExpirationDate"
                                  @change="dataWasChanged = true"
+                                 :readonly="!userCanEdit"
+                                 :disabled="!userCanEdit"
                                  @input="businessLicenseMenu = false"
                   ></v-date-picker>
                 </v-menu>
@@ -84,6 +97,8 @@
               <v-col cols="6">
                 <v-text-field v-model="ahjPermit.contractorLicense"
                               @change="dataWasChanged = true"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               label="Contractor License"
                               filled
                 ></v-text-field>
@@ -92,6 +107,8 @@
                 <v-menu v-model="contractorLicenseMenu"
                         :close-on-content-click="false"
                         :nudge-right="40"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         transition="scale-transition"
                         offset-y
                         min-width="290px">
@@ -107,6 +124,8 @@
                   </template>
                   <v-date-picker v-model="ahjPermit.contractorLicenseExpirationDate"
                                  @change="dataWasChanged = true"
+                                 :readonly="!userCanEdit"
+                                 :disabled="!userCanEdit"
                                  @input="contractorLicenseMenu = false"
                   ></v-date-picker>
                 </v-menu>
@@ -116,6 +135,8 @@
               <v-col cols="6">
                 <v-text-field v-model="ahjPermit.otherLicense"
                               @change="dataWasChanged = true"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               label="Other License"
                               filled
                 ></v-text-field>
@@ -124,6 +145,8 @@
                 <v-menu v-model="otherLicenseMenu"
                         :close-on-content-click="false"
                         :nudge-right="40"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         transition="scale-transition"
                         offset-y
                         min-width="290px">
@@ -139,6 +162,8 @@
                   </template>
                   <v-date-picker v-model="ahjPermit.otherLicenseExpirationDate"
                                  @change="dataWasChanged = true"
+                                 :readonly="!userCanEdit"
+                                 :disabled="!userCanEdit"
                                  @input="otherLicenseMenu = false"
                   ></v-date-picker>
                 </v-menu>
@@ -147,6 +172,7 @@
             <AhjChecklist v-if="dataReady"
                           title="Submission Checklist"
                           :checklistTypeId="1"
+                          :user-can-edit="userCanEdit"
                           :itemId="ahjPermit.id"
                           :itemType="itemType"
                           :ahjId="ahjId"
@@ -155,6 +181,8 @@
             ></AhjChecklist>
             <v-textarea v-model="ahjPermit.submissionNote"
                         @change="dataWasChanged = true"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Submission Instructions"
                         filled
                         auto-grow
@@ -177,12 +205,16 @@
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-value="id"
                         :label="item.fieldName"
                         filled
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
@@ -192,12 +224,15 @@
             <v-text-field v-model="ahjPermit.revisionFeeAmount"
                           @change="dataWasChanged = true"
                           label="Fee Amount"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <AhjChecklist v-if="dataReady"
                           title="Revision Submission Checklist"
                           :checklistTypeId="2"
+                          :user-can-edit="userCanEdit"
                           :itemId="ahjPermit.id"
                           :itemType="itemType"
                           :ahjId="ahjId"
@@ -206,6 +241,8 @@
             ></AhjChecklist>
             <v-textarea v-model="ahjPermit.revisionNote"
                         @change="dataWasChanged = true"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Revision Submission Instructions"
                         filled
                         auto-grow
@@ -227,6 +264,8 @@
               <v-select v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-text="name"
                         item-value="id"
                         :label="item.fieldName"
@@ -236,6 +275,8 @@
                             v-model="item.textValue"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             filled
                             class="other-field"
               ></v-text-field>
@@ -243,6 +284,8 @@
             <v-text-field v-model="ahjPermit.asBuiltFeeAmount"
                           @change="dataWasChanged = true"
                           label="Fee Amount"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
@@ -250,6 +293,7 @@
                           title="As-Built Submission Checklist"
                           :checklistTypeId="3"
                           :itemId="ahjPermit.id"
+                          :user-can-edit="userCanEdit"
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklist-items="ahjPermit.asBuiltChecklist"
@@ -259,6 +303,8 @@
                         @change="dataWasChanged = true"
                         label="As-Built Submission Instructions"
                         filled
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         auto-grow
                         style="margin-top: 30px"
             ></v-textarea>
@@ -277,11 +323,15 @@
             <v-text-field v-model="ahjPermit.approvalTimeline"
                           @change="dataWasChanged = true"
                           label="Approval Timeline"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           filled
             ></v-text-field>
             <v-text-field v-model="ahjPermit.followUpFeeAmount"
                           @change="dataWasChanged = true"
                           label="Fee Amount"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
@@ -290,6 +340,8 @@
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-value="id"
                         :label="item.fieldName"
                         filled
@@ -298,12 +350,16 @@
                             v-model="item.textValue"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjPermit.documentsAvailable"
                           @change="dataWasChanged = true"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           label="When are documents available?"
                           filled
             ></v-text-field>
@@ -321,12 +377,16 @@
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-value="id"
                         :label="item.fieldName"
                         filled
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
@@ -335,6 +395,8 @@
             </div>
             <v-text-field v-model="ahjPermit.deliveryFeeAmount"
                           @change="dataWasChanged = true"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           label="Fee Amount"
                           filled
                           prepend-inner-icon="attach_money"
@@ -342,6 +404,7 @@
             <AhjDocument v-if="dataReady"
                          title="Documents Required for Inspection"
                          :documentTypeId="1"
+                         :user-can-edit="userCanEdit"
                          :sourceId="ahjPermit.id"
                          :ahjId="ahjId"
                          :documents="documents"
@@ -350,6 +413,8 @@
             <v-textarea v-model="ahjPermit.deliveryNote"
                         @change="dataWasChanged = true"
                         label="Delivery Instructions"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         filled
                         auto-grow
             ></v-textarea>
@@ -367,6 +432,7 @@
         <AhjLink v-if="dataReady"
                        title="Submission Links"
                        :linkTypeId="4"
+                       :user-can-edit="userCanEdit"
                        :itemId="ahjPermit.id"
                        :itemType="itemType"
                        :ahjId="ahjId"
@@ -376,6 +442,7 @@
         <AhjContact v-if="dataReady"
                     title="Submission Contacts"
                     :contactTypeId="1"
+                     :user-can-edit="userCanEdit"
                     :itemId="ahjPermit.id"
                     :itemType="itemType"
                     :ahjId="ahjId"
@@ -507,6 +574,11 @@
       AhjServicingFot,
       Snackbar
     },
+    computed: {
+      userCanEdit() {
+        return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
+      },
+    },
     data: () => ({
       ahjId: null,
       itemType: 'permit',
@@ -521,6 +593,7 @@
       businessLicenseMenu: false,
       contractorLicenseMenu: false,
       otherLicenseMenu: false,
+      // userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT'),
       ahjPermit: {
         submissionChecklist: [],
         revisionChecklist: [],

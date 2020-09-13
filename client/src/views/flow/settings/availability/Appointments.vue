@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <v-btn v-if="!addNew" @click="addNew = !addNew" class="mb-3">
+        <v-btn v-if="!addNew && $store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')" @click="addNew = !addNew" class="mb-3">
           Add Appointment
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
@@ -114,13 +114,13 @@
               <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
               <td class="text-left">
                 <v-btn small text @click="[expanded = [item], selectedIndex = index, saveError = false]"
-                       v-if="!expanded.includes(item)">
+                       v-if="!expanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text @click="expanded = []"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog v-model="item.deleteConfirm" max-width="500px">
+                <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')">
                   <template #activator="{ on }">
                     <v-btn v-on="on" small text>
                       <v-icon>delete</v-icon>
@@ -192,6 +192,7 @@
         snackbar: {},
         addNew: false,
         expanded: [],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
         newAppt: {},
         appointments: [],
         saveError: false,

@@ -6,7 +6,7 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px">
+      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
         <v-icon v-show="!addMode && !editMode" @click="addLink" class="white--text">add</v-icon>
         <v-icon v-show="addMode || editMode"
                 @click="hideCtrls" class="white--text">remove</v-icon>
@@ -26,7 +26,7 @@
       <div class="link-btns">
         <a @click="hideCtrls"
            class="cancel-link">Cancel</a>
-        <v-btn v-show="editMode" dark
+        <v-btn v-show="editMode" dark v-if="userCanEdit"
                @click="deleteLink" class="error">
           Delete
         </v-btn>
@@ -41,7 +41,7 @@
                                                  'border': index === links.length - 1 ? 'none !important' : ''}">
       <v-list-item :title="link.name">
         <v-list-item-content class="flex-row-center">
-          <v-list-item-action @click="editLink(link)">
+          <v-list-item-action @click="editLink(link)" v-if="userCanEdit">
             <v-icon small>edit</v-icon>
           </v-list-item-action>
           <v-list-item-title :style="[{'font-size': isNested ? '0.95em !important' : '0.85em !important'}, {'text-align': 'left'}]">
@@ -76,6 +76,9 @@
       },
       linkTypeId: {
         type: Number
+      },
+      userCanEdit: {
+        type: Boolean
       },
       itemId: {
         type: Number

@@ -14,12 +14,14 @@
                         placeholder="Enter a value"
                         required
                         :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Company Name">
           </v-text-field>
           <v-text-field v-model="company.defaultPassword"
                         placeholder="Enter a value"
                         required
                         :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Default Password">
           </v-text-field>
         </v-col>

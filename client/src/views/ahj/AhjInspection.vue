@@ -7,7 +7,7 @@
          class="cancel-link"
          style="margin-right: 10px"
       >Cancel</a>
-      <v-btn class="white--text mr-0 save-btn"
+      <v-btn class="white--text mr-0 save-btn" v-if="userCanEdit"
              color="primaryButton"
              @click="saveDialog = true"
       >Save</v-btn>
@@ -21,7 +21,7 @@
         <v-card>
           <v-card-title class="primaryCustom white--text font-weight-bold title-with-icon">
             Scheduling with AHJ
-            <router-link :to="'/schedule'" title="Go to Scheduling Tool">
+            <router-link :to="'/schedule'" title="Go to Scheduling Tool" v-if="this.$store.getters.userHasFeature('SCHEDULE')">
               <v-icon class="white--text">launch</v-icon>
             </router-link>
           </v-card-title>
@@ -30,6 +30,8 @@
               <v-select v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-text="name"
                         item-value="id"
                         :label="item.fieldName"
@@ -40,16 +42,22 @@
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             class="other-field"
               ></v-text-field>
             </div>
             <v-text-field v-model="ahjInspection.requiredInspectionTypes"
                           @change="dataWasChanged = true"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           label="Type of Inspections Required"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.schedulingNote"
                         @change="dataWasChanged = true"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Scheduling Note"
                         filled
                         auto-grow
@@ -58,6 +66,7 @@
                           title="Checklist"
                           :checklistTypeId="12"
                           :itemId="ahjInspection.id"
+                          :user-can-edit="userCanEdit"
                           :itemType="itemType"
                           :ahjId="ahjId"
                           :checklistItems="ahjInspection.schedulingWithAhjChecklist"
@@ -77,6 +86,8 @@
           <v-card-text class="mt-4">
             <div v-for="item in getCustomFieldsForGroup(18)" :key="item.id">
               <v-select v-model="item.intValue"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
@@ -86,6 +97,8 @@
               ></v-select>
               <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                             v-model="item.textValue"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
                             filled
@@ -94,12 +107,16 @@
             </div>
             <v-textarea v-model="ahjInspection.technicianInstructionNote"
                         @change="dataWasChanged = true"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Instructions for BRS Technician"
                         filled
                         auto-grow
             ></v-textarea>
             <v-textarea v-model="ahjInspection.documentationNote"
                         @change="dataWasChanged = true"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Documentation Notes"
                         filled
                         auto-grow
@@ -107,6 +124,7 @@
             <AhjChecklist v-if="dataReady"
                           title="Checklist"
                           :checklistTypeId="13"
+                          :user-can-edit="userCanEdit"
                           :itemId="ahjInspection.id"
                           :itemType="itemType"
                           :ahjId="ahjId"
@@ -129,6 +147,8 @@
               <v-select v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-text="name"
                         item-value="id"
                         :label="item.fieldName"
@@ -137,16 +157,22 @@
             </div>
             <v-text-field v-model="ahjInspection.timeWindowCallTime"
                           @change="dataWasChanged = true"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           label="Time to Call For Window"
                           filled
             ></v-text-field>
             <v-text-field v-model="ahjInspection.timeWindowPhone"
                           @change="dataWasChanged = true"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           label="Phone # for Time Window"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.schedulingWithCustomerNote"
                         @change="dataWasChanged = true"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Scheduling with Customer Note"
                         filled
                         auto-grow
@@ -154,6 +180,8 @@
             <AhjChecklist v-if="dataReady"
                           title="Scheduling Checklist"
                           :checklistTypeId="9"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           :itemId="ahjInspection.id"
                           :itemType="itemType"
                           :ahjId="ahjId"
@@ -171,6 +199,8 @@
           <v-card-text class="mt-4">
             <v-text-field v-model="ahjInspection.obtainingResultsMethod"
                           @change="dataWasChanged = true"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           label="Obtaining Results Method"
                           filled
             ></v-text-field>
@@ -178,6 +208,8 @@
               <v-select v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-text="name"
                         item-value="id"
                         :label="item.fieldName"
@@ -187,12 +219,16 @@
                             v-model="item.textValue"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             filled
                             class="other-field"
               ></v-text-field>
             </div>
             <v-textarea v-model="ahjInspection.obtainingResultsNote"
                         @change="dataWasChanged = true"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Obtaining Results Notes"
                         filled
                         auto-grow
@@ -200,6 +236,8 @@
             <AhjChecklist v-if="dataReady"
                           title="Obtaining Results Checklist"
                           :checklistTypeId="10"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           :itemId="ahjInspection.id"
                           :itemType="itemType"
                           :ahjId="ahjId"
@@ -222,6 +260,8 @@
               <v-select v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-text="name"
                         item-value="id"
                         :label="item.fieldName"
@@ -231,6 +271,8 @@
                             v-model="item.textValue"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             label="Other Value"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             filled
                             class="other-field"
               ></v-text-field>
@@ -238,23 +280,30 @@
             <v-text-field v-model="ahjInspection.inspectionFee"
                           @change="dataWasChanged = true"
                           label="Re-inspection Fee Amount"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           filled
                           prepend-inner-icon="attach_money"
             ></v-text-field>
             <v-text-field v-model="ahjInspection.paymentMethod"
                           @change="dataWasChanged = true"
                           label="Payment Method"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           filled
             ></v-text-field>
             <v-textarea v-model="ahjInspection.reinspectionNote"
                         @change="dataWasChanged = true"
                         label="Re-inspection Notes"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         filled
                         auto-grow
             ></v-textarea>
             <AhjChecklist v-if="dataReady"
                           title="Re-inspections Checklist"
                           :checklistTypeId="11"
+                          :user-can-edit="userCanEdit"
                           :itemId="ahjInspection.id"
                           :itemType="itemType"
                           :ahjId="ahjId"
@@ -268,6 +317,7 @@
         <AhjNoteTemplate v-if="dataReady"
                          :inspectionId="ahjInspection.id"
                          :ahjId="ahjId"
+                         :user-can-edit="userCanEdit"
                          :noteTemplates="ahjInspection.noteTemplates"
         ></AhjNoteTemplate>
 
@@ -282,6 +332,8 @@
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-value="id"
                         :label="item.fieldName"
                         filled
@@ -291,11 +343,14 @@
                         @change="dataWasChanged = true"
                         label="MPU Inspection Notes"
                         filled
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         auto-grow
             ></v-textarea>
             <AhjContact v-if="dataReady"
                         title="Utility Service Department Contacts"
                         :contactTypeId="9"
+                        :user-can-edit="userCanEdit"
                         :itemId="ahjInspection.id"
                         :itemType="itemType"
                         :ahjId="ahjId"
@@ -315,6 +370,7 @@
         <AhjLink v-if="dataReady"
                  title="Scheduling Links"
                  :linkTypeId="1"
+                 :user-can-edit="userCanEdit"
                  :itemId="ahjInspection.id"
                  :itemType="itemType"
                  :ahjId="ahjId"
@@ -326,6 +382,7 @@
         <AhjLink v-if="dataReady"
                  title="Links for FOT"
                  :linkTypeId="2"
+                 :user-can-edit="userCanEdit"
                  :itemId="ahjInspection.id"
                  :itemType="itemType"
                  :ahjId="ahjId"
@@ -337,6 +394,7 @@
         <AhjLink v-if="dataReady"
                  title="Results Links"
                  :linkTypeId="3"
+                 :user-can-edit="userCanEdit"
                  :itemId="ahjInspection.id"
                  :itemType="itemType"
                  :ahjId="ahjId"
@@ -351,6 +409,7 @@
         <AhjContact v-if="dataReady"
                     title="Scheduling Contacts"
                     :contactTypeId="2"
+                    :user-can-edit="userCanEdit"
                     :itemId="ahjInspection.id"
                     :itemType="itemType"
                     :ahjId="ahjId"
@@ -362,6 +421,7 @@
         <AhjContact v-if="dataReady"
                     title="Inspector Contacts"
                     :contactTypeId="4"
+                    :user-can-edit="userCanEdit"
                     :itemId="ahjInspection.id"
                     :itemType="itemType"
                     :ahjId="ahjId"
@@ -374,6 +434,7 @@
                     title="Obtaining Results Contacts"
                     :contactTypeId="3"
                     :itemId="ahjInspection.id"
+                    :user-can-edit="userCanEdit"
                     :itemType="itemType"
                     :ahjId="ahjId"
                     :contacts="ahjInspection.obtainingResultsContacts"
@@ -395,6 +456,7 @@
                       :checklistTypeId="8"
                       :isNested="false"
                       :itemId="ahjInspection.id"
+                      :user-can-edit="userCanEdit"
                       :itemType="itemType"
                       :ahjId="ahjId"
                       :checklistItems="ahjInspection.failureChecklist"
@@ -503,6 +565,11 @@
       AhjRequirement,
       AhjServicingFot,
       Snackbar
+    },
+    computed: {
+      userCanEdit() {
+        return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
+      },
     },
     data: () => ({
       ahjId: null,

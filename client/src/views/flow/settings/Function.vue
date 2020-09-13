@@ -86,7 +86,7 @@
               </td>
               <!-- icon column -->
               <td>
-                <v-btn text v-if="item.parameterTypeId !== 2 && !expanded.includes(item)" @click="handleExpand(item, true)">
+                <v-btn text v-if="userCanEdit && item.parameterTypeId !== 2 && !expanded.includes(item)" @click="handleExpand(item, true)">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn text v-if="item.parameterTypeId !== 2 && expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
@@ -139,6 +139,7 @@
             to: `/settings/functions`
           },
         ],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         companyId: this.$store.state.user.details.companyId,
         functionId: this.$route.params.id,
         userId: this.$store.state.user.details.id,

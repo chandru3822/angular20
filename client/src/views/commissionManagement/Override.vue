@@ -10,6 +10,7 @@
         <div class="commission-button-container">
           <v-btn color="primaryCustom" class="white--text mr-2"
                  :disabled="!override.name"
+                 v-if="userCanEdit"
                  @click="saveOverride()">
             Save
           </v-btn>
@@ -19,7 +20,7 @@
                  @click="approveOverride()">
             Approve
           </v-btn>
-          <v-dialog v-if="overrideId && override.status !== 'ACTIVE'"
+          <v-dialog v-if="overrideId && override.status !== 'ACTIVE' && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
                     v-model="deleteConfirm"
                     width="500">
             <template #activator="{ on }">
@@ -55,7 +56,7 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-dialog v-else-if="overrideId"
+          <v-dialog v-else-if="overrideId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
               v-model="inactivateConfirm"
               width="500">
             <template #activator="{ on }">
@@ -118,7 +119,7 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <v-dialog v-if="overrideId && override"
+          <v-dialog v-if="overrideId && override && userCanAdd"
                     v-model="cloneDialog"
                     width="600"
           >
@@ -216,20 +217,26 @@
             <v-card flat class="pa-3" color="transparent">
               <v-text-field text
                             label="Name"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             v-model="override.name"></v-text-field>
               <v-text-field text
                             label="Description"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             v-model="override.description"></v-text-field>
               <v-select v-model="override.positionId"
                         :items="positions"
-                        :disabled="override.id != null"
+                        :readonly="!userCanEdit"
+                        :disabled="override.id != null || !userCanEdit"
                         no-data-text="No Users Available"
                         label="Position Type"
                         item-text="label"
                         item-value="id"
               ></v-select>
               <v-text-field text
-                            :disabled="override.id && override.status !== 'PENDING'"
+                            :readonly="!userCanEdit"
+                            :disabled="(override.id && override.status !== 'PENDING') || !userCanEdit"
                             label="Rate per kW ($)"
                             v-model="override.total"></v-text-field>
             </v-card>
@@ -406,7 +413,8 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addAssignedUser = !addAssignedUser, newAssignedUser = {}, userHistory = []]">
+            <v-btn text v-if="userCanAdd"
+                   @click="[addAssignedUser = !addAssignedUser, newAssignedUser = {}, userHistory = []]">
               <v-icon v-if="addAssignedUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -662,6 +670,8 @@
         cloneDialog: false,
         moment,
         cloneStartDate: null,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
         cloneDateError: false,
         timezone: this.$store.state.user.details.timezone.value,
         inactivateConfirm: false,

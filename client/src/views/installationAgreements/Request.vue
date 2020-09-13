@@ -40,7 +40,13 @@
             :key="it.id"
             :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
-            <td class="text-left"><a @click="openRequest(it)" class="mr-3 name-link">{{ it.customer_name ? it.customer_name : '' }}</a></td>
+            <td class="text-left">
+              <a v-if="$store.getters.userHasFeatureAccessLevel('INSTALLATION_AGREEMENT', 'ADD')"
+                  @click="openRequest(it)" class="mr-3 name-link">
+                {{ it.customer_name ? it.customer_name : '' }}
+              </a>
+              <span v-else>{{ it.customer_name ? it.customer_name : '' }}</span>
+            </td>
             <td class="text-left">{{ it.address ? it.address : '' }}</td>
           </tr>
         </template>

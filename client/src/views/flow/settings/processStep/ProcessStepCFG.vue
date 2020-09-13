@@ -24,6 +24,7 @@
     data () {
       return {
         snackbar: {},
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         processStepId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
         processStep: {},

@@ -9,7 +9,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary" v-if="userCanEdit">
+            <v-btn text :disabled="!position.position || !position.orgTypeId" @click="savePosition" color="primary" v-if="userCanEdit || userCanEditAccessControl">
               <v-icon>save</v-icon>
               Save
             </v-btn>
@@ -24,12 +24,14 @@
                         placeholder="Enter a value"
                         required
                         :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Position Name">
           </v-text-field>
           <v-select
               v-model="position.orgTypeId"
               :items="orgTypes"
               :readonly="!userCanEdit"
+              :disabled="!userCanEdit"
               label="Organization Type"
               item-text="orgType"
               item-value="id"
@@ -44,7 +46,9 @@
           </div>
           <v-divider class="my-2"></v-divider>
           <h3>Access Control</h3>
-          <AccessControl v-if="positionLoaded" :companyFeatures="position.companyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
+          <AccessControl v-if="positionLoaded"
+                         :user-can-edit="userCanEditAccessControl"
+                         :companyFeatures="position.companyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
         </v-card>
 
       </v-col>
@@ -78,6 +82,7 @@
         selectedRows: [],
         positionLoaded: false,
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanEditAccessControl: this.$store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'),
         orgTypes: [],
         positionId: this.$route.params.id,
         features: [],

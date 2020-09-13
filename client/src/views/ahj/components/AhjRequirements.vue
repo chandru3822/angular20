@@ -4,7 +4,7 @@
     <div id="transparent-header" v-if="transparent">
       <div class="requirement-header-bar px-4 pb-2 font-weight-bold">
         <span>{{title}}</span>
-        <v-btn class="add-hide-btn" icon>
+        <v-btn class="add-hide-btn" icon v-if="userCanEdit">
           <v-icon v-show="!addMode && !editMode"
                   @click="addRequirement">add</v-icon>
           <v-icon v-show="addMode || editMode"
@@ -25,7 +25,7 @@
         <div class="requirement-btns">
           <a @click="hideCtrls"
              class="cancel-link">Cancel</a>
-          <v-btn @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
+          <v-btn v-if="userCanEdit" @click="saveRequirement(null, false)" color="primaryButton" class="white--text py-1 px-2"
                  :disabled="(!requirement.description || requirement.description === '') || (!requirement.position || parseInt(requirement.position) <= 0)" small>
             {{ addMode ? 'Add' : 'Update' }}
           </v-btn>
@@ -38,8 +38,9 @@
         <v-list-item v-show="requirementsCopy.length > 0">
           <v-list-item-action :title="requirement.complete ? 'Mark requirement as incomplete' : 'Mark requirement as complete'"
                               :class="{'disabled-checkbox': requirement.hasOpenChallenge}"
+                              v-if="userCanEdit"
                               @click="saveRequirement(requirement, true)">
-            <v-checkbox v-model="requirement.complete" :disabled="requirement.hasOpenChallenge"></v-checkbox>
+            <v-checkbox v-model="requirement.complete" :disabled="requirement.hasOpenChallenge || !userCanEdit"></v-checkbox>
           </v-list-item-action>
           <v-list-item-content class="ml-3">
             <v-list-item-title :style="{'text-decoration': requirement.complete ? 'line-through' : ''}"
@@ -201,6 +202,9 @@
     props: {
       title: {
         type: String
+      },
+      userCanEdit: {
+        type: Boolean
       },
       requirementTypeId: {
         type: Number

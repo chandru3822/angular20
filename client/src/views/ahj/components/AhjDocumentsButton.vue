@@ -1,6 +1,7 @@
 <template id="ahj-documents-button">
   <div>
     <div id="documents-btn" :title="title" @click="documentsDialog = true"
+         v-if="userCanEdit"
          :class="[{'mt-4': !small}, {'ml-2': !small}, 'clickable']">
       <v-icon v-if="!small">insert_drive_file</v-icon>
       <v-icon v-if="small" small style="margin-top: -10px">insert_drive_file</v-icon>
@@ -10,6 +11,7 @@
       <v-card class="pt-4 pb-2">
         <v-card-text class="px-4 pb-0">
           <AhjDocument :title="title"
+                       :user-can-edit="userCanEdit"
                        :documentTypeId="documentTypeId"
                        :sourceId="sourceId"
                        :itemId="itemId"
@@ -35,6 +37,9 @@
     props: {
       title: {
         type: String
+      },
+      userCanEdit: {
+        type: Boolean
       },
       documentTypeId: {
         type: Number

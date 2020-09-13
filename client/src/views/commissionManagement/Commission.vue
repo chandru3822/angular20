@@ -10,6 +10,7 @@
         <div class="commission-button-container">
           <v-btn color="primaryCustom" class="white--text mr-2"
                  :disabled="!commission.name"
+                 v-if="userCanEdit"
                  @click="savePlan()">
             Save
           </v-btn>
@@ -19,7 +20,7 @@
                  @click="approvePlan()">
             Approve
           </v-btn>
-          <v-dialog v-if="planId && !commission.approved"
+          <v-dialog v-if="planId && !commission.approved && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
                     v-model="deleteConfirm"
                     width="500">
             <template #activator="{ on }">
@@ -56,7 +57,7 @@
             </v-card>
           </v-dialog>
 
-          <v-dialog v-else-if="planId"
+          <v-dialog v-else-if="planId && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'DELETE')"
               v-model="inactivateConfirm"
               width="500">
             <template #activator="{ on }">
@@ -121,7 +122,9 @@
           </v-dialog>
 
 
-          <v-dialog v-if="planId && commission && commission.users && commission.users.filter(u => {return u.endDate == null}).length > 0"
+          <v-dialog v-if="planId && commission && commission.users
+                        && userCanAdd
+                        && commission.users.filter(u => {return u.endDate == null}).length > 0"
             v-model="cloneDialog"
             width="600"
           >
@@ -209,9 +212,13 @@
           <v-col cols="12" sm="6">
             <v-card flat class="pa-3" color="transparent">
               <v-text-field text
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             label="Name"
                             v-model="commission.name"></v-text-field>
               <v-text-field text
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             label="Description"
                             v-model="commission.description"></v-text-field>
               <v-select v-model="commission.positionId"
@@ -545,7 +552,8 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addUser = !addUser, newUser = {}, userHistory = []]">
+            <v-btn text @click="[addUser = !addUser, newUser = {}, userHistory = []]"
+                   v-if="userCanAdd">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -794,6 +802,8 @@
         usersToAdd: [],
         userSearch: null,
         userHistory: [],
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
         usersLoading: false,
         moment,
         cloneStartDate: null,
