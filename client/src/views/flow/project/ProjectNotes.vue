@@ -11,6 +11,12 @@
     />
   </v-col>
 
+  <v-col cols="12" lg="6">
+    <Messaging
+      :primaryId="parseInt(projectId)"
+    />
+  </v-col>
+
   <Snackbar :snackbar="snackbar"/>
 </v-row>
 </template>
@@ -18,8 +24,8 @@
 <script>
 
 import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
 import NotesAndActivity from '@/views/flow/components/NotesAndActivity'
+import Messaging from '@/views/flow/components/Messaging'
 import Snackbar from '@/components/Snackbar.vue'
 
 
@@ -27,6 +33,7 @@ export default {
   name: 'ProjectNotes',
   components: {
     NotesAndActivity,
+    Messaging,
     Snackbar,
   },
   data () {

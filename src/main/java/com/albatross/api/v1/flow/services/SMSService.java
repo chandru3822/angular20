@@ -97,6 +97,14 @@ public class SMSService {
         );
     }
 
+    public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("projectId", projectId);
+
+        List<SMSQueueItem> results = sqlCache.query("sms.queue.fetchByProjectId", params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+        return results;
+    }
+
     public SMSQueueItem queueMessage(String messageGroup, Long userId, String toPhone, String message, List<URI> mediaURLs, RecordType recipientType) {
         String queueInsert = sqlCache.getByKey("sms.queue.insert");
 
@@ -154,8 +162,14 @@ public class SMSService {
                     .collect(Collectors.toList());
 
             try {
+                String messageText = sms.getMessage();
+                // For Project messages with attachment(s), the attachment file name is stored as the message
+                // which we don't want to send
+                if (!uris.isEmpty() && sms.getRecipientType() == RecordType.PROJECT) {
+                    messageText = "";
+                }
 
-                Message message = sendMessage(sms.getRecipientType(), sms.getToPhone(), sms.getMessage(), uris);
+                Message message = sendMessage(sms.getRecipientType(), sms.getToPhone(), messageText, uris);
 
                 String status = (message.getStatus() != null) ? message.getStatus().toString() : null;
                 String fromPhone = (message.getFrom() != null) ? message.getFrom().toString() : null;
