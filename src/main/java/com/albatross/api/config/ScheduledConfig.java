@@ -39,7 +39,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     //    every  minute
     @Scheduled(fixedDelayString = "${app.cron.sendSms.delay:20000}")
     public void sendSmsNotifications() {
-        if (true || sendSmsNotifications) {
+        if (sendSmsNotifications) {
             smsService.processMessages();
 
             // Update the status for any text messages that Twilio has recently told us about.
