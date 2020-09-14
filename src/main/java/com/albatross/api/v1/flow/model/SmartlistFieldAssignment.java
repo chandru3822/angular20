@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 public class SmartlistFieldAssignment {
 
-  //@TODO humes: should probably make this have a field of type SmartlistField since it uses most of those fields anyways
+  //@TODO humes: customField brings in fields making some direct fields on this class redundant. Remove the direct redundant fields
 
   private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById,
       displayOrder, processStepId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId;
@@ -25,6 +25,8 @@ public class SmartlistFieldAssignment {
   private List<Long> systemListOptionIds;
 
   private List<ListOfValue> listOfValues;
+
+  private CustomField customField;
 
   @JsonIgnore
   private String referenceTable, referenceColumn;

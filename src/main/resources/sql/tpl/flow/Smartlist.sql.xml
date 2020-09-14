@@ -125,7 +125,60 @@ select
   cdt1.allow_multiple,
   cf.company_system_list_id,
   sl.system_list_type_id,
-  cf.custom_field_sql_key
+  cf.custom_field_sql_key,
+  (select row_to_json(f) from(
+      select
+        cfga1.custom_field_group_id as "customFieldGroupId",
+        cfga1.id as "customFieldGroupAssignmentId",
+        cfga1.read_only as "customFieldGroupAssignmentReadOnly",
+        cfga1.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+        cfga1.field_order as "fieldOrder",
+        cf.list_of_value_id as "listOfValueId",
+        cf.field_name as "fieldName",
+        cf.readonly,
+        cf.custom_field_sql_key as "customFieldSqlKey",
+        cf.company_system_list_id as "companySystemListId",
+        cf.system_list_option_ids as "systemListOptionIds",
+        cf.company_data_type_id as "companyDataTypeId",
+        cdt.data_type_id as "dataTypeId",
+        cdt.has_list_values as "hasListValues",
+        coalesce((
+                     SELECT array_to_json(array_agg(row_to_json(listOfValues)))
+                     FROM (
+                              select
+                                  lov.id,
+                                  lov.name,
+                                  lov.code,
+                                  lov.parent_id,
+                                  lov.display_order
+                              from flow.list_of_value lov
+                              where lov.parent_id is not null
+                                and lov.parent_id = cf.list_of_value_id
+                                and lov.archived is not true
+                              order by lov.display_order
+                          ) listOfValues), '[]') AS "listOfValues",
+        coalesce((
+                     SELECT array_to_json(array_agg(row_to_json(wlp)))
+                     FROM (
+                              SELECT cfgawlp.id,
+                                     cfgawlp.position_id as "positionId",
+                                     cfgawlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                     cfgawlp.created_by_id as "createdById",
+                                     cfgawlp.modified_by_id as "modifiedById",
+                                     cfgawlp.archived
+                              FROM flow.custom_field_group_assignment_white_listed_position cfgawlp
+                              WHERE cfgawlp.custom_field_group_assignment_id = cfga1.id
+                                AND cfgawlp.archived is not true) wlp), '[]') AS "whiteListedPositions"
+    from flow.custom_field_group_assignment cfga1
+             left join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga1.ancillary_custom_field_group_assignment_id
+             left join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
+             left join flow.custom_field_group cfgAnc on cfgAnc.id = cfga2.custom_field_group_id
+             left join flow.company_object_type cot1 on cot1.id = cfg1.company_object_type_id
+             left join flow.company_object_type cotAnc on cotAnc.id = cfgAnc.company_object_type_id
+             inner join flow.custom_field cf on cf.id = cfga1.custom_field_id or cf.id = cfga2.custom_field_id
+             inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+    where cfga1.id = cfga.id
+  )f ) as "customField"
 from flow.smartlist_field_assignment sfa
 left join flow.smartlist_field sf on sf.id = sfa.smartlist_field_id
 left join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
