@@ -86,7 +86,6 @@
                 <td class="text-right">
                   <div class="item-icons">
                     <v-btn class="clickable" small text
-                           v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
                            @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getSystemListOptions(item.companySystemListId)]">
                       <v-icon v-if="expanded.includes(item)">remove</v-icon>
                       <v-icon v-else-if="item.custom">add</v-icon>
@@ -142,18 +141,21 @@
                     <v-card-text>{{item.custom ? 'Add Field' : 'Edit Field'}}</v-card-text>
                     <v-text-field
                         label="Field Name"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         tabindex=1
                         v-model="item.fieldName"
                     ></v-text-field>
                     <div class="text-left read-only-label">
                       <label>Read-only:</label>
-                      <input type="checkbox" class="ml-2" v-model="item.readonly">
+                      <input type="checkbox" :readonly="!userCanEdit"
+                             :disabled="!userCanEdit" class="ml-2" v-model="item.readonly">
                     </div>
                     <v-autocomplete
                         v-model="item.companyDataType"
                         :items="filterDataTypes(item)"
-                        :disabled="!item.custom"
-                        :readonly="!item.custom"
+                        :disabled="!item.custom || !userCanEdit"
+                        :readonly="!item.custom || !userCanEdit"
                         tabindex=2
                         label="Data Type"
                         item-text="companyDataType"
@@ -177,8 +179,8 @@
                     <v-select v-if="item.companyDataType && item.companyDataType.systemList"
                               v-model="item.companySystemListId"
                               :items="systemLists"
-                              :disabled="!item.custom"
-                              :readonly="!item.custom"
+                              :disabled="!item.custom || !userCanEdit"
+                              :readonly="!item.custom || !userCanEdit"
                               label="System List Type"
                               item-text="systemList"
                               item-value="id"
@@ -189,6 +191,8 @@
                               v-model="item.systemListOptionIds"
                               :items="systemListOptions"
                               multiple
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               label="System List Options"
                               item-text="name"
                               item-value="id"
@@ -206,6 +210,8 @@
                             <v-list-item-content>
                               <v-text-field
                                   class="one-hunned"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   :placeholder="ddo.placeholder"
                                   v-model="ddo.name">
                               </v-text-field>
@@ -229,6 +235,8 @@
                       <v-container v-if="item.custom">
                         <v-checkbox v-for="(ot, index) in customFieldObjectTypes"
                                     :key="index"
+                                    :readonly="!userCanEdit"
+                                    :disabled="!userCanEdit"
                                     class="fix-opacity"
                                     v-model="ot.archived"
                                     :false-value="true" :true-value="false"
@@ -238,13 +246,15 @@
                         <v-checkbox v-for="(ot, index) in item.customFieldObjectTypes"
                                     :key="index"
                                     flat
+                                    :readonly="!userCanEdit"
+                                    :disabled="!userCanEdit"
                                     v-model="ot.archived"
                                     :false-value="true" :true-value="false"
                                     :label="ot.objectType"></v-checkbox>
                       </v-container>
                     </v-col>
                     <v-btn
-                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                        v-if="userCanEdit"
                         :disabled="invalid(item)"
                         @click="[saveChanges(item.custom, item), item.expanded = !item.expanded]">
                       {{item.custom ? 'Add Field' : 'Save Changes'}}
@@ -307,6 +317,7 @@
         selectedObjectType: {id: -1, objectType: 'All'},
         customFieldObjectTypes: [],
         objectFilters: [],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         blankNewObject: {
           id: -1,
           fieldName: '',
@@ -343,7 +354,9 @@
           })
           this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase())
           this.customFields = cloneDeep(this.allCustomFields)
-          this.customFields.unshift(cloneDeep(this.blankNewObject))
+          if(this.userCanEdit) {
+            this.customFields.unshift(cloneDeep(this.blankNewObject))
+          }
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -450,7 +463,9 @@
             return !!match
           })
         }
-        this.customFields.unshift(cloneDeep(this.blankNewObject))
+        if(this.userCanEdit) {
+          this.customFields.unshift(cloneDeep(this.blankNewObject))
+        }
       },
       async saveChanges(editMode, object) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -482,13 +497,15 @@
           this.expanded = []
           // if it was a new field, reset the first index, then push it to both arrays
           if (null === object.id) {
-            object = cloneDeep(this.blankNewObject)
-            this.customFields[0] = object
-            this.allCustomFields.push(data)
-            this.customFields.push(data)
-            this.customFieldObjectTypes.forEach(ot => {
-              ot.archived = true
-            })
+            if(this.userCanEdit) {
+              object = cloneDeep(this.blankNewObject)
+              this.customFields[0] = object
+              this.allCustomFields.push(data)
+              this.customFields.push(data)
+              this.customFieldObjectTypes.forEach(ot => {
+                ot.archived = true
+              })
+            }
           }
 
           // re-sort in case the fieldName changed

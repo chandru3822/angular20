@@ -12,7 +12,7 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text @click="addItem" color="primary">
+          <v-btn text @click="addItem" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'ADD')">
             <v-icon>add</v-icon>
             <span v-if="!constants.IS_MOBILE">Add New</span>
           </v-btn>
@@ -53,7 +53,7 @@
             <td class="text-left">{{ item.state ? item.state : '' }}</td>
             <td class="text-left">
               <router-link :to="'ahjUtility/' + item.id + '/details'" class="mr-3 ahj-link">Details</router-link>
-              <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(item)">
+              <v-icon small class="mr-3 ahj-link-icon" @click="editAhjUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')">
                 edit
               </v-icon>
             </td>

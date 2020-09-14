@@ -16,11 +16,8 @@
     </template>
     <div>
       <v-list>
-        <v-list-item v-for="(item, index) in filterBy(menuItems, true, 'show')" :key="index" @click="menuOpen = false" :to="item.path">
-          <v-list-item-title>{{item.title}}</v-list-item-title>
-          <v-list-item-action class="account-menu-icon">
-            <v-icon>{{item.icon}}</v-icon>
-          </v-list-item-action>
+        <v-list-item v-for="(item, index) in companyTools" :key="index" @click="menuOpen = false" :to="item.featurePath">
+          <v-list-item-title>{{item.featureName}}</v-list-item-title>
         </v-list-item>
       </v-list>
     </div>
@@ -34,9 +31,11 @@
   const { VUE_APP_ENV } = process.env
 
   export default {
-    name: 'CompanyMenu',
+    name: 'CompanyTools',
     mixins: [Vue2Filters.mixin],
-    props: {},
+    props: {
+        companyTools: Array
+    },
     watch: {},
     data () {
       return {
@@ -50,42 +49,7 @@
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
       }
     },
-    computed: {
-      menuItems() {
-        return [
-          {
-            path: '/ahj',
-            title: 'AHJ Database',
-            show: this.$store.getters.userHasFeature('AHJ_DATABASE')
-          }, {
-            path: '/closerDashboard',
-            title: 'Closer Dashboard',
-            show: this.$store.getters.userHasFeature('CLOSER_DASHBOARD')
-          }, {
-            path: '/installation-agreements/request',
-            title: 'Installation Agreements',
-            show: this.$store.getters.userHasFeature('INSTALLATION_AGREEMENT')
-          }, {
-            path: '/setterDashboard',
-            title: 'Setter Dashboard',
-            show: this.$store.getters.userHasFeature('SETTER_DASHBOARD')
-          }, {
-            path: '/commissionManagement/closers',
-            title: 'Commissions',
-            show: this.$store.getters.userHasFeature('COMMISSIONS')
-          }, {
-            path: '/finances/rebate/viewPayments',
-            title: 'Rebates',
-            show: this.$store.getters.userHasFeature('REBATES')
-          }, {
-            path: '/proposal',
-            title: 'Proposals',
-            show: this.$store.getters.userHasFeature('REBATES')
-          },
-
-        ]
-      }
-    },
+    computed: {},
     created () {},
     methods: {
       changeRoute (path) {

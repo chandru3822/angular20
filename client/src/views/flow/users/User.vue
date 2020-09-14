@@ -38,7 +38,7 @@
               <v-tab :to="`/user/${userId}/positions`">
                 Positions
               </v-tab>
-              <v-tab :to="`/user/${userId}/access`">
+              <v-tab :to="`/user/${userId}/access`" v-if="$store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'VIEW')">
                 Access
               </v-tab>
             </v-tabs>

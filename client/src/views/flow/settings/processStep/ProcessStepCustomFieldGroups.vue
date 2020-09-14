@@ -41,7 +41,7 @@
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="!createNew" @click="createNew = !createNew">
+            <v-btn text v-if="!createNew && userCanAdd" @click="createNew = !createNew">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Create Group</span>
             </v-btn>
@@ -119,7 +119,7 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
-                    <v-btn text icon small class="handle">
+                    <v-btn text icon small class="handle" v-if="userCanEdit">
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
@@ -137,7 +137,7 @@
                     </a>
                   </td>
                   <td><div class="item-icons">
-                    <v-btn v-if="!item.eventTypeId" small text @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
+                    <v-btn v-if="!item.eventTypeId && userCanAdd" small text @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
@@ -146,6 +146,7 @@
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
                     <v-dialog
+                        v-if="userCanEdit"
                         v-model="item.deleteConfirm"
                         width="500">
                       <template #activator="{ on }">
@@ -253,7 +254,7 @@
                               :key="index" class="pa-0"  color="transparent">
                         <v-list-item :class="{grab: !item.eventTypeId}">
                           <v-list-item-action>
-                            <v-icon v-if="!item.eventTypeId">drag_handle</v-icon>
+                            <v-icon v-if="!item.eventTypeId && userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
                             <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
@@ -313,7 +314,7 @@
                               {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                             </div>
                           </v-list-item-content>
-                          <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                          <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]" v-if="userCanEdit">
                             <v-icon>edit</v-icon>
                           </v-btn>
                           <v-menu offset-y v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
@@ -338,7 +339,7 @@
 
 
                           <v-dialog
-                              v-if="!item.eventTypeId && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                              v-if="!item.eventTypeId && userCanEdit"
                               v-model="cf.deleteConfirm"
                               width="500">
                             <template v-slot:activator="{ on }">
@@ -471,6 +472,8 @@
         availableCustomFields: [],
         parent: {},
         processStepId: this.$route.params.id,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
         companyId: this.$store.state.user.details.companyId,
         parentObjects: [],
         selectedAncillaryField: {},

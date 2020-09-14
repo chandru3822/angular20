@@ -40,7 +40,7 @@
           <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text>
+            <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text v-if="userCanAdd">
               <v-icon v-if="!addNewRequirement">add</v-icon>
               {{ addNewRequirement ? 'Cancel' : 'Add Requirement'}}
             </v-btn>
@@ -202,27 +202,37 @@
                       <div v-for="(fp, index) in item.requirementParamDynamicValues" :key="index">
                         <v-text-field
                             v-if="fp.dataTypeId === 1"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             placeholder="Enter a date"
                             type="date"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                         <v-text-field
                             v-if="fp.dataTypeId === 2"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             placeholder="Enter a timestamp"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                         <v-text-field
                             v-if="fp.dataTypeId === 3"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             placeholder="Enter a boolean"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                         <v-text-field
                             v-if="fp.dataTypeId === 4"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             placeholder="Enter a number"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                         <v-text-field
                             v-if="fp.dataTypeId === 6"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             placeholder="Enter an integer"
                             type="number"
                             step="1"
@@ -230,6 +240,8 @@
                             :label="fp.parameterName"></v-text-field>
                         <v-text-field
                             v-else
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             placeholder="Enter a dynamic value"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
@@ -237,25 +249,26 @@
                     </v-card>
                   </div>
                   <v-select v-model="item.operatorTypeId"
-                            :readonly="newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7"
                             :items="operatorTypes"
                             class="one-hunned"
                             label="Operator"
-                            :disabled="item.immutable"
+                            :readonly="newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7 || item.immutable || !userCanEdit"
+                            :disabled="newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7 || item.immutable || !userCanEdit"
                             item-text="operatorType"
                             @change="operatorDataTypeCheck(item)"
                             item-value="id"
                   ></v-select>
                   <v-switch v-model="item.customValue"
                             class="mx-2"
-                            :readonly="item.operatorTypeId === 5 && item.dataTypeId === 7"
-                            :disabled="item.immutable"
+                            :readonly="item.operatorTypeId === 5 && item.dataTypeId === 7 || !userCanEdit"
+                            :disabled="item.immutable  || !userCanEdit"
                             label="Custom"
                   ></v-switch>
                   <!-- single text field for non list custom values -->
                   <v-text-field v-if="item.customValue && !item.listOfValues && !item.listOfValueId && !item.customFieldSqlKey && !item.systemListId "
                                 v-model="item.requirementValue"
-                                :disabled="item.immutable"
+                                :disabled="item.immutable || !userCanEdit"
+                                :readonly="item.immutable || !userCanEdit"
                                 placeholder="Enter a value"
                                 label="Value">
                   </v-text-field>
@@ -264,7 +277,8 @@
                       v-else-if="item.customValue && item.customField
                             && ((item.customField.listOfValueId !== null || item.customField.customFieldSqlKey !== null || item.customField.companySystemListId !== null) && !item.customField.allowMultiple)"
                       v-model="item.listOfValueId"
-                      :disabled="item.immutable"
+                      :disabled="item.immutable || !userCanEdit"
+                      :readonly="item.immutable || !userCanEdit"
                       :items="item.availableListOfValues"
                       label="Available Values"
                       item-text="name"
@@ -273,7 +287,8 @@
                   <v-select
                       v-else-if="item.customValue && item.systemListId"
                       v-model="item.systemListOptionId"
-                      :disabled="item.immutable"
+                      :disabled="item.immutable || !userCanEdit"
+                      :readonly="item.immutable || !userCanEdit"
                       :items="item.availableListOfValues"
                       label="Available Values"
                       item-text="name"
@@ -283,7 +298,8 @@
                   <v-select
                       v-else-if="item.customValue && item.customFieldSqlKey"
                       v-model="item.listOfValueId"
-                      :disabled="item.immutable"
+                      :disabled="item.immutable || !userCanEdit"
+                      :readonly="item.immutable || !userCanEdit"
                       :items="item.availableListOfValues"
                       label="Available Values"
                       item-text="name"
@@ -293,7 +309,8 @@
                   <v-select
                       v-else-if="item.customValue && item.customField && item.customField.allowMultiple"
                       v-model="item.listOfValues"
-                      :disabled="item.immutable"
+                      :disabled="item.immutable || !userCanEdit"
+                      :readonly="item.immutable || !userCanEdit"
                       :items="item.availableListOfValues"
                       label="Available Values"
                       item-text="name"
@@ -304,7 +321,8 @@
                       v-else
                       v-model="item.dataTypeRequirement"
                       :items="dataTypeRequirements"
-                      :disabled="item.immutable"
+                      :disabled="item.immutable || !userCanEdit"
+                      :readonly="item.immutable || !userCanEdit"
                       label="Available Values"
                       item-text="dataTypeValue"
                       return-object
@@ -312,10 +330,11 @@
                   <v-text-field v-if="item.dataTypeRequirement.secondaryRequirement"
                                 v-model="item.secondaryRequirementValue"
                                 placeholder="Enter a value"
-                                :disabled="item.immutable"
+                                :disabled="item.immutable || !userCanEdit"
+                                :readonly="item.immutable || !userCanEdit"
                                 label="Value">
                   </v-text-field>
-                  <v-btn @click="updateRequirement(item)">
+                  <v-btn v-if="userCanEdit" @click="updateRequirement(item)">
                     <v-icon>save</v-icon>
                     Save
                   </v-btn>
@@ -366,6 +385,7 @@
                              v-if="expanded.includes(item)">cancel
                       </v-btn>
                       <v-dialog
+                          v-if="userCanEdit"
                           v-model="item.deleteConfirm"
                           width="500">
                         <template #activator="{ on }">
@@ -416,7 +436,7 @@
             <v-toolbar-title class="app-title">Actions</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn @click="addNewAction = !addNewAction" text>
+              <v-btn @click="addNewAction = !addNewAction" text v-if="userCanAdd">
                 <v-icon v-if="!addNewAction">add</v-icon>
                 {{ addNewAction ? 'Cancel' : 'Add Action'}}
               </v-btn>
@@ -476,23 +496,31 @@
                   <v-card flat class="text-left pt-3" color="transparent">
                     <v-text-field v-model="item.actionName"
                                   placeholder="Enter a name"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   label="Action Name">
                     </v-text-field>
                     <v-select v-model="item.actionTypeId"
                               :items="actionTypes"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               label="Action Type"
                               item-text="actionType"
                               item-value="id"
                     ></v-select>
                     <v-select v-model="item.companyProcessStepStatusTypeId"
                               :items="statusTypes"
-                              :clearable="true"
+                              :clearable="userCanEdit"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               label="Action changes status of parent process step to"
                               item-text="processStepStatusType"
                               item-value="id"
                     ></v-select>
                     <v-checkbox
                         v-model="item.triggerAutomatically"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         label="Trigger Automatically"
                     />
 
@@ -505,7 +533,7 @@
                         </v-toolbar-title>
                         <v-spacer></v-spacer>
                         <v-toolbar-items>
-                          <v-btn v-if="!addChildLink"
+                          <v-btn v-if="!addChildLink && userCanEdit"
                                  @click="[addChildLink = true, loadLinks(item.id)]">
                             <v-icon>add</v-icon>
                           </v-btn>
@@ -540,6 +568,7 @@
                             {{al.link}}
                           </v-list-item-content>
                           <v-dialog
+                              v-if="userCanEdit"
                               v-model="al.deleteConfirm"
                               width="500">
                             <template v-slot:activator="{ on }">
@@ -590,7 +619,7 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn text v-if="!addChildProcess"
+                      <v-btn text v-if="!addChildProcess && userCanAdd"
                              @click="[addChildProcess = true, loadChildProcessSteps(item.id)]">
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -628,8 +657,9 @@
                             <v-list-item-title>{{cp.processStepName}}</v-list-item-title>
                           </v-list-item-content>
                           <v-dialog
-                            v-model="cp.deleteConfirm"
-                            width="500">
+                              v-if="userCanEdit"
+                              v-model="cp.deleteConfirm"
+                              width="500">
                             <template v-slot:activator="{ on }">
                               <v-list-item-action class="clickable" v-on="on">
                                 <v-icon>delete</v-icon>
@@ -678,7 +708,7 @@
                       </v-toolbar-title>
                       <v-spacer></v-spacer>
                       <v-toolbar-items>
-                        <v-btn text v-if="!addChildFunction"
+                        <v-btn text v-if="!addChildFunction && userCanAdd"
                                @click="[addChildFunction = true, loadChildFunctions(item.id)]">
                           <v-icon>add</v-icon>
                         </v-btn>
@@ -734,30 +764,35 @@
                                     v-if="fp.dataTypeId === 1"
                                     placeholder="Enter a date"
                                     type="date"
-                                    :readonly="!cp.edit"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
                                   <v-text-field
                                     v-if="fp.dataTypeId === 2"
                                     placeholder="Enter a timestamp"
-                                    :readonly="!cp.edit"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
                                   <v-text-field
                                     v-if="fp.dataTypeId === 3"
-                                    :readonly="!cp.edit"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter a boolean"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
                                   <v-text-field
                                     v-if="fp.dataTypeId === 4"
-                                    :readonly="!cp.edit"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter a number"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
                                   <v-text-field
                                     v-if="fp.dataTypeId === 6"
-                                    :readonly="!cp.edit"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter an integer"
                                     type="number"
                                     step="1"
@@ -765,7 +800,8 @@
                                     :label="fp.parameterName"></v-text-field>
                                   <v-text-field
                                     v-else
-                                    :readonly="!cp.edit"
+                                    :readonly="!cp.edit || !userCanEdit"
+                                    :disabled="!cp.edit || !userCanEdit"
                                     placeholder="Enter a dynamic value"
                                     v-model="fp.dynamicValue"
                                     :label="fp.parameterName"></v-text-field>
@@ -773,20 +809,21 @@
                               </v-card>
                             </div>
                             <v-list-item-subtitle>
-                              <v-btn color="primaryCustom" class="white--text" v-if="cp.edit"
+                              <v-btn color="primaryCustom" class="white--text" v-if="cp.edit && userCanEdit"
                                      @click="updateChildFunction(item.id, cp)">
                                 Save
                               </v-btn>
                             </v-list-item-subtitle>
                           </v-list-item-content>
-                          <v-btn text color="primaryCustom" class="white--text"
+                          <v-btn text color="primaryCustom" class="white--text" v-if="userCanEdit"
                                  @click="cp.edit = !cp.edit">
                             <v-icon v-if="cp.edit">remove</v-icon>
                             <v-icon v-else>edit</v-icon>
                           </v-btn>
                           <v-dialog
-                            v-model="cp.deleteConfirm"
-                            width="500">
+                              v-if="userCanEdit"
+                              v-model="cp.deleteConfirm"
+                              width="500">
                             <template v-slot:activator="{ on }">
                               <v-list-item-action class="clickable" v-on="on">
                                 <v-icon>delete</v-icon>
@@ -830,7 +867,7 @@
                   <v-toolbar flat dense color="transparent">
                     <v-toolbar-title class="app-title">Current Logic</v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-toolbar-items v-if="(item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled">
+                    <v-toolbar-items v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
                       <v-btn text @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = false]">
                         <v-icon>clear</v-icon>
                         Clear All
@@ -839,11 +876,14 @@
                   </v-toolbar>
                   <v-card flat class="text-left" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1"
+                           :disabled="!userCanEdit"
                            v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')" :key="index"
                            @click="[l.archived = true, item.logicListChanged = true]">
                       {{l.processStepRequirementId ? l.requirementNbr : l.operationType}}
                     </v-btn>
-                    <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled" @click="[item.logicListChanged = true, item.alwaysEnabled = !item.alwaysEnabled]">
+                    <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled"
+                           :disabled="!userCanEdit"
+                           @click="[item.logicListChanged = true, item.alwaysEnabled = !item.alwaysEnabled]">
                       Always Enabled
                     </v-btn>
                   </v-card>
@@ -852,10 +892,12 @@
                   </v-toolbar>
                   <v-card flat class="text-left" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="(ot, index) in operationTypes" :key="index"
+                           :disabled="!userCanEdit"
                            @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({operationType: ot.operationType, operationTypeId: ot.id, archived: false})]">
                       {{ot.operationType}}
                     </v-btn>
                     <v-btn small class="ml-1 mr-1 mt-1"
+                           :disabled="!userCanEdit"
                            @click="[item.logicListChanged = true, item.processStepLogicList = [], item.alwaysEnabled = true]">
                       Always Enabled
                     </v-btn>
@@ -865,12 +907,13 @@
                   </v-toolbar>
                   <v-card flat class="text-left mb-4" color="transparent">
                     <v-btn small class="ml-1 mr-1 mt-1" v-for="r in requirements" :key="r.id"
+                           :disabled="!userCanEdit"
                            @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false })]">
                       {{r.requirementNbr}}
                     </v-btn>
                   </v-card>
                   <v-divider></v-divider>
-                  <v-btn @click="updateAction(item)" class="mt-4">
+                  <v-btn v-if="userCanEdit" @click="updateAction(item)" class="mt-4">
                     <v-icon class="mr-2">save</v-icon>
                     Save Changes
                   </v-btn>
@@ -897,6 +940,7 @@
                              v-if="actionExpanded.includes(item)">cancel
                       </v-btn>
                       <v-dialog
+                          v-if="userCanEdit"
                           v-model="item.deleteConfirm"
                           width="500">
                         <template #activator="{ on }">
@@ -994,6 +1038,8 @@
         deleteError: false,
         actionsUsingLogic: [],
         invalidRequirement: true,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         headers: [
           {text: 'ID', value: 'requirementNbr', width: '65px', show: true},
           {text: 'Type', value: 'processStepRequirementType', show: true},

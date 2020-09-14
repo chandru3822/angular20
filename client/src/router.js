@@ -116,7 +116,13 @@ export default new Router({
             component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserPositions.vue'),
           }, {
             path: 'access',
-            component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserAccess.vue'),
+            component: () => {
+              if(store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'VIEW')) {
+                return import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserAccess.vue')
+              } else  {
+                return accessDenied()
+              }
+            }
           }
         ]
       }, {
@@ -399,7 +405,7 @@ export default new Router({
             redirect: "availability/schedule",
             props: true,
             component: () => {
-              if(store.getters.userHasFeature('SETTINGS')) {
+              if(store.getters.userHasFeature('AVAILABILITY')) {
                 return import (/* webpackChunkName: "availability" */ './views/flow/settings/availability/Availability.vue')
               } else  {
                 return accessDenied()
@@ -500,7 +506,7 @@ export default new Router({
         name: 'projectProcessStep',
         path: '/project/:projectId/processStep/:processStepId',
         component: () => {
-          if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')) {
+          if (store.getters.userHasFeature('PROCESS_STEPS')) {
             return import (/*webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStep.vue')
           } else {
             return accessDenied()
@@ -553,7 +559,7 @@ export default new Router({
         path: '/newContact',
         name: 'newContact',
         component: () => {
-          if(store.getters.userHasFeature('CONTACTS')) {
+          if(store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD')) {
             return import (/*webpackChunkName: "contact" */ './views/flow/contacts/NewContact.vue')
           } else  {
             return accessDenied()
@@ -801,7 +807,7 @@ export default new Router({
           path: '/proposal',
           name: 'proposal',
           component: () => {
-            if(store.getters.userHasFeature('SYSTEM')) {
+            if(store.getters.userHasFeature('PROPOSALS')) {
               return import (/* webpackChunkName: "admin" */ './views/flow/proposal/Menu.vue')
             } else  {
               return accessDenied()
@@ -811,7 +817,13 @@ export default new Router({
             {
               path: 'create',
               name: 'create',
-              component: () => import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue'),
+              component: () => {
+                if(store.getters.userHasFeatureAccessLevel('PROPOSALS', 'CREATE')) {
+                  return import (/* webpackChunkName: "proposal" */ './views/flow/proposal/Create.vue')
+                } else  {
+                  return accessDenied()
+                }
+              }
             },
             {
               path: 'search',

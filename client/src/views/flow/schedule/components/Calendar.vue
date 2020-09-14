@@ -19,7 +19,8 @@
               slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedStates.length < 3">
-                <v-chip small v-for="ss in selectedStates">
+                <v-chip small close @click:close="selectedStates.splice(index, 1)"
+                        v-for="ss in selectedStates">
                   <span>{{ ss.state }}</span>
                 </v-chip>
               </div>
@@ -44,7 +45,7 @@
           </v-select>
         </v-col>
         <v-col class="py-0" cols="12" md="4">
-          <v-select v-model="selectedOrgTypes"
+          <v-autocomplete v-model="selectedOrgTypes"
                     :items="orgTypes"
                     label="Organization Types"
                     multiple
@@ -61,7 +62,8 @@
                 slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedOrgTypes.length < 3">
-                <v-chip small v-for="sr in selectedOrgTypes">
+                <v-chip small close @click:close="selectedOrgTypes.splice(index, 1)"
+                        v-for="sr in selectedOrgTypes">
                   <span>{{ sr.orgType }}</span>
                 </v-chip>
               </div>
@@ -83,7 +85,7 @@
                 slot="prepend-item"
                 class="mt-2"
             ></v-divider>
-          </v-select>
+          </v-autocomplete>
         </v-col>
         <v-col class="py-0" cols="12" md="4">
 
@@ -104,7 +106,8 @@
                 slot-scope="{ item, index }"
             >
               <div v-if="index === 0 && selectedPositions.length < 3">
-                <v-chip small v-for="sr in selectedPositions">
+                <v-chip small close @click:close="selectedPositions.splice(index, 1)"
+                        v-for="sr in selectedPositions">
                   <span>{{ sr.position }}</span>
                 </v-chip>
               </div>
@@ -133,10 +136,11 @@
         <v-col class="py-0" cols="12" md="4">
         </v-col>
         <v-col class="py-0" cols="12" md="4">
-          <v-select v-model="selectedOrgs"
+          <v-autocomplete v-model="selectedOrgs"
                     :items="orgs"
                     label="Organizations"
                     multiple
+                    clearable
                     :loading="orgsLoading"
                     hide-details
                     return-object
@@ -149,30 +153,11 @@
               slot="selection"
               slot-scope="{ item, index }"
             >
-              <div v-if="index === 0 && selectedOrgs.length < 3">
-                <v-chip small v-for="sr in selectedOrgs">
-                  <span>{{ sr.orgName }}</span>
-                </v-chip>
-              </div>
-              <span
-                v-if="index === 1 && selectedOrgs.length >= 3"
-                class="primary--text caption"
-              >{{ selectedOrgs.length }} selected</span>
+              <span v-if="index === 0" class="primary--text caption">
+                {{ selectedOrgs.length }} selected
+              </span>
             </template>
-            <v-list-item
-              slot="prepend-item"
-              ripple
-              @click="toggleSelectAllOrgs()">
-              <v-list-item-action>
-                <v-icon>{{ icon }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
-          </v-select>
+          </v-autocomplete>
         </v-col>
         <v-col class="py-0" cols="12" md="4">
 
@@ -180,6 +165,7 @@
                           :items="users"
                           label="Users"
                           multiple
+                          clearable
                           hide-details
                           :loading="usersLoading"
                           return-object
@@ -192,29 +178,10 @@
               slot="selection"
               slot-scope="{ item, index }"
             >
-              <div v-if="index === 0 && selectedUsers.length < 3">
-                <v-chip small v-for="sr in selectedUsers">
-                  <span>{{ sr.fullName }}</span>
-                </v-chip>
-              </div>
-              <span
-                v-if="index === 1 && selectedUsers.length >= 3"
-                class="primary--text caption"
-              >{{ selectedUsers.length }} selected</span>
+              <span v-if="index === 0" class="primary--text caption">
+                {{ selectedUsers.length }} selected
+              </span>
             </template>
-            <v-list-item
-              slot="prepend-item"
-              ripple
-              @click="toggleSelectAllUsers()">
-              <v-list-item-action>
-                <v-icon>{{ iconUsers }}</v-icon>
-              </v-list-item-action>
-              <v-list-item-title>Select All</v-list-item-title>
-            </v-list-item>
-            <v-divider
-              slot="prepend-item"
-              class="mt-2"
-            ></v-divider>
           </v-autocomplete>
         </v-col>
       </v-row>
@@ -281,38 +248,6 @@
       states: {type: Array}
     },
     computed: {
-      //orgs
-      selectAll () {
-        return this.orgs.length === this.selectedOrgs.length
-      },
-      selectSome () {
-        return this.selectedOrgs.length > 0 && !this.selectAll
-      },
-      icon () {
-        if (this.orgs.length === this.selectedOrgs.length) {
-          return 'check_box'
-        }
-        if (this.selectSome) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      //users
-      selectAllUsers () {
-        return this.users.length === this.selectedUsers.length
-      },
-      selectSomeUsers () {
-        return this.selectedUsers.length > 0 && !this.selectAllUsers
-      },
-      iconUsers () {
-        if (this.users.length === this.selectedUsers.length) {
-          return 'check_box'
-        }
-        if (this.selectSomeUsers) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
       //states
       selectAllStates () {
         return this.states.length === this.selectedStates.length
@@ -504,24 +439,6 @@
               hexColorCode += (Math.random()).toString(16).substr(-6).substr(-1)
             }
             r.color = '#'+hexColorCode
-          }
-        })
-      },
-      toggleSelectAllOrgs () {
-        this.$nextTick(() => {
-          if (this.selectAll) {
-            this.selectedOrgs = []
-          } else {
-            this.selectedOrgs = cloneDeep(this.orgs)
-          }
-        })
-      },
-      toggleSelectAllUsers () {
-        this.$nextTick(() => {
-          if (this.selectAllUsers) {
-            this.selectedUsers = []
-          } else {
-            this.selectedUsers = cloneDeep(this.users)
           }
         })
       },

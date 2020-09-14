@@ -250,19 +250,6 @@ public class InstallAgreementRepository {
       return baseUrl;
   }
 
-  public String getLoanStatus(Long projectId) throws Exception {
-      JSONObject loanApplication = loanPalService.getApplicationByProjectId(projectId);
-      if (loanApplication != null) {
-          try {
-              JSONObject outcome = loanApplication.getJSONObject("outcome");
-              return outcome.getString("status");
-          } catch (JSONException ex) {
-              log.error("JSON object not found", ex);
-          }
-      }
-      return null;
-  }
-
     /**
      * Return the string form of the specified object, or an empty string if the specified
      * object is null.

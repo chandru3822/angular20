@@ -15,6 +15,8 @@
               <v-select v-model="user.userStatusTypeId"
                         :items="userStatusTypes"
                         label="User Status"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         placeholder="Select a status..."
                         item-text="userStatusType"
                         item-value="id"
@@ -22,17 +24,19 @@
               </v-select>
               <v-text-field text
                             label="Phone"
-                            placeholder=" "
                             :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            placeholder=" "
                             v-model="user.phone"></v-text-field>
               <v-text-field text
                             label="E-Mail"
-                            placeholder=" "
                             :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            placeholder=" "
                             v-model="user.email"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
-                <div v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+                <div v-if="userCanEdit">
                   <v-select
                       v-model="user.companies"
                       :items="companies"
@@ -226,7 +230,7 @@
         }
       },
       getReadOnly: function (field) {
-        return this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
+        return !this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
       },
     }
   }

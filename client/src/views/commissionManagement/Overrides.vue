@@ -7,7 +7,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text @click="goToDetails({})">
+        <v-btn text @click="goToDetails({})" v-if="$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" >
           <v-icon>add</v-icon>
         </v-btn>
       </v-toolbar-items>

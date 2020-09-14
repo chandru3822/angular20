@@ -42,8 +42,8 @@
             </v-tab>
           </v-tabs>
           <v-spacer class="ml-5"></v-spacer>
-          <v-toolbar-items>
-            <CompanyMenu/>
+          <v-toolbar-items v-if="companyTools.length > 0">
+            <CompanyTools :company-tools="companyTools"/>
           </v-toolbar-items>
           <v-spacer class="ml-5"></v-spacer>
           <v-toolbar-items>
@@ -67,7 +67,7 @@ import { UserActions } from '@/stores/UserStore'
 import { getRequest, getSnackbar } from '@/helpers/helpers'
 import Spinner from '@/components/Spinner.vue'
 import AccountMenu from '@/components/AccountMenu.vue'
-import CompanyMenu from '@/components/CompanyMenu.vue'
+import CompanyTools from '@/components/CompanyTools.vue'
 import Snackbar from '@/components/Snackbar.vue'
 
 const { VUE_APP_ENV } = process.env
@@ -79,7 +79,7 @@ export default {
     Snackbar,
     Spinner,
     AccountMenu,
-    CompanyMenu,
+    CompanyTools,
   },
   data () {
     return {
@@ -90,6 +90,7 @@ export default {
       selectedCompany: {},
       menuOpen: false,
       companies: [],
+      companyTools: [],
       model: '',
       headerColor: VUE_APP_ENV === 'local' ? 'pink' :
                    VUE_APP_ENV === 'dev' || VUE_APP_ENV === 'stage' ? 'orange' :
@@ -103,41 +104,11 @@ export default {
         path: '/projects',
         display: this.$store.getters.userHasFeature('PROJECTS')
       },
-      // {
-      //   label: 'Closer Dashboard',
-      //   path: '/closerDashboard',
-      //   display: this.$store.getters.userHasFeature('CLOSER_DASHBOARD')
-      // }, {
-      //     label: 'Setter Dashboard',
-      //     path: '/setterDashboard',
-      //     display: this.$store.getters.userHasFeature('SETTER_DASHBOARD')
-      // }, {
-      //     label: 'Installation Agreements',
-      //     path: '/installation-agreements/request',
-      //     display: this.$store.getters.userHasFeature('INSTALLATION_AGREEMENT')
-      // }, {
-      //   label: 'AHJ Database',
-      //   path: '/ahj',
-      //   display: this.$store.getters.userHasFeature('AHJ_DATABASE')
-      // }, {
-      //   label: 'Commissions',
-      //   path: '/commissionManagement/closers',
-      //   display: this.$store.getters.userHasFeature('COMMISSIONS')
-      // }, {
-      //   label: 'Rebates',
-      //   path: '/finances/rebate/viewPayments',
-      //   display: this.$store.getters.userHasFeature('REBATES')
-      // },
         {
         label: 'Schedule',
         path: '/schedule',
         display: this.$store.getters.userHasFeature('SCHEDULE')
       },
-      //   {
-      //   label: 'Proposal',
-      //   path: '/proposal',
-      //   display: this.$store.getters.userHasFeature('PROPOSALS')
-      // },
         {
         label: 'Work Queue',
         path: '/workQueue',
@@ -152,11 +123,12 @@ export default {
   created () {
 		this.loadComplete = true
     this.getCompanies()
+    this.getCompanyTools()
 	},
   computed: {
     displayedTabs () {
       return this.tabs.filter(tab => tab.display)
-    }
+    },
   },
   methods: {
     async changeContext (companyId) {
@@ -187,6 +159,21 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async getCompanyTools () {
+          // get the company tools then filter the ones the user has access to
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          try {
+              const {data} = await getRequest(`/feature/companyTools`)
+              this.companyTools = data.filter(d => {
+                return this.$store.getters.userHasFeature(d.featureCode)
+              })
+              this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
+              this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+      },
   }
 }
 </script>

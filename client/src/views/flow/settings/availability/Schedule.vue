@@ -2,7 +2,7 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <v-btn v-if="!addNew" @click="setNew" class="mb-3">
+        <v-btn v-if="!addNew && $store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')" @click="setNew" class="mb-3">
           Add Schedule
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
@@ -140,6 +140,8 @@
                 <DatetimePickerInput
                   v-model="schedule.startDate"
                   :timezone="timezone"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   input-format="HH:mm:ss"
@@ -148,6 +150,8 @@
                 <DatetimePickerInput
                   v-model="schedule.endDate"
                   :timezone="timezone"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   input-format="HH:mm:ss"
@@ -187,6 +191,8 @@
                         <DatetimePickerInput
                           v-model="item.startTime"
                           :timezone="timezone"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           type="time"
                           format="h:mm a"
                           input-format="HH:mm:ss"
@@ -200,6 +206,8 @@
                         <DatetimePickerInput
                           v-model="item.endTime"
                           :timezone="timezone"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           type="time"
                           format="h:mm a"
                           input-format="HH:mm:ss"
@@ -208,7 +216,7 @@
                       </td>
                       <td class="text-left px-0" width="150px">
 
-                        <v-tooltip top v-if="index !== 6">
+                        <v-tooltip top v-if="index !== 6 && userCanEdit">
                           <template v-slot:activator="{ on }">
                             <v-btn text small v-on="on" @click="copyTimes(schedule, item, index, 'down')">
                               <v-icon>mdi-arrow-collapse-down</v-icon>
@@ -218,7 +226,7 @@
                         </v-tooltip>
                         <v-btn text small v-else>
                         </v-btn>
-                        <v-tooltip top v-if="index !== 0">
+                        <v-tooltip top v-if="index !== 0 && userCanEdit">
                           <template v-slot:activator="{ on }">
                             <v-btn text small v-on="on" @click="copyTimes(schedule, item, index, 'up')">
                               <v-icon>mdi-arrow-collapse-up</v-icon>
@@ -229,7 +237,7 @@
 
                         <v-btn text small v-else>
                         </v-btn>
-                        <v-btn text small @click="[item.startTime = null, item.endTime = null]">
+                        <v-btn text small @click="[item.startTime = null, item.endTime = null]" v-if="userCanEdit">
                           <v-icon>close</v-icon>
                         </v-btn>
                       </td>
@@ -243,6 +251,7 @@
                 <v-card-actions>
                   <v-card-actions>
                     <v-btn color="primaryCustom"  @click="saveSchedule(schedule, false)" class="white--text"
+                           v-if="userCanEdit"
                            :disabled="!schedule.startDate || !schedule.endDate">
                       Save
                     </v-btn>
@@ -263,7 +272,7 @@
                 <v-btn small text @click="expanded = []"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog v-model="item.deleteConfirm" max-width="500px">
+                <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')">
                   <template #activator="{ on }">
                     <v-btn v-on="on" small text>
                       <v-icon>delete</v-icon>
@@ -318,6 +327,7 @@
       return {
         snackbar: {},
         addNew: false,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
         selectedIndex: null,
         newSchedule: {},
         headers: [

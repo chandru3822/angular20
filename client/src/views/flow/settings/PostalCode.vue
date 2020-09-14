@@ -29,7 +29,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text @click="editZone = !editZone">
+        <v-btn text v-if="userCanEdit" @click="editZone = !editZone">
           <v-icon>edit</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -43,7 +43,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addUser = !addUser, selectedUser = {}, getUsers()]">
+            <v-btn text v-if="userCanEdit" @click="[addUser = !addUser, selectedUser = {}, getUsers()]">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -88,7 +88,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.fullName}}</td>
               <td>
-                <v-dialog v-model="item.deleteConfirm" width="500">
+                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanEdit">
                   <template v-slot:activator="{ on }">
                     <v-btn text v-on="on">
                       <v-icon>delete</v-icon>
@@ -135,7 +135,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addCode = !addCode, newCode = '']">
+            <v-btn text v-if="userCanEdit" @click="[addCode = !addCode, newCode = '']">
               <v-icon v-if="addCode">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -176,7 +176,7 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.postalCode}}</td>
               <td>
-                <v-dialog v-model="item.deleteConfirm" width="500">
+                <v-dialog v-model="item.deleteConfirm" width="500" v-if="userCanEdit">
                   <template v-slot:activator="{ on }">
                     <v-btn text v-on="on">
                       <v-icon>delete</v-icon>
@@ -234,6 +234,7 @@
         selectedUser: {},
         editZone: false,
         zone: {},
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         users: [],
         zoneId: this.$route.params.id,
         dataLoading: true,
