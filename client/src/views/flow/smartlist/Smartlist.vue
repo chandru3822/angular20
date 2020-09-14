@@ -352,7 +352,7 @@ export default {
     },
     async getCompanyObjectTypes () {
       try {
-        const {data} = await getRequest(`/customField/getCustomFieldObjectTypes`)
+        const {data} = await getRequest(`/smartlist/customFieldObjectTypes`)
         this.companyObjectTypes = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
       } catch (e) {
         logError(e)
