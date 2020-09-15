@@ -108,7 +108,7 @@
                   Project Details
                 </v-tab>
                 <v-tab :to="`/project/${this.projectId}/notes`">
-                  Notes & Activity Feed
+                  Notes & Communication
                 </v-tab>
               </v-tabs>
             </v-toolbar-items>
