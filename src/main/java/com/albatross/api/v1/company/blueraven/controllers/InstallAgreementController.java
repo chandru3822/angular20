@@ -5,6 +5,8 @@ import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
 import com.albatross.api.v1.company.blueraven.repository.InstallAgreementRepository;
 
 import com.albatross.api.v1.company.blueraven.services.LoanPalService;
+import com.albatross.api.v1.flow.model.Contact;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
+@Slf4j
 @RequestMapping(value = "/api/v1/company/blueraven/install-agreement")
 public class InstallAgreementController {
 
@@ -31,7 +34,7 @@ public class InstallAgreementController {
   }
 
   @PostMapping(value = "/create")
-  public ResponseEntity saveRequest(@RequestBody InstallAgreementRequest request) throws Exception {
+  public ResponseEntity<String> saveRequest(@RequestBody InstallAgreementRequest request) throws Exception {
     String resultMsg = installAgreementRepository.saveRequest(request);
 
     if (resultMsg == null || resultMsg.equals(StringUtils.EMPTY)) {
@@ -56,18 +59,19 @@ public class InstallAgreementController {
       return installAgreementRepository.generateLoanPal(projectId, proposalNbr);
   }
 
+  @PutMapping(value = "/updateEmailAddress/{projectId}")
+  public void updateEmailAddress(@PathVariable Long projectId, @RequestBody Contact contact) {
+          installAgreementRepository.updateEmailAddress(projectId, contact.getEmail());
+  }
+
   @GetMapping(value = "/loanStatus/{projectId}")
-  public ResponseEntity<String> getLoanStatus(@PathVariable Long projectId) {
+  public JSONObject getLoanStatus(@PathVariable Long projectId) {
       try {
-          JSONObject loanStatus = loanPalService.getApplicationByProjectId(projectId);
-          if (loanStatus == null) {
-              return ResponseEntity.notFound().build();
-          }
-          else {
-              return ResponseEntity.ok(loanStatus.toString());
-          }
+          return loanPalService.getApplicationByProjectId(projectId);
       } catch (Exception e) {
-          return ResponseEntity.notFound().build();
+          log.warn("Installation agreement: Failed to get loan status: {}", e.getMessage());
+          e.printStackTrace();
+          return null;
       }
   }
 }
