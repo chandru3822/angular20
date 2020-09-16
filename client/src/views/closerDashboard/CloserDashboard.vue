@@ -557,6 +557,7 @@
                     outlined
                     multiple
                     dense
+                    hide-details
                     return-object
                     @blur="regionLoad(false)">
             <template v-slot:prepend-item>
@@ -602,6 +603,7 @@
                     outlined
                     multiple
                     dense
+                    hide-details
                     return-object
                     @blur="officeLoad(false)">
             <template v-slot:prepend-item>
@@ -647,6 +649,7 @@
                     outlined
                     multiple
                     dense
+                    hide-details
                     return-object
                     @blur="repLoad(false)">
             <template v-slot:prepend-item>
@@ -692,6 +695,7 @@
                     outlined
                     multiple
                     dense
+                    hide-details
                     return-object
                     @blur="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_created_pipeline_dt2)">
             <template v-slot:prepend-item>
@@ -3453,22 +3457,20 @@
           margin: 2px;
           max-width: 135px;
 
-          ::v-deep .v-input__slot {
-            margin: 0;
-          }
+          ::v-deep {
+            .v-input__slot {
+              margin: 0;
+            }
 
-          ::v-deep label {
-            color: #888 !important;
-            font-size: 10px;
-          }
+            label {
+              color: #888 !important;
+              font-size: 10px;
+            }
 
-          ::v-deep i {
-            color: #888 !important;
-            font-size: 16px;
-          }
-
-          ::v-deep .v-text-field__details {
-            display: none;
+            i {
+              color: #888 !important;
+              font-size: 16px;
+            }
           }
         }
 
