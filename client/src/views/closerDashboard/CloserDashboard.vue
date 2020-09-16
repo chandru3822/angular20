@@ -468,25 +468,26 @@
                         solo
                         dense>
                 <template v-slot:prepend-item>
-                  <v-list-item ripple @click="toggle">
+                  <v-list-item @click="toggleAllBrsProvidedSources(true)">
                     <v-list-item-action>
-                      <v-icon :color="brsProvidedSourceModel.length > 0 ? 'indigo darken-4' : ''">
-                        {{ icon }}
-                      </v-icon>
+                      <v-icon>check</v-icon>
                     </v-list-item-action>
                     <v-list-item-content>
-                      <v-list-item-title>Select All</v-list-item-title>
+                      <v-list-item-title>Check All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item @click="toggleAllBrsProvidedSources(false)">
+                    <v-list-item-action>
+                      <v-icon>clear</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Uncheck All</v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider class="mt-2"></v-divider>
                 </template>
-                <template v-slot:append-item>
-                  <v-divider class="mb-2"></v-divider>
-                  <v-list-item disabled>
-                    <v-list-item-content>
-                      <v-list-item-title>{{ brsProvidedSourceModel.length }} sources selected</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
+                <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="grey--text caption">{{ brsProvidedSourceModel.length }} Checked</span>
                 </template>
               </v-select>
 
@@ -499,23 +500,26 @@
                         solo
                         dense>
                 <template v-slot:prepend-item>
-                  <v-list-item ripple @click="toggle">
+                  <v-list-item @click="toggleAllSelfGenSources(true)">
                     <v-list-item-action>
-                      <v-icon :color="selfGenSourceModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                      <v-icon>check</v-icon>
                     </v-list-item-action>
                     <v-list-item-content>
-                      <v-list-item-title>Select All</v-list-item-title>
+                      <v-list-item-title>Check All</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item @click="toggleAllSelfGenSources(false)">
+                    <v-list-item-action>
+                      <v-icon>clear</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>Uncheck All</v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider class="mt-2"></v-divider>
                 </template>
-                <template v-slot:append-item>
-                  <v-divider class="mb-2"></v-divider>
-                  <v-list-item disabled>
-                    <v-list-item-content>
-                      <v-list-item-title>{{ selfGenSourceModel.length }} sources selected</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
+                <template v-slot:selection="{ item, index }">
+                  <span v-if="index === 0" class="grey--text caption">{{ selfGenSourceModel.length }} Checked</span>
                 </template>
               </v-select>
             </td>
@@ -549,27 +553,44 @@
                     v-model="districtModel"
                     :items="districtData"
                     label="District"
-                    solo
+                    no-data-text="No districts available"
+                    outlined
                     multiple
-                    dense>
+                    dense
+                    return-object
+                    @blur="regionLoad(false)">
             <template v-slot:prepend-item>
-              <v-list-item ripple @click="toggle">
+              <v-list-item @click="toggleAllDistricts(true)">
                 <v-list-item-action>
-                  <v-icon :color="districtModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                  <v-icon>check</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
-                  <v-list-item-title>Select All</v-list-item-title>
+                  <v-list-item-title>Check All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click="toggleAllDistricts(false)">
+                <v-list-item-action>
+                  <v-icon>clear</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Uncheck All</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
               <v-divider class="mt-2"></v-divider>
             </template>
-            <template v-slot:append-item>
-              <v-divider class="mb-2"></v-divider>
-              <v-list-item disabled>
-                <v-list-item-content>
-                  <v-list-item-title>{{ districtModel.length }} districts selected</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
+            <template v-slot:item="data">
+              <v-list-item-action>
+                <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                <v-icon v-else>check_box_outline_blank</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                  {{ data.item.text }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <template v-slot:selection="{ item, index }">
+              <span v-if="index === 0" class="grey--text caption">{{ districtModel.length }} Checked</span>
             </template>
           </v-select>
 
@@ -577,27 +598,44 @@
                     v-model="regionModel"
                     :items="regionData"
                     label="Region"
-                    solo
+                    no-data-text="No regions available"
+                    outlined
                     multiple
-                    dense>
+                    dense
+                    return-object
+                    @blur="officeLoad(false)">
             <template v-slot:prepend-item>
-              <v-list-item ripple @click="toggle">
+              <v-list-item @click="toggleAllRegions(true)">
                 <v-list-item-action>
-                  <v-icon :color="regionModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                  <v-icon>check</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
-                  <v-list-item-title>Select All</v-list-item-title>
+                  <v-list-item-title>Check All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click="toggleAllRegions(false)">
+                <v-list-item-action>
+                  <v-icon>clear</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Uncheck All</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
               <v-divider class="mt-2"></v-divider>
             </template>
-            <template v-slot:append-item>
-              <v-divider class="mb-2"></v-divider>
-              <v-list-item disabled>
-                <v-list-item-content>
-                  <v-list-item-title>{{ regionModel.length }} regions selected</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
+            <template v-slot:item="data">
+              <v-list-item-action>
+                <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                <v-icon v-else>check_box_outline_blank</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                  {{ data.item.text }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <template v-slot:selection="{ item, index }">
+              <span v-if="index === 0" class="grey--text caption">{{ regionModel.length }} Checked</span>
             </template>
           </v-select>
 
@@ -605,27 +643,44 @@
                     v-model="officeModel"
                     :items="officeData"
                     label="Office"
-                    solo
+                    no-data-text="No offices available"
+                    outlined
                     multiple
-                    dense>
+                    dense
+                    return-object
+                    @blur="repLoad(false)">
             <template v-slot:prepend-item>
-              <v-list-item ripple @click="toggle">
+              <v-list-item @click="toggleAllOffices(true)">
                 <v-list-item-action>
-                  <v-icon :color="officeModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                  <v-icon>check</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
-                  <v-list-item-title>Select All</v-list-item-title>
+                  <v-list-item-title>Check All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click="toggleAllOffices(false)">
+                <v-list-item-action>
+                  <v-icon>clear</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Uncheck All</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
               <v-divider class="mt-2"></v-divider>
             </template>
-            <template v-slot:append-item>
-              <v-divider class="mb-2"></v-divider>
-              <v-list-item disabled>
-                <v-list-item-content>
-                  <v-list-item-title>{{ officeModel.length }} offices selected</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
+            <template v-slot:item="data">
+              <v-list-item-action>
+                <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                <v-icon v-else>check_box_outline_blank</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                  {{ data.item.text }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <template v-slot:selection="{ item, index }">
+              <span v-if="index === 0" class="grey--text caption">{{ officeModel.length }} Checked</span>
             </template>
           </v-select>
 
@@ -633,31 +688,48 @@
                     v-model="repModel"
                     :items="repData"
                     label="Rep"
-                    solo
+                    no-data-text="No reps available"
+                    outlined
                     multiple
-                    dense>
+                    dense
+                    return-object
+                    @blur="apptsToFdcPipelineLoad(appts_to_fdc_pipeline_dt1, appts_created_pipeline_dt2)">
             <template v-slot:prepend-item>
-              <v-list-item ripple @click="toggle">
+              <v-list-item @click="toggleAllReps(true)">
                 <v-list-item-action>
-                  <v-icon :color="repModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                  <v-icon>check</v-icon>
                 </v-list-item-action>
                 <v-list-item-content>
-                  <v-list-item-title>Select All</v-list-item-title>
+                  <v-list-item-title>Check All</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click="toggleAllReps(false)">
+                <v-list-item-action>
+                  <v-icon>clear</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title>Uncheck All</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
               <v-divider class="mt-2"></v-divider>
             </template>
-            <template v-slot:append-item>
-              <v-divider class="mb-2"></v-divider>
-              <v-list-item disabled>
-                <v-list-item-content>
-                  <v-list-item-title>{{ repModel.length }} reps selected</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
+            <template v-slot:item="data">
+              <v-list-item-action>
+                <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                <v-icon v-else>check_box_outline_blank</v-icon>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                  {{ data.item.text }}
+                </v-list-item-title>
+              </v-list-item-content>
+            </template>
+            <template v-slot:selection="{ item, index }">
+              <span v-if="index === 0" class="grey--text caption">{{ repModel.length }} Checked</span>
             </template>
           </v-select>
 
-          <v-btn id="all-reps-btn" @click="funnelAllReps">All Reps</v-btn>
+          <v-btn id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
         </div>
       </div>
 
@@ -1008,9 +1080,9 @@
   import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
   import constants from '@/helpers/constants'
-  import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
-  import { getDistricts, getRegions, getOffices, getReps } from '@/services/dashboardService'
+  import { getCloserDistricts, getCloserRegions, getCloserOffices, getCloserReps } from '@/services/dashboardService'
 
   export default {
     name: 'closerDashboard',
@@ -1023,6 +1095,7 @@
       milestoneDialog: false,
       funnelDrilldownDialog: false,
       currentUserId: null,
+      isCloser: false,
       selectedQuarter: 1,
       headers: [
         { text: '', value: '', show: true, sortable: false },
@@ -1083,26 +1156,26 @@
         {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
       ],
       apptsToFdcPipelineData: [
-          {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
-          {id: 15, name: 'Cancelled in advance', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 5},
-          {id: 16, name: 'Ineligible for solar', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 6},
-          {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
-          {id: 25, name: 'Rescheduled', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 7},
-          {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
-          {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
-          {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
-          {id: 22, name: 'No utility bill', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
-          {id: 24, name: 'Non-dispositioned appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
-          {id: 23, name: 'Yet to occur', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
-          {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
-          {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
-          {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
-          {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
-          {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 19},
-          {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 20},
-          {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 21},
-          {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 22},
-          {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 23}
+          // {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
+          // {id: 15, name: 'Cancelled in advance', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 5},
+          // {id: 16, name: 'Ineligible for solar', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 6},
+          // {id: 17, name: 'Total Eligible Planned Appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 8},
+          // {id: 25, name: 'Rescheduled', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 7},
+          // {id: 18, name: 'Homeowner no show', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 9},
+          // {id: 19, name: 'Closer missed appointment', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 10},
+          // {id: 20, name: 'Turned away at the door', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 11},
+          // {id: 22, name: 'No utility bill', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 12},
+          // {id: 24, name: 'Non-dispositioned appointments', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 13},
+          // {id: 23, name: 'Yet to occur', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 14},
+          // {id: 11, name: 'Pitched', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 15},
+          // {id: 9, name: 'Credits run', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 16},
+          // {id: 3, name: 'Credits passed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 17},
+          // {id: 4, name: 'Bookings Complete', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 18},
+          // {id: 5, name: 'Site Surveys Verified', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 19},
+          // {id: 6, name: 'Final Designs sent to Homeowner', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 20},
+          // {id: 7, name: 'Final Designs Approved', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 21},
+          // {id: 21, name: 'Final Designs Completed', checked_in_today_count: 0, today_count: 0, checked_in_week_to_date_count: 0, week_to_date_count: 0, checked_in_custom_date_range_count: 0, custom_date_range_count: 0, display_order: 22},
+          // {id: 8, name: 'Installations Completed', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 23}
       ],
       apptsCreatedPipelineCustomSelectorIsOpen: false,
       apptsToFdcPipelineCustomSelectorIsOpen: false,
@@ -1200,7 +1273,7 @@
         value: 'MTD'
       },
       showApptsToFdcPipelineCustomDates: false,
-      viewSelect: 'apptDateCohort',
+      viewSelect: 'standard',
       appts_created_pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
       appts_created_pipeline_dt1_formatted: moment().startOf('month').format('M/D/YY'),
       appts_created_pipeline_menu1: false,
@@ -1240,14 +1313,6 @@
       },
       allDistrictsSelected () {
         return this.districtModel.length === this.districtData.length
-      },
-      someDistrictsSelected () {
-        return this.districtModel.length > 0 && !this.allDistrictsSelected
-      },
-      icon () {
-        if (this.allDistrictsSelected) return 'mdi-close-box'
-        if (this.someDistrictsSelected) return 'mdi-minus-box'
-        return 'mdi-checkbox-blank-outline'
       },
       visibleFunnelDrilldownHeaders () {
         return this.funnelDrilldownHeaders.filter(header => header.show === true)
@@ -1888,11 +1953,11 @@
       },
 
       loadFunnels () {
-        if (this.apptsCreatedPipelineData && this.apptsCreatedPipelineData.length === 0) {
+        if (this.apptsCreatedPipelineData?.length === 0) {
           this.loadSources()
         }
 
-        if (this.apptsToFdcPipelineData && this.apptsToFdcPipelineData.length === 0) {
+        if (this.apptsToFdcPipelineData?.length === 0) {
           if (this.isCloser) {
             this.districtLoad(true)
           } else {
@@ -1921,7 +1986,7 @@
             this.brsProvidedSourceData = orderBy(res.data, ['source_name'])
             this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
 
-            getRequest('/api/v1/report/selfGenSources', 'blueraven').then(res => {
+            getRequest('/closerDashboard/selfGenSources', 'blueraven').then(res => {
               this.selfGenSourceData = orderBy(res.data, ['source_name'])
               this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
 
@@ -1935,7 +2000,7 @@
         }
       },
 
-      apptsCreatedPipelineLoad (start, end) {
+      async apptsCreatedPipelineLoad (start, end) {
         let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
         let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.id)
 
@@ -1950,95 +2015,110 @@
           return
         }
 
-        const params = {
+        const requestBody = {
           brsProvidedSources: brsProvidedSources,
           selfGenSources: selfGenSources,
           start: moment(start).format('YYYY-MM-DD'),
           end: moment(end).format('YYYY-MM-DD')
         }
 
-        getRequestWithParams('/closerDashboard/funnel/apptsCreatedPipeline', {params}, 'blueraven').then(res => {
-          this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
-        })
+        try {
+          await postRequest('/closerDashboard/funnel/apptsCreatedPipeline', requestBody, 'blueraven').then(res => {
+            this.apptsCreatedPipelineData = orderBy(res.data, row => row.display_order)
+          })
 
-        if (this.isCloser) {
-          if (this.apptsToFdcPipelineData.length > 0) {
+          if (this.isCloser) {
+            if (this.apptsToFdcPipelineData.length > 0) {
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
+          } else {
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
-        } else {
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments Created Pipeline data')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 
-      apptsToFdcPipelineLoad (start, end) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      async apptsToFdcPipelineLoad (start, end) {
+        let reps = []
+        let orgs = []
 
-        let reps = this.repModel.map(rep => rep.id)
-        let orgs = this.officeModel.map(org => org.id)
-
-        if (!reps || reps.length === 0) {
+        if (this.repModel.length === 0) {
           this.apptsToFdcPipelineData = []
-          this.$store.commit(AppMutations.SET_LOADING, false)
           return
         }
 
-        const params = {
+        this.repModel.forEach(rep => reps.push(rep.value))
+        this.officeModel.forEach(org => orgs.push(org.value))
+
+        const requestBody = {
           users: reps,
           orgs: orgs,
           start: moment(start).format('YYYY-MM-DD'),
           end: moment(end).format('YYYY-MM-DD')
         }
 
-        getRequestWithParams('/closerDashboard/funnel/' + this.viewSelect, {params}, 'blueraven').then(res => {
-          this.apptsToFdcPipelineData = orderBy(res.data, row => row.display_order)
+        this.$store.commit(AppMutations.SET_LOADING, true)
 
-          let todayUpperNumerator = 0
-          let todayUpperDenominator = 0
-          let wtdUpperNumerator = 0
-          let wtdUpperDenominator = 0
-          let customDateRangeUpperNumerator = 0
-          let customDateRangeUpperDenominator = 0
-          let todayLowerNumerator = 0
-          let todayLowerDenominator = 0
-          let wtdLowerNumerator = 0
-          let wtdLowerDenominator = 0
-          let customDateRangeLowerNumerator = 0
-          let customDateRangeLowerDenominator = 0
+        try {
+          await postRequest('/closerDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(res => {
+            this.apptsToFdcPipelineData = orderBy(res.data, row => row.display_order)
 
-          this.apptsToFdcPipelineData.forEach(row => {
-            if (row.id === 17) {
-              todayUpperDenominator = row.today_count
-              wtdUpperDenominator = row.week_to_date_count
-              customDateRangeUpperDenominator = row.custom_date_range_count
-            }
+            let todayUpperNumerator = 0
+            let todayUpperDenominator = 0
+            let wtdUpperNumerator = 0
+            let wtdUpperDenominator = 0
+            let customDateRangeUpperNumerator = 0
+            let customDateRangeUpperDenominator = 0
+            let todayLowerNumerator = 0
+            let todayLowerDenominator = 0
+            let wtdLowerNumerator = 0
+            let wtdLowerDenominator = 0
+            let customDateRangeLowerNumerator = 0
+            let customDateRangeLowerDenominator = 0
 
-            if (row.id === 11) {
-              todayUpperNumerator = row.today_count
-              wtdUpperNumerator = row.week_to_date_count
-              customDateRangeUpperNumerator = row.custom_date_range_count
-              todayLowerDenominator = row.today_count
-              wtdLowerDenominator = row.week_to_date_count
-              customDateRangeLowerDenominator = row.custom_date_range_count
-            }
+            this.apptsToFdcPipelineData.forEach(row => {
+              if (row.id === 17) {
+                todayUpperDenominator = row.today_count
+                wtdUpperDenominator = row.week_to_date_count
+                customDateRangeUpperDenominator = row.custom_date_range_count
+              }
 
-            if (row.id === 21) {
-              todayLowerNumerator = row.today_count
-              wtdLowerNumerator = row.week_to_date_count
-              customDateRangeLowerNumerator = row.custom_date_range_count
-            }
+              if (row.id === 11) {
+                todayUpperNumerator = row.today_count
+                wtdUpperNumerator = row.week_to_date_count
+                customDateRangeUpperNumerator = row.custom_date_range_count
+                todayLowerDenominator = row.today_count
+                wtdLowerDenominator = row.week_to_date_count
+                customDateRangeLowerDenominator = row.custom_date_range_count
+              }
+
+              if (row.id === 21) {
+                todayLowerNumerator = row.today_count
+                wtdLowerNumerator = row.week_to_date_count
+                customDateRangeLowerNumerator = row.custom_date_range_count
+              }
+            })
+
+            this.todayUpperPercentage = this.getPercentage(todayUpperNumerator, todayUpperDenominator)
+            this.wtdUpperPercentage = this.getPercentage(wtdUpperNumerator, wtdUpperDenominator)
+            this.cdrUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
+            this.todayLowerPercentage = this.getPercentage(todayLowerNumerator, todayLowerDenominator)
+            this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
+            this.cdrLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
+
+            // TODO: Re-enable this later
+            // if (this.apptsCreatedPipelineData.length > 0) {
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            // }
           })
-
-          this.todayUpperPercentage = this.getPercentage(todayUpperNumerator, todayUpperDenominator)
-          this.wtdUpperPercentage = this.getPercentage(wtdUpperNumerator, wtdUpperDenominator)
-          this.cdrUpperPercentage = this.getPercentage(customDateRangeUpperNumerator, customDateRangeUpperDenominator)
-          this.todayLowerPercentage = this.getPercentage(todayLowerNumerator, todayLowerDenominator)
-          this.wtdLowerPercentage = this.getPercentage(wtdLowerNumerator, wtdLowerDenominator)
-          this.cdrLowerPercentage = this.getPercentage(customDateRangeLowerNumerator, customDateRangeLowerDenominator)
-
-          if (this.apptsCreatedPipelineData.length > 0) {
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        })
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving Appointments to FDC Pipeline data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
 
       getPercentage (numerator, denominator) {
@@ -2052,81 +2132,114 @@
       async districtLoad (preSelectLists) {
         if (!this.currentUserId) return
 
-        await getDistricts(this.currentUserId, true, false).then(res => {
-          this.districtData = orderBy(res,['active', 'org_name'], ['desc', 'asc'])
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getCloserDistricts(this.currentUserId, false).then(res => {
+          this.districtData = res
 
           if (preSelectLists) {
             this.districtModel = cloneDeep(this.districtData)
           }
 
-          this.regionLoad(preSelectLists)
+          if (this.districtModel.length > 0) {
+            this.regionLoad(preSelectLists)
+          }
         })
 
         this.apptsToFdcPipelineData = []
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       async regionLoad (preSelectLists) {
         if (!this.currentUserId) return
 
-        let districts = this.districtModel.map(district => district.id)
+        let districts = this.districtModel.map(function (district) {
+          return {
+            district_id: district.value
+          }
+        })
 
-        await getRegions(this.currentUserId, JSON.stringify(districts), true, false).then(res => {
-          this.regionData = orderBy(res, ['active', 'org_name'], ['desc', 'asc'])
+        if (districts?.length === 0) return
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getCloserRegions(this.currentUserId, JSON.stringify(districts), false).then(res => {
+          this.regionData = res
 
           if (preSelectLists) {
             this.regionModel = cloneDeep(this.regionData)
+          }
+
+          if (this.regionModel.length > 0) {
             this.officeLoad(preSelectLists)
           }
         })
 
         this.apptsToFdcPipelineData = []
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       async officeLoad (preSelectLists) {
         if (!this.currentUserId) return
 
-        let regions = this.regionModel.map(region => region.id)
+        let regions = this.regionModel.map(function (region) {
+          return {
+            region_id: region.value
+          }
+        })
 
-        getOffices(this.currentUserId, JSON.stringify(regions), true, false).then(res => {
-          this.officeData = orderBy(res, ['active', 'org_name'], ['desc', 'asc'])
-          this.officeModel = preSelectLists ? cloneDeep(this.officeData) : []
-          this.repLoad(preSelectLists)
+        if (regions?.length === 0) return
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getCloserOffices(this.currentUserId, JSON.stringify(regions), false).then(res => {
+          this.officeData = res
+
+          if (preSelectLists) {
+            this.officeModel = cloneDeep(this.officeData)
+          }
+
+          if (this.officeModel.length > 0) {
+            this.repLoad(preSelectLists)
+          }
         })
 
         this.apptsToFdcPipelineData = []
         this.repData = []
         this.repModel = []
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       async repLoad (preSelectLists) {
         if (!this.currentUserId) return
 
-        let regions = this.regionModel.map(region => region.id)
+        let regions = this.regionModel.map(function (region) {
+          return {
+            region_id: region.value
+          }
+        })
 
-        let offices = this.officeModel.map(office => office.id)
+        let offices = this.officeModel.map(function (office) {
+          return {
+            office_id: office.value
+          }
+        })
 
-        if (!offices || offices.length === 0) {
-          this.repModel = []
-          this.apptsToFdcPipelineData = []
-          this.repData = []
-          return
-        }
+        if (offices?.length === 0) return
 
-        await getReps(this.currentUserId, JSON.stringify(regions), true, JSON.stringify(offices), true).then(res => {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getCloserReps(this.currentUserId, JSON.stringify(regions), JSON.stringify(offices)).then(res => {
           this.repData = res
-          this.repModel = preSelectLists ? this.repData.filter(rep => rep.id === this.currentUserId) : []
 
-          if (this.isMobile()) {
-            this.chooseApptsToFdcPipelineDateRange({
-              label: 'Month to Date',
-              value: 'MTD'
-            })
-          } else {
+          if (preSelectLists) {
+            this.repModel = cloneDeep(this.repData)
+          }
+
+          this.apptsToFdcPipelineData = []
+
+          if (this.repModel.length > 0) {
             this.apptsToFdcPipelineLoad(this.appts_to_fdc_pipeline_dt1, this.appts_to_fdc_pipeline_dt2)
           }
         })
 
-        this.apptsToFdcPipelineData = []
+        this.$store.commit(AppMutations.SET_LOADING, false)
       },
 
       updateApptsCreatedPipelineCalendar () {
@@ -2483,19 +2596,81 @@
         this.funnelDrilldownRowCount = filteredItems.length
       },
 
-      toggle () {
-        this.$nextTick(() => {
-          if (this.allDistrictsSelected) {
-            this.districtModel = []
-          } else {
-            this.districtModel = this.districtData.slice()
-          }
-        })
+      toggleAllBrsProvidedSources (checkAll) {
+        if (checkAll) {
+          this.brsProvidedSourceModel = this.brsProvidedSourceData.slice()
+        } else {
+          this.brsProvidedSourceModel = []
+        }
+      },
+
+      toggleAllSelfGenSources (checkAll) {
+        if (checkAll) {
+          this.selfGenSourceModel = this.selfGenSourceData.slice()
+        } else {
+          this.selfGenSourceModel = []
+        }
+      },
+
+      toggleAllDistricts (checkAll) {
+        if (checkAll) {
+          this.districtModel = this.districtData.slice()
+          this.regionLoad(false)
+        } else {
+          this.districtModel = []
+          this.regionData = []
+          this.regionModel = []
+          this.officeData = []
+          this.officeModel = []
+          this.repData = []
+          this.repModel = []
+        }
+      },
+
+      toggleAllRegions (checkAll) {
+        if (checkAll) {
+          this.regionModel = this.regionData.slice()
+          this.officeLoad(false)
+        } else {
+          this.regionData = []
+          this.regionModel = []
+          this.officeData = []
+          this.officeModel = []
+          this.repData = []
+          this.repModel = []
+        }
+      },
+
+      toggleAllOffices (checkAll) {
+        if (checkAll) {
+          this.officeModel = this.officeData.slice()
+          this.repLoad(false)
+        } else {
+          this.officeData = []
+          this.officeModel = []
+          this.repData = []
+          this.repModel = []
+        }
+      },
+
+      toggleAllReps (checkAll) {
+        if (checkAll) {
+          this.repModel = this.repData.slice()
+        } else {
+          this.repModel = []
+        }
       }
       /* FUNNEL-RELATED CODE END */
     },
     created () {
       this.currentUserId = this.$store.state.user.details.id
+
+      if (this.$store.state.user.details.userPositions?.length > 0) {
+        this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
+          return (position.position === 'Closer' && !position.endDate && !position.archived && position.primaryFlag)
+        }).length > 0
+      }
+
       this.switchTabs(this.tabNum)
     },
     mounted () {
@@ -3269,9 +3444,6 @@
       }
 
       #pipeline-header-right-side {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: flex-start;
         margin-bottom: 5px;
         width: 100%;
 
@@ -3279,7 +3451,7 @@
           transform: scale(0.875);
           transform-origin: left;
           margin: 2px;
-          max-width: 100px;
+          max-width: 135px;
 
           ::v-deep .v-input__slot {
             margin: 0;
@@ -3305,7 +3477,7 @@
           font-size: 10px;
           margin: 2px;
           width: 87px;
-          height: 33px;
+          height: 35px;
         }
       }
     }
@@ -4100,8 +4272,8 @@
           margin: 0;
 
           .appts-to-fdc-pipeline-dropdown {
-            margin: 0 10px 10px 0;
             transform: none;
+            margin: 0 10px 10px 0;
 
             ::v-deep label {
               font-size: 14px;
@@ -4115,7 +4287,7 @@
           #all-reps-btn {
             font-size: 14px;
             margin: 0 0 10px 0;
-            height: 38px;
+            height: 40px;
           }
         }
       }
@@ -4547,6 +4719,8 @@
 
     #appts-to-fdc-pipeline-container {
       .pipeline-header-container {
+        flex-flow: row nowrap;
+
         .pipeline-icon {
           font-size: 35px;
         }
@@ -4556,7 +4730,13 @@
         }
 
         #pipeline-header-right-side {
-          width: 55%;
+          justify-content: flex-end;
+          width: 58%;
+
+          .appts-to-fdc-pipeline-dropdown,
+          #all-reps-btn {
+            margin: 0 0 10px 10px;
+          }
         }
       }
 
@@ -4809,7 +4989,6 @@
     #appts-to-fdc-pipeline-container {
       .pipeline-header-container {
         #pipeline-header-right-side {
-          justify-content: flex-end;
           margin: 5px 5px 0 0;
         }
       }
