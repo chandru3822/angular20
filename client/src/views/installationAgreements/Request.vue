@@ -293,7 +293,7 @@
                   email: this.requestItem.email
               }, 'blueraven')
 
-              this.currentEmail = it.email;
+              this.currentEmail = this.requestItem.email;
               this.editEmail = false;
               this.snackbar = getSnackbar('SUCCESS', 'Email address updated')
               this.$store.commit(AppMutations.SET_LOADING, false)
