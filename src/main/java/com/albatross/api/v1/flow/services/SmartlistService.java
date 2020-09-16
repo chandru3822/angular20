@@ -80,6 +80,23 @@ public class SmartlistService {
     return fields;
   }
 
+    public SmartlistFieldAssignment getAvailableFieldByCfgaId(Long cfgaId) {
+        SmartlistFieldAssignment field = sqlCache.get("smartlist.getAvailableFieldByCfgaId", Map.of("cfgaId", cfgaId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om)).orElse(null);
+
+        if (field != null) {
+            if (field.getCustomFieldSqlKey() != null) {
+                final String sql = sqlCache.getByKey(field.getCustomFieldSqlKey());
+                if (sql != null) {
+                    field.setListOfValues(sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class));
+                }
+            } else if (field.getCompanySystemListId() != null) {
+                field.setListOfValues(systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds()));
+            }
+        }
+
+        return field;
+    }
+
   public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
     return sqlCache.query("smartlist.getAssignedFields", Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }

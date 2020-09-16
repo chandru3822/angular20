@@ -26,10 +26,10 @@ public class SmartlistFieldAssignment {
 
   private List<ListOfValue> listOfValues;
 
+  private CustomField customField;
+
   // The fields below are used for smartlist generation
   @JsonIgnore
   private String referenceTable, referenceColumn, valueReferenceTable;
 
-  @JsonIgnore
-  private CustomField customField;
 }

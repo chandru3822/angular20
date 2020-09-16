@@ -39,6 +39,49 @@ where
   id = :id;
 ]]></smartlist.update>
 
+<smartlist.getAvailableFieldByCfgaId><![CDATA[
+select null as "smartlistFieldId",
+    cfga.id as "customFieldGroupAssignmentId",
+    cf.field_name as "name",
+    cf.custom_field_sql_key as "customFieldSqlKey",
+    cf.company_system_list_id as "companySystemListId",
+    to_jsonb(cf.system_list_option_ids) as "systemListOptionIds",
+    ps.id as "processStepId",
+    ps.process_step_name as "processStepName",
+    cdt.data_type_id as "dataTypeId",
+    cdt.has_list_values as "hasListValues",
+    cdt.allow_multiple as "allowMultiple",
+    coalesce((
+    select to_jsonb(array_agg(row_to_json(rows))) from (
+        select
+            lv.id,
+            lv.name,
+            lv.parent_id as "parentId",
+            lv.date_created as "dateCreated",
+            lv.date_modified as "dateModified",
+            lv.created_by_id as "createdById",
+            lv.modified_by_id as "modifiedById",
+            lv.display_order as "displayOrder",
+            lv.archived
+        from flow.list_of_value lv
+        where
+            lv.parent_id = cf.list_of_value_id and
+            lv.archived is not true
+        order by lv.display_order
+    ) rows), '[]') AS "listOfValues"
+    from flow.custom_field_group_assignment cfga
+    inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    left join flow.process_step ps on ps.id = cfg.process_step_id
+    inner join flow.object_type ot on ot.id = cot.object_type_id
+    inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+    where cfga.id = :cfgaId and
+        cfga.archived is not true
+    order by name,
+        "processStepName";
+]]></smartlist.getAvailableFieldByCfgaId>
+
 <smartlist.getAvailableFields><![CDATA[
 select sf.id as "smartlistFieldId",
        null as "customFieldGroupAssignmentId",
