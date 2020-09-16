@@ -250,6 +250,13 @@ public class InstallAgreementRepository {
       return baseUrl;
   }
 
+  public void updateEmailAddress(Long projectId, String emailAddress) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("emailAddress", emailAddress);
+      sqlCache.update("installAgreement.updateEmailAddress", params);
+  }
+
     /**
      * Return the string form of the specified object, or an empty string if the specified
      * object is null.

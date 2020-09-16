@@ -92,4 +92,12 @@
             where project_id = :projectId
         ]]>
     </installAgreement.getDealId>
+
+    <installAgreement.updateEmailAddress>
+        <![CDATA[
+            UPDATE flow.contact
+            SET email = :emailAddress
+            WHERE id = (select contact_id from flow.project where id = :projectId)
+        ]]>
+    </installAgreement.updateEmailAddress>
 </sql>
