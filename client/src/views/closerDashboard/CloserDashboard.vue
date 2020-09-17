@@ -4277,12 +4277,14 @@
             transform: none;
             margin: 0 10px 10px 0;
 
-            ::v-deep label {
-              font-size: 14px;
-            }
+            ::v-deep {
+              label {
+                font-size: 14px;
+              }
 
-            ::v-deep i {
-              font-size: 20px;
+              i {
+                font-size: 20px;
+              }
             }
           }
 

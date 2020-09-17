@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION flow.util_closer_region_selection(p_platform_user_id integer, p_district_ids json, p_permission_override boolean DEFAULT false)
+CREATE OR REPLACE FUNCTION brs.util_closer_region_selection(p_platform_user_id integer, p_district_ids json, p_permission_override boolean DEFAULT false)
     RETURNS SETOF json
     LANGUAGE plpgsql
 AS $function$
@@ -47,7 +47,8 @@ BEGIN
                 group by upmv.org_id, upmv.org_name, lov.name, o.active_flag
                 order by o.active_flag desc, upmv.org_name, lov.name
             ) as sub_rows;
-        end case;
+
+    end case;
 
 END
 $function$
