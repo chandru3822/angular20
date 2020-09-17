@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION flow.util_closer_district_selection(p_platform_user_id integer, p_permission_override boolean DEFAULT false)
+CREATE OR REPLACE FUNCTION brs.util_closer_district_selection(p_platform_user_id integer, p_permission_override boolean DEFAULT false)
 	RETURNS SETOF json
     LANGUAGE plpgsql
 AS $function$
@@ -35,7 +35,7 @@ BEGIN
             select array_to_json(array_agg(row_to_json(sub_rows)))
             from (
                 select upmv.org_id, case when length(lov.name) > 0 then concat(upmv.org_name, ' - ', lov.name) else upmv.org_name end as org_name, o.active_flag as active
-                from flow.user_positions_vw upmv
+                from flow.user_positions_materialized_vw upmv
                     inner join flow.org o on o.id = upmv.org_id
                     left join flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id
                     left join flow.list_of_value lov ON ocfv.int_value = lov.id
@@ -46,7 +46,7 @@ BEGIN
                 order by o.active_flag desc, upmv.org_name, lov.name
             ) as sub_rows;
 
-        end case;
+    end case;
 
 END
 $function$

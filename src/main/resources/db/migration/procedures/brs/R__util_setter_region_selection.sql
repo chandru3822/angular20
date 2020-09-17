@@ -1,0 +1,52 @@
+CREATE OR REPLACE FUNCTION brs.util_setter_region_selection(p_platform_user_id integer, p_district_ids json)
+	RETURNS SETOF json
+LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_org_level_id integer;
+BEGIN
+    select min(ol.level)
+    into v_org_level_id
+    from flow.user_position up
+        inner join flow.org o on o.id = up.org_id
+        inner join flow.org_type ot on o.org_type_id = ot.id
+        inner join flow.org_level ol on ol.id = ot.org_level_id
+    where up.user_id = p_platform_user_id
+      and end_date is null
+      and primary_flag is true;
+
+    -- org_level_id of 5 = Region
+	case when (v_org_level_id < 5) OR (p_platform_user_id in (99999999)) then
+		RETURN QUERY
+		    select array_to_json(array_agg(row_to_json(sub_rows)))
+		    from (
+                select upmv.org_id, concat(upmv.org_name, ' - ', ot.org_type) as org_name, o.active_flag as active
+                from flow.user_positions_materialized_vw upmv
+                    inner join flow.org o on o.id = upmv.org_id
+					inner join flow.org_type ot on ot.id = o.org_type_id
+                where upmv.org_id is not null
+                    and o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
+                                            FROM json_array_elements(p_district_ids) elem)
+                 group by upmv.org_id, upmv.org_name, ot.org_type, o.active_flag
+                 order by o.active_flag desc, upmv.org_name, ot.org_type
+            ) as sub_rows;
+	else
+        RETURN QUERY
+            select array_to_json(array_agg(row_to_json(sub_rows)))
+            from (
+                select upmv.org_id, concat(upmv.org_name, ' - ', ot.org_type) as org_name, o.active_flag as active
+                from flow.user_positions_materialized_vw upmv
+                    inner join flow.org o on o.id = upmv.org_id
+                    inner join flow.org_type ot on ot.id = o.org_type_id
+                where upmv.org_id is not null
+                    and o.parent_org_id in (SELECT (elem ->> 'district_id') :: INTEGER
+                                            FROM json_array_elements(p_district_ids) elem)
+                    and upmv.user_id = p_platform_user_id
+                 group by upmv.org_id, upmv.org_name, ot.org_type, o.active_flag
+                 order by o.active_flag desc, upmv.org_name, ot.org_type
+             ) as sub_rows;
+
+    end case;
+
+END
+$function$

@@ -58,8 +58,8 @@ export async function getCloserReps (userId, regions, offices) {
   return data
 }
 
-export async function getSetterDistricts (userId, setterOverride) {
-  const params = {userId, setterOverride}
+export async function getSetterDistricts (userId) {
+  const params = {userId}
   const {data} = await getRequestWithParams('/setterDashboard/getDistricts', {params}, 'blueraven')
 
   data.forEach(dataItem => {
@@ -70,9 +70,9 @@ export async function getSetterDistricts (userId, setterOverride) {
   return data
 }
 
-export async function getSetterRegions (userId, districts, setterOverride) {
+export async function getSetterRegions (userId, districts) {
   districts = encodeURI(districts)
-  const params = {userId, districts, setterOverride}
+  const params = {userId, districts}
   const {data} = await getRequestWithParams('/setterDashboard/getRegions', {params}, 'blueraven')
 
   data.forEach(dataItem => {
@@ -83,9 +83,9 @@ export async function getSetterRegions (userId, districts, setterOverride) {
   return data
 }
 
-export async function getSetterOffices (userId, regions, setterOverride) {
+export async function getSetterOffices (userId, regions) {
   regions = encodeURI(regions)
-  const params = {userId, regions, setterOverride}
+  const params = {userId, regions}
   const {data} = await getRequestWithParams('/setterDashboard/getOffices', {params}, 'blueraven')
 
   data.forEach(dataItem => {
@@ -98,7 +98,7 @@ export async function getSetterOffices (userId, regions, setterOverride) {
 
 export async function getSetterReps (userId, regions, offices) {
   const requestBody = {userId, regions, offices}
-  const {data} = await postRequest('/setterDashboard/getUsers', requestBody, 'blueraven')
+  const {data} = await postRequest('/setterDashboard/getReps', requestBody, 'blueraven')
 
   data.forEach(dataItem => {
     dataItem.value = dataItem.user_id
