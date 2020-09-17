@@ -50,7 +50,7 @@ public class TwilioMessageRequest {
         data.put("to", to);
         data.put("body", body);
         data.put("numMedia", numMedia);
-        data.put("mediaUrl0", mediaUrl0 == null ? null : new String[] {mediaUrl0});
+        data.put("mediaUrls", mediaUrl0 == null ? null : new String[] {mediaUrl0});
 
         return data;
     }
