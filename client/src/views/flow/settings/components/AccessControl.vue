@@ -132,19 +132,34 @@
       },
       alterEnabledFlagForRows (newList, oldList, blah) {
         // filter the new list and remove everything that was in old list.  this is the row that was clicked
-        let selectedRow, enable
-        if(newList?.length > oldList?.length) {
-          selectedRow = newList?.filter(e => !oldList?.includes(e))[0]
-          enable = true
+        if(this.companyFeatureList.length === newList?.length) {
+          // select all
+          this.companyFeatureList.forEach(cfl => {
+            cfl.accessControl.forEach(ac => {
+              ac.enabled = true
+            })
+          })
+        } else if (this.companyFeatureList.length === oldList?.length) {
+          // deselect all
+          this.companyFeatureList.forEach(cfl => {
+            cfl.accessControl.forEach(ac => {
+              ac.enabled = false
+            })
+          })
         } else {
-          selectedRow = oldList?.filter(e => !newList?.includes(e))[0]
-          enable = false
+          let selectedRow, enable
+          if(newList?.length > oldList?.length) {
+            selectedRow = newList?.filter(e => !oldList?.includes(e))[0]
+            enable = true
+          } else {
+            selectedRow = oldList?.filter(e => !newList?.includes(e))[0]
+            enable = false
+          }
+          let selectedCfl = this.companyFeatureList.find(cfl => { return cfl?.featureId === selectedRow?.featureId})
+          selectedCfl?.accessControl?.forEach(acl => {
+            acl.enabled = enable
+          })
         }
-        //todo: see why this function gets called on page load
-        let selectedCfl = this.companyFeatureList.find(cfl => { return cfl?.featureId === selectedRow?.featureId})
-        selectedCfl?.accessControl?.forEach(acl => {
-          acl.enabled = enable
-        })
 
         this.callback(this.companyFeatureList)
       },
