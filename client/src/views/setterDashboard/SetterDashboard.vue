@@ -411,6 +411,8 @@
             <v-select class="pipeline-dropdown"
                       v-model="districtModel"
                       :items="districtData"
+                      item-text="org_name"
+                      item-value="org_id"
                       label="District"
                       no-data-text="No districts available"
                       outlined
@@ -444,7 +446,7 @@
                 </v-list-item-action>
                 <v-list-item-content>
                   <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.text }}
+                    {{ data.item.org_name }}
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
@@ -456,6 +458,8 @@
             <v-select class="pipeline-dropdown"
                       v-model="regionModel"
                       :items="regionData"
+                      item-text="org_name"
+                      item-value="org_id"
                       label="Region"
                       no-data-text="No regions available"
                       outlined
@@ -489,7 +493,7 @@
                 </v-list-item-action>
                 <v-list-item-content>
                   <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.text }}
+                    {{ data.item.org_name }}
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
@@ -501,6 +505,8 @@
             <v-select class="pipeline-dropdown"
                       v-model="officeModel"
                       :items="officeData"
+                      item-text="org_name"
+                      item-value="org_id"
                       label="Office"
                       no-data-text="No offices available"
                       outlined
@@ -534,7 +540,7 @@
                 </v-list-item-action>
                 <v-list-item-content>
                   <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.text }}
+                    {{ data.item.org_name }}
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
@@ -546,6 +552,8 @@
             <v-select class="pipeline-dropdown"
                       v-model="repModel"
                       :items="repData"
+                      item-text="name"
+                      item-value="user_id"
                       label="Rep"
                       no-data-text="No reps available"
                       outlined
@@ -579,7 +587,7 @@
                 </v-list-item-action>
                 <v-list-item-content>
                   <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                    {{ data.item.text }}
+                    {{ data.item.name }}
                   </v-list-item-title>
                 </v-list-item-content>
               </template>
@@ -1521,7 +1529,7 @@
 
         let districts = this.districtModel.map(function (district) {
           return {
-            district_id: district.value
+            district_id: district.org_id
           }
         })
 
@@ -1549,7 +1557,7 @@
 
         let regions = this.regionModel.map(function (region) {
           return {
-            region_id: region.value
+            region_id: region.org_id
           }
         })
 
@@ -1579,13 +1587,13 @@
 
         let regions = this.regionModel.map(function (region) {
           return {
-            region_id: region.value
+            region_id: region.org_id
           }
         })
 
         let offices = this.officeModel.map(function (office) {
           return {
-            office_id: office.value
+            office_id: office.org_id
           }
         })
 
@@ -1669,8 +1677,8 @@
           return
         }
 
-        this.repModel.forEach(rep => reps.push(rep.value))
-        this.officeModel.forEach(org => orgs.push(org.value))
+        this.repModel.forEach(rep => reps.push(rep.user_id))
+        this.officeModel.forEach(org => orgs.push(org.org_id))
 
         const requestBody = {
           targetInstallations: targetInstallations,
@@ -1904,7 +1912,7 @@
 
       toggleAllDistricts (checkAll) {
         if (checkAll) {
-          this.districtModel = this.districtData.slice()
+          this.districtModel = cloneDeep(this.districtData)
           this.regionLoad(false)
         } else {
           this.districtModel = []
@@ -1919,10 +1927,9 @@
 
       toggleAllRegions (checkAll) {
         if (checkAll) {
-          this.regionModel = this.regionData.slice()
+          this.regionModel = cloneDeep(this.regionData)
           this.officeLoad(false)
         } else {
-          this.regionData = []
           this.regionModel = []
           this.officeData = []
           this.officeModel = []
@@ -1933,10 +1940,9 @@
 
       toggleAllOffices (checkAll) {
         if (checkAll) {
-          this.officeModel = this.officeData.slice()
+          this.officeModel = cloneDeep(this.officeData)
           this.repLoad(false)
         } else {
-          this.officeData = []
           this.officeModel = []
           this.repData = []
           this.repModel = []
@@ -1945,7 +1951,7 @@
 
       toggleAllReps (checkAll) {
         if (checkAll) {
-          this.repModel = this.repData.slice()
+          this.repModel = cloneDeep(this.repData)
         } else {
           this.repModel = []
         }

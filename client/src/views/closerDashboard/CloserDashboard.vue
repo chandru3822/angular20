@@ -463,10 +463,14 @@
                         class="appts-created-pipeline-dropdown"
                         v-model="brsProvidedSourceModel"
                         :items="brsProvidedSourceData"
+                        item-text="sourceName"
+                        item-value="sourceId"
                         placeholder="Select"
                         multiple
-                        solo
-                        dense>
+                        outlined
+                        background-color="white"
+                        dense
+                        @blur="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:prepend-item>
                   <v-list-item @click="toggleAllBrsProvidedSources(true)">
                     <v-list-item-action>
@@ -495,10 +499,14 @@
                         class="appts-created-pipeline-dropdown"
                         v-model="selfGenSourceModel"
                         :items="selfGenSourceData"
+                        item-text="sourceName"
+                        item-value="sourceId"
                         placeholder="Select"
                         multiple
-                        solo
-                        dense>
+                        outlined
+                        background-color="white"
+                        dense
+                        @blur="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:prepend-item>
                   <v-list-item @click="toggleAllSelfGenSources(true)">
                     <v-list-item-action>
@@ -552,6 +560,8 @@
           <v-select class="appts-to-fdc-pipeline-dropdown"
                     v-model="districtModel"
                     :items="districtData"
+                    item-text="org_name"
+                    item-value="org_id"
                     label="District"
                     no-data-text="No districts available"
                     outlined
@@ -586,7 +596,7 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                  {{ data.item.text }}
+                  {{ data.item.org_name }}
                 </v-list-item-title>
               </v-list-item-content>
             </template>
@@ -598,6 +608,8 @@
           <v-select class="appts-to-fdc-pipeline-dropdown"
                     v-model="regionModel"
                     :items="regionData"
+                    item-text="org_name"
+                    item-value="org_id"
                     label="Region"
                     no-data-text="No regions available"
                     outlined
@@ -632,7 +644,7 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                  {{ data.item.text }}
+                  {{ data.item.org_name }}
                 </v-list-item-title>
               </v-list-item-content>
             </template>
@@ -644,6 +656,8 @@
           <v-select class="appts-to-fdc-pipeline-dropdown"
                     v-model="officeModel"
                     :items="officeData"
+                    item-text="org_name"
+                    item-value="org_id"
                     label="Office"
                     no-data-text="No offices available"
                     outlined
@@ -678,7 +692,7 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                  {{ data.item.text }}
+                  {{ data.item.org_name }}
                 </v-list-item-title>
               </v-list-item-content>
             </template>
@@ -690,6 +704,8 @@
           <v-select class="appts-to-fdc-pipeline-dropdown"
                     v-model="repModel"
                     :items="repData"
+                    item-text="name"
+                    item-value="user_id"
                     label="Rep"
                     no-data-text="No reps available"
                     outlined
@@ -724,7 +740,7 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                  {{ data.item.text }}
+                  {{ data.item.name }}
                 </v-list-item-title>
               </v-list-item-content>
             </template>
@@ -1155,9 +1171,9 @@
       userRowIndex: -1,
       numOffices: 0,
       apptsCreatedPipelineData: [
-        {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-        {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-        {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
+        // {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
+        // {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
+        // {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
       ],
       apptsToFdcPipelineData: [
           // {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
@@ -1986,12 +2002,12 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          getRequest('/closerDashboard/brsProvidedSources', 'blueraven').then(res => {
-            this.brsProvidedSourceData = orderBy(res.data, ['source_name'])
+          getRequest('/closerDashboard/getBrsProvidedSources', 'blueraven').then(res => {
+            this.brsProvidedSourceData = res.data
             this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
 
-            getRequest('/closerDashboard/selfGenSources', 'blueraven').then(res => {
-              this.selfGenSourceData = orderBy(res.data, ['source_name'])
+            getRequest('/closerDashboard/getSelfGenSources', 'blueraven').then(res => {
+              this.selfGenSourceData = res.data
               this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
 
               this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
@@ -2005,6 +2021,7 @@
       },
 
       async apptsCreatedPipelineLoad (start, end) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
         let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.id)
 
@@ -2054,8 +2071,8 @@
           return
         }
 
-        this.repModel.forEach(rep => reps.push(rep.value))
-        this.officeModel.forEach(org => orgs.push(org.value))
+        this.repModel.forEach(rep => reps.push(rep.user_id))
+        this.officeModel.forEach(org => orgs.push(org.org_id))
 
         const requestBody = {
           users: reps,
@@ -2158,7 +2175,7 @@
 
         let districts = this.districtModel.map(function (district) {
           return {
-            district_id: district.value
+            district_id: district.org_id
           }
         })
 
@@ -2186,7 +2203,7 @@
 
         let regions = this.regionModel.map(function (region) {
           return {
-            region_id: region.value
+            region_id: region.org_id
           }
         })
 
@@ -2216,13 +2233,13 @@
 
         let regions = this.regionModel.map(function (region) {
           return {
-            region_id: region.value
+            region_id: region.org_id
           }
         })
 
         let offices = this.officeModel.map(function (office) {
           return {
-            office_id: office.value
+            office_id: office.org_id
           }
         })
 
@@ -2602,7 +2619,7 @@
 
       toggleAllBrsProvidedSources (checkAll) {
         if (checkAll) {
-          this.brsProvidedSourceModel = this.brsProvidedSourceData.slice()
+          this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
         } else {
           this.brsProvidedSourceModel = []
         }
@@ -2610,7 +2627,7 @@
 
       toggleAllSelfGenSources (checkAll) {
         if (checkAll) {
-          this.selfGenSourceModel = this.selfGenSourceData.slice()
+          this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
         } else {
           this.selfGenSourceModel = []
         }
@@ -2618,7 +2635,7 @@
 
       toggleAllDistricts (checkAll) {
         if (checkAll) {
-          this.districtModel = this.districtData.slice()
+          this.districtModel = cloneDeep(this.districtData)
           this.regionLoad(false)
         } else {
           this.districtModel = []
@@ -2633,10 +2650,9 @@
 
       toggleAllRegions (checkAll) {
         if (checkAll) {
-          this.regionModel = this.regionData.slice()
+          this.regionModel = cloneDeep(this.regionData)
           this.officeLoad(false)
         } else {
-          this.regionData = []
           this.regionModel = []
           this.officeData = []
           this.officeModel = []
@@ -2647,10 +2663,9 @@
 
       toggleAllOffices (checkAll) {
         if (checkAll) {
-          this.officeModel = this.officeData.slice()
+          this.officeModel = cloneDeep(this.officeData)
           this.repLoad(false)
         } else {
-          this.officeData = []
           this.officeModel = []
           this.repData = []
           this.repModel = []
@@ -2659,7 +2674,7 @@
 
       toggleAllReps (checkAll) {
         if (checkAll) {
-          this.repModel = this.repData.slice()
+          this.repModel = cloneDeep(this.repData)
         } else {
           this.repModel = []
         }
