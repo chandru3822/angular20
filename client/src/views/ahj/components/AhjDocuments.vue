@@ -7,7 +7,7 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <label class="button" @click="$refs.fileInput.value = ''">
+      <label class="button" @click="$refs.fileInput.value = ''" v-if="userCanEdit">
         <v-icon class="white--text" style="cursor: pointer">add</v-icon>
         <input type="file" style="display: none" ref="fileInput" @input="saveDocument($event.target.files)">
       </label>
@@ -22,7 +22,7 @@
           </v-list-item-title>
         </v-list-item-content>
         <v-list-item-action>
-          <v-icon small class="mr-3" @click="deleteDocument(document.id)">delete</v-icon>
+          <v-icon small v-if="userCanEdit" class="mr-3" @click="deleteDocument(document.id)">delete</v-icon>
         </v-list-item-action>
       </v-list-item>
     </v-list>
@@ -51,6 +51,9 @@
       },
       sourceId: {
         type: Number
+      },
+      userCanEdit: {
+        type: Boolean
       },
       ahjId: {
         type: Number

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="custom-field-group-container">
+  <v-container id="process-step-container" class="custom-field-group-container">
     <v-dialog
       v-model="deleteError"
     >
@@ -42,12 +42,12 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addNew = !addNew, newStep = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              {{'Add New'}}
+              {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
-          <v-card color="transparent" flat v-if="addNew">
+          <v-card color="transparent" flat v-if="addNew" class="mb-3">
             <v-text-field
                 label="Process Step Name"
                 tabindex=1
@@ -55,7 +55,6 @@
             ></v-text-field>
             <v-btn :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
           </v-card>
-          <v-divider v-if="addNew"></v-divider>
           <v-card>
             <v-card-title class="pt-0">
               <v-text-field
@@ -64,17 +63,18 @@
                 label="Search"
                 single-line
                 hide-details
+                @input="debounceGetSteps"
               ></v-text-field>
             </v-card-title>
             <v-data-table
               :headers="headers"
               :items="filterProcessSteps()"
               :fixed-header="true"
-              :items-per-page="-1"
               disable-sort
-              :search="search"
+              :options.sync="options"
+              :footer-props="footerProps"
+              :server-items-length="totalItems"
               hide-default-header
-              hide-default-footer
               class="elevation-1"
             >
               <template #item="{ item, index }">
@@ -139,7 +139,8 @@
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, getRequestWithParams, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import debounce from "lodash.debounce";
 
   export default {
     name: 'ProcessSteps',
@@ -162,20 +163,45 @@
         headers: [
           {text: 'Process Step Name', value: 'processStepName', show: true},
           {text: '', value: 'icons', show: true},
-        ]
+        ],
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': 'Rows per page:'
+        },
+        options: {
+          itemsPerPage: 100
+        },
+        totalItems: 0,
       }
+    },
+    watch: {
+      options: {
+        handler () {
+          this.getProcessSteps()
+        },
+        deep: true,
+      },
     },
     computed: {
     },
     methods: {
+      debounceGetSteps: debounce( function () {
+        this.getProcessSteps()
+      }, 500),
       goToProcessStep(stepId) {
         this.$router.push({path: `/settings/processStep/${stepId}/components`})
       },
       async getProcessSteps () {
         this.$store.commit(AppMutations.SET_LOADING, true)
+        const { sortBy, sortDesc, page, itemsPerPage } = this.options
         try {
-          const {data} = await getRequest(`/processStep`)
-          this.processSteps = data
+          const {data} = await getRequestWithParams(`/processStep/search`, { params: {
+            query: this.search,
+            page: page - 1,
+            size: itemsPerPage
+          } })
+          this.processSteps = data.content
+          this.totalItems = data.totalElements
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -228,7 +254,10 @@
   }
 </script>
 
-<style scoped lang="scss">
-
+<style lang="scss">
+  #process-step-container .v-data-table__wrapper {
+    height: calc(100vh - 310px);
+    min-height: 300px;
+  }
 
 </style>

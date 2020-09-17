@@ -135,7 +135,7 @@ export default {
       }, {
         path: '/settings/availability',
         title: 'Availability',
-        show: this.hasSettingsAccess
+        show: this.hasSettingsAccess || this.$store.getters.userHasFeature('AVAILABILITY')
       }, {
         path: '/settings/positions',
         title: 'Positions',

@@ -43,8 +43,8 @@
               ></v-select>
             </v-col>
             <v-col cols="12" sm="6">
-              <v-select v-model="user.companyUserStatusTypeId"
-                        :items="companyUserStatusTypes"
+              <v-select v-model="user.userStatusTypeId"
+                        :items="userStatusTypes"
                         label="User Status"
                         :rules="requiredRules"
                         item-text="userStatusType"
@@ -92,7 +92,7 @@ import {getCountries} from '@/services/countryService'
 import {getStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
-import {getCompanyUserStatusTypes} from '@/services/userService'
+import {getUserStatusTypes} from '@/services/userService'
 
 const { VUE_APP_ENV } = process.env
 
@@ -109,7 +109,7 @@ export default {
       states: [],
       countries: [],
       customFieldGroups: [],
-      companyUserStatusTypes: [],
+      userStatusTypes: [],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       emailRules: constants.EMAIL_RULES,
       companyId: this.$store.state.user.details.companyId,
@@ -120,7 +120,7 @@ export default {
     if(VUE_APP_ENV === 'local') {
       this.setFakeUser()
     }
-    this.getCompanyUserStatusTypes()
+    this.getUserStatusTypes()
     this.getStates()
     this.getCountries()
     this.getCustomFieldGroups()
@@ -143,11 +143,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getCompanyUserStatusTypes () {
+    async getUserStatusTypes () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getCompanyUserStatusTypes()
-        this.companyUserStatusTypes = data
+        const {data} = await getUserStatusTypes()
+        this.userStatusTypes = data
 
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

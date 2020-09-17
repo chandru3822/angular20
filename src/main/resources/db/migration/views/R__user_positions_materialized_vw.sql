@@ -21,18 +21,18 @@ select u.id                                      as user_id,
        u.email,
        u.phone_number,
        p.available_to_children,
-       (select  cust.id
-        from flow.user_status_type ust
-          inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id
-        where cust.company_id = p.company_id
-          and ust.user_id = u.id
-          and ust.archived is not true) as company_user_status_type_id,
-    (select  cust.has_access
-            from flow.user_status_type ust
-              inner join flow.company_user_status_type cust on cust.id = ust.company_user_status_type_id
-            where cust.company_id = p.company_id
-              and ust.user_id = u.id
-              and ust.archived is not true) as has_access
+       (select  ust.id
+        from flow.company_user_status cus
+          inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
+        where ust.company_id = p.company_id
+          and cus.user_id = u.id
+          and cus.archived is not true) as user_status_type_id,
+    (select  ust.has_access
+     from flow.company_user_status cus
+              inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
+            where ust.company_id = p.company_id
+              and cus.user_id = u.id
+              and cus.archived is not true) as has_access
 from flow."user" u
          left join flow.user_position up on up.user_id = u.id
          left join flow.position p on p.id = up.position_id

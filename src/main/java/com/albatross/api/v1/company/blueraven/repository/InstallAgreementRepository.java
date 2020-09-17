@@ -250,17 +250,11 @@ public class InstallAgreementRepository {
       return baseUrl;
   }
 
-  public String getLoanStatus(Long projectId) throws Exception {
-      JSONObject loanApplication = loanPalService.getApplicationByProjectId(projectId);
-      if (loanApplication != null) {
-          try {
-              JSONObject outcome = loanApplication.getJSONObject("outcome");
-              return outcome.getString("status");
-          } catch (JSONException ex) {
-              log.error("JSON object not found", ex);
-          }
-      }
-      return null;
+  public void updateEmailAddress(Long projectId, String emailAddress) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("emailAddress", emailAddress);
+      sqlCache.update("installAgreement.updateEmailAddress", params);
   }
 
     /**

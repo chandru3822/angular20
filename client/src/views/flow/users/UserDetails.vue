@@ -12,9 +12,11 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="pa-4">
-              <v-select v-model="user.companyUserStatusTypeId"
-                        :items="companyUserStatusTypes"
+              <v-select v-model="user.userStatusTypeId"
+                        :items="userStatusTypes"
                         label="User Status"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         placeholder="Select a status..."
                         item-text="userStatusType"
                         item-value="id"
@@ -22,17 +24,19 @@
               </v-select>
               <v-text-field text
                             label="Phone"
-                            placeholder=" "
                             :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            placeholder=" "
                             v-model="user.phone"></v-text-field>
               <v-text-field text
                             label="E-Mail"
-                            placeholder=" "
                             :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            placeholder=" "
                             v-model="user.email"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
-                <div v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+                <div v-if="userCanEdit">
                   <v-select
                       v-model="user.companies"
                       :items="companies"
@@ -113,7 +117,7 @@
         userId: this.$route.params.id,
         companyId: this.$store.state.user.details.companyId,
         changeOwner: false,
-        companyUserStatusTypes: [],
+        userStatusTypes: [],
       }
     },
     created () {
@@ -121,7 +125,7 @@
       this.getCompanies()
       this.getCustomFieldGroups()
       this.getNotes()
-      this.getCompanyUserStatusTypes()
+      this.getUserStatusTypes()
     },
     methods: {
       async saveUser() {
@@ -201,11 +205,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getCompanyUserStatusTypes () {
+      async getUserStatusTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data} = await getRequest(`/user/statuses`)
-          this.companyUserStatusTypes = data
+          this.userStatusTypes = data
 
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
@@ -217,7 +221,7 @@
       async saveUserStatus () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/user/${this.userId}/status/${this.user.companyUserStatusTypeId}`)
+          await postRequest(`/user/${this.userId}/status/${this.user.userStatusTypeId}`)
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -226,7 +230,7 @@
         }
       },
       getReadOnly: function (field) {
-        return this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
+        return !this.userCanEdit || getCustomFieldReadOnly(this.$store, field)
       },
     }
   }

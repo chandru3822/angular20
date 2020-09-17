@@ -30,11 +30,11 @@ BEGIN
 
 	RETURN QUERY select array_to_json(array_agg(row_to_json(sub_rows)))
         from (
-            select row_number() over (order by (c.first_name || ' ' || c.last_name)::bytea),
-                   c.first_name || ' ' || c.last_name as customer_name,
+            select row_number() over (order by (concat(c.first_name, ' ', c.last_name))::bytea),
+                   concat(c.first_name, ' ', c.last_name) as customer_name,
                    p.id,
                    pd.source,
-                   upv.first_name || ' ' || upv.last_name as owner_name,
+                   concat(upv.first_name,' ',upv.last_name) as owner_name,
                    employee_id.employee_id,
                    pd.closer_appointment_start,
                    closer_appointment_outcome.text_value

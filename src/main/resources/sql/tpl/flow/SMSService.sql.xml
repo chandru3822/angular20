@@ -30,31 +30,18 @@
 
     <sms.queue.fetchByProjectId>
         <![CDATA[
-            SELECT
-              sms.id,
-              sms.user_id,
-              u.first_name,
-              u.last_name,
-              u.email,
-              sms.message,
-              array_to_json(sms.media_urls) AS media_urls,
-              sms.recipient_type_id,
-              sms.error_message,
-              sms.message_group,
-              sms.message_sid,
-              sms.message_status,
-              sms.from_phone,
-              sms.to_phone,
-              sms.twilio_created,
-              sms.twilio_sent,
-              sms.twilio_delivered,
-              sms.created,
-              sms.updated
+            (SELECT
+                sms.message,
+                array_to_json(sms.media_urls) AS media_urls,
+                created,
+                sms.from_phone,
+                sms.recipient_type_id
             FROM flow.sms_queue sms
-              INNER JOIN flow.user u
-                ON sms.user_id = u.id
             WHERE
-                sms.to_phone = (select phone_number from flow.project where id = :projectId)
+                sms.to_phone ILIKE '%' || (select c.phone from flow.project p
+                                            inner join flow.contact c on c.id = p.contact_id
+                                            left join flow.user users on users.id = p.created_by_id
+                                            where p.id = :projectId)
             AND (
                 error_message IS NULL OR
                    (LOWER(error_message) IN
@@ -63,14 +50,22 @@
                     created >= '2017-11-08'
                     )
                 )
-            ORDER BY sms.created ASC
+            UNION ALL
+                SELECT body as message, null as media_urls,
+                   date_received as created, from_phone, 1 as recipient_type_id from flow.sms_reply
+                WHERE from_phone ILIKE '%' || (select c.phone from flow.project p
+                                               inner join flow.contact c on c.id = p.contact_id
+                                               left join flow.user users on users.id = p.created_by_id
+                                               where p.id = :projectId)
+            )
+            ORDER BY created ASC
         ]]>
     </sms.queue.fetchByProjectId>
 
     <sms.queue.exportAll>
         <![CDATA[
             SELECT
-                u.first_name || ' ' || u.last_name as full_name,
+            concat(u.first_name, ' ', u.last_name) AS full_name,
                 u.email,
                 sms.to_phone,
                 sms.message,
@@ -160,12 +155,8 @@
                    sq.twilio_delivered,
                    sq.updated,
                    sq.created,
-                   sq.recipient_type_id,
-                   u.first_name,
-                   u.last_name,
-                   u.first_name || ' ' || u.last_name AS fullname
+                   sq.recipient_type_id
             FROM sq
-                   INNER JOIN flow.user u ON u.id = sq.user_id;
         ]]>
     </sms.queue.insert>
 
@@ -174,9 +165,6 @@
             SELECT
               sms.id,
               sms.user_id,
-              u.first_name,
-              u.last_name,
-              u.email,
               sms.message,
               array_to_json(sms.media_urls) AS media_urls,
               sms.recipient_type_id,
@@ -192,7 +180,6 @@
               sms.updated,
               sms.created
             FROM flow.sms_queue sms
-              INNER JOIN flow.user u ON sms.user_id = u.id
             WHERE message_sid IS NULL
                   AND sms.to_phone IS NOT NULL
                   AND (

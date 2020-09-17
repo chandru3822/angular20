@@ -20,11 +20,13 @@
             <v-text-field text
                           label="Organization Name"
                           :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           v-model="org.orgName"></v-text-field>
             <v-select v-model="org.orgTypeId"
                       :items="orgTypes"
                       label="Organization Type"
                       :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
                       item-text="orgType"
                       item-value="id"
                       @input="getOrgsByType(org.orgTypeId)"
@@ -32,6 +34,7 @@
             <v-select v-model="org.parentOrgId"
                       :items="parents"
                       :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
                       label="Parent Organization"
                       item-text="orgName"
                       item-value="id"
@@ -39,17 +42,19 @@
             <v-select v-model="org.stateId"
                       :items="states"
                       :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
                       label="State"
                       item-text="state"
                       item-value="id"
             ></v-select>
             <div class="mb-3">
               <label>Show in Scheduling Tool:</label>
-              <input type="checkbox" :disabled="!userCanEdit" class="ml-2" v-model="org.schedulable">
+              <input type="checkbox" :disabled="!userCanEdit" :readonly="!userCanEdit" class="ml-2" v-model="org.schedulable">
             </div>
             <div class="mb-3" v-if="$store.getters.isParent(parentId)">
               <label>Make available in children:</label>
-              <input type="checkbox" class="ml-3" v-model="org.availableToChildren">
+              <input type="checkbox" :readonly="!userCanEdit" :disabled="!userCanEdit"
+                     class="ml-3" v-model="org.availableToChildren">
             </div>
           </v-card>
         </div>
@@ -204,7 +209,7 @@
         }
       },
       getReadOnly: function (field) {
-        return getCustomFieldReadOnly(this.$store, field)
+        return getCustomFieldReadOnly(this.$store, field) || !this.userCanEdit
       }
     }
   }

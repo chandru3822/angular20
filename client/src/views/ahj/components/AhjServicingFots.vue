@@ -11,11 +11,12 @@
       <p v-for="(fot, index) in servicingFots"
          :key="index"
          class="my-0">
-        <router-link v-if="fot.hierarchy !== null"
+        <router-link v-if="fot.hierarchy !== null && $store.getters.userHasFeature('ORGS')"
                      class="list-link"
                      :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}"
                      :to="{ name: 'orgs', params: {orgFilter: fot.hierarchy.orgName} }"
         >{{ fot.hierarchy.orgName }}</router-link>
+        <span v-else>{{ fot.hierarchy.orgName }}</span>
       </p>
     </div>
     <div class="empty-list" v-show="servicingFots.length < 1"

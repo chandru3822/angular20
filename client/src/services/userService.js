@@ -1,6 +1,6 @@
 import {getRequest, getRequestWithParams} from '@/helpers/helpers'
 
-export async function getCompanyUserStatusTypes() {
+export async function getUserStatusTypes() {
   try {
     const {data} = await getRequest(`/user/statuses`)
     return {data, status}

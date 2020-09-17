@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.v1.company.blueraven.models.CloserTableScores;
+import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.security.SecurityService;
@@ -128,5 +129,52 @@ public class CloserDashboardService {
       }
     }
     return closerTableScoresArray;
+  }
+
+  public String getDistricts(int userId, Boolean setterOverride) {
+    String sqlQuery = "SELECT * FROM flow.util_closer_district_selection(:userId, :setterOverride::BOOLEAN)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", userId);
+    parameters.addValue("setterOverride", setterOverride);
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public String getRegions(int userId, String districts, Boolean setterOverride) {
+    districts = districts.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
+
+    String sqlQuery = "SELECT * FROM flow.util_closer_region_selection(:userId, :districts::JSON, :setterOverride::BOOLEAN)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", userId);
+    parameters.addValue("districts", districts);
+    parameters.addValue("setterOverride", setterOverride);
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public String getOffices(int userId, String regions, Boolean setterOverride) {
+    regions = regions.replace("%5B", "[").replace("%7B", "{").replace("%7D", "}").replace("%22", "\"").replace("%5D", "]");
+
+    String sqlQuery = "SELECT * FROM flow.util_closer_office_selection(:userId, :regions::JSON, :setterOverride::BOOLEAN)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", userId);
+    parameters.addValue("regions", regions);
+    parameters.addValue("setterOverride", setterOverride);
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public String getReps(DashboardUserRequest req) {
+    String sqlQuery = "SELECT * FROM flow.util_closer_rep_selection(:userId::int, :regions::JSON, :offices::JSON)";
+
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("regions", req.getRegions());
+    parameters.addValue("offices", req.getOffices());
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 }

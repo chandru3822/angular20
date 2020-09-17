@@ -15,6 +15,33 @@
       order by ps.process_step_name
   ]]></processStep.getAllForCompany>
 
+  <processStep.searchForCompany><![CDATA[
+      select ps.id,
+             ps.process_step_name,
+             ps.non_admin_add,
+             ps.company_id,
+             ps.archived,
+             ps.date_created,
+             ps.date_modified,
+             ps.created_by_id,
+             ps.modified_by_id
+      from flow.process_step ps
+      where ps.company_id = :companyId
+        and ps.process_step_name ILIKE '%' || :query || '%'
+        and ps.archived is not true
+      order by ps.process_step_name
+      limit :limit
+      offset :offset
+  ]]></processStep.searchForCompany>
+
+  <processStep.searchForCompanyCount><![CDATA[
+      select count(*)
+      from flow.process_step ps
+      where ps.company_id = :companyId
+        and ps.process_step_name ILIKE '%' || :query || '%'
+        and ps.archived is not true
+  ]]></processStep.searchForCompanyCount>
+
   <processStep.get><![CDATA[
       select ps.id,
              ps.process_step_name,

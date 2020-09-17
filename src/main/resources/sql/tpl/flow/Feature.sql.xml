@@ -10,6 +10,22 @@
     order by f.feature_name
   ]]></feature.getAll>
 
+  <feature.getCompanyTools><![CDATA[
+    select cf.id,
+           cf.feature_name,
+           f.feature_code,
+           f.feature_path,
+           f.is_system,
+           cf.archived
+    from flow.company_feature cf
+        inner join flow.feature f on f.id = cf.feature_id
+    where company_id = :companyId
+    and cf.archived is not true
+    and f.archived is not true
+    and f.is_system is not true
+    order by cf.feature_name
+  ]]></feature.getCompanyTools>
+
   <feature.getAllForCompany><![CDATA[
     select cf.id,
            cf.feature_name,
@@ -103,16 +119,12 @@
       and NOT EXISTS (SELECT 1 FROM t);
   ]]></feature.getAccessForUser>
 
-  <feature.insertUserFeatureAccessControl><![CDATA[
+  <feature.upsertUserFeatureAccessControl><![CDATA[
     insert into flow.user_feature_access_control(company_feature_id, access_control_id, user_id, enabled)
-    values (:companyFeatureId, :accessControlId, :userId, true);
-  ]]></feature.insertUserFeatureAccessControl>
-
-  <feature.updateUserFeatureAccessControl><![CDATA[
-    update flow.user_feature_access_control
-    set enabled = :enabled
-    where id = :userFeatureAccessControlId
-  ]]></feature.updateUserFeatureAccessControl>
+    values (:companyFeatureId, :accessControlId, :userId, true)
+    ON CONFLICT (user_id, company_feature_id, access_control_id)
+      DO UPDATE SET enabled = :enabled
+  ]]></feature.upsertUserFeatureAccessControl>
 
   <feature.getOneCompanyFeature><![CDATA[
     select cf.id,

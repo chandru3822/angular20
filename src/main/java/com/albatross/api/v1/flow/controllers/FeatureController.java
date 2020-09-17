@@ -28,6 +28,11 @@ public class FeatureController {
     return featureService.getAllFeatures();
   }
 
+    @GetMapping(value = "/companyTools", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Feature> getCompanySpecificTools() {
+        return featureService.getCompanySpecificTools();
+    }
+
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteFeature(@PathVariable Long id) {
     featureService.deleteFeature(id);

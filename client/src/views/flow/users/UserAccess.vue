@@ -6,13 +6,16 @@
           Access Control
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="saveUserAccess" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
+            <v-btn text @click="saveUserAccess"
+                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
               <v-icon>save</v-icon>
               Save
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <AccessControl v-if="userAccessLoaded" :companyFeatures="userCompanyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
+        <AccessControl v-if="userAccessLoaded"
+                       :user-can-edit="userCanEdit"
+                       :companyFeatures="userCompanyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -35,6 +38,7 @@
       return {
         snackbar: {},
         userId: this.$route.params.id,
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'),
         features: [],
         userAccessLoaded: false,
         userCompanyFeatures: [],

@@ -25,7 +25,7 @@ BEGIN
                 p.id                                                             AS project_id,
                 p.project_name,
                 c.email,
-                p.street1 || ', ' || p.city || ', ' || s.state || ' ' || p.postal_code AS address
+                concat(p.street1, ', ', p.city, ', ' ,s.state, ' ', p.postal_code) AS address
             FROM flow.project p
                      left join brs.project_details pd on pd.project_id = p.id
                      INNER JOIN flow.contact c ON c.id = p.contact_id
@@ -40,7 +40,7 @@ BEGIN
                     p.id                                                             AS project_id,
                     p.project_name,
                     c.email,
-                    p.street1 || ', ' || p.city || ', ' || s.state || ' ' || p.postal_code AS address
+                       concat(p.street1, ', ' ,p.city, ', ', s.state, ' ' ,p.postal_code) AS address
                 FROM flow.project p
                          left join brs.project_details pd on pd.project_id = p.id
                          INNER JOIN flow.contact c ON c.id = p.contact_id

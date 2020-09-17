@@ -5,7 +5,7 @@
         <div class="contact-title">
           {{contact.fullName}}
           <v-menu
-              v-if="userCanEdit"
+              v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
               bottom
               offset-y
               :close-on-content-click="false"
@@ -16,14 +16,15 @@
                   <div v-on="{ ...tooltip }" class="d-inline-block">
                     <v-btn v-on="{ ...menu }"
                            color="primary"
-                           :disabled="!contact.owner || !contact.owner.userId"
+                           :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
                            class="white--text"
                            @click="getAvailableProcesses">
                       Add Project
                     </v-btn>
                   </div>
                 </template>
-                <span v-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+                <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
+                <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
               </v-tooltip>
             </template>
             <v-card class="pa-5">
@@ -72,7 +73,7 @@
           >
           </v-autocomplete>
         </div>
-        <v-btn text x-small class="change-owner-button" @click="changeOwner = !changeOwner">
+        <v-btn text x-small class="change-owner-button" v-if="userCanEdit" @click="changeOwner = !changeOwner">
           <span v-if="changeOwner">cancel</span>
           <span v-else-if="contact.owner && contact.owner.userId">change</span>
           <span v-else style="font-size: 15px;">add owner</span>
@@ -93,11 +94,22 @@
             <v-toolbar-title>Summary</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text @click="saveContact">Save</v-btn>
+              <v-btn text v-if="userCanEdit"
+                     @click="saveContact">Save</v-btn>
             </v-toolbar-items>
           </v-toolbar>
           <v-card class="pa-4">
             <v-form ref="address">
+              <v-text-field text
+                            label="First Name"
+                            placeholder=" "
+                            :readonly="!userCanEdit"
+                            v-model="contact.firstName"></v-text-field>
+              <v-text-field text
+                            label="Last Name"
+                            placeholder=" "
+                            :readonly="!userCanEdit"
+                            v-model="contact.lastName"></v-text-field>
               <v-text-field text
                             label="Address"
                             placeholder=" "
@@ -113,6 +125,8 @@
               <v-select v-model="contact.stateId"
                         :items="states"
                         label="State"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         @change="addressChanged = true"
                         item-text="state"
                         item-value="id"

@@ -91,7 +91,7 @@
               drb.updated_by_user_id,
               case when drb.updated_by_user_id is null then
                 'System'
-              else u.first_name || ' ' || u.last_name end as updated_by_user,
+              else concat(u.first_name, ' ', u.last_name) end as updated_by_user,
                 coalesce((
                  SELECT array_to_json(array_agg(row_to_json(rebatePayments)))
                  FROM (
@@ -167,7 +167,7 @@
               drb.updated_by_user_id,
               case when drb.updated_by_user_id is null then
               'System'
-              else u.first_name || ' ' || u.last_name end as updated_by_user
+              else concat(u.first_name, ' ', u.last_name) end as updated_by_user
             from brs.project_rebate_batch drb
               LEFT JOIN flow."user" u on u.id = drb.updated_by_user_id
             order by drb.batch_date desc
@@ -183,7 +183,7 @@
               coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
               (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
               coalesce(prps.name,'New') state,
-              (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
+              (select concat(u.first_name, ' ', u.last_name) from flow.user where id = prp.created_by_user_id) as createdBy,
               (select lov.name
                 from flow.list_of_value lov
                 where lov.id = pd.primary_financier) as financier,
@@ -235,7 +235,7 @@
             (select min(payment_nbr) from brs.project_rebate_payment where project_id = p.id and project_rebate_payment_state_id = 1) next_scheduled_payment,
             prps.name state,
             case when (select count(1) from brs.project_rebate_payment where project_id = p.id and payment_nbr < prp.payment_nbr and project_rebate_payment_state_id=1)>0 then false else true end approvable,
-            (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
+            (select concat(u.first_name, ' ', u.last_name) from flow.user where id = prp.created_by_user_id) as createdBy,
             (select lov.name
                 from flow.list_of_value lov
                 where lov.id = pd.primary_financier) as financier,
@@ -265,7 +265,7 @@
          s.sc,
          sum(prp.payment_amount) payment_amount,
          coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
-         (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id) as createdBy,
+         (select concat(u.first_name, ' ', u.last_name) from flow.user where id = prp.created_by_user_id) as createdBy,
          (select lov.name
                 from flow.list_of_value lov
                 where lov.id = pd.primary_financier) as financier,
@@ -290,7 +290,7 @@
            total_promotion_amount,
            entered_into_payment_system_date,
            coalesce((select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0),
-           (select first_name || ' ' || last_name from flow.user where id = prp.created_by_user_id)
+           (select concat(u.first_name, ' ', u.last_name) from flow.user where id = prp.created_by_user_id)
         ) payments where payments.total_promotion_amount != payments.total_paid AND (payments.total_promotion_amount - payments.total_paid > 0)
         ]]>
   </rebate.getPaymentsUnbalanced>

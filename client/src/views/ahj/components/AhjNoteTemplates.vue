@@ -6,7 +6,7 @@
         Note Templates
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px">
+      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
         <v-icon v-show="!addMode && !editMode"
                 @click="addNoteTemplate" class="white--text">add</v-icon>
         <v-icon v-show="addMode || editMode"
@@ -43,7 +43,7 @@
                 @click="copyText(index)">file_copy</v-icon>
       </v-card-title>
       <v-card-text class="mt-4 note-text">
-        <v-icon small @click="editNoteTemplate(noteTemplate)">edit</v-icon>
+        <v-icon small v-if="userCanEdit" @click="editNoteTemplate(noteTemplate)">edit</v-icon>
         <span :style="{'font-size': isNested ? '0.95em !important' : '0.85em !important'}">
           {{ noteTemplate.note }}
         </span>
@@ -72,6 +72,9 @@
     props: {
       inspectionId: {
         type: Number
+      },
+      userCanEdit: {
+        type: Boolean
       },
       ahjId: {
         type: Number

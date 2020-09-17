@@ -6,7 +6,7 @@
         {{title}}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px">
+      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
         <v-icon v-show="!addMode && !editMode"
                 @click="addItem" class="white--text">add</v-icon>
         <v-icon v-show="addMode || editMode"
@@ -39,7 +39,7 @@
         <v-list-item v-show="checklistItemsCopy.length > 0"
                      class="grab" :title="item.description">
           <v-list-item-action>
-            <v-icon small class="mr-3" @click="editItem(item)">edit</v-icon>
+            <v-icon small v-if="userCanEdit" class="mr-3" @click="editItem(item)">edit</v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title v-text="item.description"
@@ -47,7 +47,7 @@
             </v-list-item-title>
           </v-list-item-content>
           <v-list-item-action>
-            <v-icon>drag_handle</v-icon>
+            <v-icon v-if="userCanEdit">drag_handle</v-icon>
           </v-list-item-action>
         </v-list-item>
       </v-list>
@@ -93,6 +93,9 @@
       },
       ahjId: {
         type: Number
+      },
+      userCanEdit: {
+        type: Boolean
       },
       checklistItems: {
         type: Array,

@@ -42,10 +42,14 @@ public class ScheduleService {
   public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    List<Long> combined = esp.getUserIds();
+    combined.addAll(esp.getOrgIds());
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("userIds", esp.getUserIds());
-    params.put("orgIds", esp.getOrgIds());
+//    params.put("userIds", esp.getUserIds());
+//    params.put("orgIds", esp.getOrgIds());
+    params.put("combined", combined );
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());

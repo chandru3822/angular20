@@ -24,7 +24,8 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]">
+            <v-btn text v-if="userCanAdd"
+                   @click="[planErrorObj = {}, addNewCommissionPlan = !addNewCommissionPlan, newCommissionPlan = {}, getCommissionPlans()]">
               <v-icon v-if="addNewCommissionPlan">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -119,7 +120,7 @@
               <td class="text-left">{{item.note}}</td>
               <td>
                 <v-btn small text @click="[expanded = [item], selectedIndex = index]"
-                       v-if="!expanded.includes(item)">
+                       v-if="!expanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text @click="[expanded = [], selectedIndex = index]"
@@ -139,7 +140,8 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan,
+            <v-btn text v-if="userCanAdd"
+                   @click="[overrideErrorObj = {}, addNewOverridePlan = !addNewOverridePlan,
                                 newOverridePlan = {}, getOverridePlans()]">
               <v-icon v-if="addNewOverridePlan">remove</v-icon>
               <v-icon v-else>add</v-icon>
@@ -241,7 +243,7 @@
               <td class="text-left">{{item.note}}</td>
               <td>
                 <v-btn small text @click="[overrideExpanded = [item], overrideSelectedIndex = index]"
-                       v-if="!overrideExpanded.includes(item)">
+                       v-if="!overrideExpanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text @click="[overrideExpanded = [], overrideSelectedIndex = index]"
@@ -261,11 +263,12 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]">
+            <v-btn text v-if="userCanAdd"
+                   @click="[addNewReceivingPlan = !addNewReceivingPlan, cloneOverridePlan = {}, getOverridePlans()]">
               <v-icon v-if="addNewReceivingPlan">remove</v-icon>
               <v-icon v-else>mdi-content-copy</v-icon>
             </v-btn>
-            <v-btn text @click="addOverridePlan()">
+            <v-btn text @click="addOverridePlan()" v-if="userCanAdd" >
               <v-icon>add</v-icon>
             </v-btn>
           </v-toolbar-items>
@@ -335,7 +338,7 @@
               <td class="text-left">{{item.note}}</td>
               <td>
                 <v-btn small text @click="[receivingExpanded = [item], receivingSelectedIndex = index]"
-                       v-if="!receivingExpanded.includes(item)">
+                       v-if="!receivingExpanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text @click="[receivingExpanded = [], receivingSelectedIndex = index]"
@@ -375,6 +378,8 @@
         dataLoading: true,
         overrideSelectedIndex: null,
         selectedIndex: null,
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
         receivingSelectedIndex: null,
         commissionPlans: [],
         timezone: this.$store.state.user.details.timezone.value,

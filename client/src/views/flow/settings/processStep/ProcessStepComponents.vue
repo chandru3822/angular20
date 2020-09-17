@@ -5,13 +5,16 @@
         <v-row class="mb-2">
           <v-col cols="12">
             <v-text-field color="primary"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
                           label="Process Step Name"></v-text-field>
             <div>
               <label class="mt-4">Allow Non-Admin to Add to Project:</label>
-              <input class="ml-3" type="checkbox" v-model="processStep.nonAdminAdd">
+              <input class="ml-3" type="checkbox" :readonly="!userCanEdit"
+                     :disabled="!userCanEdit" v-model="processStep.nonAdminAdd">
             </div>
-            <v-btn color="primaryCustom" dark class="white--text mt-3"
+            <v-btn color="primaryCustom" dark class="white--text mt-3" v-if="userCanEdit"
                    @click="saveProcessStep">
               Save Process Step
             </v-btn>
@@ -24,7 +27,7 @@
               <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="getWorkQueueTypesForStep">
+                <v-btn text @click="getWorkQueueTypesForStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewWorkQueueType">add</v-icon>
                   {{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type'}}
                 </v-btn>
@@ -64,13 +67,15 @@
                         v-model="item.selectedOptions"
                         :items="projectStatusTypes"
                         multiple
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         persistent-hint
                         hint="Active Status will be used if none selected"
                         label="Project Status Types"
                         item-text="projectStatusType"
                         return-object
                       ></v-select>
-                      <v-btn dark class="white--text mt-3" color="primaryCustom" @click="saveProjectStatusesToWorkQueueType(item)">
+                      <v-btn dark class="white--text mt-3" v-if="userCanEdit" color="primaryCustom" @click="saveProjectStatusesToWorkQueueType(item)">
                         Save
                       </v-btn>
                     </td>
@@ -88,8 +93,9 @@
                                v-else>cancel
                         </v-btn>
                         <v-dialog
-                          v-model="item.deleteConfirm"
-                          width="500">
+                            v-if="userCanEdit"
+                            v-model="item.deleteConfirm"
+                            width="500">
                           <template v-slot:activator="{ on }">
                             <v-btn text v-on="on">
                               <v-icon>delete</v-icon>
@@ -184,7 +190,7 @@
               <v-toolbar-title class="app-title">Links</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="getLinksForProcessStep">
+                <v-btn text @click="getLinksForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewLink">add</v-icon>
                   {{ addNewLink ? 'Cancel' : 'Add Link'}}
                 </v-btn>
@@ -207,6 +213,7 @@
                       {{a.link}} | {{ a.url }}
                     </v-list-item-content>
                     <v-dialog
+                        v-if="userCanEdit"
                         v-model="a.deleteConfirm"
                         width="500">
                       <template v-slot:activator="{ on }">
@@ -256,7 +263,7 @@
               <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text @click="getAttachmentTypesForProcessStep">
+                <v-btn text @click="getAttachmentTypesForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewType">add</v-icon>
                   {{ addNewType ? 'Cancel' : 'Add Type'}}
                 </v-btn>
@@ -279,6 +286,7 @@
                       {{a.attachmentType}}
                     </v-list-item-content>
                     <v-dialog
+                        v-if="userCanEdit"
                         v-model="a.deleteConfirm"
                         width="500">
                       <template v-slot:activator="{ on }">
@@ -345,6 +353,8 @@
       return {
         snackbar: {},
         expanded: [],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
         projectStatusTypes: [],
         headers: [
           {text: 'Work Queue Types', value: 'workQueueType', show: true},

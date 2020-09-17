@@ -137,13 +137,13 @@
               </v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-tooltip top>
+                <v-tooltip top v-if="$store.getters.userHasFeature('PROJECTS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on" @click="goTo(selectedProject, true, false)"><v-icon>mdi-chevron-right</v-icon></v-btn>
                   </template>
                   <span>Go to Project</span>
                 </v-tooltip>
-                <v-tooltip top>
+                <v-tooltip top v-if="$store.getters.userHasFeature('PROCESS_STEPS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on" @click="goTo(selectedProject, false, true)"><v-icon>mdi-chevron-double-right</v-icon></v-btn>
                   </template>
@@ -162,7 +162,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.start"
                 :timezone="this.timezone"
-                :readonly="selectedProject.startFieldReadOnly"
+                :readonly="selectedProject.startFieldReadOnly || !userCanEdit"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="Start Time"
@@ -172,7 +172,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.end"
                 :timezone="this.timezone"
-                :readonly="selectedProject.endFieldReadOnly"
+                :readonly="selectedProject.endFieldReadOnly || !userCanEdit"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="End Time"
@@ -184,15 +184,15 @@
                         placeholder=" "
                         return-object
                         item-text="name"
-                        :readonly="selectedProject.resourceFieldReadOnly"
-                        :disabled="selectedProject.resourceFieldReadOnly"
+                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit"
+                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit"
                         item-value="id"
                         class="mt-3"
                         @input="validateSaveEvent()"
               />
               <v-btn color="primary"
                      class="white--text"
-                     :disabled="saveInvalid"
+                     :disabled="saveInvalid || !userCanEdit"
                      @click="scheduleProject">Save</v-btn>
             </div>
           </v-card-text>
@@ -288,6 +288,7 @@
         mapResources: [],
         selectedRows: [],
         selectedResources: [],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
         state: {},
         states: [],
         processStepStatusTypes: [],

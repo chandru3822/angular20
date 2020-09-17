@@ -6,7 +6,7 @@
     <v-row class="process-step-header">
       <v-col cols="8" class="text-left pl-5">
         <div class="project-title">
-          <router-link :to="`/project/${project.id}`">{{ project.projectName}}</router-link>
+          <router-link :to="`/project/${project.id}/details`">{{ project.projectName}}</router-link>
         </div>
         <div class="project-subtitle">
           {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
@@ -33,13 +33,15 @@
                           :items="availableOwners"
                           label="Select Owner"
                           item-text="fullName"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           return-object
                           autocomplete="off"
                           @change="updateOwner"
           >
           </v-autocomplete>
         </div>
-        <v-btn text x-small class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
+        <v-btn text x-small v-if="userCanEdit" class="change-owner-button" @click="displayChangeOwner = !displayChangeOwner">
           <span v-if="displayChangeOwner">cancel</span>
           <span v-else-if="processStep.owner && processStep.owner.userId">change</span>
           <span v-else>add owner</span>
@@ -77,7 +79,7 @@
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>
 <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
-          <router-link v-if="cfg.eventTypeId" :to="`/schedule`">{{cfg.groupName}}</router-link>
+          <router-link v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')" :to="`/schedule`">{{cfg.groupName}}</router-link>
           <template v-else>{{cfg.groupName}}</template>
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -255,6 +257,7 @@ export default {
       timeSlots: [],
       selectedTimeSlot: {},
       closerApptOverride: false,
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
       closerApptSaved: false,
       searchedTimeSlots: false,
       timezone: this.$store.state.user.details.timezone.value,
@@ -410,7 +413,7 @@ export default {
           }
       },
     getReadOnly: function (field) {
-      return this?.processStep?.processStepStatusTypeId !== 1 || (!this.closerApptOverride ? getCustomFieldReadOnly(this.$store, field) : this.closerApptSaved)
+      return this?.processStep?.processStepStatusTypeId !== 1 || (!this.closerApptOverride ? getCustomFieldReadOnly(this.$store, field) : this.closerApptSaved) || !this.userCanEdit
     },
     handleActionCompleted () {
       this.$router.push({name: 'projectDetails', params: {projectId: this.projectId}})
@@ -465,7 +468,7 @@ export default {
     },
     displayUniqueView(cfg) {
       // return true
-      if(cfg.uniqueBehaviorTypeId !== 1) {
+      if(cfg.uniqueBehaviorTypeId !== 1 || !this.userCanEdit) {
         return false
       } else {
         let hasTime, hasResource = false

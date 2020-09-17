@@ -30,6 +30,7 @@
              style="margin-right: 10px"
           >Cancel</a>
           <v-btn id="save-btn"
+                 v-if="userCanEdit"
                  color="primaryButton"
                  class="white--text mr-0"
                  @click="saveAhjUtility"
@@ -42,6 +43,7 @@
             <!-- CONTACTS -->
             <AhjContact v-if="dataReady"
                         title="Contacts"
+                        :user-can-edit="userCanEdit"
                         :contactTypeId="8"
                         :itemId="ahjUtility.id"
                         :itemType="itemType"
@@ -59,6 +61,8 @@
                     <v-text-field v-model="ahjUtility.regulatedBy"
                                   @change="dataWasChanged = true"
                                   label="Regulated By"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   filled
                     ></v-text-field>
                   </v-col>
@@ -66,6 +70,8 @@
                     <v-text-field v-model="ahjUtility.monthlyFacilityCharge"
                                   @change="dataWasChanged = true"
                                   label="Monthly Facility Charge"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   filled
                     ></v-text-field>
                   </v-col>
@@ -74,6 +80,8 @@
                   <v-col cols="6" class="pr-4">
                     <v-text-field v-model="ahjUtility.populationOfService"
                                   @change="dataWasChanged = true"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   label="Population of Service"
                                   filled
                     ></v-text-field>
@@ -83,6 +91,8 @@
                       <v-select v-model="item.intValue"
                                 @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                 :items="item.listOfValues"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 item-text="name"
                                 item-value="id"
                                 :label="item.fieldName"
@@ -90,6 +100,8 @@
                       ></v-select>
                       <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                     v-model="item.textValue"
+                                    :readonly="!userCanEdit"
+                                    :disabled="!userCanEdit"
                                     @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                     label="Other Value"
                                     filled
@@ -103,6 +115,8 @@
                     <v-text-field v-model="ahjUtility.netMeteringRate"
                                   @change="dataWasChanged = true"
                                   label="Net Metering Rate"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   filled
                    ></v-text-field>
                   </v-col>
@@ -110,6 +124,8 @@
                     <v-text-field v-model="ahjUtility.rebateRates"
                                   @change="dataWasChanged = true"
                                   label="Rebate Rates"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   filled
                    ></v-text-field>
                   </v-col>
@@ -119,11 +135,14 @@
                              :documentTypeId="7"
                              :sourceId="ahjUtility.id"
                              :documents="documents"
+                             :user-can-edit="userCanEdit"
                              :isNested="true"
                 ></AhjDocument>
                 <v-textarea v-model="ahjUtility.utilityRateNotes"
                             @change="dataWasChanged = true"
                             label="Notes"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             filled
                             auto-grow
                             style="margin-top: 30px"
@@ -143,6 +162,8 @@
                     <v-select v-model="item.intValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               :items="item.listOfValues"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               item-text="name"
                               item-value="id"
                               :label="item.fieldName"
@@ -150,26 +171,31 @@
                     ></v-select>
                     <AhjDocumentsButton v-if="item.customFieldId === 22"
                                         title="Documents"
+                                        :user-can-edit="userCanEdit"
                                         :documentTypeId="20"
                                         :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                     <AhjDocumentsButton v-if="item.customFieldId === 23"
                                         title="Documents"
+                                        :user-can-edit="userCanEdit"
                                         :documentTypeId="21"
                                         :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                     <AhjDocumentsButton v-if="item.customFieldId === 30"
                                         title="Documents"
+                                        :user-can-edit="userCanEdit"
                                         :documentTypeId="22"
                                         :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                     <AhjDocumentsButton v-if="item.customFieldId === 24"
                                         title="Documents"
+                                        :user-can-edit="userCanEdit"
                                         :documentTypeId="22"
                                         :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
                     <AhjDocumentsButton v-if="item.customFieldId === 25"
                                         title="Documents"
+                                        :user-can-edit="userCanEdit"
                                         :documentTypeId="23"
                                         :sourceId="ahjUtilityId"
                     ></AhjDocumentsButton>
@@ -179,6 +205,7 @@
                                 title="Utility PV Design Notes and Additional Requirements"
                                 :requirementTypeId="4"
                                 :itemType="itemType"
+                                :user-can-edit="userCanEdit"
                                 :itemId="ahjUtilityId"
                                 :requirements="ahjUtility.utilityRequirements"
                                 :transparent="true"
@@ -196,6 +223,8 @@
                 <v-textarea v-model="ahjUtility.notes"
                             @change="dataWasChanged = true"
                             label="Notes"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             filled
                             auto-grow
                 ></v-textarea>
@@ -213,6 +242,8 @@
               <v-card-text class="mt-4">
                 <v-textarea v-model="ahjUtility.timelinesAndStages"
                             @change="dataWasChanged = true"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             label="Timelines / Stages"
                             filled
                             auto-grow
@@ -230,6 +261,8 @@
                   <v-select v-model="item.intValue"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             :items="item.listOfValues"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             item-text="name"
                             item-value="id"
                             :label="item.fieldName"
@@ -237,6 +270,8 @@
                   ></v-select>
                   <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                 v-model="item.textValue"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                 label="Other Value"
                                 filled
@@ -245,6 +280,7 @@
                 </div>
                 <AhjLink v-if="dataReady"
                          title="Links"
+                         :user-can-edit="userCanEdit"
                          :linkTypeId="6"
                          :itemId="ahjUtility.id"
                          :itemType="itemType"
@@ -254,6 +290,8 @@
                 <v-textarea v-model="ahjUtility.customerSignatureInstructions"
                             @change="dataWasChanged = true"
                             label="Instructions"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             filled
                             auto-grow
                             style="margin-top: 30px"
@@ -271,6 +309,8 @@
                             @change="dataWasChanged = true"
                             label="Overview of Submission Process"
                             filled
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             auto-grow
                 ></v-textarea>
                 <div v-for="item in getCustomFieldsForGroup(10)" :key="item.id">
@@ -278,6 +318,8 @@
                             v-model="item.intValue"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             :items="item.listOfValues"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             item-text="name"
                             item-value="id"
                             :label="item.fieldName"
@@ -285,6 +327,8 @@
                   ></v-select>
                   <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 56"
                                 v-model="item.textValue"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                 label="Other Value"
                                 filled
@@ -293,6 +337,7 @@
                 </div>
                 <AhjChecklist v-if="dataReady"
                               title="Checklist"
+                              :user-can-edit="userCanEdit"
                               :checklistTypeId="4"
                               :itemId="ahjUtility.id"
                               :itemType="itemType"
@@ -301,6 +346,7 @@
                               class="mb-4"
                 ></AhjChecklist>
                 <AhjDocument v-if="dataReady"
+                             :user-can-edit="userCanEdit"
                              title="Documents"
                              :documentTypeId="6"
                              :sourceId="ahjUtility.id"
@@ -310,6 +356,7 @@
                 <AhjLink v-if="dataReady"
                          title="Links"
                          :linkTypeId="9"
+                         :user-can-edit="userCanEdit"
                          :itemId="ahjUtility.id"
                          :itemType="itemType"
                          :links="ahjUtility.submissionLinks"
@@ -323,6 +370,8 @@
                               v-model="item.intValue"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               :items="item.listOfValues"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               item-text="name"
                               item-value="id"
                               :label="item.fieldName"
@@ -331,6 +380,8 @@
                     <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [55,61].indexOf(item.customFieldId) !== -1"
                                   v-model="item.textValue"
                                   @change="[item.valueWasChanged = true, dataWasChanged = true]"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   label="Other Value"
                                   filled
                                   class="other-field"
@@ -340,6 +391,8 @@
                 <v-textarea v-model="ahjUtility.submissionInstructions"
                             @change="dataWasChanged = true"
                             label="Instructions"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             filled
                             auto-grow
                 ></v-textarea>
@@ -357,11 +410,14 @@
               <v-card-text class="mt-4">
                 <v-text-field v-model="ahjUtility.expectedApprovalTimeline"
                               @change="dataWasChanged = true"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               label="Expected Timeline for Approval"
                               filled
                 ></v-text-field>
                 <AhjChecklist v-if="dataReady"
                               title="Checklist"
+                              :user-can-edit="userCanEdit"
                               :checklistTypeId="5"
                               :itemId="ahjUtility.id"
                               :itemType="itemType"
@@ -371,6 +427,7 @@
                 ></AhjChecklist>
                 <AhjDocument v-if="dataReady"
                              title="Documents"
+                             :user-can-edit="userCanEdit"
                              :documentTypeId="25"
                              :sourceId="ahjUtility.id"
                              :documents="documents"
@@ -385,6 +442,8 @@
                       <v-select v-model="item.intValue"
                                 @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                 :items="item.listOfValues"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 item-text="name"
                                 item-value="id"
                                 :label="item.fieldName"
@@ -392,6 +451,8 @@
                       ></v-select>
                       <v-text-field v-if="showOtherField(item.intValue, item.listOfValues)"
                                     v-model="item.textValue"
+                                    :readonly="!userCanEdit"
+                                    :disabled="!userCanEdit"
                                     @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                     label="Other Value"
                                     filled
@@ -400,6 +461,8 @@
                     </div>
                     <v-textarea v-model="ahjUtility.rejectionInstructions"
                                 @change="dataWasChanged = true"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 label="Instructions"
                                 filled
                                 auto-grow
@@ -420,6 +483,8 @@
                        :class="[{'mr-4': item.customFieldId === 54}, {'ml-4': item.customFieldId === 53}]">
                     <v-select v-if="[54,53].indexOf(item.customFieldId) !== -1"
                               v-model="item.intValue"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               @change="[item.valueWasChanged = true, dataWasChanged = true]"
                               :items="item.listOfValues"
                               item-text="name"
@@ -429,6 +494,8 @@
                     ></v-select>
                     <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && [54,53].indexOf(item.customFieldId) !== -1"
                                   v-model="item.textValue"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                   label="Other Value"
                                   filled
@@ -439,6 +506,7 @@
                 <AhjChecklist v-if="dataReady"
                               title="Checklist for Submission"
                               :checklistTypeId="6"
+                              :user-can-edit="userCanEdit"
                               :itemId="ahjUtility.id"
                               :itemType="itemType"
                               :checklistItems="ahjUtility.ptoChecklist"
@@ -447,6 +515,7 @@
                 ></AhjChecklist>
                 <AhjLink v-if="dataReady"
                          title="Links"
+                         :user-can-edit="userCanEdit"
                          :linkTypeId="7"
                          :itemId="ahjUtility.id"
                          :itemType="itemType"
@@ -457,6 +526,8 @@
                 <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
                   <v-select v-if="item.customFieldId === 60"
                             v-model="item.intValue"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             @change="[item.valueWasChanged = true, dataWasChanged = true]"
                             :items="item.listOfValues"
                             item-text="name"
@@ -466,6 +537,8 @@
                   ></v-select>
                   <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 60"
                                 v-model="item.textValue"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                 label="Other Value"
                                 filled
@@ -475,6 +548,7 @@
                 <AhjChecklist v-if="dataReady"
                               title="Checklist for Utility Inspection"
                               :checklistTypeId="7"
+                              :user-can-edit="userCanEdit"
                               :itemId="ahjUtility.id"
                               :itemType="itemType"
                               :checklistItems="ahjUtility.utilityInspectionChecklist"
@@ -489,6 +563,8 @@
                     <div v-for="item in getCustomFieldsForGroup(11)" :key="item.id">
                       <v-select v-if="item.customFieldId === 40"
                                 v-model="item.intValue"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                 :items="item.listOfValues"
                                 item-text="name"
@@ -498,6 +574,8 @@
                       ></v-select>
                       <v-text-field v-if="showOtherField(item.intValue, item.listOfValues) && item.customFieldId === 40"
                                     v-model="item.textValue"
+                                    :readonly="!userCanEdit"
+                                    :disabled="!userCanEdit"
                                     @change="[item.valueWasChanged = true, dataWasChanged = true]"
                                     label="Other Value"
                                     filled
@@ -507,11 +585,14 @@
                     <v-text-field v-model="ahjUtility.timelines"
                                   @change="dataWasChanged = true"
                                   label="Timelines"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!userCanEdit"
                                   filled
                     ></v-text-field>
                     <AhjLink v-if="dataReady"
                              title="Links"
                              :linkTypeId="8"
+                             :user-can-edit="userCanEdit"
                              :itemId="ahjUtility.id"
                              :itemType="itemType"
                              :links="ahjUtility.ptoFollowupLinks"
@@ -521,6 +602,8 @@
                     <v-textarea v-model="ahjUtility.ptoFollowupInstructions"
                                 @change="dataWasChanged = true"
                                 label="Instructions"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 filled
                                 auto-grow
                     ></v-textarea>
@@ -535,6 +618,8 @@
                               @change="dataWasChanged = true"
                               :items="financiers"
                               item-text="name"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               item-value="id"
                               label="Financier"
                               filled
@@ -542,13 +627,16 @@
                     ></v-select>
                     <v-text-field label="Submission Method"
                                   v-model="selectedFinancier.submissionMethod"
+                                  :readonly="!userCanEdit"
+                                  :disabled="!selectedFinancier.id || !userCanEdit"
                                   @change="dataWasChanged = true"
-                                  :disabled="!selectedFinancier.id"
                                   filled
                     ></v-text-field>
                     <v-textarea v-model="ahjUtility.finalCompletionInstructions"
                                 @change="dataWasChanged = true"
                                 label="Instructions"
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 filled
                                 auto-grow
                     ></v-textarea>
@@ -587,6 +675,11 @@
       AhjLink,
       AhjRequirement,
       Snackbar
+    },
+    computed: {
+      userCanEdit() {
+        return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
+      },
     },
     data: () => ({
       ahjUtilityId: null,

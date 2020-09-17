@@ -22,7 +22,7 @@
       <dt class="left-align">Mailing Address:</dt>
       <!-- if all mailing address fields are null then show the add button -->
       <dd v-if="!editMailing && rebateDetails.mailing_street1 == null && rebateDetails.mailing_city == null && rebateDetails.mailing_state == null && rebateDetails.mailing_postal_code == null">
-        <v-btn text  @click="editMailing = true"><!-- :disabled="!hasPermission('HR_ADMIN','REBATE_ADMIN')"-->
+        <v-btn text v-if="userCanEdit"  @click="editMailing = true"><!-- :disabled="!hasPermission('HR_ADMIN','REBATE_ADMIN')"-->
           <v-icon>add</v-icon>
           Add
         </v-btn>
@@ -31,38 +31,49 @@
       <!-- if edit mode enabled then show inputs -->
       <dd v-if="editMailing" class="edit-mail-div">
         <v-text-field text
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
                       type="text"
                       label="Street 1:"
                       v-model="rebateDetails.mailing_street1">
         </v-text-field>
         <div class="addr-inputs">
           <v-text-field text
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         type="text"
                         label="Street 2:"
                         v-model="rebateDetails.mailing_street2">
           </v-text-field>
           <v-text-field text
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         type="text"
                         label="City:"
                         v-model="rebateDetails.mailing_city">
           </v-text-field>
           <v-text-field text
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         type="text"
                         label="State:"
                         maxlength="2"
                         v-model="rebateDetails.mailing_state">
           </v-text-field>
           <v-text-field text
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         type="text"
                         label="Postal Code:"
                         v-model="rebateDetails.mailing_postal_code">
           </v-text-field>
           <v-btn class="ma-2" @click="saveMailingAddress(false)"
+                 v-if="userCanEdit"
                   :disabled="!rebateDetails.mailing_street1 || !rebateDetails.mailing_city || !rebateDetails.mailing_state || !rebateDetails.mailing_postal_code">
             Save
           </v-btn>
           <v-btn class="ma-2" @click="saveMailingAddress(true)"
-                  v-if="mailingDetails.mailingStreet1 != null">
+                  v-if="mailingDetails.mailingStreet1 != null && userCanEdit">
             Remove
           </v-btn>
           <v-btn class="ma-2" @click="cancelMailingEdit()">
@@ -178,14 +189,14 @@
                 <td class="text-left">{{item.name}}</td>
                 <td class="text-left">{{item.check_number}}</td>
                 <td class="text-left">
-                  <a v-if="item.id != null" @click="openNotesDialog(item)">+ Note</a><br/>
+                  <a v-if="item.id != null && userCanEdit" @click="openNotesDialog(item)">+ Note</a><br/>
                   {{item.void_note}}
                 </td>
                 <td class="text-left" style="color: red">
                   <a v-if="item.payment_state_id === 3" @click="voidDialog = true">Void</a>
                 </td>
                 <td>
-                  <v-dialog v-model="voidDialog" max-width="600px">
+                  <v-dialog v-model="voidDialog" max-width="600px" v-if="userCanEdit">
                     <v-card class="pt-4 pb-2">
                       <v-card-title class="flex-display justify-space-between pt-0 px-4">
                         <span class="font-weight-bold">Confirm</span>
@@ -212,7 +223,7 @@
 
                   <v-dialog
                     v-model="item.deleteConfirm"
-                    v-if="item.payment_state_id != 3 && item.payment_state_id != 2"
+                    v-if="item.payment_state_id != 3 && item.payment_state_id != 2 && $store.getters.userHasFeatureAccessLevel('REBATES', 'DELETE')"
                     width="500">
                     <template v-slot:activator="{ on }">
                       <v-btn small text class="clickable" v-on="on">
@@ -269,8 +280,8 @@
                   </template>
 
                   <v-card-actions class="flex-display justify-end px-4 pt-0">
-                    <v-btn @click="updatePaymentNote(item)">Confirm</v-btn>
-                    <v-btn @click="cancelNotesDialog(item)">Close</v-btn>
+                    <v-btn v-if="userCanEdit" @click="updatePaymentNote(item)">Confirm</v-btn>
+                    <v-btn v-if="userCanEdit" @click="cancelNotesDialog(item)">Close</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -284,7 +295,7 @@
           <div>
           <tr>
             <td class="left-align">
-              <v-icon :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.totalpromotionamount"
+              <v-icon v-if="userCanAdd" :disabled="rebateDetails.sumOfNonCanceledPayments >= rebateDetails.totalpromotionamount"
                       @click="addNewRow()">
                 add
               </v-icon>
@@ -297,7 +308,7 @@
               (Non-Canceled)
             </td>
             <td>
-              <v-icon :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.totalpromotionamount"
+              <v-icon v-if="userCanEdit" :disabled="rebateDetails.sumOfNonCanceledPayments > rebateDetails.totalpromotionamount"
                       @click="savePaymentHistoryChanges()">
                 save
               </v-icon>
@@ -342,6 +353,8 @@
           { text: 'Notes', value: 'void_note', show: true }
         ],
         rebateDetails: {},
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
         mailingDetails: {},
         editMailing: false,
         notesDialog: false,
@@ -397,7 +410,7 @@
           //if processed or voided don't allow editing
           disabled = true
         }
-        return disabled
+        return disabled || !this.userCanEdit
       },
       async saveMailingAddress(removeAddress) {
         if (removeAddress) {

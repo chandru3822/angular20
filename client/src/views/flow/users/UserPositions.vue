@@ -71,7 +71,7 @@
 
           <template #header.icons="{}">
             <th>
-              <v-btn text x-small @click="addNew = !addNew">
+              <v-btn text x-small @click="addNew = !addNew" v-if="userCanAdd">
                 <v-icon>add</v-icon>
               </v-btn>
             </th>
@@ -83,6 +83,8 @@
               <DatetimePickerInput
                 v-model="item.startDate"
                 :timezone="timezone"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
                 :type="'date'"
                 :format="'MM/DD/YYYY'"
                 label="Start Date"
@@ -90,23 +92,30 @@
               <DatetimePickerInput
                 v-model="item.endDate"
                 :timezone="timezone"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
                 :type="'date'"
                 :format="'MM/DD/YYYY'"
                 label="End Date"
               />
               <v-autocomplete v-model="item.positionId"
                               :items="positions"
+                              :readonly="!userCanEdit"
+                              :disabled="!userCanEdit"
                               label="Positions"
                               @input="populateHierarchy(item, false)"
                               item-text="position"
                               item-value="id"/>
               <label>Primary:</label>
-              <input type="checkbox" class="ml-3 mb-4" v-model="item.primaryFlag" :readonly="item.primary" :disabled="item.primary">
+              <input type="checkbox" class="ml-3 mb-4" v-model="item.primaryFlag"
+                     :readonly="item.primary || !userCanEdit" :disabled="item.primary || !userCanEdit">
               <div v-for="(f, index) in filters" :key="index">
                 <v-autocomplete
                           v-if="item.keyedHierarchy[f.orgLevelId] && isSameLevelAsPosition(f, item)"
                           v-model="item.keyedHierarchy[f.orgLevelId]['orgId']"
                           :items="f.orgs"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           :label="f.levelName"
                           item-text="orgName"
                           item-value="id"
@@ -121,6 +130,7 @@
               </div>
               <v-btn color="primary" class="white--text mr-2"
                      :disabled="validatePositionFields(item)"
+                     v-if="userCanEdit"
                      @click="savePosition(item)">Save</v-btn>
             </td>
           </template>
@@ -137,11 +147,14 @@
                 {{getOrgNameForFilter(item.hierarchy, f.orgLevelId)}}
               </td>
               <td width="150">
-                <v-btn class="d-inline-block" text v-if="!expanded.includes(item)" @click="[handleExpand(item, true), item.primary = item.primaryFlag]">
+                <v-btn class="d-inline-block" text
+                       v-if="!expanded.includes(item) && userCanEdit"
+                       @click="[handleExpand(item, true), item.primary = item.primaryFlag]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn class="d-inline-block" text v-if="expanded.includes(item)" @click="handleExpand(item, false)">cancel</v-btn>
                 <v-dialog
+                    v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'DELETE')"
                   class="d-inline-block"
                   v-model="item.deleteConfirm"
                   width="500">
@@ -210,6 +223,8 @@
         newPosition: {},
         userPositions: [],
         positions: [],
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT'),
         addNew: false,
         newPositionHierarchyPopulated: false,
         filters: [],

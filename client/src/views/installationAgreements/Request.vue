@@ -40,7 +40,13 @@
             :key="it.id"
             :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
-            <td class="text-left"><a @click="openRequest(it)" class="mr-3 name-link">{{ it.customer_name ? it.customer_name : '' }}</a></td>
+            <td class="text-left">
+              <a v-if="$store.getters.userHasFeatureAccessLevel('INSTALLATION_AGREEMENT', 'ADD')"
+                  @click="openRequest(it)" class="mr-3 name-link">
+                {{ it.customer_name ? it.customer_name : '' }}
+              </a>
+              <span v-else>{{ it.customer_name ? it.customer_name : '' }}</span>
+            </td>
             <td class="text-left">{{ it.address ? it.address : '' }}</td>
           </tr>
         </template>
@@ -59,10 +65,21 @@
                                         disabled
                           ></v-text-field>
 
-                          <v-text-field label="Email Address"
+                          <div style="display: flex;">
+                              <v-text-field label="Email Address"
                                         v-model="requestItem.email"
-                                        disabled
-                          ></v-text-field>
+                                        :disabled="!editEmail"
+                              ></v-text-field>
+                              <v-icon v-if="!editEmail"  small class="mr-3" @click="editEmail = !editEmail">
+                                  edit
+                              </v-icon>
+                              <v-icon v-if="editEmail"  small class="mr-3" @click="resetEmail">
+                                  cancel
+                              </v-icon>
+                              <v-icon v-if="editEmail"  small class="mr-3" @click="updateEmail">
+                                  save
+                              </v-icon>
+                          </div>
 
                           <v-btn color="primaryButton" raised @click="openLoanpalApp()" class="white--text">
                               LoanPal Application
@@ -152,6 +169,7 @@
           isSpanish: false,
           project_id: ''
       },
+      currentEmail: '',
       editEmail: false
     }),
     computed: {
@@ -198,6 +216,7 @@
       async openRequest (it) {
           this.requestItem.customer_name = it.customer_name
           this.requestItem.email = it.email
+          this.currentEmail = it.email
           this.requestItem.project_id = it.project_id
 
           // get proposal numbers
@@ -266,6 +285,27 @@
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error generating LoanPal Application')
           }
+      },
+      async updateEmail(it) {
+          try {
+              this.$store.commit(AppMutations.SET_LOADING, true)
+              await putRequest('/install-agreement/updateEmailAddress/'+this.requestItem.project_id, {
+                  email: this.requestItem.email
+              }, 'blueraven')
+
+              this.currentEmail = this.requestItem.email;
+              this.editEmail = false;
+              this.snackbar = getSnackbar('SUCCESS', 'Email address updated')
+              this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+              this.$store.commit(AppMutations.SET_LOADING, false)
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error updating email address')
+          }
+      },
+      resetEmail() {
+          this.editEmail = false;
+          this.requestItem.email = this.currentEmail;
       }
     }
   }

@@ -39,6 +39,14 @@ public class FeatureService {
     return results;
   }
 
+  public List<Feature> getCompanySpecificTools() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<Feature> results = sqlCache.query("feature.getCompanyTools", params, Feature.class);
+    return results;
+  }
+
   public Feature saveFeature(Feature f) {
     //this is used for adding/updating features to system
     User user = securityService.getCurrentUser();
@@ -104,15 +112,14 @@ public class FeatureService {
 
     for(CompanyFeature cf : features) {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
-        if(null != ac.getId()) {
-          params.put("enabled", ac.isEnabled());
+        if(null != ac.getId() || ac.isEnabled()) {
           params.put("userFeatureAccessControlId", ac.getId());
-          sqlCache.update("feature.updateUserFeatureAccessControl", params);
-        } else if (ac.isEnabled()) {
+          params.put("enabled", ac.isEnabled());
           params.put("companyFeatureId", cf.getId());
           params.put("accessControlId", ac.getAccessControlId());
           params.put("userId", userId);
-          sqlCache.update("feature.insertUserFeatureAccessControl", params);
+
+          sqlCache.update("feature.upsertUserFeatureAccessControl", params);
         }
       }
     }

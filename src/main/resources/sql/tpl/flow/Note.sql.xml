@@ -15,7 +15,7 @@
            n.date_created,
            n.date_modified,
            n.created_by_id,
-           creator.first_name || ' ' || creator.last_name as created_by,
+           concat(creator.first_name, ' ', creator.last_name) AS created_by,
            n.modified_by_id
     from flow.note n
     inner join flow.user creator on creator.id = n.created_by_id
