@@ -380,6 +380,7 @@ public class SMSService {
 
     public void saveReply(TwilioMessageRequest sms) {
         log.info("saving Twilio SMS reply: {}", sms.getMessageSid());
+        log.info("saving Twilio SMS reply: {}", sms.toHashMap().toString());
 
         RecordType type = getRecordTypeByMessagingServiceSID(sms.getMessagingServiceSid());
 
