@@ -10,7 +10,7 @@
         from flow.project_process_step_custom_field_value ppscfv
                  inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
         where cfga.schedule_field_type_id = 3
-        and ppscfv.int_value = any( ARRAY [ :combined ]::INT[])
+          and ARRAY [ppscfv.int_value] <@ coalesce(ARRAY [ :combined ]::INT[], '{}')
     ), start_time as (
         select ppscfv.id,
                ppscfv.custom_field_group_assignment_id,
