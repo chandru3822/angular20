@@ -140,8 +140,8 @@
           selectedRow = oldList?.filter(e => !newList?.includes(e))[0]
           enable = false
         }
-
-        let selectedCfl = this.companyFeatureList.find(cfl => { return cfl.featureId === selectedRow.featureId})
+        //todo: see why this function gets called on page load
+        let selectedCfl = this.companyFeatureList.find(cfl => { return cfl?.featureId === selectedRow?.featureId})
         selectedCfl?.accessControl?.forEach(acl => {
           acl.enabled = enable
         })
