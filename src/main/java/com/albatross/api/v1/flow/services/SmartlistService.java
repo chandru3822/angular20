@@ -517,7 +517,13 @@ public class SmartlistService {
               // @TODO humes, probably want to also check processStepId here is objectTypeId == 4
               final String referenceTable = joinTables.stream()
                   .filter(t -> t.getCustomFieldGroupAssignmentId().equals(r.getCustomFieldGroupAssignmentId()))
-                  .map(SmartlistFieldAssignment::getReferenceTable)
+                  .map(t -> {
+                      if (t.getValueReferenceTable() != null) {
+                          return t.getValueReferenceTable();
+                      } else {
+                          return t.getReferenceTable();
+                      }
+                  })
                   .findFirst()
                   .orElse(null);
 
@@ -565,6 +571,8 @@ public class SmartlistService {
           // date, timestamp, and text (text only when it's a custom value) data types need single quotes around them
           if ((List.of(1L, 2L).contains(r.getDataTypeId())) || r.getDataTypeId() == 5 && r.getIsCustomValue()) {
               requirementValue = String.format("'%s'", requirementValue);
+          } else if (r.getDataTypeId() == 9) {
+              requirementValue = r.getListOfValueId();
           }
 
           if (r.getDataTypeId() == 7) {
