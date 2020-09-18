@@ -41,16 +41,14 @@ BEGIN
                     inner join flow.user_positions_vw upv on (upv.user_position_id = c.owner_user_position_id and upv.position_id = 4)
                     inner join flow.user u on u.id = upv.user_id
                     inner join flow.org o on (o.id = upv.org_id and o.active_flag is true)
-                    left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
-                    left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
                     left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
-                where pd.source in (6,493)
+                where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
                     and case when upv.end_date is not null
                         then p.date_created::date between upv.start_date and upv.end_date
                         else p.date_created::date >= upv.start_date
                         end
                     and pd.closer_appointment_start between p_start_date and p_end_date
-                    and closer_appointment_outcome.text_value = 'Pitched'
+                    and pd.closer_appointment_outcome = 2 -- 'Pitched'
                     and o.id != 171
                 group by o.id, o.org_name || ' (' || metro_area.metro_area || ')'
             ) as ranks
