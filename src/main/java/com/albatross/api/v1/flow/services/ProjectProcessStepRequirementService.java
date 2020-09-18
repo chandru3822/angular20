@@ -37,6 +37,7 @@ public class ProjectProcessStepRequirementService {
       if(null != req.getCustomFieldSqlKey()) {
         String sql = sqlCache.getByKey(req.getCustomFieldSqlKey());
         if(null != sql) {
+          req.setHasListValues(true);
           User user = securityService.getCurrentUser();
           //i think we can get away with not passing project_id here because they can never set up a requirement for a specific value for a specific project they can only check null/not null etc
           HashMap<String, Object> params2 = new HashMap<>();

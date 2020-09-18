@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.v1.company.blueraven.models.CloserTableScores;
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
+import com.albatross.api.v1.company.blueraven.models.Source;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.security.SecurityService;
 
@@ -129,6 +130,14 @@ public class CloserDashboardService {
       }
     }
     return closerTableScoresArray;
+  }
+
+  public List<Source> getBrsProvidedSources() {
+    return sqlCache.query("closerDashboard.getBrsProvidedSources", null, Source.class);
+  }
+
+  public List<Source> getSelfGenSources() {
+    return sqlCache.query("closerDashboard.getSelfGenSources", null, Source.class);
   }
 
   public String getDistricts(int userId, Boolean setterOverride) {
