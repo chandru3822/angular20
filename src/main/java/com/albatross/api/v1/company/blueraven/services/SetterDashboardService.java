@@ -3,13 +3,16 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
+import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by Joseph Canto on 2020-07-06.
@@ -169,6 +172,52 @@ public class SetterDashboardService {
     parameters.addValue("userId", req.getUserId());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("offices", req.getOffices());
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public String funnelStandard(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+
+    return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getTargetInstallations(), funnelRequest.getUsers(), funnelRequest.getOrgs());
+  }
+
+  public String funnelCohort(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_setter_funnel_cohort(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+
+    return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getTargetInstallations(), funnelRequest.getUsers(), funnelRequest.getOrgs());
+  }
+
+  private String runFunnelQuery(String sqlQuery, String start, String end, BigDecimal target, List<Long> userIds, List<Long> orgIds) {
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("startDate", start);
+    parameters.addValue("endDate", end);
+    parameters.addValue("target", target);
+    parameters.addValue("userIds", userIds);
+    parameters.addValue("orgIds", orgIds);
+
+    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_setter_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+
+    return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs());
+  }
+
+  public String funnelDrilldownCohort(FunnelRequest funnelRequest) {
+    String sqlQuery = "select brs.rpt_setter_funnel_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::integer[], array[ :orgIds ]::integer[])";
+
+    return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs());
+  }
+
+  private String runFunnelDrilldownQuery(String sqlQuery, String start, String end, int funnelId, List<Long> userIds, List<Long> orgIds) {
+    MapSqlParameterSource parameters = new MapSqlParameterSource();
+    parameters.addValue("startDate", start);
+    parameters.addValue("endDate", end);
+    parameters.addValue("funnelId", funnelId);
+    parameters.addValue("userIds", userIds);
+    parameters.addValue("orgIds", orgIds);
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }

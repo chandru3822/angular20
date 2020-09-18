@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
+import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
 import com.albatross.api.v1.company.blueraven.services.SetterDashboardService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -92,5 +93,25 @@ public class SetterDashboardController {
   @PostMapping(value = "/getReps")
   public String getReps(@RequestBody DashboardUserRequest request) {
     return setterDashboardService.getReps(request);
+  }
+
+  @PostMapping(value = "/funnel/standard")
+  public String funnelStandard(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelStandard(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnelDrilldown/standard")
+  public String funnelDrilldownStandard(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelDrilldownStandard(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnel/cohort")
+  public String funnelCohort(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelCohort(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnelDrilldown/cohort")
+  public String funnelDrilldownCohort(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelDrilldownCohort(funnelRequest);
   }
 }
