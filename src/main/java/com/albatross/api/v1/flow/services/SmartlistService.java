@@ -63,21 +63,8 @@ public class SmartlistService {
   }
 
   public List<SmartlistFieldAssignment> getAvailableFields(Long objectTypeId) {
-    List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAvailableFields", Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeId", objectTypeId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
-
-//    for (SmartlistFieldAssignment field : fields) {
-//
-//      if (field.getCustomFieldSqlKey() != null) {
-//        final String sql = sqlCache.getByKey(field.getCustomFieldSqlKey());
-//        if (sql != null) {
-//          field.setListOfValues(sqlCache.queryBySql(sql, Collections.emptyMap(), ListOfValue.class));
-//        }
-//      } else if (field.getCompanySystemListId() != null) {
-//        field.setListOfValues(systemListService.getSystemListOptionsForCompany(field.getCompanySystemListId(), true, field.getSystemListOptionIds()));
-//      }
-//    }
-
-    return fields;
+    Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeId", objectTypeId);
+    return sqlCache.query("smartlist.getAvailableFields", params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
 
     public SmartlistFieldAssignment getAvailableFieldByCfgaId(Long cfgaId) {
@@ -185,17 +172,20 @@ public class SmartlistService {
     });
   }
 
-  public List<SmartlistRequirement> getRequirements(Long smartlistId) {
-    List<SmartlistRequirement> requirements =  sqlCache.query("smartlist.getRequirements", Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId()), new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+  public List<SmartlistRequirement> getRequirements(Long smartlistId, boolean includeListValues) {
+    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", securityService.getCurrentUser().getCompanyId());
+    List<SmartlistRequirement> requirements = sqlCache.query("smartlist.getRequirements", params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
-//    for (SmartlistRequirement r : requirements) {
-//        if (r.getCustomFieldSqlKey() != null) {
-//            final String sql = sqlCache.getByKey(r.getCustomFieldSqlKey());
-//            if (sql != null) {
-//                r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
-//            }
-//        }
-//    }
+    if (includeListValues) {
+        for (SmartlistRequirement r : requirements) {
+            if (r.getCustomFieldSqlKey() != null) {
+                final String sql = sqlCache.getByKey(r.getCustomFieldSqlKey());
+                if (sql != null) {
+                    r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+                }
+            }
+        }
+    }
 
     return requirements;
   }
@@ -239,7 +229,7 @@ public class SmartlistService {
 
     //@TODO humes: grab custom field sql key stuff here to account for custom custom fields
     List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
-    List<SmartlistRequirement> requirements = this.getRequirements(smartlistId);
+    List<SmartlistRequirement> requirements = this.getRequirements(smartlistId, false);
 
     List<SmartlistFieldAssignment> joinTables = new ArrayList<>();
 
@@ -308,11 +298,16 @@ public class SmartlistService {
         query.append(String.format(" %s as \"%s\", ", location, f.getName()));
       }
 
-
-
       if (isCustomSqlField) {
           withClause.append(String.format(" \"%s\" as  (%s), ", f.getCustomFieldSqlKey(), sqlCache.getByKey(f.getCustomFieldSqlKey())));
       }
+    }
+
+    for (SmartlistRequirement r: requirements) {
+        // If this custom sql is not already in the "with" clause, add it
+        if (r.getCustomFieldSqlKey() != null && withClause.indexOf(r.getCustomFieldSqlKey()) == -1) {
+            withClause.append(String.format(" \"%s\" as  (%s), ", r.getCustomFieldSqlKey(), sqlCache.getByKey(r.getCustomFieldSqlKey())));
+        }
     }
 
     // Remove comma and space from last select field
@@ -541,18 +536,25 @@ public class SmartlistService {
                       // @TODO humes, reference column changes if field is a list or not.
                       referenceLocation = "\"" + ppscfvUUID + "\"." + referenceColumn;
                   } else {
-                      final String newUuid = UUID.randomUUID().toString();
+                      final String valueUuid = UUID.randomUUID().toString();
 
                       if (r.getCustomFieldSqlKey() != null) {
 
-//                          query.append(String.format("left join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(objectTypeId), pcfvUUID, pcfvUUID, pcfvUUID, cfgaId));
-//                          query.append(String.format("left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", customFieldSqlKey, uuid, uuid, pcfvUUID));
+                          final String customSqlUuid = UUID.randomUUID().toString();
 
-                          additionalJoins.append(String.format("left join \"%s\" \"%s\" on \"%s\".id = %s", r.getCustomFieldSqlKey(), newUuid, newUuid, r.getListOfValueId()));
-                          referenceLocation = "\"" + newUuid + "\".id";
+                          if (r.getObjectTypeId() == 1) {
+                              additionalJoins.append(String.format("left join %s \"%s\" on \"%s\".project_id = flow.project.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, valueUuid, r.getCustomFieldGroupAssignmentId()));
+                          } else if (r.getObjectTypeId() == 2) {
+                              additionalJoins.append(String.format("left join %s \"%s\" on \"%s\".contact_id = flow.contact.id and \"%s\".custom_field_group_assignment_id = %s ", getReferenceTable(r.getObjectTypeId()), valueUuid, valueUuid, valueUuid, r.getCustomFieldGroupAssignmentId()));
+                          }
+
+                          additionalJoins.append(String.format("left join \"%s\" \"%s\" on \"%s\".id = \"%s\".int_value ", r.getCustomFieldSqlKey(), customSqlUuid, customSqlUuid, valueUuid));
+
+//                          additionalJoins.append(String.format("left join \"%s\" \"%s\" on \"%s\".id = %s", r.getCustomFieldSqlKey(), valueUuid, valueUuid, r.getListOfValueId()));
+                          referenceLocation = "\"" + customSqlUuid + "\".id";
                       } else {
-                          additionalJoins.append(String.format("left join %s \"%s\"", getReferenceTable(r.getObjectTypeId()), newUuid));
-                          referenceLocation = "\"" + newUuid + "\"." + referenceColumn;
+                          additionalJoins.append(String.format("left join %s \"%s\"", getReferenceTable(r.getObjectTypeId()), valueUuid));
+                          referenceLocation = "\"" + valueUuid + "\"." + referenceColumn;
                       }
                   }
               }

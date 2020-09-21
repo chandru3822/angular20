@@ -68,7 +68,7 @@ public class SmartlistController {
 
   @GetMapping(value = "/{smartlistId}/requirement", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistRequirement>> getRequirementsBySmartlistId(@PathVariable Long smartlistId) {
-    return new ResponseEntity<>(smartlistService.getRequirements(smartlistId), HttpStatus.OK);
+    return new ResponseEntity<>(smartlistService.getRequirements(smartlistId, true), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{smartlistId}/requirement", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
