@@ -789,6 +789,8 @@ public class SmartlistService {
         return ">";
       case 4:
         return "<";
+      case 5:
+        return "<@";
       default:
         //@TODO: blow up?
         return null;
