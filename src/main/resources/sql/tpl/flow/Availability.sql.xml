@@ -3,6 +3,7 @@
     SELECT
         rs.id,
         rs.org_id,
+        rs.user_id,
         rs.start_date,
         rs.end_date,
         rs.archived,
