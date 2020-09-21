@@ -127,7 +127,7 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.id)">Go</v-btn>
+            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.processStepStatusTypeId)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -532,9 +532,6 @@
             projectId,
             eventTypeId,
             processStepStatusTypeId
-            // i dont think we need this for finding specific projects
-            // startTime: this.startTime,
-            // endTime: this.endTime
           }
 
           const {data} = await postRequest(`/schedule/getProject`, params)
