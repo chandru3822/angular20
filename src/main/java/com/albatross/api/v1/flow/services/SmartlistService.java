@@ -207,7 +207,7 @@ public class SmartlistService {
 
   public SmartlistResult getSmartlistResults(Long smartlistId) {
       final String query = buildSql(smartlistId);
-      List<SmartlistFieldAssignment> fields = sqlCache.query("smartlist.getAssignedFields", Map.of("smartlistId", smartlistId), SmartlistFieldAssignment.class);
+      List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
       List<Map<String, Object>> results = sqlCache.queryBySql(query, null, new ColumnMapRowMapper());
 
       return new SmartlistResult(fields, results);
