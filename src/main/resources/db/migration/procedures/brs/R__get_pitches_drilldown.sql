@@ -47,7 +47,7 @@ BEGIN
                 left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
                 left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
             where pd.closer_appointment_start between v_start_date and v_end_date
-                and pd.source in (6,493)
+                and pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
                 and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
                 and upv.primary_flag is true
                 and case when p_is_setter_mgr is true then upv.org_id = p_setter_mgr_office_id

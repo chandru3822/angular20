@@ -12,8 +12,10 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -65,13 +67,18 @@ public class InstallAgreementController {
   }
 
   @GetMapping(value = "/loanStatus/{projectId}")
-  public JSONObject getLoanStatus(@PathVariable Long projectId) {
+  public ResponseEntity<Object> getLoanStatus(@PathVariable Long projectId) {
       try {
-          return loanPalService.getApplicationByProjectId(projectId);
+          JSONObject loanApp = loanPalService.getApplicationByProjectId(projectId);
+          return ResponseEntity.ok(loanApp.toString());
       } catch (Exception e) {
           log.warn("Installation agreement: Failed to get loan status: {}", e.getMessage());
-          e.printStackTrace();
-          return null;
+          if (e.getMessage().contains("locate")) {
+              throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan application was not found.", new Exception());
+          }
+          else {
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
+          }
       }
   }
 }

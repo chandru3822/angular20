@@ -659,7 +659,7 @@
               v-for="(line, index) in funnelStats" :key="line.id">
             <td v-if="showExpectationInput(index)" id="expectation-input"
                 class="funnel-td funnel-expectation">
-              <v-text-field @change="expectationChanged(this)"
+              <v-text-field @change="expectationChanged"
                             v-model="expectedInstalls"
                             solo
                             dense>
@@ -683,10 +683,9 @@
                   {{line.today_day_count}}{{line.id === 4 ? '%' : ''}}
                 </div>
 
-                <div class="funnel-percentage">
-                  <span :style="{color: line.percentTodayState}" :title="line.percentTodayHover">
-                    {{line.percentToday}}
-                  </span>
+                <div class="funnel-percentage" :style="{color: line.percentTodayState}"
+                     :title="line.percentTodayHover">
+                  {{line.percentToday}}
                 </div>
 
                 <div :class="line.percentTodayState + '_arrow'" class="funnel-arrow"></div>
@@ -702,12 +701,9 @@
                   {{line.seven_day_count}}{{line.id === 4 ? '%' : ''}}
                 </div>
 
-                <div class="funnel-percentage">
-                  <span style="font-size:12px;font-weight:normal;"
-                        :style="{color: line.percent7state}"
-                        :title="line.percent7hover">
-                    {{line.percent7}}
-                  </span>
+                <div class="funnel-percentage" :style="{color: line.percent7state}"
+                     :title="line.percent7hover">
+                  {{line.percent7}}
                 </div>
 
                 <div :class="line.percent7state + '_arrow'" class="funnel-arrow"></div>
@@ -723,12 +719,9 @@
                   {{line.thirty_day_count}}{{line.id === 4 ? '%' : ''}}
                 </div>
 
-                <div class="funnel-percentage">
-                  <span style="font-size:12px;font-weight:normal;"
-                        :style="{color: line.percent30state}"
-                        :title="line.percent30hover">
-                    {{line.percent30}}
-                  </span>
+                <div class="funnel-percentage" :style="{color: line.percent30state}"
+                     :title="line.percent30hover">
+                  {{line.percent30}}
                 </div>
 
                 <div :class="line.percent30state + '_arrow'" class="funnel-arrow"></div>
@@ -756,12 +749,9 @@
                   {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
                 </div>
 
-                <div class="funnel-percentage">
-                  <span style="font-size:12px;font-weight:normal"
-                        :style="{color: line.percentCustomState}"
-                        :title="line.percentCustomHover">
-                    {{line.percentCustom}}
-                  </span>
+                <div class="funnel-percentage" :style="{color: line.percentCustomState}"
+                     :title="line.percentCustomHover">
+                  {{line.percentCustom}}
                 </div>
 
                 <div :class="line.percentCustomState + '_arrow'" class="funnel-arrow"
@@ -780,11 +770,10 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import orderBy from 'lodash.orderby'
   import $ from 'jquery'
   import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import { getSetterDistricts, getSetterRegions, getSetterOffices, getSetterReps } from '@/services/dashboardService'
 
@@ -1658,11 +1647,11 @@
 
       funnelAllReps () {
         this.repModel = [
-          {id: -1, label: 'All Reps'}
+          {user_id: -1, name: 'All Reps', active: true}
         ]
 
         this.repData = [
-          {id: -1, label: 'All Reps'}
+          {user_id: -1, name: 'All Reps', active: true}
         ]
 
         this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
@@ -1685,14 +1674,13 @@
           users: reps,
           orgs: orgs,
           start: moment(start).format('YYYY-MM-DD'),
-          end: moment(end).format('YYYY-MM-DD'),
-          timeframe: this.timeframe
+          end: moment(end).format('YYYY-MM-DD')
         }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          await getRequestWithParams('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
+          await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
             for (let i = 0; i < data.length; ++i) {
               data[i]['countTodayState'] = data[i]['today_day_count'] < data[i]['expectation'] ? 'red' : 'green'
               data[i]['todayHover'] = this.getCountHover(data[i]['today_day_count'], data[i]['expectation'])
@@ -1718,7 +1706,6 @@
               data[i]['custom_date_range_count'] = Math.round(data[i]['custom_date_range_count'])
             }
 
-            this.timeFrame = 'NTF'
             this.funnelStats = data
             this.$store.commit(AppMutations.SET_LOADING, false)
           })
@@ -1801,21 +1788,18 @@
       },
 
       weekToDate () {
-        this.timeFrame = 'WTD'
         this.pipeline_dt1 = moment().startOf('isoWeek').toDate()
         this.pipeline_dt2 = moment().toDate()
         this.updatePipelineCalendar(true)
       },
 
       monthToDate () {
-        this.timeFrame = 'MTD'
         this.pipeline_dt1 = moment().startOf('month').toDate()
         this.pipeline_dt2 = moment().toDate()
         this.updatePipelineCalendar(true)
       },
 
       quarterToDate () {
-        this.timeFrame = 'QTD'
         let quarter = moment().quarter()
         this.pipeline_dt1 = moment().startOf('year').quarter(quarter).toDate()
         this.pipeline_dt2 = moment().toDate()
@@ -1823,28 +1807,24 @@
       },
 
       yearToDate () {
-        this.timeFrame = 'NTF'
         this.pipeline_dt1 = moment().startOf('year').toDate()
         this.pipeline_dt2 = moment().toDate()
         this.updatePipelineCalendar()
       },
 
       lastMonth () {
-        this.timeFrame = 'LAST_MONTH'
         this.pipeline_dt1 = moment().subtract(1, 'month').startOf('month').toDate()
         this.pipeline_dt2 = moment().subtract(1, 'month').endOf('month').toDate()
         this.updatePipelineCalendar(true)
       },
 
       lastWeek () {
-        this.timeFrame = 'LAST_WEEK'
         this.pipeline_dt1 = moment().subtract(1, 'week').startOf('week').add(1, 'day').toDate()
         this.pipeline_dt2 = moment().subtract(1, 'week').endOf('week').add(1, 'day').toDate()
         this.updatePipelineCalendar(true)
       },
 
       previousNumberOfDays (days) {
-        this.timeFrame = 'NTF'
         this.pipeline_dt1 = moment().subtract(days, 'days').toDate()
         this.pipeline_dt2 = moment().subtract(1, 'days').toDate()
         this.updatePipelineCalendar()
@@ -1854,10 +1834,8 @@
         clearTimeout(this.expectationTimeout)
         let expectedInstalls = this.expectedInstalls
         if (!/^(\d+|\d*(\.\d+){1})$/.test(expectedInstalls)) return
-        this.expectationTimeout = setTimeout(function () {
-          this.expectedInstalls = expectedInstalls
-          this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
-        }, 500)
+        this.expectedInstalls = expectedInstalls
+        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
       },
 
       viewSelected (view) {
@@ -2807,7 +2785,7 @@
         }
 
         .funnel-expectation {
-          width: 150px;
+          width: 75px;
         }
 
         .funnel-line-name {
@@ -2845,15 +2823,15 @@
         .funnel-td {
           font-size: 7px;
 
-          // TODO: Figure out if any CSS is needed for the funnel-count class
-          //.funnel-count {
-          //  font-size: 7px;
-          //}
+          div {
+            display: flex;
+            justify-content: center;
+          }
 
-          // TODO: Figure out if any CSS is needed for the funnel-percentage class
-          //.funnel-percentage {
-          //  font-size: 7px;
-          //}
+          .funnel-count,
+          .funnel-percentage {
+            margin: 3px;
+          }
         }
       }
     }
@@ -3307,6 +3285,11 @@
 
           .funnel-td {
             font-size: 12px;
+
+            .funnel-count,
+            .funnel-percentage {
+              margin: 5px;
+            }
           }
         }
       }
@@ -3587,6 +3570,11 @@
           .funnel-td {
             font-size: 14px;
             height: 60px;
+
+            .funnel-count,
+            .funnel-percentage {
+              margin: 10px;
+            }
           }
         }
       }

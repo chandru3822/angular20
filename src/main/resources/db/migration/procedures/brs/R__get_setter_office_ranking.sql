@@ -35,7 +35,7 @@ BEGIN
                      inner join flow.user_positions_vw upv2 on (upv2.user_position_id = c2.owner_user_position_id and upv2.position_id = 4)
                      inner join flow.user u2 on u2.id = upv2.user_id
                      inner join flow.org o2 on (o2.id = upv2.org_id and o2.active_flag is true)
-                 where pd2.source in (6,493)
+                 where pd2.source in (6,493) -- ('Setter Gen', 'Retargeted')
                      and case when upv2.end_date is not null
                          then p2.date_created::date between upv2.start_date and upv2.end_date
                          else p2.date_created::date >= upv2.start_date
@@ -52,16 +52,14 @@ BEGIN
                 inner join flow.user_positions_vw upv on (upv.user_position_id = c.owner_user_position_id and upv.position_id = 4)
                 inner join flow.user u on u.id = upv.user_id
                 inner join flow.org o on (o.id = upv.org_id and o.active_flag is true)
-                left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
-                left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
                 left join lateral (select * from flow.get_value_for_custom_field(5, 185, p.id, 0, false) as metro_area) metro_area on true
-            where pd.source in (6,493)
+            where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
                 and case when upv.end_date is not null
                     then p.date_created::date between upv.start_date and upv.end_date
                     else p.date_created::date >= upv.start_date
                     end
                 and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date - p_days) and ((now() at time zone 'US/Mountain')::date)
-                and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
+                and pd.closer_appointment_outcome in (2,3) -- ('Pitched', 'Missed')
                 and o.id != 171
             group by o.id, o.org_name || ' (' || metro_area.metro_area || ')'
             limit p_limit
