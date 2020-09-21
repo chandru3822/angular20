@@ -51,7 +51,7 @@
           :items="availableFields"
           item-text="name"
           return-object
-          @input="[resetNewField(), getOperators(newRequirement.selectedField.dataTypeId), getDataTypeRequirements(newRequirement.selectedField.dataTypeId)]"
+          @input="[resetNewField(), getOperators(newRequirement.selectedField.dataTypeId), getDataTypeRequirements(newRequirement.selectedField.dataTypeId), getProcessStepFieldData()]"
       />
 
       <v-select
@@ -68,8 +68,10 @@
       <v-switch
         v-if="newRequirement.operatorTypeId !== null"
         v-model="newRequirement.isCustomValue"
+        :disabled="newRequirement.selectedField.dataTypeId === 3"
         class="mx-2"
         label="Custom"
+        @change="resetInputValues(newRequirement)"
       />
 
 <!--      if field is a single-select item -->
@@ -230,6 +232,7 @@
           <v-switch
               v-if="expandedRequirement.operatorTypeId !== null"
               v-model="expandedRequirement.isCustomValue"
+              :disabled="expandedRequirement.dataTypeId === 3"
               class="mx-2"
               label="Custom"
               @change="resetInputValues(expandedRequirement)"
@@ -340,7 +343,7 @@ export default {
         allowMultiple: null,
         customFieldSqlKey: null,
         companySystemListId: null,
-        availableListOfValues: []
+        availableListOfValues: [],
       },
       fetchedAvailableFields: [],
       availableFields: [],
@@ -432,6 +435,15 @@ export default {
       } catch (e) {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching data type requirements for selected field')
+      }
+    },
+    async getProcessStepFieldData () {
+      try {
+        const {data} = await getRequest(`/smartlist/availableFieldByCfgaId/${this.newRequirement.selectedField.customFieldGroupAssignmentId}`)
+        this.newRequirement.selectedField = data
+      } catch (e) {
+        logError(e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching process step data')
       }
     },
     addNewRequirement () {
