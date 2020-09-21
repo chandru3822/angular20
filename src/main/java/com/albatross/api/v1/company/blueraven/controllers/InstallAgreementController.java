@@ -37,17 +37,20 @@ public class InstallAgreementController {
 
   @PostMapping(value = "/create")
   public ResponseEntity<String> saveRequest(@RequestBody InstallAgreementRequest request) throws Exception {
-    String resultMsg = installAgreementRepository.saveRequest(request);
-
-    if (resultMsg == null || resultMsg.equals(StringUtils.EMPTY)) {
-        request.setRequest_successful(true);
-        installAgreementRepository.setRequestStatus(request);
-        return ResponseEntity.ok("Request submitted");
-    }
-    else {
-        request.setRequest_successful(false);
-        installAgreementRepository.setRequestStatus(request);
-        return ResponseEntity.badRequest().body(resultMsg);
+    try {
+        String resultMsg = installAgreementRepository.saveRequest(request);
+        if (resultMsg == null || resultMsg.equals(StringUtils.EMPTY)) {
+            request.setRequest_successful(true);
+            installAgreementRepository.setRequestStatus(request);
+            return ResponseEntity.ok("Request submitted");
+        }
+        else {
+            request.setRequest_successful(false);
+            installAgreementRepository.setRequestStatus(request);
+            return ResponseEntity.badRequest().body(resultMsg);
+        }
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
   }
 
