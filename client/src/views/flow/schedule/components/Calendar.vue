@@ -47,7 +47,7 @@
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgTypes"
                     :items="orgTypes"
-                    label="Organization Types"
+                    label="Organization Resource Types"
                     multiple
                     :loading="orgTypesLoading"
                     hide-details
@@ -91,7 +91,7 @@
 
           <v-autocomplete v-model="selectedPositions"
                     :items="positions"
-                    label="Positions"
+                    label="Position Resource Types"
                     multiple
                     hide-details
                     :loading="positionsLoading"
@@ -138,7 +138,7 @@
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgs"
                     :items="orgs"
-                    label="Organizations"
+                    label="Organization Resources"
                     multiple
                     clearable
                     :loading="orgsLoading"
@@ -163,7 +163,7 @@
 
           <v-autocomplete v-model="selectedUsers"
                           :items="users"
-                          label="Users"
+                          label="User Resources"
                           multiple
                           clearable
                           hide-details
@@ -228,7 +228,7 @@
   import momentPlugin from '@fullcalendar/moment'
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
-  import {getOrgTypes} from '@/services/orgService'
+  import {getSchedulingOrgTypes} from '@/services/orgService'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
@@ -325,7 +325,7 @@
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
       this.getSchedulingOrgs()
       this.getSchedulingUsers()
-      this.getOrgTypes()
+      this.getSchedulingOrgTypes()
       this.getPositions()
     },
     data() {
@@ -496,10 +496,10 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getOrgTypes () {
+      async getSchedulingOrgTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgTypes()
+          const {data} = await getSchedulingOrgTypes()
           this.orgTypes = data
           this.orgTypesLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)

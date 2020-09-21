@@ -10,6 +10,18 @@
     order by ol.level, ot.org_type
   ]]></orgType.getAllForCompany>
 
+  <orgType.getSchedulingForCompany><![CDATA[
+    select distinct ot.*,
+       parent.org_type as org_parent_type,
+       ol.level
+    from flow.org_type ot
+         left join flow.org_type parent on parent.id = ot.org_parent_type_id
+         inner join flow.org_level ol on ol.id = ot.org_level_id
+         inner join flow.org o on o.org_type_id = ot.id and o.schedulable is true and o.archived is not true
+    where ot.company_id = :companyId
+    order by ot.org_type
+  ]]></orgType.getSchedulingForCompany>
+
   <orgType.getOne><![CDATA[
     select ot.*,
            parent.org_type as org_parent_type,
