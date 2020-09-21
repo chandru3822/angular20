@@ -204,6 +204,9 @@
                     :editable="calendar.options.editable"
                     :event-sources="eventSources"
                     :now-indicator="true"
+                    :slot-duration="calendar.options.slotDuration"
+                    :slot-label-interval="calendar.options.slotLabelInterval"
+                    :slot-width="calendar.options.slotWidth"
                     :min-time="calendar.options.minTime"
                     :max-time="calendar.options.maxTime"
                     :height="calendar.options.height"
@@ -211,7 +214,6 @@
                     :first-day="calendar.options.firstDay"
                     :hidden-days="calendar.options.hiddenDays"
                     :custom-buttons="calendar.options.customButtons"
-                    :slot-width="55"
                     @eventClick="(info) => handleEventClick(info)"
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
@@ -373,6 +375,9 @@
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         calendar: {
           options: {
+            slotDuration: '00:30:00',
+            slotLabelInterval: '01:00:00',
+            slotWidth: 45,
             scrollTime: moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'),
             hiddenDays: [0],
             minTime: '02:00:00',
@@ -385,7 +390,7 @@
             header: {
               left: 'customPrev,customToday,customNext',
               center: 'title',
-              right: 'resourceTimelineDay,resourceTimelineWeek'
+              right: 'customTimelineDay,customTimelineWeek'
             },
             customButtons: {
               customToday: {
@@ -416,7 +421,34 @@
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents(false, true)
                 }
-              }
+              },
+              customTimelineDay: {
+                text: 'day',
+                click: () => {
+                  let calendarApi = this.$refs.eventCalendar.getApi()
+                  this.calendar.options.slotDuration = '00:30:00'
+                  this.calendar.options.minTime = '02:00:00'
+                  this.calendar.options.maxTime = '23:00:00'
+                  this.calendar.options.slotLabelInterval = '01:00:00'
+                  this.calendar.options.slotWidth = 45
+                  calendarApi.changeView('resourceTimelineDay')
+                  this.getEvents(false, true)
+                }
+              },
+              customTimelineWeek: {
+                text: 'week',
+                click: () => {
+                  this.calendar.options.minTime = '06:00:00'
+                  this.calendar.options.maxTime = '22:00:00'
+                  this.calendar.options.slotDuration = '01:00:00'
+                  this.calendar.options.slotLabelInterval = '02:00:00'
+                  this.calendar.options.slotWidth = 25
+
+                  let calendarApi = this.$refs.eventCalendar.getApi()
+                  calendarApi.changeView('resourceTimelineWeek')
+                  this.getEvents(false, true)
+                }
+              },
             }
           }
         }
