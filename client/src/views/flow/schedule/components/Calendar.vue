@@ -198,8 +198,8 @@
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
                     :defaultView="calendar.options.defaultView"
                     :resources="resources"
-                    :event-overlap="true"
                     theme-system="standard"
+                    :resources-initially-expanded="true"
                     :time-zone="calendar.options.timezone"
                     :header="calendar.options.header"
                     :editable="calendar.options.editable"
@@ -668,7 +668,7 @@
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
       handleEventClick (info) {
-        if(info.event.title) {
+        if(info.event.title && !info.event.rendering) {
           let props = info.event.extendedProps
           this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}?processStepId=${props.processStepId}&contactId=${props.contactId}`})
           // this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
@@ -680,7 +680,7 @@
         // inverse-background = blocked before start and after end (resource_schedule_availability)
         if(info.event.rendering === 'background') {
           info.el.textContent = info.event.title
-          info.el.style.cssText += `padding-left: 10px; opacity: 100%; color: black;`
+          info.el.style.cssText += `padding-left: 5px; margin-left: 1px; margin-right: 1px; opacity: 100%; color: black; overflow: hidden; border: solid 1px black;`
         } else if(info.event.rendering !== 'inverse-background') {
           info.el.querySelector('.fc-title').innerHTML = info.event.title
           info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
