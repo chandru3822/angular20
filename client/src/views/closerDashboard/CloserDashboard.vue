@@ -2289,12 +2289,12 @@
 
       previousWeek (pipelineName) {
         if (pipelineName === 'apptsCreatedPipeline') {
-          this.appts_created_pipeline_dt1 = moment().startOf('w').subtract(1, 'w').toDate()
-          this.appts_created_pipeline_dt2 = moment().endOf('w').subtract(1, 'w').toDate()
+          this.appts_created_pipeline_dt1 = moment().startOf('W').subtract(1, 'w').toDate()
+          this.appts_created_pipeline_dt2 = moment().endOf('W').subtract(1, 'w').toDate()
           this.updateApptsCreatedPipelineCalendar(true)
         } else {
-          this.appts_to_fdc_pipeline_dt1 = moment().startOf('w').subtract(1, 'w').toDate()
-          this.appts_to_fdc_pipeline_dt2 = moment().endOf('w').subtract(1, 'w').toDate()
+          this.appts_to_fdc_pipeline_dt1 = moment().startOf('W').subtract(1, 'w').toDate()
+          this.appts_to_fdc_pipeline_dt2 = moment().endOf('W').subtract(1, 'w').toDate()
           this.updateApptsToFdcPipelineCalendar(true)
         }
       },
