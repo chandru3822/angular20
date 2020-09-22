@@ -40,20 +40,6 @@
                       :disabled="!state || !state.id"
                       multiple
             >
-<!--              <v-list-item-->
-<!--                  slot="prepend-item"-->
-<!--                  ripple-->
-<!--                  @click="toggleSelectAllSteps()"-->
-<!--              >-->
-<!--                <v-list-item-action>-->
-<!--                  <v-icon>{{ icon }}</v-icon>-->
-<!--                </v-list-item-action>-->
-<!--                <v-list-item-title>Select All</v-list-item-title>-->
-<!--              </v-list-item>-->
-<!--              <v-divider-->
-<!--                  slot="prepend-item"-->
-<!--                  class="mt-2"-->
-<!--              ></v-divider>-->
               <template
                   slot="selection"
                   slot-scope="{ item, index }"
@@ -73,6 +59,7 @@
             <v-select v-model="selectedProcessStepStatusTypes"
                       :items="processStepStatusTypes"
                       label="Status"
+                      clearable
                       item-text="processStepStatusType"
                       item-value="id"
                       :disabled="selectedEventTypes.length === 0"
@@ -321,23 +308,6 @@
         // masterProjects: []
       }
     },
-    computed: {
-      // selectAll () {
-      //   return this.selectedEventTypes.length === this.eventTypes.length
-      // },
-      // selectSome () {
-      //   return this.selectedEventTypes.length > 0 && !this.selectAll
-      // },
-      // icon () {
-      //   if (this.selectedEventTypes && this.eventTypes && this.selectedEventTypes.length === this.eventTypes.length) {
-      //     return 'check_box'
-      //   }
-      //   if (this.selectSome) {
-      //     return 'indeterminate_check_box'
-      //   }
-      //   return 'check_box_outline_blank'
-      // }
-    },
     watch: {
       search(val) {
         if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
@@ -357,6 +327,7 @@
     created() {
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
+      this.selectedProcessStepStatusTypes = JSON.parse(localStorage.getItem('scheduleProcessStepStatusTypes')) || []
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
@@ -455,6 +426,7 @@
         }
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
+        localStorage.setItem('scheduleProcessStepStatusTypes', JSON.stringify(this.selectedProcessStepStatusTypes))
 
         if(this.selectedEventTypes?.length > 0) {
           this.listLoading = true
