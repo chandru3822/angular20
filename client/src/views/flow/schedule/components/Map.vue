@@ -7,7 +7,8 @@
                :color="m.color || '#ffffff'">
       <MglPopup :close-button="false">
         <VCard flat>
-          {{m.contactFirstName}} {{m.contactLastName}}
+          {{m.contactFirstName}} {{m.contactLastName}}<br/>
+          {{m.processStepName}}
         </VCard>
       </MglPopup>
     </MglMarker>
