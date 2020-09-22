@@ -592,6 +592,7 @@
           }
           const {data} = await postRequest(`/schedule/availability`, params)
           data.forEach(d => {
+            d.groupId = `${d.systemListTypeId}${d.resourceId}`
             d.resourceId = `${d.systemListTypeId}${d.resourceId}`
             d.color = 'gray'
           })
