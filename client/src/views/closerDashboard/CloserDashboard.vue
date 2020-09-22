@@ -905,7 +905,7 @@
                   {{line.week_to_date_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
                 {{line.week_to_date_count}}
               </div>
             </td>
@@ -933,7 +933,7 @@
                   {{line.custom_date_range_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
                 {{line.custom_date_range_count}}
               </div>
             </td>
@@ -943,6 +943,7 @@
     </div>
     <!-- APPOINTMENTS TO FDC PIPELINE END -->
 
+    <!-- FUNNEL DRILLDOWN START -->
     <v-dialog v-model="funnelDrilldownDialog">
       <v-card id="funnel-drilldown">
         <v-card-title class="mb-1">
@@ -1086,6 +1087,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- FUNNEL DRILLDOWN END -->
     <!----------------------------------- PIPELINE TAB END ----------------------------------->
 
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -1307,7 +1309,33 @@
       appts_to_fdc_pipeline_dt2_formatted: moment().format('M/D/YY'),
       appts_to_fdc_pipeline_menu2: false,
       funnelDrilldownTitle: '',
-      funnelDrilldownHeaders: [],
+      funnelDrilldownHeaders: [
+        { text: '', value: '', show: true, sortable: false, width: 25 },
+        { text: 'Owner', value: 'owner_name', show: true, width: 90 },
+        { text: 'Employee ID', value: 'employee_id', show: true, width: 115 },
+        { text: 'State', value: 'state', show: true, width: 75 },
+        { text: 'Name', value: 'customer_name', show: true, width: 90 },
+        { text: 'Deal ID', value: 'deal_id', show: true, width: 85 },
+        { text: 'Source', value: 'source_name', show: true, width: 85 },
+        { text: 'System Size', value: 'system_size', show: true, width: 110 },
+        { text: 'Financier', value: 'financier', show: true, width: 95 },
+        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145 },
+        { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130 },
+        { text: 'Added On', value: 'added_on', show: false, width: 100 },
+        { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
+        { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
+        { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
+        { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215 },
+        { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
+        { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155 },
+        { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
+        { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 140 },
+        { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
+        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
+        { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
+        { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160 },
+        { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175 }
+      ],
       funnelDrilldownData: [],
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
@@ -2342,34 +2370,6 @@
         let start, end
         let datesMatch = false
 
-        this.funnelDrilldownHeaders = [
-          { text: '', value: '', show: true, sortable: false, width: 25 },
-          { text: 'Owner', value: 'owner_name', show: true, width: 90 },
-          { text: 'Employee ID', value: 'employee_id', show: true, width: 115 },
-          { text: 'State', value: 'state', show: true, width: 75 },
-          { text: 'Name', value: 'customer_name', show: true, width: 90 },
-          { text: 'Deal ID', value: 'deal_id', show: true, width: 85 },
-          { text: 'Source', value: 'source_name', show: true, width: 85 },
-          { text: 'System Size', value: 'system_size', show: true, width: 110 },
-          { text: 'Financier', value: 'financier', show: true, width: 95 },
-          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145 },
-          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130 },
-          { text: 'Added On', value: 'added_on', show: false, width: 100 },
-          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
-          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
-          { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
-          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215 },
-          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
-          { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155 },
-          { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
-          { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 140 },
-          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
-          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
-          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
-          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160 },
-          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175 }
-        ]
-
         if (pipelineName === 'apptsCreatedPipeline') {
           if (funnelId === 12) { // BRS-provided sources
             sourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
@@ -2411,8 +2411,9 @@
           }
         }
 
-        if (moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')) {
-          datesMatch = true
+        datesMatch = moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')
+
+        if (datesMatch) {
           this.funnelDrilldownTitle = funnelName + ' on ' + moment(start).format('M/D/YYYY')
         } else {
           this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
@@ -3620,6 +3621,7 @@
         }
 
         .funnel-td {
+          cursor: pointer;
           font-size: 7px;
           width: 90px;
         }
