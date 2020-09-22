@@ -353,7 +353,7 @@
         try {
           const {data} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
           // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
-          this.$refs.calendar.getEvents()
+          this.$refs.calendar.getEvents(false, true)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
         } catch (e) {
