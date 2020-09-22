@@ -712,6 +712,8 @@
             resourceEvents.forEach(re => {
               let eventObj = {
                 id: resource.id,
+                projectName: re.projectName,
+                processStepName: re.processStepName,
                 color: resource.extendedProps.color,
                 coordinates: [ re.longitude, re.latitude]
               }
