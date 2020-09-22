@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION brs.limit_by_org_for_setters(p_user_ids integer[], p_org_ids integer[], p_added_on date)
+CREATE OR REPLACE FUNCTION brs.limit_by_org_for_setters(p_user_ids integer[], p_org_ids integer[], p_date_created date)
     RETURNS integer[]
     LANGUAGE plpgsql
 AS $function$
@@ -9,8 +9,8 @@ AS $function$
             where up.position_id = 4 and ((Array[up.org_id] <@ p_org_ids))
                 and Array[up.user_id] <@ p_user_ids
                 and case when up.end_date is not null then
-                    p_added_on between up.start_date and up.end_date
-                    else p_added_on >= up.start_date
+                    p_date_created between up.start_date and up.end_date
+                    else p_date_created >= up.start_date
                     end
         );
     END
