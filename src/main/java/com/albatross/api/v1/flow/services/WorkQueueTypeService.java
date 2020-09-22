@@ -1,11 +1,17 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -19,14 +25,12 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-//@RequiredArgsConstructor(onConstructor = @_(@Autowired))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class WorkQueueTypeService {
 
-  @Autowired
-  SqlCache sqlCache;
-
-  @Autowired
-  SecurityService securityService;
+  private final SqlCache sqlCache;
+  private final SecurityService securityService;
+  private final ObjectMapper om;
 
   public List<WorkQueueType> getWorkQueueTypes(Boolean sortByName) {
     User user = securityService.getCurrentUser();
@@ -101,7 +105,7 @@ public class WorkQueueTypeService {
 
   public Optional<ProcessStepWorkQueueType> getProcessStepWorkQueueType(Long id) {
     Optional<ProcessStepWorkQueueType> result = sqlCache.get("workQueueType.getProcessStepWorkQueueType",
-      ImmutableMap.of("id", id), ProcessStepWorkQueueType.class);
+      ImmutableMap.of("id", id), new ProcessStepWorkQueueTypeMapper<>(ProcessStepWorkQueueType.class, om));
 
     return result;
   }
@@ -130,7 +134,7 @@ public class WorkQueueTypeService {
   public List<WorkQueueTypeProjectStatus> saveProjectStatusTypesToWorkQueueType(ProcessStepWorkQueueType processStepWorkQueueType) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getWorkQueueTypeId());
+    params.put("processStepWorkQueueTypeId", processStepWorkQueueType.getId());
     params.put("userId", currentUser.getId());
 
     for(WorkQueueTypeProjectStatus ps : processStepWorkQueueType.getProjectStatuses()) {
@@ -153,6 +157,22 @@ public class WorkQueueTypeService {
 
     List<WorkQueueTypeProjectStatus> results = sqlCache.query("workQueueType.getProjectStatusesForWorkQueueType", params, WorkQueueTypeProjectStatus.class);
     return results;
+  }
+
+  public static class ProcessStepWorkQueueTypeMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProcessStepWorkQueueTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<WorkQueueTypeProjectStatus>> projectStatusesRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "projectStatuses",
+              new JsonCollectionDeserializer(projectStatusesRef, objectMapper));
+    }
   }
 
 }

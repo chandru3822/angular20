@@ -191,62 +191,28 @@
   ]]></user.getOne>
 
   <user.getSchedulingUsers><![CDATA[
-      with t1 as (
-          select distinct upv.user_id                            as id,
-                          upv.first_name,
-                          upv.last_name,
-                          concat(upv.first_name, ' ', upv.last_name) AS full_name,
-                          concat(upv.first_name, ' ', upv.last_name) AS title
-
-          from flow.user_positions_vw upv
-          where upv.position_schedulable is true
-            and case
-                    when :isParent and :isSchedulingTool
-                        then array [upv.company_id] <@
-                             (select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-                    else (upv.company_id = :companyId OR
-                          (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true)) end
-            and case
-                    when :stateId::integer is not null
-                        then upv.state_id = :stateId::integer and upv.position_schedulable is true
-                    else upv.position_schedulable is true end
-            and upv.user_archived is not true
-            and upv.start_date <= now()
-            and upv.has_access is true
-            and (upv.end_date is null or upv.end_date >= now())
-      )
-      select id,
-             first_name,
-             last_name,
-             full_name,
-             title,
-             coalesce((
-                          SELECT array_to_json(array_agg(row_to_json(positions)))
-                          FROM (
-                                   SELECT up.id,
-                                          up.user_id as "userId",
-                                          p.position,
-                                          up.position_id as "positionId",
-                                          up.org_id as "orgId",
-                                          o.state_id as "stateId",
-                                          up.start_date as "startDate",
-                                          up.end_date as "endDate",
-                                          up.primary_flag as "primaryFlag",
-                                          up.archived,
-                                          (select json_agg(json_build_object(
-                                                                   'orgId', h.org_id,
-                                                                   'orgName', h.org_name,
-                                                                   'positionLevel', h.position_level,
-                                                                   'orgLevelId', h.org_level_id
-                                                               ) order by h.org_level_id)::jsonb
-                                           from flow.user_org_hierarchy(up.org_id) as h) as "hierarchy"
-                                   FROM flow.user_position up
-                                            inner join flow.position p on p.id = up.position_id
-                                            inner join flow.org o on o.id = up.org_id
-                                   WHERE up.user_id = t1.id
-                                     and up.archived is not true
-                                     and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
-      from t1
+      select distinct upv.user_id                            as id,
+                upv.user_position_id,
+                upv.first_name,
+                upv.last_name,
+                concat(upv.first_name, ' ', upv.last_name) AS full_name,
+                concat(upv.first_name, ' ', upv.last_name) AS title
+      from flow.user_positions_vw upv
+      where upv.position_schedulable is true
+        and case
+                when :isParent and :isSchedulingTool
+                    then array [upv.company_id] <@
+                         (select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                else (upv.company_id = :companyId OR
+                      (:isSchedulingTool AND upv.company_id = :parentCompanyId AND upv.available_to_children is true)) end
+        and case
+                when :stateId::integer is not null
+                    then upv.state_id = :stateId::integer and upv.position_schedulable is true
+                else upv.position_schedulable is true end
+        and upv.user_archived is not true
+        and upv.start_date <= now()
+        and upv.has_access is true
+        and (upv.end_date is null or upv.end_date >= now())
       order by full_name
   ]]></user.getSchedulingUsers>
 

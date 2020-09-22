@@ -566,8 +566,9 @@
           })
           //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
           data.forEach(d => {
-            d.masterId = d.id
-            d.id = `${2}${d.id}`
+            d.masterUserPostionId = d.userPositionId
+            d.userId = d.id
+            d.id = `${2}${d.userPositionId}`
           })
           this.users = data
           this.masterUsers = cloneDeep(this.users)
@@ -586,7 +587,7 @@
         try {
           let params = {
             orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.userId) : [],
             startTime: this.calendarStartTime,
             endTime: this.calendarEndTime
           }
@@ -629,7 +630,7 @@
             try {
               let params = {
                 orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-                userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+                userPositionIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.userPositionId) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
@@ -680,7 +681,8 @@
         // inverse-background = blocked before start and after end (resource_schedule_availability)
         if(info.event.rendering === 'background') {
           info.el.textContent = info.event.title
-          info.el.style.cssText += `padding-left: 5px; margin-left: 1px; margin-right: 1px; opacity: 100%; color: black; overflow: hidden; border: solid 1px black;`
+          info.el.style.cssText += `font-size: 11px; padding-left: 5px; cursor: default; margin-left: 1px; margin-right: 1px; opacity: 100%; color: black; overflow: hidden; border: solid 1px black;`
+          info.el.title = info.event.title + ': ' + moment(info.event.start).format('h:mm') + '-' + moment(info.event.end).format('h:mm')
         } else if(info.event.rendering !== 'inverse-background') {
           info.el.querySelector('.fc-title').innerHTML = info.event.title
           info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
