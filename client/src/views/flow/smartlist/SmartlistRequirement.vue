@@ -438,12 +438,14 @@ export default {
       }
     },
     async getProcessStepFieldData () {
-      try {
-        const {data} = await getRequest(`/smartlist/availableFieldByCfgaId/${this.newRequirement.selectedField.customFieldGroupAssignmentId}`)
-        this.newRequirement.selectedField = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching process step data')
+      if (this.newRequirement.selectedField.customFieldGroupAssignmentId !== null) {
+        try {
+          const {data} = await getRequest(`/smartlist/availableFieldByCfgaId/${this.newRequirement.selectedField.customFieldGroupAssignmentId}`)
+          this.newRequirement.selectedField = data
+        } catch (e) {
+          logError(e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching process step data')
+        }
       }
     },
     addNewRequirement () {
