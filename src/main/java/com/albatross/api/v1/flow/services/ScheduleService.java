@@ -42,7 +42,8 @@ public class ScheduleService {
   public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
-    List<Long> combined = esp.getUserIds();
+
+    List<Long> combined = esp.getUserPositionIds();
     combined.addAll(esp.getOrgIds());
 
     HashMap<String, Object> params = new HashMap<>();
