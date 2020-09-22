@@ -198,6 +198,7 @@
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
                     :defaultView="calendar.options.defaultView"
                     :resources="resources"
+                    :event-overlap="true"
                     theme-system="standard"
                     :time-zone="calendar.options.timezone"
                     :header="calendar.options.header"
