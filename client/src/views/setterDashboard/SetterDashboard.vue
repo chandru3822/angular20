@@ -394,12 +394,12 @@
           <div id="pipeline-header-left-side">
             <v-radio-group v-model="viewSelect">
               <v-radio label="Standard View" value="standard" class="funnel-radio-btn"
-                       @click="viewSelected('standard')"
+                       @change="viewSelected('standard')"
                        :class="{'white--text': viewSelect === 'standard'}"
                        :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
               </v-radio>
               <v-radio label="Cohort View" value="cohort" class="funnel-radio-btn"
-                       @click="viewSelected('cohort')"
+                       @change="viewSelected('cohort')"
                        :class="{'white--text': viewSelect === 'cohort'}"
                        :color="viewSelect === 'cohort' ? 'primaryCustom' : 'secondaryCustom'">
               </v-radio>
@@ -603,7 +603,8 @@
 
       <!-- FUNNEL -->
       <div class="funnel-container">
-        <div v-show="funnelStats.length > 0" id="funnel-background"></div>
+        <div v-show="funnelStats.length > 0" id="funnel-background"
+             :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"></div>
         <table class="funnel-table">
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
@@ -1662,7 +1663,7 @@
         let orgs = []
 
         if (this.repModel.length === 0) {
-          this.apptsToFdcPipelineData = []
+          this.funnelStats = []
           return
         }
 
@@ -1684,13 +1685,13 @@
             for (let i = 0; i < data.length; ++i) {
               data[i]['countTodayState'] = data[i]['today_day_count'] < data[i]['expectation'] ? 'red' : 'green'
               data[i]['todayHover'] = this.getCountHover(data[i]['today_day_count'], data[i]['expectation'])
-              data[i]['percentToday'] = data[i]['today_percent'] ? data[i]['today_percent'] + '%' : '0 %'
+              data[i]['percentToday'] = data[i]['today_percent'] ? data[i]['today_percent'] + '%' : '0%'
               data[i]['percentTodayState'] = this.getPercentColor(data[i]['today_percent'])
-              data[i]['percent7'] = data[i]['seven_percent'] ? data[i]['seven_percent'] + '%' : '0 %'
+              data[i]['percent7'] = data[i]['seven_percent'] ? data[i]['seven_percent'] + '%' : '0%'
               data[i]['percent7state'] = this.getPercentColor(data[i]['seven_percent'])
               data[i]['count7state'] = data[i]['seven_day_count'] < data[i]['expectation'] ? 'red' : 'green'
               data[i]['sevenDayHover'] = this.getCountHover(data[i]['seven_day_count'], data[i]['expectation'])
-              data[i]['percent30'] = data[i]['thirty_day_percent'] ? data[i]['thirty_day_percent'] + '%' : '0 %'
+              data[i]['percent30'] = data[i]['thirty_day_percent'] ? data[i]['thirty_day_percent'] + '%' : '0%'
               data[i]['percent30state'] = this.getPercentColor(data[i]['thirty_day_percent'])
               data[i]['count30state'] = data[i]['thirty_day_count'] < data[i]['expectation'] ? 'red' : 'green'
               data[i]['thirtyDayHover'] = this.getCountHover(data[i]['thirty_day_count'], data[i]['expectation'])
@@ -1702,7 +1703,7 @@
               data[i]['expectation'] = this.roundTenth(data[i]['expectation'])
               data[i]['percentCustomState'] = this.getPercentColor(data[i]['custom_date_range_percent'])
               data[i]['percentCustomHover'] = this.getPercentHover(data[i]['custom_date_range_percent'], this.daysBetween(start, end))
-              data[i]['percentCustom'] = data[i]['custom_date_range_percent'] ? data[i]['custom_date_range_percent'] + '%' : '0 %'
+              data[i]['percentCustom'] = data[i]['custom_date_range_percent'] ? data[i]['custom_date_range_percent'] + '%' : '0%'
               data[i]['custom_date_range_count'] = Math.round(data[i]['custom_date_range_count'])
             }
 
@@ -1841,8 +1842,11 @@
       viewSelected (view) {
         if (this.viewSelect !== view) {
           this.viewSelect = view
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2)
+
+          if ((this.districtModel.length > 0 && this.regionModel.length > 0 && this.officeModel.length > 0 && this.repModel.length > 0) || this.repModel[0]?.user_id === -1) {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+          }
         }
       },
 
@@ -3135,13 +3139,20 @@
       z-index: 6;
       border-top-style: solid;
       border-top-color: rgba(0, 110, 200, 0.05);
-      border-top-width: 120px;
       border-right: 20px solid transparent;
       border-left: 20px solid transparent;
       margin-top: 63px;
       margin-left: 110px;
       width: 170px;
       height: 0;
+    }
+
+    #funnel-background.standard-view {
+      border-top-width: 120px;
+    }
+
+    #funnel-background.cohort-view {
+      border-top-width: 160px;
     }
 
     #pipeline-container {
@@ -3445,12 +3456,19 @@
     }
 
     #funnel-background {
-      border-top-width: 180px;
       border-right: 80px solid transparent;
       border-left: 80px solid transparent;
       margin-top: 63px;
       margin-left: 140px;
       width: 320px;
+    }
+
+    #funnel-background.standard-view {
+      border-top-width: 180px;
+    }
+
+    #funnel-background.cohort-view {
+      border-top-width: 240px;
     }
 
     #pipeline-container {
