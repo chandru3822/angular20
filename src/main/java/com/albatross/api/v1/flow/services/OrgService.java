@@ -229,4 +229,43 @@ public class OrgService {
     return results;
   }
 
+  public List<Org> getOrgCalendarsForUser(Long userId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    List<Org> results = sqlCache.query("org.getOrgCalendarsForUser", params, Org.class);
+
+    return results;
+  }
+
+  public UserOrgAccess saveOrgCalendarToUser(UserOrgAccess userOrgAccess) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userOrgAccess.getUserId());
+    params.put("orgId", userOrgAccess.getOrgId());
+    params.put("createdById", user.getId());
+
+    Long id = sqlCache.updateReturningId("org.saveOrgCalendarToUser", params, "id").longValue();
+    return getOneOrgCalendarAccess(id);
+  }
+
+  public void deleteOrgCalendarFromUser(Long id) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("modifiedById", user.getId());
+
+    sqlCache.update("org.deleteOrgCalendarFromUser", params);
+  }
+
+  public UserOrgAccess getOneOrgCalendarAccess(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    Optional<UserOrgAccess> result = sqlCache.get("org.getOneOrgCalendarAccess", params, UserOrgAccess.class);
+
+    return result.orElse(null);
+  }
+
+
 }
