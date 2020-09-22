@@ -12,7 +12,7 @@ import lombok.Setter;
 public class Feature {
 
   private Long id;
-  private String featureName, featureCode;
+  private String featureName, featureCode, featurePath;
   private Boolean archived, isSystem;
 
 }

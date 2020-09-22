@@ -7,11 +7,15 @@
             <v-col cols="10" class="text-left pl-5">
               <v-breadcrumbs :items="breadcrumbs" class="pl-0 pt-0 pb-2"></v-breadcrumbs>
               <div class="project-title">
-                <router-link :to="`/contact/${project.contactId}`">{{ project.projectName}}</router-link>
+                <router-link v-if="$store.getters.userHasFeature('CONTACTS')"
+                             :to="`/contact/${project.contactId}`">
+                  {{ project.projectName}}
+                </router-link>
+                <span v-else>{{ project.projectName}}</span>
               </div>
               <div class="project-subtitle">
                 <span v-if="!editAddress">{{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}</span>
-                <div v-else>
+                <div v-else-if="userCanEdit">
                   <v-text-field
                     v-model="project.street1"
                     label="Street"
@@ -37,7 +41,7 @@
                             item-value="id"
                   ></v-select>
                 </div>
-                <v-btn x-small text @click="[editAddress = !editAddress, getStatesAndCountries()]">
+                <v-btn x-small text v-if="userCanEdit" @click="[editAddress = !editAddress, getStatesAndCountries()]">
                   <span v-if="editAddress">Cancel</span>
                   <v-icon v-else>edit</v-icon>
                 </v-btn>
@@ -81,6 +85,8 @@
               <v-select
                 v-model="project.companyProjectStatusTypeId"
                 :items="statuses"
+                :readonly="!userCanEdit"
+                :disabled="!userCanEdit"
                 item-text="projectStatusType"
                 item-value="id"
                 @change="updateStatus"
@@ -102,7 +108,7 @@
                   Project Details
                 </v-tab>
                 <v-tab :to="`/project/${this.projectId}/notes`">
-                  Notes & Activity Feed
+                  Notes & Communication
                 </v-tab>
               </v-tabs>
             </v-toolbar-items>
@@ -135,6 +141,7 @@ export default {
       constants,
       projectId: parseInt(this.$route.params.projectId),
       companyId: this.$store.state.user.details.companyId,
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       displayChangeOwner: false,
       availableOwners: [],
       editAddress: false,

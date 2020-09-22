@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar color="transparent" class="elevation-0">
-      <v-toolbar-title>Notes & Activity Feed</v-toolbar-title>
+      <v-toolbar-title>Notes</v-toolbar-title>
     </v-toolbar>
     <v-card class="pa-4">
       <v-toolbar flat color="white" class="elevation-0">
@@ -42,7 +42,7 @@
         <template #item="{ item, index }">
           <tr class="text-left" :class="{'shaded-row': index % 2}">
             <td class="py-2">
-              {{item.note}}
+              <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div class="mt-2 note-created-by">
                 Created by: {{item.createdBy}}<br/>
                 Created at: {{item.dateCreated | formatDate('timestamp')}}

@@ -3,7 +3,7 @@
     <![CDATA[
       with regional_managers AS (
           select user_id,
-                 first_name || ' ' || last_name as "full_name",
+          concat(u.first_name, ' ', u.last_name) AS "full_name",
                  region_id
           from flow.user_positions_vw
           where position_id = 3
@@ -45,7 +45,7 @@
              (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
               FROM (
                        select u.id as id,
-                              u.first_name || ' ' || u.last_name as "fullName",
+                            concat(u.first_name, ' ', u.last_name) AS "fullName",
                               override_amount as amount,
                               ooc.id as "rowId"
                        from brs.overrides_on_closer ooc
@@ -95,7 +95,7 @@
                     group by closer_user_id)
       select oc.id AS "overrideCloserId",
              upv.user_id,
-             (select first_name || ' ' || last_name
+             (select concat(u.first_name, ' ', u.last_name)
               from flow.user u1
               where u1.id = :closerRegionalUserId) as regional_manager,
              :closerRegionalUserId as regional_manager_id,
@@ -122,7 +122,7 @@
              (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
               FROM (
                        select u.id as id,
-                              u.first_name || ' ' || u.last_name as "fullName",
+                              concat(u.first_name, ' ', u.last_name) AS "fullName",
                               override_amount as amount,
                               ooc.id as "rowId"
                        from brs.overrides_on_closer ooc
@@ -157,7 +157,7 @@
     <![CDATA[
       with regional_managers AS (
         select user_id,
-               first_name || ' ' || last_name as "full_name",
+        concat(u.first_name, ' ', u.last_name) AS "full_name",
                region_id
         from flow.user_positions_vw
         where position_id = 3
@@ -195,7 +195,7 @@
              (SELECT array_to_json(array_agg(row_to_json(sub_rows)))
               FROM (
                        select u.id as id,
-                              u.first_name || ' ' || u.last_name as "fullName",
+                       concat(u.first_name, ' ', u.last_name) AS "fullName",
                               override_amount as amount,
                               ooc.id as "rowId"
                        from brs.overrides_on_closer ooc
@@ -278,7 +278,7 @@
     <![CDATA[
       select first_name,
             last_name,
-            first_name || ' ' || last_name as full_name,
+            concat(u.first_name, ' ', u.last_name) AS "full_name",
             pv.user_id as id
       from flow.user_positions_vw pv
       where position_id in (1,2,3)
@@ -363,7 +363,8 @@
                                  select case when recruited_by_user_id is not null then
                                                  20.00
                                              else 0.00
-                                            end as recruited_amount, ooc.override_amount,pv.first_name || ' ' || pv.last_name as closer_name,
+                                            end as recruited_amount, ooc.override_amount,
+                                            concat(pv.first_name, ' ', pv.last_name) AS closer_name,
                                         (select allowance
                                          from brs.office_override_allowance ro
                                                   where oc.date_created::date >= start_date and
@@ -381,7 +382,9 @@
                              ) as foo
                         group by allowance,foo.recruited_amount,user_id,closer_name) as foo1
                union all
-               select  user_id, first_name || ' ' || last_name as closer_name,override_amount
+               select  user_id,
+               concat(first_name, ' ', last_name) AS closer_name,
+               override_amount
                from brs.override_closer oc
                         inner join brs.overrides_on_closer ooc on ooc.override_closer_id = oc.id
                         inner join max_effective_date med on med.effective_date = oc.effective_date and med.closer_user_id = oc.closer_user_id
@@ -407,7 +410,9 @@
                                     effective_date <= :effectiveDate::date and
                                     oc.override_closer_status_type_id = 2) as foo
                    group by closer_user_id)
-               select  user_id, first_name || ' ' || last_name as closer_name,override_amount
+               select  user_id,
+               concat(first_name, ' ', last_name) AS closer_name,
+               override_amount
                from brs.override_closer oc
                         inner join brs.overrides_on_closer ooc on ooc.override_closer_id = oc.id
                         inner join max_effective_date med on med.effective_date = oc.effective_date and med.closer_user_id = oc.closer_user_id
@@ -468,7 +473,7 @@
   <overridePlan.getReceivingUser><![CDATA[
     SELECT row_to_json(receiving) receiving
     FROM (SELECT opu.user_id                        AS "userId",
-                 u.first_name || ' ' || u.last_name AS name,
+    concat(u.first_name, ' ', u.last_name) AS name,
                  opu.m1_allocation                      AS "m1Allocation",
                  opu.m2_allocation                      AS "m2Allocation",
                  (select
@@ -611,7 +616,7 @@
                 FROM (
                        SELECT
                          opu.user_id as "userId",
-                         u.first_name || ' ' || u.last_name AS name,
+                         concat(u.first_name, ' ', u.last_name) AS name,
                          p.position,
                          p.id                               AS "positionId"
                        FROM brs.override_plan_receiving_user opu
@@ -627,7 +632,7 @@
                            SELECT
                              opa.id,
                              opa.user_id as "userId",
-                             u.first_name || ' ' || u.last_name AS name,
+                             concat(u.first_name, ' ', u.last_name) AS name,
                              p.position,
                              p.id                               AS "positionId",
                              opa.start_date                     AS "startDate",
@@ -661,23 +666,23 @@ FROM (SELECT op.id,
              ops.status_type                                                           AS status,
              op.position_id                                                             AS "positionId",
              (SELECT row_to_json(u)
-              FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
+              FROM (SELECT u.id, concat(u.first_name, ' ', u.last_name) AS name,
                     FROM flow."user" u
                     WHERE u.id = op.created_by) u)                                      AS "createdBy",
              op.created,
              (SELECT row_to_json(u)
-              FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
+              FROM (SELECT u.id, concat(u.first_name, ' ', u.last_name) AS name
                     FROM flow."user" u
                     WHERE u.id = op.updated_by) u)                                      AS "updatedBy",
              op.updated,
              (SELECT row_to_json(u)
-              FROM (SELECT u.id, u.first_name || ' ' || u.last_name AS name
+              FROM (SELECT u.id, concat(u.first_name, ' ', u.last_name) AS name
                     FROM flow."user" u
                     WHERE u.id = op.approved_by) u)                                     AS "approvedBy",
              op.approved,
              coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
                        FROM (SELECT opu.user_id                        AS "userId",
-                                    u.first_name || ' ' || u.last_name AS name,
+                                    concat(u.first_name, ' ', u.last_name) AS name,
                                     opu.m1_allocation                      AS "m1Allocation",
                                     opu.m2_allocation                      AS "m2Allocation",
                                     (select
@@ -694,7 +699,7 @@ FROM (SELECT op.id,
              coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
                        FROM (SELECT opa.id,
                                     opa.user_id                        AS "userId",
-                                    u.first_name || ' ' || u.last_name AS name,
+                                    concat(u.first_name, ' ', u.last_name) AS name,
                                     opa.start_date                     AS "startDate",
                                     opa.end_date                       AS "endDate"
                              FROM brs.override_plan_assigned_user opa
@@ -727,7 +732,7 @@ FROM (SELECT op.id,
   <overridePlan.findUsers><![CDATA[
       SELECT coalesce(array_to_json(array_agg(row_to_json(results))), '[]')
 FROM (SELECT u.id                                                             AS "userId",
-             u.first_name || ' ' || u.last_name                               AS name,
+             concat(u.first_name, ' ', u.last_name) AS name,
              u.email,
              (SELECT string_agg( distinct position, ', ')
               FROM flow.user_position up1
@@ -753,7 +758,7 @@ FROM (SELECT u.id                                                             AS
                                 OR opau.end_date >= current_date) aup), '[]') AS "assignedUserPlans"
       FROM flow."user" u
       WHERE (
-              lower(trim(first_name)) || ' ' || lower(trim(last_name)) LIKE lower(:search)
+              concat(lower(trim(first_name)), ' ', lower(trim(last_name))) LIKE lower(:search)
                 OR lower(trim(last_name)) LIKE lower(:search)
                 OR lower(trim(u.email)) LIKE lower(:search)
           )
@@ -798,7 +803,7 @@ FROM (SELECT u.id                                                             AS
     SELECT coalesce(array_to_json(array_agg(row_to_json(u))), '[]')
     FROM (SELECT opa.id,
                  opa.user_id                        AS "userId",
-                 u.first_name || ' ' || u.last_name AS name,
+                 concat(u.first_name, ' ', u.last_name) AS name,
                  opa.start_date                     AS "startDate",
                  opa.end_date                       AS "endDate",
                  string_agg(DISTINCT p.position, ', ') FILTER (
@@ -824,7 +829,7 @@ FROM (SELECT u.id                                                             AS
     FROM (SELECT
               opa.id,
               opa.user_id as "userId",
-              u.first_name || ' ' || u.last_name AS name,
+              concat(u.first_name, ' ', u.last_name) AS name,
               p.position,
               p.id                               AS "positionId",
               opa.start_date                     AS "startDate",
@@ -842,7 +847,7 @@ FROM (SELECT u.id                                                             AS
     SELECT coalesce(array_to_json(array_agg(row_to_json(u))), '[]')
     FROM (SELECT opu.user_id                        AS "userId",
              opu.allocation,
-             u.first_name || ' ' || u.last_name AS name,
+             concat(u.first_name, ' ', u.last_name) AS name,
              up.active,
              string_agg(DISTINCT p.position, ', ') FILTER (
              WHERE

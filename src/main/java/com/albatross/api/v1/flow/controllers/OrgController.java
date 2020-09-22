@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.Org;
 import com.albatross.api.v1.flow.model.OrgFilter;
+import com.albatross.api.v1.flow.model.UserOrgAccess;
 import com.albatross.api.v1.flow.model.UserSearch;
 import com.albatross.api.v1.flow.services.OrgService;
 import lombok.extern.slf4j.Slf4j;
@@ -82,6 +83,21 @@ public class OrgController {
   @PostMapping(value = "/orgHierarchyFilter", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<OrgFilter> getHierarchyFilteredOrgsForCompany(@RequestBody UserSearch search) {
     return orgService.getHierarchyFilteredOrgsForCompany(search.getOrgs());
+  }
+
+  @GetMapping(value = "/user/{userId}/calendars", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Org> getOrgCalendarsForUser(@PathVariable Long userId) {
+    return orgService.getOrgCalendarsForUser(userId);
+  }
+
+  @PostMapping(value = "/user/calendar", produces = MediaType.APPLICATION_JSON_VALUE)
+  public UserOrgAccess saveOrgCalendarToUser(@RequestBody UserOrgAccess userOrgAccess) {
+    return orgService.saveOrgCalendarToUser(userOrgAccess);
+  }
+
+  @DeleteMapping(value = "/user/calendar/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteOrgCalendarFromUser(@PathVariable Long id) {
+    orgService.deleteOrgCalendarFromUser(id);
   }
 
 }

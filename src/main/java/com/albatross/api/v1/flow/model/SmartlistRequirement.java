@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +16,7 @@ public class SmartlistRequirement {
   private Long id, smartlistId, smartlistFieldId, processStepId, customFieldGroupAssignmentId, operatorTypeId, objectTypeId,
                dataTypeId, dataTypeRequirementId, displayOrder, createdById, modifiedById, companySystemListId, listOfValueId, systemListOptionId, customSqlOptionId;
 
-  private String requirementValue, secondaryRequirementValue, processStepName, objectType, operatorType, name, referenceTable, referenceColumn, customFieldSqlKey;
+  private String requirementValue, secondaryRequirementValue, processStepName, objectType, operatorType, name, customFieldSqlKey;
 
   private Timestamp dateCreated, dateModified;
 
@@ -26,4 +27,10 @@ public class SmartlistRequirement {
   private List<ListOfValue> listOfValues, availableListOfValues;
 
   private DataTypeRequirement dataTypeRequirement;
+
+  @JsonIgnore
+  private String referenceTable, referenceColumn;
+
+  @JsonIgnore
+  private CustomField customField;
 }

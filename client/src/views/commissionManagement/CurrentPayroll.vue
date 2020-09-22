@@ -7,13 +7,13 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <div class="flex-display align-center" >
-          <v-btn v-if="payrollStatus.action" :color="payrollStatus.actionColor"
+          <v-btn v-if="payrollStatus.action && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD')" :color="payrollStatus.actionColor"
                  class="white--text" @click="submitForApproval(payrollStatus.action)">
             {{payrollStatus.actionText}}
           </v-btn>
           <!-- currently only "Approve" has a secondary action which requires a dialog confirm. will have to update if that changes -->
           <v-dialog
-            v-if="payrollStatus.secondaryAction"
+            v-if="payrollStatus.secondaryAction && $store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')"
             v-model="approveConfirm"
             width="500">
             <template v-slot:activator="{ on }">
@@ -72,15 +72,19 @@
               <DatetimePickerInput
                   v-model="currentPayroll.periodEnd"
                   :timezone="this.timezone"
+                  :readonly="!userCanEdit"
+                  :disabled="!userCanEdit"
                   :type="'date'"
                   :format="'MMMM DD, YYYY'"
                   label="Period Ending"
               />
               <v-text-field text
                             label="Description"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             v-model="currentPayroll.description"></v-text-field>
               <div class="text-left">
-                <v-btn color="primaryCustom" dark @click="saveChangesToPayroll()">Save Changes</v-btn>
+                <v-btn color="primaryCustom" dark v-if="userCanEdit" @click="saveChangesToPayroll()">Save Changes</v-btn>
               </div>
             </v-card>
           </v-col>
@@ -180,6 +184,7 @@
                   {{ item.commission_adjustments || 0 | currency('$', 2) }}
 
                   <v-dialog
+                    v-if="userCanAdd"
                     v-model="item.dialog"
                     width="500">
                     <template v-slot:activator="{ on }">
@@ -300,6 +305,8 @@
         dataLoading: true,
         selectAll: false,
         customers: [],
+        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADD'),
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'EDIT'),
         customerSearch: null,
         customersLoading: false,
         reps: [],

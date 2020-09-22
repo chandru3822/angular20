@@ -1,7 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.services.ProcessStepActionService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +22,6 @@ import java.util.stream.Collectors;
 public class ProjectProcessStepController {
 
   private final ProjectProcessStepService projectProcessStepService;
-
-  private final ProcessStepActionService processStepActionService;
 
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
 
@@ -95,11 +92,6 @@ public class ProjectProcessStepController {
     return new ResponseEntity<>(projectProcessStepService.insertProjectProcessStep(projectProcessStep.getProjectId(), projectProcessStep.getProcessStepId(), null), HttpStatus.OK);
   }
 
-//  @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-//  public ResponseEntity<List<CustomFieldGroup>> saveProjectProcessStep(@RequestBody ProjectProcessStep pps) {
-//    return new ResponseEntity<>(projectProcessStepService.saveProjectProcessStep(pps), HttpStatus.OK);
-//  }
-
   @GetMapping(value = "/{projectProcessStepId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Attachment>> getProjectProcessStepAttachments(@PathVariable Long projectProcessStepId,
                                                                            @PathVariable(required = false) Boolean isMobile) {
@@ -138,17 +130,7 @@ public class ProjectProcessStepController {
         projectProcessStepService.setStatus(currentStep, status.getProcessStepStatusTypeId(), status.getId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), new RuntimeException());
     }
-  }
-
-    @PutMapping(value = "/{projectProcessStepId}/main")
-    public ResponseEntity<Void> updateProjectProcessStepMain(@PathVariable Long projectProcessStepId) {
-        try {
-            projectProcessStepService.updateMain(projectProcessStepId);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
   }
 }

@@ -6,7 +6,7 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px">
+      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
         <v-icon v-show="!addMode && !editMode" @click="addContact" class="white--text">add</v-icon>
         <v-icon v-show="addMode || editMode"
                 @click="hideCtrls" class="white--text">remove</v-icon>
@@ -32,7 +32,7 @@
       <div class="contact-btns">
         <a @click="hideCtrls"
            class="cancel-link">Cancel</a>
-        <v-btn v-show="editMode" dark
+        <v-btn v-show="editMode" dark v-if="userCanEdit"
                @click="deleteContact" class="error">
           Delete
         </v-btn>
@@ -62,7 +62,7 @@
         <dd v-if="contact.notes" class="pa-2" style="background-color: #eee">{{contact.notes}}</dd>
         <dt></dt>
         <dd>
-          <v-btn small color="primaryButton"
+          <v-btn small color="primaryButton" v-if="userCanEdit"
                  @click="editContact(contact)"
                  class="pa-0 mx-0 mt-2 text-capitalize white--text">Edit</v-btn>
         </dd>
@@ -99,6 +99,9 @@
       },
       itemId: {
         type: Number
+      },
+      userCanEdit: {
+        type: Boolean
       },
       itemType: {
         type: String

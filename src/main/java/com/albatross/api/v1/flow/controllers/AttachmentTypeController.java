@@ -68,8 +68,8 @@ public class AttachmentTypeController {
   }
 
   @GetMapping(value = "/projectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProjectAttachmentType> getProjectTypes() {
-    return attachmentTypeService.getProjectTypes();
+  public List<ProjectAttachmentType> getProjectTypes(@RequestParam(required = false) Long projectId) {
+    return attachmentTypeService.getProjectTypes(projectId);
   }
 
   @DeleteMapping(value = "/type/{typeId}", produces = MediaType.APPLICATION_JSON_VALUE)

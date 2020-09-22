@@ -59,7 +59,8 @@
             :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
             <td v-if="status === 'approval'">
-              <v-checkbox color="primaryCustom" v-model="it.selected"></v-checkbox>
+              <v-checkbox color="primaryCustom" :readonly="!userCanEdit"
+                          :disabled="!userCanEdit" v-model="it.selected"></v-checkbox>
             </td>
             <td class="text-left" v-if="status === 'invalid' || status === 'approval'"><a v href="" @click="goToDetails(it)"> {{ it.projectName ? it.projectName : '' }}</a></td>
             <td class="text-left" v-else>{{ it.projectName ? it.projectName : '' }}</td>
@@ -76,7 +77,7 @@
             <td v-show="status === 'approval'" class="text-left">{{ it.lastPaymentDate | formatDate('date') }}</td>
             <td v-show="status === 'invalid' || status === 'approval'" class="text-left">{{ it.balanceOwed || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'invalid' || status === 'approval'" class="text-left">{{ it.enteredIntoPaymentSystemDate | formatDate('date') }}</td>
-            <td v-show="status === 'pending'" class="text-left"><a @click="enterPayment(it)" class="mr-3 pay-link">Enter Now</a></td>
+            <td v-show="status === 'pending'" class="text-left"><a v-if="userCanEdit" @click="enterPayment(it)" class="mr-3 pay-link">Enter Now</a></td>
           </tr>
         </template>
       </v-data-table>
@@ -236,6 +237,8 @@
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
       payments: [],
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'ADD'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('REBATES', 'EDIT'),
       headers: [
         { text: 'Project Name', value: 'projectName', show: true },
         { text: 'Project ID', value: 'projectId', show: true },

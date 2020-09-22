@@ -18,7 +18,7 @@
         <v-spacer></v-spacer>
         <v-toolbar-items>
         <v-btn
-          v-if="index === 0"
+          v-if="index === 0 && userCanEdit"
           text
           @click="updateFieldGroups">Save</v-btn>
         </v-toolbar-items>
@@ -43,14 +43,14 @@
   </v-col>
 
   <v-col cols="12" lg="6" class="text-left pt-0">
-    <v-col class="pt-0">
+    <v-col class="pt-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-row>
         <v-toolbar color="transparent" class="elevation-0">
           <v-toolbar-title>Active Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <AddProcessStep
-              v-if="project.processId"
+              v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
               class="d-inline-block"
               :project-id="projectId"
               :process-id="project.processId"
@@ -59,7 +59,7 @@
             <v-btn
               small
               text
-              v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')"
+              v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADMIN')"
               class="d-inline-block"
               @click="$router.push({name: 'projectAdmin', params: {projectId}})"
             >
@@ -81,7 +81,7 @@
       </v-row>
     </v-col>
 
-    <v-fade-transition>
+    <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
       <v-col
         v-show="!isProcessStepsExpanded"
         cols="12"
@@ -167,6 +167,7 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
       customFieldGroups: [],
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       isProcessStepsLoading: false,
       isFieldsLoading: true,
       dirtyCfvs: [],
@@ -260,7 +261,7 @@ export default {
       }
     },
     getReadOnly: function (field) {
-      return getCustomFieldReadOnly(this.$store, field)
+      return getCustomFieldReadOnly(this.$store, field) || !this.userCanEdit
     }
   }
 }

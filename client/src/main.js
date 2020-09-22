@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuetify from './plugins/vuetify'
+import Chat from 'vue-beautiful-chat'
 import Vue2Filters from 'vue2-filters'
 import App from './App.vue'
 import router from './router'
@@ -114,3 +115,5 @@ new Vue({
   vuetify: Vuetify,
   render: h => h(App)
 }).$mount('#app')
+
+Vue.use(Chat)

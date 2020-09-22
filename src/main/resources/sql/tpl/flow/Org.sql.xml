@@ -185,4 +185,43 @@
     order by o.org_name;
   ]]></org.getOrgsForLevel>
 
+  <org.getOrgCalendarsForUser><![CDATA[
+      select uoa.id,
+             o.org_name,
+             uoa.user_id,
+             uoa.org_id,
+             uoa.archived
+      from flow.user_org_access uoa
+               inner join flow.org o on o.id = uoa.org_id
+      where uoa.user_id = :userId
+          and uoa.archived is not true
+          and o.archived is not true
+      order by o.org_name;
+  ]]></org.getOrgCalendarsForUser>
+
+  <org.getOneOrgCalendarAccess><![CDATA[
+      select uoa.id,
+             o.org_name,
+             uoa.user_id,
+             uoa.org_id,
+             uoa.archived
+      from flow.user_org_access uoa
+               inner join flow.org o on o.id = uoa.org_id
+      where uoa.id = :id
+  ]]></org.getOneOrgCalendarAccess>
+
+  <org.saveOrgCalendarToUser><![CDATA[
+      insert into flow.user_org_access(org_id, user_id, created_by_id)
+      values (:orgId, :userId, :createdById)
+  ]]></org.saveOrgCalendarToUser>
+
+
+  <org.deleteOrgCalendarFromUser><![CDATA[
+      update flow.user_org_access
+        set archived = true,
+            date_modified = now(),
+            modified_by_id = :modifiedById
+      where id = :id
+  ]]></org.deleteOrgCalendarFromUser>
+
 </sql>

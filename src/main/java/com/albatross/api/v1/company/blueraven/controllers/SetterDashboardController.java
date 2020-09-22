@@ -1,5 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
+import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
+import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.IronmanCounts;
 import com.albatross.api.v1.company.blueraven.services.SetterDashboardService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -69,5 +71,47 @@ public class SetterDashboardController {
   @GetMapping(value = "/officeRanking")
   public String officeRanking(@RequestParam int limit, @RequestParam int days) {
     return setterDashboardService.officeRanking(limit, days);
+  }
+
+  @GetMapping(value = "/getDistricts")
+  public String getDistricts(@RequestParam int userId) {
+    return setterDashboardService.getDistricts(userId);
+  }
+
+  @GetMapping(value = "/getRegions")
+  public String getRegions(@RequestParam int userId,
+                           @RequestParam String districts) {
+    return setterDashboardService.getRegions(userId, districts);
+  }
+
+  @GetMapping(value = "/getOffices")
+  public String getOffices(@RequestParam int userId,
+                           @RequestParam String regions) {
+    return setterDashboardService.getOffices(userId, regions);
+  }
+
+  @PostMapping(value = "/getReps")
+  public String getReps(@RequestBody DashboardUserRequest request) {
+    return setterDashboardService.getReps(request);
+  }
+
+  @PostMapping(value = "/funnel/standard")
+  public String funnelStandard(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelStandard(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnelDrilldown/standard")
+  public String funnelDrilldownStandard(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelDrilldownStandard(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnel/cohort")
+  public String funnelCohort(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelCohort(funnelRequest);
+  }
+
+  @PostMapping(value = "/funnelDrilldown/cohort")
+  public String funnelDrilldownCohort(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelDrilldownCohort(funnelRequest);
   }
 }

@@ -36,23 +36,10 @@
                       item-text="eventType"
                       item-value="id"
                       return-object
+                      clearable
                       :disabled="!state || !state.id"
                       multiple
             >
-              <v-list-item
-                  slot="prepend-item"
-                  ripple
-                  @click="toggleSelectAllSteps()"
-              >
-                <v-list-item-action>
-                  <v-icon>{{ icon }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                  slot="prepend-item"
-                  class="mt-2"
-              ></v-divider>
               <template
                   slot="selection"
                   slot-scope="{ item, index }"
@@ -72,12 +59,12 @@
             <v-select v-model="selectedProcessStepStatusTypes"
                       :items="processStepStatusTypes"
                       label="Status"
+                      clearable
                       item-text="processStepStatusType"
                       item-value="id"
                       :disabled="selectedEventTypes.length === 0"
                       return-object
                       multiple
-                      @input="filterProjects"
             >
               <template
                   slot="selection"
@@ -94,7 +81,10 @@
                 >{{ selectedProcessStepStatusTypes.length }} selected</span>
               </template>
             </v-select>
-            <v-btn dark color="primary" @click="getProjects(true)">Go</v-btn>
+            <v-btn color="primaryCustom" class="white--text"
+                   :disabled="!selectedEventTypes || selectedEventTypes.length === 0
+                   || !state || !selectedProcessStepStatusTypes || selectedProcessStepStatusTypes.length === 0"
+                   @click="getProjects(true)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
             <v-autocomplete v-model="searchProject"
@@ -127,7 +117,7 @@
                       return-object
             >
             </v-select>
-            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.id)">Go</v-btn>
+            <v-btn color="primary" class="white--text" :disabled="!searchProject.projectId || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchProcessStepStatusType.processStepStatusTypeId)">Go</v-btn>
           </v-card-text>
           <v-card-text v-else>
             <v-toolbar color="white" flat>
@@ -137,13 +127,13 @@
               </v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-tooltip top>
+                <v-tooltip top v-if="$store.getters.userHasFeature('PROJECTS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on" @click="goTo(selectedProject, true, false)"><v-icon>mdi-chevron-right</v-icon></v-btn>
                   </template>
                   <span>Go to Project</span>
                 </v-tooltip>
-                <v-tooltip top>
+                <v-tooltip top v-if="$store.getters.userHasFeature('PROCESS_STEPS')">
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on" @click="goTo(selectedProject, false, true)"><v-icon>mdi-chevron-double-right</v-icon></v-btn>
                   </template>
@@ -162,7 +152,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.start"
                 :timezone="this.timezone"
-                :readonly="selectedProject.startFieldReadOnly"
+                :readonly="selectedProject.startFieldReadOnly || !userCanEdit"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="Start Time"
@@ -172,7 +162,7 @@
               <DatetimePickerInput
                 v-model="selectedProject.end"
                 :timezone="this.timezone"
-                :readonly="selectedProject.endFieldReadOnly"
+                :readonly="selectedProject.endFieldReadOnly || !userCanEdit"
                 :type="'timestamp'"
                 :format="'MMMM DD, YYYY, h:mm A'"
                 label="End Time"
@@ -184,15 +174,15 @@
                         placeholder=" "
                         return-object
                         item-text="name"
-                        :readonly="selectedProject.resourceFieldReadOnly"
-                        :disabled="selectedProject.resourceFieldReadOnly"
+                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit"
+                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit"
                         item-value="id"
                         class="mt-3"
                         @input="validateSaveEvent()"
               />
               <v-btn color="primary"
                      class="white--text"
-                     :disabled="saveInvalid"
+                     :disabled="saveInvalid || !userCanEdit"
                      @click="scheduleProject">Save</v-btn>
             </div>
           </v-card-text>
@@ -288,6 +278,7 @@
         mapResources: [],
         selectedRows: [],
         selectedResources: [],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT'),
         state: {},
         states: [],
         processStepStatusTypes: [],
@@ -314,24 +305,7 @@
           {text: 'Resource', value: 'resourceName', show: true},
         ],
         projects: [],
-        masterProjects: []
-      }
-    },
-    computed: {
-      selectAll () {
-        return this.selectedEventTypes.length === this.eventTypes.length
-      },
-      selectSome () {
-        return this.selectedEventTypes.length > 0 && !this.selectAll
-      },
-      icon () {
-        if (this.selectedEventTypes && this.eventTypes && this.selectedEventTypes.length === this.eventTypes.length) {
-          return 'check_box'
-        }
-        if (this.selectSome) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
+        // masterProjects: []
       }
     },
     watch: {
@@ -353,6 +327,7 @@
     created() {
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
+      this.selectedProcessStepStatusTypes = JSON.parse(localStorage.getItem('scheduleProcessStepStatusTypes')) || []
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
@@ -398,6 +373,8 @@
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {
+        console.log('ssssssssssssstart', startTime)
+        console.log('END', endTime)
         this.startTime = startTime
         this.endTime = endTime
       },
@@ -449,12 +426,14 @@
         }
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
+        localStorage.setItem('scheduleProcessStepStatusTypes', JSON.stringify(this.selectedProcessStepStatusTypes))
 
         if(this.selectedEventTypes?.length > 0) {
           this.listLoading = true
           try {
             let params = {
               eventTypeIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
+              processStepStatusTypeIds: this.selectedProcessStepStatusTypes?.length > 0 ? this.selectedProcessStepStatusTypes.map(o => o.processStepStatusTypeId) : [],
               stateId: this.state.id,
               startTime: this.startTime,
               endTime: this.endTime
@@ -465,10 +444,10 @@
               d.coordinates = [ d.longitude, d.latitude ]
             })
             this.projects = data
-            this.masterProjects = cloneDeep(data)
-            if(this.selectedProcessStepStatusTypes?.length > 0) {
-              this.filterProjects()
-            }
+            // this.masterProjects = cloneDeep(data)
+            // if(this.selectedProcessStepStatusTypes?.length > 0) {
+            //   this.filterProjects()
+            // }
             this.listLoading = false
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -477,28 +456,28 @@
           }
         } else {
           this.projects = []
-          this.masterProjects = []
+          // this.masterProjects = []
         }
       },
-      filterProjects () {
-        let statusIds = this.selectedProcessStepStatusTypes.map(st => st.processStepStatusTypeId)
-        if(statusIds?.length === 0) {
-          this.projects = cloneDeep(this.masterProjects)
-        } else {
-          this.projects = this.masterProjects.filter(p => {
-            return statusIds.includes(p.processStepStatusTypeId)
-          })
-        }
-      },
-      toggleSelectAllSteps () {
-        this.$nextTick(() => {
-          if (this.selectAll) {
-            this.selectedEventTypes = []
-          } else {
-            this.selectedEventTypes = cloneDeep(this.eventTypes)
-          }
-        })
-      },
+      // filterProjects () {
+      //   let statusIds = this.selectedProcessStepStatusTypes.map(st => st.processStepStatusTypeId)
+      //   if(statusIds?.length === 0) {
+      //     this.projects = cloneDeep(this.masterProjects)
+      //   } else {
+      //     this.projects = this.masterProjects.filter(p => {
+      //       return statusIds.includes(p.processStepStatusTypeId)
+      //     })
+      //   }
+      // },
+      // toggleSelectAllSteps () {
+      //   this.$nextTick(() => {
+      //     if (this.selectAll) {
+      //       this.selectedEventTypes = []
+      //     } else {
+      //       this.selectedEventTypes = cloneDeep(this.eventTypes)
+      //     }
+      //   })
+      // },
       async searchForProjects(search) {
         try {
           let params = {
@@ -531,9 +510,6 @@
             projectId,
             eventTypeId,
             processStepStatusTypeId
-            // i dont think we need this for finding specific projects
-            // startTime: this.startTime,
-            // endTime: this.endTime
           }
 
           const {data} = await postRequest(`/schedule/getProject`, params)

@@ -11,10 +11,10 @@
              arst.name AS status,
              ars.complete,
              ars.date_created,
-             u.first_name || ' ' || u.last_name created_by,
+             concat(u.first_name, ' ', u.last_name) AS created_by,
              ars.created_by_id,
              ars.date_modified,
-             u2.first_name || ' ' || u2.last_name modified_by,
+             concat(u2.first_name, ' ', u2.last_name) AS modified_by,
              ars.modified_by_id
       FROM brs.ahj_requirements ars
         JOIN brs.ahj_requirement ar ON ar.id = ars.requirement_id
@@ -57,10 +57,10 @@
              ar.complete,
              ar.date_created "dateCreated",
              ar.created_by_id "createdById",
-             u.first_name || ' ' || u.last_name "createdBy",
+             concat(u.first_name, ' ', u.last_name) AS "createdBy",
              ar.date_modified "dateModified",
              ar.modified_by_id "modifiedById",
-             u2.first_name || ' ' || u2.last_name "modifiedBy",
+             concat(u2.first_name, ' ', u2.last_name) AS "modifiedBy",
              r.id,
              r.description,
              r.requirement_type_id as "requirementTypeId",

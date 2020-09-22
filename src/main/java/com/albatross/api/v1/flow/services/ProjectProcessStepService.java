@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -170,9 +172,13 @@ public class ProjectProcessStepService {
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
     try {
         String json = sqlCache.queryForObject("projectProcessStep.getProjectProcessStep", Map.of("stepId", stepId), String.class);
-        return om.readValue(json, new TypeReference<>(){});
+        if(null != json) {
+          return om.readValue(json, new TypeReference<>(){});
+        } else {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new Exception());
+        }
     } catch (Exception e) {
-        return null;
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Process Step Not Found", new Exception());
     }
   }
 
@@ -201,25 +207,6 @@ public class ProjectProcessStepService {
           sqlCache.query("projectProcessStep.delete", Map.of("projectProcessStepId", projectProcessStepId), String.class);
       }
   }
-
-
-    public void updateMain(Long projectProcessStepId) {
-        ProjectProcessStep updatingStep = this.getProjectProcessStep(projectProcessStepId);
-
-        if (updatingStep != null) {
-
-            Map<String, Object> params = Map.of("projectProcessStepId", projectProcessStepId, "projectId", updatingStep.getProjectId(), "processStepId", updatingStep.getProcessStepId());
-
-            Long activeIdCount = sqlCache.queryForObject("projectProcessStep.getActiveCountInProject", params, Long.class);
-
-            if (activeIdCount > 0) {
-                throw new RuntimeException("An active primary process step already exists");
-            }
-
-            sqlCache.update("projectProcessStep.updateMain", params);
-        }
-    }
-
 
     public static class ProjectProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     public final ObjectMapper objectMapper;

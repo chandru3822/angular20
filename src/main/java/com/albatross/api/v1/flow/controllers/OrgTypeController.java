@@ -28,6 +28,11 @@ public class OrgTypeController {
     return orgTypeService.getOrgTypesForCompany();
   }
 
+  @GetMapping(value = "/scheduling", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<OrgType> getSchedulingOrgTypesForCompany() {
+    return orgTypeService.getSchedulingOrgTypesForCompany();
+  }
+
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public OrgType saveOrgType(@RequestBody OrgType type) {
     return orgTypeService.saveOrgType(type);

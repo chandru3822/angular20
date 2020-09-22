@@ -41,7 +41,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newGroup = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
@@ -79,7 +79,7 @@
             <template #item="{ item, index }">
               <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text icon small class="handle">
+                  <v-btn text icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
@@ -98,7 +98,9 @@
                 </td>
                 <td>
                   <div class="item-icons">
-                    <v-btn small text @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
+                    <v-btn small text
+                           v-if="userCanAdd"
+                           @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded = [item], selectedIndex = index]">
                       <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                       <v-icon v-else>add</v-icon>
                     </v-btn>
@@ -107,7 +109,7 @@
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
                     <v-dialog
-                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                        v-if="userCanEdit"
                         v-model="item.deleteConfirm"
                         width="500">
                       <template #activator="{ on }">
@@ -204,7 +206,7 @@
                     <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
                       <v-list-item class="grab">
-                        <v-list-item-action>
+                        <v-list-item-action v-if="userCanEdit">
                           <v-icon>drag_handle</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
@@ -212,7 +214,8 @@
                             {{cf.fieldName}} <span v-if="cf.customFieldGroupAssignmentReadOnly">(Read Only)</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <div>
-                                <input type="checkbox" v-model="cf.customFieldGroupAssignmentReadOnly">
+                                <input type="checkbox" :readonly="!userCanEdit"
+                                       :disabled="!userCanEdit" v-model="cf.customFieldGroupAssignmentReadOnly">
                                 Read Only
                               </div>
                               <v-select
@@ -221,6 +224,8 @@
                                 :items="positions"
                                 :loading="positionsLoading"
                                 multiple
+                                :readonly="!userCanEdit"
+                                :disabled="!userCanEdit"
                                 label="White Listed Positions"
                                 item-text="position"
                                 item-value="positionId"
@@ -256,7 +261,9 @@
                                   >{{ cf.whiteListedPositions.length }} selected</span>
                                 </template>
                               </v-select>
-                              <v-btn color="primaryCustom" dark class="mt-2 white--text" @click="saveReadOnlyAndWhiteList(cf)">
+                              <v-btn color="primaryCustom" dark class="mt-2 white--text"
+                                     v-if="userCanEdit"
+                                     @click="saveReadOnlyAndWhiteList(cf)">
                                 Save
                               </v-btn>
                             </div>
@@ -265,11 +272,12 @@
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                           </div>
                           <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null && $route.params.id !== '1'">
-                            <input type="checkbox" v-model="cf.showOnInsert" @change="updateShowOnInsert(cf)">
+                            <input type="checkbox" v-model="cf.showOnInsert" :readonly="!userCanEdit"
+                                   :disabled="!userCanEdit" @change="updateShowOnInsert(cf)">
                             Show On Insert
                           </div>
                         </v-list-item-content>
-                        <v-btn text small @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                        <v-btn text small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
                           <v-icon>edit</v-icon>
                         </v-btn>
                         <v-menu offset-y v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
@@ -437,6 +445,8 @@ export default {
       deleteHeader: null,
       deleteText: null,
       fieldsInUse: [],
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       positions: [],
       positionsLoading: false,
       newFieldType: 'native',

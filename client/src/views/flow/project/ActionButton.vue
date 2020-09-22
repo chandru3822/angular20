@@ -33,7 +33,8 @@ export default {
       try {
         this.isResultLoading = true
         const {data} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}/actionResult/${this.actionId}`)
-        this.proceed = data.canPerform
+        //verifying that a user has edit permissions to process steps to be able to click a button, might have to add an Actions permission eventually
+        this.proceed = data.canPerform && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
       } catch (e) {
         logError(e)
       } finally {

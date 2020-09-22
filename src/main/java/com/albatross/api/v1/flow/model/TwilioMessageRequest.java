@@ -34,6 +34,9 @@ public class TwilioMessageRequest {
     @JsonProperty(value = "NumMedia")
     private Integer numMedia;
 
+    @JsonProperty(value = "MediaUrl0")
+    private String mediaUrl0;
+
     private Date date_received;
 
     public HashMap<String, Object> toHashMap() {
@@ -47,6 +50,7 @@ public class TwilioMessageRequest {
         data.put("to", to);
         data.put("body", body);
         data.put("numMedia", numMedia);
+        data.put("mediaUrls", mediaUrl0 == null ? null : new String[] {mediaUrl0});
 
         return data;
     }

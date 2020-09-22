@@ -21,23 +21,24 @@
         </template>
 
         <template v-slot:header.MODIFY-ME="{ header, on, props }">
-          <a @click="header.selectAll = !header.selectAll; alterEnabledFlagForColumns(header)">{{header.text}}</a>
+          <a @click="alterEnabledFlagForColumns(header)">{{header.text}}</a>
         </template>
 
         <template v-slot:header.data-table-select="{ on, props }">
-          <v-simple-checkbox v-bind="props" v-on="on"></v-simple-checkbox>
+          <v-simple-checkbox v-bind="props" v-on="on" v-if="userCanEdit"></v-simple-checkbox>
         </template>
 
         <template #item="{ item, index, isSelected, select }">
           <tr :class="{ 'shaded-row': index % 2 }">
             <td class="text-center">
-              <v-simple-checkbox :value="isSelected" @input="select($event)"></v-simple-checkbox>
+              <v-simple-checkbox v-if="userCanEdit" :value="isSelected" @input="select($event)"></v-simple-checkbox>
             </td>
             <td class="text-left">
               {{ item.featureName }}
             </td>
             <td v-for="acl in item.accessControl">
-              <input type="checkbox" v-model="acl.enabled" @input="callback(companyFeatureList)">
+              <input type="checkbox" :readonly="!userCanEdit"
+                     :disabled="!userCanEdit" v-model="acl.enabled" @input="callback(companyFeatureList)">
             </td>
           </tr>
         </template>
@@ -60,10 +61,11 @@
     props: {
       companyFeatures: {type: Array},
       callback: Function,
+      userCanEdit: Boolean
     },
     watch: {
-      'selectedRows': function () {
-        this.alterEnabledFlagForRows()
+      'selectedRows': function (newVal, oldVal, blah) {
+        this.alterEnabledFlagForRows(newVal, oldVal, blah)
       }
     },
     data() {
@@ -116,23 +118,49 @@
         }
       },
       alterEnabledFlagForColumns (header) {
-        this.companyFeatureList.forEach(cf => {
-          cf.accessControl.forEach(acl => {
-            if(header.accessControlId === acl.accessControlId) {
-              acl.enabled = header.selectAll
-            }
+        if(this.userCanEdit) {
+          header.selectAll = !header.selectAll
+          this.companyFeatureList.forEach(cf => {
+            cf.accessControl.forEach(acl => {
+              if(header.accessControlId === acl.accessControlId) {
+                acl.enabled = header.selectAll
+              }
+            })
           })
-        })
-        this.callback(this.companyFeatureList)
+          this.callback(this.companyFeatureList)
+        }
       },
-      alterEnabledFlagForRows () {
-        this.companyFeatureList.forEach(cf => {
-          let matchingRow = this.selectedRows.find(row => row.featureId === cf.featureId)
-          let enabled = matchingRow !== null && matchingRow !== undefined
-          cf.accessControl.forEach(acl => {
-            acl.enabled = enabled
+      alterEnabledFlagForRows (newList, oldList) {
+        // filter the new list and remove everything that was in old list.  this is the row that was clicked
+        if(this.companyFeatureList.length === newList?.length) {
+          // select all
+          this.companyFeatureList.forEach(cfl => {
+            cfl.accessControl.forEach(ac => {
+              ac.enabled = true
+            })
           })
-        })
+        } else if (newList?.length === 0 && this.companyFeatureList.length === oldList?.length) {
+          // deselect all
+          this.companyFeatureList.forEach(cfl => {
+            cfl.accessControl.forEach(ac => {
+              ac.enabled = false
+            })
+          })
+        } else {
+          let selectedRow, enable
+          if(newList?.length > oldList?.length) {
+            selectedRow = newList?.filter(e => !oldList?.includes(e))[0]
+            enable = true
+          } else {
+            selectedRow = oldList?.filter(e => !newList?.includes(e))[0]
+            enable = false
+          }
+          let selectedCfl = this.companyFeatureList.find(cfl => { return cfl?.featureId === selectedRow?.featureId})
+          selectedCfl?.accessControl?.forEach(acl => {
+            acl.enabled = enable
+          })
+        }
+
         this.callback(this.companyFeatureList)
       },
       async getFeatures() {

@@ -38,6 +38,7 @@
     "sortablejs": "^1.10.2",
     "uuid": "^8.3.0",
     "vue": "^2.6.12",
+    "vue-beautiful-chat": "^2.5.0",
     "vue-json-excel": "0.2.98",
     "vue-mapbox": "^0.4.1",
     "vue-router": "^3.4.3",

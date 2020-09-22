@@ -1,8 +1,7 @@
 CREATE OR REPLACE FUNCTION flow.get_availability_time_slots(p_project_id integer,
                                                             p_start_time timestamp,
                                                             p_end_time timestamp,
-                                                            p_available_date date,
-                                                            p_history boolean default false)
+                                                            p_available_date date)
     RETURNS TABLE
             (
                 users                integer array,
@@ -88,10 +87,7 @@ BEGIN
                                             inner join flow.user_company uc on uc.user_id = rs.user_id and uc.company_id = 3
                                    where p.id = p_project_id
                                      and p_available_date::date between rs.start_date and rs.end_date) as foo) as foo1
-                 where case
-                           when p_history is false then foo1.scheduled_start_time > now() + interval '30 minutes'
-                           else 1 = 1 end
-                   and foo1.scheduled_start_time::time <= foo1.scheduled_end_time::time) as foo2
+                 where foo1.scheduled_start_time::time <= foo1.scheduled_end_time::time) as foo2
         where foo2.available is true
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;

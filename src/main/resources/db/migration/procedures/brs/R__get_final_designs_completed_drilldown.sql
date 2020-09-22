@@ -30,10 +30,10 @@ BEGIN
 
 	RETURN QUERY select array_to_json(array_agg(row_to_json(sub_rows)))
         from (
-            select c.first_name || ' ' || c.last_name as customer_name,
+            select concat(c.first_name, ' ', c.last_name) as customer_name,
                    p.id,
                    lov.name as source_name,
-                   u.first_name || ' ' || u.last_name as owner_name,
+                   concat(u.first_name, ' ', u.last_name) as owner_name,
                    pd.system_size,
                    pd.final_design_signed_date,
                    pd.financial_agreement_signed_date,

@@ -7,6 +7,7 @@
          style="margin-right: 10px"
       >Cancel</a>
       <v-btn class="white--text mr-0 save-btn"
+             v-if="userCanEdit"
              color="primaryButton"
              @click="saveDialog = true"
       >Save</v-btn>
@@ -26,12 +27,15 @@
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
                         item-text="name"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-value="id"
                         :label="item.fieldName"
                         filled
               ></v-select>
               <AhjDocumentsButton v-if="item.customFieldId === 1"
                                   title="Documents"
+                                  :user-can-edit="userCanEdit"
                                   :documentTypeId="17"
                                   :sourceId="ahjDesign.id"
                                   :itemId="ahjId"
@@ -41,6 +45,8 @@
                         @change="dataWasChanged = true"
                         label="Reference Standards"
                         filled
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         auto-grow
             ></v-textarea>
           </v-card-text>
@@ -56,6 +62,8 @@
               <v-select v-model="item.intValue"
                         @change="[item.valueWasChanged = true, dataWasChanged = true]"
                         :items="item.listOfValues"
+                        :readonly="!userCanEdit"
+                        :disabled="!userCanEdit"
                         item-text="name"
                         item-value="id"
                         :label="item.fieldName"
@@ -82,6 +90,8 @@
                 <v-select v-model="item.intValue"
                           @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           item-text="name"
                           item-value="id"
                           :label="item.fieldName"
@@ -89,6 +99,7 @@
                 ></v-select>
                 <AhjDocumentsButton v-if="item.customFieldId === 7"
                                     title="Documents"
+                                    :user-can-edit="userCanEdit"
                                     :documentTypeId="18"
                                     :sourceId="ahjDesign.id"
                                     :itemId="ahjId"
@@ -99,6 +110,7 @@
                             title="PV Design Notes and Additional Requirements"
                             :requirementTypeId="3"
                             :itemType="itemType"
+                            :user-can-edit="userCanEdit"
                             :itemId="ahjId"
                             :requirements="ahjDesign.designRequirements"
                             :transparent="true"
@@ -121,6 +133,8 @@
                 <v-select v-model="item.intValue"
                           @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           item-text="name"
                           item-value="id"
                           :label="item.fieldName"
@@ -128,6 +142,7 @@
                 ></v-select>
                 <AhjDocumentsButton v-if="item.customFieldId === 10"
                                     title="Documents"
+                                    :user-can-edit="userCanEdit"
                                     :documentTypeId="19"
                                     :sourceId="ahjDesign.id"
                                     :itemId="ahjId"
@@ -137,6 +152,7 @@
             <AhjRequirement v-if="dataReady"
                             title="Electrical Design Notes and Additional Requirements"
                             :requirementTypeId="1"
+                            :user-can-edit="userCanEdit"
                             :itemType="itemType"
                             :itemId="ahjId"
                             :requirements="ahjDesign.electricalRequirements"
@@ -161,6 +177,8 @@
                 <v-select v-model="item.intValue"
                           @change="[item.valueWasChanged = true, dataWasChanged = true]"
                           :items="item.listOfValues"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
                           item-text="name"
                           item-value="id"
                           :label="item.fieldName"
@@ -168,24 +186,28 @@
                 ></v-select>
                 <AhjDocumentsButton v-if="item.customFieldId === 14"
                                     title="Documents"
+                                    :user-can-edit="userCanEdit"
                                     :documentTypeId="13"
                                     :sourceId="ahjDesign.id"
                                     :itemId="ahjId"
                 ></AhjDocumentsButton>
                 <AhjDocumentsButton v-if="item.customFieldId === 16"
                                     title="Documents"
+                                    :user-can-edit="userCanEdit"
                                     :documentTypeId="14"
                                     :sourceId="ahjDesign.id"
                                     :itemId="ahjId"
                 ></AhjDocumentsButton>
                 <AhjDocumentsButton v-if="item.customFieldId === 17"
                                     title="Documents"
+                                    :user-can-edit="userCanEdit"
                                     :documentTypeId="15"
                                     :sourceId="ahjDesign.id"
                                     :itemId="ahjId"
                 ></AhjDocumentsButton>
                 <AhjDocumentsButton v-if="item.customFieldId === 19"
                                     title="Documents"
+                                    :user-can-edit="userCanEdit"
                                     :documentTypeId="16"
                                     :sourceId="ahjDesign.id"
                                     :itemId="ahjId"
@@ -196,16 +218,22 @@
                             @change="dataWasChanged = true"
                             label="Ground Snow Load"
                             filled
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
               ></v-text-field>
               <v-text-field class="structural-design-text-field mx-2"
                             v-model="ahjDesign.roofSnowLoad"
                             @change="dataWasChanged = true"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             label="Roof Snow Load"
                             filled
               ></v-text-field>
               <v-text-field class="structural-design-text-field mx-2"
                             v-model="ahjDesign.windSpeed"
                             @change="dataWasChanged = true"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
                             label="Wind Speed"
                             filled
               ></v-text-field>
@@ -214,6 +242,7 @@
                             title="Structural Design Notes and Additional Requirements"
                             :requirementTypeId="2"
                             :itemType="itemType"
+                            :user-can-edit="userCanEdit"
                             :itemId="ahjId"
                             :requirements="ahjDesign.structuralRequirements"
                             :transparent="true"
@@ -301,6 +330,11 @@
       AhjDocumentsButton,
       AhjRequirement,
       Snackbar
+    },
+    computed: {
+      userCanEdit() {
+        return this.$store.getters.userHasFeatureAccessLevel('AHJ_DATABASE', 'EDIT')
+      },
     },
     data: () => ({
       ahjId: null,

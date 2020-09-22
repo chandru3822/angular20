@@ -11,10 +11,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import java.sql.Array;
@@ -182,16 +187,21 @@ public class AvailabilityService {
   }
 
 //  appointments
-  public List<ResourceAppointment> getResourceAppointments(Long userId, Long orgId) {
+  public Page<ResourceAppointment> getResourceAppointments(Long userId, Long orgId, Pageable pageable) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
 
     List<ResourceAppointment> results = sqlCache.query("availability.getAppointmentsForResource", params, ResourceAppointment.class);
-    return results;
+    Integer count = sqlCache.queryForObject("availability.getAppointmentsForResourceCount", params, Integer.class);
+
+    Page<ResourceAppointment> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    return page;
   }
 
   public ResourceAppointment saveAppointment(ResourceAppointment ra) {
@@ -244,34 +254,36 @@ public class AvailabilityService {
   }
 
   public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws SQLException {
+      if (null != request.getProjectId() && null != request.getAppointmentTime() && null != request.getProjectProcessStepId() && null != request.getUsers()) {
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", request.getProjectId());
-    params.put("projectProcessStepId", request.getProjectProcessStepId());
-    params.put("startTime", request.getStartTime());
-    params.put("endTime", request.getEndTime());
-    params.put("appointmentTime", request.getAppointmentTime());
-    params.put("users", createSqlArrayOfType("int", request.getUsers()));
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("projectId", request.getProjectId());
+        params.put("projectProcessStepId", request.getProjectProcessStepId());
+        params.put("appointmentTime", request.getAppointmentTime());
+        params.put("users", createSqlArrayOfType("int", request.getUsers()));
 
 
-    List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
+        List<CloserAppointmentResult> results = sqlCache.query("availability.setCloserAppointment", params, CloserAppointmentResult.class);
 
-    if(!results.isEmpty()) {
-      if(null != results.get(0) && results.get(0).getSuccess()) {
-        return ResponseEntity.ok(results.get(0));
+        if (!results.isEmpty()) {
+          if (null != results.get(0) && results.get(0).getSuccess()) {
+            return ResponseEntity.ok(results.get(0));
+          } else {
+            //todo: handle other types of errors from function
+            // Appointment no longer available. Please select another time.
+            // Appointment is already scheduled.
+            //          errorObj.put("message", "Appointment no longer available. Please select another time.");
+            //          return new ResponseEntity<>(errorObj, HttpStatus.CONFLICT);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Appointment no longer available. Please select another time.", new Exception());
+          }
+        } else {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown Error Occurred", new Exception());
+        }
+        //todo: error handling
       } else {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("Appointment no longer available. Please select another time.");
+        throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Missing Parameters", new Exception());
       }
-    } else {
-      return ResponseEntity.badRequest().body("Unknown Error Occurred");
-    }
-    //todo: error handling
-    //todo: if successful return the full cfg/cfv stuff so we can display it
-//    if(appointmentSaved) {
-//      return ResponseEntity.ok("Appointment Saved");
-//    } else {
-//      return ResponseEntity.badRequest().body("Selected appointment is not available.");
-//    }
+
   }
 
   private Array createSqlArrayOfType(String typeName, List<?> array) throws SQLException {

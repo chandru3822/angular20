@@ -114,10 +114,19 @@ public class AttachmentTypeService {
     return result;
   }
 
-  public List<ProjectAttachmentType> getProjectTypes() {
+  public List<ProjectAttachmentType> getProjectTypes(Long projectId) {
     User currentUser = securityService.getCurrentUser();
+    Long companyId = currentUser.getCompanyId();
+
+    if(null != projectId) {
+      //had to change this so that a parent looking at a child project could still see attachments
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+    }
+
     List<ProjectAttachmentType> result = sqlCache.query("attachmentType.getProjectTypes",
-        ImmutableMap.of("companyId", currentUser.getCompanyId()), ProjectAttachmentType.class);
+        ImmutableMap.of("companyId", companyId), ProjectAttachmentType.class);
 
     return result;
   }

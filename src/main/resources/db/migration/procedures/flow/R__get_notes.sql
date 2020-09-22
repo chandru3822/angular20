@@ -17,7 +17,7 @@ BEGIN
                    n.date_created,
                    n.date_modified,
                    n.created_by_id,
-                   creator.first_name || ' ' || creator.last_name as created_by,
+                   concat(creator.first_name, ' ', creator.last_name) as created_by,
                    n.modified_by_id,
                    pn.project_id as primary_id,
                    coalesce((
@@ -29,7 +29,7 @@ BEGIN
                                                 n2.date_created as "dateCreated",
                                                 n2.date_modified as "dateModified",
                                                 n2.created_by_id as "createdById",
-                                                creator2.first_name || ' ' || creator2.last_name as "createdBy",
+                                                concat(creator2.first_name, ' ', creator2.last_name) as created_by,
                                                 n2.modified_by_id as "modifiedById",
                                                 pn2.project_id as primaryId
                                          from flow.note n2
@@ -55,7 +55,7 @@ BEGIN
                    n.date_created,
                    n.date_modified,
                    n.created_by_id,
-                   creator.first_name || ' ' || creator.last_name as created_by,
+                   concat(creator.first_name, ' ', creator.last_name) as created_by,
                    n.modified_by_id,
                    cn.contact_id as primary_id,
                    coalesce((
@@ -67,7 +67,7 @@ BEGIN
                                                 n2.date_created as "dateCreated",
                                                 n2.date_modified as "dateModified",
                                                 n2.created_by_id as "createdById",
-                                                creator2.first_name || ' ' || creator2.last_name as "createdBy",
+                                                concat(creator2.first_name, ' ', creator2.last_name) as created_by,
                                                 n2.modified_by_id as "modifiedById",
                                                 cn2.contact_id as primaryId
                                          from flow.note n2
@@ -93,7 +93,7 @@ BEGIN
                  n.date_created,
                  n.date_modified,
                  n.created_by_id,
-                 creator.first_name || ' ' || creator.last_name as created_by,
+                 concat(creator.first_name, ' ', creator.last_name) as created_by,
                  n.modified_by_id,
                  pn.project_process_step_id as primary_id,
                  coalesce((
@@ -105,7 +105,7 @@ BEGIN
                                           n2.date_created as "dateCreated",
                                           n2.date_modified as "dateModified",
                                           n2.created_by_id as "createdById",
-                                          creator2.first_name || ' ' || creator2.last_name as "createdBy",
+                                          concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
                                           n2.modified_by_id as "modifiedById",
                                           pn2.project_process_step_id as primaryId
                                    from flow.note n2
@@ -131,7 +131,7 @@ BEGIN
                    n.date_created,
                    n.date_modified,
                    n.created_by_id,
-                   creator.first_name || ' ' || creator.last_name as created_by,
+                   concat(creator.first_name, ' ', creator.last_name) as created_by,
                    n.modified_by_id,
                    un.user_id as primary_id,
                    coalesce((
@@ -143,7 +143,7 @@ BEGIN
                                                 n2.date_created as "dateCreated",
                                                 n2.date_modified as "dateModified",
                                                 n2.created_by_id as "createdById",
-                                                creator2.first_name || ' ' || creator2.last_name as "createdBy",
+                                                concat(creator2.first_name, ' ', creator2.last_name) "createdBy",
                                                 n2.modified_by_id as "modifiedById",
                                                 cn2.contact_id as primaryId
                                          from flow.note n2

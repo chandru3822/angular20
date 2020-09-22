@@ -1,8 +1,8 @@
 <template>
-  <v-container v-if="orgId || userId">
+  <v-container v-if="orgId || userId" id="appointment-container">
     <v-row>
       <v-col>
-        <v-btn v-if="!addNew" @click="addNew = !addNew" class="mb-3">
+        <v-btn v-if="!addNew && $store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')" @click="addNew = !addNew" class="mb-3">
           Add Appointment
         </v-btn>
         <v-card v-if="addNew" flat class="px-3">
@@ -49,12 +49,14 @@
           :headers="headers"
           :items="filterAppointments()"
           :fixed-header="true"
-          :items-per-page="-1"
           single-expand
           :expanded.sync="expanded"
-          hide-default-footer
+          :options.sync="options"
+          :loading="dataLoading"
+          :footer-props="footerProps"
+          :server-items-length="totalAppointments"
           disable-sort
-          class="elevation-1"
+          class="elevation-1 appointment-table"
         >
           <template #no-data>
             No available appointments
@@ -114,13 +116,13 @@
               <td><input type="checkbox" :disabled="true" v-model="item.allDay"></td>
               <td class="text-left">
                 <v-btn small text @click="[expanded = [item], selectedIndex = index, saveError = false]"
-                       v-if="!expanded.includes(item)">
+                       v-if="!expanded.includes(item) && userCanEdit">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text @click="expanded = []"
                        v-if="expanded.includes(item)">cancel
                 </v-btn>
-                <v-dialog v-model="item.deleteConfirm" max-width="500px">
+                <v-dialog v-model="item.deleteConfirm" max-width="500px" v-if="$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE')">
                   <template #activator="{ on }">
                     <v-btn v-on="on" small text>
                       <v-icon>delete</v-icon>
@@ -159,6 +161,7 @@
   import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby"
   import moment from 'moment-timezone'
+  import constants from "@/helpers/constants";
 
   export default {
     name: 'Appointments',
@@ -192,11 +195,21 @@
         snackbar: {},
         addNew: false,
         expanded: [],
+        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
         newAppt: {},
         appointments: [],
         saveError: false,
         saveErrorMsg: '',
         dateType: 'date',
+        options: {
+          itemsPerPage: 100
+        },
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
+        totalAppointments: 0,
+        dataLoading: true,
         dateFormat: 'MMMM DD, YYYY',
         timestampType: 'timestamp',
         timestampFormat: 'MMMM DD, YYYY h:mm a',
@@ -215,13 +228,19 @@
     methods: {
       async getAppointments() {
         if(this.orgId || this.userId) {
+          this.dataLoading = true
           this.$store.commit(AppMutations.SET_LOADING, true)
+          const { sortBy, sortDesc, page, itemsPerPage } = this.options
           try {
             const {data} = await getRequestWithParams(`/availability/appointments`, { params: {
                 userId: this.userId,
                 orgId: this.orgId,
+                page: page - 1,
+                size: itemsPerPage
               }})
-            this.appointments = data
+            this.appointments = data.content
+            this.totalAppointments = data.totalElements
+            this.dataLoading = false
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -285,6 +304,10 @@
 </script>
 
 <style lang="scss">
+#appointment-container .v-data-table__wrapper {
+  height: calc(100vh - 390px);
+  min-height: 300px;
+}
 </style>
 
 <style lang="scss" scoped>

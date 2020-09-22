@@ -69,7 +69,7 @@
                         <td class="text-left">{{project.id}}</td>
                         <td class="text-left">{{project.projectName}}</td>
                         <td class="text-left">{{project.processName}}</td>
-                        <td class="text-left">{{project.statusType}}</td>
+                        <td class="text-left">{{project.projectStatusType}}</td>
                         <td class="text-left">{{project.dateCreated | formatDate('date')}}</td>
                     </tr>
                 </template>
@@ -118,7 +118,7 @@ export default {
                 {text: 'ID', value: 'id', show: true},
                 {text: 'Name', value: 'projectName', show: true},
                 {text: 'Process', value: 'processName', show: true},
-                {text: 'Status', value: 'statusType', show: true},
+                {text: 'Status', value: 'projectStatusType', show: true},
                 {text: 'Date Created', value: 'dateCreated', show: true}
             ],
             footerProps: {

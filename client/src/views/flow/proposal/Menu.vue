@@ -99,19 +99,19 @@ export default {
       }, {
         path: '/proposal/create',
         title: 'Create New Proposal',
-        show: true
+        show: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADD')
       }, {
         path: '/proposal/search',
         title: 'Search Proposals',
-        show: true
+        show: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'VIEW')
       }, {
         path: '/proposal/export',
         title: 'Export Proposal Log',
-        show: true
+        show: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'VIEW')
       }, {
         path: '/proposal/recreate',
         title: 'Recreate Proposal',
-        show: true
+        show: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADD')
       }
     ]
   }

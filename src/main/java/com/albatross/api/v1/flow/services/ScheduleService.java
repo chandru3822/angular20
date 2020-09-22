@@ -42,10 +42,15 @@ public class ScheduleService {
   public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+
+    List<Long> combined = esp.getUserPositionIds();
+    combined.addAll(esp.getOrgIds());
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    params.put("userIds", esp.getUserIds());
-    params.put("orgIds", esp.getOrgIds());
+//    params.put("userIds", esp.getUserIds());
+//    params.put("orgIds", esp.getOrgIds());
+    params.put("combined", combined );
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
@@ -75,6 +80,7 @@ public class ScheduleService {
     params.put("companyId", user.getCompanyId());
     params.put("stateId", esp.getStateId());
     params.put("eventTypeIds", esp.getEventTypeIds());
+    params.put("processStepStatusTypeIds", esp.getProcessStepStatusTypeIds());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
@@ -94,8 +100,6 @@ public class ScheduleService {
     params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
-//    params.put("startTime", esp.getStartTime());
-//    params.put("endTime", esp.getEndTime());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProject", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
     return results;
   }
@@ -139,6 +143,7 @@ public class ScheduleService {
         params.put("id", ev.getStartCustomFieldValueId());
         sqlCache.update("customFieldValues.process_step.updateCustomFieldValue", params);
       } else {
+        params.put("sourceId", ev.getProjectProcessStepId());
         sqlCache.update("customFieldValues.process_step.insertCustomFieldValue", params);
       }
 

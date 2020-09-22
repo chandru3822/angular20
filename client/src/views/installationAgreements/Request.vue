@@ -14,13 +14,14 @@
     <v-col cols="12">
       <v-data-table
         :headers="headers"
-        :items="filteredProjects"
+        :items="projects"
+        :fixed-header="true"
         :search="projectsSearch"
-        :options="pagination"
+        :options.sync="options"
         :footer-props="footerProps"
         :items-per-page="50"
+        :server-items-length="totalItems"
         :loading="dataLoading"
-        fixed-header
         dense
         class="elevation-1"
       >
@@ -39,7 +40,13 @@
             :key="it.id"
             :class="['text-sm-left', 'row-hover', { 'shaded-row': !(index % 2) }]"
           >
-            <td class="text-left"><a @click="openRequest(it)" class="mr-3 name-link">{{ it.customer_name ? it.customer_name : '' }}</a></td>
+            <td class="text-left">
+              <a v-if="$store.getters.userHasFeatureAccessLevel('INSTALLATION_AGREEMENT', 'ADD')"
+                  @click="openRequest(it)" class="mr-3 name-link">
+                {{ it.customer_name ? it.customer_name : '' }}
+              </a>
+              <span v-else>{{ it.customer_name ? it.customer_name : '' }}</span>
+            </td>
             <td class="text-left">{{ it.address ? it.address : '' }}</td>
           </tr>
         </template>
@@ -58,10 +65,21 @@
                                         disabled
                           ></v-text-field>
 
-                          <v-text-field label="Email Address"
+                          <div style="display: flex;">
+                              <v-text-field label="Email Address"
                                         v-model="requestItem.email"
-                                        disabled
-                          ></v-text-field>
+                                        :disabled="!editEmail"
+                              ></v-text-field>
+                              <v-icon v-if="!editEmail"  small class="mr-3" @click="editEmail = !editEmail">
+                                  edit
+                              </v-icon>
+                              <v-icon v-if="editEmail"  small class="mr-3" @click="resetEmail">
+                                  cancel
+                              </v-icon>
+                              <v-icon v-if="editEmail"  small class="mr-3" @click="updateEmail">
+                                  save
+                              </v-icon>
+                          </div>
 
                           <v-btn color="primaryButton" raised @click="openLoanpalApp()" class="white--text">
                               LoanPal Application
@@ -104,7 +122,14 @@
 
 <script>
   import Snackbar from '@/components/Snackbar.vue'
-  import { getRequest, deleteRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import {
+      getRequest,
+      deleteRequest,
+      putRequest,
+      postRequest,
+      getSnackbar,
+      getRequestWithParams
+  } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import { AppMutations } from '@/stores/AppStore'
   import debounce from "lodash.debounce";
@@ -121,8 +146,10 @@
         'items-per-page-options': [25, 50, 100, 500],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
+      options: {
+          itemsPerPage: 100
+      },
       projects: [],
-      filteredProjects: [],
       headers: [
         { text: 'Customer Name', value: 'customer_name', show: true },
         { text: 'Address', value: 'address', show: true }
@@ -130,6 +157,7 @@
       pagination: {},
       projectsSearch: '',
       searchQuery: '',
+      totalItems: 0,
       requestDialog: false,
       requestItem: {
           customer_name: '',
@@ -141,11 +169,18 @@
           isSpanish: false,
           project_id: ''
       },
+      currentEmail: '',
       editEmail: false
     }),
     computed: {
     },
     watch: {
+      options: {
+        handler () {
+          this.fetchProjects()
+        },
+        deep: true,
+      },
     },
     created () {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -157,27 +192,31 @@
     methods: {
       async fetchProjects() {
         try {
-            const {data} = await getRequest('/install-agreement/projects', 'blueraven')
-            this.projects = data;
-            this.filteredProjects = data;
+            this.dataLoading = true
+            const { page, itemsPerPage } = this.options
+            const {data} = await getRequestWithParams(`/install-agreement/projects`, { params: {
+                    query: this.searchQuery,
+                    page: page - 1,
+                    size: itemsPerPage
+                }}, 'blueraven')
+
+            this.projects = data.content;
+            this.totalItems = data.totalElements
+            this.dataLoading = false;
         } catch (e) {
+          this.dataLoading = false;
           this.$store.commit(AppMutations.SET_LOADING, false)
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving installation agreements')
         }
       },
-        debounceFilterProjects: debounce( function () {
-        this.dataLoading = true
-        this.filteredProjects = this.projects && this.projects.filter(p => {
-          return (p['customer_name'].toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-              (p['address'] != null && p['address'].toString().toLowerCase().includes(this.searchQuery.toLowerCase()))
-          )
-        })
-        this.dataLoading = false;
+      debounceFilterProjects: debounce( function () {
+        this.fetchProjects()
       }, 500),
       async openRequest (it) {
           this.requestItem.customer_name = it.customer_name
           this.requestItem.email = it.email
+          this.currentEmail = it.email
           this.requestItem.project_id = it.project_id
 
           // get proposal numbers
@@ -221,14 +260,13 @@
                   return
               }
 
-              const {data} = await postRequest('/install-agreement/create', this.requestItem, 'blueraven')
+              await postRequest('/install-agreement/create', this.requestItem, 'blueraven')
               this.requestDialog = false;
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('SUCCESS', 'Installation agreement request submitted')
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
-              this.requestDialog = false;
               console.error('*** ERROR ***', e)
           }
       },
@@ -246,6 +284,27 @@
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error generating LoanPal Application')
           }
+      },
+      async updateEmail(it) {
+          try {
+              this.$store.commit(AppMutations.SET_LOADING, true)
+              await putRequest('/install-agreement/updateEmailAddress/'+this.requestItem.project_id, {
+                  email: this.requestItem.email
+              }, 'blueraven')
+
+              this.currentEmail = this.requestItem.email;
+              this.editEmail = false;
+              this.snackbar = getSnackbar('SUCCESS', 'Email address updated')
+              this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+              this.$store.commit(AppMutations.SET_LOADING, false)
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error updating email address')
+          }
+      },
+      resetEmail() {
+          this.editEmail = false;
+          this.requestItem.email = this.currentEmail;
       }
     }
   }
