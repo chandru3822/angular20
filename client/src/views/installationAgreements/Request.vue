@@ -260,14 +260,13 @@
                   return
               }
 
-              const {data} = await postRequest('/install-agreement/create', this.requestItem, 'blueraven')
+              await postRequest('/install-agreement/create', this.requestItem, 'blueraven')
               this.requestDialog = false;
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('SUCCESS', 'Installation agreement request submitted')
           } catch (e) {
               this.$store.commit(AppMutations.SET_LOADING, false)
               this.snackbar = getSnackbar('ERROR', 'Error submitting installation agreement request ')
-              this.requestDialog = false;
               console.error('*** ERROR ***', e)
           }
       },

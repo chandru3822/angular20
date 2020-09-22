@@ -25,7 +25,7 @@ BEGIN
                  inner join flow.contact c on c.id = p.contact_id
                  inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                  inner join flow.user u on u.id = upv.user_id
-             where pd.source in (6,493)
+             where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
                  and pd.closer_appointment_start between p_start_date and p_end_date
                  and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > p_end_date))
                  and u.id is not null
@@ -38,11 +38,9 @@ BEGIN
                  inner join flow.contact c on c.id = p.contact_id
                  inner join flow.user_positions_vw upv on upv.user_position_id = c.owner_user_position_id
                  inner join flow.user u on u.id = upv.user_id
-                 left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
-                 left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
-             where pd.source in (6,493)
+             where pd.source in (6,493) -- ('Setter Gen', 'Retargeted')
                  and pd.closer_appointment_start between p_start_date and p_end_date
-                 and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
+                 and pd.closer_appointment_outcome in (2,3) -- ('Pitched', 'Missed')
                  and u.id is not null
                  and u.id not in (2354810, 2390159)
                  and u.id = p_user_id

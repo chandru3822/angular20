@@ -4,6 +4,9 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.services.AvailabilityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,9 +62,10 @@ public class AvailabilityController {
   }
 
   @GetMapping(value = "/appointments", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ResourceAppointment> getResourceAppointments(@RequestParam(required = false) Long userId,
-                                                           @RequestParam(required = false) Long orgId) {
-    return availabilityService.getResourceAppointments(userId, orgId);
+  public ResponseEntity<Page<ResourceAppointment>> getResourceAppointments(@RequestParam(required = false) Long userId,
+                                                                           @RequestParam(required = false) Long orgId,
+                                                                           Pageable pageable) {
+    return new ResponseEntity<>(availabilityService.getResourceAppointments(userId, orgId, pageable), HttpStatus.OK);
   }
 
   @PostMapping(value = "/appointment", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -202,8 +202,9 @@ export default {
 
             this.messageList = messages
             $(".sc-user-input").css("text-align","left")
-            $(".sc-user-input").parent().parent().css("right","250px")
-            $(".sc-user-input").parent().parent().css("width","400px")
+            $(".sc-user-input").parent().parent().css("right","14%")
+            $(".sc-user-input").parent().parent().css("width","20%")
+            $(".sc-user-input").parent().parent().css("height","61%")
           } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error fetching messages')

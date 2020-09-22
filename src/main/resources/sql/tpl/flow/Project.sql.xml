@@ -172,7 +172,7 @@
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     where
-        s.shared is true and
+        (s.shared is true or s.owner_id = :userId) and
         cot.object_type_id = :objectTypeId and
         cot.company_id = :companyId
     order by s.name

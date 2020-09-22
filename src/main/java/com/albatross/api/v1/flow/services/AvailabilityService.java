@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -183,16 +187,21 @@ public class AvailabilityService {
   }
 
 //  appointments
-  public List<ResourceAppointment> getResourceAppointments(Long userId, Long orgId) {
+  public Page<ResourceAppointment> getResourceAppointments(Long userId, Long orgId, Pageable pageable) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     params.put("orgId", orgId);
     params.put("companyId", user.getCompanyId());
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
 
     List<ResourceAppointment> results = sqlCache.query("availability.getAppointmentsForResource", params, ResourceAppointment.class);
-    return results;
+    Integer count = sqlCache.queryForObject("availability.getAppointmentsForResourceCount", params, Integer.class);
+
+    Page<ResourceAppointment> page = new PageImpl<>(results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+    return page;
   }
 
   public ResourceAppointment saveAppointment(ResourceAppointment ra) {

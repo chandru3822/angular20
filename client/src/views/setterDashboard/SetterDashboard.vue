@@ -142,7 +142,7 @@
           <v-data-table
             id="drilldown-table"
             :headers="headers"
-            :items="drilldownData"
+            :items="milestoneDrilldownData"
             :items-per-page="-1"
             :mobile-breakpoint="0"
             fixed-header
@@ -150,7 +150,7 @@
             hide-default-footer
             class="elevation-1"
           >
-            <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
+            <template v-if="milestoneDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td class="text-left">{{ index + 1 }}</td>
                 <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
@@ -394,12 +394,12 @@
           <div id="pipeline-header-left-side">
             <v-radio-group v-model="viewSelect">
               <v-radio label="Standard View" value="standard" class="funnel-radio-btn"
-                       @click="viewSelected('standard')"
+                       @change="viewSelected('standard')"
                        :class="{'white--text': viewSelect === 'standard'}"
                        :color="viewSelect === 'standard' ? 'primaryCustom' : 'secondaryCustom'">
               </v-radio>
               <v-radio label="Cohort View" value="cohort" class="funnel-radio-btn"
-                       @click="viewSelected('cohort')"
+                       @change="viewSelected('cohort')"
                        :class="{'white--text': viewSelect === 'cohort'}"
                        :color="viewSelect === 'cohort' ? 'primaryCustom' : 'secondaryCustom'">
               </v-radio>
@@ -411,123 +411,200 @@
             <v-select class="pipeline-dropdown"
                       v-model="districtModel"
                       :items="districtData"
+                      item-text="org_name"
+                      item-value="org_id"
                       label="District"
-                      solo
+                      no-data-text="No districts available"
+                      outlined
                       multiple
-                      dense>
+                      dense
+                      return-object
+                      @blur="regionLoad(false)">
               <template v-slot:prepend-item>
-                <v-list-item ripple @click="toggle">
+                <v-list-item @click="toggleAllDistricts(true)">
                   <v-list-item-action>
-                    <v-icon :color="districtModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                    <v-icon>check</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title>Check All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item @click="toggleAllDistricts(false)">
+                  <v-list-item-action>
+                    <v-icon>clear</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Uncheck All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
               </template>
-              <template v-slot:append-item>
-                <v-divider class="mb-2"></v-divider>
-                <v-list-item disabled>
-                  <v-list-item-content>
-                    <v-list-item-title>{{ districtModel.length }} districts selected</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
+              <template v-slot:item="data">
+                <v-list-item-action>
+                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                  <v-icon v-else>check_box_outline_blank</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                    {{ data.item.org_name }}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </template>
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">{{ districtModel.length }} Checked</span>
               </template>
             </v-select>
 
             <v-select class="pipeline-dropdown"
                       v-model="regionModel"
                       :items="regionData"
+                      item-text="org_name"
+                      item-value="org_id"
                       label="Region"
-                      solo
+                      no-data-text="No regions available"
+                      outlined
                       multiple
-                      dense>
+                      dense
+                      return-object
+                      @blur="officeLoad(false)">
               <template v-slot:prepend-item>
-                <v-list-item ripple @click="toggle">
+                <v-list-item @click="toggleAllRegions(true)">
                   <v-list-item-action>
-                    <v-icon :color="regionModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                    <v-icon>check</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title>Check All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item @click="toggleAllRegions(false)">
+                  <v-list-item-action>
+                    <v-icon>clear</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Uncheck All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
               </template>
-              <template v-slot:append-item>
-                <v-divider class="mb-2"></v-divider>
-                <v-list-item disabled>
-                  <v-list-item-content>
-                    <v-list-item-title>{{ regionModel.length }} regions selected</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
+              <template v-slot:item="data">
+                <v-list-item-action>
+                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                  <v-icon v-else>check_box_outline_blank</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                    {{ data.item.org_name }}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </template>
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">{{ regionModel.length }} Checked</span>
               </template>
             </v-select>
 
             <v-select class="pipeline-dropdown"
                       v-model="officeModel"
                       :items="officeData"
+                      item-text="org_name"
+                      item-value="org_id"
                       label="Office"
-                      solo
+                      no-data-text="No offices available"
+                      outlined
                       multiple
-                      dense>
+                      dense
+                      return-object
+                      @blur="repLoad(false)">
               <template v-slot:prepend-item>
-                <v-list-item ripple @click="toggle">
+                <v-list-item @click="toggleAllOffices(true)">
                   <v-list-item-action>
-                    <v-icon :color="officeModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                    <v-icon>check</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title>Check All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item @click="toggleAllOffices(false)">
+                  <v-list-item-action>
+                    <v-icon>clear</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Uncheck All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
               </template>
-              <template v-slot:append-item>
-                <v-divider class="mb-2"></v-divider>
-                <v-list-item disabled>
-                  <v-list-item-content>
-                    <v-list-item-title>{{ officeModel.length }} offices selected</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
+              <template v-slot:item="data">
+                <v-list-item-action>
+                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                  <v-icon v-else>check_box_outline_blank</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                    {{ data.item.org_name }}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </template>
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">{{ officeModel.length }} Checked</span>
               </template>
             </v-select>
 
             <v-select class="pipeline-dropdown"
                       v-model="repModel"
                       :items="repData"
+                      item-text="name"
+                      item-value="user_id"
                       label="Rep"
-                      solo
+                      no-data-text="No reps available"
+                      outlined
                       multiple
-                      dense>
+                      dense
+                      return-object
+                      @blur="pipelineLoad(expectedInstalls, pipeline_dt1, pipeline_dt2)">
               <template v-slot:prepend-item>
-                <v-list-item ripple @click="toggle">
+                <v-list-item @click="toggleAllReps(true)">
                   <v-list-item-action>
-                    <v-icon :color="repModel.length > 0 ? 'indigo darken-4' : ''">{{ icon }}</v-icon>
+                    <v-icon>check</v-icon>
                   </v-list-item-action>
                   <v-list-item-content>
-                    <v-list-item-title>Select All</v-list-item-title>
+                    <v-list-item-title>Check All</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item @click="toggleAllReps(false)">
+                  <v-list-item-action>
+                    <v-icon>clear</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-content>
+                    <v-list-item-title>Uncheck All</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider class="mt-2"></v-divider>
               </template>
-              <template v-slot:append-item>
-                <v-divider class="mb-2"></v-divider>
-                <v-list-item disabled>
-                  <v-list-item-content>
-                    <v-list-item-title>{{ repModel.length }} reps selected</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
+              <template v-slot:item="data">
+                <v-list-item-action>
+                  <v-icon v-if="data.attrs.inputValue">check_box</v-icon>
+                  <v-icon v-else>check_box_outline_blank</v-icon>
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
+                    {{ data.item.name }}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </template>
+              <template v-slot:selection="{ item, index }">
+                <span v-if="index === 0" class="grey--text caption">{{ repModel.length }} Checked</span>
               </template>
             </v-select>
 
-            <v-btn id="all-reps-btn" @click="funnelAllReps">All Reps</v-btn>
+            <v-btn id="all-reps-btn" outlined @click="funnelAllReps">All Reps</v-btn>
           </div>
         </div>
       </div>
 
       <!-- FUNNEL -->
       <div class="funnel-container">
-        <div v-show="funnelStats.length > 0" id="funnel-background"></div>
+        <div v-show="funnelStats.length > 0" id="funnel-background"
+             :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"></div>
         <table class="funnel-table">
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
@@ -583,7 +660,7 @@
               v-for="(line, index) in funnelStats" :key="line.id">
             <td v-if="showExpectationInput(index)" id="expectation-input"
                 class="funnel-td funnel-expectation">
-              <v-text-field @change="expectationChanged(this)"
+              <v-text-field @change="expectationChanged"
                             v-model="expectedInstalls"
                             solo
                             dense>
@@ -600,64 +677,55 @@
 
             <!-- TODAY COUNT -->
             <td class="funnel-td" style="cursor: pointer"
-                @click="drillDown(line.id, 'yesterday', line.name)">
-              <div class="dash_cell_contents funnel_data">
-                <div class="funnel_count" :style="{color: line.countTodayState}"
+                @click="funnelDrilldown(line.id, 'yesterday', line.name)">
+              <div>
+                <div class="funnel-count" :style="{color: line.countTodayState}"
                      :title="line.todayHover">
                   {{line.today_day_count}}{{line.id === 4 ? '%' : ''}}
                 </div>
 
-                <div class="desktop funnel_percent">
-                  <span style="font-size:12px;font-weight:normal;"
-                        :style="{color: line.percentTodayState}"
-                        :title="line.percentTodayHover">
-                    {{line.percentToday}}
-                  </span>
+                <div class="funnel-percentage" :style="{color: line.percentTodayState}"
+                     :title="line.percentTodayHover">
+                  {{line.percentToday}}
                 </div>
 
-                <div :class="line.percentTodayState + '_arrow'" class="desktop funnel_arrow"></div>
+                <div :class="line.percentTodayState + '_arrow'" class="funnel-arrow"></div>
               </div>
             </td>
 
             <!-- LAST 7 DAYS COUNT -->
             <td class="funnel-td" style="cursor: pointer"
-                @click="drillDown(line.id, '7days', line.name)">
-              <div class="dash_cell_contents funnel_data">
-                <div class="funnel_count" :style="{color: line.count7state}"
+                @click="funnelDrilldown(line.id, '7days', line.name)">
+              <div>
+                <div class="funnel-count" :style="{color: line.count7state}"
                      :title="line.sevenDayHover">
                   {{line.seven_day_count}}{{line.id === 4 ? '%' : ''}}
                 </div>
 
-                <div class="desktop funnel_percent">
-                  <span style="font-size:12px;font-weight:normal;"
-                        :style="{color: line.percent7state}"
-                        :title="line.percent7hover">
-                    {{line.percent7}}
-                  </span>
+                <div class="funnel-percentage" :style="{color: line.percent7state}"
+                     :title="line.percent7hover">
+                  {{line.percent7}}
                 </div>
 
-                <div :class="line.percent7state + '_arrow'" class="desktop funnel_arrow"></div>
+                <div :class="line.percent7state + '_arrow'" class="funnel-arrow"></div>
               </div>
             </td>
 
             <!-- LAST 30 DAYS COUNT -->
             <td class="funnel-td" style="cursor: pointer"
-                @click="drillDown(line.id, '30days', line.name)">
-              <div class="dash_cell_contents funnel_data">
-                <div class="funnel_count" :style="{color: line.count30state}"
+                @click="funnelDrilldown(line.id, '30days', line.name)">
+              <div>
+                <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.thirtyDayHover">
                   {{line.thirty_day_count}}{{line.id === 4 ? '%' : ''}}
                 </div>
 
-                <div class="desktop funnel_percent">
-                  <span style="font-size:12px;font-weight:normal;"
-                        :style="{color: line.percent30state}"
-                        :title="line.percent30hover">
-                    {{line.percent30}}
-                  </span>
+                <div class="funnel-percentage" :style="{color: line.percent30state}"
+                     :title="line.percent30hover">
+                  {{line.percent30}}
                 </div>
 
-                <div :class="line.percent30state + '_arrow'" class="desktop funnel_arrow"></div>
+                <div :class="line.percent30state + '_arrow'" class="funnel-arrow"></div>
               </div>
             </td>
 
@@ -667,7 +735,7 @@
                 :style="{color: line.customCountState}"
                 style="width:15%; cursor: pointer"
                 :title="line.customDayHover"
-                @click="drillDown(line.id, 'custom', line.name)">
+                @click="funnelDrilldown(line.id, 'custom', line.name)">
               {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
             </td>
 
@@ -675,22 +743,19 @@
                 class="funnel-td"
                 :style="{color: line.customCountState}"
                 style="width: 15%; cursor: pointer"
-                @click="drillDown(line.id, 'custom', line.name)">
-              <div class="dash_cell_contents funnel_data">
-                <div class="funnel_count" :style="{color: line.count30state}"
+                @click="funnelDrilldown(line.id, 'custom', line.name)">
+              <div>
+                <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.customDayHover">
                   {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
                 </div>
 
-                <div class="desktop funnel_percent">
-                  <span style="font-size:12px;font-weight:normal"
-                        :style="{color: line.percentCustomState}"
-                        :title="line.percentCustomHover">
-                    {{line.percentCustom}}
-                  </span>
+                <div class="funnel-percentage" :style="{color: line.percentCustomState}"
+                     :title="line.percentCustomHover">
+                  {{line.percentCustom}}
                 </div>
 
-                <div :class="line.percentCustomState + '_arrow'" class="desktop funnel_arrow"
+                <div :class="line.percentCustomState + '_arrow'" class="funnel-arrow"
                      :title="line.percentCustomHover"></div>
               </div>
             </td>
@@ -698,6 +763,89 @@
         </table>
       </div>
     </div>
+    <!-- FUNNEL END -->
+
+    <v-dialog v-model="funnelDrilldownDialog">
+      <v-card id="funnel-drilldown">
+        <v-card-title class="mb-1">
+          <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="funnelDrilldownDialog = false">×</a>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
+          <v-text-field v-model="funnelDrilldownSearch"
+                        placeholder="Type to filter..."
+                        single-line
+                        hide-details
+                        outlined
+                        dense
+          ></v-text-field>
+          <span id="funnel-drilldown-row-count">
+            Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
+          </span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-data-table
+            id="funnel-drilldown-table"
+            class="elevation-1"
+            :class="{'mt-6': funnelDrilldownData.length === 0}"
+            :mobile-breakpoint="0"
+            :headers="visibleFunnelDrilldownHeaders"
+            fixed-header
+            :items="funnelDrilldownData"
+            @current-items="filteredFunnelDrilldownItems"
+            :search="funnelDrilldownSearch"
+            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 355px)') : '105px'"
+            dense
+            multi-sort
+            :sort-by="[]"
+            :sort-desc="[]"
+            hide-default-footer
+            disable-pagination
+          >
+            <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
+              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+                <td style="text-align: center">{{ index + 1 }}</td>
+                <td>{{ item.setter_name ? item.setter_name : '' }}</td>
+                <td>{{ item.employee_id ? item.employee_id : '' }}</td>
+                <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
+                <td>{{ item.deal_id ? item.deal_id : '' }}</td>
+                <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td>{{ item.owner_name ? item.owner_name : '' }}</td>
+                <td>{{ item.verified_setter_lead ? item.verified_setter_lead : '' }}</td>
+                <td :class="item.appointment_outcome_class">
+                  {{ item.appointment_outcome ? item.appointment_outcome : '' }}
+                </td>
+                <td>{{ item.date_created_formatted ? item.date_created_formatted : '' }}</td>
+                <td>{{ item.state ? item.state : '' }}</td>
+                <td>{{ item.office ? item.office : '' }}</td>
+              </tr>
+            </template>
+
+            <template #no-data>
+              <div class="my-3 funnel-drilldown-no-data-msg">
+                No data is available for the selected date range.
+              </div>
+            </template>
+
+            <template #no-results>
+              <div class="my-3 funnel-drilldown-no-data-msg">
+                No matching records found.
+              </div>
+            </template>
+          </v-data-table>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
+                 @click="funnelDrilldownDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <!----------------------------------- PIPELINE TAB END ----------------------------------->
 
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -706,13 +854,13 @@
 
 <script>
   import cloneDeep from 'lodash.clonedeep'
-  import orderBy from 'lodash.orderby'
   import $ from 'jquery'
   import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
-  import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import constants from '@/helpers/constants'
+  import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
-  import { getDistricts, getRegions, getOffices, getReps } from '@/services/dashboardService'
+  import { getSetterDistricts, getSetterRegions, getSetterOffices, getSetterReps } from '@/services/dashboardService'
 
   export default {
     name: 'setterDashboard',
@@ -721,7 +869,9 @@
     },
     data: () => ({
       snackbar: {},
+      constants,
       milestoneDialog: false,
+      funnelDrilldownDialog: false,
       currentUserId: null,
       isSetterMgr: false,
       selectedQuarter: 1,
@@ -733,7 +883,7 @@
         { text: 'Appointment Date', value: 'appointment_date', show: true },
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
       ],
-      drilldownData: [],
+      milestoneDrilldownData: [],
       timeIntervalBtnGroup: 0,
       timeIntervalString: 'MTD', // MTD is selected by default
       timeInterval: +moment().format('DD') - 1,
@@ -841,13 +991,22 @@
       showCustomPercentage: false,
       expectedInstalls: 1,
       expectationTimeout: 0,
-      funnelStats: [
-        {id: 3, name: 'Appointments Created', ratio: 4.17, expectation: 4.17, display_order: 1, today_day_count: 0, yesterday_day_count: 0, today_percent: 0, seven_day_count: 992, prev_seven_day_count: 1526, seven_percent: -35.00, thirty_day_count: 4644, prev_thirty_day_count: 4639, thirty_day_percent: 0.00, custom_date_range_count: 0},
-        {id: 1, name: 'Appointments Occurred', ratio: 1.67,expectation: 1.67,display_order: 2,today_day_count: 127,yesterday_day_count: 8,today_percent: 1488.00,seven_day_count: 1310,prev_seven_day_count: 1493,seven_percent: -12.00,thirty_day_count: 4836,prev_thirty_day_count: 4638,thirty_day_percent: 4.00,custom_date_range_count: 127},
-        {id: 2,name:  'Appointments Pitched',ratio: 1.00,expectation: 1.00,display_order: 3,today_day_count: 1,yesterday_day_count: 0,today_percent: 0,seven_day_count: 507,prev_seven_day_count: 866,seven_percent: -41.00,thirty_day_count: 2546,prev_thirty_day_count: 2463,thirty_day_percent: 3.00,custom_date_range_count: 1}
-      ],
+      funnelStats: [],
       funnelDrilldownTitle: '',
-      funnelDrilldownHeaders: [],
+      funnelDrilldownHeaders: [
+        { text: '', value: '', show: true, sortable: false, width: 25 },
+        { text: 'Setter', value: 'setter_name', show: true, width: 90 },
+        { text: 'Employee ID', value: 'employee_id', show: true, width: 120 },
+        { text: 'Name', value: 'customer_name', show: true, width: 90 },
+        { text: 'Deal ID', value: 'deal_id', show: true, width: 95 },
+        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 150 },
+        { text: 'Closer', value: 'owner_name', show: true, width: 90 },
+        { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
+        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
+        { text: 'Added On', value: 'date_created_formatted', show: true, width: 105 },
+        { text: 'State', value: 'state', show: true, width: 80 },
+        { text: 'Office', value: 'office', show: true, width: 90 }
+      ],
       funnelDrilldownData: [],
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
@@ -902,7 +1061,7 @@
             this.showDashboard = false
             this.showFunnel = true
             if (!this.funnelWasLoaded) {
-              // await this.loadFunnel()
+              await this.loadFunnel()
               this.funnelWasLoaded = true
             }
             break
@@ -1136,17 +1295,17 @@
             setterMgrOfficeId: this.setterMgrOfficeId
           }
           const {data} = await getRequestWithParams('/setterDashboard/pitchesDrilldown', {params}, 'blueraven')
-          this.drilldownData = cloneDeep(data)
+          this.milestoneDrilldownData = cloneDeep(data)
 
-          if (this.drilldownData.length > 0) {
+          if (this.milestoneDrilldownData.length > 0) {
             this.reformatDates()
-            this.drilldownData.forEach(row => {
+            this.milestoneDrilldownData.forEach(row => {
               if (row.customer_name) {
                 row.customer_name = row.customer_name.toLowerCase()
               }
             })
           } else {
-            this.drilldownData = []
+            this.milestoneDrilldownData = []
           }
 
           this.selectedQuarter = quarter
@@ -1160,7 +1319,7 @@
       },
 
       reformatDates () {
-        this.drilldownData.forEach(row => {
+        this.milestoneDrilldownData.forEach(row => {
           if (row.appointment_date) {
             row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
           }
@@ -1430,6 +1589,135 @@
       /* RANKING TABLES-RELATED CODE END */
 
       /* FUNNEL-RELATED CODE START */
+      async districtLoad (preSelectLists) {
+        if (!this.currentUserId) return
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getSetterDistricts(this.currentUserId).then(res => {
+          this.districtData = res
+
+          if (preSelectLists) {
+            this.districtModel = cloneDeep(this.districtData)
+          }
+
+          if (this.districtModel.length > 0) {
+            this.regionLoad(preSelectLists)
+          }
+        })
+
+        this.funnelStats = []
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+
+      async regionLoad (preSelectLists) {
+        if (!this.currentUserId) return
+
+        let districts = this.districtModel.map(function (district) {
+          return {
+            district_id: district.org_id
+          }
+        })
+
+        if (districts?.length === 0) return
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getSetterRegions(this.currentUserId, JSON.stringify(districts)).then(res => {
+          this.regionData = res
+
+          if (preSelectLists) {
+            this.regionModel = cloneDeep(this.regionData)
+          }
+
+          if (this.regionModel.length > 0) {
+            this.officeLoad(preSelectLists)
+          }
+        })
+
+        this.funnelStats = []
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+
+      async officeLoad (preSelectLists) {
+        if (!this.currentUserId) return
+
+        let regions = this.regionModel.map(function (region) {
+          return {
+            region_id: region.org_id
+          }
+        })
+
+        if (regions?.length === 0) return
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getSetterOffices(this.currentUserId, JSON.stringify(regions)).then(res => {
+          this.officeData = res
+
+          if (preSelectLists) {
+            this.officeModel = cloneDeep(this.officeData)
+          }
+
+          if (this.officeModel.length > 0) {
+            this.repLoad(preSelectLists)
+          }
+        })
+
+        this.funnelStats = []
+        this.repData = []
+        this.repModel = []
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+
+      async repLoad (preSelectLists) {
+        if (!this.currentUserId) return
+
+        let regions = this.regionModel.map(function (region) {
+          return {
+            region_id: region.org_id
+          }
+        })
+
+        let offices = this.officeModel.map(function (office) {
+          return {
+            office_id: office.org_id
+          }
+        })
+
+        if (offices?.length === 0) return
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        await getSetterReps(this.currentUserId, JSON.stringify(regions), JSON.stringify(offices)).then(res => {
+          this.repData = res
+
+          if (preSelectLists) {
+            this.repModel = cloneDeep(this.repData)
+          }
+
+          this.funnelStats = []
+
+          if (this.repModel.length > 0) {
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+          }
+        })
+
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      },
+
+      roundTenth (value) {
+        if (typeof value !== 'number') {
+          return value
+        }
+        let precision = Math.max(Math.ceil(Math.log10(value)) + 1, 2)
+        if (value < 1) precision = 1
+        if (value === 0) precision = 2
+        return value.toPrecision(precision)
+      },
+
+      daysBetween (start, end) {
+        let a = moment(start)
+        let b = moment(end)
+        return b.diff(a, 'days')
+      },
+
       getPercentColor (percent) {
         if (percent < 0) return 'red'
         return 'green'
@@ -1455,48 +1743,73 @@
 
       funnelAllReps () {
         this.repModel = [
-          {id: -1, label: 'All Reps'}
+          {user_id: -1, name: 'All Reps', active: true}
         ]
 
         this.repData = [
-          {id: -1, label: 'All Reps'}
+          {user_id: -1, name: 'All Reps', active: true}
         ]
 
-        this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2)
+        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
       },
 
-      pipelineLoad (start, end) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      async pipelineLoad (targetInstallations, start, end) {
+        let reps = []
+        let orgs = []
 
-        let reps = this.repModel.map(rep => rep.id)
-        let orgs = this.officeModel.map(org => org.id)
-
-        if (!reps || reps.length === 0) {
+        if (this.repModel.length === 0) {
           this.funnelStats = []
-          this.$store.commit(AppMutations.SET_LOADING, false)
           return
         }
 
-        const params = {
+        this.repModel.forEach(rep => reps.push(rep.user_id))
+        this.officeModel.forEach(org => orgs.push(org.org_id))
+
+        const requestBody = {
+          targetInstallations: targetInstallations,
           users: reps,
           orgs: orgs,
           start: moment(start).format('YYYY-MM-DD'),
           end: moment(end).format('YYYY-MM-DD')
         }
 
-        getRequestWithParams('/setterDashboard/funnel/' + this.viewSelect, {params}, 'blueraven').then(res => {
-          this.funnelStats = orderBy(res.data, row => row.display_order)
-        })
-      },
+        this.$store.commit(AppMutations.SET_LOADING, true)
 
-      toggle () {
-        this.$nextTick(() => {
-          if (this.allDistrictsSelected) {
-            this.districtModel = []
-          } else {
-            this.districtModel = this.districtData.slice()
-          }
-        })
+        try {
+          await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
+            for (let i = 0; i < data.length; ++i) {
+              data[i]['countTodayState'] = data[i]['today_day_count'] < data[i]['expectation'] ? 'red' : 'green'
+              data[i]['todayHover'] = this.getCountHover(data[i]['today_day_count'], data[i]['expectation'])
+              data[i]['percentToday'] = data[i]['today_percent'] ? data[i]['today_percent'] + '%' : '0%'
+              data[i]['percentTodayState'] = this.getPercentColor(data[i]['today_percent'])
+              data[i]['percent7'] = data[i]['seven_percent'] ? data[i]['seven_percent'] + '%' : '0%'
+              data[i]['percent7state'] = this.getPercentColor(data[i]['seven_percent'])
+              data[i]['count7state'] = data[i]['seven_day_count'] < data[i]['expectation'] ? 'red' : 'green'
+              data[i]['sevenDayHover'] = this.getCountHover(data[i]['seven_day_count'], data[i]['expectation'])
+              data[i]['percent30'] = data[i]['thirty_day_percent'] ? data[i]['thirty_day_percent'] + '%' : '0%'
+              data[i]['percent30state'] = this.getPercentColor(data[i]['thirty_day_percent'])
+              data[i]['count30state'] = data[i]['thirty_day_count'] < data[i]['expectation'] ? 'red' : 'green'
+              data[i]['thirtyDayHover'] = this.getCountHover(data[i]['thirty_day_count'], data[i]['expectation'])
+              data[i]['customCountState'] = data[i]['custom_date_range_count'] < data[i]['expectation'] ? 'red' : 'green'
+              data[i]['customDayHover'] = this.getCountHover(data[i]['custom_date_range_count'], data[i]['expectation'])
+              data[i]['percent7hover'] = this.getPercentHover(data[i]['seven_percent'], 7)
+              data[i]['percent30hover'] = this.getPercentHover(data[i]['thirty_day_percent'], 30)
+              data[i]['percentTodayHover'] = this.getPercentHover(data[i]['today_percent'], 1)
+              data[i]['expectation'] = this.roundTenth(data[i]['expectation'])
+              data[i]['percentCustomState'] = this.getPercentColor(data[i]['custom_date_range_percent'])
+              data[i]['percentCustomHover'] = this.getPercentHover(data[i]['custom_date_range_percent'], this.daysBetween(start, end))
+              data[i]['percentCustom'] = data[i]['custom_date_range_percent'] ? data[i]['custom_date_range_percent'] + '%' : '0%'
+              data[i]['custom_date_range_count'] = Math.round(data[i]['custom_date_range_count'])
+            }
+
+            this.funnelStats = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          })
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving pipeline data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
 
       showExpectationInput (index) {
@@ -1571,21 +1884,18 @@
       },
 
       weekToDate () {
-        this.timeFrame = 'WTD'
         this.pipeline_dt1 = moment().startOf('isoWeek').toDate()
         this.pipeline_dt2 = moment().toDate()
         this.updatePipelineCalendar(true)
       },
 
       monthToDate () {
-        this.timeFrame = 'MTD'
         this.pipeline_dt1 = moment().startOf('month').toDate()
         this.pipeline_dt2 = moment().toDate()
         this.updatePipelineCalendar(true)
       },
 
       quarterToDate () {
-        this.timeFrame = 'QTD'
         let quarter = moment().quarter()
         this.pipeline_dt1 = moment().startOf('year').quarter(quarter).toDate()
         this.pipeline_dt2 = moment().toDate()
@@ -1593,28 +1903,24 @@
       },
 
       yearToDate () {
-        this.timeFrame = 'NTF'
         this.pipeline_dt1 = moment().startOf('year').toDate()
         this.pipeline_dt2 = moment().toDate()
         this.updatePipelineCalendar()
       },
 
       lastMonth () {
-        this.timeFrame = 'LAST_MONTH'
         this.pipeline_dt1 = moment().subtract(1, 'month').startOf('month').toDate()
         this.pipeline_dt2 = moment().subtract(1, 'month').endOf('month').toDate()
         this.updatePipelineCalendar(true)
       },
 
       lastWeek () {
-        this.timeFrame = 'LAST_WEEK'
         this.pipeline_dt1 = moment().subtract(1, 'week').startOf('week').add(1, 'day').toDate()
         this.pipeline_dt2 = moment().subtract(1, 'week').endOf('week').add(1, 'day').toDate()
         this.updatePipelineCalendar(true)
       },
 
       previousNumberOfDays (days) {
-        this.timeFrame = 'NTF'
         this.pipeline_dt1 = moment().subtract(days, 'days').toDate()
         this.pipeline_dt2 = moment().subtract(1, 'days').toDate()
         this.updatePipelineCalendar()
@@ -1624,17 +1930,18 @@
         clearTimeout(this.expectationTimeout)
         let expectedInstalls = this.expectedInstalls
         if (!/^(\d+|\d*(\.\d+){1})$/.test(expectedInstalls)) return
-        this.expectationTimeout = setTimeout(function () {
-          this.expectedInstalls = expectedInstalls
-          this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
-        }, 500)
+        this.expectedInstalls = expectedInstalls
+        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
       },
 
       viewSelected (view) {
         if (this.viewSelect !== view) {
           this.viewSelect = view
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2)
+
+          if ((this.districtModel.length > 0 && this.regionModel.length > 0 && this.officeModel.length > 0 && this.repModel.length > 0) || this.repModel[0]?.user_id === -1) {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2)
+          }
         }
       },
 
@@ -1668,6 +1975,133 @@
         if (!date) return null
 
         return moment(date, 'M/D/YY').format('YYYY-MM-DD')
+      },
+
+      loadFunnel () {
+        if(!this.showDashboard && this.funnelStats?.length === 0) {
+          if (this.isSetter) {
+            this.districtLoad(true)
+          } else {
+            this.districtLoad(false)
+          }
+        }
+      },
+
+      toggleAllDistricts (checkAll) {
+        if (checkAll) {
+          this.districtModel = cloneDeep(this.districtData)
+          this.regionLoad(false)
+        } else {
+          this.districtModel = []
+          this.regionData = []
+          this.regionModel = []
+          this.officeData = []
+          this.officeModel = []
+          this.repData = []
+          this.repModel = []
+        }
+      },
+
+      toggleAllRegions (checkAll) {
+        if (checkAll) {
+          this.regionModel = cloneDeep(this.regionData)
+          this.officeLoad(false)
+        } else {
+          this.regionModel = []
+          this.officeData = []
+          this.officeModel = []
+          this.repData = []
+          this.repModel = []
+        }
+      },
+
+      toggleAllOffices (checkAll) {
+        if (checkAll) {
+          this.officeModel = cloneDeep(this.officeData)
+          this.repLoad(false)
+        } else {
+          this.officeModel = []
+          this.repData = []
+          this.repModel = []
+        }
+      },
+
+      toggleAllReps (checkAll) {
+        if (checkAll) {
+          this.repModel = cloneDeep(this.repData)
+        } else {
+          this.repModel = []
+        }
+      },
+
+      funnelDrilldown (funnelId, dateRange, funnelName) {
+        let reps = []
+        let orgs = []
+        let start, end
+        let datesMatch = false
+
+        reps = this.repModel.map(rep => rep.id)
+        orgs = this.officeModel.map(org => org.id)
+
+        switch (dateRange) {
+          case 'today':
+            start = moment().startOf('day').toDate()
+            end = moment().toDate()
+            break
+          case '7days':
+            start = moment().startOf('W').toDate()
+            end = moment().toDate()
+            break
+          case '30days':
+            start = moment().startOf('W').toDate()
+            end = moment().toDate()
+            break
+          default:
+            start = this.appts_to_fdc_pipeline_dt1
+            end = this.appts_to_fdc_pipeline_dt2
+            break
+        }
+
+        if (moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')) {
+          datesMatch = true
+          this.funnelDrilldownTitle = funnelName + ' on ' + moment(start).format('M/D/YYYY')
+        } else {
+          this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
+        }
+
+        this.markMissingDrilldownData()
+        this.reformatFunnelDrilldownDates()
+        this.funnelDrilldownDialog = true
+      },
+
+      markMissingDrilldownData() {
+        this.funnelDrilldownData = this.funnelDrilldownData.map(function (line) {
+          let newLine = {}
+
+          Object.keys(line).forEach(function (key) {
+            newLine[key] = line[key]
+            newLine[key + '_class'] = !line[key] ? 'missing' : ''
+          })
+
+          return newLine
+        })
+      },
+
+      reformatFunnelDrilldownDates () {
+        this.funnelDrilldownData.forEach(row => {
+          if (row.appointment_date) {
+            row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
+          }
+
+          if (row.date_created) {
+            row.date_created_formatted = moment(row.date_created).format('MMM D, YYYY')
+          }
+        })
+      },
+
+      filteredFunnelDrilldownItems (filteredItems) {
+        this.filteredFunnelDrilldownData = filteredItems
+        this.funnelDrilldownRowCount = filteredItems.length
       }
       /* FUNNEL-RELATED CODE END */
     },
@@ -1678,6 +2112,7 @@
       if (userPositions.length > 0) {
         this.userOfficeId = userPositions.filter(position => position.primaryFlag && !position.endDate && ([4,5,6].indexOf(position.positionId) !== -1))[0].orgId
         this.userOffice = userPositions.filter(position => position.orgId === this.userOfficeId)[0].hierarchy.filter(orgLevel => orgLevel.orgId === this.userOfficeId)[0].orgName
+        this.isSetter = userPositions.filter(position => (position.positionId === 4) && position.primaryFlag && !position.endDate).length > 0
         this.isSetterMgr = userPositions.filter(position => position.primaryFlag && !position.endDate && ([5,6].indexOf(position.positionId) !== -1)).length > 0
       }
 
@@ -2350,10 +2785,14 @@
         padding: 3px 5px;
         width: 100%;
 
-        #pipeline-header-left-side {
+        #pipeline-header-left-side,
+        #pipeline-header-right-side {
           display: flex;
-          flex-flow: row nowrap;
           align-items: center;
+        }
+
+        #pipeline-header-left-side {
+          flex-flow: row nowrap;
 
           .v-input {
             padding-top: 0;
@@ -2393,16 +2832,13 @@
         }
 
         #pipeline-header-right-side {
-          display: flex;
           flex-flow: row wrap;
-          justify-content: flex-start;
-          align-items: center;
 
           .pipeline-dropdown {
             transform: scale(0.875);
             transform-origin: left;
             margin: 2px 0;
-            max-width: 100px;
+            max-width: 135px;
 
             ::v-deep {
               .v-input__slot {
@@ -2428,9 +2864,9 @@
           #all-reps-btn {
             text-transform: capitalize;
             font-size: 10px;
-            margin: 2px;
+            margin: 2px 0;
             width: 87px;
-            height: 33px;
+            height: 35px;
           }
         }
       }
@@ -2518,7 +2954,7 @@
         }
 
         .funnel-expectation {
-          width: 150px;
+          width: 75px;
         }
 
         .funnel-line-name {
@@ -2555,8 +2991,102 @@
 
         .funnel-td {
           font-size: 7px;
+
+          div {
+            display: flex;
+            justify-content: center;
+          }
+
+          .funnel-count,
+          .funnel-percentage {
+            margin: 3px;
+          }
         }
       }
+    }
+  }
+
+  #funnel-drilldown {
+    .missing {
+      background-color: rgba(204, 0, 0, 0.5);
+    }
+
+    .v-card__title {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      padding: 0 24px;
+
+      #funnel-drilldown-title {
+        font-family: "Roboto Condensed", sans-serif;
+        font-size: 14px;
+        line-height: 24px;
+        word-break: normal;
+        padding-top: 5px;
+      }
+    }
+
+    .close-modal-x {
+      font-size: 20px;
+      margin-left: 15px;
+
+      &:hover {
+        font-weight: bolder;
+      }
+    }
+
+    #funnel-drilldown-search {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: center;
+
+      ::v-deep .v-input {
+        max-width: 70%;
+      }
+
+      ::v-deep input,
+      #funnel-drilldown-row-count {
+        font-size: 11px;
+      }
+    }
+
+    #funnel-drilldown-table {
+      ::v-deep th, ::v-deep td {
+        font-size: 10px;
+        padding: 5px;
+      }
+
+      ::v-deep th {
+        line-height: 14px;
+
+        .v-data-table-header__icon {
+          font-size: 12px !important;
+          padding-bottom: 2px;
+        }
+      }
+
+      .customer-name {
+        text-transform: capitalize;
+      }
+
+      .funnel-drilldown-no-data-msg {
+        text-align: left;
+        margin-left: 25px;
+      }
+    }
+
+    .v-card__text {
+      padding-bottom: 0;
+    }
+
+    .v-btn {
+      font-size: 10px;
+      width: 50px;
+      min-width: 50px;
+      height: 25px;
     }
   }
 
@@ -2577,6 +3107,18 @@
       #eighth-segment img {
         max-width: 22px;
         top: -4px;
+      }
+    }
+
+    #funnel-drilldown {
+      .v-card__title {
+        align-items: center;
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep .v-input {
+          max-width: 75%;
+        }
       }
     }
   }
@@ -2855,16 +3397,23 @@
     #funnel-background {
       display: block;
       position: absolute;
-      z-index: 200;
+      z-index: 6;
       border-top-style: solid;
       border-top-color: rgba(0, 110, 200, 0.05);
-      border-top-width: 120px;
       border-right: 20px solid transparent;
       border-left: 20px solid transparent;
       margin-top: 63px;
       margin-left: 110px;
       width: 170px;
       height: 0;
+    }
+
+    #funnel-background.standard-view {
+      border-top-width: 120px;
+    }
+
+    #funnel-background.cohort-view {
+      border-top-width: 160px;
     }
 
     #pipeline-container {
@@ -2889,6 +3438,8 @@
         }
 
         #pipeline-header-controls {
+          justify-content: space-between;
+
           #pipeline-header-left-side {
             .v-input ::v-deep .v-input--radio-group__input {
               flex-flow: column nowrap;
@@ -2931,7 +3482,7 @@
               font-size: 12px;
               margin: 3px;
               width: 100px;
-              height: 38px;
+              height: 40px;
             }
           }
         }
@@ -3006,8 +3557,69 @@
 
           .funnel-td {
             font-size: 12px;
+
+            .funnel-count,
+            .funnel-percentage {
+              margin: 5px;
+            }
           }
         }
+      }
+    }
+
+    #funnel-drilldown {
+      .v-card__title {
+        padding: 10px 24px 0 24px;
+
+        #funnel-drilldown-title {
+          font-size: 18px;
+          padding-bottom: 10px;
+        }
+      }
+
+      .close-modal-x {
+        font-size: 24px;
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 12px;
+        }
+
+        ::v-deep .v-input {
+          width: 80%;
+        }
+
+        #funnel-drilldown-row-count {
+          text-align: right;
+          width: 20%;
+        }
+      }
+
+      #funnel-drilldown-table {
+        ::v-deep th, ::v-deep td {
+          font-size: 11px;
+        }
+
+        ::v-deep th {
+          line-height: 16px;
+
+          .v-data-table-header__icon {
+            font-size: 14px !important;
+            padding-bottom: 3px;
+          }
+        }
+      }
+
+      .v-card__text {
+        padding-bottom: 10px;
+      }
+
+      .v-btn {
+        font-size: 12px;
+        width: 75px;
+        height: 30px;
       }
     }
   }
@@ -3161,12 +3773,19 @@
     }
 
     #funnel-background {
-      border-top-width: 180px;
       border-right: 80px solid transparent;
       border-left: 80px solid transparent;
       margin-top: 63px;
       margin-left: 140px;
       width: 320px;
+    }
+
+    #funnel-background.standard-view {
+      border-top-width: 180px;
+    }
+
+    #funnel-background.cohort-view {
+      border-top-width: 240px;
     }
 
     #pipeline-container {
@@ -3215,6 +3834,7 @@
             }
 
             #all-reps-btn {
+              margin: 5px 0 5px 5px;
               font-size: 14px;
             }
           }
@@ -3285,8 +3905,35 @@
           .funnel-td {
             font-size: 14px;
             height: 60px;
+
+            .funnel-count,
+            .funnel-percentage {
+              margin: 10px;
+            }
           }
         }
+      }
+    }
+
+    #funnel-drilldown {
+      .v-card__title {
+        #funnel-drilldown-title {
+          font-size: 20px;
+          line-height: 26px;
+        }
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 12px;
+        }
+      }
+
+      .v-btn {
+        font-size: 14px;
+        width: 80px;
+        height: 35px;
       }
     }
   }
@@ -3372,6 +4019,36 @@
 
           .funnel-line-name {
             width: 350px;
+          }
+        }
+      }
+    }
+
+    #funnel-drilldown {
+      .v-card__title {
+        #funnel-drilldown-title {
+          font-size: 24px;
+          line-height: 32px;
+        }
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 14px;
+        }
+      }
+
+      #funnel-drilldown-table {
+        ::v-deep th, ::v-deep td {
+          font-size: 12px;
+        }
+
+        ::v-deep th {
+          line-height: 18px;
+
+          .v-data-table-header__icon {
+            font-size: 16px !important;
           }
         }
       }

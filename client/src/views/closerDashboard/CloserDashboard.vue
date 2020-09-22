@@ -463,10 +463,14 @@
                         class="appts-created-pipeline-dropdown"
                         v-model="brsProvidedSourceModel"
                         :items="brsProvidedSourceData"
+                        item-text="sourceName"
+                        item-value="sourceId"
                         placeholder="Select"
                         multiple
-                        solo
-                        dense>
+                        outlined
+                        background-color="white"
+                        dense
+                        @blur="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:prepend-item>
                   <v-list-item @click="toggleAllBrsProvidedSources(true)">
                     <v-list-item-action>
@@ -495,10 +499,14 @@
                         class="appts-created-pipeline-dropdown"
                         v-model="selfGenSourceModel"
                         :items="selfGenSourceData"
+                        item-text="sourceName"
+                        item-value="sourceId"
                         placeholder="Select"
                         multiple
-                        solo
-                        dense>
+                        outlined
+                        background-color="white"
+                        dense
+                        @blur="apptsCreatedPipelineLoad(appts_created_pipeline_dt1, appts_created_pipeline_dt2)">
                 <template v-slot:prepend-item>
                   <v-list-item @click="toggleAllSelfGenSources(true)">
                     <v-list-item-action>
@@ -552,6 +560,8 @@
           <v-select class="appts-to-fdc-pipeline-dropdown"
                     v-model="districtModel"
                     :items="districtData"
+                    item-text="org_name"
+                    item-value="org_id"
                     label="District"
                     no-data-text="No districts available"
                     outlined
@@ -586,7 +596,7 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                  {{ data.item.text }}
+                  {{ data.item.org_name }}
                 </v-list-item-title>
               </v-list-item-content>
             </template>
@@ -598,6 +608,8 @@
           <v-select class="appts-to-fdc-pipeline-dropdown"
                     v-model="regionModel"
                     :items="regionData"
+                    item-text="org_name"
+                    item-value="org_id"
                     label="Region"
                     no-data-text="No regions available"
                     outlined
@@ -632,7 +644,7 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                  {{ data.item.text }}
+                  {{ data.item.org_name }}
                 </v-list-item-title>
               </v-list-item-content>
             </template>
@@ -644,6 +656,8 @@
           <v-select class="appts-to-fdc-pipeline-dropdown"
                     v-model="officeModel"
                     :items="officeData"
+                    item-text="org_name"
+                    item-value="org_id"
                     label="Office"
                     no-data-text="No offices available"
                     outlined
@@ -678,7 +692,7 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                  {{ data.item.text }}
+                  {{ data.item.org_name }}
                 </v-list-item-title>
               </v-list-item-content>
             </template>
@@ -690,6 +704,8 @@
           <v-select class="appts-to-fdc-pipeline-dropdown"
                     v-model="repModel"
                     :items="repData"
+                    item-text="name"
+                    item-value="user_id"
                     label="Rep"
                     no-data-text="No reps available"
                     outlined
@@ -724,7 +740,7 @@
               </v-list-item-action>
               <v-list-item-content>
                 <v-list-item-title :style="{'text-decoration': data.item.active ? '' : 'line-through'}">
-                  {{ data.item.text }}
+                  {{ data.item.name }}
                 </v-list-item-title>
               </v-list-item-content>
             </template>
@@ -889,7 +905,7 @@
                   {{line.week_to_date_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'wtd', line.name, 'apptsToFdcPipeline', false)">
                 {{line.week_to_date_count}}
               </div>
             </td>
@@ -917,7 +933,7 @@
                   {{line.custom_date_range_count}}
                 </div>
               </div>
-              <div v-else @click="funnelDrilldown(line.id, 'today', line.name, 'apptsToFdcPipeline', false)">
+              <div v-else @click="funnelDrilldown(line.id, 'custom', line.name, 'apptsToFdcPipeline', false)">
                 {{line.custom_date_range_count}}
               </div>
             </td>
@@ -927,6 +943,7 @@
     </div>
     <!-- APPOINTMENTS TO FDC PIPELINE END -->
 
+    <!-- FUNNEL DRILLDOWN START -->
     <v-dialog v-model="funnelDrilldownDialog">
       <v-card id="funnel-drilldown">
         <v-card-title class="mb-1">
@@ -1070,6 +1087,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- FUNNEL DRILLDOWN END -->
     <!----------------------------------- PIPELINE TAB END ----------------------------------->
 
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -1155,9 +1173,9 @@
       userRowIndex: -1,
       numOffices: 0,
       apptsCreatedPipelineData: [
-        {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-        {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
-        {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
+        // {id: 12, name: 'BRS provided appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
+        // {id: 13, name: 'Self-gen appointments created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0},
+        // {id: 10, name: 'Total Appointments Created', today_count: 0, week_to_date_count: 0, custom_date_range_count: 0}
       ],
       apptsToFdcPipelineData: [
           // {id: 14, name: 'Total Planned Appointments', checked_in_today_count: null, today_count: 0, checked_in_week_to_date_count: null, week_to_date_count: 0, checked_in_custom_date_range_count: null, custom_date_range_count: 0, display_order: 4},
@@ -1291,7 +1309,33 @@
       appts_to_fdc_pipeline_dt2_formatted: moment().format('M/D/YY'),
       appts_to_fdc_pipeline_menu2: false,
       funnelDrilldownTitle: '',
-      funnelDrilldownHeaders: [],
+      funnelDrilldownHeaders: [
+        { text: '', value: '', show: true, sortable: false, width: 25 },
+        { text: 'Owner', value: 'owner_name', show: true, width: 90 },
+        { text: 'Employee ID', value: 'employee_id', show: true, width: 115 },
+        { text: 'State', value: 'state', show: true, width: 75 },
+        { text: 'Name', value: 'customer_name', show: true, width: 90 },
+        { text: 'Deal ID', value: 'deal_id', show: true, width: 85 },
+        { text: 'Source', value: 'source_name', show: true, width: 85 },
+        { text: 'System Size', value: 'system_size', show: true, width: 110 },
+        { text: 'Financier', value: 'financier', show: true, width: 95 },
+        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145 },
+        { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130 },
+        { text: 'Added On', value: 'added_on', show: false, width: 100 },
+        { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
+        { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
+        { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
+        { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215 },
+        { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
+        { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155 },
+        { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
+        { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 140 },
+        { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
+        { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
+        { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
+        { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160 },
+        { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175 }
+      ],
       funnelDrilldownData: [],
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
@@ -1986,12 +2030,12 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          getRequest('/closerDashboard/brsProvidedSources', 'blueraven').then(res => {
-            this.brsProvidedSourceData = orderBy(res.data, ['source_name'])
+          getRequest('/closerDashboard/getBrsProvidedSources', 'blueraven').then(res => {
+            this.brsProvidedSourceData = res.data
             this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
 
-            getRequest('/closerDashboard/selfGenSources', 'blueraven').then(res => {
-              this.selfGenSourceData = orderBy(res.data, ['source_name'])
+            getRequest('/closerDashboard/getSelfGenSources', 'blueraven').then(res => {
+              this.selfGenSourceData = res.data
               this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
 
               this.apptsCreatedPipelineLoad(this.appts_created_pipeline_dt1, this.appts_created_pipeline_dt2)
@@ -2005,6 +2049,7 @@
       },
 
       async apptsCreatedPipelineLoad (start, end) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
         let brsProvidedSources = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
         let selfGenSources = this.selfGenSourceModel.map(selfGenSource => selfGenSource.id)
 
@@ -2054,8 +2099,8 @@
           return
         }
 
-        this.repModel.forEach(rep => reps.push(rep.value))
-        this.officeModel.forEach(org => orgs.push(org.value))
+        this.repModel.forEach(rep => reps.push(rep.user_id))
+        this.officeModel.forEach(org => orgs.push(org.org_id))
 
         const requestBody = {
           users: reps,
@@ -2158,7 +2203,7 @@
 
         let districts = this.districtModel.map(function (district) {
           return {
-            district_id: district.value
+            district_id: district.org_id
           }
         })
 
@@ -2186,7 +2231,7 @@
 
         let regions = this.regionModel.map(function (region) {
           return {
-            region_id: region.value
+            region_id: region.org_id
           }
         })
 
@@ -2216,13 +2261,13 @@
 
         let regions = this.regionModel.map(function (region) {
           return {
-            region_id: region.value
+            region_id: region.org_id
           }
         })
 
         let offices = this.officeModel.map(function (office) {
           return {
-            office_id: office.value
+            office_id: office.org_id
           }
         })
 
@@ -2272,12 +2317,12 @@
 
       previousWeek (pipelineName) {
         if (pipelineName === 'apptsCreatedPipeline') {
-          this.appts_created_pipeline_dt1 = moment().startOf('w').subtract(1, 'w').toDate()
-          this.appts_created_pipeline_dt2 = moment().endOf('w').subtract(1, 'w').toDate()
+          this.appts_created_pipeline_dt1 = moment().startOf('W').subtract(1, 'w').toDate()
+          this.appts_created_pipeline_dt2 = moment().endOf('W').subtract(1, 'w').toDate()
           this.updateApptsCreatedPipelineCalendar(true)
         } else {
-          this.appts_to_fdc_pipeline_dt1 = moment().startOf('w').subtract(1, 'w').toDate()
-          this.appts_to_fdc_pipeline_dt2 = moment().endOf('w').subtract(1, 'w').toDate()
+          this.appts_to_fdc_pipeline_dt1 = moment().startOf('W').subtract(1, 'w').toDate()
+          this.appts_to_fdc_pipeline_dt2 = moment().endOf('W').subtract(1, 'w').toDate()
           this.updateApptsToFdcPipelineCalendar(true)
         }
       },
@@ -2325,34 +2370,6 @@
         let start, end
         let datesMatch = false
 
-        this.funnelDrilldownHeaders = [
-          { text: '', value: '', show: true, sortable: false, width: 25 },
-          { text: 'Owner', value: 'owner_name', show: true, width: 90 },
-          { text: 'Employee ID', value: 'employee_id', show: true, width: 115 },
-          { text: 'State', value: 'state', show: true, width: 75 },
-          { text: 'Name', value: 'customer_name', show: true, width: 90 },
-          { text: 'Deal ID', value: 'deal_id', show: true, width: 85 },
-          { text: 'Source', value: 'source_name', show: true, width: 85 },
-          { text: 'System Size', value: 'system_size', show: true, width: 110 },
-          { text: 'Financier', value: 'financier', show: true, width: 95 },
-          { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 145 },
-          { text: 'Cancelled Date', value: 'cancelled_date_formatted', show: true, width: 130 },
-          { text: 'Added On', value: 'added_on', show: false, width: 100 },
-          { text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170 },
-          { text: 'Credit Decision Date', value: 'credit_decision_date_formatted', show: false, width: 160 },
-          { text: 'Credit Check', value: 'credit_check', show: false, width: 115 },
-          { text: 'Installation Agreement Signed Date', value: 'installation_agreement_signed_date', show: false, width: 215 },
-          { text: 'Site Survey Verified Date', value: 'site_survey_verified_date_formatted', show: false, width: 155 },
-          { text: 'Site Survey Date', value: 'site_survey_completed_date_formatted', show: false, width: 155 },
-          { text: 'FD Sent to Customer Date', value: 'final_design_sent_to_customer_date_formatted', show: false, width: 165 },
-          { text: 'Final Design Approved', value: 'final_design_signed_date_formatted', show: false, width: 140 },
-          { text: 'Proof of HOI Obtained Date', value: 'proof_of_homeowners_insurance_obtained_date_formatted', show: false, width: 200 },
-          { text: 'Utility Bill Verified Date', value: 'utility_bill_verified_date_formatted', show: false, width: 175 },
-          { text: 'Financial Agreement Signed', value: 'financial_agreement_signed_date_formatted', show: false, width: 195 },
-          { text: 'Cash Down Payment', value: 'cash_down_payment_date_formatted', show: false, width: 160 },
-          { text: 'Substantial Completion Date', value: 'substantial_completion_date_formatted', show: false, width: 175 }
-        ]
-
         if (pipelineName === 'apptsCreatedPipeline') {
           if (funnelId === 12) { // BRS-provided sources
             sourceIds = this.brsProvidedSourceModel.map(brsProvidedSource => brsProvidedSource.id)
@@ -2394,8 +2411,9 @@
           }
         }
 
-        if (moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')) {
-          datesMatch = true
+        datesMatch = moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')
+
+        if (datesMatch) {
           this.funnelDrilldownTitle = funnelName + ' on ' + moment(start).format('M/D/YYYY')
         } else {
           this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
@@ -2602,7 +2620,7 @@
 
       toggleAllBrsProvidedSources (checkAll) {
         if (checkAll) {
-          this.brsProvidedSourceModel = this.brsProvidedSourceData.slice()
+          this.brsProvidedSourceModel = cloneDeep(this.brsProvidedSourceData)
         } else {
           this.brsProvidedSourceModel = []
         }
@@ -2610,7 +2628,7 @@
 
       toggleAllSelfGenSources (checkAll) {
         if (checkAll) {
-          this.selfGenSourceModel = this.selfGenSourceData.slice()
+          this.selfGenSourceModel = cloneDeep(this.selfGenSourceData)
         } else {
           this.selfGenSourceModel = []
         }
@@ -2618,7 +2636,7 @@
 
       toggleAllDistricts (checkAll) {
         if (checkAll) {
-          this.districtModel = this.districtData.slice()
+          this.districtModel = cloneDeep(this.districtData)
           this.regionLoad(false)
         } else {
           this.districtModel = []
@@ -2633,10 +2651,9 @@
 
       toggleAllRegions (checkAll) {
         if (checkAll) {
-          this.regionModel = this.regionData.slice()
+          this.regionModel = cloneDeep(this.regionData)
           this.officeLoad(false)
         } else {
-          this.regionData = []
           this.regionModel = []
           this.officeData = []
           this.officeModel = []
@@ -2647,10 +2664,9 @@
 
       toggleAllOffices (checkAll) {
         if (checkAll) {
-          this.officeModel = this.officeData.slice()
+          this.officeModel = cloneDeep(this.officeData)
           this.repLoad(false)
         } else {
-          this.officeData = []
           this.officeModel = []
           this.repData = []
           this.repModel = []
@@ -2659,7 +2675,7 @@
 
       toggleAllReps (checkAll) {
         if (checkAll) {
-          this.repModel = this.repData.slice()
+          this.repModel = cloneDeep(this.repData)
         } else {
           this.repModel = []
         }
@@ -3605,6 +3621,7 @@
         }
 
         .funnel-td {
+          cursor: pointer;
           font-size: 7px;
           width: 90px;
         }
@@ -4277,12 +4294,14 @@
             transform: none;
             margin: 0 10px 10px 0;
 
-            ::v-deep label {
-              font-size: 14px;
-            }
+            ::v-deep {
+              label {
+                font-size: 14px;
+              }
 
-            ::v-deep i {
-              font-size: 20px;
+              i {
+                font-size: 20px;
+              }
             }
           }
 

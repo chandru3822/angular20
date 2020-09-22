@@ -40,8 +40,9 @@
         pps.id as project_process_step_id,
         sl.system_list_type_id,
         st.timestamp_value as start,
-        et.timestamp_value as end,
+        et.timestamp_value as "end",
         r.int_value as resource_id,
+        u.id as user_id,
         c.id as contact_id,
         c.first_name as contact_first_name,
         c.last_name as contact_last_name,
@@ -50,7 +51,7 @@
         case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
         p.project_name,
         ps.process_step_name,
-        c.state_id,
+        p.state_id,
         s.state,
         pps.company_process_step_status_type_id,
         cpsst.process_step_status_type
@@ -63,7 +64,7 @@
         inner join flow.process_step ps on ps.id = pps.process_step_id
         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
         inner join flow.contact c on c.id = p.contact_id
-        inner join flow.state s on s.id = c.state_id
+        inner join flow.state s on s.id = p.state_id
         inner join flow.custom_field cf on cf.id = r.custom_field_id
         left join flow.user_position up on up.id = r.int_value
         left join flow.user u on u.id = up.user_id
@@ -119,196 +120,144 @@
  ]]></schedule.getAvailability>
 
   <schedule.getProjects><![CDATA[
-    with start_time as (
-        select ppscfv.id,
-               ppscfv.custom_field_group_assignment_id,
-               ppscfv.project_process_step_id,
-               ppscfv.timestamp_value
-        from flow.project_process_step_custom_field_value ppscfv
-                 inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-        where cfga.schedule_field_type_id = 1
-    ), end_time as (
-        select ppscfv.id,
-               ppscfv.custom_field_group_assignment_id,
-               ppscfv.project_process_step_id,
-               ppscfv.timestamp_value
-        from flow.project_process_step_custom_field_value ppscfv
-                 inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-        where cfga.schedule_field_type_id = 2
-    ), resource as (
-        select ppscfv.id,
-               ppscfv.custom_field_group_assignment_id,
-               ppscfv.project_process_step_id,
-               ppscfv.int_value
-        from flow.project_process_step_custom_field_value ppscfv
-                 inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-        where cfga.schedule_field_type_id = 3
-    )
-    select
-        cfg.group_name,
-        pps.process_step_id,
-        pps.project_id,
-        pps.id as project_process_step_id,
-        sl.system_list_type_id,
-        st.timestamp_value as start,
-        st.id as start_custom_field_value_id,
-        cfga1.id as start_custom_field_group_assignment_id,
-        cf1.field_name as start_field_name,
-        cf1.readonly as start_field_read_only,
-        et.timestamp_value as end,
-        et.id as end_custom_field_value_id,
-        cfga2.id as end_custom_field_group_assignment_id,
-        cf2.field_name as end_field_name,
-        cf2.readonly as end_field_read_only,
-        r.int_value as resource_id,
-        cf3.field_name as resource_field_name,
-        r.id as resource_custom_field_value_id,
-        cfga3.id as resource_custom_field_group_assignment_id,
-        cf3.readonly as resource_field_read_only,
-        c.first_name as contact_first_name,
-        c.last_name as contact_last_name,
-        c.latitude,
-        c.longitude,
-        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
-        p.project_name,
-        ps.process_step_name,
-        c.state_id,
-        s.state,
-        pps.company_process_step_status_type_id,
-        cpsst.process_step_status_type,
-        cpsst.process_step_status_type_id,
-        case when sl.id is not null then coalesce((
-            SELECT array_to_json(array_agg(row_to_json(sys)))
-            FROM (
-                   select *
-                   from flow.get_system_list_options(ps.company_id::integer, sl.id::integer, true, cf3.system_list_option_ids::integer[])
-               ) sys), '[]') else '[]' end as resources
-    from flow.project_process_step pps
-             inner join flow.project p on p.id = pps.project_id
-             inner join flow.process_step ps on ps.id = pps.process_step_id
-             inner join flow.contact c on c.id = p.contact_id
-             inner join flow.state s on s.id = c.state_id
-             inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-             inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
-             left join flow.custom_field_group_assignment cfga1 on cfga1.custom_field_group_id = cfg.id and cfga1.schedule_field_type_id = 1
-             left join flow.custom_field_group_assignment cfga2 on cfga2.custom_field_group_id = cfg.id and cfga2.schedule_field_type_id = 2
-             left join flow.custom_field_group_assignment cfga3 on cfga3.custom_field_group_id = cfg.id and cfga3.schedule_field_type_id = 3
-             left join start_time st on st.project_process_step_id = pps.id and st.custom_field_group_assignment_id = cfga1.id
-             left join end_time et on et.project_process_step_id = pps.id and et.custom_field_group_assignment_id = cfga2.id
-             left join resource r on r.project_process_step_id = pps.id and r.custom_field_group_assignment_id = cfga3.id
-             left join flow.custom_field cf1 on cf1.id = cfga1.custom_field_id
-             left join flow.custom_field cf2 on cf2.id = cfga2.custom_field_id
-             left join flow.custom_field cf3 on cf3.id = cfga3.custom_field_id
-             left join flow.company_system_list csl on csl.id = cf3.company_system_list_id
-             left join flow.system_list sl on sl.id = csl.system_list_id
-             left join flow.user_position up on up.id = r.int_value
-             left join flow.user u on u.id = up.user_id
-             left join flow.org o on o.id = r.int_value
-    where case when :isParent
-      then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-      else ps.company_id = :companyId end
-      and ps.archived is not true
-      and cpsst.process_step_status_type_id = 1
-      and c.state_id = :stateId
-      and cfg.archived is not true
-      and case when st.timestamp_value is not null then st.timestamp_value >= :startTime::date else 1=1 end
-      and case when st.timestamp_value is not null then st.timestamp_value <= :endTime::date else 1=1 end
-      and case when array_length(ARRAY[ :eventTypeIds ]::INTEGER[], 1) = 0 OR ARRAY[ :eventTypeIds ]::integer[] is null then 1=1 else ARRAY[coalesce(cfg.event_type_id,-1)] <@ ARRAY[ :eventTypeIds ]::INTEGER[] end
+    select cfg.group_name,
+       pps.process_step_id,
+       pps.project_id,
+       pps.id as project_process_step_id,
+       sl.system_list_type_id,
+       start_cfv.timestamp_value as start,
+       start_cfv.id as start_custom_field_value_id,
+       start_cfga.id as start_custom_field_group_assignment_id,
+       start_cf.field_name as start_field_name,
+       start_cf.readonly as start_field_read_only,
+       end_cfv.timestamp_value as "end",
+       end_cfv.id as end_custom_field_value_id,
+       end_cfga.id as end_custom_field_group_assignment_id,
+       end_cf.field_name as end_field_name,
+       end_cf.readonly as end_field_read_only,
+       resource_cfv.int_value as resource_id,
+       resource_cfv.id as resource_custom_field_value_id,
+       resource_cfga.id as resource_custom_field_group_assignment_id,
+       resource_cf.field_name as resource_field_name,
+       resource_cf.readonly as resource_field_read_only,
+       c.first_name as contact_first_name,
+       c.last_name as contact_last_name,
+       c.latitude,
+       c.longitude,
+       case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
+       p.project_name,
+       ps.process_step_name,
+       c.state_id,
+       s.state,
+       pps.company_process_step_status_type_id,
+       cpsst.process_step_status_type,
+       cpsst.process_step_status_type_id,
+       case when sl.id is not null then coalesce((
+                                                     SELECT array_to_json(array_agg(row_to_json(sys)))
+                                                     FROM (
+                                                              select *
+                                                              from flow.get_system_list_options(ps.company_id::integer, sl.id::integer, true, resource_cf.system_list_option_ids::integer[])
+                                                          ) sys), '[]') else '[]' end as resources
+      from flow.project_process_step pps
+               inner join flow.process_step ps on ps.id = pps.process_step_id
+               inner join flow.custom_field_group cfg on cfg.process_step_id = pps.process_step_id
+               inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+               inner join flow.project p on p.id = pps.project_id
+               inner join flow.contact c on c.id = p.contact_id
+               inner join flow.state s on s.id = c.state_id
+               left join flow.custom_field_group_assignment start_cfga on start_cfga.custom_field_group_id = cfg.id and start_cfga.schedule_field_type_id = 1
+               left join flow.custom_field_group_assignment end_cfga on end_cfga.custom_field_group_id = cfg.id and end_cfga.schedule_field_type_id = 2
+               left join flow.custom_field_group_assignment resource_cfga on resource_cfga.custom_field_group_id = cfg.id and resource_cfga.schedule_field_type_id = 3
+               left join flow.project_process_step_custom_field_value start_cfv on start_cfv.project_process_step_id = pps.id and start_cfv.custom_field_group_assignment_id = start_cfga.id
+               left join flow.project_process_step_custom_field_value end_cfv on end_cfv.project_process_step_id = pps.id and end_cfv.custom_field_group_assignment_id = end_cfga.id
+               left join flow.project_process_step_custom_field_value resource_cfv on resource_cfv.project_process_step_id = pps.id and resource_cfv.custom_field_group_assignment_id = resource_cfga.id
+               left join flow.custom_field start_cf on start_cf.id = start_cfga.custom_field_id
+               left join flow.custom_field end_cf on end_cf.id = end_cfga.custom_field_id
+               left join flow.custom_field resource_cf on resource_cf.id = resource_cfga.custom_field_id
+               left join flow.user_position up on up.id = resource_cfv.int_value
+               left join flow.user u on u.id = up.user_id
+               left join flow.org o on o.id = resource_cfv.int_value
+               left join flow.company_system_list csl on csl.id = resource_cf.company_system_list_id
+               left join flow.system_list sl on sl.id = csl.system_list_id
+      where case when :isParent
+                     then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+                 else ps.company_id = :companyId end
+        and ps.archived is not true
+        and p.state_id = :stateId
+        and cfg.archived is not true
+        and case when start_cfv.timestamp_value is not null then start_cfv.timestamp_value >= :startTime::date else 1=1 end
+        and case when end_cfv.timestamp_value is not null then end_cfv.timestamp_value <= :endTime::date else 1=1 end
+        and ARRAY[coalesce(cfg.event_type_id,-1)] <@ ARRAY[ :eventTypeIds ]::INTEGER[]
+        and ARRAY[coalesce(cpsst.process_step_status_type_id,-1)] <@ ARRAY[ :processStepStatusTypeIds ]::INTEGER[]
     ]]>
 </schedule.getProjects>
 
 <schedule.getProject>
   <![CDATA[
-     with start_time as (
-          select ppscfv.id,
-                 ppscfv.custom_field_group_assignment_id,
-                 ppscfv.project_process_step_id,
-                 ppscfv.timestamp_value
-          from flow.project_process_step_custom_field_value ppscfv
-                   inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-          where cfga.schedule_field_type_id = 1
-      ), end_time as (
-          select ppscfv.id,
-                 ppscfv.custom_field_group_assignment_id,
-                 ppscfv.project_process_step_id,
-                 ppscfv.timestamp_value
-          from flow.project_process_step_custom_field_value ppscfv
-                   inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-          where cfga.schedule_field_type_id = 2
-      ), resource as (
-          select ppscfv.id,
-                 ppscfv.custom_field_group_assignment_id,
-                 ppscfv.project_process_step_id,
-                 ppscfv.int_value
-          from flow.project_process_step_custom_field_value ppscfv
-                   inner join flow.custom_field_group_assignment cfga on cfga.id = ppscfv.custom_field_group_assignment_id
-          where cfga.schedule_field_type_id = 3
-      )
-      select
-          cfg.group_name,
-          pps.process_step_id,
-          pps.project_id,
-          pps.id as project_process_step_id,
-          sl.system_list_type_id,
-          st.timestamp_value as start,
-          cf1.field_name as start_field_name,
-          cf1.readonly as start_field_read_only,
-          et.timestamp_value as end,
-          cf2.field_name as end_field_name,
-          cf2.readonly as end_field_read_only,
-          r.int_value as resource_id,
-          cf3.field_name as resource_field_name,
-          c.first_name as contact_first_name,
-          c.last_name as contact_last_name,
-          c.latitude,
-          c.longitude,
-          case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
-          p.project_name,
-          ps.process_step_name,
-          c.state_id,
-          s.state,
-          pps.company_process_step_status_type_id,
-          cpsst.process_step_status_type,
-          case when sl.id is not null then coalesce((
-                                                        SELECT array_to_json(array_agg(row_to_json(sys)))
-                                                        FROM (
-                                                                 select *
-                                                                 from flow.get_system_list_options(:companyId::integer, sl.id::integer, true, cf3.system_list_option_ids::integer[])
-                                                             ) sys), '[]') else '[]' end as resources
-      from flow.project_process_step pps
-               inner join flow.project p on p.id = pps.project_id
-               inner join flow.process_step ps on ps.id = pps.process_step_id
-               inner join flow.contact c on c.id = p.contact_id
-               inner join flow.state s on s.id = c.state_id
-               inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
-               inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
-               left join flow.custom_field_group_assignment cfga1 on cfga1.custom_field_group_id = cfg.id and cfga1.schedule_field_type_id = 1
-               left join flow.custom_field_group_assignment cfga2 on cfga2.custom_field_group_id = cfg.id and cfga2.schedule_field_type_id = 2
-               left join flow.custom_field_group_assignment cfga3 on cfga3.custom_field_group_id = cfg.id and cfga3.schedule_field_type_id = 3
-               left join start_time st on st.project_process_step_id = pps.id and st.custom_field_group_assignment_id = cfga1.id
-               left join end_time et on et.project_process_step_id = pps.id and et.custom_field_group_assignment_id = cfga2.id
-               left join resource r on r.project_process_step_id = pps.id and r.custom_field_group_assignment_id = cfga3.id
-               left join flow.custom_field cf1 on cf1.id = cfga1.custom_field_id
-               left join flow.custom_field cf2 on cf2.id = cfga2.custom_field_id
-               left join flow.custom_field cf3 on cf3.id = cfga3.custom_field_id
-               left join flow.company_system_list csl on csl.id = cf3.company_system_list_id
-               left join flow.system_list sl on sl.id = csl.system_list_id
-               left join flow.user_position up on up.id = r.int_value
-               left join flow.user u on u.id = up.user_id
-               left join flow.org o on o.id = r.int_value
-      where case when :isParent
-          then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
-          else ps.company_id = :companyId end
-        and ps.archived is not true
-        and pps.project_id = :projectId
-        and cfg.event_type_id = :eventTypeId
-        and case when :processStepStatusTypeId::int is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::int end
+     select cfg.group_name,
+           pps.process_step_id,
+           pps.project_id,
+           pps.id as project_process_step_id,
+           sl.system_list_type_id,
+           start_cfv.timestamp_value as start,
+           start_cf.field_name as start_field_name,
+           start_cf.readonly as start_field_read_only,
+           end_cfv.timestamp_value as "end",
+           end_cf.field_name as end_field_name,
+           end_cf.readonly as end_field_read_only,
+           resource_cfv.int_value as resource_id,
+           resource_cf.field_name as resource_field_name,
+           c.first_name as contact_first_name,
+           c.last_name as contact_last_name,
+           c.latitude,
+           c.longitude,
+           case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
+           p.project_name,
+           ps.process_step_name,
+           p.state_id,
+           s.state,
+           pps.company_process_step_status_type_id,
+           cpsst.process_step_status_type,
+           case when sl.id is not null then coalesce((
+                                                         SELECT array_to_json(array_agg(row_to_json(sys)))
+                                                         FROM (
+                                                                  select *
+                                                                  from flow.get_system_list_options(:companyId::integer, sl.id::integer, true, resource_cf.system_list_option_ids::integer[])
+                                                              ) sys), '[]') else '[]' end as resources
+    from flow.project_process_step pps
+             inner join flow.process_step ps on ps.id = pps.process_step_id
+             inner join flow.custom_field_group cfg on cfg.process_step_id = pps.process_step_id
+             inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+             inner join flow.project p on p.id = pps.project_id
+             inner join flow.contact c on c.id = p.contact_id
+             inner join flow.state s on s.id = p.state_id
+             left join flow.custom_field_group_assignment start_cfga on start_cfga.custom_field_group_id = cfg.id and start_cfga.schedule_field_type_id = 1
+             left join flow.custom_field_group_assignment end_cfga on end_cfga.custom_field_group_id = cfg.id and end_cfga.schedule_field_type_id = 2
+             left join flow.custom_field_group_assignment resource_cfga on resource_cfga.custom_field_group_id = cfg.id and resource_cfga.schedule_field_type_id = 3
+             left join flow.project_process_step_custom_field_value start_cfv on start_cfv.project_process_step_id = pps.id and start_cfv.custom_field_group_assignment_id = start_cfga.id
+             left join flow.project_process_step_custom_field_value end_cfv on end_cfv.project_process_step_id = pps.id and end_cfv.custom_field_group_assignment_id = end_cfga.id
+             left join flow.project_process_step_custom_field_value resource_cfv on resource_cfv.project_process_step_id = pps.id and resource_cfv.custom_field_group_assignment_id = resource_cfga.id
+             left join flow.custom_field start_cf on start_cf.id = start_cfga.custom_field_id
+             left join flow.custom_field end_cf on end_cf.id = end_cfga.custom_field_id
+             left join flow.custom_field resource_cf on resource_cf.id = resource_cfga.custom_field_id
+             left join flow.user_position up on up.id = resource_cfv.int_value
+             left join flow.user u on u.id = up.user_id
+             left join flow.org o on o.id = resource_cfv.int_value
+             left join flow.company_system_list csl on csl.id = resource_cf.company_system_list_id
+             left join flow.system_list sl on sl.id = csl.system_list_id
+    where case when :isParent
+                   then array[ps.company_id] <@ ( select array(select id from flow.company_hierarchy_filter_down(:parentCompanyId::int)))
+               else ps.company_id = :companyId end
+      and ps.archived is not true
+      and pps.project_id = :projectId
+      and cfg.event_type_id = :eventTypeId
+      and case when :processStepStatusTypeId::int is null then 1=1 else cpsst.process_step_status_type_id = :processStepStatusTypeId::int end
   ]]></schedule.getProject>
 
   <schedule.searchProjectsByName><![CDATA[
         select c.first_name as contact_first_name,
                c.last_name as contact_last_name,
-               concat(c.first_name, ' ', c.last_name) as contact_full_name
+               concat(c.first_name, ' ', c.last_name) as contact_full_name,
                p.project_name,
                p.id as project_id
         from flow.project p

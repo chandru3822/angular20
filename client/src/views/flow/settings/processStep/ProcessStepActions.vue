@@ -115,10 +115,12 @@
                 item-text="operatorType"
                 item-value="id"
             ></v-select>
+            hi:
             <v-switch
                 v-if="newRequirement.operatorTypeId"
                 v-model="newRequirement.customValue"
-                :readonly="newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7"
+                :readonly="(newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3"
+                :disabled="(newRequirement.operatorTypeId === 5 && selectedCustomField.dataTypeId === 7) || selectedCustomField.dataTypeId === 3"
                 @change="[newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null, validateRequirementForm()]"
                 class="mx-2"
                 label="Custom"
@@ -260,8 +262,8 @@
                   ></v-select>
                   <v-switch v-model="item.customValue"
                             class="mx-2"
-                            :readonly="item.operatorTypeId === 5 && item.dataTypeId === 7 || !userCanEdit"
-                            :disabled="item.immutable  || !userCanEdit"
+                            :readonly="(item.operatorTypeId === 5 && item.dataTypeId === 7) || item.dataTypeId === 3 || !userCanEdit"
+                            :disabled="(item.operatorTypeId === 5 && item.dataTypeId === 7) || item.dataTypeId === 3 || item.immutable  || !userCanEdit"
                             label="Custom"
                   ></v-switch>
                   <!-- single text field for non list custom values -->

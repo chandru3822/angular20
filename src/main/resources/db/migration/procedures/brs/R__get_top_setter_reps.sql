@@ -19,11 +19,9 @@ BEGIN
         inner join flow.user u on u.id = upv.user_id
         inner join flow.company_user_status cus on cus.user_id = u.id
         inner join flow.user_status_type ust on ust.id = cus.user_status_type_id
-        left join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 2
-        left join flow.project_process_step_custom_field_value closer_appointment_outcome on closer_appointment_outcome.project_process_step_id = pps.id and closer_appointment_outcome.custom_field_group_assignment_id = 4
       where ust.user_status_type = 'Active'
         and pd.closer_appointment_start between ((now() at time zone 'US/Mountain')::date) - p_days and ((now() at time zone 'US/Mountain')::date)
-        and closer_appointment_outcome.text_value in ('Pitched', 'Missed')
+        and pd.closer_appointment_outcome in (2,3) -- ('Pitched', 'Missed')
         and u.id not in (2354810, 2390159) --Trizon and Central Solar
       group by u.id, name
     )

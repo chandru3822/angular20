@@ -183,15 +183,15 @@
                    ) companies), '[]') as companies
       from flow."user" u
         inner join flow.user_company uc on uc.user_id = u.id
-        left join flow.company_user_status cus on cus.user_id = u.id
-        left join flow.user_status_type ust on ust.company_id = uc.company_id and ust.id = cus.user_status_type_id
+        inner join flow.company_user_status cus on cus.user_id = u.id
+        inner join flow.user_status_type ust on ust.company_id = uc.company_id and ust.id = cus.user_status_type_id
       where u.id = :id
         and uc.company_id = :companyId
         and uc.archived is not true
   ]]></user.getOne>
 
   <user.getSchedulingUsers><![CDATA[
-      with t1 as (
+            with t1 as (
           select distinct upv.user_id                            as id,
                           upv.first_name,
                           upv.last_name,
@@ -247,7 +247,7 @@
                                      and up.archived is not true
                                      and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
       from t1
-      order by full_name
+        order by full_name
   ]]></user.getSchedulingUsers>
 
   <user.findByUsernameIgnoreCase><![CDATA[

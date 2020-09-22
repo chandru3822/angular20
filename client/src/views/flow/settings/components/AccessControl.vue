@@ -130,7 +130,7 @@
           this.callback(this.companyFeatureList)
         }
       },
-      alterEnabledFlagForRows (newList, oldList, blah) {
+      alterEnabledFlagForRows (newList, oldList) {
         // filter the new list and remove everything that was in old list.  this is the row that was clicked
         if(this.companyFeatureList.length === newList?.length) {
           // select all
@@ -139,7 +139,7 @@
               ac.enabled = true
             })
           })
-        } else if (this.companyFeatureList.length === oldList?.length) {
+        } else if (newList?.length === 0 && this.companyFeatureList.length === oldList?.length) {
           // deselect all
           this.companyFeatureList.forEach(cfl => {
             cfl.accessControl.forEach(ac => {

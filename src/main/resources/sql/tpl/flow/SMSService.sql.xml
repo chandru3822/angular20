@@ -40,7 +40,6 @@
             WHERE
                 sms.to_phone ILIKE '%' || (select c.phone from flow.project p
                                             inner join flow.contact c on c.id = p.contact_id
-                                            left join flow.user users on users.id = p.created_by_id
                                             where p.id = :projectId)
             AND (
                 error_message IS NULL OR
@@ -51,11 +50,10 @@
                     )
                 )
             UNION ALL
-                SELECT body as message, null as media_urls,
+                SELECT body as message, array_to_json(media_urls),
                    date_received as created, from_phone, 1 as recipient_type_id from flow.sms_reply
                 WHERE from_phone ILIKE '%' || (select c.phone from flow.project p
                                                inner join flow.contact c on c.id = p.contact_id
-                                               left join flow.user users on users.id = p.created_by_id
                                                where p.id = :projectId)
             )
             ORDER BY created ASC
@@ -248,7 +246,7 @@
         <![CDATA[
         INSERT INTO flow.sms_reply (
             message_sid, account_sid, messaging_service_sid,
-            from_phone, to_phone, body, num_media
+            from_phone, to_phone, body, num_media, media_urls
         ) VALUES (
             :messageSid,
             :accountSid,
@@ -256,7 +254,8 @@
             :from,
             :to,
             :body,
-            :numMedia
+            :numMedia,
+            :mediaUrls
         )
         ]]>
     </sms.reply.save>

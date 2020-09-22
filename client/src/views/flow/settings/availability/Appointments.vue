@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="orgId || userId">
+  <v-container v-if="orgId || userId" id="appointment-container">
     <v-row>
       <v-col>
         <v-btn v-if="!addNew && $store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD')" @click="addNew = !addNew" class="mb-3">
@@ -49,12 +49,14 @@
           :headers="headers"
           :items="filterAppointments()"
           :fixed-header="true"
-          :items-per-page="-1"
           single-expand
           :expanded.sync="expanded"
-          hide-default-footer
+          :options.sync="options"
+          :loading="dataLoading"
+          :footer-props="footerProps"
+          :server-items-length="totalAppointments"
           disable-sort
-          class="elevation-1"
+          class="elevation-1 appointment-table"
         >
           <template #no-data>
             No available appointments
@@ -159,6 +161,7 @@
   import {getRequest, deleteRequest, putRequest, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import orderBy from "lodash.orderby"
   import moment from 'moment-timezone'
+  import constants from "@/helpers/constants";
 
   export default {
     name: 'Appointments',
@@ -198,6 +201,15 @@
         saveError: false,
         saveErrorMsg: '',
         dateType: 'date',
+        options: {
+          itemsPerPage: 100
+        },
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 1000],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
+        totalAppointments: 0,
+        dataLoading: true,
         dateFormat: 'MMMM DD, YYYY',
         timestampType: 'timestamp',
         timestampFormat: 'MMMM DD, YYYY h:mm a',
@@ -216,13 +228,19 @@
     methods: {
       async getAppointments() {
         if(this.orgId || this.userId) {
+          this.dataLoading = true
           this.$store.commit(AppMutations.SET_LOADING, true)
+          const { sortBy, sortDesc, page, itemsPerPage } = this.options
           try {
             const {data} = await getRequestWithParams(`/availability/appointments`, { params: {
                 userId: this.userId,
                 orgId: this.orgId,
+                page: page - 1,
+                size: itemsPerPage
               }})
-            this.appointments = data
+            this.appointments = data.content
+            this.totalAppointments = data.totalElements
+            this.dataLoading = false
             this.$store.commit(AppMutations.SET_LOADING, false)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -286,6 +304,10 @@
 </script>
 
 <style lang="scss">
+#appointment-container .v-data-table__wrapper {
+  height: calc(100vh - 390px);
+  min-height: 300px;
+}
 </style>
 
 <style lang="scss" scoped>
