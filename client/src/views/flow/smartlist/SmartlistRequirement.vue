@@ -307,6 +307,21 @@ import {getRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import Snackbar from '@/components/Snackbar'
 
+const newRequirementStructure = {
+  selectedField: null,
+    objectTypeId: null,
+    processStepId: null,
+    operatorTypeId: null,
+    dataTypeRequirementId: null,
+    secondaryRequirement: null,
+    secondaryRequirementValue: null,
+    isCustomValue: null,
+    allowMultiple: null,
+    customFieldSqlKey: null,
+    companySystemListId: null,
+    availableListOfValues: [],
+}
+
 export default {
   name: "SmartlistRequirement",
   components: {
@@ -331,20 +346,7 @@ export default {
       constants,
       snackbar: {},
       showNewRequirementForm: false,
-      newRequirement: {
-        selectedField: null,
-        objectTypeId: null,
-        processStepId: null,
-        operatorTypeId: null,
-        dataTypeRequirementId: null,
-        secondaryRequirement: null,
-        secondaryRequirementValue: null,
-        isCustomValue: null,
-        allowMultiple: null,
-        customFieldSqlKey: null,
-        companySystemListId: null,
-        availableListOfValues: [],
-      },
+      newRequirement: Object.assign(newRequirementStructure, {}),
       fetchedAvailableFields: [],
       availableFields: [],
       availableProcessSteps: [],
@@ -474,7 +476,7 @@ export default {
     },
     resetRequirementForm () {
       this.showNewRequirementForm = false
-      this.newRequirement = {}
+      this.newRequirement = Object.assign(newRequirementStructure, {})
       this.$emit('form-reset', true)
     },
     resetNewObjectType () {
