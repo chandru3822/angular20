@@ -373,8 +373,6 @@
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {
-        console.log('ssssssssssssstart', startTime)
-        console.log('END', endTime)
         this.startTime = startTime
         this.endTime = endTime
       },

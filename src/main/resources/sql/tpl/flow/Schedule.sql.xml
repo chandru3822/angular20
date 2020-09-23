@@ -76,8 +76,8 @@
       and st.timestamp_value is not null
       and et.timestamp_value is not null
       and r.int_value is not null
-      and case when :startTime::date is not null then st.timestamp_value >= :startTime::date else 1=1 end
-      and case when :endTime::date is not null then et.timestamp_value <= :endTime::date else 1=1 end
+      and case when :startTime::timestamp is not null then st.timestamp_value >= :startTime::timestamp else 1=1 end
+        and case when :endTime::timestamp is not null then et.timestamp_value <= :endTime::timestamp else 1=1 end
   ]]></schedule.getEvents>
 
   <schedule.getAvailability><![CDATA[
@@ -112,8 +112,8 @@
          'background' as rendering,
          case when ra.org_id is not null then 1 else 2 end as system_list_type_id
   from flow.resource_appointment ra
-  where ra.start_time >= :startTime::date
-    and ra.end_time <= :endTime::date
+  where ra.start_time >= :startTime::timestamp
+    and ra.end_time <= :endTime::timestamp
     and ra.archived is not true
     and ( case when array_length(ARRAY[ :orgIds ]::INTEGER[], 1) > 0 then ARRAY[coalesce(ra.org_id, -1)] <@ ARRAY[ :orgIds ]::INTEGER[] end
       OR case when array_length(ARRAY [ :userIds ]::INTEGER[], 1) > 0 then ARRAY [coalesce(ra.user_id, -1)] <@ ARRAY [ :userIds ]::INTEGER[] end )
