@@ -79,7 +79,8 @@
       <v-toolbar color="transparent" class="elevation-0">
         <v-toolbar-title>
 <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
-          <router-link v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')" :to="`/schedule`">{{cfg.groupName}}</router-link>
+          <router-link v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')"
+                       :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">{{cfg.groupName}}</router-link>
           <template v-else>{{cfg.groupName}}</template>
         </v-toolbar-title>
         <v-spacer></v-spacer>

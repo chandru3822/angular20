@@ -2379,12 +2379,12 @@
 
           switch (dateRange) {
             case 'today':
-              start = moment().startOf('day').toDate()
-              end = moment().toDate()
+              start = moment().startOf('day').format('YYYY-MM-DD')
+              end = moment().format('YYYY-MM-DD')
               break
             case 'wtd':
-              start = moment().startOf('W').toDate()
-              end = moment().toDate()
+              start = moment().startOf('W').format('YYYY-MM-DD')
+              end = moment().format('YYYY-MM-DD')
               break
             default:
               start = this.appts_created_pipeline_dt1
@@ -2397,12 +2397,12 @@
 
           switch (dateRange) {
             case 'today':
-              start = moment().startOf('day').toDate()
-              end = moment().toDate()
+              start = moment().startOf('day').format('YYYY-MM-DD')
+              end = moment().format('YYYY-MM-DD')
               break
             case 'wtd':
-              start = moment().startOf('W').toDate()
-              end = moment().toDate()
+              start = moment().startOf('W').format('YYYY-MM-DD')
+              end = moment().format('YYYY-MM-DD')
               break
             default:
               start = this.appts_to_fdc_pipeline_dt1
