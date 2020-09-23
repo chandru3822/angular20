@@ -1,9 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.Smartlist;
-import com.albatross.api.v1.flow.model.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.SmartlistLogic;
-import com.albatross.api.v1.flow.model.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -20,6 +19,8 @@ import java.util.List;
 public class SmartlistController {
 
   private final SmartlistService smartlistService;
+
+  private final CustomFieldService customFieldService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Smartlist>> getSmartlists() {
@@ -67,7 +68,7 @@ public class SmartlistController {
 
   @GetMapping(value = "/{smartlistId}/requirement", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistRequirement>> getRequirementsBySmartlistId(@PathVariable Long smartlistId) {
-    return new ResponseEntity<>(smartlistService.getRequirements(smartlistId), HttpStatus.OK);
+    return new ResponseEntity<>(smartlistService.getRequirements(smartlistId, true), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{smartlistId}/requirement", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -107,9 +108,24 @@ public class SmartlistController {
       return new ResponseEntity<>(smartlistService.getSmartlistResults(smartlistId), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/customFieldObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<CompanyObjectType>> getCustomFieldObjectTypes() {
+      List<CompanyObjectType> types = customFieldService.getCompanyObjectTypes();
+      // Object types 3 (users) and 5 (orgs) are only available in smartlists through process steps, not as direct lists or fields
+      List<CompanyObjectType> filteredTypes = types.stream()
+          .filter(t -> t.getObjectTypeId() != 3 && t.getObjectTypeId() != 5)
+          .collect(Collectors.toList());
+      return new ResponseEntity<>(filteredTypes, HttpStatus.OK);
+  }
+
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableSmartlistFieldsByObjectType(@RequestParam Long objectTypeId) {
     return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeId), HttpStatus.OK);
+  }
+
+  @GetMapping( value = "/availableFieldByCfgaId/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SmartlistFieldAssignment> getAvailableSmarlistFieldByCfgaId(@PathVariable Long cfgaId) {
+      return new ResponseEntity<>(smartlistService.getAvailableFieldByCfgaId(cfgaId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/shared", produces = MediaType.APPLICATION_JSON_VALUE)

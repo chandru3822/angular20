@@ -44,7 +44,7 @@ public class ScheduleController {
 
   @PostMapping(value = "/getProject", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ScheduleEvent> getProject(@RequestBody EventSearchParams params) {
-    //this returns a list because of how the UI currently works. probably will change this later
+    //this returns a list because if they search for canceled or complete they could get more than one
     return scheduleService.getProject(params);
   }
 
@@ -61,9 +61,9 @@ public class ScheduleController {
 
   @Data
   public static class EventSearchParams {
-    private List<Long> userIds, orgIds, eventTypeIds;
+    private List<Long> userIds, orgIds, eventTypeIds, processStepStatusTypeIds, userPositionIds;
     private String startTime, endTime, search;
-    private Long stateId, projectId, eventTypeId, processStepStatusTypeId;
+    private Long stateId, projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId;
   }
 
 }

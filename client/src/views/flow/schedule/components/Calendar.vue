@@ -47,7 +47,7 @@
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgTypes"
                     :items="orgTypes"
-                    label="Organization Types"
+                    label="Organization Resource Types"
                     multiple
                     :loading="orgTypesLoading"
                     hide-details
@@ -91,7 +91,7 @@
 
           <v-autocomplete v-model="selectedPositions"
                     :items="positions"
-                    label="Positions"
+                    label="Position Resource Types"
                     multiple
                     hide-details
                     :loading="positionsLoading"
@@ -138,7 +138,7 @@
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgs"
                     :items="orgs"
-                    label="Organizations"
+                    label="Organization Resources"
                     multiple
                     clearable
                     :loading="orgsLoading"
@@ -163,7 +163,7 @@
 
           <v-autocomplete v-model="selectedUsers"
                           :items="users"
-                          label="Users"
+                          label="User Resources"
                           multiple
                           clearable
                           hide-details
@@ -199,11 +199,15 @@
                     :defaultView="calendar.options.defaultView"
                     :resources="resources"
                     theme-system="standard"
+                    :resources-initially-expanded="true"
                     :time-zone="calendar.options.timezone"
                     :header="calendar.options.header"
                     :editable="calendar.options.editable"
                     :event-sources="eventSources"
                     :now-indicator="true"
+                    :slot-duration="calendar.options.slotDuration"
+                    :slot-label-interval="calendar.options.slotLabelInterval"
+                    :slot-width="calendar.options.slotWidth"
                     :min-time="calendar.options.minTime"
                     :max-time="calendar.options.maxTime"
                     :height="calendar.options.height"
@@ -211,7 +215,6 @@
                     :first-day="calendar.options.firstDay"
                     :hidden-days="calendar.options.hiddenDays"
                     :custom-buttons="calendar.options.customButtons"
-                    :slot-width="55"
                     @eventClick="(info) => handleEventClick(info)"
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
@@ -228,7 +231,7 @@
   import momentPlugin from '@fullcalendar/moment'
   import moment from 'moment'
   import cloneDeep from 'lodash.clonedeep'
-  import {getOrgTypes} from '@/services/orgService'
+  import {getSchedulingOrgTypes} from '@/services/orgService'
   import momentTimezonePlugin from '@fullcalendar/moment-timezone'
   import {AppMutations} from '@/stores/AppStore'
   import Snackbar from '@/components/Snackbar.vue'
@@ -325,7 +328,7 @@
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
       this.getSchedulingOrgs()
       this.getSchedulingUsers()
-      this.getOrgTypes()
+      this.getSchedulingOrgTypes()
       this.getPositions()
     },
     data() {
@@ -373,6 +376,9 @@
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         calendar: {
           options: {
+            slotDuration: '00:30:00',
+            slotLabelInterval: '01:00:00',
+            slotWidth: 45,
             scrollTime: moment().tz(this.$store.state.user.details.timezone.value).startOf('hour').format('HH:mm:ss'),
             hiddenDays: [0],
             minTime: '02:00:00',
@@ -385,7 +391,7 @@
             header: {
               left: 'customPrev,customToday,customNext',
               center: 'title',
-              right: 'resourceTimelineDay,resourceTimelineWeek'
+              right: 'customTimelineDay,customTimelineWeek'
             },
             customButtons: {
               customToday: {
@@ -416,7 +422,34 @@
                   // this.setCalendarStartAndEndTimes()
                   this.getEvents(false, true)
                 }
-              }
+              },
+              customTimelineDay: {
+                text: 'day',
+                click: () => {
+                  let calendarApi = this.$refs.eventCalendar.getApi()
+                  this.calendar.options.slotDuration = '00:30:00'
+                  this.calendar.options.minTime = '02:00:00'
+                  this.calendar.options.maxTime = '23:00:00'
+                  this.calendar.options.slotLabelInterval = '01:00:00'
+                  this.calendar.options.slotWidth = 45
+                  calendarApi.changeView('resourceTimelineDay')
+                  this.getEvents(false, true)
+                }
+              },
+              customTimelineWeek: {
+                text: 'week',
+                click: () => {
+                  this.calendar.options.minTime = '06:00:00'
+                  this.calendar.options.maxTime = '22:00:00'
+                  this.calendar.options.slotDuration = '01:00:00'
+                  this.calendar.options.slotLabelInterval = '02:00:00'
+                  this.calendar.options.slotWidth = 25
+
+                  let calendarApi = this.$refs.eventCalendar.getApi()
+                  calendarApi.changeView('resourceTimelineWeek')
+                  this.getEvents(false, true)
+                }
+              },
             }
           }
         }
@@ -496,10 +529,10 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getOrgTypes () {
+      async getSchedulingOrgTypes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getOrgTypes()
+          const {data} = await getSchedulingOrgTypes()
           this.orgTypes = data
           this.orgTypesLoading = false
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -559,6 +592,7 @@
           }
           const {data} = await postRequest(`/schedule/availability`, params)
           data.forEach(d => {
+            d.groupId = `${d.systemListTypeId}${d.resourceId}`
             d.resourceId = `${d.systemListTypeId}${d.resourceId}`
             d.color = 'gray'
           })
@@ -574,8 +608,6 @@
         localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
-        console.log('we are loading reload', reload)
-        console.log('we are loading initial', this.calendarInitialRender)
         if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
           if (!this.calendarInitialRender) {
             this.setCalendarStartAndEndTimes()
@@ -591,19 +623,21 @@
           if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
             //i do this here instead of on its own because all of the code above here has to happen for get availability as well
             this.calendarLoading = true
-            this.getAvailability()
+            await this.getAvailability()
 
             try {
               let params = {
                 orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-                userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+                userPositionIds: this.getUserPositionIds(),
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
               const {data} = await postRequest(`/schedule`, params)
               data.forEach(d => {
-                d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-                d.title = `<b>${d.contactFirstName} ${d.contactLastName}</b> <br/> ${d.groupName}`
+                // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
+                // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+                d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
+                d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.groupName}`
                 let matchingResource = this.resources.find(r => r.id === d.resourceId)
                 d.colorForBorder = matchingResource?.color
               })
@@ -621,21 +655,33 @@
           }
         }
       },
+      getUserPositionIds () {
+        let userPositionIds = []
+        this.selectedUsers?.forEach(su => {
+          su.userPositions.forEach(up => {
+            //up.id = userPositionId
+            userPositionIds.push(up.id)
+          })
+        })
+        return userPositionIds
+      },
       setCalendarStartAndEndTimes () {
         this.calendarStart = this.calendarApi.getDate()
         this.calendarView = this.calendarApi.view?.type
         if(this.calendarView === 'resourceTimelineDay') {
-          this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
         } else {
           //moment starts on sunday, add 1 to start
-          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          this.calendarEndTime = moment(this.calendarStart).endOf('week').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).endOf('week').utc().format('YYYY-MM-DD HH:mm:ss')
         }
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
       handleEventClick (info) {
-        if(info.event.title) {
+        if(info.event.title && !info.event.rendering) {
           let props = info.event.extendedProps
           this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}?processStepId=${props.processStepId}&contactId=${props.contactId}`})
           // this.$router.push({name: 'projectProcessStep', params: {projectId: props.projectId, processStepId: props.projectProcessStepId}})
@@ -647,7 +693,8 @@
         // inverse-background = blocked before start and after end (resource_schedule_availability)
         if(info.event.rendering === 'background') {
           info.el.textContent = info.event.title
-          info.el.style.cssText += `padding-left: 10px; opacity: 100%; color: black;`
+          info.el.style.cssText += `font-size: 11px; padding-left: 5px; cursor: default; margin-left: 1px; margin-right: 1px; opacity: 100%; color: black; overflow: hidden; border: solid 1px black;`
+          info.el.title = info.event.title + ': ' + moment(info.event.start).format('h:mm') + '-' + moment(info.event.end).format('h:mm')
         } else if(info.event.rendering !== 'inverse-background') {
           info.el.querySelector('.fc-title').innerHTML = info.event.title
           info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
@@ -667,6 +714,8 @@
             resourceEvents.forEach(re => {
               let eventObj = {
                 id: resource.id,
+                projectName: re.projectName,
+                processStepName: re.processStepName,
                 color: resource.extendedProps.color,
                 coordinates: [ re.longitude, re.latitude]
               }
@@ -714,7 +763,7 @@
               })
             }
             if(positionFilterRequired) {
-              positionMatch = mo.userPositions.some(up => {
+              positionMatch = mo?.userPositions.some(up => {
                 return selectedPositionIds.includes(up.positionId)
               })
             }

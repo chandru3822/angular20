@@ -30,7 +30,7 @@ BEGIN
 
 	RETURN QUERY select array_to_json(array_agg(row_to_json(sub_rows)))
         from (
-            select concat(c.first_name, ' ', c.last_name) as full_name,
+            select concat(c.first_name, ' ', c.last_name) as customer_name,
                    p.id,
                    lov.name as source_name,
                    concat(u.first_name, ' ', u.last_name) as owner_name,

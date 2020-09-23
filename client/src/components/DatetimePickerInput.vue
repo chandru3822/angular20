@@ -63,6 +63,7 @@ export default {
   },
   data: () => ({
     date: null,
+    utcDate: null,
     time: null,
     menu: false,
     showDate: false,
@@ -82,6 +83,8 @@ export default {
       },
       set: function (date) {
         this.time = moment.tz(date, 'HH:mm', this.timezone).utc().format('HH:mm')
+        // this date will be used in case the time selected pushes the utc date to the next day
+        this.utcDate = moment(this.date + ' ' + date).utc().format('yyyy-MM-DD')
         return date
       }
     }
@@ -99,8 +102,11 @@ export default {
     },
     saveTime () {
       if (this.type === 'timestamp') {
-        const date = DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: 'utc'})
+        const date = this.utcDate ? DateTime.fromFormat(this.utcDate, 'yyyy-MM-dd', {zone: 'utc'})
+          : DateTime.fromFormat(this.date, 'yyyy-MM-dd', {zone: 'utc'})
         let time = DateTime.fromISO(this.time, {zone: 'utc'})
+        console.log('randaLogger', date)
+
         const datetime = time.set({
           year: date.year,
           month: date.month,

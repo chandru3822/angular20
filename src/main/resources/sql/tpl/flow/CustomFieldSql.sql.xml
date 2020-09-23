@@ -4,7 +4,7 @@
        a.name
     from brs.ahj a
     where archived is not true
-    order by a.name;
+    order by a.name
   ]]></customFieldSql.brs.ahjList>
 
   <customFieldSql.brs.utilityCompanyList><![CDATA[

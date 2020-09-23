@@ -37,6 +37,15 @@ public class OrgTypeService {
     return results;
   }
 
+  public List<OrgType> getSchedulingOrgTypesForCompany() {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    List<OrgType> results = sqlCache.query("orgType.getSchedulingForCompany", params, OrgType.class);
+    return results;
+  }
+
   public List<OrgLevel> getOrgLevels() {
     User user = securityService.getCurrentUser();
 
