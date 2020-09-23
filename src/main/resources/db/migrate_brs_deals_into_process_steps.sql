@@ -9282,8 +9282,10 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                        and dce.deal_id = d2.id and
                                                                          (d2.resurvey_date >= up.start_date and case when end_date is not null then d2.resurvey_date <= end_date else 1=1 end) limit 1)
                  else null end,
+            case when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
+                                                                                                             and name = d2.resurvey_a_reason) else null end,
+
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
-                 when    p.custom_field_group_assignment_id = 1243 then d2.resurvey_a_reason
                 else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -9319,7 +9321,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,int_value,
+                                                         date_value,timestamp_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 1185 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
@@ -9339,8 +9341,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                        and dce.deal_id = d2.id and
                                                                          (d2.resurvey_date >= up.start_date and case when end_date is not null then d2.resurvey_date <= end_date else 1=1 end) limit 1)
                  else null end,
+            case when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
+                                                                                                             and name = d2.resurvey_a_reason) else null end,
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
-                 when    p.custom_field_group_assignment_id = 1243 then d2.resurvey_a_reason
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -9376,7 +9379,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,int_value,
+                                                         date_value,timestamp_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 1185 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
@@ -9396,8 +9399,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                        and dce.deal_id = d2.id and
                                                                          (d2.resurvey_b_date >= up.start_date and case when end_date is not null then d2.resurvey_b_date <= end_date else 1=1 end) limit 1)
                  else null end,
+            case when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
+                                                                                                             and name = d2.resurvey_b_reason) else null end,
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
-                 when    p.custom_field_group_assignment_id = 1243 then d2.resurvey_b_reason
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
@@ -9432,7 +9436,7 @@ now(),
            and cf.archived is false and cfg.archived is false and cfga.archived is false
      )
 insert into flow.project_process_step_custom_field_value(project_process_step_id, custom_field_group_assignment_id,
-                                                         timestamp_value,int_value,
+                                                         date_value,timestamp_value,int_value,text_value,
                                                          date_created, date_modified, created_by_id, modified_by_id)
     (select p1.id,p.custom_field_group_assignment_id,
             case when p.custom_field_group_assignment_id = 1185 then ((resurvey_scheduled_date  AT TIME ZONE 'US/Mountain') AT TIME ZONE 'UTC') else null end,
@@ -9452,8 +9456,9 @@ insert into flow.project_process_step_custom_field_value(project_process_step_id
                                                                        and dce.deal_id = d2.id and
                                                                          (d2.resurvey_c_date >= up.start_date and case when end_date is not null then d2.resurvey_c_date <= end_date else 1=1 end) limit 1)
                  else null end,
+            case when    p.custom_field_group_assignment_id = 1305 then (select id from flow.list_of_value where parent_id = 1013
+                                                                                                             and name = d2.resurvey_c_reason) else null end,
             case when p.custom_field_group_assignment_id = 1244 then d2.resurvey_requested_by
-                 when    p.custom_field_group_assignment_id = 1243 then d2.resurvey_c_reason
                  else null end,
             now(),now(),2350555,2350555
      from blueraven.deal d2
