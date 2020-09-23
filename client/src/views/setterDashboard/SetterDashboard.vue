@@ -621,7 +621,7 @@
                     <v-text-field class="custom-date-input" v-model="pipeline_dt1_formatted" readonly
                                   outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="pipeline_dt1"
+                  <v-date-picker v-model="pipeline_dt1" :max="pipeline_dt2"
                                  @input="updatePipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
@@ -631,7 +631,7 @@
                     <v-text-field class="custom-date-input" v-model="pipeline_dt2_formatted" readonly
                                   outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="pipeline_dt2"
+                  <v-date-picker v-model="pipeline_dt2" :min="pipeline_dt1"
                                  @input="updatePipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>

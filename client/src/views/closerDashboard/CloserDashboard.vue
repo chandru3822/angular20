@@ -421,7 +421,7 @@
                     <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
                                   readonly outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt1"
+                  <v-date-picker v-model="appts_created_pipeline_dt1" :max="appts_created_pipeline_dt2"
                                  @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
@@ -431,7 +431,7 @@
                     <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
                                   readonly outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt2"
+                  <v-date-picker v-model="appts_created_pipeline_dt2" :min="appts_created_pipeline_dt1"
                                  @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
@@ -818,7 +818,7 @@
                     <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
                                   outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1"
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1" :max="appts_to_fdc_pipeline_dt2"
                                  @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
@@ -828,7 +828,7 @@
                     <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
                                   outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2"
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2" :min="appts_to_fdc_pipeline_dt1"
                                  @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
