@@ -30,7 +30,7 @@ BEGIN
 					and o.parent_org_id in (SELECT (elem->>'region_id') :: INTEGER
 					                        FROM json_array_elements(p_region_ids) elem)
 				group by upmv.org_id, upmv.org_name, ot.org_type, lov.name, o.active_flag
-				order by o.active_flag, upmv.org_name, ot.org_type, lov.name
+				order by o.active_flag desc, upmv.org_name, ot.org_type, lov.name
             ) as sub_rows;
 	else
         RETURN QUERY
