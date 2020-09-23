@@ -40,20 +40,6 @@
                       :disabled="!state || !state.id"
                       multiple
             >
-<!--              <v-list-item-->
-<!--                  slot="prepend-item"-->
-<!--                  ripple-->
-<!--                  @click="toggleSelectAllSteps()"-->
-<!--              >-->
-<!--                <v-list-item-action>-->
-<!--                  <v-icon>{{ icon }}</v-icon>-->
-<!--                </v-list-item-action>-->
-<!--                <v-list-item-title>Select All</v-list-item-title>-->
-<!--              </v-list-item>-->
-<!--              <v-divider-->
-<!--                  slot="prepend-item"-->
-<!--                  class="mt-2"-->
-<!--              ></v-divider>-->
               <template
                   slot="selection"
                   slot-scope="{ item, index }"
@@ -73,6 +59,7 @@
             <v-select v-model="selectedProcessStepStatusTypes"
                       :items="processStepStatusTypes"
                       label="Status"
+                      clearable
                       item-text="processStepStatusType"
                       item-value="id"
                       :disabled="selectedEventTypes.length === 0"
@@ -321,23 +308,6 @@
         // masterProjects: []
       }
     },
-    computed: {
-      // selectAll () {
-      //   return this.selectedEventTypes.length === this.eventTypes.length
-      // },
-      // selectSome () {
-      //   return this.selectedEventTypes.length > 0 && !this.selectAll
-      // },
-      // icon () {
-      //   if (this.selectedEventTypes && this.eventTypes && this.selectedEventTypes.length === this.eventTypes.length) {
-      //     return 'check_box'
-      //   }
-      //   if (this.selectSome) {
-      //     return 'indeterminate_check_box'
-      //   }
-      //   return 'check_box_outline_blank'
-      // }
-    },
     watch: {
       search(val) {
         if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
@@ -357,11 +327,14 @@
     created() {
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
+      this.selectedProcessStepStatusTypes = JSON.parse(localStorage.getItem('scheduleProcessStepStatusTypes')) || []
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
-      if(this.$route.query && this.$route.query.processStepId && this.$route.query.projectId) {
-        this.getSingleProject(parseInt(this.$route.query.projectId), parseInt(this.$route.query.processStepId))
+      console.log('router', this.$route)
+      if(this.$route.query && this.$route.query.projectProcessStepId) {
+        //projectId, eventTypeId, processStepStatusTypeId
+        this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
       }
     },
     methods: {
@@ -382,7 +355,7 @@
         try {
           const {data} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
           // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
-          this.$refs.calendar.getEvents()
+          this.$refs.calendar.getEvents(false, true)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
         } catch (e) {
@@ -402,8 +375,6 @@
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {
-        console.log('ssssssssssssstart', startTime)
-        console.log('END', endTime)
         this.startTime = startTime
         this.endTime = endTime
       },
@@ -455,6 +426,7 @@
         }
         localStorage.setItem('scheduleState', JSON.stringify(this.state))
         localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
+        localStorage.setItem('scheduleProcessStepStatusTypes', JSON.stringify(this.selectedProcessStepStatusTypes))
 
         if(this.selectedEventTypes?.length > 0) {
           this.listLoading = true
@@ -531,13 +503,14 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventTypeId, processStepStatusTypeId) {
+      async getSingleProject(projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId) {
         this.listLoading = true
         try {
           let params = {
             projectId,
             eventTypeId,
-            processStepStatusTypeId
+            processStepStatusTypeId,
+            projectProcessStepId
           }
 
           const {data} = await postRequest(`/schedule/getProject`, params)
@@ -547,6 +520,7 @@
           this.projects = data
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
+            this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
           }
           this.listLoading = false
         } catch (e) {

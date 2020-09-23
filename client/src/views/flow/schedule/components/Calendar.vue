@@ -566,9 +566,8 @@
           })
           //in order for resources to work as both users and orgs, the resourceId needs to be prefixed with a type_id 1=org, 2=user
           data.forEach(d => {
-            d.masterUserPostionId = d.userPositionId
-            d.userId = d.id
-            d.id = `${2}${d.userPositionId}`
+            d.masterId = d.id
+            d.id = `${2}${d.id}`
           })
           this.users = data
           this.masterUsers = cloneDeep(this.users)
@@ -587,12 +586,13 @@
         try {
           let params = {
             orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.userId) : [],
+            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
             startTime: this.calendarStartTime,
             endTime: this.calendarEndTime
           }
           const {data} = await postRequest(`/schedule/availability`, params)
           data.forEach(d => {
+            d.groupId = `${d.systemListTypeId}${d.resourceId}`
             d.resourceId = `${d.systemListTypeId}${d.resourceId}`
             d.color = 'gray'
           })
@@ -608,8 +608,6 @@
         localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
-        console.log('we are loading reload', reload)
-        console.log('we are loading initial', this.calendarInitialRender)
         if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender)) || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
           if (!this.calendarInitialRender) {
             this.setCalendarStartAndEndTimes()
@@ -625,19 +623,21 @@
           if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
             //i do this here instead of on its own because all of the code above here has to happen for get availability as well
             this.calendarLoading = true
-            this.getAvailability()
+            await this.getAvailability()
 
             try {
               let params = {
                 orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-                userPositionIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.userPositionId) : [],
+                userPositionIds: this.getUserPositionIds(),
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
               const {data} = await postRequest(`/schedule`, params)
               data.forEach(d => {
-                d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-                d.title = `<b>${d.contactFirstName} ${d.contactLastName}</b> <br/> ${d.groupName}`
+                // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
+                // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+                d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
+                d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.groupName}`
                 let matchingResource = this.resources.find(r => r.id === d.resourceId)
                 d.colorForBorder = matchingResource?.color
               })
@@ -655,16 +655,28 @@
           }
         }
       },
+      getUserPositionIds () {
+        let userPositionIds = []
+        this.selectedUsers?.forEach(su => {
+          su.userPositions.forEach(up => {
+            //up.id = userPositionId
+            userPositionIds.push(up.id)
+          })
+        })
+        return userPositionIds
+      },
       setCalendarStartAndEndTimes () {
         this.calendarStart = this.calendarApi.getDate()
         this.calendarView = this.calendarApi.view?.type
         if(this.calendarView === 'resourceTimelineDay') {
-          this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
         } else {
           //moment starts on sunday, add 1 to start
-          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          this.calendarEndTime = moment(this.calendarStart).endOf('week').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).endOf('week').utc().format('YYYY-MM-DD HH:mm:ss')
         }
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
@@ -702,6 +714,8 @@
             resourceEvents.forEach(re => {
               let eventObj = {
                 id: resource.id,
+                projectName: re.projectName,
+                processStepName: re.processStepName,
                 color: resource.extendedProps.color,
                 coordinates: [ re.longitude, re.latitude]
               }
@@ -749,7 +763,7 @@
               })
             }
             if(positionFilterRequired) {
-              positionMatch = mo.userPositions.some(up => {
+              positionMatch = mo?.userPositions.some(up => {
                 return selectedPositionIds.includes(up.positionId)
               })
             }

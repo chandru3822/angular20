@@ -142,7 +142,7 @@
           <v-data-table
             id="drilldown-table"
             :headers="headers"
-            :items="drilldownData"
+            :items="milestoneDrilldownData"
             :items-per-page="-1"
             :mobile-breakpoint="0"
             fixed-header
@@ -150,7 +150,7 @@
             hide-default-footer
             class="elevation-1"
           >
-            <template v-if="drilldownData.length > 0" #item="{ item, index }" class="table-body">
+            <template v-if="milestoneDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
                 <td class="text-left">{{ index + 1 }}</td>
                 <td class="text-left customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
@@ -677,7 +677,7 @@
 
             <!-- TODAY COUNT -->
             <td class="funnel-td" style="cursor: pointer"
-                @click="drillDown(line.id, 'yesterday', line.name)">
+                @click="funnelDrilldown(line.id, 'yesterday', line.name)">
               <div>
                 <div class="funnel-count" :style="{color: line.countTodayState}"
                      :title="line.todayHover">
@@ -695,7 +695,7 @@
 
             <!-- LAST 7 DAYS COUNT -->
             <td class="funnel-td" style="cursor: pointer"
-                @click="drillDown(line.id, '7days', line.name)">
+                @click="funnelDrilldown(line.id, '7days', line.name)">
               <div>
                 <div class="funnel-count" :style="{color: line.count7state}"
                      :title="line.sevenDayHover">
@@ -713,7 +713,7 @@
 
             <!-- LAST 30 DAYS COUNT -->
             <td class="funnel-td" style="cursor: pointer"
-                @click="drillDown(line.id, '30days', line.name)">
+                @click="funnelDrilldown(line.id, '30days', line.name)">
               <div>
                 <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.thirtyDayHover">
@@ -735,7 +735,7 @@
                 :style="{color: line.customCountState}"
                 style="width:15%; cursor: pointer"
                 :title="line.customDayHover"
-                @click="drillDown(line.id, 'custom', line.name)">
+                @click="funnelDrilldown(line.id, 'custom', line.name)">
               {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
             </td>
 
@@ -743,7 +743,7 @@
                 class="funnel-td"
                 :style="{color: line.customCountState}"
                 style="width: 15%; cursor: pointer"
-                @click="drillDown(line.id, 'custom', line.name)">
+                @click="funnelDrilldown(line.id, 'custom', line.name)">
               <div>
                 <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.customDayHover">
@@ -763,6 +763,89 @@
         </table>
       </div>
     </div>
+    <!-- FUNNEL END -->
+
+    <v-dialog v-model="funnelDrilldownDialog">
+      <v-card id="funnel-drilldown">
+        <v-card-title class="mb-1">
+          <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
+          <a class="close-modal-x pb-3" title="Close" @click="funnelDrilldownDialog = false">×</a>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-title v-if="funnelDrilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
+          <v-text-field v-model="funnelDrilldownSearch"
+                        placeholder="Type to filter..."
+                        single-line
+                        hide-details
+                        outlined
+                        dense
+          ></v-text-field>
+          <span id="funnel-drilldown-row-count">
+            Records: {{ funnelDrilldownRowCount + '/' + funnelDrilldownData.length }}
+          </span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-data-table
+            id="funnel-drilldown-table"
+            class="elevation-1"
+            :class="{'mt-6': funnelDrilldownData.length === 0}"
+            :mobile-breakpoint="0"
+            :headers="visibleFunnelDrilldownHeaders"
+            fixed-header
+            :items="funnelDrilldownData"
+            @current-items="filteredFunnelDrilldownItems"
+            :search="funnelDrilldownSearch"
+            :height="funnelDrilldownRowCount > 0 ? (constants.IS_MOBILE ? 'calc(100vh - 250px)' : 'calc(100vh - 355px)') : '105px'"
+            dense
+            multi-sort
+            :sort-by="[]"
+            :sort-desc="[]"
+            hide-default-footer
+            disable-pagination
+          >
+            <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
+              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+                <td style="text-align: center">{{ index + 1 }}</td>
+                <td>{{ item.setter_name ? item.setter_name : '' }}</td>
+                <td>{{ item.employee_id ? item.employee_id : '' }}</td>
+                <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
+                <td>{{ item.deal_id ? item.deal_id : '' }}</td>
+                <td>{{ item.appointment_date_formatted ? item.appointment_date_formatted : '' }}</td>
+                <td>{{ item.owner_name ? item.owner_name : '' }}</td>
+                <td>{{ item.verified_setter_lead ? item.verified_setter_lead : '' }}</td>
+                <td :class="item.appointment_outcome_class">
+                  {{ item.appointment_outcome ? item.appointment_outcome : '' }}
+                </td>
+                <td>{{ item.date_created_formatted ? item.date_created_formatted : '' }}</td>
+                <td>{{ item.state ? item.state : '' }}</td>
+                <td>{{ item.office ? item.office : '' }}</td>
+              </tr>
+            </template>
+
+            <template #no-data>
+              <div class="my-3 funnel-drilldown-no-data-msg">
+                No data is available for the selected date range.
+              </div>
+            </template>
+
+            <template #no-results>
+              <div class="my-3 funnel-drilldown-no-data-msg">
+                No matching records found.
+              </div>
+            </template>
+          </v-data-table>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn class="white--text text-capitalize mr-4 mb-2" color="primaryButton"
+                 @click="funnelDrilldownDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <!----------------------------------- PIPELINE TAB END ----------------------------------->
 
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -774,6 +857,7 @@
   import $ from 'jquery'
   import moment from 'moment'
   import Snackbar from '@/components/Snackbar.vue'
+  import constants from '@/helpers/constants'
   import { getRequestWithParams, postRequest, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import { getSetterDistricts, getSetterRegions, getSetterOffices, getSetterReps } from '@/services/dashboardService'
@@ -785,7 +869,9 @@
     },
     data: () => ({
       snackbar: {},
+      constants,
       milestoneDialog: false,
+      funnelDrilldownDialog: false,
       currentUserId: null,
       isSetterMgr: false,
       selectedQuarter: 1,
@@ -797,7 +883,7 @@
         { text: 'Appointment Date', value: 'appointment_date', show: true },
         { text: 'Appointment Outcome', value: 'appointment_outcome', show: true }
       ],
-      drilldownData: [],
+      milestoneDrilldownData: [],
       timeIntervalBtnGroup: 0,
       timeIntervalString: 'MTD', // MTD is selected by default
       timeInterval: +moment().format('DD') - 1,
@@ -905,13 +991,22 @@
       showCustomPercentage: false,
       expectedInstalls: 1,
       expectationTimeout: 0,
-      funnelStats: [
-        // {id: 3, name: 'Appointments Created', ratio: 4.2, expectation: 4.2, display_order: 1, today_day_count: 0, yesterday_day_count: 0, today_percent: 0, seven_day_count: 992, prev_seven_day_count: 1526, seven_percent: -35.00, thirty_day_count: 4644, prev_thirty_day_count: 4639, thirty_day_percent: 0.00, custom_date_range_count: 0},
-        // {id: 1, name: 'Appointments Occurred', ratio: 1.7,expectation: 1.7,display_order: 2,today_day_count: 127,yesterday_day_count: 8,today_percent: 1488.00,seven_day_count: 1310,prev_seven_day_count: 1493,seven_percent: -12.00,thirty_day_count: 4836,prev_thirty_day_count: 4638,thirty_day_percent: 4.00,custom_date_range_count: 127},
-        // {id: 2,name:  'Appointments Pitched',ratio: 1.00,expectation: 1.00,display_order: 3,today_day_count: 1,yesterday_day_count: 0,today_percent: 0,seven_day_count: 507,prev_seven_day_count: 866,seven_percent: -41.00,thirty_day_count: 2546,prev_thirty_day_count: 2463,thirty_day_percent: 3.00,custom_date_range_count: 1}
-      ],
+      funnelStats: [],
       funnelDrilldownTitle: '',
-      funnelDrilldownHeaders: [],
+      funnelDrilldownHeaders: [
+        { text: '', value: '', show: true, sortable: false, width: 25 },
+        { text: 'Setter', value: 'setter_name', show: true, width: 90 },
+        { text: 'Employee ID', value: 'employee_id', show: true, width: 120 },
+        { text: 'Name', value: 'customer_name', show: true, width: 90 },
+        { text: 'Deal ID', value: 'deal_id', show: true, width: 95 },
+        { text: 'Appointment Date', value: 'appointment_date_formatted', show: true, width: 150 },
+        { text: 'Closer', value: 'owner_name', show: true, width: 90 },
+        { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
+        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
+        { text: 'Added On', value: 'date_created_formatted', show: true, width: 105 },
+        { text: 'State', value: 'state', show: true, width: 80 },
+        { text: 'Office', value: 'office', show: true, width: 90 }
+      ],
       funnelDrilldownData: [],
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
@@ -1200,17 +1295,17 @@
             setterMgrOfficeId: this.setterMgrOfficeId
           }
           const {data} = await getRequestWithParams('/setterDashboard/pitchesDrilldown', {params}, 'blueraven')
-          this.drilldownData = cloneDeep(data)
+          this.milestoneDrilldownData = cloneDeep(data)
 
-          if (this.drilldownData.length > 0) {
+          if (this.milestoneDrilldownData.length > 0) {
             this.reformatDates()
-            this.drilldownData.forEach(row => {
+            this.milestoneDrilldownData.forEach(row => {
               if (row.customer_name) {
                 row.customer_name = row.customer_name.toLowerCase()
               }
             })
           } else {
-            this.drilldownData = []
+            this.milestoneDrilldownData = []
           }
 
           this.selectedQuarter = quarter
@@ -1224,7 +1319,7 @@
       },
 
       reformatDates () {
-        this.drilldownData.forEach(row => {
+        this.milestoneDrilldownData.forEach(row => {
           if (row.appointment_date) {
             row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
           }
@@ -1937,6 +2032,76 @@
         } else {
           this.repModel = []
         }
+      },
+
+      funnelDrilldown (funnelId, dateRange, funnelName) {
+        let reps = []
+        let orgs = []
+        let start, end
+        let datesMatch = false
+
+        reps = this.repModel.map(rep => rep.id)
+        orgs = this.officeModel.map(org => org.id)
+
+        switch (dateRange) {
+          case 'today':
+            start = moment().startOf('day').toDate()
+            end = moment().toDate()
+            break
+          case '7days':
+            start = moment().startOf('W').toDate()
+            end = moment().toDate()
+            break
+          case '30days':
+            start = moment().startOf('W').toDate()
+            end = moment().toDate()
+            break
+          default:
+            start = this.appts_to_fdc_pipeline_dt1
+            end = this.appts_to_fdc_pipeline_dt2
+            break
+        }
+
+        if (moment(start).format('YYYY-MM-DD') === moment(end).format('YYYY-MM-DD')) {
+          datesMatch = true
+          this.funnelDrilldownTitle = funnelName + ' on ' + moment(start).format('M/D/YYYY')
+        } else {
+          this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
+        }
+
+        this.markMissingDrilldownData()
+        this.reformatFunnelDrilldownDates()
+        this.funnelDrilldownDialog = true
+      },
+
+      markMissingDrilldownData() {
+        this.funnelDrilldownData = this.funnelDrilldownData.map(function (line) {
+          let newLine = {}
+
+          Object.keys(line).forEach(function (key) {
+            newLine[key] = line[key]
+            newLine[key + '_class'] = !line[key] ? 'missing' : ''
+          })
+
+          return newLine
+        })
+      },
+
+      reformatFunnelDrilldownDates () {
+        this.funnelDrilldownData.forEach(row => {
+          if (row.appointment_date) {
+            row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
+          }
+
+          if (row.date_created) {
+            row.date_created_formatted = moment(row.date_created).format('MMM D, YYYY')
+          }
+        })
+      },
+
+      filteredFunnelDrilldownItems (filteredItems) {
+        this.filteredFunnelDrilldownData = filteredItems
+        this.funnelDrilldownRowCount = filteredItems.length
       }
       /* FUNNEL-RELATED CODE END */
     },
@@ -2841,6 +3006,90 @@
     }
   }
 
+  #funnel-drilldown {
+    .missing {
+      background-color: rgba(204, 0, 0, 0.5);
+    }
+
+    .v-card__title {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      padding: 0 24px;
+
+      #funnel-drilldown-title {
+        font-family: "Roboto Condensed", sans-serif;
+        font-size: 14px;
+        line-height: 24px;
+        word-break: normal;
+        padding-top: 5px;
+      }
+    }
+
+    .close-modal-x {
+      font-size: 20px;
+      margin-left: 15px;
+
+      &:hover {
+        font-weight: bolder;
+      }
+    }
+
+    #funnel-drilldown-search {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: center;
+
+      ::v-deep .v-input {
+        max-width: 70%;
+      }
+
+      ::v-deep input,
+      #funnel-drilldown-row-count {
+        font-size: 11px;
+      }
+    }
+
+    #funnel-drilldown-table {
+      ::v-deep th, ::v-deep td {
+        font-size: 10px;
+        padding: 5px;
+      }
+
+      ::v-deep th {
+        line-height: 14px;
+
+        .v-data-table-header__icon {
+          font-size: 12px !important;
+          padding-bottom: 2px;
+        }
+      }
+
+      .customer-name {
+        text-transform: capitalize;
+      }
+
+      .funnel-drilldown-no-data-msg {
+        text-align: left;
+        margin-left: 25px;
+      }
+    }
+
+    .v-card__text {
+      padding-bottom: 0;
+    }
+
+    .v-btn {
+      font-size: 10px;
+      width: 50px;
+      min-width: 50px;
+      height: 25px;
+    }
+  }
+
   @media (min-width: 500px) {
     #progress-bar-container {
       span {
@@ -2858,6 +3107,18 @@
       #eighth-segment img {
         max-width: 22px;
         top: -4px;
+      }
+    }
+
+    #funnel-drilldown {
+      .v-card__title {
+        align-items: center;
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep .v-input {
+          max-width: 75%;
+        }
       }
     }
   }
@@ -3305,6 +3566,62 @@
         }
       }
     }
+
+    #funnel-drilldown {
+      .v-card__title {
+        padding: 10px 24px 0 24px;
+
+        #funnel-drilldown-title {
+          font-size: 18px;
+          padding-bottom: 10px;
+        }
+      }
+
+      .close-modal-x {
+        font-size: 24px;
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 12px;
+        }
+
+        ::v-deep .v-input {
+          width: 80%;
+        }
+
+        #funnel-drilldown-row-count {
+          text-align: right;
+          width: 20%;
+        }
+      }
+
+      #funnel-drilldown-table {
+        ::v-deep th, ::v-deep td {
+          font-size: 11px;
+        }
+
+        ::v-deep th {
+          line-height: 16px;
+
+          .v-data-table-header__icon {
+            font-size: 14px !important;
+            padding-bottom: 3px;
+          }
+        }
+      }
+
+      .v-card__text {
+        padding-bottom: 10px;
+      }
+
+      .v-btn {
+        font-size: 12px;
+        width: 75px;
+        height: 30px;
+      }
+    }
   }
 
   @media (min-width: 1070px) {
@@ -3597,6 +3914,28 @@
         }
       }
     }
+
+    #funnel-drilldown {
+      .v-card__title {
+        #funnel-drilldown-title {
+          font-size: 20px;
+          line-height: 26px;
+        }
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 12px;
+        }
+      }
+
+      .v-btn {
+        font-size: 14px;
+        width: 80px;
+        height: 35px;
+      }
+    }
   }
 
   @media (min-width: 1135px) {
@@ -3680,6 +4019,36 @@
 
           .funnel-line-name {
             width: 350px;
+          }
+        }
+      }
+    }
+
+    #funnel-drilldown {
+      .v-card__title {
+        #funnel-drilldown-title {
+          font-size: 24px;
+          line-height: 32px;
+        }
+      }
+
+      #funnel-drilldown-search {
+        ::v-deep input,
+        #funnel-drilldown-row-count {
+          font-size: 14px;
+        }
+      }
+
+      #funnel-drilldown-table {
+        ::v-deep th, ::v-deep td {
+          font-size: 12px;
+        }
+
+        ::v-deep th {
+          line-height: 18px;
+
+          .v-data-table-header__icon {
+            font-size: 16px !important;
           }
         }
       }

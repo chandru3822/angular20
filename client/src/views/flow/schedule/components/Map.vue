@@ -2,17 +2,33 @@
   <MglMap :accessToken="map.accessToken"
           :mapStyle="map.style"
           @load="onMapLoad">
+    <!-- these markers come from the lower data table  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates" :coordinates="m.coordinates"
-               :color="m.color || '#ffffff'"></MglMarker>
+               :color="m.color || '#ffffff'">
+      <MglPopup :close-button="false">
+        <VCard flat>
+          {{m.contactFirstName}} {{m.contactLastName}}<br/>
+          {{m.processStepName}}
+        </VCard>
+      </MglPopup>
+    </MglMarker>
+    <!-- these markers come from the calendar  -->
     <MglMarker v-for="m in mapResources" v-if="m.coordinates" :coordinates="m.coordinates"
-               :color="m.color || '#ffffff'"></MglMarker>
+               :color="m.color || '#ffffff'">
+      <MglPopup  :close-button="false">
+        <VCard flat>
+          {{m.projectName}}<br/>
+          {{m.processStepName}}
+        </VCard>
+      </MglPopup>
+    </MglMarker>
     <MglNavigationControl :showCompass="false" position="top-right"/>
   </MglMap>
 </template>
 
 <script>
   import Mapbox from 'mapbox-gl'
-  import {MglMap, MglMarker, MglNavigationControl} from 'vue-mapbox'
+  import {MglMap, MglPopup, MglMarker, MglNavigationControl} from 'vue-mapbox'
   import constants from '@/helpers/constants'
 
 
@@ -20,6 +36,7 @@
     name: 'ScheduleMap',
     components: {
       MglMap,
+      MglPopup,
       MglMarker,
       MglNavigationControl,
     },

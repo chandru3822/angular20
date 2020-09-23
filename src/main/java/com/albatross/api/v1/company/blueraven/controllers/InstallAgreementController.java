@@ -36,18 +36,21 @@ public class InstallAgreementController {
   }
 
   @PostMapping(value = "/create")
-  public ResponseEntity<String> saveRequest(@RequestBody InstallAgreementRequest request) throws Exception {
-    try {
+  public ResponseEntity<String> saveRequest(@RequestBody InstallAgreementRequest request) {
+      JSONObject result = new JSONObject();
+      try {
         String resultMsg = installAgreementRepository.saveRequest(request);
         if (resultMsg == null || resultMsg.equals(StringUtils.EMPTY)) {
             request.setRequest_successful(true);
             installAgreementRepository.setRequestStatus(request);
-            return ResponseEntity.ok("Request submitted");
+            result.put("message", "Request successfully submitted");
+            return ResponseEntity.ok(result.toString());
         }
         else {
             request.setRequest_successful(false);
             installAgreementRepository.setRequestStatus(request);
-            return ResponseEntity.badRequest().body(resultMsg);
+            result.put("message", resultMsg);
+            return ResponseEntity.badRequest().body(result.toString());
         }
     } catch (Exception e) {
         return ResponseEntity.badRequest().body(e.getMessage());
