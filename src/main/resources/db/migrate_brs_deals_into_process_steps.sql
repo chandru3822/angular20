@@ -8820,7 +8820,7 @@ INSERT INTO flow.project_process_step (project_id, process_step_id, company_proc
               INNER JOIN blueraven.deal d
                          ON project.id = d.id
               inner join blueraven.stage sd on sd.id = d.current_stage_id
-     where originator_id =1 and  and
+     where originator_id =1 and
 
          (permit_packet_submitted_date >= (now() AT TIME ZONE 'US/Mountain') and permit_pack_submittal_verified IS NULL OR
 
@@ -10572,3 +10572,4 @@ EXECUTE PROCEDURE flow.refresh_user_position_records();
 --      where ac.id is null
 --        and a.local_deleted = 0
 --        and u.id != 2355131);
+/**/
