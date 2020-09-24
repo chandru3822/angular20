@@ -3,13 +3,18 @@
     <v-toolbar color="transparent" class="elevation-0">
       <v-toolbar-title>Notes</v-toolbar-title>
     </v-toolbar>
-    <v-card class="pa-4">
-      <v-toolbar flat color="white" class="elevation-0">
+    <v-card>
+      <v-toolbar flat dense color="white" class="elevation-0">
         <v-toolbar-title class="app-title">Leave a note:</v-toolbar-title>
       </v-toolbar>
-      <v-card class="pa-3 elevation-0 square-card">
-        <v-textarea solo v-model="note.note"></v-textarea>
-        <div class="text-right">
+      <v-divider></v-divider>
+      <v-card class="px-3 elevation-0 square-card">
+        <v-textarea class="py-2" hide-details
+                    auto-grow
+                    rows="4"
+                    background-color="#F2F6F8"
+                    filled v-model="note.note"></v-textarea>
+        <div class="text-left mb-2">
           <v-btn color="primary" class="white--text"
                  :disabled="!note.note"
                  @click="saveNote(note)">Save</v-btn>
@@ -18,18 +23,20 @@
           </v-btn>
         </div>
       </v-card>
+      <v-divider></v-divider>
 
       <v-spacer></v-spacer>
+      <h4 class="pl-3 pt-2">Notes Feed</h4>
       <v-data-table
         :headers="headers"
-        :items="notes"
+        :items="filterNotes()"
         :items-per-page="-1"
         single-expand
         item-key="id"
         :expanded.sync="expanded"
         hide-default-footer
         hide-default-header
-        class="elevation-1 mt-1"
+        class="elevation-0 mt-1"
         >
 
         <template #no-data>
@@ -40,55 +47,205 @@
         </template>
 
         <template #item="{ item, index }">
-          <tr class="text-left" :class="{'shaded-row': index % 2}">
-            <td class="py-2">
-              <pre class="app-pre-wrapper">{{ item.note }}</pre>
-              <div class="mt-2 note-created-by">
-                Created by: {{item.createdBy}}<br/>
-                Created at: {{item.dateCreated | formatDate('timestamp')}}
+          <tr class="text-left" :class="{'shaded-row': index % 2}" v-if="item.edit" >
+            <td class="py-2 pl-5" colspan="3">
+              <v-textarea class="py-2" hide-details
+                          auto-grow
+                          rows="4"
+                          background-color="#F2F6F8"
+                          filled v-model="item.note"></v-textarea>
+              <div class="text-left mb-2">
+                <v-btn color="primary" class="white--text"
+                       :disabled="!item.note"
+                       @click="[item.edit = false, item.noteMenu = false, saveNote(item)]">Save</v-btn>
+                <v-btn text @click="[item.note = item.oldNote, item.edit = false, item.noteMenu = false]">
+                  <span>cancel</span>
+                </v-btn>
               </div>
             </td>
-            <td class="text-right">
-              <v-btn text @click="[item.showReply = true, expanded=[item]]">
-                <v-icon>reply</v-icon>
-              </v-btn>
-              <v-btn text v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)" @click="expanded=[item]">
-                <v-icon>expand_more</v-icon>
-              </v-btn>
-              <v-btn text v-if="item.childNotes && item.childNotes.length > 0 && expanded.includes(item)" @click="expanded=[]">
-                <v-icon>expand_less</v-icon>
-              </v-btn>
+          </tr>
+          <tr class="text-left" :class="{'shaded-row': index % 2}" v-else>
+            <td class="py-2 pl-5">
+              <pre class="app-pre-wrapper">{{ item.note }}</pre>
+              <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
+                   @click="expanded=[item]" class="pl-4 note-see-comments">
+                See {{ item.childNotes.length}} comment{{item.childNotes.length > 1 ? 's' : ''}}...
+              </div>
+              <div v-else-if="item.childNotes && item.childNotes.length > 0 && expanded.includes(item)"
+                   @click="expanded=[]" class="pl-4 note-see-comments">
+                Hide comments...
+              </div>
+            </td>
+            <td class="note-created-by">
+              {{item.createdBy}} {{item.dateCreated | formatDate('timestamp')}}
+            </td>
+            <td class="text-right"  style="width: 50px;">
+              <v-menu v-model="item.noteMenu"
+                      :close-on-content-click="true"
+                      min-width="290px">
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on" text>
+                    <v-icon>mdi-dots-horizontal</v-icon>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item @click="[item.showReply = true, expanded=[item]]">
+                    <v-list-item-title>Add Comment</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item v-if="item.createdById === userId || $store.getters.isFullAdmin"
+                    @click="[item.oldNote = item.note, item.edit = true]">
+                    <v-list-item-title>Edit Note</v-list-item-title>
+                  </v-list-item>
+                  <v-dialog
+                    v-if="item.createdById === userId || $store.getters.isFullAdmin"
+                    v-model="item.deleteConfirm"
+                    width="500">
+                    <template #activator="{ on }">
+                      <v-list-item v-on="on">
+                        <v-list-item-title>Delete Note</v-list-item-title>
+                      </v-list-item>
+                    </template>
+                    <v-card>
+                      <v-card-title
+                        class="headline grey lighten-2"
+                        primary-title>
+                        Confirm
+                      </v-card-title>
+
+                      <v-card-text class="pt-4">
+                        Deleting this note will remove all comments. Are you sure you want to delete?
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="item.deleteConfirm = false">
+                          No
+                        </v-btn>
+                        <v-btn
+                          color="primary"
+                          text
+                          @click="deleteNote(item, false)">
+                          Yes
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+
+                </v-list>
+              </v-menu>
             </td>
           </tr>
         </template>
 
         <template #expanded-item="{ headers, item }">
-          <td :colspan="headers.length" class="pa-4">
+          <td :colspan="headers.length" class="py-4 px-10">
             <div v-if="item.showReply">
-              <label>Leave a reply:</label>
-              <v-textarea solo v-model="item.reply" class="mt-1"></v-textarea>
-              <div class="text-right">
+              <v-textarea solo v-model="item.reply"
+                          hide-details
+                          auto-grow
+                          rows="1"
+                          placeholder="Add a comment..." class="mt-1"></v-textarea>
+              <div class="text-left py-2">
                 <v-btn color="primary white--text" @click="saveNote(item)"
                        :disabled="!item.reply"
                 >
                   Save
                 </v-btn>
                 <v-btn class="ml-2" v-if="item.reply"
-                       @click="[item.reply=null, item.showReply = false]">
+                       @click="[item.reply=null, item.showReply = false, !item.childNotes || item.childNotes.length === 0 ? expanded=[] : null]">
                   cancel</v-btn>
               </div>
             </div>
-            <h4>Replies:</h4>
-            <v-list>
-              <v-list-item v-for="(cn, index) in item.childNotes" :key="index" dense class="mb-4">
-                <v-list-item-content>
-                  <v-list-item-title>{{cn.note}}</v-list-item-title>
-                  <v-list-item-subtitle>Left by: {{cn.createdBy}}</v-list-item-subtitle>
-                  <v-list-item-subtitle>Left at: {{cn.dateCreated | formatDate('timestamp')}}</v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+            <div v-for="(cn, index) in filterBy(item.childNotes, false, 'archived')" :key="index">
+              <div v-if="cn.edit">
+                <v-textarea class="py-2" hide-details
+                            auto-grow
+                            rows="4"
+                            background-color="#F2F6F8"
+                            filled v-model="cn.note"></v-textarea>
+                <div class="text-left mb-2">
+                  <v-btn color="primary" class="white--text"
+                         :disabled="!cn.note"
+                         @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save</v-btn>
+                  <v-btn text @click="[cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
+                    <span>cancel</span>
+                  </v-btn>
+                </div>
+              </div>
+              <v-row v-else class="px-0">
+                <v-col cols="11" class="pr-0">
+                  <v-card color="#F2F6F8" class="py-0">
+                    <v-card-title class="reply-note-creator pt-1 pb-0">
+                      {{cn.createdBy}}
+                      <v-spacer></v-spacer>
+                      {{cn.dateCreated | formatDate('timestamp')}}
+                    </v-card-title>
+                    <v-card-text class="reply-note pb-1">
+                      <pre class="app-pre-wrapper">{{cn.note}}</pre>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+                <v-col cols="1" class="reply-button-dots pl-0">
+                  <v-menu v-model="cn.noteMenu"
+                          :close-on-content-click="true"
+                          min-width="290px">
+                    <template v-slot:activator="{ on }">
+                      <v-btn v-on="on" text>
+                        <v-icon>mdi-dots-horizontal</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list>
+                      <v-list-item v-if="cn.createdById === userId || $store.getters.isFullAdmin"
+                                 @click="[cn.oldNote = cn.note, cn.edit = true]">
+                        <v-list-item-title>Edit Comment</v-list-item-title>
+                      </v-list-item>
+                      <v-dialog
+                        v-if="cn.createdById === userId || $store.getters.isFullAdmin"
+                        v-model="cn.deleteConfirm"
+                        width="500">
+                        <template #activator="{ on }">
+                          <v-list-item v-on="on">
+                            <v-list-item-title>Delete Comment</v-list-item-title>
+                          </v-list-item>
+                        </template>
+                        <v-card>
+                          <v-card-title
+                            class="headline grey lighten-2"
+                            primary-title>
+                            Confirm
+                          </v-card-title>
 
+                          <v-card-text class="pt-4">
+                            Are you sure you want to delete this comment?
+                          </v-card-text>
+
+                          <v-divider></v-divider>
+
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                              @click="cn.deleteConfirm = false">
+                              No
+                            </v-btn>
+                            <v-btn
+                              color="primary"
+                              text
+                              @click="deleteNote(cn, false)">
+                              Yes
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+
+                    </v-list>
+                  </v-menu>
+
+                </v-col>
+              </v-row>
+            </div>
           </td>
         </template>
 
@@ -103,9 +260,11 @@
 <script>
 import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import Snackbar from '@/components/Snackbar.vue'
+import Vue2Filters from "vue2-filters";
 
 export default {
   name: 'NotesAndActivity',
+  mixins: [Vue2Filters.mixin],
   props: {
     showNotes: Boolean,
     showActivity: Boolean,
@@ -121,20 +280,40 @@ export default {
       snackbar: {},
       addNote: false,
       note: {},
+      userId: this.$store.state.user.details.id,
+      noteOptions: [
+        { label: 'Add Comment' },
+        { label: 'Edit Note' },
+        { label: 'Delete Note' },
+      ],
       selectedParent: {},
       headers: [
         { text: 'note', value: 'note', show: true },
-        { text: null, value: 'icons', show: true }
+        { text: '', value: 'createdBy', show: true },
+        { text: null, value: 'icons', show: true, width: '50px' }
       ],
       expanded: [],
     }
   },
   methods: {
+    async deleteNote(n, isChildNote) {
+      try {
+        // @randa: Probably should create an object type enum on the frontend that mimics the backend?
+        await deleteRequest(`/note/${n.id}`)
+        n.archived = true
+        this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Deleting Note')
+      }
+    },
     async saveNote(n) {
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
+        console.log('NOTE_HERE', n)
         const {data} = await postRequest(`/note/save${this.$props.type}Note`, {
           primaryId: this.primaryId,
+          id: n.id,
           note: n.reply ? n.reply : n.note,
           parentId: n.reply ? n.id : null
         })
@@ -143,7 +322,7 @@ export default {
           n.reply = null
           n.showReply = false
           n.childNotes == null ? n.childNotes = [data] : n.childNotes.push(data)
-        } else {
+        } else if(!n.id) {
           this.$props.notes.unshift(data)
           this.note = {}
         }
@@ -152,6 +331,9 @@ export default {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Note')
       }
+    },
+    filterNotes() {
+      return this.notes.filter(n => { return !n.archived})
     }
   }
 }
@@ -162,6 +344,30 @@ export default {
 .note-created-by {
   font-size: 11px;
   font-style: italic;
+}
+.note-see-comments {
+  font-size: 11px;
+  font-style: italic;
+  color: #6B777D;
+}
+.reply-note-item {
+  background-color: #F2F6F8;
+  padding: 5px 15px;
+  border-radius: 10px;
+}
+.reply-note-creator {
+  color: var(--v-primaryCustom-base) !important;
+  font-weight: 600;
+  font-size: 12px;
+}
+.reply-note {
+  color: var(--v-primaryCustom-base) !important;
+  font-size: 12px;
+  font-style: italic;
+}
+.reply-button-dots {
+  display: flex;
+  align-items: center;
 }
 </style>
 <style lang="scss">
