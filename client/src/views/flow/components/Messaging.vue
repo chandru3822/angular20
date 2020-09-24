@@ -200,11 +200,7 @@ export default {
                 messages.push(msg);
             })
 
-            // this.messageList = messages
-            // $(".sc-user-input").css("text-align","left")
-            // $(".sc-user-input").parent().parent().css("right","5%")
-            // $(".sc-user-input").parent().parent().css("width","40%")
-            // $(".sc-user-input").parent().parent().css("height","61%")
+            this.messageList = messages
           } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error fetching messages')
@@ -220,8 +216,6 @@ export default {
 <style lang="scss">
 .message-container {
   min-height: 400px;
-  //max-width: 100%;
-  //width: 400px;
 }
 
 .sc-chat-window {
@@ -229,23 +223,7 @@ export default {
   max-width: 100%;
   width: 400px !important;
   height: 100% !important;
+  text-align: left !important;
 }
-
-.message-avatar {
-  border-radius:50%;
-  color: pink;
-  font-size: 15px;
-  line-height:25px;
-  text-align:center;
-  background: tomato;
-  width: 25px !important;
-  height: 25px !important;
-  min-width: 30px;
-  min-height: 30px;
-  margin: 5px;
-  font-weight:bold;
-}
-
-
 
 </style>
