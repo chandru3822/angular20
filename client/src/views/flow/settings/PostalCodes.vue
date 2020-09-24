@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Postal Code Zones</v-toolbar-title>
+          <v-toolbar-title class="app-title">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="[addNew = !addNew, newZone = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
@@ -14,7 +14,7 @@
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
             <v-text-field
-                label="Zone Name"
+                label="Round Robin Name"
                 tabindex=1
                 v-model="newZone.zoneName"
             ></v-text-field>
@@ -72,7 +72,7 @@
                         </v-card-title>
 
                         <v-card-text>
-                          Are you sure you want to delete this postal code zone: <strong>{{ item.zoneName }}</strong>?
+                          Are you sure you want to delete this round robin: <strong>{{ item.zoneName }}</strong>?
                         </v-card-text>
 
                         <v-divider></v-divider>
@@ -128,7 +128,7 @@
         userId: this.$store.state.user.details.id,
         postalCodeZones: [],
         headers: [
-          {text: 'Zone Name', value: 'zoneName', show: true},
+          {text: 'Round Robin Name', value: 'zoneName', show: true},
           {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
           {text: '', value: 'icons', show: true},
         ]
