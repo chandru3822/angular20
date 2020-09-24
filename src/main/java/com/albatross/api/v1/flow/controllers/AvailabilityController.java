@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -87,7 +86,7 @@ public class AvailabilityController {
   }
 
   @PostMapping(value = "/setCloserAppointment", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> setCloserAppointment(@RequestBody CloserAppointmentRequest request) throws SQLException {
+  public ResponseEntity<Object> setCloserAppointment(@RequestBody CloserAppointmentRequest request) throws Exception {
     return availabilityService.setCloserAppointment(request);
   }
 }

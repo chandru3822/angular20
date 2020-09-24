@@ -241,6 +241,7 @@
         p.city,
         p.state_id,
         s.state,
+        s.time_zone_abbreviation,
         p.postal_code,
         p.country_id,
         c.country,
