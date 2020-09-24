@@ -293,8 +293,10 @@ public class SmartlistService {
         }
       }
 
-      if (f.getDataTypeId() == 1 || f.getDataTypeId() == 2) {
-        query.append(String.format(" %s as \"%s\", ", location, f.getName()));
+      if (f.getDataTypeId() == 1) {
+        query.append(String.format(" to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
+      } else if(f.getDataTypeId() == 2) {
+        query.append(String.format(" to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 7) {
           query.append(String.format(" (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
@@ -338,20 +340,20 @@ public class SmartlistService {
         query.append("left join flow.contact on flow.contact.id = flow.project.contact_id and flow.contact.archived is not true ");
     }
 
-    for (SmartlistFieldAssignment field : joinTables) {
+    for (SmartlistFieldAssignment f : joinTables) {
 
-      final Long objectTypeId = field.getObjectTypeId();
-      final Boolean hasListValues = field.getHasListValues();
-      final String customFieldSqlKey = field.getCustomFieldSqlKey();
-      final Boolean allowMultiple = field.getAllowMultiple();
-      final Long processStepId = field.getProcessStepId();
-      final Long cfgaId = field.getCustomFieldGroupAssignmentId();
+      final Long objectTypeId = f.getObjectTypeId();
+      final Boolean hasListValues = f.getHasListValues();
+      final String customFieldSqlKey = f.getCustomFieldSqlKey();
+      final Boolean allowMultiple = f.getAllowMultiple();
+      final Long processStepId = f.getProcessStepId();
+      final Long cfgaId = f.getCustomFieldGroupAssignmentId();
       String uuid;
 
-      if (field.getSystemListTypeId() != null) {
-        uuid = field.getValueReferenceTable();
+      if (f.getSystemListTypeId() != null) {
+        uuid = f.getValueReferenceTable();
       } else {
-        uuid = field.getReferenceTable();
+        uuid = f.getReferenceTable();
       }
 
       switch (objectTypeId.intValue()) {
@@ -442,7 +444,6 @@ public class SmartlistService {
                   .orElse(null);
 
               if (referenceTable != null) {
-                  //Only put quotes around table when dataTypeId == 7
                   referenceLocation = "\"" + referenceTable + "\"." + referenceColumn;
               } else {
                   // Do a new join from custom field value table based on object type
@@ -622,7 +623,6 @@ public class SmartlistService {
                 LocalDate nowDate = LocalDate.now();
                 String secondaryDateValue = r.getSecondaryRequirementValue();
 
-                //@TODO: format dates for sql query when returning
                 switch (r.getDataTypeRequirementId().intValue()) {
                     case 1:
                         return nowDate.minusDays(Long.parseLong(secondaryDateValue));
