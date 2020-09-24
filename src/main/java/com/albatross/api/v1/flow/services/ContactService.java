@@ -85,6 +85,13 @@ public class ContactService {
     return result.orElse(null);
   }
 
+  public Contact getContactByPhone(String phoneNumber) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("phone", phoneNumber);
+    Optional<Contact> result = sqlCache.get("contact.getContactByPhone", params, new ContactMapper<>(Contact.class, om));
+    return result.orElse(null);
+  }
+
   public Contact updateContact(Contact contact) {
     User currentUser = securityService.getCurrentUser();
 
