@@ -16,7 +16,7 @@ public class Org {
 
   private Long id, companyId, parentOrgId, orgTypeId, orgLevelId, stateId, parentOrgTypeId, defaultAppointmentLength;
   private String orgName, orgType, parentOrgName, title; //title used for scheduling tool
-  private Boolean activeFlag, schedulable, availableToChildren, showType;
+  private Boolean activeFlag, schedulable, availableToChildren, showType, archived;
 
   //when getting orgs for scheduling, I had to "type" the id by putting a 1 in front of it. this field should only be used in the scheduling tool
   private Long masterId;
