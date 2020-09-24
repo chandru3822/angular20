@@ -65,7 +65,7 @@ CREATE INDEX if not exists fki_project_rebate_payment_project_id
     on brs.project_rebate_payment (project_id);
 
 CREATE INDEX if not exists fki_project_rebate_payment_state_id
-    on brs.project_rebate_payment (state_id);
+    on brs.project_rebate_payment (project_rebate_payment_state_id);
 
 CREATE TABLE if NOT EXISTS brs.project_rebate_payment_audit
 (
