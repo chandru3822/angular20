@@ -84,7 +84,8 @@ public class CustomFieldService {
   public CustomField saveField(CustomField customField) throws SQLException {
     HashMap<String, Object> params = new HashMap<>();
     params.put("fieldName", customField.getFieldName());
-    params.put("readonly", customField.getReadonly() == null ? false : customField.getReadonly());
+    params.put("readonly", customField.getReadonly() != null && customField.getReadonly());
+    params.put("multiLine", customField.getMultiLine() != null && customField.getMultiLine());
     params.put("systemListId", customField.getCompanySystemListId());
     params.put("systemListOptionIds", null == customField.getSystemListOptionIds() || customField.getSystemListOptionIds().isEmpty()
                                           ? null : createSqlArrayOfType("int", customField.getSystemListOptionIds()));
