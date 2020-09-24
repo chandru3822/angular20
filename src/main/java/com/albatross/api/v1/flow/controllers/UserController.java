@@ -36,8 +36,8 @@ public class UserController {
     private final CommunicationService communicationService;
     private final UserService userService;
 
-    @Value("${reset_url}")
-    private String resetUrl;
+    @Value("${home_url}")
+    private String homeUrl;
 
     @PostMapping(value="/search", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<User>> searchUsers(@RequestBody UserSearch search, Pageable pageable) {
@@ -116,7 +116,7 @@ public class UserController {
                 String template = IOUtils.toString(inputStream);
 
                 HashMap context = new HashMap();
-                context.put("link", resetUrl + "/passwordReset/" + uuid);
+                context.put("link", homeUrl + "/passwordReset/" + uuid);
                 context.put("from", "Blue Raven Solar Sales HR");
                 context.put("mailTo", "saleshr@blueravensolar.com");
 
