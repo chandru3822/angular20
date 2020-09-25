@@ -68,11 +68,11 @@
             <td class="py-2 pl-5">
               <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
-                   @click="expanded=[item]" class="pl-4 note-see-comments">
+                   @click="expanded=[item]" class="pl-4 note-see-comments clickable">
                 See {{ item.childNotes.length}} comment{{item.childNotes.length > 1 ? 's' : ''}}...
               </div>
               <div v-else-if="item.childNotes && item.childNotes.length > 0 && expanded.includes(item)"
-                   @click="expanded=[]" class="pl-4 note-see-comments">
+                   @click="expanded=[]" class="pl-4 note-see-comments clickable">
                 Hide comments...
               </div>
             </td>

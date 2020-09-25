@@ -140,6 +140,7 @@
       set first_name = :firstName,
           last_name = :lastName,
           email = :email,
+          username = :username,
           phone_number = :phone,
           modified_by_id = :modifiedById,
           date_modified = now()
@@ -156,6 +157,7 @@
       select u.id,
              u.phone_number,
              u.email,
+             u.username,
              u.created_by_id,
              u.first_name,
              u.last_name,
