@@ -9,6 +9,7 @@ BEGIN
     if v_whole_company then
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
 		from (
+            --Appointments Occurred
 			with setter_funnel_1 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)
@@ -55,12 +56,13 @@ BEGIN
 				 from brs.project_details pd
 				 where pd.source in (6) -- 'Setter Gen'
 				     and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) -- 'Cancelled'
-				     and pd.closer_appointment_start between p_custom_start_date and p_custom_end_date
+				     and pd.closer_appointment_start::date between p_custom_start_date and p_custom_end_date
 				     and pd.closer_appointment_start is not null) as custom_date_range_count
 				from brs.setter_funnel
 				where id = 1
             ),
 
+            --Appointments Pitched
             setter_funnel_2 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)
@@ -100,12 +102,13 @@ BEGIN
 				(select count(1)
 				 from brs.project_details pd
 				 where pd.source in (6) -- 'Setter Gen'
-				     and pd.closer_appointment_start between p_custom_start_date and p_custom_end_date
+				     and pd.closer_appointment_start::date between p_custom_start_date and p_custom_end_date
 				     and pd.closer_appointment_outcome in (2,3)) as custom_date_range_count
 				from brs.setter_funnel
 				where id = 2
             ),
 
+            --Appointments Created
             setter_funnel_3 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)
@@ -190,6 +193,7 @@ BEGIN
     else
 	    RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
         from (
+            --Appointments Occurred
 		    with setter_funnel_1 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
     			(select count(1)
@@ -277,13 +281,14 @@ BEGIN
                  where pd.source in (6) -- 'Setter Gen'
                      and (pd.closer_appointment_outcome is null or pd.closer_appointment_outcome != 4) -- 'Cancelled'
                      and Array[u.id]::integer[] && p_user_ids
-                     and pd.closer_appointment_start between p_custom_start_date and p_custom_end_date
+                     and pd.closer_appointment_start::date between p_custom_start_date and p_custom_end_date
                      and pd.closer_appointment_start is not null
                      and Array[u.id]::integer[] && brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date)) as custom_date_range_count--,
                 from brs.setter_funnel
                 where id = 1
             ),
 
+            --Appointments Pitched
             setter_funnel_2 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
                 (select count(1)
@@ -364,13 +369,14 @@ BEGIN
                      inner join flow.user u on u.id = upv.user_id
                  where pd.source in (6) -- 'Setter Gen'
                      and Array[u.id]::integer[] && p_user_ids
-                     and pd.closer_appointment_start between p_custom_start_date and p_custom_end_date
+                     and pd.closer_appointment_start::date between p_custom_start_date and p_custom_end_date
                      and pd.closer_appointment_outcome in (2,3)
                      and Array[u.id]::integer[] && brs.limit_by_org_for_setters(Array[u.id]::integer[],p_org_ids,p.date_created::date)) as custom_date_range_count--,
                 from brs.setter_funnel
                 where id = 2
             ),
 
+            --Appointments Created
             setter_funnel_3 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
                 (select count(1)

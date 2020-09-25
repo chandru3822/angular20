@@ -5,7 +5,7 @@
 
   <note.insertNote><![CDATA[
     insert into flow.note(parent_id, created_by_id, note)
-    values (:parentId, :createdById, :note)
+    values (:parentId, :userId, :note)
   ]]></note.insertNote>
 
   <note.getNote><![CDATA[
@@ -15,6 +15,7 @@
            n.date_created,
            n.date_modified,
            n.created_by_id,
+           n.archived,
            concat(creator.first_name, ' ', creator.last_name) AS created_by,
            n.modified_by_id
     from flow.note n
@@ -25,7 +26,7 @@
   <note.updateNote><![CDATA[
     update flow.note
         set note = :note,
-            modified_by_id = :modifiedById,
+            modified_by_id = :userId,
             date_modified = now()
     where id = :id
   ]]></note.updateNote>
@@ -33,5 +34,13 @@
   <note.insertNoteRelation><![CDATA[
     select * from flow.insert_note_relation(:primaryId::integer, :noteId::integer, :typeId::integer)
   ]]></note.insertNoteRelation>
+
+  <note.deleteNote><![CDATA[
+    update flow.note
+        set archived = true,
+            modified_by_id = :modifiedById,
+            date_modified = now()
+    where id = :noteId
+  ]]></note.deleteNote>
 
 </sql>

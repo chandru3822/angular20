@@ -8106,73 +8106,73 @@ INSERT INTO flow.contact_custom_field_value (contact_id, custom_field_group_assi
 
 
 -- add the company project status types
-insert into flow.project_status_type (project_status_type)
-values ('Active'), ('Cancelled'), ('On Hold');
+-- insert into flow.project_status_type (project_status_type)
+-- values ('Active'), ('Cancelled'), ('On Hold');
 
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'B+C Electric'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'B+C Electric'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'B+C Electric'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Eco Lux Solar'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Eco Lux Solar'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Eco Lux Solar'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Salient Solar'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Salient Solar'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Salient Solar'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Solenrgi'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Solenrgi'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Solenrgi'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Sun Run'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Sun Run'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Sun Run'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Solar 101'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Solar 101'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Solar 101'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'TGE Solar'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'TGE Solar'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'TGE Solar'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Atlas Solar Advisors'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Atlas Solar Advisors'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Atlas Solar Advisors'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Direct Solar of America'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Direct Solar of America'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Direct Solar of America'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Revolution Solar'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Revolution Solar'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Revolution Solar'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Smart Money Solar'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Smart Money Solar'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Smart Money Solar'), 'On Hold', 2350555);
-
-insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
-values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Supernova Energy'), 'Active', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Supernova Energy'), 'Cancelled', 2350555),
-       ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Supernova Energy'), 'On Hold', 2350555);
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name = 'Blue Raven Solar'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'B+C Electric'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'B+C Electric'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'B+C Electric'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Eco Lux Solar'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Eco Lux Solar'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Eco Lux Solar'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Salient Solar'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Salient Solar'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Salient Solar'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Solenrgi'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Solenrgi'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Solenrgi'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Sun Run'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Sun Run'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Sun Run'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Solar 101'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Solar 101'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Solar 101'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'TGE Solar'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'TGE Solar'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'TGE Solar'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Atlas Solar Advisors'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Atlas Solar Advisors'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Atlas Solar Advisors'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Direct Solar of America'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Direct Solar of America'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Direct Solar of America'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Revolution Solar'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Revolution Solar'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Revolution Solar'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Smart Money Solar'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Smart Money Solar'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Smart Money Solar'), 'On Hold', 2350555);
+--
+-- insert into flow.company_project_status_type (project_status_type_id, company_id, project_status_type, created_by_id)
+-- values ((select id from flow.project_status_type where project_status_type.project_status_type = 'Active'), (select id from flow.company where company_name =    'Supernova Energy'), 'Active', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'Cancelled'), (select id from flow.company where company_name = 'Supernova Energy'), 'Cancelled', 2350555),
+--        ((select id from flow.project_status_type where project_status_type.project_status_type = 'On Hold'), (select id from flow.company where company_name =   'Supernova Energy'), 'On Hold', 2350555);
 
 
 -- copy over the common deal/project fields

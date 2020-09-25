@@ -9,6 +9,7 @@ BEGIN
     if v_whole_company then
         RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
 		from (
+            --Appointments Occurred
 			with setter_funnel_1 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)
@@ -75,6 +76,7 @@ BEGIN
 				where id = 1
             ),
 
+            --Appointments Pitched
             setter_funnel_2 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)
@@ -134,6 +136,7 @@ BEGIN
 				where id = 2
             ),
 
+            --Appointments Created
             setter_funnel_3 as (
 				select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)
@@ -239,6 +242,7 @@ BEGIN
     else
 	    RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
 		from (
+            --Appointments Occurred
 			with setter_funnel_1 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)
@@ -340,6 +344,7 @@ BEGIN
 				where id = 1
             ),
 
+            --Appointments Pitched
             setter_funnel_2 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)
@@ -430,6 +435,7 @@ BEGIN
 				where id = 2
             ),
 
+            --Appointments Created
             setter_funnel_3 as (
                 select id, name, ratio, ratio * p_base_expectation as expectation, display_order,
 				(select count(1)

@@ -90,7 +90,7 @@
                 item-text="projectStatusType"
                 item-value="id"
                 @change="updateStatus"
-                label="Status"
+                label="Project Status"
               />
             </v-col>
           </v-row>
@@ -160,8 +160,8 @@ export default {
     }
   },
   created () {
-    this.getProject()
     this.getAvailableOwners()
+    this.getProject()
     this.getStatuses()
   },
   methods: {
@@ -201,7 +201,9 @@ export default {
     },
     getStatuses: async function () {
       try {
-        const {data} = await getRequest('/project/status')
+        const {data} = await getRequestWithParams('/project/status', { params: {
+          projectId: this.projectId
+        }})
         this.statuses = data
       } catch (e) {
         this.snackbar = getSnackbar('ERROR', 'Error fetching project statuses')

@@ -34,6 +34,12 @@
                             :disabled="!userCanEdit"
                             placeholder=" "
                             v-model="user.email"></v-text-field>
+              <v-text-field text
+                            label="Username"
+                            :readonly="!userCanEdit"
+                            :disabled="!userCanEdit"
+                            placeholder=" "
+                            v-model="user.username"></v-text-field>
   <!--            <div class="mt-2" v-if="companies.length > 1">-->
               <div class="mt-2">
                 <div v-if="userCanEdit">
@@ -51,6 +57,11 @@
                   <div class="ml-4"  v-for="uc in user.companies">{{uc.companyName}}</div>
                 </div>
               </div>
+              <v-text-field text
+                            v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN')"
+                            label="Password"
+                            placeholder=" "
+                            v-model="user.newPassword"></v-text-field>
             </v-card>
           </div>
           <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -129,23 +140,29 @@
     },
     methods: {
       async saveUser() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        // this.user.customFieldGroups = this.customFieldGroups
+        if(this.user?.username?.length > 2) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          // this.user.customFieldGroups = this.customFieldGroups
 
-        try {
-          //save user
-          await putRequest(`/user`, this.user)
-          // save dirty custom field values
-          const {data} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
-          this.dirtyCfvs = []
-          this.customFieldGroups = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let errorMsg = e?.data?.message ? 'Error Saving User: ' + e.data.message : 'Error Saving User'
-          this.snackbar = getSnackbar('ERROR', errorMsg)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          try {
+            //save user
+            await putRequest(`/user`, this.user)
+            // save dirty custom field values
+            const {data} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
+            this.dirtyCfvs = []
+            this.user.newPassword = null
+            this.customFieldGroups = data
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            let errorMsg = e?.data?.message ? 'Error Saving User: ' + e.data.message : 'Error Saving User'
+            this.snackbar = getSnackbar('ERROR', errorMsg)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
+          this.snackbar = getSnackbar('ERROR', 'Username must be at least 3 characters')
         }
+
       },
       populateDirtyCfvs(field) {
         let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)

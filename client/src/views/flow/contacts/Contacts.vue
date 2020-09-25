@@ -6,13 +6,24 @@
           <v-toolbar-title class="app-title">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-select
+              v-model="selectedSmartlistId"
+              :items="smartlists"
+              item-text="name"
+              item-value="id"
+              class="smartlist-selector pt-3"
+            />
             <v-btn text to="/newContact" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('CONTACTS', 'ADD')">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Add Contact</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-toolbar color="white" class="elevation-1 mt-3">
+        <v-toolbar
+          v-if="selectedSmartlistId === 0"
+          color="white"
+          class="elevation-1 mt-3"
+        >
           <v-text-field
               class="mt-5"
               prepend-inner-icon="search"
@@ -70,6 +81,7 @@
 <!--          </v-toolbar-items>-->
         </v-toolbar>
         <v-data-table
+            v-if="selectedSmartlistId === 0"
             :headers="headers"
             :items="contacts"
             :fixed-header="true"
@@ -99,6 +111,12 @@
             </tr>
           </template>
         </v-data-table>
+
+        <SmartlistTable
+          class="mt-3"
+          v-else
+          :smartlistId="selectedSmartlistId"
+        />
       </v-col>
     </v-row>
     <Snackbar :snackbar="snackbar"></Snackbar>
@@ -108,15 +126,25 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import Snackbar from '@/components/Snackbar.vue'
-import {getRequest, deleteRequest, putRequest, postRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {
+  getRequest,
+  deleteRequest,
+  putRequest,
+  postRequest,
+  getRequestWithParams,
+  getSnackbar,
+  logError,
+} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
 import { saveAs } from 'file-saver'
+import SmartlistTable from '@/components/SmartlistTable'
 
 export default {
   name: 'Contacts',
   components: {
-    Snackbar
+    Snackbar,
+    SmartlistTable
   },
   data () {
     return {
@@ -141,7 +169,9 @@ export default {
         { text: 'State', value: 'state', show: true },
         { text: 'Date Created', value: 'dateCreated', show: true },
       ],
-      search: ''
+      search: '',
+      selectedSmartlistId: 0,
+      smartlists: [{id: 0, name: 'Default View'}]
     }
   },
   watch: {
@@ -152,7 +182,18 @@ export default {
       deep: true,
     },
   },
+  created () {
+    this.getSharedSmartlists()
+  },
   methods: {
+    async getSharedSmartlists() {
+      try {
+        const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 2}})
+        this.smartlists = [...this.smartlists, ...data]
+      } catch (e) {
+        logError(e)
+      }
+    },
     clickRow(id){
       this.$router.push({name: 'contact', params: {id}})
     },

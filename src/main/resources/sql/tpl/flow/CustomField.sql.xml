@@ -4,6 +4,7 @@
      cf.list_of_value_id,
      cf.company_id,
      cf.readonly,
+     cf.multi_line,
      cf.field_name,
      cf.archived,
      cf.created_by_id,
@@ -57,6 +58,7 @@
        cf.list_of_value_id,
        cf.company_id,
        cf.readonly,
+       cf.multi_line,
        cf.field_name,
        cf.archived,
        cf.created_by_id,
@@ -150,6 +152,7 @@
       set field_name = :fieldName,
           company_system_list_id = :systemListId,
           readonly = :readonly,
+          multi_line = :multiLine,
           system_list_option_ids = :systemListOptionIds::int[],
           modified_by_id = :modifiedById,
           date_modified = now()
@@ -157,8 +160,8 @@
   ]]></customField.saveField>
 
   <customField.insertField><![CDATA[
-    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, readonly)
-    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::int[], :readonly)
+    insert into flow.custom_field(list_of_value_id, company_id, field_name, date_created, created_by_id, company_data_type_id, custom_field_sql_key, custom_field_sql_reference_table, company_system_list_id, system_list_option_ids, readonly, multi_line)
+    values (:listOfValueId, :companyId, :fieldName, now(), :createdById, :companyDataTypeId, :customFieldSqlKey, :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::int[], :readonly, :multiLine)
     returning id
   ]]></customField.insertField>
 
@@ -203,6 +206,7 @@
     select cf.id,
        cf.list_of_value_id,
        cf.readonly,
+       cf.multi_line,
        cf.custom_field_sql_key,
        cf.company_id,
        cf.field_name,
@@ -252,6 +256,7 @@
     select  cf.id,
             cf.list_of_value_id,
             cf.readonly,
+            cf.multi_line,
             cf.custom_field_sql_key,
             cf.company_id,
             cf.field_name,

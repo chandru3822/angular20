@@ -23,7 +23,7 @@ public class CustomFieldValue {
   private List<Integer> intArrayValue;
 
   private BigDecimal numericValue;
-  private Boolean booleanValue, hasListValues, readonly, customFieldGroupAssignmentReadOnly;
+  private Boolean booleanValue, hasListValues, readonly, customFieldGroupAssignmentReadOnly, multiLine;
 
   private Timestamp dateValue, timestampValue;
 

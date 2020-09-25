@@ -204,9 +204,22 @@ public class ProjectService {
     return sqlCache.query("project.getOwners", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), Owner.class);
   }
 
-  public List<ProjectStatus> getStatuses() {
-      // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
-      return sqlCache.query("project.getStatuses", Map.of("companyId", securityService.getCurrentUser().getCompanyId()), ProjectStatus.class);
+  public List<ProjectStatus> getStatuses(Long projectId) {
+    User currentUser = securityService.getCurrentUser();
+    Long companyId = currentUser.getCompanyId();
+
+    if(null != projectId) {
+      //had to change this so that a parent looking at a child project could still see project statuses
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      companyId = sqlCache.queryForObject("project.getCompanyId", params, Long.class);
+    }
+
+    // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
+    List<ProjectStatus> results = sqlCache.query("project.getStatuses",
+      ImmutableMap.of("companyId", companyId), ProjectStatus.class);
+
+    return results;
   }
 
   public String generateReport(String query) {

@@ -39,7 +39,7 @@
       <v-col>
         <v-toolbar flat>
           <v-toolbar-title>
-            Users
+            Closers
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -53,7 +53,7 @@
         <v-card v-if="addUser" class="square-card text-left pa-5">
           <v-select v-model="selectedUser.id"
                     :items="users"
-                    label="Select a User..."
+                    label="Select a Closer..."
                     :loading="usersLoading"
                     item-text="fullName"
                     item-value="id"

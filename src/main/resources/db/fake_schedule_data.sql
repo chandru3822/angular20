@@ -237,4 +237,10 @@ set password = '$2a$10$SD380/.K.90kkNIPSDhim.uPhxaOcW6dW54Yd4MUI2mytO4zQTevm'
 where email = 'gary.brever@blueravensolar.com'
 ;
 
+-- reset scott loves's password so mobile has a user to log in with
+update flow."user"
+set password = '$2a$10$SD380/.K.90kkNIPSDhim.uPhxaOcW6dW54Yd4MUI2mytO4zQTevm'
+where email = 's.love830@icloud.com'
+;
+
 
