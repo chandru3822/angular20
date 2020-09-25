@@ -25,7 +25,7 @@
   <note.updateNote><![CDATA[
     update flow.note
         set note = :note,
-            modified_by_id = :modifiedById,
+            modified_by_id = :userId,
             date_modified = now()
     where id = :id
   ]]></note.updateNote>

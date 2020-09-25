@@ -58,16 +58,15 @@ public class NoteService {
     params.put("note", note.getNote());
     // parentId is used for a hierarchy of notes - currently we don't use it
     params.put("parentId", note.getParentId());
+    params.put("userId", currentUser.getId());
 
     // @randa: Would an upsert be better here? -- i dont think so because there is not a unique constraint i could throw on it.  the same user can add multiple notes to the same project/contact/user/etc
     Long noteId;
     if(null != note.getId()) {
       noteId = note.getId();
       params.put("id", noteId);
-      params.put("modifiedById", currentUser.getId());
       sqlCache.update("note.updateNote", params);
     } else {
-      params.put("createdById", currentUser.getId());
       noteId = sqlCache.updateReturningId("note.insertNote", params, "id").longValue();
 
       //add to the glue table only if it is a new note
