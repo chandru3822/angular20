@@ -69,7 +69,7 @@ BEGIN
 				 from brs.project_details pd
 				 where pd.source = 6 --Setter Gen
                      and pd.closer_appointment_outcome in (2,3) --(Pitched, Missed)
-				     ) as today_day_count,
+				     and pd.closer_appointment_start::date = (now() at time zone 'US/Mountain')::date) as today_day_count,
 				(select count(1)
 				 from brs.project_details pd
 				 where pd.source = 6 --Setter Gen
