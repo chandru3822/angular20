@@ -70,8 +70,8 @@ public class ProjectController {
   }
 
   @GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<ProjectStatus>> getProjectStatuses() {
-      return new ResponseEntity<>(projectService.getStatuses(), HttpStatus.OK);
+  public ResponseEntity<List<ProjectStatus>> getProjectStatuses(@RequestParam(required = false) Long projectId) {
+      return new ResponseEntity<>(projectService.getStatuses(projectId), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{projectId}/status", consumes = MediaType.APPLICATION_JSON_VALUE)

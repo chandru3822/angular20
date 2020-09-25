@@ -15,6 +15,7 @@
            n.date_created,
            n.date_modified,
            n.created_by_id,
+           n.archived,
            concat(creator.first_name, ' ', creator.last_name) AS created_by,
            n.modified_by_id
     from flow.note n
@@ -25,7 +26,7 @@
   <note.updateNote><![CDATA[
     update flow.note
         set note = :note,
-            modified_by_id = :modifiedById,
+            modified_by_id = :userId,
             date_modified = now()
     where id = :id
   ]]></note.updateNote>

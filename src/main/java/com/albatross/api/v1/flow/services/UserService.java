@@ -141,6 +141,7 @@ public class UserService {
     params.put("lastName", user.getLastName());
     params.put("phone", user.getPhoneNumber());
     params.put("email", user.getEmail());
+    params.put("username", user.getUsername());
     params.put("companyId", currentUser.getCompanyId());
 
     Long id;
