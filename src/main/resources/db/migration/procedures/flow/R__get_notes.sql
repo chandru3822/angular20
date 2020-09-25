@@ -29,7 +29,7 @@ BEGIN
                                                 n2.date_created as "dateCreated",
                                                 n2.date_modified as "dateModified",
                                                 n2.created_by_id as "createdById",
-                                                concat(creator2.first_name, ' ', creator2.last_name) as created_by,
+                                                concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
                                                 n2.modified_by_id as "modifiedById",
                                                 pn2.project_id as primaryId
                                          from flow.note n2
@@ -67,7 +67,7 @@ BEGIN
                                                 n2.date_created as "dateCreated",
                                                 n2.date_modified as "dateModified",
                                                 n2.created_by_id as "createdById",
-                                                concat(creator2.first_name, ' ', creator2.last_name) as created_by,
+                                                concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
                                                 n2.modified_by_id as "modifiedById",
                                                 cn2.contact_id as primaryId
                                          from flow.note n2

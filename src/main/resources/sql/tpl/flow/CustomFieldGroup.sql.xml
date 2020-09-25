@@ -104,6 +104,7 @@
                when :customFieldGroupAssignmentId::int is not null then cfga.id = :customFieldGroupAssignmentId::int
         else cfga.custom_field_group_id = :customFieldGroupId end
         and psr.archived is not true
+          and ps.archived is not true
         union all
     select cf.field_name,
            cfg.group_name,

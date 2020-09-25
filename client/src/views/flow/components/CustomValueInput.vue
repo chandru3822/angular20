@@ -50,8 +50,19 @@
     />
 
     <v-text-field
-      v-if="field.dataTypeId === 5"
+      v-if="field.dataTypeId === 5 && !field.multiLine"
       text
+      :readonly="readonly"
+      placeholder=" "
+      :label="field.fieldName"
+      v-model="field.textValue"
+      @change="callback(field)"
+    />
+
+    <v-textarea
+      v-if="field.dataTypeId === 5 && field.multiLine"
+      auto-grow
+      rows="1"
       :readonly="readonly"
       placeholder=" "
       :label="field.fieldName"

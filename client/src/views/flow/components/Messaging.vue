@@ -6,7 +6,7 @@
       </v-toolbar-title>
     </v-toolbar>
 
-    <v-row id="project-tabs" class="mb-2" justify="center" no-gutters>
+    <v-row id="project-tabs" class="mb-2 message-container" justify="center" no-gutters>
         <!-- MESSAGING TAB -->
         <template>
             <beautiful-chat
@@ -28,7 +28,7 @@
                 :messageStyling="messageStyling"/>
         </template>
         <template v-slot:user-avatar="{ message, user }">
-            <div style="border-radius:50%; color: pink; font-size: 15px; line-height:25px; text-align:center;background: tomato; width: 25px !important; height: 25px !important; min-width: 30px;min-height: 30px;margin: 5px; font-weight:bold" v-if="message.type === 'text' && user && user.name">
+            <div class="message-avatar" v-if="message.type === 'text' && user && user.name">
                 {{user.name.toUpperCase()[0]}}
             </div>
         </template>
@@ -201,10 +201,6 @@ export default {
             })
 
             this.messageList = messages
-            $(".sc-user-input").css("text-align","left")
-            $(".sc-user-input").parent().parent().css("right","14%")
-            $(".sc-user-input").parent().parent().css("width","20%")
-            $(".sc-user-input").parent().parent().css("height","61%")
           } catch (e) {
               console.error('*** ERROR ***', e)
               this.snackbar = getSnackbar('ERROR', 'Error fetching messages')
@@ -216,8 +212,18 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-
 </style>
 <style lang="scss">
+.message-container {
+  min-height: 400px;
+}
+
+.sc-chat-window {
+  position: unset !important;
+  max-width: 100%;
+  width: 400px !important;
+  height: 100% !important;
+  text-align: left !important;
+}
 
 </style>

@@ -12,9 +12,7 @@
   </v-col>
 
   <v-col cols="12" lg="6">
-    <Messaging
-      :primaryId="parseInt(projectId)"
-    />
+    <Messaging :primaryId="parseInt(projectId)"/>
   </v-col>
 
   <Snackbar :snackbar="snackbar"/>

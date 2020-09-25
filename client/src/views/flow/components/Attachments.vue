@@ -2,10 +2,12 @@
 <v-col v-if="attachmentTypes.length > 0">
   <v-row>
     <v-col class="text-left">
-      <h3>Documents</h3>
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title>Documents</v-toolbar-title>
+      </v-toolbar>
     </v-col>
   </v-row>
-  <v-sheet color="#fff" class="elevation-2">
+  <v-sheet color="#fff" class="elevation-2 mx-4">
     <v-col cols="12">
       <v-row v-if="displayType === null" class="d-flex justify-start">
         <v-col

@@ -51,6 +51,11 @@
                   <div class="ml-4"  v-for="uc in user.companies">{{uc.companyName}}</div>
                 </div>
               </div>
+              <v-text-field text
+                            v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN')"
+                            label="Password"
+                            placeholder=" "
+                            v-model="user.newPassword"></v-text-field>
             </v-card>
           </div>
           <div class="mt-4" v-for="(cfg, index) in customFieldGroups" :key="index">
@@ -138,6 +143,7 @@
           // save dirty custom field values
           const {data} = await postRequest(`/customFieldValues/user/${this.user.id}`, this.dirtyCfvs)
           this.dirtyCfvs = []
+          this.user.newPassword = null
           this.customFieldGroups = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {

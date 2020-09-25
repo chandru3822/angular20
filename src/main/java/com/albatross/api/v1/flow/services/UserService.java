@@ -154,6 +154,12 @@ public class UserService {
       saveUserStatus(true, id, user.getUserStatusTypeId());
       //save user companies
       handleSavingUserCompanies(user.getCompanies(), user.getId());
+      //save user password if sent in
+      if(null != user.getNewPassword()) {
+        String newPwd = BCrypt.hashpw(user.getNewPassword(), BCrypt.gensalt(10));
+        params.put("password", newPwd);
+        sqlCache.update("user.saveUserPassword", params);
+      }
     } else {
       //get the default password
       HashMap<String, Object> p2 = new HashMap<>();

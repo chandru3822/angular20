@@ -1,5 +1,6 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.config.ScheduledConfig;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,15 +21,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
+import java.io.InputStream;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 
 
 /**
@@ -43,6 +49,8 @@ public class AvailabilityService {
   private final SecurityService securityService;
   private final DataSource dataSource;
   private final ObjectMapper om;
+  private final CommunicationService communicationService;
+  private final ProjectService projectService;
 
   public List<ResourceSchedule> getResourceAvailability(Long userId, Long orgId) {
     User user = securityService.getCurrentUser();
@@ -253,7 +261,7 @@ public class AvailabilityService {
     return results;
   }
 
-  public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws SQLException {
+  public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request) throws Exception {
       if (null != request.getProjectId() && null != request.getAppointmentTime() && null != request.getProjectProcessStepId() && null != request.getUsers()) {
 
         HashMap<String, Object> params = new HashMap<>();
@@ -267,6 +275,37 @@ public class AvailabilityService {
 
         if (!results.isEmpty()) {
           if (null != results.get(0) && results.get(0).getSuccess()) {
+            //on success send email to the closer
+            String closerEmail = results.get(0).getUserEmail();
+            if(null != closerEmail) {
+              //send email to closer
+              InputStream inputStream = ScheduledConfig.class.getResourceAsStream("/communication/templates/closer-appointment.ftl.html");
+              String template = IOUtils.toString(inputStream);
+              Optional<Project> project = projectService.getProject(request.getProjectId());
+              String projectAddress = "";
+              String timeZoneAbbreviation = "";
+              String startTime = "";
+
+              if(project.isPresent()) {
+                // todo: time zones.... this is not 100% accurate. there are states that have multiple time zones that we dont account for
+                projectAddress = project.get().getStreet1() + ", " + project.get().getCity() + ", " + project.get().getState() + " " + project.get().getPostalCode();
+                timeZoneAbbreviation = project.get().getTimeZoneAbbreviation();
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy h:mm a");
+                TimeZone tz = TimeZone.getTimeZone(timeZoneAbbreviation);
+                dateFormat.setTimeZone(tz);
+                startTime = dateFormat.format(results.get(0).getAppointmentStartTime());
+              }
+
+
+              HashMap context = new HashMap();
+              context.put("startTime", startTime);
+              context.put("from", "Blue Raven Solar Sales HR");
+              context.put("projectAddress", projectAddress);
+
+              communicationService.sendEmail("New Customer Appointment Scheduled on " + startTime, StringUtils.trimWhitespace(closerEmail), template, context, "SalesOps@blueravensolar.com");
+            }
+
             return ResponseEntity.ok(results.get(0));
           } else {
             //todo: handle other types of errors from function
