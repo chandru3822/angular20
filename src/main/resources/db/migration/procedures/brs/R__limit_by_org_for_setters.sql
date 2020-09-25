@@ -6,7 +6,8 @@ AS $function$
         select array(
             select up.user_id
             from flow.user_position up
-            where up.position_id = 4 and ((Array[up.org_id] <@ p_org_ids))
+            where up.position_id = 4
+                and array_remove(Array[up.org_id], null) <@ p_org_ids
                 and Array[up.user_id] <@ p_user_ids
                 and case when up.end_date is not null then
                     p_date_created between up.start_date and up.end_date

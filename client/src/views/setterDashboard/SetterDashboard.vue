@@ -676,8 +676,8 @@
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
 
             <!-- TODAY COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, 'today', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, 'today', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.countTodayState}"
                      :title="line.todayHover">
@@ -694,8 +694,8 @@
             </td>
 
             <!-- LAST 7 DAYS COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, '7days', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, '7days', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count7state}"
                      :title="line.sevenDayHover">
@@ -712,8 +712,8 @@
             </td>
 
             <!-- LAST 30 DAYS COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, '30days', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, '30days', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.thirtyDayHover">
@@ -732,18 +732,16 @@
             <!-- CUSTOM DATE RANGE COUNT -->
             <td v-show="!showCustomPercentage"
                 class="funnel-td"
-                :style="{color: line.customCountState}"
-                style="width:15%; cursor: pointer"
+                :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
                 :title="line.customDayHover"
-                @click="funnelDrilldown(line.id, 'custom', line.name)">
+                @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
               {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
             </td>
 
             <td v-show="showCustomPercentage"
                 class="funnel-td"
-                :style="{color: line.customCountState}"
-                style="width: 15%; cursor: pointer"
-                @click="funnelDrilldown(line.id, 'custom', line.name)">
+                :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.customDayHover">
