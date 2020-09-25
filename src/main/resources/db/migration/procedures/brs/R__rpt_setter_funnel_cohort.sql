@@ -143,47 +143,47 @@ BEGIN
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 6 --Setter Gen
-                     and coalesce(pd.closer_appointment_outcome, '') != 4 --Cancelled
+                     and pd.closer_appointment_outcome != 4 --Cancelled
 				     and p.date_created::date = (now() at time zone 'US/Mountain')::date) as today_day_count,
 				(select count(1)
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 6 --Setter Gen
-                     and coalesce(pd.closer_appointment_outcome, '') != 4 --Cancelled
+                     and pd.closer_appointment_outcome != 4 --Cancelled
 				     and p.date_created::date = (now() at time zone 'US/Mountain')::date - 1) as yesterday_day_count,
 				(select count(1)
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 6 --Setter Gen
-                     and coalesce(pd.closer_appointment_outcome, '') != 4 --Cancelled
+                     and pd.closer_appointment_outcome != 4 --Cancelled
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 7
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 1) as seven_day_count,
 				(select count(1)
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 6 --Setter Gen
-                     and coalesce(pd.closer_appointment_outcome, '') != 4 --Cancelled
+                     and pd.closer_appointment_outcome != 4 --Cancelled
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 14
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 7) as prev_seven_day_count,
 				(select count(1)
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 6 --Setter Gen
-                     and coalesce(pd.closer_appointment_outcome, '') != 4 --Cancelled
+                     and pd.closer_appointment_outcome != 4 --Cancelled
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 30
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 1) as thirty_day_count,
 				(select count(1)
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 6 --Setter Gen
-                     and coalesce(pd.closer_appointment_outcome, '') != 4 --Cancelled
+                     and pd.closer_appointment_outcome != 4 --Cancelled
 				     and p.date_created::date >= (now() at time zone 'US/Mountain')::date - 60
 				     and p.date_created::date <= (now() at time zone 'US/Mountain')::date - 30) as prev_thirty_day_count,
 				(select count(1)
 				 from brs.project_details pd
                      inner join flow.project p on p.id = pd.project_id
 				 where pd.source = 6 --Setter Gen
-                     and coalesce(pd.closer_appointment_outcome, '') != 4 --Cancelled
+                     and pd.closer_appointment_outcome != 4 --Cancelled
 				     and p.date_created::date between p_custom_start_date and p_custom_end_date) as custom_date_range_count
 				from brs.setter_funnel
 				where id = 3
