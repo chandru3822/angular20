@@ -16,7 +16,7 @@ select 'Ignore' where not exists (select id from flow.error_log_status where sta
 CREATE TABLE if not exists flow.company_error_log
 (
     id                       serial  NOT NULL,
-    company_id       integer NOT NULL,
+    company_feature_id       integer NOT NULL,
     error_message  text not null,
     error_log_status_id integer not null,
     date_created     timestamp without time zone DEFAULT now(),
@@ -25,8 +25,8 @@ CREATE TABLE if not exists flow.company_error_log
     modified_by_id  integer,
     archived       boolean not null default false,
     CONSTRAINT flow_company_error_log_pk PRIMARY KEY (id),
-    CONSTRAINT flow_cel_company_id_fk FOREIGN KEY (company_id)
-        REFERENCES flow.company (id) MATCH SIMPLE
+    CONSTRAINT flow_cel_company_feature_id_fk FOREIGN KEY (company_feature_id)
+        REFERENCES flow.company_feature (id) MATCH SIMPLE
         ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT flow_cel_error_log_status_id_fk FOREIGN KEY (error_log_status_id)
         REFERENCES flow.error_log_status (id) MATCH SIMPLE

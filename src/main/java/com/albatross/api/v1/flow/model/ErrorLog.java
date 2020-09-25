@@ -12,7 +12,7 @@ import lombok.Setter;
 public class ErrorLog {
 
 
-  private Long id, companyId, errorLogStatusId;
+  private Long id, companyId, companyFeatureId, errorLogStatusId;
   private String errorMessage, errorLogStatus;
   private Boolean archived;
 
