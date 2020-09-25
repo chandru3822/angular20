@@ -142,9 +142,9 @@
                     multiple
                     clearable
                     :loading="orgsLoading"
-                    :hide-details="countSelected < 10"
-                    :error="countSelected >= 10"
-                    :error-messages="countSelected >= 10 ? countErrorMessage : null"
+                    :hide-details="countSelected < maxSelectionAllowed"
+                    :error="countSelected >= maxSelectionAllowed"
+                    :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                     return-object
                     item-text="orgName"
                     item-value="id"
@@ -168,9 +168,9 @@
                           label="User Resources"
                           multiple
                           clearable
-                          :hide-details="countSelected < 10"
-                          :error="countSelected >= 10"
-                          :error-messages="countSelected >= 10 ? countErrorMessage : null"
+                          :hide-details="countSelected < maxSelectionAllowed"
+                          :error="countSelected >= maxSelectionAllowed"
+                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                           :loading="usersLoading"
                           return-object
                           item-text="fullName"
@@ -354,6 +354,7 @@
         ],
         events: [],
         countSelected: 0,
+        maxSelectionAllowed: 10,
         countErrorMessage: 'Maximum Selection Reached',
         selectedStates: [],
         previousStateCount: 0,
@@ -615,11 +616,11 @@
         console.log('count', this.countSelected)
         this.orgs.forEach(o => {
           let match = this.selectedOrgs.find(so => so.id === o.id)
-          o.disabled = !match && this.countSelected >= 10
+          o.disabled = !match && this.countSelected >= maxSelectionAllowed
         })
         this.users.forEach(u => {
           let match = this.selectedUsers.find(su => su.id === u.id)
-          u.disabled = !match && this.countSelected >= 10
+          u.disabled = !match && this.countSelected >= maxSelectionAllowed
         })
       },
       async getEvents(isOrgs, reload) {
