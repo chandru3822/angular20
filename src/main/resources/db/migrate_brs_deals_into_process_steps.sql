@@ -14668,7 +14668,7 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
+                  left join blueraven.ahj ahj on ahj.id = d.ahj_id
                   left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
                   left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and
@@ -14934,9 +14934,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and (
                                       scheduled_installation_date IS NOT NULL AND substantial_completion_date is not null AND
                                       ahj_inspection_ready_to_schedule_date is not null and (ahj_inspection_scheduled_date IS NULL OR ahj_inspection_date IS NULL))) returning *),
@@ -15124,9 +15121,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and additional_ahj_inspection_required is TRUE and ahj_inspection_date is not null and ahj_inspection_passed_date is not null and additional_ahj_inspection_scheduled_date is null) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -15313,9 +15307,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and (d.in_house_mpu_permit_approved_date is not null AND
                                             d.in_house_mpu_permit_pickup_scheduled_date is null)) returning *),
      p as (
@@ -16630,9 +16621,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and ( as_built_permit_packet_complete_date IS NOT NULL
              AND asbuilt_permit_pack_submittal_schedule_date IS NULL AND (engineering_restamp_required_date is null OR engineering_restamp_received_date is not null))) returning *),
      p as (
@@ -16991,9 +16979,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and asbuilt_permit_approved_date IS NOT NULL  AND as_built_permit_pickup_scheduled_date IS NULL ) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -17489,9 +17474,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and ahj_inspection_date IS NOT NULL AND inspection_scheduled_with_ahj_date IS NULL) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -17562,9 +17544,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and ((ahj_reinspection_date IS NOT NULL AND reinspection_scheduled_with_ahj IS NULL) OR
                                            (ahj_reinspection_b_date IS NOT NULL AND ahj_reinspection_b_scheduled_with_ahj IS NULL))) returning *),
      p as (
@@ -17670,9 +17649,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and additional_ahj_inspection_date IS NOT NULL AND additional_inspection_scheduled_with_ahj_date IS NULL) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -17743,9 +17719,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and additional_ahj_inspection_date IS NOT NULL AND additional_ahj_inspection_date >= (now() at time zone 'US/Mountain')::date) returning *),
      p as (
          select cfga.id as custom_field_group_assignment_id,cf.field_name,dt.data_type,dt.id as data_type_id
@@ -17816,9 +17789,6 @@ with active_step as (
          FROM flow.project
                   INNER JOIN blueraven.deal d
                              ON project.id = d.id
-                  left join blueraven.ahj ahj on ahj.id = f.ahj_id
-                  left join blueraven.ahj_inspection ai on ai.ahj_id = ahj.id
-                  left join blueraven.ahj_rough_inspection_required_type rt on rt.id = ai.rough_inspection_required_type_id
          where originator_id = 1 and non_standard_installation_work like any (array['%Main Panel Upgrade - Outsource%','%Main Panel Upgrade'])
 and non_standard_installation_work_date is not null and non_standard_installation_work_date > ((now() AT TIME ZONE 'US/Mountain') :: DATE)) returning *),
      p as (
