@@ -621,7 +621,7 @@
                     <v-text-field class="custom-date-input" v-model="pipeline_dt1_formatted" readonly
                                   outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="pipeline_dt1"
+                  <v-date-picker v-model="pipeline_dt1" :max="pipeline_dt2"
                                  @input="updatePipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
@@ -631,7 +631,7 @@
                     <v-text-field class="custom-date-input" v-model="pipeline_dt2_formatted" readonly
                                   outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="pipeline_dt2"
+                  <v-date-picker v-model="pipeline_dt2" :min="pipeline_dt1"
                                  @input="updatePipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
@@ -677,7 +677,7 @@
 
             <!-- TODAY COUNT -->
             <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, 'yesterday', line.name)">
+                @click="funnelDrilldown(line.id, 'today', line.name)">
               <div>
                 <div class="funnel-count" :style="{color: line.countTodayState}"
                      :title="line.todayHover">
@@ -944,11 +944,11 @@
         },
         {
           label: 'Last Week',
-          value: 'previousWeek'
+          value: 'lastWeek'
         },
         {
           label: 'Last Month',
-          value: 'previousMonth'
+          value: 'lastMonth'
         },
         {
           label: 'Last 90 days',
@@ -982,8 +982,8 @@
       showPipelineCustomDates: false,
       customDateSelectorIsOpen: false,
       viewSelect: 'standard',
-      pipeline_dt1: moment().startOf('month').format('YYYY-MM-DD'),
-      pipeline_dt1_formatted: moment().startOf('month').format('M/D/YY'),
+      pipeline_dt1: moment().startOf('W').format('YYYY-MM-DD'),
+      pipeline_dt1_formatted: moment().startOf('W').format('M/D/YY'),
       pipeline_menu1: false,
       pipeline_dt2: moment().format('YYYY-MM-DD'),
       pipeline_dt2_formatted: moment().format('M/D/YY'),
@@ -1823,8 +1823,6 @@
       },
 
       choosePipelineDateRange (dateRange) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
         if (this.showPipelineCustomDates) {
           this.showPipelineCustomDates = false
           this.fixFunnelTopMargin()
@@ -1835,6 +1833,12 @@
         switch (dateRange.value) {
           case 'yesterday':
             this.yesterday()
+            break
+          case 'lastWeek':
+            this.lastWeek()
+            break
+          case 'lastMonth':
+            this.lastMonth()
             break
           case 'WTD':
             this.weekToDate()
@@ -1847,12 +1851,6 @@
             break
           case 'YTD':
             this.yearToDate()
-            break
-          case 'lastMonth':
-            this.lastMonth()
-            break
-          case 'lastWeek':
-            this.lastWeek()
             break
           case 'Custom':
             this.showPipelineCustomDates = true
@@ -1878,51 +1876,51 @@
       },
 
       yesterday () {
-        this.pipeline_dt1 = moment().subtract(1, 'd').toDate()
-        this.pipeline_dt2 = moment().subtract(1, 'd').toDate()
+        this.pipeline_dt1 = moment().subtract(1, 'd').format('YYYY-MM-DD')
+        this.pipeline_dt2 = moment().subtract(1, 'd').format('YYYY-MM-DD')
+        this.updatePipelineCalendar(true)
+      },
+
+      lastWeek () {
+        this.pipeline_dt1 = moment().subtract(1, 'week').startOf('week').add(1, 'day').format('YYYY-MM-DD')
+        this.pipeline_dt2 = moment().subtract(1, 'week').endOf('week').add(1, 'day').format('YYYY-MM-DD')
+        this.updatePipelineCalendar(true)
+      },
+
+      lastMonth () {
+        this.pipeline_dt1 = moment().subtract(1, 'month').startOf('month').format('YYYY-MM-DD')
+        this.pipeline_dt2 = moment().subtract(1, 'month').endOf('month').format('YYYY-MM-DD')
         this.updatePipelineCalendar(true)
       },
 
       weekToDate () {
-        this.pipeline_dt1 = moment().startOf('isoWeek').toDate()
-        this.pipeline_dt2 = moment().toDate()
+        this.pipeline_dt1 = moment().startOf('isoWeek').format('YYYY-MM-DD')
+        this.pipeline_dt2 = moment().format('YYYY-MM-DD')
         this.updatePipelineCalendar(true)
       },
 
       monthToDate () {
-        this.pipeline_dt1 = moment().startOf('month').toDate()
-        this.pipeline_dt2 = moment().toDate()
+        this.pipeline_dt1 = moment().startOf('month').format('YYYY-MM-DD')
+        this.pipeline_dt2 = moment().format('YYYY-MM-DD')
         this.updatePipelineCalendar(true)
       },
 
       quarterToDate () {
         let quarter = moment().quarter()
-        this.pipeline_dt1 = moment().startOf('year').quarter(quarter).toDate()
-        this.pipeline_dt2 = moment().toDate()
+        this.pipeline_dt1 = moment().startOf('year').quarter(quarter).format('YYYY-MM-DD')
+        this.pipeline_dt2 = moment().format('YYYY-MM-DD')
         this.updatePipelineCalendar(true)
       },
 
       yearToDate () {
-        this.pipeline_dt1 = moment().startOf('year').toDate()
-        this.pipeline_dt2 = moment().toDate()
+        this.pipeline_dt1 = moment().startOf('year').format('YYYY-MM-DD')
+        this.pipeline_dt2 = moment().format('YYYY-MM-DD')
         this.updatePipelineCalendar()
       },
 
-      lastMonth () {
-        this.pipeline_dt1 = moment().subtract(1, 'month').startOf('month').toDate()
-        this.pipeline_dt2 = moment().subtract(1, 'month').endOf('month').toDate()
-        this.updatePipelineCalendar(true)
-      },
-
-      lastWeek () {
-        this.pipeline_dt1 = moment().subtract(1, 'week').startOf('week').add(1, 'day').toDate()
-        this.pipeline_dt2 = moment().subtract(1, 'week').endOf('week').add(1, 'day').toDate()
-        this.updatePipelineCalendar(true)
-      },
-
       previousNumberOfDays (days) {
-        this.pipeline_dt1 = moment().subtract(days, 'days').toDate()
-        this.pipeline_dt2 = moment().subtract(1, 'days').toDate()
+        this.pipeline_dt1 = moment().subtract(days, 'days').format('YYYY-MM-DD')
+        this.pipeline_dt2 = moment().subtract(1, 'days').format('YYYY-MM-DD')
         this.updatePipelineCalendar()
       },
 
@@ -2034,31 +2032,31 @@
         }
       },
 
-      funnelDrilldown (funnelId, dateRange, funnelName) {
+        async funnelDrilldown (funnelId, dateRange, funnelName) {
         let reps = []
         let orgs = []
         let start, end
         let datesMatch = false
 
-        reps = this.repModel.map(rep => rep.id)
-        orgs = this.officeModel.map(org => org.id)
+        reps = this.repModel.map(rep => rep.user_id)
+        orgs = this.officeModel.map(org => org.org_id)
 
         switch (dateRange) {
           case 'today':
-            start = moment().startOf('day').toDate()
-            end = moment().toDate()
+            start = moment().format('YYYY-MM-DD')
+            end = moment().format('YYYY-MM-DD')
             break
           case '7days':
-            start = moment().startOf('W').toDate()
-            end = moment().toDate()
+            start = moment().subtract(7, 'days').format('YYYY-MM-DD')
+            end = moment().format('YYYY-MM-DD')
             break
           case '30days':
-            start = moment().startOf('W').toDate()
-            end = moment().toDate()
+            start = moment().subtract(30, 'days').format('YYYY-MM-DD')
+            end = moment().format('YYYY-MM-DD')
             break
           default:
-            start = this.appts_to_fdc_pipeline_dt1
-            end = this.appts_to_fdc_pipeline_dt2
+            start = this.pipeline_dt1
+            end = this.pipeline_dt2
             break
         }
 
@@ -2069,9 +2067,33 @@
           this.funnelDrilldownTitle = funnelName + ' ' + moment(start).format('M/D/YYYY') + ' - ' + moment(end).format('M/D/YYYY')
         }
 
-        this.markMissingDrilldownData()
-        this.reformatFunnelDrilldownDates()
-        this.funnelDrilldownDialog = true
+        const requestBody = {
+          start: start,
+          end: end,
+          funnelId: funnelId,
+          users: reps,
+          orgs: orgs
+        }
+
+        this.$store.commit(AppMutations.SET_LOADING, true)
+
+        try {
+          await postRequest(`/setterDashboard/funnelDrilldown/${this.viewSelect}`, requestBody, 'blueraven').then(({data}) => {
+            this.funnelDrilldownData = data?.length > 0 ? data : []
+
+            if (this.funnelDrilldownData?.length > 0) {
+              this.markMissingDrilldownData()
+              this.reformatFunnelDrilldownDates()
+            }
+
+            this.funnelDrilldownDialog = true
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          })
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
 
       markMissingDrilldownData() {
@@ -2088,7 +2110,7 @@
       },
 
       reformatFunnelDrilldownDates () {
-        this.funnelDrilldownData.forEach(row => {
+        this.funnelDrilldownData?.forEach(row => {
           if (row.appointment_date) {
             row.appointment_date_formatted = moment(row.appointment_date).format('MMM D, YYYY')
           }
@@ -2939,7 +2961,7 @@
             align-items: center;
             font-size: 7px;
             text-transform: capitalize;
-            padding: 4px 3px;
+            padding: 4px 1px;
             margin: 4px auto;
             width: 100%;
             min-width: 40px;
@@ -3526,7 +3548,7 @@
 
             .custom-dates-btn {
               font-size: 10px;
-              padding: 5px 5px 5px 8px;
+              padding: 5px 2px;
               margin: 4px auto;
               min-width: 60px;
               max-width: 100px;
@@ -3875,7 +3897,7 @@
 
             .custom-dates-btn {
               font-size: 12px;
-              padding: 8px 10px;
+              padding: 8px 4px;
               margin: 5px auto 0 auto;
               min-width: 80px;
               max-width: 125px;

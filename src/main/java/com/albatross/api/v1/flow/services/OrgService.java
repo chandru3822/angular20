@@ -230,8 +230,10 @@ public class OrgService {
   }
 
   public List<Org> getOrgCalendarsForUser(Long userId) {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
+    params.put("companyId", user.getCompanyId());
     List<Org> results = sqlCache.query("org.getOrgCalendarsForUser", params, Org.class);
 
     return results;

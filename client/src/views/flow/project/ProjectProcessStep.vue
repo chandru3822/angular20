@@ -50,7 +50,7 @@
     </v-row>
   </v-col>
 
-  <v-col class="text-left">
+  <v-col class="text-left px-5">
     <v-btn
       class="back-btn"
       text
@@ -58,29 +58,34 @@
       @click="$router.go(-1)">Back</v-btn>
   </v-col>
 
-  <v-col cols="12" class="text-left">
+  <v-col cols="12" class="text-left px-5">
     <h2>{{ processStep.processStepName }}</h2>
-            <v-checkbox
-                v-model="processStep.main"
-                :disabled="processStep.main"
-                label="Primary"
-                @change="updateMain(processStep.projectProcessStepId)"
-            />
+<!--            <v-checkbox-->
+<!--                v-model="processStep.main"-->
+<!--                :disabled="processStep.main"-->
+<!--                label="Primary"-->
+<!--                @change="updateMain(processStep.projectProcessStepId)"-->
+<!--            />-->
   </v-col>
 
   <v-col cols="12" lg="6" class="text-left">
 
 <!--    process field groups-->
     <v-col
-      class="mt-4"
+      class="pt-0"
       v-for="(cfg, index) in customFieldGroups"
       :key="index"
     >
-      <v-toolbar color="transparent" class="elevation-0">
+      <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar">
         <v-toolbar-title>
 <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
-          <router-link v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')" :to="`/schedule`">{{cfg.groupName}}</router-link>
-          <template v-else>{{cfg.groupName}}</template>
+          <v-btn small text v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')"
+                 :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">
+            <v-icon>mdi-calendar</v-icon>
+          </v-btn>
+<!--          <router-link v-if="cfg.eventTypeId && $store.getters.userHasFeature('SCHEDULE')"-->
+<!--                       :to="`/schedule?projectProcessStepId=${projectProcessStepId}`">{{cfg.groupName}}</router-link>-->
+          {{cfg.groupName}}
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -181,19 +186,7 @@
       </v-card>
     </v-col>
 
-    <v-toolbar color="transparent" class="elevation-0">
-      <v-toolbar-title>Actions</v-toolbar-title>
-    </v-toolbar>
-    <v-col v-for="action in processStep.actions" :key="action.id">
-      <ActionButton
-        v-if="action.actionTypeId === 2"
-        :actionId="action.id"
-        :projectProcessStepId="parseInt(projectProcessStepId)"
-        :label="action.actionName"
-        :handleOnComplete="handleActionCompleted"
-        :handleOnCompleteError="handleOnCompleteError"
-      />
-    </v-col>
+
 
     <!-- todo: @humes just putting this here so i can test scheduling.  feel free to do what you want with it. i dont even know if this is the right spot -->
     <!-- @TODO: @randa, Uncommenting for now until I can add it in programatically. How do we not hardcode the processStepid and projectId vals? (they harcoded for testing?)   -->
@@ -208,19 +201,33 @@
 <!--      </v-col>-->
 <!--    </v-row>-->
 
-    <v-row>
-      <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
-    </v-row>
+
   </v-col>
 
   <v-col cols="12" lg="6" class="text-left">
-    <NotesAndActivity
-      :showNotes="true"
-      :showActivity="false"
-      :notes="notes"
-      :primaryId="parseInt(projectProcessStepId)"
-      type="ProjectProcessStep"
-    />
+    <v-toolbar color="transparent" class="elevation-0">
+      <v-toolbar-title>Actions</v-toolbar-title>
+    </v-toolbar>
+    <v-col v-for="action in processStep.actions" :key="action.id">
+      <ActionButton
+        v-if="action.actionTypeId === 2"
+        :actionId="action.id"
+        :projectProcessStepId="parseInt(projectProcessStepId)"
+        :label="action.actionName"
+        :handleOnComplete="handleActionCompleted"
+        :handleOnCompleteError="handleOnCompleteError"
+      />
+    </v-col>
+<!--    <NotesAndActivity-->
+<!--      :showNotes="true"-->
+<!--      :showActivity="false"-->
+<!--      :notes="notes"-->
+<!--      :primaryId="parseInt(projectProcessStepId)"-->
+<!--      type="ProjectProcessStep"-->
+<!--    />-->
+    <v-row>
+      <Attachments :projectProcessStepId="parseInt(projectProcessStepId)" :processStepId="parseInt(processStepId)"/>
+    </v-row>
   </v-col>
 
   <Snackbar :snackbar="snackbar"></Snackbar>
@@ -279,7 +286,8 @@ export default {
   async created () {
     this.getAvailableStatuses()
     this.getCustomFieldGroups()
-    this.getNotes()
+    //per 9/24 request judson had us remove notes from process steps
+    // this.getNotes()
     this.getProject()
     await this.getProcessStep()
     this.getAvailableOwners()
@@ -488,8 +496,12 @@ export default {
 }
 </script>
 
+<style lang="scss">
+.cfg-name-toolbar .v-toolbar__content {
+  padding-left: 0 !important;
+}
+</style>
 <style lang="scss" scoped>
-
 .process-step-header {
   border-bottom: solid 1px #EAEAF4;
 }

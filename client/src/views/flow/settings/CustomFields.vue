@@ -163,7 +163,11 @@
                         autocomplete="off"
                         return-object
                     ></v-autocomplete>
-
+                    <div class="text-left read-only-label" v-if="item.companyDataType && item.companyDataType.dataTypeId === 5">
+                      <label>Multi-Line:</label>
+                      <input type="checkbox" :readonly="!userCanEdit"
+                             :disabled="!userCanEdit" class="ml-2" v-model="item.multiLine">
+                    </div>
                     <div v-if="$store.getters.userHasFeature('SYSTEM') && item.companyDataType && item.companyDataType.customBehavior">
                       <v-text-field
                                     v-model="item.customFieldSqlKey"

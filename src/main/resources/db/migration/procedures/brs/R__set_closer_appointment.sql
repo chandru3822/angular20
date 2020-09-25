@@ -1,3 +1,4 @@
+-- drop function flow.set_closer_appointment(integer, integer, timestamp, int[])
 CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
                                                        p_project_process_step_id integer,
                                                        p_appointment_start_time timestamp,
@@ -8,7 +9,8 @@ CREATE OR REPLACE FUNCTION flow.set_closer_appointment(p_project_id integer,
                 user_id                integer,
                 appointment_start_time timestamp,
                 appointment_end_time   timestamp,
-                user_full_name         text
+                user_full_name         text,
+                user_email             text
             )
 AS
 $BODY$
@@ -19,6 +21,7 @@ declare
     v_default_appointment_length                 integer;
     v_user_already_assigned                      bigint;
     v_user_full_name                             text;
+    v_user_email                                 text;
     v_user_position_id                           integer;
 BEGIN
 
@@ -169,8 +172,9 @@ BEGIN
 
     if v_user_id is not null then
 
-        select first_name || ' ' || last_name
-        into v_user_full_name
+        select into v_user_full_name, v_user_email
+               first_name || ' ' || last_name,
+                email
         from flow."user"
         where id = v_user_id;
 
@@ -271,7 +275,8 @@ BEGIN
                                 p_appointment_start_time::timestamp,
                                 (p_appointment_start_time +
                                  (v_default_appointment_length || 'minutes')::interval)::timestamp,
-                                v_user_full_name;
+                                v_user_full_name,
+                                v_user_email;
         elsif v_user_already_assigned > 1 and array_length(p_users, 1) > 1 then
             p_users = array_remove(p_users, v_user_id);
             return query select *

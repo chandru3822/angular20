@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class Project {
 
   private Long id, processId, companyId, contactId, statusTypeId, companyProjectStatusTypeId, projectStatusTypeId, stateId, countryId;
-  private String projectName, processName, projectStatusType, state, country, street1, street2, city, postalCode;
+  private String projectName, processName, projectStatusType, state, timeZoneAbbreviation, country, street1, street2, city, postalCode;
 
   private LocalDate dateCreated;
 

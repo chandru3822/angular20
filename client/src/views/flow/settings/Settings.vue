@@ -127,7 +127,7 @@ export default {
         show: this.hasSettingsAccess
       }, {
         path: '/settings/postalCodes',
-        title: 'Postal Code Zones',
+        title: 'Round Robins',
         show: this.hasSettingsAccess
       }, {
         header: 'User Management',

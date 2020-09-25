@@ -421,7 +421,7 @@
                     <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt1_formatted"
                                   readonly outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt1"
+                  <v-date-picker v-model="appts_created_pipeline_dt1" :max="appts_created_pipeline_dt2"
                                  @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
@@ -431,7 +431,7 @@
                     <v-text-field class="custom-date-input" v-model="appts_created_pipeline_dt2_formatted"
                                   readonly outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_created_pipeline_dt2"
+                  <v-date-picker v-model="appts_created_pipeline_dt2" :min="appts_created_pipeline_dt1"
                                  @input="updateApptsCreatedPipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
@@ -818,7 +818,7 @@
                     <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt1_formatted" readonly
                                   outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1"
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt1" :max="appts_to_fdc_pipeline_dt2"
                                  @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
                 </v-menu>
                 <span class="custom-date-span">-</span>
@@ -828,7 +828,7 @@
                     <v-text-field class="custom-date-input" v-model="appts_to_fdc_pipeline_dt2_formatted" readonly
                                   outlined dense v-on="on"></v-text-field>
                   </template>
-                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2"
+                  <v-date-picker v-model="appts_to_fdc_pipeline_dt2" :min="appts_to_fdc_pipeline_dt1"
                                  @input="updateApptsToFdcPipelineCalendar()"></v-date-picker>
                 </v-menu>
               </div>
@@ -1232,7 +1232,7 @@
         },
         {
           label: 'Last Week',
-          value: 'previousWeek'
+          value: 'lastWeek'
         },
         {
           label: 'Month to Date',
@@ -1267,7 +1267,7 @@
         },
         {
           label: 'Last Week',
-          value: 'previousWeek'
+          value: 'lastWeek'
         },
         {
           label: 'Month to Date',
@@ -1806,8 +1806,6 @@
 
       /* FUNNEL-RELATED CODE START */
       chooseApptsCreatedPipelineDateRange (dateRange) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
         if (this.showApptsCreatedPipelineCustomDates) {
           this.showApptsCreatedPipelineCustomDates = false
           this.fixApptsCreatedFunnelTopMargin()
@@ -1819,8 +1817,8 @@
           case 'yesterday':
             this.yesterday('apptsCreatedPipeline')
             break
-          case 'previousWeek':
-            this.previousWeek('apptsCreatedPipeline')
+          case 'lastWeek':
+            this.lastWeek('apptsCreatedPipeline')
             break
           case 'MTD':
             this.monthToDate('apptsCreatedPipeline')
@@ -1840,8 +1838,6 @@
       },
 
       chooseApptsToFdcPipelineDateRange (dateRange) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
         if (this.showApptsToFdcPipelineCustomDates) {
           this.showApptsToFdcPipelineCustomDates = false
           this.fixApptsToFdcFunnelTopMargin()
@@ -1857,8 +1853,8 @@
           case 'yesterday':
             this.yesterday('apptsToFdcPipeline')
             break
-          case 'previousWeek':
-            this.previousWeek('apptsToFdcPipeline')
+          case 'lastWeek':
+            this.lastWeek('apptsToFdcPipeline')
             break
           case 'MTD':
             this.monthToDate('apptsToFdcPipeline')
@@ -2305,65 +2301,65 @@
 
       yesterday (pipelineName) {
         if (pipelineName === 'apptsCreatedPipeline') {
-          this.appts_created_pipeline_dt1 = moment().subtract(1, 'd').toDate()
-          this.appts_created_pipeline_dt2 = moment().subtract(1, 'd').toDate()
+          this.appts_created_pipeline_dt1 = moment().subtract(1, 'd').format('YYYY-MM-DD')
+          this.appts_created_pipeline_dt2 = moment().subtract(1, 'd').format('YYYY-MM-DD')
           this.updateApptsCreatedPipelineCalendar(true)
         } else {
-          this.appts_to_fdc_pipeline_dt1 = moment().subtract(1, 'd').toDate()
-          this.appts_to_fdc_pipeline_dt2 = moment().subtract(1, 'd').toDate()
+          this.appts_to_fdc_pipeline_dt1 = moment().subtract(1, 'd').format('YYYY-MM-DD')
+          this.appts_to_fdc_pipeline_dt2 = moment().subtract(1, 'd').format('YYYY-MM-DD')
           this.updateApptsToFdcPipelineCalendar(true)
         }
       },
 
-      previousWeek (pipelineName) {
+      lastWeek (pipelineName) {
         if (pipelineName === 'apptsCreatedPipeline') {
-          this.appts_created_pipeline_dt1 = moment().startOf('W').subtract(1, 'w').toDate()
-          this.appts_created_pipeline_dt2 = moment().endOf('W').subtract(1, 'w').toDate()
+          this.appts_created_pipeline_dt1 = moment().startOf('W').subtract(1, 'w').format('YYYY-MM-DD')
+          this.appts_created_pipeline_dt2 = moment().endOf('W').subtract(1, 'w').format('YYYY-MM-DD')
           this.updateApptsCreatedPipelineCalendar(true)
         } else {
-          this.appts_to_fdc_pipeline_dt1 = moment().startOf('W').subtract(1, 'w').toDate()
-          this.appts_to_fdc_pipeline_dt2 = moment().endOf('W').subtract(1, 'w').toDate()
+          this.appts_to_fdc_pipeline_dt1 = moment().startOf('W').subtract(1, 'w').format('YYYY-MM-DD')
+          this.appts_to_fdc_pipeline_dt2 = moment().endOf('W').subtract(1, 'w').format('YYYY-MM-DD')
           this.updateApptsToFdcPipelineCalendar(true)
         }
       },
 
       monthToDate (pipelineName) {
         if (pipelineName === 'apptsCreatedPipeline') {
-          this.appts_created_pipeline_dt1 = moment().startOf('month').toDate()
-          this.appts_created_pipeline_dt2 = moment().toDate()
+          this.appts_created_pipeline_dt1 = moment().startOf('month').format('YYYY-MM-DD')
+          this.appts_created_pipeline_dt2 = moment().format('YYYY-MM-DD')
           this.updateApptsCreatedPipelineCalendar(true)
         } else {
-          this.appts_to_fdc_pipeline_dt1 = moment().startOf('month').toDate()
-          this.appts_to_fdc_pipeline_dt2 = moment().toDate()
+          this.appts_to_fdc_pipeline_dt1 = moment().startOf('month').format('YYYY-MM-DD')
+          this.appts_to_fdc_pipeline_dt2 = moment().format('YYYY-MM-DD')
           this.updateApptsToFdcPipelineCalendar(true)
         }
       },
 
       previousNumberOfDays (pipelineName, days) {
         if (pipelineName === 'apptsCreatedPipeline') {
-          this.appts_created_pipeline_dt1 = moment().subtract(days, 'days').toDate()
-          this.appts_created_pipeline_dt2 = moment().toDate()
+          this.appts_created_pipeline_dt1 = moment().subtract(days, 'days').format('YYYY-MM-DD')
+          this.appts_created_pipeline_dt2 = moment().format('YYYY-MM-DD')
           this.updateApptsCreatedPipelineCalendar()
         } else {
-          this.appts_to_fdc_pipeline_dt1 = moment().subtract(days, 'days').toDate()
-          this.appts_to_fdc_pipeline_dt2 = moment().toDate()
+          this.appts_to_fdc_pipeline_dt1 = moment().subtract(days, 'days').format('YYYY-MM-DD')
+          this.appts_to_fdc_pipeline_dt2 = moment().format('YYYY-MM-DD')
           this.updateApptsToFdcPipelineCalendar()
         }
       },
 
       yearToDate (pipelineName) {
         if (pipelineName === 'apptsCreatedPipeline') {
-          this.appts_created_pipeline_dt1 = moment().startOf('year').toDate()
-          this.appts_created_pipeline_dt2 = moment().toDate()
+          this.appts_created_pipeline_dt1 = moment().startOf('year').format('YYYY-MM-DD')
+          this.appts_created_pipeline_dt2 = moment().format('YYYY-MM-DD')
           this.updateApptsCreatedPipelineCalendar()
         } else {
-          this.appts_to_fdc_pipeline_dt1 = moment().startOf('year').toDate()
-          this.appts_to_fdc_pipeline_dt2 = moment().toDate()
+          this.appts_to_fdc_pipeline_dt1 = moment().startOf('year').format('YYYY-MM-DD')
+          this.appts_to_fdc_pipeline_dt2 = moment().format('YYYY-MM-DD')
           this.updateApptsToFdcPipelineCalendar()
         }
       },
 
-      funnelDrilldown (funnelId, dateRange, funnelName, pipelineName, isCheckedInColumn) {
+      async funnelDrilldown (funnelId, dateRange, funnelName, pipelineName, isCheckedInColumn) {
         let sourceIds = []
         let reps = []
         let orgs = []
@@ -2379,12 +2375,12 @@
 
           switch (dateRange) {
             case 'today':
-              start = moment().startOf('day').toDate()
-              end = moment().toDate()
+              start = moment().startOf('day').format('YYYY-MM-DD')
+              end = moment().format('YYYY-MM-DD')
               break
             case 'wtd':
-              start = moment().startOf('W').toDate()
-              end = moment().toDate()
+              start = moment().startOf('W').format('YYYY-MM-DD')
+              end = moment().format('YYYY-MM-DD')
               break
             default:
               start = this.appts_created_pipeline_dt1
@@ -2397,12 +2393,12 @@
 
           switch (dateRange) {
             case 'today':
-              start = moment().startOf('day').toDate()
-              end = moment().toDate()
+              start = moment().startOf('day').format('YYYY-MM-DD')
+              end = moment().format('YYYY-MM-DD')
               break
             case 'wtd':
-              start = moment().startOf('W').toDate()
-              end = moment().toDate()
+              start = moment().startOf('W').format('YYYY-MM-DD')
+              end = moment().format('YYYY-MM-DD')
               break
             default:
               start = this.appts_to_fdc_pipeline_dt1

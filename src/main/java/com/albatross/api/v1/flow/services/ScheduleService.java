@@ -100,6 +100,7 @@ public class ScheduleService {
     params.put("processStepStatusTypeId", esp.getProcessStepStatusTypeId());
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
+    params.put("projectProcessStepId", esp.getProjectProcessStepId());
     List<ScheduleEvent> results = sqlCache.query("schedule.getProject", params, new ScheduleEventMapper<>(ScheduleEvent.class, om));
     return results;
   }

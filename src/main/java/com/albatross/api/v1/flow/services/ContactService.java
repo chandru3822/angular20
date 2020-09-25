@@ -21,10 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.function.ObjLongConsumer;
 
 @Slf4j
@@ -82,6 +79,13 @@ public class ContactService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     Optional<Contact> result = sqlCache.get("contact.getByProjectId", params, new ContactMapper<>(Contact.class, om));
+    return result.orElse(null);
+  }
+
+  public Contact getContactByPhone(String phoneNumber) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("phone", phoneNumber);
+    Optional<Contact> result = sqlCache.get("contact.getContactByPhone", params, new ContactMapper<>(Contact.class, om));
     return result.orElse(null);
   }
 
@@ -246,6 +250,7 @@ public class ContactService {
 
       if(null != latitude && null != longitude) {
         //if lat and long then update contact's location
+        // todo: need to save the contact's timezone here.  not seeing a way to use mapbox and i don't want to import the entire google maps suite
         HashMap<String, Object> params = new HashMap<>();
         params.put("latitude", latitude);
         params.put("longitude", longitude);

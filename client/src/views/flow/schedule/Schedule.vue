@@ -331,8 +331,10 @@
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventTypes()
-      if(this.$route.query && this.$route.query.processStepId && this.$route.query.projectId) {
-        this.getSingleProject(parseInt(this.$route.query.projectId), parseInt(this.$route.query.processStepId))
+      console.log('router', this.$route)
+      if(this.$route.query && this.$route.query.projectProcessStepId) {
+        //projectId, eventTypeId, processStepStatusTypeId
+        this.getSingleProject(null, null, null, parseInt(this.$route.query.projectProcessStepId))
       }
     },
     methods: {
@@ -353,7 +355,7 @@
         try {
           const {data} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
           // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
-          this.$refs.calendar.getEvents()
+          this.$refs.calendar.getEvents(false, true)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
         } catch (e) {
@@ -373,8 +375,6 @@
         this.mapResources = newValue
       },
       dateCallback (startTime, endTime) {
-        console.log('ssssssssssssstart', startTime)
-        console.log('END', endTime)
         this.startTime = startTime
         this.endTime = endTime
       },
@@ -503,13 +503,14 @@
           this.searchProjectsLoading = false
         }, 500)
       },
-      async getSingleProject(projectId, eventTypeId, processStepStatusTypeId) {
+      async getSingleProject(projectId, eventTypeId, processStepStatusTypeId, projectProcessStepId) {
         this.listLoading = true
         try {
           let params = {
             projectId,
             eventTypeId,
-            processStepStatusTypeId
+            processStepStatusTypeId,
+            projectProcessStepId
           }
 
           const {data} = await postRequest(`/schedule/getProject`, params)
@@ -519,6 +520,7 @@
           this.projects = data
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
+            this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
           }
           this.listLoading = false
         } catch (e) {

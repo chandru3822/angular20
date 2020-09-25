@@ -123,7 +123,7 @@
                       upv.first_name,
                       upv.last_name,
                       concat(upv.first_name, ' ', upv.last_name) AS full_name,
-                      concat(upv.first_name, ' ', upv.last_name) AS title,
+                      concat(upv.first_name, ' ', upv.last_name) AS title
       from flow.user_positions_vw upv
       where upv.position_schedulable is true
         and case when :isParent and :isSchedulingTool

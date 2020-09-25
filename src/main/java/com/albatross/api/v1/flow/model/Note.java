@@ -18,6 +18,9 @@ public class Note {
   private String note, createdBy;
   private Boolean archived;
 
+  //wtf!!! why can i not get the frontend to update the dom if this value isn't present on page load?!?!?!
+  private Boolean edit;
+
   private Long primaryId;
 
   private Date dateCreated;

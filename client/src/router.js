@@ -86,6 +86,16 @@ export default new Router({
           }
         }
       }, {
+        path: 'errorLog',
+        name: 'errorLog',
+        component: () => {
+          if(store.getters.userHasFeature('ERROR_LOG')) {
+            return import(/* webpackChunkName: "errors" */ './views/flow/ErrorLog.vue')
+          } else  {
+            return accessDenied()
+          }
+        }
+      }, {
         path: 'users',
         name: 'users',
         component: () => {

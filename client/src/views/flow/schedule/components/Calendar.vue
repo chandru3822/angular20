@@ -142,11 +142,13 @@
                     multiple
                     clearable
                     :loading="orgsLoading"
-                    hide-details
+                    :hide-details="countSelected < maxSelectionAllowed"
+                    :error="countSelected >= maxSelectionAllowed"
+                    :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                     return-object
                     item-text="orgName"
                     item-value="id"
-                    @input="orgValuesChanged = true"
+                    @input="[orgValuesChanged = true, limiter()]"
                     @blur="getEvents(true)"
           >
             <template
@@ -166,12 +168,14 @@
                           label="User Resources"
                           multiple
                           clearable
-                          hide-details
+                          :hide-details="countSelected < maxSelectionAllowed"
+                          :error="countSelected >= maxSelectionAllowed"
+                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
                           :loading="usersLoading"
                           return-object
                           item-text="fullName"
                           item-value="id"
-                          @input="userValuesChanged = true"
+                          @input="[userValuesChanged = true, limiter()]"
                           @blur="getEvents(false)"
           >
             <template
@@ -326,6 +330,7 @@
     created() {
       this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
+      this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
       this.getSchedulingOrgs()
       this.getSchedulingUsers()
       this.getSchedulingOrgTypes()
@@ -348,6 +353,9 @@
             events: [] }
         ],
         events: [],
+        countSelected: 0,
+        maxSelectionAllowed: 10,
+        countErrorMessage: 'Maximum Selection Reached',
         selectedStates: [],
         previousStateCount: 0,
         masterOrgs: [],
@@ -603,6 +611,18 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      limiter(e) {
+        this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
+        console.log('count', this.countSelected)
+        this.orgs.forEach(o => {
+          let match = this.selectedOrgs.find(so => so.id === o.id)
+          o.disabled = !match && this.countSelected >= maxSelectionAllowed
+        })
+        this.users.forEach(u => {
+          let match = this.selectedUsers.find(su => su.id === u.id)
+          u.disabled = !match && this.countSelected >= maxSelectionAllowed
+        })
+      },
       async getEvents(isOrgs, reload) {
         localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
         localStorage.setItem('scheduleUsers', JSON.stringify(this.selectedUsers))
@@ -635,9 +655,9 @@
               const {data} = await postRequest(`/schedule`, params)
               data.forEach(d => {
                 // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-                // this is the user_id so that if a user has multiple positions we can load all of them into the same user row on the calendar
-                d.resourceId = `${d.systemListTypeId}${d.userId}`
-                d.title = `<b>${d.contactFirstName} ${d.contactLastName}</b> <br/> ${d.groupName}`
+                // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+                d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
+                d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.groupName}`
                 let matchingResource = this.resources.find(r => r.id === d.resourceId)
                 d.colorForBorder = matchingResource?.color
               })
@@ -669,12 +689,14 @@
         this.calendarStart = this.calendarApi.getDate()
         this.calendarView = this.calendarApi.view?.type
         if(this.calendarView === 'resourceTimelineDay') {
-          this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
         } else {
           //moment starts on sunday, add 1 to start
-          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          this.calendarEndTime = moment(this.calendarStart).endOf('week').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          this.calendarStartTime = moment(this.calendarStart).startOf('week').add(1, 'd').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).endOf('week').utc().format('YYYY-MM-DD HH:mm:ss')
         }
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
@@ -712,6 +734,8 @@
             resourceEvents.forEach(re => {
               let eventObj = {
                 id: resource.id,
+                projectName: re.projectName,
+                processStepName: re.processStepName,
                 color: resource.extendedProps.color,
                 coordinates: [ re.longitude, re.latitude]
               }

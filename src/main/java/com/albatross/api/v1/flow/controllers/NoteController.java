@@ -64,4 +64,9 @@ public class NoteController {
   public ResponseEntity<Note> saveProjectProcessStepNote(@RequestBody Note note) {
     return new ResponseEntity<>(noteService.saveNote(ObjectType.PROCESS_STEP.id, note), HttpStatus.OK);
   }
+
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteNote(@PathVariable Long id) {
+    noteService.deleteNote(id);
+  }
 }

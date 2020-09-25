@@ -12,7 +12,7 @@ import java.util.Date;
 public class CloserAppointmentResult {
 
   private Long userId;
-  private String userFirstName, userLastName, userFullName;
+  private String userFirstName, userLastName, userFullName, userEmail;
   private Date appointmentStartTime, appointmentEndTime;
   private Boolean success;
 }
