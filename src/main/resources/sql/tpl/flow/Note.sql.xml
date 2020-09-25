@@ -15,6 +15,7 @@
            n.date_created,
            n.date_modified,
            n.created_by_id,
+           n.archived,
            concat(creator.first_name, ' ', creator.last_name) AS created_by,
            n.modified_by_id
     from flow.note n

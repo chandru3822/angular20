@@ -313,7 +313,7 @@ export default {
         console.log('NOTE_HERE', n)
         const {data} = await postRequest(`/note/save${this.$props.type}Note`, {
           primaryId: this.primaryId,
-          id: n.id,
+          id: n.reply ? null : n.id,
           note: n.reply ? n.reply : n.note,
           parentId: n.reply ? n.id : null
         })
