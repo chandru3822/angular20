@@ -13,7 +13,7 @@ public class ErrorLog {
 
 
   private Long id, companyId, companyFeatureId, errorLogStatusId;
-  private String errorMessage, errorLogStatus;
+  private String errorMessage, errorLogStatus, featureName;
   private Boolean archived;
 
 }

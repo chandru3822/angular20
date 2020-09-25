@@ -2,6 +2,7 @@
   <errorLog.getAllForCompany><![CDATA[
     select cel.id,
            cel.company_feature_id,
+           cf.feature_name,
            cel.error_message,
            cel.error_log_status_id,
            cel.date_created,

@@ -27,6 +27,7 @@
 
           <template #item="{ item, index }">
             <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.featureName}}</td>
               <td class="text-left">{{item.errorMessage}}</td>
               <td class="text-left">{{item.errorLogStatus}}</td>
               <td>
@@ -93,6 +94,7 @@
         errors: [],
         dataLoading: true,
         headers: [
+          { text: 'Feature', value: 'featureName', show: true},
           { text: 'Error', value: 'errorMessage', show: true},
           { text: 'Status', value: 'errorLogStatus', show: true},
           {text: '', value: 'icons', show: true},
