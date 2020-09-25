@@ -142,11 +142,13 @@
                     multiple
                     clearable
                     :loading="orgsLoading"
-                    hide-details
+                    :hide-details="countSelected < 10"
+                    :error="countSelected >= 10"
+                    :error-messages="countSelected >= 10 ? countErrorMessage : null"
                     return-object
                     item-text="orgName"
                     item-value="id"
-                    @input="orgValuesChanged = true"
+                    @input="[orgValuesChanged = true, limiter()]"
                     @blur="getEvents(true)"
           >
             <template
@@ -166,12 +168,14 @@
                           label="User Resources"
                           multiple
                           clearable
-                          hide-details
+                          :hide-details="countSelected < 10"
+                          :error="countSelected >= 10"
+                          :error-messages="countSelected >= 10 ? countErrorMessage : null"
                           :loading="usersLoading"
                           return-object
                           item-text="fullName"
                           item-value="id"
-                          @input="userValuesChanged = true"
+                          @input="[userValuesChanged = true, limiter()]"
                           @blur="getEvents(false)"
           >
             <template
@@ -326,6 +330,7 @@
     created() {
       this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
       this.selectedUsers = JSON.parse(localStorage.getItem('scheduleUsers')) || []
+      this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
       this.getSchedulingOrgs()
       this.getSchedulingUsers()
       this.getSchedulingOrgTypes()
@@ -348,6 +353,8 @@
             events: [] }
         ],
         events: [],
+        countSelected: 0,
+        countErrorMessage: 'Maximum Selection Reached',
         selectedStates: [],
         previousStateCount: 0,
         masterOrgs: [],
@@ -602,6 +609,18 @@
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      limiter(e) {
+        this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
+        console.log('count', this.countSelected)
+        this.orgs.forEach(o => {
+          let match = this.selectedOrgs.find(so => so.id === o.id)
+          o.disabled = !match && this.countSelected >= 10
+        })
+        this.users.forEach(u => {
+          let match = this.selectedUsers.find(su => su.id === u.id)
+          u.disabled = !match && this.countSelected >= 10
+        })
       },
       async getEvents(isOrgs, reload) {
         localStorage.setItem('scheduleOrgs', JSON.stringify(this.selectedOrgs))
