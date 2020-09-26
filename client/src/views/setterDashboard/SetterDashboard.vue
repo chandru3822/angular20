@@ -799,12 +799,15 @@
             multi-sort
             :sort-by="[]"
             :sort-desc="[]"
-            hide-default-footer
-            disable-pagination
+            :loading="funnelDrilldownLoading"
+            :items-per-page="500"
+            :footer-props="footerProps"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td style="text-align: center">{{ index + 1 }}</td>
+                <td style="text-align: center">
+                  {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
+                </td>
                 <td>{{ item.setter_name ? item.setter_name : '' }}</td>
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
@@ -1006,9 +1009,17 @@
         { text: 'Office', value: 'office', show: true, width: 90 }
       ],
       funnelDrilldownData: [],
+      funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
-      funnelDrilldownRowCount: 0
+      funnelDrilldownRowCount: 0,
+      footerProps: {
+        showFirstLastPage: !constants.IS_MOBILE,
+        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+        'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]
+      }
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -2080,6 +2091,10 @@
             this.funnelDrilldownData = data?.length > 0 ? data : []
 
             if (this.funnelDrilldownData?.length > 0) {
+              for (let i = 0; i < this.funnelDrilldownData.length; i++) {
+                this.funnelDrilldownData[i].rowNum = i + 1
+              }
+
               this.markMissingDrilldownData()
               this.reformatFunnelDrilldownDates()
             }
