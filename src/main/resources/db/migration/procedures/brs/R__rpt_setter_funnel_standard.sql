@@ -179,7 +179,7 @@ BEGIN
                    thirty_day_count,
                    prev_thirty_day_count,
                    case when prev_thirty_day_count = 0 then 0
-                       else cast(cast(thirty_day_count-prev_thirty_day_count as numeric(10,2)) / prev_thirty_day_count as numeric(6,2)) * 100
+                       else cast(cast(thirty_day_count - prev_thirty_day_count as numeric(10,2)) / prev_thirty_day_count as numeric(6,2)) * 100
                        end as thirty_day_percent,
                    custom_date_range_count
 			from (
@@ -503,7 +503,7 @@ BEGIN
                    thirty_day_count,
                    prev_thirty_day_count,
                    case when prev_thirty_day_count = 0 then 0
-                       else cast(cast(thirty_day_count-prev_thirty_day_count as numeric(10,2)) / prev_thirty_day_count as numeric(6,2)) * 100
+                       else cast(cast(thirty_day_count - prev_thirty_day_count as numeric(10,2)) / prev_thirty_day_count as numeric(6,2)) * 100
                        end as thirty_day_percent,
                    custom_date_range_count
             from (
