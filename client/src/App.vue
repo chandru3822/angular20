@@ -8,15 +8,20 @@
         <v-btn text @click="refreshPage">Click here to Refresh</v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <router-view/>
+    <AppNav v-if="$route.name !== 'login'"/>
+    <router-view id="portal"/>
   </v-app>
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
+  import AppNav from '@/components/AppNav.vue'
 
   export default {
     name: 'App',
+    components: {
+      AppNav
+    },
     data() {
       return {}
     },
@@ -56,4 +61,32 @@
 
 <style lang="scss">
 @import "@/styles/main.scss";
+
+#portal .v-slide-group__prev {
+  display: none !important;
+}
+</style>
+
+<style scoped lang="scss">
+#portal {
+  font-family: 'Lato', sans-serif;
+  letter-spacing: .4px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding-top: 0 !important;
+  background-color: var(--v-secondaryCustom-base);
+  min-height: 100vh;
+  .app-title {
+    font-size: 25px;
+    margin-top: 7px;
+  }
+}
+
+@media (min-width: 769px) {
+  #portal{
+    .app-title {
+      font-size: 35px;
+    }
+  }
+}
 </style>

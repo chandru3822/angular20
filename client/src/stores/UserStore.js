@@ -1,4 +1,4 @@
-import {postRequest} from "@/helpers/helpers";
+import {postRequest} from "@/helpers/helpers"
 
 export const UserActions = {
   LOGIN_SUCCESS: 'loginSuccess',
@@ -50,15 +50,15 @@ export const UserStore = {
         )
       }
     },
-    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters }, params) => {
+    [UserActions.CHANGE_CONTEXT]: async ({ commit, getters, state }, params) => {
       //change context
       const {data} = await postRequest(`/user/changeContext/${params.companyId}`)
 
       //update vuex store - user details
       commit(UserMutations.SET_DETAILS, data)
 
-      //refresh entire app
-      window.location.reload()
+      //refresh entire app and go to home screen
+      window.location.href = '/'
     },
     [UserActions.LOGOUT]: () => {
       localStorage.removeItem('store')
