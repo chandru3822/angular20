@@ -676,8 +676,8 @@
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
 
             <!-- TODAY COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, 'today', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, 'today', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.countTodayState}"
                      :title="line.todayHover">
@@ -694,8 +694,8 @@
             </td>
 
             <!-- LAST 7 DAYS COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, '7days', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, '7days', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count7state}"
                      :title="line.sevenDayHover">
@@ -712,8 +712,8 @@
             </td>
 
             <!-- LAST 30 DAYS COUNT -->
-            <td class="funnel-td" style="cursor: pointer"
-                @click="funnelDrilldown(line.id, '30days', line.name)">
+            <td class="funnel-td" :style="{'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, '30days', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.thirtyDayHover">
@@ -732,18 +732,16 @@
             <!-- CUSTOM DATE RANGE COUNT -->
             <td v-show="!showCustomPercentage"
                 class="funnel-td"
-                :style="{color: line.customCountState}"
-                style="width:15%; cursor: pointer"
+                :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
                 :title="line.customDayHover"
-                @click="funnelDrilldown(line.id, 'custom', line.name)">
+                @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
               {{line.custom_date_range_count}}{{line.id === 4 ? '%' : ''}}
             </td>
 
             <td v-show="showCustomPercentage"
                 class="funnel-td"
-                :style="{color: line.customCountState}"
-                style="width: 15%; cursor: pointer"
-                @click="funnelDrilldown(line.id, 'custom', line.name)">
+                :style="{color: line.customCountState, 'cursor': line.id !== 4 ? 'pointer' : ''}"
+                @click="line.id !== 4 ? funnelDrilldown(line.id, 'custom', line.name) : ''">
               <div>
                 <div class="funnel-count" :style="{color: line.count30state}"
                      :title="line.customDayHover">
@@ -801,12 +799,15 @@
             multi-sort
             :sort-by="[]"
             :sort-desc="[]"
-            hide-default-footer
-            disable-pagination
+            :loading="funnelDrilldownLoading"
+            :items-per-page="500"
+            :footer-props="footerProps"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }" class="table-body">
               <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
-                <td style="text-align: center">{{ index + 1 }}</td>
+                <td style="text-align: center">
+                  {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
+                </td>
                 <td>{{ item.setter_name ? item.setter_name : '' }}</td>
                 <td>{{ item.employee_id ? item.employee_id : '' }}</td>
                 <td class="customer-name">{{ item.customer_name ? item.customer_name : '' }}</td>
@@ -1008,9 +1009,17 @@
         { text: 'Office', value: 'office', show: true, width: 90 }
       ],
       funnelDrilldownData: [],
+      funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
       filteredFunnelDrilldownData: [],
-      funnelDrilldownRowCount: 0
+      funnelDrilldownRowCount: 0,
+      footerProps: {
+        showFirstLastPage: !constants.IS_MOBILE,
+        firstIcon: constants.IS_MOBILE ? '' : 'mdi-page-first',
+        lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:',
+        'items-per-page-options': [100, 500, 1000, 2500, 5000, 10000]
+      }
     }),
     computed: {
       is_q1 () { return this.currentQuarter === 1 },
@@ -2082,6 +2091,10 @@
             this.funnelDrilldownData = data?.length > 0 ? data : []
 
             if (this.funnelDrilldownData?.length > 0) {
+              for (let i = 0; i < this.funnelDrilldownData.length; i++) {
+                this.funnelDrilldownData[i].rowNum = i + 1
+              }
+
               this.markMissingDrilldownData()
               this.reformatFunnelDrilldownDates()
             }
